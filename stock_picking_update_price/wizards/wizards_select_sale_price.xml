@@ -14,7 +14,8 @@
 <!--                            <filter name="group_employee_id" string="Product" icon="terp-partner" context="{'group_by':'product_id'}"/>-->
 
                             <field name="selected"/>
-                            <field name="product_id" readonly="1" force_save="1"/>
+                            <field name="product_text" readonly="1" force_save="1"/>
+                            <field name="move_id" readonly="1" force_save="1"/>
 <!--                            <field name="previous_purchase_date" readonly="1"/>-->
 <!--                            <field name="previous_purchase_price" readonly="1"/>-->
 <!--                            <field name="previous_cost_price" readonly="1"/>-->

@@ -37,7 +37,7 @@ class Picking(models.Model):
             raise UserError(_('The selected picking does not have validated yet. Please validate the picking.'))
             return
 
-        view = self.env.ref('account_invoice_change_price.select_sale_price_form')
+        view = self.env.ref('stock_picking_update_price.select_sale_price_form')
 
         return {'name': _('Picking Prices'),
                 'view_type': 'form',
