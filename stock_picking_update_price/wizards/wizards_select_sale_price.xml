@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<odoo>
+
+        <record id="select_sale_price_form" model="ir.ui.view">
+            <field name="name">select.sale.price.wizard</field>
+            <field name="model">select.sale.price</field>
+            <field name="arch" type="xml">
+                <form string="Select Sale Price">
+                    <group>
+                        <field name="picking_id" readonly="1" options="{'no_open': True}"/>
+                    </group>
+                    <field name="price_line_ids">
+                        <tree string="Costs lines" editable="false" create="false" delete="false" default_order="product_id" >
+<!--                            <filter name="group_employee_id" string="Product" icon="terp-partner" context="{'group_by':'product_id'}"/>-->
+
+                            <field name="selected"/>
+                            <field name="product_id" readonly="1" force_save="1"/>
+<!--                            <field name="previous_purchase_date" readonly="1"/>-->
+<!--                            <field name="previous_purchase_price" readonly="1"/>-->
+<!--                            <field name="previous_cost_price" readonly="1"/>-->
+<!--                            <field name="purchase_price" readonly="1"/>-->
+<!--                            <field name="current_cost_price" readonly="1"/>-->
+<!--                            <field name="current_list_price" readonly="1"/>-->
+<!--                            <field name="current_percent_price" readonly="1"/>-->
+                            <field name="list_price"/>
+<!--                            <field name="percent_list_price" readonly="1"/>-->
+<!--                            <field name="eur_price"/>-->
+<!--                            <field name="percent_eur_price" readonly="1"/>-->
+<!--                            <field name="usd_price"/>-->
+<!--                            <field name="percent_usd_price" readonly="1"/>-->
+                        </tree>
+                    </field>
+
+<!--            <search string="Sales by Channel Analysis">-->
+<!--                <field name="date_order"/>-->
+<!--                <field name="product_id"/>-->
+<!--                <filter string="Date" name="current_year" date="date_order" default_period="this_year"/>-->
+<!--                <filter string="Last 365 Days" name="last_year" domain="[('date_order', '&gt;=', (context_today() - datetime.timedelta(days=365)).strftime('%Y-%m-%d'))]"/>-->
+<!--                <group expand="1" string="Group By">-->
+<!--                    <filter string="Sales Team" name="team_id" context="{'group_by':'team_id'}"/>-->
+<!--                </group>-->
+<!--            </search>-->
+
+
+<!--                    <footer>-->
+<!--                        <button name="action_select_sale_price" string="Submit" type="object" class="btn-primary"/>-->
+<!--                        <button string="Cancel" class="btn-secondary" special="cancel"/>-->
+<!--                    </footer>-->
+                </form>
+            </field>
+        </record>
+
+</odoo>
