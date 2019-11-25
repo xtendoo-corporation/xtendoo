@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <odoo>
 
-        <record id="select_sale_price_form" model="ir.ui.view">
-            <field name="name">select.sale.price.wizard</field>
-            <field name="model">select.sale.price</field>
+        <record id="select_picking_price_form" model="ir.ui.view">
+            <field name="name">select.picking.price.wizard</field>
+            <field name="model">select.picking.price</field>
             <field name="arch" type="xml">
-                <form string="Select Sale Price">
+                <form string="Select Picking Price">
                     <group>
                         <field name="picking_id" readonly="1" options="{'no_open': True}"/>
                     </group>
                     <field name="price_line_ids">
                         <tree string="Costs lines" editable="false" create="false" delete="false" default_order="product_id" >
-<!--                            <filter name="group_employee_id" string="Product" icon="terp-partner" context="{'group_by':'product_id'}"/>-->
-
                             <field name="selected"/>
+                            <field name="product_id" readonly="1" force_save="1" invisible="1"/>
+                            <field name="picking_id" readonly="1" force_save="1" invisible="1"/>
                             <field name="product_text" readonly="1" force_save="1"/>
-                            <field name="move_id" readonly="1" force_save="1"/>
-<!--                            <field name="previous_purchase_date" readonly="1"/>-->
+                            <field name="pricelist_id" readonly="1" force_save="1"/>
+                            <field name="move_id" readonly="1" force_save="1" invisible="1"/>
 <!--                            <field name="previous_purchase_price" readonly="1"/>-->
 <!--                            <field name="previous_cost_price" readonly="1"/>-->
 <!--                            <field name="purchase_price" readonly="1"/>-->
@@ -42,11 +42,10 @@
 <!--                </group>-->
 <!--            </search>-->
 
-
-<!--                    <footer>-->
-<!--                        <button name="action_select_sale_price" string="Submit" type="object" class="btn-primary"/>-->
-<!--                        <button string="Cancel" class="btn-secondary" special="cancel"/>-->
-<!--                    </footer>-->
+                    <footer>
+                        <button name="action_write_selected_picking_price" string="Submit" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
                 </form>
             </field>
         </record>

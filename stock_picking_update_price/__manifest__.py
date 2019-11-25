@@ -12,7 +12,8 @@
         'account',
     ],
     'data': [
-        'wizards/wizards_select_sale_price.xml',
+        'wizards/wizards_select_picking_price.xml',
+        'security/ir.model.access.csv',
         'views/stock_picking_view.xml',
     ],
     'installable': True,
