@@ -46,25 +46,20 @@ class Picking(models.Model):
 
         view = self.env.ref('stock_picking_update_price.select_picking_price_form')
 
-        return {'name': _('Picking Prices'),
-                'view_type': 'form',
-                'view_mode': 'form',
-                'res_model': 'select.picking.price',
-                'view_id': view.id,
-                'views': [(view.id, 'form')],
-                'type': 'ir.actions.act_window',
-                'target': 'new',
-                'domain': [('id', 'in', self.picking_price_ids)],
-                'context': {'default_picking_id': self.id}}
+        action = {'name': _('Picking Prices'),
+                  'view_type': 'form',
+                  'view_mode': 'form',
+                  'res_model': 'select.picking.price',
+                  'view_id': view.id,
+                  'views': [(view.id, 'form')],
+                  'type': 'ir.actions.act_window',
+                  'target': 'new',
+                  'context': {'default_picking_id': self.id}}
 
-    # @api.multi
-    # def action_stock_picking(self):
-    #     pickings = self.order_ids.mapped('picking_id').filtered(lambda x: x.state != 'done')
-    #     action_picking = self.env.ref('stock.action_picking_tree_ready')
-    #     action = action_picking.read()[0]
-    #     action['context'] = {}
-    #     action['domain'] = [('id', 'in', pickings.ids)]
-    #     return action
+        if self.picking_price_ids:
+            action['res_id'] = self.picking_price_ids[0].id
+
+        return action
 
 
 class StockMove(models.Model):
