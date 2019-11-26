@@ -102,22 +102,25 @@ class SelectPickingPriceLine(models.Model):
     picking_id = fields.Many2one('stock.picking', required=True)
     product_id = fields.Many2one('product.product', string='Product')
     move_id = fields.Many2one('stock.move', string='Operations')
-    list_price = fields.Float('List Price', digits=dp.get_precision('Product Price'))
     pricelist_id = fields.Many2one('product.pricelist')
+    list_price = fields.Float('List Price', digits=dp.get_precision('Product Price'))
 
-    product_text = fields.Text('Product Text', compute='_compute_product_text')
+    product_text = fields.Text('Product Text', compute='_compute_text')
+    pricelist_text = fields.Text('Price List Text', compute='_compute_text')
+    cost_price = fields.Float('Cost Price', compute='_compute_text')
 
     @api.onchange('list_price')
     def _onchange_standard_price(self):
         self.selected = True
 
     @api.multi
-    def _compute_product_text(self):
+    def _compute_text(self):
         stock_move = self.env['stock.move']
 
         for line in self:
             if line.pricelist_id.id == 0:
                 line.product_text = line.product_id.name
+                line.pricelist_text = 'Sales Price'
 
                 search = stock_move.get_search_last_purchase(line.product_id, line.picking_id)
                 if search:
@@ -125,6 +128,12 @@ class SelectPickingPriceLine(models.Model):
                     line.product_text += " por un importe de " + str(search.purchase_line_id.price_unit)
             else:
                 line.product_text = ''
+                line.pricelist_text = line.pricelist_id.name
+
+            logging.info("line.product_id.standard_price")
+            logging.info(line.product_id.standard_price)
+
+            line.cost_price = line.product_id.standard_price
 
     @api.multi
     def _compute_current_cost_price(self):
