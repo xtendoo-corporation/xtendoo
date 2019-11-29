@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+         <record model="ir.ui.view" id="res_partner_show_ref">
+            <field name="name">res.partner.template.ref</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                 <xpath expr="//field[@name='commercial_name']" position="after">
+                    <field name="ref"
+                           placeholder="Referencia interna..."
+                           sring="Referencia interna"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
