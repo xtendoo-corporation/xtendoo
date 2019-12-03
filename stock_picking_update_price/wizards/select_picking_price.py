@@ -1,6 +1,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from odoo import fields, models, api
 from odoo.addons import decimal_precision as dp
+from datetime import datetime
 
 import logging
 
@@ -11,6 +12,7 @@ class SelectPickingPrice(models.Model):
 
     picking_id = fields.Many2one('stock.picking', 'Stock Picking')
     price_line_ids = fields.One2many('select.picking.price.line', 'select_picking_id')
+    date = fields.Datetime('Date', default=datetime.now(), readonly=True)
 
     @api.model
     def default_get(self, default_fields):
@@ -108,6 +110,9 @@ class SelectPickingPriceLine(models.Model):
     product_text = fields.Text('Product Text', compute='_compute_text')
     pricelist_text = fields.Text('Price List Text', compute='_compute_text')
     cost_price = fields.Float('Cost Price', compute='_compute_text')
+    purchase_price = fields.Float('Purchase Price', compute='_compute_text')
+    margin = fields.Float('Margin', compute='_compute_text')
+    percent_margin = fields.Float('Percent Margin %', compute='_compute_text')
 
     @api.onchange('list_price')
     def _onchange_standard_price(self):
@@ -130,23 +135,17 @@ class SelectPickingPriceLine(models.Model):
                 line.product_text = ''
                 line.pricelist_text = line.pricelist_id.name
 
-            logging.info("line.product_id.standard_price")
-            logging.info(line.product_id.standard_price)
-
             line.cost_price = line.product_id.standard_price
-
-    @api.multi
-    def _compute_current_cost_price(self):
-        for line in self:
-            self.current_cost_price = self.product_id.standard_price
-            self.current_list_price = self.product_id.list_price
-            self.current_percent_price = 100 - ((self.product_id.standard_price / self.product_id.list_price) * 100)
+            line.purchase_price = line.move_id.purchase_line_id.price_unit
+            line.margin = line.list_price - line.move_id.purchase_line_id.price_unit
+            line.percent_margin = 100 - ((line.move_id.purchase_line_id.price_unit / line.list_price) * 100)
 
     @api.multi
     @api.onchange('list_price')
     def _compute_percent_list_price(self):
         for line in self:
-            if self.list_price != 0:
-                self.percent_list_price = 100 - ((self.product_id.standard_price / self.list_price) * 100)
+            line.margin = line.list_price - line.move_id.purchase_line_id.price_unit
+            if line.list_price != 0:
+                line.percent_margin = 100 - ((line.purchase_price / line.list_price) * 100)
             else:
-                self.percent_list_price = 0
+                line.percent_margin = 0
