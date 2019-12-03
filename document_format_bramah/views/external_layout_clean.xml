@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <template id="external_layout_clean_ch" inherit_id="web.external_layout_clean">
+
+            <!-- Header -->
+
+            <xpath expr="//div[@class='o_clean_header']" position="replace">
+
+            <!-- Datos documento -->
+              <div style="width:55%;float:left;margin-left:15px;margin-top:217px; position:absolute;top:-160px;">
+
+              <h2>
+                  <div t-if="docState == 'sale'">
+                      <span>Pedido de venta</span>
+                  </div>
+                  <div t-if="docState == 'draft'">
+                    <span>Presupuesto</span>
+                  </div>
+
+                   <span t-if="docState == 'out_invoice' and o.state in ('open', 'in_payment', 'paid')">Factura</span>
+                   <span t-if="docState == 'out_invoice' and o.state == 'draft'">Factura borrador</span>
+                   <span t-if="docState == 'out_invoice' and o.state == 'cancel'">Factura cancelada</span>
+                   <span t-if="docState == 'out_refund'">Factura rectificativa</span>
+                   <span t-if="docState == 'in_refund'">Factura rectificativa de compra</span>
+                   <span t-if="docState == 'in_invoice'">Factura de compra</span>
+                   <span  t-if="docState == 'outgoing'">Albarán de entrega</span>
+
+              </h2>
+
+              <div t-if="docName">
+                <span style="margin-left:70px;height:21;" t-esc="docName"/>
+              </div>
+              <div t-if="docDate">
+                <span style="margin-left:70px;height:21;" t-esc="docDate.strftime('%d/%m/%Y')"/>
+              </div>
+            </div>
+            <!-- Fin datos documento -->
+
+            <!--Datos cliente -->
+
+            <div style="width:38%;margin-top:215px;float:left;margin-left:35px;position:absolute;top:-153px;left:57%;">
+              <div style="margin-top:34px;" t-if="clientName">
+                <span t-esc="clientName"/>
+              </div>
+              <div t-if="clientStreet">
+                <span t-esc="clientStreet"/>
+              </div>
+              <div t-if="clientCity">
+                <span t-esc="clientZip" /> <span t-esc="clientCity"/>  (<span t-esc="clientState"/>) <span t-esc="clientCountry"/>
+              </div>
+              <div t-if="clientVat">
+                <span>N.I.F.: </span><span t-esc="clientVat"/>
+              </div>
+
+            </div>
+
+            <!-- Fin datos cliente -->
+                <div style="clear:both;"></div>
+
+            </xpath>
+
+            <!-- Fin Header -->
+
+            <!-- Footer -->
+
+            <xpath expr="//div[@class='row mt8']" position="replace">
+
+                <div id="total" name="total">
+
+
+                          <!-- Primera fila -->
+                        <div t-if="docState != 'outgoing'" style="margin-top:5px;">
+                          <div style="margin-top:9px;">
+                            <div style="margin-left:130px;width:124px; float:left;display:block;" t-if="bruto">
+                              <span t-esc="'%.2f'%bruto"/>€
+                            </div>
+                            <div style="margin-left:107px; width:115px; float:left;">
+                              <div t-if="descuento">
+                                <div t-if="descuento > 0">
+                                  <span t-esc="'%.2f'%descuento"/>€
+                                </div>
+                                <div t-else="">
+                                  <span>0.00</span>€
+                                </div>
+                              </div>
+                              <div t-else="">
+                                <span>0.00</span>€
+                              </div>
+                            </div>
+                            <div style="margin-left:77px; width:136px; float:left;">
+                              <span t-esc="importePortes"></span>
+                            </div>
+                            <div style="margin-left:137px; width:119px; float:left;" t-if="formaPago">
+                              <span t-esc="formaPago"/>
+                            </div>
+                          </div>
+                          <!-- Fin primera fila -->
+                          <!-- Segunda fila -->
+
+                          <div style="clear:both;float:left; margin-top:15px;">
+                            <div style="margin-left:130px; width:124px; float:left;" t-if="base">
+                                <span t-esc="'%.2f'%base"/>€
+                            </div>
+                            <div style="margin-left:107px; width:115px; float:left;" t-if="iva">
+                              <span t-esc="'%.2f'%iva"/>€
+                              <!--<t t-foreach="doc.amount_by_group" t-as="amount_by_group">
+                                  <span t-esc="amount_by_group[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                              </t>-->
+                            </div>
+                          </div>
+                        </div>
+
+                          <!-- Fin segunda fila -->
+                          <!-- Total -->
+                          <!-- total de facturas -->
+                        <div t-if="docState != 'outgoing'">
+                          <div style="clear:both;padding-top:11px;">
+                            <div style="margin-left:736px;" t-if="total">
+                              <span t-esc="'%.2f'%total"/>€
+                            </div>
+                          </div>
+                        </div>
+                        <!-- fin total factura -->
+                        <!-- total albaran -->
+                        <div t-if="docState == 'outgoing'">
+                          <div style="clear:both;padding-top:11px;">
+                            <div style="margin-left:736px;margin-top:56px;" t-if="total">
+                              <span t-esc="'%.2f'%total"/>€
+                            </div>
+                          </div>
+                        </div>
+                        <!-- fin total albaran -->
+
+                          <!-- Fin total -->
+
+                         <div style="clear:both;padding-top:11px;" t-if="total">
+                            <div style="width:536px;float:left;">
+
+                            </div>
+                          </div>
+
+                </div>
+            </xpath>
+
+            <!-- Fin footer -->
+
+        </template>
+    </data>
+</odoo>

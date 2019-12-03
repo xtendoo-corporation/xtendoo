@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="A4_albaran" model="report.paperformat">
+            <field name="name">A4 Albarán</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="margin_top">20</field>
+            <field name="margin_bottom">0</field>
+            <field name="margin_right">7</field>
+            <field name="margin_left">7</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_spacing">80</field>
+            <field name="dpi">95</field>
+            <!--<field name="report_ids">sale.order</field>-->
+        </record>
+
+        <record id="stock.action_report_delivery" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_bramah.A4_albaran" />
+        </record>
+
+        <template id="report_delivery_document_bramah" inherit_id="stock.report_delivery_document">
+
+            <xpath expr="/t/t/t/t/t[@t-set='address']" position="replace">
+
+                <div></div>
+
+
+            </xpath>
+
+            <xpath expr="//div[@class='page']" position="replace">
+
+                <!-- Cabecera -->
+
+
+                <div class="col-6" style="display:block; width:38%;float:left;padding-right:2%;" >
+                    <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo" style="width:100%"/>
+                </div>
+                <div style= "width:60%; display:block;float:left;" >
+                  <div t-if="o.company_id.name" style="float:left;width:60%;"><span style="color:black; margin-bottom:0px" t-field="o.company_id.name"/></div>
+                    <div t-if="o.company_id.vat" style="float:left;width:40%;color:black;">CIF: <span t-field="o.company_id.vat"/></div>
+                  <hr style="heigth:5px; color:grey; margin: 3px;clear:both;" ></hr>
+                  <div class="col-5 offset-1" name="company_address" style= "color:gray; display:inline; width:50%">
+                      <div style="width:60%; display:block; float:left;">
+                        <span> <strong style="color:black;" > Dirección </strong> </span>
+                      <ul style="list-style-type:none;margin-left:-35px!important;margin-top:-3px!important;font-weight:0.9em;">
+
+                          <li>
+                            <div t-if="o.company_id.street" style="display:inline-block" ><i class="fa fa-map" role="img" aria-label="map" title="map" style="color:black; font-weigth:bolder;"/> C/ <span t-field="o.company_id.street"/>, </div>
+                            <div t-if="o.company_id.street2" style="display:inline-block"> <span t-field="o.company_id.street2" /> </div>
+                          </li>
+                          <li>
+                            <div t-if="o.company_id.zip" style="display:inline"><span t-field="o.company_id.zip"/> </div>
+                            <div t-if="o.company_id.city" style="display:inline"> <span t-field="o.company_id.city" />. </div>
+                            <div t-if="o.company_id.state_id" style="display:inline" > <span t-field= "o.company_id.state_id" />. </div>
+                            <div t-if="o.company_id.country_id" style= "display:inline" > <span t-field="o.company_id.country_id" /> </div>
+                          </li>
+                      </ul>
+                  </div>
+                   <div style="width:35%; display:block; float:left">
+                        <span > <strong style="color:black;" > Atención al cliente </strong> </span>
+                      <ul style="list-style-type:none;margin-left:-35px!important;margin-top:-3px!important;font-weight:0.9em;">
+
+                          <li>
+                            <div t-if="o.company_id.phone" style="display:inline" ><i class="fa fa-phone" role="img" aria-label="Phone" title="Phone" style="color:black; font-weigth:bolder;"/> <span t-field="o.company_id.phone"/> </div>
+                          </li>
+                          <li>
+                            <div t-if="o.company_id.email" style="display:inline" ><i class="fa fa-at" role="img" aria-label="Email" title="Email" style="color:black; font-weigth:bolder;"/> <span t-field="o.company_id.email" /> </div>
+                          </li>
+                      </ul>
+                  </div>
+                </div>
+              </div>
+
+
+      <!-- Fin cabecera -->
+
+       <!-- Datos documento -->
+              <div style="width:60%;float:left;padding-bottom:30px;clear:both;margin-top:30px;font-size:1.1em;">
+
+              <h2 style="color:black;margin-left:80px;">
+
+                 <t t-if="o.sale_id">
+                    Albarán de Entrega
+                </t>
+                 <t t-else="">
+                    Albarán de Recepción
+                </t>
+              </h2>
+              <div>
+                <span style="width:100px;display:inline-block;font-size:1.3em;margin-left:10px;">Numero :</span><span style="margin-left:5px;height:21;" t-field="o.name"/>
+              </div>
+              <div>
+               <span style="width:100px;display:inline-block;font-size:1.3em;margin-left:10px;">Fecha :</span><span style="margin-left:1px;height:21;">
+                  <t t-if="o.state == 'done'">
+                      <span t-field="o.date_done" t-options="{&quot;format&quot;: &quot;dd-MM-yyyy&quot;}"/>
+                       </t>
+                   <t t-if="o.state != 'done'">
+                      <span t-field="o.scheduled_date" t-options="{&quot;format&quot;: &quot;dd-MM-yyyy&quot;}"/>
+                  </t>
+               </span>
+              </div>
+              <div>
+                 <span style="width:100px;display:inline-block;font-size:1.3em;margin-left:10px;">Pedido :</span><span style="margin-left:5px;height:21;" t-field="o.origin"/>
+              </div>
+            </div>
+            <!-- Fin datos documento -->
+
+            <!--Datos cliente -->
+
+            <div style="width:40%;float:left;margin-top:30px;font-size:1.3em;padding-bottom:30px;">
+              <div>
+                <span t-field="o.partner_id.name"/>
+              </div>
+              <div t-if="o.partner_id.street">
+                <span t-field="o.partner_id.street"/>
+              </div>
+              <div t-if="o.partner_id.city">
+                <span t-field="o.partner_id.zip" /> <span t-field="o.partner_id.city"/>  (<span t-field="o.partner_id.state_id.name"/>) <span t-field="o.partner_id.country_id.name"/>
+              </div>
+              <div t-if="o.partner_id.vat">
+                <span>N.I.F.: </span><span t-field="o.partner_id.vat"/>
+              </div>
+
+            </div>
+
+            <!-- Fin datos cliente -->
+
+            <!-- cabecera lineas -->
+
+             <div style="clear:both;">
+                          <div style="height:14px; width:122px; display:block; float:left; margin-left:-15px;font-size:1.2em;">
+                            <span>Código</span>
+                          </div>
+                          <div style="height:14px; width:424px; display:block;float:left;font-size:1.2em;">
+                            <span>Descripción</span>
+                          </div>
+                          <div style="height:14px; width:55px;  display:block; float:left;font-size:1.2em;text-align:rght;">
+                            <span>IVA</span>
+                          </div>
+                          <div style="height:14px; width:84px;  display:block; float:left;font-size:1.2em;text-align:right;">
+                            <span>Unidades</span>
+                          </div>
+                          <div style="height:14px; width:84px;  display:block;float:left;font-size:1.2em;text-align:right;">
+                            <span>Precio/U</span>
+                          </div>
+                          <div style="height:14px; width:80px;  display:block; float:left;font-size:1.2em;text-align:right;">
+                            <span>DTO.</span>
+                          </div>
+
+                          <div style="height:14px; width:134px;  display:block; float:left;font-size:1.2em;text-align:right;">
+                            <span>Importe</span>
+                          </div>
+                        </div>
+
+               <!-- Separador -->
+
+                    <div style="height:2px;background-color:black;clear:both;margin-top:30px;margin-left:-50px;"></div>
+
+
+               <!-- Fin separador -->
+
+            <!-- fin cabecera lineas -->
+
+            <!-- lineas -->
+
+             <!-- variales totales -->
+
+                <t t-set="importeBruto" t-value="0"></t>
+                <t t-set="descuento" t-value="0"></t>
+                <t t-set="baseImponible" t-value="0"></t>
+                <t t-set="importeIva" t-value="0"></t>
+                <t t-set="importeTotal" t-value="0"></t>
+
+             <!-- fin variables totales -->
+
+            <t t-foreach="o.move_line_ids" t-as="move_line">
+
+
+
+             <!-- codigo -->
+                             <div style="clear:both;">
+                                <div style="width:122px; display:block; float:left; margin-left:-15px;">
+                                  <t t-if="move_line.move_id.product_id.default_code">
+                                  <span t-field="move_line.move_id.product_id.default_code"/>
+                                  </t>
+                                  <t t-esle="">
+                                    <span style="color:white">aaa</span>
+                                  </t>
+                                </div>
+                             <!-- Fin codigo -->
+                             <!-- Descripcion -->
+                                <div style="width:424px; display:block;float:left;">
+                                    <span t-field="move_line.move_id.product_id.name"/>
+                                </div>
+                              <!-- Fin descripcion -->
+
+                            <!-- si es venta -->
+
+                          <t t-if="move_line.move_id.sale_line_id">
+                              <!-- % de IVA -->
+                                 <div t-if="move_line.move_id.sale_line_id.price_tax != 0.00" style="width:55px;  display:block; float:left;text-align:right;">
+                                   <t t-set="ivaLinea" t-value="round(move_line.move_id.sale_line_id.price_tax*100/move_line.move_id.sale_line_id.price_subtotal,0)"/>
+                                    <span t-esc="ivaLinea" />%
+
+                                </div>
+                                <div t-else="" style="width:55px;;display:block; float:left;">
+                                     <span style="color:white">aaa</span>
+                                      <t t-set="ivaLinea" t-value="0"></t>
+                                </div>
+                              <!-- Fin % de IVA -->
+                              <!-- Cantidad entregada -->
+                                <div style="width:84px;  display:block; float:left;text-align:right">
+                                    <t t-set="quantity" t-value="round(move_line.move_id.sale_line_id.qty_delivered,2)"></t>
+                                    <span t-esc="quantity"/>
+                                </div>
+                              <!-- Fin cantidad entregada -->
+                              <!--Precio / U -->
+                                <div style="width:84px;  display:block;float:left; text-align:right;">
+                                     <t t-set="price_unit" t-value="round(move_line.move_id.sale_line_id.price_unit,3)"></t>
+                                     <span t-esc="price_unit"/>€
+                                </div>
+                              <!-- Fin precio / u -->
+                              <!-- Descuento -->
+                                <div t-if="move_line.move_id.sale_line_id.discount != 0.00" style="width:80px;  display:block; float:left;text-align:right;">
+                                     <span t-field="move_line.move_id.sale_line_id.discount"/>%
+                                      <t t-set="descuentoLinea" t-value="move_line.qty_done * move_line.move_id.sale_line_id.price_unit * move_line.move_id.sale_line_id.discount /100"/>
+                                       <t t-set="descuento" t-value="descuento + descuentoLinea"></t>
+
+                                </div>
+                                <div t-else="" style="width:80px;display:block; float:left;text-align:right;">
+                                     <span style="color:white;">aaa</span>
+                                     <t t-set="descuentoLinea" t-value="0"/>
+                                </div>
+                              <!-- Fin descuento -->
+
+                              <!-- Precio total linea -->
+                                <div style="width:134px;  display:block; float:left;text-align:right;">
+                                  <t t-set="subtotalLinea" t-value="move_line.move_id.sale_line_id.price_unit*move_line.qty_done - descuentoLinea"/>
+                                     <span t-esc="round(subtotalLinea,2)"/>€
+
+                                </div>
+                                <t t-set="ivaLineaImporte" t-value="round((quantity * price_unit - descuentoLinea) * ivaLinea /100,2) "/>
+                                 <t t-set="importeIva" t-value="importeIva +ivaLineaImporte"></t>
+                                <t t-set="importeBruto" t-value="importeBruto + move_line.move_id.sale_line_id.price_reduce*move_line.move_id.sale_line_id.qty_delivered"></t>
+
+                              <!-- Fin precio total de linea -->
+
+                            </t>
+                            <!-- fin si es venta -->
+                            <!-- si es compra -->
+                            <t t-if="move_line.move_id.purchase_line_id">
+
+                            <!-- % de IVA -->
+                                 <div t-if="move_line.move_id.purchase_line_id.price_tax != 0.00" style="width:55px;  display:block; float:left;text-align:right;">
+                                   <t t-set="ivaLinea" t-value="round(move_line.move_id.purchase_line_id.price_tax*100/move_line.move_id.purchase_line_id.price_subtotal,0)"/>
+                                    <span t-esc="ivaLinea" />%
+
+                                </div>
+                                <div t-else="" style="width:55px;;display:block; float:left;">
+                                     <span style="color:white">aaa</span>
+                                     <t t-set="ivaLinea" t-value="0"></t>
+                                </div>
+                              <!-- Fin % de IVA -->
+                              <!-- Cantidad entregada -->
+                                <div style="width:84px;  display:block; float:left;text-align:right">
+                                     <!--<span t-esc="round(move_line.qty_done,2)"/>-->
+                                    <t t-set="quantity" t-value="round(move_line.qty_done,2)"></t>
+                                    <span t-esc="quantity"/>
+                                </div>
+                              <!-- Fin cantidad entregada -->
+                              <!--Precio / U -->
+                                <div style="width:84px;  display:block;float:left; text-align:right;">
+                                     <span t-esc="round(move_line.move_id.purchase_line_id.price_unit,3)"/>€
+                                </div>
+                              <!-- Fin precio / u -->
+                              <!-- Descuento -->
+                                <div t-if="move_line.move_id.purchase_line_id.discount != 0.00" style="width:80px;  display:block; float:left;text-align:right;">
+                                      <span t-esc="round(move_line.move_id.purchase_line_id.discount,2)"/>%
+                                      <t t-set="descuentoLinea" t-value="move_line.move_id.purchase_line_id.discount * (move_line.move_id.purchase_line_id.price_unit * move_line.qty_done) /100 "/>
+                                      <t t-set="descuento" t-value="descuento + descuentoLinea"></t>
+                                </div>
+                                <div t-else="" style="width:80px;display:block; float:left;text-align:right;">
+                                     <span style="color:white;">aaa</span>
+                                     <t t-set="descuentoLinea" t-value="0 "/>
+                                </div>
+                              <!-- Fin descuento -->
+
+                              <!-- Precio total linea -->
+                                <div style="width:134px;  display:block; float:left;text-align:right;">
+                                  <t t-set="subtotalLinea" t-value="(move_line.move_id.purchase_line_id.price_unit * move_line.qty_done) - descuentoLinea"/>
+                                     <span t-esc="round(subtotalLinea,2)"/>€
+                                </div>
+
+                              <!-- FIn precio total linea -->
+                              <t t-set="importeBruto" t-value="importeBruto + subtotalLinea"></t>
+                              <t t-set="ivaLineaImporte" t-value="round((move_line.qty_done * move_line.move_id.purchase_line_id.price_unit - descuentoLinea) * ivaLinea /100,2) "/>
+                              <t t-set="importeIva" t-value="importeIva + ivaLineaImporte"></t>
+                            </t>
+
+                            <!-- fin si es compra -->
+                            </div>
+
+
+
+
+                            </t>
+                            <t t-set="baseImponible" t-value="importeBruto"></t>
+                          <t t-set="importeTotal" t-value="importeTotal + (baseImponible + importeIva)"></t>
+
+            <!-- fin lineas -->
+            <!-- totales -->
+
+            <div style="clear:both;margin-top:100px;">
+                <div id="total" name="total" t-if="o.state != 'draft'">
+
+
+                          <!-- Primera fila -->
+                          <div style="margin-top:30px;border-top:1px solid grey;border-bottom:1px solid grey;padding-top:5px;padding-bottom:30px;width:120%;margin-left:-30px;">
+                            <div style="width:258px; float:left;margin-left:30px;">
+                              <span style="display:inline-block;margin-left:5px;">IMPORTE BRUTO</span>
+                              <span t-esc="round(importeBruto,2)"/>€
+                            </div>
+                            <div style="width:222px; float:left;">
+                              <span style="display:inline-block;margin-left:5px;">DESCUENTO</span>
+                              <span t-esc="round(descuento,2)"></span>€
+                            </div>
+                            <div style="width:213px; float:left;">
+                              <span style="display:inline-block;">PORTES</span>
+                              <span></span>
+                            </div>
+                            <div style="width:246px; float:left;">
+                              <span style="display:inline-block;margin-left:5px;">FORMA DE PAGO</span>
+                              <span></span>
+                            </div>
+                          </div>
+                          <!-- Fin primera fila -->
+                          <!-- Segunda fila -->
+
+                          <div style="clear:both;float:left; margin-top:15px;border-top:1px solid grey;border-bottom:1px solid grey;padding-top:5px;padding-bottom:10px;width:120%;margin-left:-30px;margin-bottom:15px;">
+                            <div style="width:258px; float:left;margin-left:30px;">
+                                <span style="display:inline-block;margin-left:5px;">BASE IMPONIBLE</span>
+                                <span t-esc="round(baseImponible,2)"/>€
+                            </div>
+                            <div style="width:222px; float:left;">
+                                  <span style="display:inline-block;margin-left:5px;">IMPORTE IVA</span>
+                                  <span t-esc="round(importeIva,2)"/>€
+                            </div>
+                          </div>
+
+                          <!-- Fin segunda fila -->
+                          <!-- Total -->
+
+                          <div style="clear:both;padding-top:11px;border-top:1px solid grey;border-bottom:1px solid grey;padding-top:5px;padding-bottom:10px;margin-top:30px;width:40%;margin-left:650px;">
+                            <div>
+                              <span style="display:inline-block;margin-left:5px;">TOTAL</span>
+                              <span t-esc="round(importeTotal,2)"/>€
+                            </div>
+                          </div>
+
+                          <!-- Fin total -->
+
+                </div>
+
+            </div>
+
+            <!-- fin totales -->
+                    <!--<table class="table table-sm mt48" t-if="o.state!='done'">
+                        <thead>
+                            <tr>
+                                <th><strong>Product</strong></th>
+                                <th><strong>Quantity</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+                            <tr t-foreach="lines" t-as="move">
+                                <td>
+                                    <span t-field="move.product_id"/>
+                                    <p t-if="o.picking_type_code == 'outgoing'">
+                                        <span t-field="move.product_id.sudo().description_pickingout"/>
+                                    </p>
+                                    <p t-if="o.picking_type_code == 'incoming'">
+                                        <span t-field="move.product_id.sudo().description_pickingin"/>
+                                    </p>
+                                </td>
+                                <td>
+                                    <span t-field="move.product_uom_qty"/>
+                                    <span t-field="move.product_uom"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-sm mt48" t-if="o.move_line_ids and o.state=='done'">
+                        <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
+                        <thead>
+                            <tr>
+                                <th><strong>Product</strong></th>
+                                <th name="lot_serial" t-if="has_serial_number" groups="stock.group_lot_on_delivery_slip">
+                                    Lot/Serial Number
+                                </th>
+                                <th class="text-center"><strong>Quantity</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.move_line_ids" t-as="move_line">
+                                <td>
+                                    <span t-field="move_line.product_id"/>
+                                    <p t-if="o.picking_type_code == 'outgoing'">
+                                        <span t-field="move_line.product_id.sudo().description_pickingout"/>
+                                    </p>
+                                    <p t-if="o.picking_type_code == 'incoming'">
+                                        <span t-field="move_line.product_id.sudo().description_pickingin"/>
+                                    </p>
+                                </td>
+                                <td t-if="has_serial_number and move_line.lot_name" groups="stock.group_lot_on_delivery_slip">
+                                    <span t-field="move_line.lot_name"/>
+                                </td>
+                                <td t-else="" groups="stock.group_lot_on_delivery_slip">
+                                    <span t-field="move_line.lot_id.name"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-field="move_line.qty_done"/>
+                                    <span t-field="move_line.product_uom_id"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table> -->
+
+                    <!-- notas -->
+
+                    <div>
+                      <spam style="display:block">Observaciones:</spam>
+                      <spam t-field="o.note"/>
+                    </div>
+
+                    <!-- fin notas -->
+                    <p>
+                        <t t-if="o.backorder_ids and o.backorder_ids.filtered(lambda x: x.state not in ('done', 'cancel'))">
+                            All items couldn't be shipped, the remaining ones will be shipped as soon as they become available.
+                        </t>
+                    </p>
+            </xpath>
+
+        </template>
+
+    </data>
+
+</odoo>

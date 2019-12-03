@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_users_form_pricelist" model="ir.ui.view">
+        <field name="name">view.users.form.pricelist</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+           <xpath expr="//page[@name='access_rights']//field[@name='sel_groups_1_9_10']" position="after">
+               <group string="Allowed Pricelist">
+                    <field string="Allowed Pricelist" name="pricelist_ids" widget="many2many_tags" options="{'no_create': True}" colspan="2"/>
+               </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
