@@ -1,5 +1,5 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-
+from odoo import api
 from . import select_picking_price
 
 
@@ -12,6 +12,3 @@ def _compute_percent_list_price(self):
             line.percent_margin = 100 - ((line.purchase_price / line.list_price) * 100)
         else:
             line.percent_margin = 0
-
-
-str(search.purchase_line_id.price_unit)

@@ -1,10 +1,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-
 {
-    'name': 'Avaible Pricelist on Invoices',
+    'name': 'Account Payment Pivot View',
     'version': '12.0.1.0.0',
-    'summary': 'Avaible Pricelist on Invoices',
-    'author': 'DDL',
+    'summary': 'Account Payment Pivot View',
+    'author': 'Manuel Calero Solís',
     'company': 'Xtendoo',
     'website': 'http://www.xtendoo.com',
     'category': 'Extra Tools',
@@ -15,4 +14,5 @@
         'views/view.xml',
     ],
     'installable': True,
+    'auto_install': False,
 }

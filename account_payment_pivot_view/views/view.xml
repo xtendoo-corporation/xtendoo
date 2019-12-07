@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_account_payment_pivot" model="ir.ui.view">
+        <field name="name">account.payment.pivot</field>
+        <field name="model">account.payment</field>
+        <field name="arch" type="xml">
+            <pivot string="Invoices">
+                <field name="payment_type" type="row"/>
+                <field name="journal_id"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_account_payments_inherit" model="ir.actions.act_window">
+        <field name="name">Payments</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_type">form</field>
+        <field name="inherit_id" ref="account.action_account_payments"/>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+    </record>
+
+    <record id="action_account_payments_payable_inherit" model="ir.actions.act_window">
+        <field name="name">Payments</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_type">form</field>
+        <field name="inherit_id" ref="account.action_account_payments_payable"/>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+    </record>
+
+    <record id="action_account_payments_transfer_inherit" model="ir.actions.act_window">
+        <field name="name">Internal Transfers</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_type">form</field>
+        <field name="inherit_id" ref="account.action_account_payments_transfer"/>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+    </record>
+
+</odoo>
