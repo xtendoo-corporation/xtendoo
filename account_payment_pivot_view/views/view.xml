@@ -13,27 +13,15 @@
         </field>
     </record>
 
-    <record id="action_account_payments_inherit" model="ir.actions.act_window">
-        <field name="name">Payments</field>
-        <field name="res_model">account.payment</field>
-        <field name="view_type">form</field>
-        <field name="inherit_id" ref="account.action_account_payments"/>
+    <record id="account.action_account_payments" model="ir.actions.act_window">
         <field name="view_mode">tree,kanban,form,pivot,graph</field>
     </record>
 
-    <record id="action_account_payments_payable_inherit" model="ir.actions.act_window">
-        <field name="name">Payments</field>
-        <field name="res_model">account.payment</field>
-        <field name="view_type">form</field>
-        <field name="inherit_id" ref="account.action_account_payments_payable"/>
+    <record id="account.action_account_payments_payable" model="ir.actions.act_window">
         <field name="view_mode">tree,kanban,form,pivot,graph</field>
     </record>
 
-    <record id="action_account_payments_transfer_inherit" model="ir.actions.act_window">
-        <field name="name">Internal Transfers</field>
-        <field name="res_model">account.payment</field>
-        <field name="view_type">form</field>
-        <field name="inherit_id" ref="account.action_account_payments_transfer"/>
+    <record id="account.action_account_payments_transfer" model="ir.actions.act_window">
         <field name="view_mode">tree,kanban,form,pivot,graph</field>
     </record>
 
