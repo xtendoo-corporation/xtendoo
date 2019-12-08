@@ -1,1 +1,3 @@
-# account_payment_pivot_view
+# Account Payment Pivot View
+
+Displays the pivot view for payments.
