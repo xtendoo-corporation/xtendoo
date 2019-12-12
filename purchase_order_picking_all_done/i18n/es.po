@@ -16,17 +16,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: sale_order_picking_all_done
-#: model_terms:ir.ui.view,arch_db:sale_order_picking_all_done.view_order_form_inherit
+#: model_terms:ir.ui.view,arch_db:purchase_order_picking_all_done.view_order_form_inherit
 msgid "Confirm and delivery"
 msgstr "Confirmar y entregar"
 
 #. module: sale_order_picking_all_done
-#: model:ir.model,name:sale_order_picking_all_done.model_sale_order
+#: model:ir.model,name:purchase_order_picking_all_done.model_sale_order
 msgid "Sale Order"
 msgstr "Pedido de venta"
 
 #. module: sale_order_picking_all_done
-#: model_terms:ir.ui.view,arch_db:sale_order_picking_all_done.view_order_form_inherit
+#: model_terms:ir.ui.view,arch_db:purchase_order_picking_all_done.view_order_form_inherit
 msgid "Confirm and invoiced"
 msgstr "Confirmar y facturar"
 
