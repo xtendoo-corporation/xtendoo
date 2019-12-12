@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-#	* sale_order_picking_all_done
+#	* purchase_order_picking_all_done
 #
 msgid ""
 msgstr ""
@@ -21,8 +21,8 @@ msgid "Confirm and delivery"
 msgstr "Confirmar y entregar"
 
 #. module: purchase_order_picking_all_done
-#: model:ir.model,name:purchase_order_picking_all_done.model_sale_order
-msgid "Sale Order"
+#: model:ir.model,name:purchase_order_picking_all_done.model_purchase_order
+msgid "Purchase Order"
 msgstr "Pedido de venta"
 
 #. module: purchase_order_picking_all_done
