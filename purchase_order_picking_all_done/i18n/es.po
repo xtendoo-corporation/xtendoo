@@ -23,7 +23,7 @@ msgstr "Confirmar y entregar"
 #. module: purchase_order_picking_all_done
 #: model:ir.model,name:purchase_order_picking_all_done.model_purchase_order
 msgid "Purchase Order"
-msgstr "Pedido de venta"
+msgstr "Pedido de Compra"
 
 #. module: purchase_order_picking_all_done
 #: model_terms:ir.ui.view,arch_db:purchase_order_picking_all_done.view_order_form_inherit
