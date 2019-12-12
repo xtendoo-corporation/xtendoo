@@ -9,8 +9,8 @@
             <xpath expr="//button[@name='button_confirm']" position="before">
                 <button name="action_purchase_order_confirm_and_delivery" class="btn-success" string="Confirm and delivery"
                         type="object" attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
-                <button name="action_purchase_order_confirm_and_invoiced" class="btn-success" string="Confirm and invoiced"
-                        type="object" attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
+<!--                <button name="action_purchase_order_confirm_and_invoiced" class="btn-success" string="Confirm and invoiced"-->
+<!--                        type="object" attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>-->
             </xpath>
         </field>
     </record>

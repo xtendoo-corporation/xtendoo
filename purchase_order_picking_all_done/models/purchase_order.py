@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models, _
+
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ class PurchaseOrder(models.Model):
 
     @api.multi
     def action_purchase_order_confirm_and_delivery(self):
-        self.action_confirm()
+        self.button_confirm()
 
         for picking in self.picking_ids:
 
@@ -24,7 +25,7 @@ class PurchaseOrder(models.Model):
     def action_purchase_order_confirm_and_invoiced(self):
         self.action_purchase_order_confirm_and_delivery()
 
-        self.action_invoice_create()
+        self.with_context(create_bill=True).action_view_invoice()
 
         for invoice in self.invoice_ids:
             invoice.action_invoice_open()

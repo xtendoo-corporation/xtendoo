@@ -29,15 +29,4 @@ class SaleOrder(models.Model):
         for invoice in self.invoice_ids:
             invoice.action_invoice_open()
 
-        # payment = self.env['sale.advance.payment.inv'].create({'advance_payment_method': 'delivered'})
-        #
-        # sale_context = {'active_id': self.id,
-        #                 'active_ids': self.ids,
-        #                 'active_model': 'sale.order',
-        #                 'open_invoices': True}
-        #
-        #
-        # res = payment.with_context(sale_context).create_invoices()
-        #
-        # return self.env['account.invoice'].browse(res['res_id'])
 
