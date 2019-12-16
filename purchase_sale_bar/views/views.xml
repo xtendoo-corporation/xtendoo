@@ -20,6 +20,9 @@
             <xpath expr="//field[@name='move_ids_without_package']/tree//field[@name='quantity_done']" position="before">
                 <field name="bar_qty"/>
             </xpath>
+<!--            <xpath expr="//field[@name='move_line_ids_without_package']/tree//field[@name='quantity_done']" position="before">-->
+<!--                <field name="bar_qty"/>-->
+<!--            </xpath>-->
         </field>
     </record>
 

@@ -28,7 +28,7 @@
     'description': """Purchase and Sale Using Bar""",
     'author': 'Manuel Calero Solís',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'purchase',
