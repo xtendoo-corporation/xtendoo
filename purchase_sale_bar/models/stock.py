@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-    bar_qty = fields.Float(string='Bar Quantity', digits=dp.get_precision('Product Unit of Measure'), required=True)
+    bar_qty = fields.Float(string='Bar Quantity', digits=dp.get_precision('Product Unit of Measure'))
 
     change_bar_qty = True
 
