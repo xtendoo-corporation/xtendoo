@@ -7,7 +7,7 @@
     'description': """Formatos de documentos CH""",
     'author': 'DDL',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'base',

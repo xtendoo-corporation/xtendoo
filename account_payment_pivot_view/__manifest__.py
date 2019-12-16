@@ -5,7 +5,7 @@
     'summary': 'Account Payment Pivot View',
     'author': 'Manuel Calero Solís',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'account',

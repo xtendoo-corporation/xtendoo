@@ -28,7 +28,7 @@
     'description': """Base Partner Avaible Pricelist""",
     'author': 'DDL',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'base',

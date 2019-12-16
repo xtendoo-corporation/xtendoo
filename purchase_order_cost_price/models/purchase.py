@@ -22,30 +22,7 @@ class PurchaseOrderLine(models.Model):
 
     @api.onchange('product_id')
     def onchange_product_id(self):
-        result = {}
-        if not self.product_id:
-            return result
-
-        # Reset date, price and quantity since _onchange_quantity will provide default values
-        self.date_planned = datetime.today().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
-
-        #ddl
-        self.price_unit = self.product_id.standard_price
-        #ddl
-
-        self.product_uom = self.product_id.uom_po_id or self.product_id.uom_id
-        result['domain'] = {'product_uom': [('category_id', '=', self.product_id.uom_id.category_id.id)]}
-
-        product_lang = self.product_id.with_context(
-            lang=self.partner_id.lang,
-            partner_id=self.partner_id.id,
-        )
-        self.name = product_lang.display_name
-        if product_lang.description_purchase:
-            self.name += '\n' + product_lang.description_purchase
-
-        self._compute_tax_id()
-        self._suggest_quantity()
-        self._onchange_quantity()
-
+        result = super(PurchaseOrderLine, self).onchange_product_id()
+        if self.price_unit == 0.00:
+            self.price_unit = self.product_id.standard_price
         return result

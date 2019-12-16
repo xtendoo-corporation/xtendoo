@@ -28,7 +28,7 @@
     'description': """Show the supplier reference in the purchase order view""",
     'author': 'DDL',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'base',

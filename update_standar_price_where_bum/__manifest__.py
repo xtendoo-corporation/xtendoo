@@ -7,7 +7,7 @@
     'description': """Actualizar el coste de un producto fabricado, en función de los costes de los materiales empleados en su fabricación""",
     'author': 'DDL',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'base',

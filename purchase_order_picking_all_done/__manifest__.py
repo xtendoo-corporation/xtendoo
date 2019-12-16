@@ -3,8 +3,8 @@
 ###################################################################################
 #
 #    Xtendoo Technologies
-#    Copyright (C) 2018-TODAY Xtendoo Technologies (<https://www.xtendoo.com>).
-#    Author: Manuel Calero Solís(<https://www.xtendoo.com>)
+#    Copyright (C) 2018-TODAY Xtendoo Technologies (<https://www.xtendoo.es>).
+#    Author: Manuel Calero Solís(<https://www.xtendoo.es>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -28,7 +28,7 @@
     'description': """Purchase Order Picking All Done""",
     'author': 'Manuel Calero Solís',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'stock',
