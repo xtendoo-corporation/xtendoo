@@ -6,15 +6,24 @@ import logging
 from odoo import api, fields, models, _
 from datetime import datetime
 
+
+def _get_date_next_coming(product):
+    line = product.env['purchase.order.line'].search(
+        [('order_id.state', '=', 'purchase'), ('product_id', '=', product.id)],
+        order='date_planned asc', limit=1)
+
+    return line.date_planned
+
+
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     date_next_coming = fields.Datetime(string='Next Coming', help="Date for next coming.",
-        compute='_compute_quantities_dict')
+        compute='_compute_quantities')
 
     def _compute_quantities(self):
         res = self._compute_quantities_dict()
-        
+
         for template in self:
             template.qty_available = res[template.id]['qty_available']
             template.virtual_available = res[template.id]['virtual_available']
@@ -40,7 +49,7 @@ class ProductTemplate(models.Model):
                 outgoing_qty += variants_available[p.id]["outgoing_qty"]
 
                 if date_next_coming == None and incoming_qty > 0:
-                    date_next_coming = self._get_date_next_coming(p)
+                    date_next_coming = _get_date_next_coming(p)
 
             prod_available[template.id] = {
                 "qty_available": qty_available,
@@ -51,11 +60,3 @@ class ProductTemplate(models.Model):
             }
 
         return prod_available
-
-    def _get_date_next_coming(self, product):
-        line = product.env['purchase.order.line'].search(
-            [('order_id.state', '=', 'purchase'),
-            ('product_id', '=', product.id)],
-            order='date_planned asc', limit=1)    
-
-        return line.date_planned
