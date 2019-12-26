@@ -3,12 +3,16 @@
 
 from odoo import api, fields, models
 
+import logging
+
 
 class AccountInvoiceLine(models.Model):
     _inherit = "account.invoice.line"
 
     @api.one
-    @api.depends('discount2', 'discount3')
+    @api.depends('price_unit', 'discount', 'invoice_line_tax_ids', 'quantity',
+        'product_id', 'invoice_id.partner_id', 'invoice_id.currency_id', 'invoice_id.company_id',
+        'invoice_id.date_invoice', 'invoice_id.date','discount2', 'discount3')
     def _compute_price(self):
         price = self._get_price()
         currency = self._get_currency()
@@ -39,3 +43,33 @@ class AccountInvoiceLine(models.Model):
             return False
         return self.invoice_line_tax_ids.compute_all(price, currency, self.quantity, product=self.product_id,
                                                      partner=self.invoice_id.partner_id)
+
+
+class AccountInvoice(models.Model):
+    _inherit = "account.invoice"
+
+    def get_taxes_values(self):
+        tax_grouped = {}
+        round_curr = self.currency_id.round
+        for line in self.invoice_line_ids:
+            if not line.account_id:
+                continue
+
+            price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+            price = price * (1 - (line.discount2 or 0.0) / 100.0)
+            price = price * (1 - (line.discount3 or 0.0) / 100.0)
+
+            taxes = line.invoice_line_tax_ids.compute_all(price, self.currency_id, line.quantity, line.product_id,
+                                                          self.partner_id)['taxes']
+
+            for tax in taxes:
+                val = self._prepare_tax_line_vals(line, tax)
+                key = self.env['account.tax'].browse(tax['id']).get_grouping_key(val)
+
+                if key not in tax_grouped:
+                    tax_grouped[key] = val
+                    tax_grouped[key]['base'] = round_curr(val['base'])
+                else:
+                    tax_grouped[key]['amount'] += val['amount']
+                    tax_grouped[key]['base'] += round_curr(val['base'])
+        return tax_grouped
