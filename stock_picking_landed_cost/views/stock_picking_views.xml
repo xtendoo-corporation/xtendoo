@@ -16,11 +16,15 @@
         </field>
     </record>
 
-<!--    <record id='view_picking_form' model='ir.ui.view'>-->
-<!--        <field name="name">stock.landed.cost.form</field>-->
-<!--        <field name="model">stock.landed.cost</field>-->
-<!--        <field name="inherit_id" ref="stock.view_picking_form"/>-->
-<!--        <field name="arch" type="xml">-->
-<!--    </record>-->
+    <record id='view_stock_landed_cost_form' model='ir.ui.view'>
+        <field name="name">stock.landed.cost.form</field>
+        <field name="inherit_id" ref="stock_landed_costs.view_stock_landed_cost_form"/>
+        <field name="model">stock.landed.cost</field>
+        <field name="arch" type="xml">
+            <xpath expr="/form/sheet/field/tree/field[@name='former_cost_per_unit']" position="replace">
+                <field name="former_cost_per_unit" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
 
 </odoo>

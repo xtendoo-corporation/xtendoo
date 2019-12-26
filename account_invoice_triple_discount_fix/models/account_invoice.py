@@ -10,17 +10,10 @@ class AccountInvoiceLine(models.Model):
     @api.one
     @api.depends('discount2', 'discount3')
     def _compute_price(self):
-        currency = self.invoice_id and self.invoice_id.currency_id or None
+        price = self._get_price()
+        currency = self._get_currency()
+        taxes = self._get_taxes(price, currency)
 
-        # to avoid coupling these calculations must be passed to a method
-        price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
-        price *= (1 - (self.discount2 or 0.0) / 100.0)
-        price *= (1 - (self.discount3 or 0.0) / 100.0)
-
-        taxes = False
-        if self.invoice_line_tax_ids:
-            taxes = self.invoice_line_tax_ids.compute_all(price, currency, self.quantity, product=self.product_id,
-                                                          partner=self.invoice_id.partner_id)
         self.price_subtotal = price_subtotal_signed = taxes['total_excluded'] if taxes else self.quantity * price
         self.price_total = taxes['total_included'] if taxes else self.price_subtotal
         if self.invoice_id.currency_id and self.invoice_id.currency_id != self.invoice_id.company_id.currency_id:
@@ -31,3 +24,18 @@ class AccountInvoiceLine(models.Model):
                                                       date or fields.Date.today())
         sign = self.invoice_id.type in ['in_refund', 'out_refund'] and -1 or 1
         self.price_subtotal_signed = price_subtotal_signed * sign
+
+    def _get_currency(self):
+        return self.invoice_id and self.invoice_id.currency_id or None
+
+    def _get_price(self):
+        price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
+        price *= (1 - (self.discount2 or 0.0) / 100.0)
+        price *= (1 - (self.discount3 or 0.0) / 100.0)
+        return price
+
+    def _get_taxes(self, price, currency):
+        if not self.invoice_line_tax_ids:
+            return False
+        return self.invoice_line_tax_ids.compute_all(price, currency, self.quantity, product=self.product_id,
+                                                     partner=self.invoice_id.partner_id)

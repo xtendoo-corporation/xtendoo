@@ -3,6 +3,8 @@
 
 from odoo import api, fields, models, tools, _
 from odoo.exceptions import UserError
+from odoo.addons import decimal_precision as dp
+
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -112,3 +114,11 @@ class LandedCost(models.Model):
             cost.write({'state': 'done', 'account_move_id': move.id})
             move.post()
         return True
+
+
+class AdjustmentLines(models.Model):
+    _inherit = 'stock.valuation.adjustment.lines'
+
+    former_cost_per_unit = fields.Float(
+        'Former Cost(Per Unit)', compute='_compute_former_cost_per_unit',
+        digits=dp.get_precision('Product Price'), store=True)
