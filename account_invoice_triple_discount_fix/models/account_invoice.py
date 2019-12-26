@@ -1,15 +1,13 @@
-# Copyright 2017 Tecnativa - David Vidal
-# Copyright 2017 Tecnativa - Pedro M. Baeza
+# Copyright 2019 Xtendoo - Manuel Calero Solís
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models
-from odoo.addons import decimal_precision as dp
 
 
 class AccountInvoiceLine(models.Model):
     _inherit = "account.invoice.line"
 
-    @api.multi
+    @api.one
     @api.depends('discount2', 'discount3')
     def _compute_price(self):
         currency = self.invoice_id and self.invoice_id.currency_id or None

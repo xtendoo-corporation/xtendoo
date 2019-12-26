@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
-from odoo import api, fields, models, tools, _
+from odoo import api, models, _
 from odoo.exceptions import UserError
 import logging
 
@@ -10,18 +7,6 @@ _logger = logging.getLogger(__name__)
 
 class LandedCost(models.Model):
     _inherit = 'stock.landed.cost'
-
-    @api.model
-    def default_get(self, default_fields):
-        """ Compute default partner_bank_id field for 'out_invoice' type,
-        using the default values computed for the other fields.
-        """
-        res = super(LandedCost, self).default_get(default_fields)
-
-        if self._context.get('default_picking_id') is not None:
-            res['picking_ids'] = [self._context.get('default_picking_id')]
-
-        return res
 
     def get_valuation_lines(self):
         """
@@ -45,10 +30,7 @@ class LandedCost(models.Model):
             lines.append(vals)
 
         if not lines and self.mapped('picking_ids'):
-            raise UserError(_(
-                'The selected picking does not contain any move that would be impacted by landed costs. Landed costs '
-                'are only possible for products configured in real time valuation with real price costing method. '
-                'Please make sure it is the case, or you selected the correct picking'))
+            raise UserError(_('The selected picking does not contain any move that would be impacted by landed costs. Landed costs are only possible for products configured in real time valuation with real price costing method. Please make sure it is the case, or you selected the correct picking'))
         return lines
 
     @api.multi
@@ -57,9 +39,6 @@ class LandedCost(models.Model):
         Override to directly set new standard_price on product if average costed.
         :return: True
         """
-
-        _logger.info("****************button_validate***********************")
-
         if any(cost.state != 'draft' for cost in self):
             raise UserError(_('Only draft landed costs can be validated'))
         if any(not cost.valuation_adjustment_lines for cost in self):
@@ -77,7 +56,10 @@ class LandedCost(models.Model):
             }
             for line in cost.valuation_adjustment_lines.filtered(lambda line: line.move_id):
                 # Prorate the value at what's still in stock
+                _logger.info('(line.move_id.remaining_qty / line.move_id.product_qty) * line.additional_landed_cost')
+                _logger.info('(%s / %s) * %s' % (line.move_id.remaining_qty, line.move_id.product_qty, line.additional_landed_cost))
                 cost_to_add = (line.move_id.remaining_qty / line.move_id.product_qty) * line.additional_landed_cost
+                _logger.info('cost_to_add: ' + str(cost_to_add))
 
                 new_landed_cost_value = line.move_id.landed_cost_value + line.additional_landed_cost
                 line.move_id.write({
