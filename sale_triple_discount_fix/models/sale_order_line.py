@@ -9,8 +9,7 @@ class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     @api.one
-    @api.depends('discount2', 'discount3')
-    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id')
+    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id','discount2','discount3')
     def _compute_amount(self):
         """
         Compute the amounts of the SO line.
