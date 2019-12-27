@@ -3,7 +3,7 @@
 
 from datetime import datetime
 
-from odoo.addons.stock_landed_costs.tests.common import TestStockLandedCostsCommon
+from .common import TestStockLandedCostsCommon
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from odoo.tests import tagged
 
@@ -15,27 +15,13 @@ class TestStockLandedCostsAVCO(TestStockLandedCostsCommon):
         # In order to test the landed costs feature of stock,
         # I create a landed cost, confirm it and check its account move created
 
-        self._load('account', 'test', 'account_minimal_test.xml')
-        self._load('stock_account', 'test', 'stock_valuation_account.xml')
-
-        self.product1 = self.env['product.product'].create({
-            'name': 'Product A',
-            'type': 'product',
-            'cost_method': 'average',
-            'valuation': 'real_time',
-            'standard_price': 10,
-            'lst_price': 20,
-        })
-
-        self.stock_location = self.env.ref('stock.stock_location_stock')
-
         # make some stock
-        self.env['stock.quant']._update_available_quantity(self.product1, self.stock_location, 10)
-        self.assertEqual(len(self.env['stock.quant']._gather(self.product1, self.stock_location)), 1.0)
-        self.assertEqual(self.env['stock.quant']._get_available_quantity(self.product1, self.stock_location), 10.0)
+        self.StockQuant._update_available_quantity(self.product1, self.stock_location, 10)
+        self.assertEqual(len(self.StockQuant._gather(self.product1, self.stock_location)), 1.0)
+        self.assertEqual(self.StockQuant._get_available_quantity(self.product1, self.stock_location), 10.0)
 
         # remove them with an inventory adjustment
-        inventory = self.env['stock.inventory'].create({
+        inventory = self.StockInventory.create({
             'name': 'initial',
             'filter': 'product',
             'location_id': self.stock_location.id,
@@ -48,7 +34,7 @@ class TestStockLandedCostsAVCO(TestStockLandedCostsCommon):
         inventory.action_validate()
 
         # check
-        self.assertEqual(self.env['stock.quant']._get_available_quantity(self.product1, self.stock_location), 100.0)
+        self.assertEqual(self.StockQuant._get_available_quantity(self.product1, self.stock_location), 100.0)
 
         # purchase order
         po_vals = {
@@ -62,9 +48,9 @@ class TestStockLandedCostsAVCO(TestStockLandedCostsCommon):
                     'price_unit': 20.0,
                     'date_planned': datetime.today().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
                 })],
-        }
+            }
 
-        self.po = self.env['purchase.order'].create(po_vals)
+        self.po = self.PurchaseOrder.create(po_vals)
 
         self.assertTrue(self.po, 'Purchase: no purchase order created')
         self.assertEqual(self.po.invoice_status, 'no', 'Purchase: PO invoice_status should be "Not purchased"')
@@ -95,7 +81,7 @@ class TestStockLandedCostsAVCO(TestStockLandedCostsCommon):
                     'split_method': 'equal',
                     'price_unit': 30,
                     'product_id': self.product1.id,
-                    })],
+                })],
             }
 
         self.lc = self.LandedCost.create(lc_vals)

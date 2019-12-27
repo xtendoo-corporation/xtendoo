@@ -59,9 +59,6 @@ class LandedCost(models.Model):
         Override to directly set new standard_price on product if average costed.
         :return: True
         """
-
-        _logger.info("****************button_validate***********************")
-
         if any(cost.state != 'draft' for cost in self):
             raise UserError(_('Only draft landed costs can be validated'))
         if any(not cost.valuation_adjustment_lines for cost in self):
