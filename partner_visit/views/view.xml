@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo xmlns:minInclusive="http://www.w3.org/2001/XMLSchema">
 
-<!--<field name="fixed_price" string="Price" required='1' widget='monetary' options="{'currency_field': 'currency_id', 'field_digits': True}"/>-->
-
     <record id="view_partner_form_inherit" model="ir.ui.view">
         <field name="name">view.partner.form.inherit</field>
         <field name="model">res.partner</field>
@@ -71,8 +69,19 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_id']" position="after">
-                <label for="button_next_costumer" class="btn btn-sm btn-primary"/>
-                <field name="button_next_costumer" invisible="1"/>
+
+<!--                <label for="button_next_costumer" class="oe_inline oe_link">-->
+<!--                    <i class="fa fa-arrow-left"/>-->
+<!--                </label>-->
+<!--                <field name="button_next_costumer" invisible="1"/>-->
+
+                <button name="button_next_costumer"
+                        type="object"
+                        class="oe_inline oe_link">
+                    <i class="fa fa-arrow-right"/>
+                    <span> Next Customer</span>
+                </button>
+
             </xpath>
         </field>
     </record>
