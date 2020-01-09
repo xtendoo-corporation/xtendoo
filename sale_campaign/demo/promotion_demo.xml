@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="promotion_01" model="sale.promotion">
+      <field name="name">Promotion Product Fixed Price</field>
+      <field name="type">price_unit</field>
+      <field name="apply_on_product_tmpl_ids" eval="[(6,0,[ref('product.product_product_1_product_template')])]"/>
+      <field name="apply_on">product_template</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_01_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_01"/>
+      <field name="start">0</field>
+      <field name="value">27.5</field>
+    </record>
+    <record id="promotion_02" model="sale.promotion">
+      <field name="name">Promotion Variant Fixed Price</field>
+      <field name="type">price_unit</field>
+      <field name="apply_on_product_ids" eval="[(6,0,[ref('product.product_product_2')])]"/>
+      <field name="apply_on">product_variant</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_02_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_02"/>
+      <field name="start">0</field>
+      <field name="value">34.99</field>
+    </record>
+    <record id="promotion_03" model="sale.promotion">
+      <field name="name">Promotion Category Fixed Price</field>
+      <field name="type">price_unit</field>
+      <field name="apply_on_category_ids" eval="[(6,0,[ref('product.cat_expense')])]"/>
+      <field name="apply_on">product_category</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_03_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_03"/>
+      <field name="start">0</field>
+      <field name="value">10</field>
+    </record>
+    <record id="promotion_04" model="sale.promotion">
+      <field name="name">Promotion Product Discount</field>
+      <field name="type">discount</field>
+      <field name="apply_on_product_tmpl_ids" eval="[(6,0,[ref('product.product_product_3_product_template')])]"/>
+      <field name="apply_on">product_template</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_04_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_04"/>
+      <field name="start">0</field>
+      <field name="value">10</field>
+    </record>
+    <record id="promotion_05" model="sale.promotion">
+      <field name="name">Promotion Variant Discount</field>
+      <field name="type">discount</field>
+      <field name="apply_on_product_ids" eval="[(6,0,[ref('product.product_product_4')])]"/>
+      <field name="apply_on">product_variant</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_05_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_05"/>
+      <field name="start">0</field>
+      <field name="value">20</field>
+    </record>
+    <record id="promotion_06" model="sale.promotion">
+      <field name="name">Promotion Category Discount</field>
+      <field name="type">discount</field>
+      <field name="apply_on_category_ids" eval="[(6,0,[ref('product.cat_expense')])]"/>
+      <field name="apply_on">product_category</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_06_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_06"/>
+      <field name="start">0</field>
+      <field name="value">20</field>
+    </record>
+    <record id="promotion_07" model="sale.promotion">
+      <field name="name">Promotion Variant 2+1</field>
+      <field name="type">add</field>
+      <field name="product_id" ref="product.product_product_5"/>
+      <field name="apply_on">product_variant</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_07_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_07"/>
+      <field name="start">2</field>
+      <field name="value">1</field>
+    </record>
+    <record id="promotion_08" model="sale.promotion">
+      <field name="name">Promotion Category Discount (10 Units Mixin Allowed)</field>
+      <field name="type">discount</field>
+      <field name="apply_on_category_ids" eval="[(6,0,[ref('product.product_category_5')])]"/>
+      <field name="apply_on">product_category</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">False</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_01')])]"/>
+    </record>
+    <record id="promotion_08_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_08"/>
+      <field name="start">10</field>
+      <field name="value">20</field>
+    </record>
+    <!--record id="promotion_09" model="sale.promotion">
+      <field name="name">Promotion Variant Discount Scalable</field>
+      <field name="apply_on_category_ids" eval="[(6,0,[ref('product.product_product_6')])]"/>
+      <field name="apply_on">product_variant</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">False</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_campaign.campaign_01')])]"/>
+    </record-->
+    <record id="promotion_10" model="sale.promotion">
+      <field name="name">Promotion All Partners</field>
+      <field name="type">discount</field>
+      <field name="apply_on_product_ids" eval="[(6,0,[ref('product.product_product_8')])]"/>
+      <field name="apply_on">product_variant</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_02')])]"/>
+    </record>
+    <record id="promotion_10_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_10"/>
+      <field name="start">0</field>
+      <field name="value">20</field>
+    </record>
+
+    <record id="promotion_11" model="sale.promotion">
+      <field name="name">Promotion Partner Exclude</field>
+      <field name="type">discount</field>
+      <field name="apply_on_product_ids" eval="[(6,0,[ref('product.product_product_9')])]"/>
+      <field name="apply_on">product_variant</field>
+      <field name="start_date">01/01/2018</field>
+      <field name="end_date">01/01/2024</field>
+      <field name="mixing_allowed">True</field>
+      <field name="apply_to_same_product">True</field>
+      <field name="excluding_promotion">False</field>
+      <field name="force_pricelist_price">False</field>
+      <field name="campaign_ids" eval="[(6,0,[ref('sale_promotion.campaign_03')])]"/>
+    </record>
+    <record id="promotion_11_qty" model="sale.promotion.qty">
+      <field name="promotion_id" ref="sale_promotion.promotion_11"/>
+      <field name="start">0</field>
+      <field name="value">15</field>
+    </record>
+
+  </data>
+</odoo>
