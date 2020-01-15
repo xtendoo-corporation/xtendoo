@@ -34,12 +34,21 @@ class ResPartner(models.Model):
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    has_outstanding = fields.Boolean(compute='_compute_outstanding')
-    button_next_costumer = fields.Boolean(default=True)
+    def _get_default_partner(self):
+        logging.info("@"*80)
+        logging.info(self.env["partner.visit"].get_partner_visit_today())
+        return 1
+
+    partner_id = fields.Many2one('res.partner', string='Customer', readonly=True,
+                                 states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, required=True,
+                                 change_default=True, index=True, track_visibility='always', track_sequence=1,
+                                 help="You can find a customer by its Name, TIN, Email or Internal Reference.",
+                                 default=_get_default_partner)
+
+    has_outstanding = fields.Boolean()
 
     @api.multi
-    @api.onchange('button_next_costumer')
-    def onchange_button_next_costumer(self):
+    def button_next_costumer(self):
         if self.partner_id:
             self.env["partner.visit.line"].create_if_not_exist(self.partner_id.id)
 
@@ -52,11 +61,9 @@ class SaleOrder(models.Model):
         self.onchange_partner_id()
 
     @api.model
-    def create(self, vals):
-        res = super(SaleOrder, self).create(vals)
+    def create(self, values):
+        logging.info("Create a new sale order **************************************")
+        res = super(SaleOrder, self).create(values)
         res.env["partner.visit.line"].write_sale_id(res.id, res.partner_id.id)
         return res
 
-    @api.depends('has_outstanding')
-    def _compute_outstanding(self):
-        return True

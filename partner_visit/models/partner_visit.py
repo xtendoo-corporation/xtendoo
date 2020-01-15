@@ -8,13 +8,14 @@ class PartnerVisit(models.Model):
     _name = "partner.visit"
     _description = "Partner Visit"
 
-    partner_id = fields.Many2one('res.partner', string="Partner")
+    user_id = fields.Many2one('res.users', 'User')
+    partner_id = fields.Many2one('res.partner', 'Partner')
     week_day = fields.Selection(
         [('1', 'Monday'), ('2', 'Tuesday'), ('3', 'Wednesday'), ('4', 'Thursday'), ('5', 'Friday'), ('6', 'Saturday'),
          ('0', 'Sunday')], string='Weekday', default="1")
     order = fields.Integer(string="Order", default="1")
-    period = fields.Selection([('week', 'week'), ('fortnight', 'fortnight'), ('month', 'month')], string='Period',
-                              default="week")
+    period = fields.Selection(
+        [('week', 'week'), ('fortnight', 'fortnight'), ('month', 'month')], string='Period', default="week")
     next_date = fields.Date(string='Next Visit')
 
     phone = fields.Char(compute='_compute_partner_data', string='Phone')
@@ -61,11 +62,14 @@ class PartnerVisit(models.Model):
     def get_partner_visit_today(self):
         visited_user_data = self.env["partner.visit.line"].get_partner_user_today()
 
+        logging.info("visited_user_data*******************************")
+        logging.info(visited_user_data)
+
         partner_id_list = []
         for n in visited_user_data:
             partner_id_list.append(n.partner_id.id)
 
-        return self.search([('next_date', '=', date.today()), ('partner_id.user_id.id', '=', self.env.user.id),
+        return self.search([('next_date', '=', date.today()), ('user_id.id', '=', self.env.user.id),
                             ('partner_id.id', 'not in', partner_id_list)], order='order', limit=1)
 
     def calculate_next_visit_depend_period(self, partner_id):

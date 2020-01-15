@@ -35,6 +35,7 @@
         <field name="model">partner.visit</field>
         <field name="arch" type="xml">
             <tree string="Visit Days" create="0">
+                <field name="user_id"/>
                 <field name="order"/>
                 <field name="partner_id"/>
                 <field name="week_day"/>

@@ -6,7 +6,7 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='internal_notes']" position='before'>
+            <xpath expr="//page[@name='sales_purchases']" position='after'>
                 <page string="Visits">
                     <field name="visit_ids" mode="kanban" context="{'default_partner_id': id}">
                         <kanban>
@@ -14,6 +14,9 @@
                                 <t t-name="kanban-box">
                                     <div t-attf-class="oe_kanban_global_click">
                                         <div class="oe_kanban_details">
+                                            <div>User:
+                                                <field name="user_id"/>
+                                            </div>
                                             <field name="week_day"/>
                                             <div>Order:
                                                 <field name="order"/>
@@ -32,6 +35,7 @@
                         <form string="Visit">
                             <sheet>
                                 <group>
+                                    <field name="user_id" required="1"/>
                                     <field name="partner_id" invisible="1"/>
                                     <field name="week_day" string="Day of the week" required="1"/>
                                     <field name="order" string="Order number" required="1"/>
@@ -92,11 +96,11 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="after">
-                <div class="alert alert-info" role="alert" style="margin-bottom:0px;"
-                     attrs="{'invisible': [('has_outstanding','=',False)]}">
-                    <b>You haven't more visits today.</b>
-                </div>
-                <field name="has_outstanding" invisible="1"/>
+<!--                <div class="alert alert-info" role="alert" style="margin-bottom:0px;"-->
+<!--                     attrs="{'invisible': [('has_outstanding','=',False)]}">-->
+<!--                    <b>You haven't more visits today.</b>-->
+<!--                </div>-->
+<!--                <field name="has_outstanding" invisible="1"/>-->
             </xpath>
         </field>
     </record>
