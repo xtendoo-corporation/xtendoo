@@ -22,7 +22,7 @@ msgid ""
 "<i class=\"fa fa-info-circle\"/>This SO needs to be\n"
 "                        validated."
 msgstr ""
-"<i class=\"fa fa-info-circle\"/>Esta SO debe ser\n"
+"<i class=\"fa fa-info-circle\"/>Esta venta debe ser\n"
 "                        validada."
 
 #. module: sale_tier_validation
