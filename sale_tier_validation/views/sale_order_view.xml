@@ -37,6 +37,7 @@
                                 type="object"
                                 class="oe_inline oe_button btn-success"
                                 icon="fa-thumbs-up"/>
+                        <span> </span>
                         <button name="reject_tier"
                                 string="Reject"
                                 attrs="{'invisible': [('can_review', '=', False)]}"
