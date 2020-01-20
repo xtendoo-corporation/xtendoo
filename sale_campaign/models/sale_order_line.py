@@ -12,7 +12,7 @@ class OrderLine(models.Model):
         comodel_name='sale.promotion',
         string='Promotion')
     promotion = fields.Boolean(
-        string='Im promotion',
+        string='In promotion',
         default=False)
 
     @api.multi

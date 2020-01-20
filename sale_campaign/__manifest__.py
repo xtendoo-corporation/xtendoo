@@ -1,9 +1,8 @@
-
-# Copyright 2017 Pesol (<http://pesol.es>)
+# Copyright 2020 Pesol (<http://pesol.es>)
 #                Angel Moya <angel.moya@pesol.es>
 #                Antonio Rubio Lorente <antonio.rubio@pesol.es>
+#                Manuel Calero Solis <manuelcalerosolis@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
-
 
 {
     'name': 'Sale Campaign',
@@ -13,6 +12,8 @@
     'sequence': 1,
     'complexity': 'easy',
     'author': 'Xtendoo',
+    'website': 'https://www.xtendoo.es',
+    'summary': 'Sales campaigns and promotions',
     'depends': [
         'sale_management',
     ],
@@ -30,3 +31,4 @@
     ],
     'installable': True,
 }
+
