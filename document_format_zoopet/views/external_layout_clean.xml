@@ -2,7 +2,7 @@
 <odoo>
     <data>
 
-        <template id="external_layout_clean_ch" inherit_id="web.external_layout_clean">
+        <template id="external_layout_clean_zoopet" inherit_id="web.external_layout_clean">
 
             <!-- Header -->
 
@@ -45,8 +45,8 @@
                                         <div t-if="company.state_id" style="display:inline"><span
                                                 t-field="company.state_id.name"/>.
                                         </div>
-                                        <div t-if="company.country_id" style="display:inline">
-                                            <span t-field="company.country_id"/>
+                                        <div style="display:inline">
+                                            <span>Spain</span>
                                         </div>
                                     </li>
                                         <li t-if="company.email" style="clear:both;text-align:left;width:100%;">

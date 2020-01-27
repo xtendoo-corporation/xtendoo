@@ -21,6 +21,7 @@
 
         <template id="report_saleorder_document_zoopet" inherit_id="sale.report_saleorder_document">
 
+
             <xpath expr="//div[@t-field='doc.partner_id']" position="replace">
 
                 <div></div>
