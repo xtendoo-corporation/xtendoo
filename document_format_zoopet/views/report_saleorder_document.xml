@@ -512,12 +512,15 @@
                                     <t t-set="neto_linea" t-value="line.price_unit"></t>
                                     <t t-if="line.discount != 0.00">
                                         <t t-set="neto_linea" t-value="neto_linea - (neto_linea *line.discount /100)"></t>
+
                                     </t>
                                      <t t-if="line.discount2 != 0.00">
                                           <t t-set="neto_linea" t-value="neto_linea - (neto_linea *line.discount2 /100)"></t>
+
                                      </t>
                                     <t t-if="line.discount3 != 0.00">
                                           <t t-set="neto_linea" t-value="neto_linea - (neto_linea *line.discount3 /100)"></t>
+
                                      </t>
 
                                      <span t-esc="round(neto_linea*line.product_uom_qty,2)"/>€
@@ -531,39 +534,41 @@
 
                   <!-- acumulacion de las cantidad de cada iva ventas -->
 
+                        <t t-set="linea_total" t-value="neto_linea*line.product_uom_qty"></t>
+
                   <t t-if="tax.amount == 21.0">
                       <t t-set="importeIva21"
-                         t-value="importeIva21 +(neto_linea*0.21 )"></t>
+                         t-value="importeIva21 +(linea_total*0.21 )"></t>
                       <t t-set="importeIva21Total"
-                         t-value="importeIva21Total +neto_linea"></t>
+                         t-value="importeIva21Total +linea_total"></t>
                   </t>
                   <t t-if="tax.amount == 5.2">
                       <t t-set="importeRec52"
-                         t-value="importeRec52 + neto_linea *0.052"></t>
+                         t-value="importeRec52 + linea_total *0.052"></t>
                   </t>
 
                   <t t-if="tax.amount == 10.0">
                       <t t-set="importeIva10"
-                         t-value="importeIva10 +(neto_linea*0.10 )"></t>
+                         t-value="importeIva10 +(linea_total*0.10 )"></t>
                       <t t-set="importeIva10Total"
-                         t-value="importeIva10Total +neto_linea"></t>
+                         t-value="importeIva10Total +linea_total"></t>
                   </t>
 
                   <t t-if="tax.amount == 1.4">
                       <t t-set="importeRec14"
-                         t-value="importeRec14 +neto_linea *0.014"></t>
+                         t-value="importeRec14 +linea_total *0.014"></t>
                   </t>
 
                   <t t-if="tax.amount == 4.0">
                       <t t-set="importeIva4"
-                         t-value="importeIva4 +(neto_linea*0.04 )"></t>
+                         t-value="importeIva4 +(linea_total*0.04 )"></t>
                       <t t-set="importeIva4Total"
-                         t-value="importeIva4Total +neto_linea"></t>
+                         t-value="importeIva4Total +linea_total"></t>
                   </t>
 
                   <t t-if="tax.amount == 0.50">
                       <t t-set="importeRec05"
-                         t-value="importeRec05 + neto_linea  *0.005"></t>
+                         t-value="importeRec05 + linea_total  *0.005"></t>
                   </t>
 
                   <!-- fin acumulaciones de las cantuidades de iva ventas -->

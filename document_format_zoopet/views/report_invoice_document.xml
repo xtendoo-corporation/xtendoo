@@ -583,11 +583,14 @@
                                     <!-- Fin Neto -->
 
                                     <!-- Importe total -->
+
                                      <td class="text-right o_price_total">
                                             <span t-field="line.price_total"/>
                                         </td>
-                                    <!-- Fin importte total -->
+
+                                    <!-- Fin importe total -->
                                     </t>
+
                                     <t t-if="line.display_type == 'line_section'">
                                         <td colspan="99">
                                             <span t-field="line.name"/>

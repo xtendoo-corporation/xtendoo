@@ -23,7 +23,7 @@
                              style="color:black; display:inline; width:50%;font-size:0.8em;">
                             <div style="width:50%; display:block; float:left">
                                 <span>
-                                    <strong>Dirección</strong>
+                                    <!--<strong>Dirección</strong>-->
                                 </span>
                                 <ul class="list-unstyled">
 
@@ -49,18 +49,27 @@
                                             <span t-field="company.country_id"/>
                                         </div>
                                     </li>
-
+                                        <li t-if="company.email" style="clear:both;text-align:left;width:100%;">
+                                        <span t-field="company.email"/>
+                                    </li>
                                 </ul>
+
                             </div>
                             <div style="width:50%; display:block; float:left">
                                 <span>
-                                    <strong>Atención al cliente</strong>
+                                   <!-- <strong>Atención al cliente</strong> -->
                                 </span>
                                 <ul class="list-unstyled">
                                     <li>
                                         <div t-if="company.phone" style="display:inline">
                                             <spam>TLF:</spam>
                                             <span t-field="company.phone"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div style="display:inline">
+                                            <spam>Móvil:</spam>
+                                            <span>+34 691711950</span>
                                         </div>
                                     </li>
                                     <li t-if="company.vat">
@@ -73,10 +82,6 @@
                                         </div>
                                     </li>
                                 </ul>
-                            </div>
-
-                            <div t-if="company.email" style="clear:both;text-align:left;width:100%;">
-                                <span t-field="company.email"/>
                             </div>
 
                         </div>
@@ -175,7 +180,7 @@
                     <t t-if="weight">
                         <t t-if="weight != 0">
                             <div style="width:33%;float:left;clear:both;margin-top:-3px;">
-                                <b><span t-esc="'%.4f'%weight"></span></b>
+                                <b><span t-esc="'%.1f'%weight"></span></b>
                             </div>
                         </t>
                         <t t-else="">
@@ -210,12 +215,12 @@
                       <!-- Plazos de pago -->
                 <t t-if="plazos">
                     <div t-if="plazos" style="width:33%;float:left;margin-top:-3px;">
-                      <span>Plazos de Pago: </span><b><span t-esc="plazos"/></b>
+                      <span>Forma de Pago: </span><b><span t-esc="plazos"/></b>
                     </div>
                 </t>
                 <t t-else="">
                     <div t-if="plazos" style="width:33%;float:left;color:white;margin-top:-3px">
-                      <span>Plazos de Pago: </span>
+                      <span>Forma de Pago: </span>
                     </div>
                 </t>
                 <!-- Fin plazos pago -->
