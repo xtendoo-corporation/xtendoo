@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data>
+
+      <!--  <record id="A4_albaran" model="report.paperformat">
+            <field name="name">A4 Albaran</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="margin_top">55</field>
+            <field name="margin_bottom">28</field>
+            <field name="margin_right">7</field>
+            <field name="margin_left">7</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_spacing">50</field>
+            <field name="dpi">95</field>
+
+        </record>-->
+
+       <report id="report_delivery_without_price"
+                string="Albarán Sin Valorar"
+                model="stock.picking"
+                report_type="qweb-pdf"
+                name="document_format_zoopet.report_delivery_bluetooth"
+                print_report_name="'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)"
+        />
+
+        <!--<record id="document_format_zoopet.report_delivery_without_price" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_zoopet.A4_albaran"/>
+        </record>-->
+
+        <template id="report_delivery_bluetooth">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="document_format_zoopet.report_delivery_document_bluetooth" t-lang="o.partner_id.lang"/>
+                </t>
+            </t>
+        </template>
+
+        <template id="report_delivery_document_bluetooth">
+
+            <t t-name="stock.report_delivery_document">
+                <t t-set="isAlbaran" t-value="o.move_line_ids"></t>
+                <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+                    <t t-set="partner" t-value="o.partner_id or (o.move_lines and o.move_lines[0].partner_id) or False"/>
+                    <!-- <t t-if="partner" name="partner_header">
+                        <t t-set="address">
+                            <div t-esc="partner" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True}"/>
+                    </t>
+                    </t> -->
+
+                <div class="page">
+
+                     <!-- Datos documento -->
+              <div style="width:70%;padding-bottom:30px;margin-top:-150px;margin:0px auto;display:none;">
+
+              <h2 style="color:black;margin-left:30%;">
+                  <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
+                      <span> Albarán</span>
+                  </t>
+              </h2>
+              <!-- Primera columna -->
+              <div style="float:left; width:50%;">
+              <div>
+                 <span style="width:25%;display:inline-block">Numero :</span><span style="display:inline-block;width:75%;" t-field="o.name"/>
+              </div>
+              <div>
+                 <span style="width:25%;display:inline-block">Fecha :</span><span style="display:inline-block;width:75%;" t-field="o.date_done" t-options="{&quot;format&quot;: &quot;MM-dd-yyyy&quot;}"/>
+              </div>
+              <div t-if="o.origin">
+                 <span style="width:25%;display:inline-block">Pedido: </span><span style="display:inline-block;width:75%;" t-field="o.origin"/>
+                </div>
+              </div>
+              <!-- fin primera columna -->
+              <!--Segunda columna -->
+              <div  style="float:left; width:50%;">
+                <div t-if="o.partner_id.comercial">
+                  <span style="width:20%;display:inline-block">Cliente: </span><span style="display:inline-block;width:80%;" t-field="o.partner_id.comercial"/>
+                </div>
+
+               <div t-else="">
+                  <span style="width:20%;display:inline-block">Cliente: </span><span style="display:inline-block;width:80%;" t-field="o.partner_id.name"/>
+                </div>
+                <div t-if="o.partner_id.vat">
+                  <span style="width:20%;display:inline-block">NIF/CIF: </span><span style="display:inline-block;width:80%;" t-field="o.partner_id.vat"/>
+                </div>
+                <!-- Fin segunda columna -->
+              </div>
+
+            </div>
+
+        <!-- Direcciones -->
+
+            <!-- DIreccion de facturacion -->
+
+            <div style="width:49%;float:left;clear:both;margin-right:1%;border:2px solid black;height:175px;">
+              <div style="background-color:blue;color:white;text-align:center;">
+                  Dirección de facturacíon
+              </div>
+              <!-- si es difernte de la de envio -->
+                <div t-if="o.partner_id.parent_id" style="margin-left:2%;">
+                  <!-- nombre -->
+                    <div t-if="o.partner_id.parent_id.name">
+                        <span t-field="o.partner_id.parent_id.name"/>
+                    </div>
+                  <!-- nombre comercial -->
+                    <div t-if="o.partner_id.parent_id.comercial">
+                       <span t-field="o.partner_id.parent_id.comercial"/>
+                    </div>
+
+                 <!-- calle -->
+                    <div>
+                      <span t-field="o.partner_id.parent_id.street"/>
+                    </div>
+                 <!-- CP, ciudad -->
+                    <div>
+                      <span t-if="o.partner_id.parent_id.zip" t-field="o.partner_id.parent_id.zip"/>
+                      <span t-if="o.partner_id.parent_id.city" t-field="o.partner_id.parent_id.city"/>
+                    </div>
+                 <!-- Provincia -->
+                    <div>
+                      <span t-if="o.partner_id.parent_id.state_id.name" t-field="o.partner_id.parent_id.state_id.name"/>
+                    </div>
+                 <!-- tlf -->
+                    <div>
+                      <span t-if="o.partner_id.parent_id.phone">TLF.:</span><span t-if="o.partner_id.parent_id.phone" t-field="o.partner_id.parent_id.phone"/>
+                    </div>
+                 <!-- CIF/NIF -->
+                    <div>
+                      <span t-if="o.partner_id.parent_id.vat">NIF/CIF: </span><span  t-if="o.partner_id.parent_id.vat" t-field="o.partner_id.parent_id.vat"/>
+                    </div>
+                </div>
+            <!-- si es la misma -->
+                 <div t-if="not o.partner_id.parent_id" style="margin-left:2%;">
+                      <!-- nombre -->
+                    <div t-if="o.partner_id.name">
+                        <span t-field="o.partner_id.name"/>
+                    </div>
+                  <!-- nombre comercial -->
+                    <div t-if="o.partner_id.comercial">
+                       <span t-field="o.partner_id.comercial"/>
+                    </div>
+                 <!-- calle -->
+                    <div>
+                      <span t-field="o.partner_id.street"/>
+                    </div>
+                 <!-- CP, ciudad -->
+                    <div>
+                      <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
+                      <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>
+                    </div>
+                 <!-- Provincia -->
+                    <div>
+                      <span t-if="o.partner_id.state_id.name" t-field="o.partner_id.state_id.name"/>
+                    </div>
+                 <!-- tlf -->
+                    <div>
+                      <span t-if="o.partner_id.phone">TLF.:</span><span t-if="o.partner_id.phone" t-field="o.partner_id.phone"/>
+                    </div>
+                 <!-- CIF/NIF -->
+                    <div>
+                      <span t-if="o.partner_id.vat">NIF/CIF: </span><span  t-if="o.partner_id.vat" t-field="o.partner_id.vat"/>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Fin direccion de facturacion -->
+
+             <!-- Direccion de envio -->
+              <div style="width:49%;float:left;border:2px solid black;margin-left:1%;height:175px;">
+                <div style="background-color:blue;color:white;text-align:center;">
+                  Dirección de envío
+                </div>
+                <div t-if="o.partner_id" style="margin-left:2%;">
+                    <!-- nombre -->
+                    <div t-if="o.partner_id.parent_id.name">
+                        <span t-field="o.partner_id.parent_id.name"/>
+                    </div>
+                    <div t-else="">
+                        <span t-field="o.partner_id.name"/>
+                    </div>
+                  <!-- nombre comercial -->
+                    <div t-if="o.partner_id.parent_id.comercial">
+                       <span t-field="o.partner_id.parent_id.comercial"/>
+                    </div>
+                     <div t-else="">
+                       <span t-field="o.partner_id.comercial"/>
+                    </div>
+                 <!-- calle -->
+                    <div>
+                      <span t-field="o.partner_id.street"/>
+                    </div>
+                 <!-- CP, ciudad -->
+                    <div>
+                      <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
+                      <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>
+                    </div>
+                 <!-- Provincia -->
+                    <div>
+                      <span t-if="o.partner_id.state_id.name" t-field="o.partner_id.state_id.name"/>
+                    </div>
+                 <!-- tlf -->
+                    <div>
+                      <span t-if="o.partner_id.phone">TLF.:</span><span t-if="o.partner_id.phone" t-field="o.partner_id.phone"/>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin direccion de envio -->
+      <!-- Fin direcciones -->
+      <!-- Datos documento y observaciones -->
+          <!-- datos documento -->
+            <div style="width:49%;clear:both;float:left;margin-right:1%;margin-top:5px;font-size:0.9em;">
+              <div style="width:50%;float:left;border:2px solid black;height:25px;">
+                  <span style="margin-left:2px;"><b>Nª Albaran:</b></span><span t-field="o.name"/>
+              </div>
+              <div style="width:50%;float:left;border-bottom:2px solid black;border-right:2px solid black;border-top:2px solid black;height:25px;">
+               <span style="margin-left:2px;"><b>Fecha:</b></span><span t-field="o.date_done" t-options="{&quot;format&quot;: &quot;dd/MM/yyyy&quot;}"/>
+              </div>
+              <div style="width:50%;float:left;border-bottom:2px solid black;border-left:2px solid black;border-right:2px solid black;height:25px;">
+                <span style="margin-left:2px;"><b>Cliente:</b></span><span t-field="o.partner_id.ref"/>
+              </div>
+              <div style="width:50%;float:left;border-bottom:2px solid black;border-right:2px solid black;height:25px;">
+               <span style="margin-left:2px;"><b>Pedido:</b></span><span t-field="o.origin"/>
+              </div>
+            </div>
+          <!-- fin datos documento -->
+          <!-- observaciones -->
+            <div style="width:49%;float:left;margin-left:1%;border:2px solid black;height:51px;margin-top:5px;">
+              <span style="margin-left:2px;"><b>Observaciones:</b></span><span t-field="o.note"/>
+            </div>
+          <!-- fin observaciones -->
+      <!-- Fin datos documento -->
+
+                    <div class="watermark" style="position:absolute;opacity:0.25;font-size:3em;width:100%;text-align:center;z-index:1000;-webkit-transform: rotate(-37deg);margin-top:300px;">
+                        <p>*NOTA DE ENTREGA*</p>
+                </div>
+
+                    <hr style="background-color:white;height:250px;"></hr>
+                    <!-- Cabecera -->
+
+                       <div style="clear:both;font-size:0.8em;">
+                          <div style="height:14px; width:20%; display:block; float:left; margin-left:-15px;font-size:1.2em;">
+                            <span>Código</span>
+                          </div>
+                          <div style="height:14px; width:70%; display:block;float:left;font-size:1.2em;">
+                            <span>Descripción</span>
+                          </div>
+
+                          <div style="height:14px; width:10%;  display:block; float:left;font-size:1.2em;text-align:right;">
+                            <span>Unidades</span>
+                          </div>
+                       </div>
+                    <!-- lineas -->
+                     <t t-set="plazos" t-value="0"></t>
+                    <t t-set="weight" t-value="0"></t>
+                        <div style="margin-top:50px;font-size:0.8em;">
+                            <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
+
+                                <t t-foreach="o.move_line_ids" t-as="move_line">
+
+                                     <t t-set="plazos" t-value="move_line.move_id.sale_line_id.order_id.payment_term_id.name"></t>
+
+                                 <!-- codigo -->
+                                 <div style="font-size:0.9em;clear:both;">
+                                    <div style="width:20%; display:block; float:left; margin-left:-15px;">
+                                      <span t-field="move_line.product_id.default_code"/>
+                                    </div>
+                                 <!-- Fin codigo -->
+                                 <!-- Descripcion -->
+                                    <div style="width:70%; display:block;float:left;">
+                                        <span t-field="move_line.product_id.name"/>
+                                        <p t-if="o.picking_type_code == 'outgoing'">
+                                            <span t-field="move_line.product_id.sudo().description_pickingout"/>
+                                        </p>
+                                        <p t-if="o.picking_type_code == 'incoming'">
+                                            <span t-field="move_line.product_id.sudo().description_pickingin"/>
+                                        </p>
+                                    </div>
+                                  <!-- Fin descripcion -->
+
+                                  <!-- Cantidad entregada -->
+                                    <div style="width:10%;  display:block; float:left;text-align:right">
+                                         <span t-esc="'%.2f'%move_line.move_id.sale_line_id.qty_delivered"/>
+                                    </div>
+                                  <!-- Fin cantidad entregada -->
+
+                                      <t t-if="move_line.move_id.sale_line_id.product_id.weight">
+                                        <t t-set="weight" t-value="weight + move_line.move_id.sale_line_id.product_id.weight * move_line.move_id.sale_line_id.qty_delivered"></t>
+                                    </t>
+
+
+                                </div>
+                                </t>
+                          </div>
+                    <!-- Fin lineas -->
+
+                        <hr style="height:2px;width:110%;background-color:black;margin-left:-15px;"></hr>
+
+                <!-- Fin productos -->
+
+
+
+
+                    <!-- Fin cabecera -->
+
+                      <!-- Portes -->
+                    <t t-if="o.carrier_id.name">
+                        <t t-set="carrier_delivery" t-value="o.carrier_id.name"></t>
+                    </t>
+
+
+                </div>
+                </t>
+                </t>
+            </t>
+
+
+        </template>
+
+    </data>
+
+</odoo>

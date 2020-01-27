@@ -8,19 +8,19 @@
 
             <xpath expr="//div[@class='o_clean_header']" position="replace">
                 <div>
-                    <div class="col-6" style="display:block; width:40%;float:left;">
+                    <div class="col-6" style="display:block; width:30%;float:left;">
                         <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"
                              style="width:100%"/>
                     </div>
-                    <div style="width:60%; display:block;float:left;">
+                    <div style="width:50%; display:block;float:left;">
                         <strong>
                             <div t-if="company.name">
                                 <span style="color:black; margin-bottom:0px" t-field="company.name"/>
                             </div>
                         </strong>
-                        <hr style="heigth:5px; color:black; margin: 3px"></hr>
+                        <hr style="heigth:5px; color:black; margin: 3px;"></hr>
                         <div class="col-5 offset-1" name="company_address"
-                             style="color:black; display:inline; width:50%">
+                             style="color:black; display:inline; width:50%;font-size:0.8em;">
                             <div style="width:50%; display:block; float:left">
                                 <span>
                                     <strong>Dirección</strong>
@@ -29,7 +29,7 @@
 
                                     <li>
                                         <div t-if="company.street" style="display:inline-block">
-                                            C/<span t-field="company.street"/>,
+                                            <span t-field="company.street"/>,
                                         </div>
                                         <div t-if="company.street2" style="display:inline-block">
                                             <span t-field="company.street2"/>
@@ -43,7 +43,7 @@
                                         <div t-if="company.city" style="display:inline"><span t-field="company.city"/>.
                                         </div>
                                         <div t-if="company.state_id" style="display:inline"><span
-                                                t-field="company.state_id"/>.
+                                                t-field="company.state_id.name"/>.
                                         </div>
                                         <div t-if="company.country_id" style="display:inline">
                                             <span t-field="company.country_id"/>
@@ -82,6 +82,58 @@
                         </div>
 
                     </div>
+                    <!-- si es albaran -->
+                    <t t-if="isAlbaran">
+                        <div style="float:left;width:20%;text-align:center;margin-top:20px; -webkit-transform: rotate(-37deg);">
+                            <div style="font-size:1.2em;">
+                                <b><span>*ALBARAN*</span></b>
+                            </div>
+                            <div>
+                                <b><span>NOTA DE ENTREGA</span></b>
+                            </div>
+                        </div>
+                    </t>
+                    <!-- fin si es albaran -->
+
+                    <!-- si es venta -->
+                    <t t-if="isSale">
+                        <div style="float:left;width:20%;text-align:center;margin-top:20px;-webkit-transform: rotate(-37deg);">
+                            <div>
+                                <t t-if="isDep == 'Depósito'">
+                                    <b><span style="font-size:1.1em;">*DEPÓSITO*</span></b>
+                                </t>
+                                <t t-else="">
+                                     <t t-if="isSale == 'sale'">
+                                        <b><span style="font-size:1.1em;">*PEDIDO*</span></b>
+                                    </t>
+                                    <t t-if="isSale == 'draft'">
+                                        <b><span style="font-size:0.9em;">*PRESUPUESTO*</span></b>
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                    <!-- fin si es venta -->
+
+                    <!-- si es factura -->
+                    <t t-if="isInvoice">
+                        <div style="float:left;width:20%;text-align:center;margin-top:20px;-webkit-transform: rotate(-37deg);">
+                            <div style="font-size:1.2em;">
+                                <t t-if="isInvoice == 'out_invoice'">
+                                    <b><span>*FACTURA*</span></b>
+                                </t>
+                                 <t t-if="isInvoice == 'out_refund'">
+                                    <b><span>*FACTURA RECTIFICATIVA*</span></b>
+                                </t>
+                               <!-- <t t-if="isSale == 'draft'">
+                                    <b><span>*PRESUPUESTO*</span></b>
+                                </t> -->
+
+                            </div>
+                        </div>
+                    </t>
+                    <!-- fin si es factura -->
+
                 </div>
 
                 <div style="clear:both;"></div>
@@ -94,9 +146,91 @@
 
             <xpath expr="//div[@class='row mt8']" position="replace">
 
-                <div>
-                    <span style="font-weight:bolder;font-size:0.9em;">Inscrita en el Reg. Mercantil de Huelva, Tpmp 762,
-                        Libro 0, Folio 150, Sección 8ª, Hoja H13722/h, Inscrip. 1ª 10/05/05
+                         <!-- leyenda Factura -->
+
+                 <t t-if="isInvoice">
+                    <div style="clear:both;">
+                        <div style="display:block;" t-if="o.partner_shipping_id.country_id.name == 'Portugal'" >
+                            <span>Para pagos por transferencia:</span>
+                            <span> BANCO: BPI</span>
+                            <span>IBAN: PT50 0010 0000 4423 5081 5019 1</span>
+                        </div>
+                        <div style="display:block;" t-if="o.partner_shipping_id.country_id.name != 'Portugal'" >
+                            <span>Para pagos por transferencia:</span>
+                            <span> BANCO: SANTANDER</span>
+                            <span>IBAN: ES94 0049 2336 4225 1408 4617</span>
+                        </div>
+
+
+                      <!--<span style="display:block;" >Las incidencias en transporte (roturas, falta de mercancía, etc.), deberán ser comunicadas antes de 24 horas.</span>-->
+                    </div>
+                </t>
+
+                 <hr style="height:2px;width:100%;background-color:black;margin-top:-3px;"></hr>
+
+                         <!-- Fin leyenda Factura -->
+
+                 <!-- Peso -->
+
+                    <t t-if="weight">
+                        <t t-if="weight != 0">
+                            <div style="width:33%;float:left;clear:both;margin-top:-3px;">
+                                <b><span t-esc="'%.4f'%weight"></span></b>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div style="width:33%;float:left;clear:both;color:white;margin-top:-3px">
+                                <b><span>aa</span></b>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-else="">
+                            <div style="width:33%;float:left;clear:both;color:white;margin-top:-3px">
+                                <b><span>aa</span></b>
+                            </div>
+                        </t>
+                    <!-- Fin peso -->
+
+                <!-- Portes -->
+                <t t-if="isSale">
+                    <t t-set="carrier_delivery" t-value="doc.carrier_id.name"></t>
+                </t>
+                    <t t-if="carrier_delivery">
+                   <div style="width:33%;float:left;margin-top:-3px;">
+                     <span>Método de Envío: </span><b><span t-esc="carrier_delivery"/></b>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div style="width:33%;float:left;color:white;margin-top:-3px;">
+                     <span>Método de Envío: </span>
+                    </div>
+                </t>
+                    <!-- Fin portes -->
+
+                      <!-- Plazos de pago -->
+                <t t-if="plazos">
+                    <div t-if="plazos" style="width:33%;float:left;margin-top:-3px;">
+                      <span>Plazos de Pago: </span><b><span t-esc="plazos"/></b>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div t-if="plazos" style="width:33%;float:left;color:white;margin-top:-3px">
+                      <span>Plazos de Pago: </span>
+                    </div>
+                </t>
+                <!-- Fin plazos pago -->
+
+                 <div>
+
+                      <span style="display:block;clear:both;" >Las incidencias en transporte (roturas, falta de mercancía, etc.), deberán ser comunicadas antes de 24 horas.</span>
+                     <span style="display:block;clear:both;text-align:center;">La posesión de esta Factura no justifica su pago</span>
+                 </div>
+
+                <hr style="height:2px;width:100%;background-color:black;margin-top:-3px;clear:both;"></hr>
+
+                <div style="margin-top:-15px;">
+                    <span style="font-weight:bolder;font-size:0.9em;">Inscrita en el Reg. Mercantil de Huelva, Tomo 716,
+                        Libro 0, Folio 192, Hoja H-12333, Inscrip. 1ª
                     </span>
                 </div>
                 <div style="width:95%; float:left; font-size:0.5em">
