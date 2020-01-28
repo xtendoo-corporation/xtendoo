@@ -27,6 +27,11 @@
                                 </span>
                                 <ul class="list-unstyled">
 
+                                     <li t-if="company.vat">
+                                        <spam>C.I.F: :</spam>
+                                        <span t-field="company.vat"/>
+                                    </li>
+
                                     <li>
                                         <div t-if="company.street" style="display:inline-block">
                                             <span t-field="company.street"/>,
@@ -42,16 +47,17 @@
                                         </div>
                                         <div t-if="company.city" style="display:inline"><span t-field="company.city"/>.
                                         </div>
-                                        <div t-if="company.state_id" style="display:inline"><span
+                                    </li>
+
+                                    <li>
+                                        <div t-if="company.state_id" style="display:inline;"><span
                                                 t-field="company.state_id.name"/>.
                                         </div>
                                         <div style="display:inline">
                                             <span>Spain</span>
                                         </div>
                                     </li>
-                                        <li t-if="company.email" style="clear:both;text-align:left;width:100%;">
-                                        <span t-field="company.email"/>
-                                    </li>
+
                                 </ul>
 
                             </div>
@@ -72,10 +78,11 @@
                                             <span>+34 691711950</span>
                                         </div>
                                     </li>
-                                    <li t-if="company.vat">
-                                        <spam>C.I.F: :</spam>
-                                        <span t-field="company.vat"/>
+
+                                    <li t-if="company.email" style="clear:both;text-align:left;width:100%;">
+                                        <span t-field="company.email"/>
                                     </li>
+
                                     <li>
                                         <div t-if="company.website" style="display:inline">
                                             <span t-field="company.website"/>
