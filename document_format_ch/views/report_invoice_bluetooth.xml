@@ -42,6 +42,8 @@
 
         <template id="report_invoice_document_bluetooth">
 
+             <t t-call="web.external_layout">
+
                <div class="page">
 
                    <!-- Cabecera documento -->
@@ -404,6 +406,7 @@
                    <div style="clear:both;height:10px;"></div>
 
                </div>
+             </t>
 
         </template>
 

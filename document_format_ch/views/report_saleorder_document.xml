@@ -135,7 +135,7 @@
                   <span>Código</span>
                 </div>
 
-                <div class="text-left" style="font-weight:bolder; color:#4f4b4b;float:left;width:41%;">
+                <div class="text-left" style="font-weight:bolder; color:#4f4b4b;float:left;width:31%;">
                   <span>Descripción</span>
                 </div>
 
@@ -148,6 +148,10 @@
                 </div>
                 <div class="text-right" groups="sale.group_discount_per_so_line" style="font-weight:bolder; color:#4f4b4b;float:left;width:10%;">
                   <span>Des.(%)</span>
+                </div>
+
+                <div class="text-right" groups="sale.group_discount_per_so_line" style="font-weight:bolder; color:#4f4b4b;float:left;width:10%;">
+                  <span>Des.2(%)</span>
                 </div>
 
                 <div class="text-right" style="font-weight:bolder; color:#4f4b4b;float:left;width:12%;">
@@ -193,7 +197,7 @@
 
                 <!-- descripción -->
 
-                <div class="text-left" style="float:left;width:41%;">
+                <div class="text-left" style="float:left;width:31%;">
                     <t t-set="descripcion" t-value="line.name.find(']') +1"></t>
                     <t t-set="linea" t-value="line.name[descripcion:]"></t>
                     <span t-esc="linea"/>
@@ -224,6 +228,14 @@
                 </div>
 
                 <!-- Fin descuento -->
+
+                <!-- Descuento 2 -->
+
+                <div class="text-right" style="float:left;width:10%;">
+                  <span t-field="line.discount2"/>
+                </div>
+
+                <!-- Fin descuento 2 -->
 
                 <!--  Valor Neto -->
 
