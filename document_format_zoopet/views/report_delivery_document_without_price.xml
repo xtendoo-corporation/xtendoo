@@ -266,26 +266,48 @@
 
                                  <!-- codigo -->
                                  <div style="font-size:0.9em;clear:both;">
-                                    <div style="width:20%; display:block; float:left; margin-left:-15px;">
-                                      <span t-field="move_line.product_id.default_code"/>
-                                    </div>
+                                     <t t-if="move_line.product_id.default_code">
+                                        <div style="width:20%; display:block; float:left; margin-left:-15px;">
+                                          <span t-field="move_line.product_id.default_code"/>
+                                        </div>
+                                     </t>
+                                     <t t-else="">
+                                         <div style="width:20%; display:block; float:left; margin-left:-15px;color:white;">
+                                             <span>aaa</span>
+                                        </div>
+                                     </t>
                                  <!-- Fin codigo -->
                                  <!-- Descripcion -->
-                                    <div style="width:70%; display:block;float:left;">
-                                        <span t-field="move_line.product_id.name"/>
-                                        <p t-if="o.picking_type_code == 'outgoing'">
-                                            <span t-field="move_line.product_id.sudo().description_pickingout"/>
-                                        </p>
-                                        <p t-if="o.picking_type_code == 'incoming'">
-                                            <span t-field="move_line.product_id.sudo().description_pickingin"/>
-                                        </p>
-                                    </div>
+                                     <t t-if="move_line.product_id.name">
+                                        <div style="width:70%; display:block;float:left;">
+                                            <span t-field="move_line.product_id.name"/>
+                                            <p t-if="o.picking_type_code == 'outgoing'">
+                                                <span t-field="move_line.product_id.sudo().description_pickingout"/>
+                                            </p>
+                                            <p t-if="o.picking_type_code == 'incoming'">
+                                                <span t-field="move_line.product_id.sudo().description_pickingin"/>
+                                            </p>
+                                        </div>
+                                     </t>
+
+                                     <t t-else="">
+                                          <div style="width:70%; display:block;float:left;color:white;">
+                                              <span>aaa</span>
+                                        </div>
+                                     </t>
                                   <!-- Fin descripcion -->
 
                                   <!-- Cantidad entregada -->
-                                    <div style="width:10%;  display:block; float:left;text-align:right">
-                                         <span t-esc="'%.2f'%move_line.move_id.sale_line_id.qty_delivered"/>
-                                    </div>
+                                     <t t-if="move_line.move_id.sale_line_id.qty_delivered">
+                                            <div style="width:10%;  display:block; float:left;text-align:right">
+                                                 <span t-esc="'%.2f'%move_line.move_id.sale_line_id.qty_delivered"/>
+                                            </div>
+                                     </t>
+                                     <t t-else="">
+                                          <div style="width:10%;  display:block; float:left;text-align:right;color:white;">
+                                              <span>aaaa</span>
+                                            </div>
+                                     </t>
                                   <!-- Fin cantidad entregada -->
 
                                       <t t-if="move_line.move_id.sale_line_id.product_id.weight">
