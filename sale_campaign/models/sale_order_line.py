@@ -73,8 +73,7 @@ class OrderLine(models.Model):
         if value:
             self.order_id.filtered(
                 lambda l: (l.product_id == promotion.product_id or
-                           (l.product_id.product_tmpl_id ==
-                               promotion.product_tmpl_id))
+                           (l.product_id.product_tmpl_id == promotion.product_tmpl_id))
             ).write({'discount': promotion.amount})
 
     @api.multi
