@@ -11,12 +11,12 @@ class SaleOrder(models.Model):
 
     discount_dpp = fields.Float(
         digits=dp.get_precision('Discount'),
-        string='Discount DPP',
+        string='Descuento PP',
     )
 
     client_discount = fields.Float(
         digits=dp.get_precision('Discount'),
-        string='Discount Client',
+        string='Descuento Cliente',
     )
 
     @api.onchange('partner_id')

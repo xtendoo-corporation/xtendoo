@@ -9,10 +9,10 @@ class ResPartner(models.Model):
 
     client_discount = fields.Float(
         digits=dp.get_precision('Discount'),
-        string='Discount (%)'
+        string='Descuento (%)'
     )
 
     discount_dpp = fields.Float(
         digits=dp.get_precision('Discount'),
-        string='Discount DPP (%)'
+        string='Descuento PP (%)'
     )

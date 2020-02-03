@@ -15,7 +15,7 @@
                           />
 
                       <field name="discount_dpp"
-                           sring="Descuento DPP"
+                           sring="Descuento PP"
                           />
 
                 </xpath>
