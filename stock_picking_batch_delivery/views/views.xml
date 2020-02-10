@@ -12,6 +12,27 @@
                         <field name="user_id" required="1"/>
                         <field name="delivery_id" context="{'order_id': id}" options="{'no_create': True, 'no_open': True}" required="1"/>
                         <field name="date_planned" required="1"/>
+                        <field name="total_weight" required="1"/>
+                </xpath>
+
+                 <xpath expr="//field[@name='picking_ids']" position="replace">
+
+                      <field name="picking_ids" widget="many2many" domain="[('state', 'not in', ('done', 'cancel'))]" options="{'not_delete': True}">
+                        <tree>
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="partner_phone"/>
+                            <field name="date"/>
+                            <field name="scheduled_date"/>
+                            <field name="weight"/>
+                            <field name="state"/>
+                            <field name="payment_term"/>
+                            <field name="total_amount"/>
+                            <button name="action_assign" string="Confirm picking" type="object" icon="fa-check text-success" attrs="{'invisible': [('state', 'in', ('done', 'cancel', 'confirmed', 'assigned'))]}"/>
+                            <button name="action_cancel" string="Cancel picking" type="object" icon="fa-times-circle text-danger" attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}"/>
+                        </tree>
+                    </field>
+
                 </xpath>
 
             </field>
@@ -33,6 +54,8 @@
                 <xpath expr="//field[@name='state']" position="after">
                         <field name="date_planned"/>
                 </xpath>
+
+
 
             </field>
         </record>
