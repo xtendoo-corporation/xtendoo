@@ -162,11 +162,17 @@
 
                  <t t-if="isInvoice">
                     <div style="clear:both;">
+
+                        <div style="display:block;" t-if="noIva">
+                            <span>*Exenta de IVA, según artículo 20, Ley 37/1992 de IVA.</span>
+                        </div>
+
                         <div style="display:block;" t-if="o.partner_shipping_id.country_id.name == 'Portugal'" >
                             <span>Para pagos por transferencia:</span>
                             <span> BANCO: BPI</span>
                             <span>IBAN: PT50 0010 0000 4423 5081 5019 1</span>
                         </div>
+
                         <div style="display:block;" t-if="o.partner_shipping_id.country_id.name != 'Portugal'" >
                             <span>Para pagos por transferencia:</span>
                             <span> BANCO: SANTANDER</span>
