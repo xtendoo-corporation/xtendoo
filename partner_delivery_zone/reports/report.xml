@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="invoice_partner_delivery_zone">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="partner_delivery_zone.invoice_partner_delivery_zone_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="invoice_partner_delivery_zone_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <div class="oe_structure"/>
+
+                <t t-set="quotations" t-value="doc.get_quotations_today()"/>
+                <div t-if="quotations">
+                    <p/>
+                    <table class="table table-striped">
+                        <thead>
+                            <th>Presupuesto</th>
+                            <th>Cliente</th>
+                            <th class="text-right">Importe</th>
+                        </thead>
+                        <tbody>
+                            <t t-set="quotation_subtotal" t-value="0"/>
+                            <t t-foreach="quotations" t-as="quotation">
+                                <tr>
+                                    <td>
+                                        <span t-esc="quotation.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="quotation.partner_id.name"/>
+                                    </td>
+                                    <td align="right">
+                                        <span t-esc="quotation.amount_total"/>
+                                    </td>
+                                </tr>
+                                <t t-set="quotation_subtotal" t-value="quotation_subtotal + quotation.amount_total"/>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>
+                                    <strong>Total presupuesto</strong>
+                                </td>
+                                <td/>
+                                <td align="right">
+                                    <strong>
+                                        <span t-esc="quotation_subtotal"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <t t-set="orders" t-value="doc.get_orders_today()"/>
+                <div t-if="orders">
+                    <table class="table table-striped">
+                        <thead>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th class="text-right">Importe</th>
+                        </thead>
+                        <tbody>
+                            <t t-set="order_subtotal" t-value="0"/>
+                            <t t-foreach="orders" t-as="order">
+                                <tr>
+                                    <td>
+                                        <span t-esc="order.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="order.partner_id.name"/>
+                                    </td>
+                                    <td align="right">
+                                        <span t-esc="order.amount_total"/>
+                                    </td>
+                                </tr>
+                                <t t-set="order_subtotal" t-value="order_subtotal + order.amount_total"/>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>
+                                    <strong>Total pedidos</strong>
+                                </td>
+                                <td/>
+                                <td align="right">
+                                    <strong>
+                                        <span t-esc="order_subtotal"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <t t-set="pickings" t-value="doc.get_pickings_today()"/>
+                <div t-if="pickings">
+                    <p/>
+                    <table class="table table-striped">
+                        <thead>
+                            <th>Albaran</th>
+                            <th>Cliente</th>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="pickings" t-as="picking">
+                                <tr>
+                                    <td>
+                                        <span t-esc="picking.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="picking.partner_id.name"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>
+                                    <strong>Total albaranes</strong>
+                                </td>
+                                <td align="right">
+                                    <strong>
+                                        <span t-esc="len(pickings)"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <t t-set="invoices" t-value="doc.get_invoices_today()"/>
+                <div t-if="invoices">
+                    <p/>
+                    <table class="table table-striped">
+                        <thead>
+                            <th>Facturas</th>
+                            <th>Cliente</th>
+                            <th class="text-right">Importe</th>
+                        </thead>
+                        <tbody>
+                            <t t-set="invoice_subtotal" t-value="0"/>
+                            <t t-foreach="invoices" t-as="invoice">
+                                <tr>
+                                    <td>
+                                        <span t-esc="invoice.number"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="invoice.partner_id.name"/>
+                                    </td>
+                                    <td align="right">
+                                        <span t-esc="invoice.amount_total_signed"/>
+                                    </td>
+                                </tr>
+                                <t t-set="invoice_subtotal" t-value="invoice_subtotal + invoice.amount_total_signed"/>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>
+                                    <strong>Total facturas</strong>
+                                </td>
+                                <td/>
+                                <td align="right">
+                                    <strong>
+                                        <span t-esc="invoice_subtotal"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <t t-set="payments" t-value="doc.get_payments_today()"/>
+                <div t-if="payments">
+                    <p/>
+                    <table class="table table-striped">
+                        <thead>
+                            <th>Cobros</th>
+                            <th>Cliente</th>
+                            <th class="text-right">Importe</th>
+                        </thead>
+                        <tbody>
+                            <t t-set="payment_subtotal" t-value="0"/>
+                            <t t-foreach="payments" t-as="payment">
+                                <tr>
+                                    <td>
+                                        <span t-esc="payment.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="payment.partner_id.name"/>
+                                    </td>
+                                    <td align="right">
+                                        <span t-esc="payment.amount"/>
+                                    </td>
+                                </tr>
+                                <t t-set="payment_subtotal" t-value="payment_subtotal + payment.amount"/>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>
+                                    <strong>Total cobros</strong>
+                                </td>
+                                <td/>
+                                <td align="right">
+                                    <strong>
+                                        <span t-esc="payment_subtotal"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+
+    <report id="invoice_partner_delivery_zone"
+            model="partner.delivery.zone"
+            string="Delivery Zone"
+            report_type="qweb-pdf"
+            name="partner_delivery_zone.invoice_partner_delivery_zone"
+            file="partner_delivery_zone.invoice_partner_delivery_zone"
+            attachment="(object.name + '.pdf')"
+            print_report_name="(object.name)"
+    />
+
+</odoo>
