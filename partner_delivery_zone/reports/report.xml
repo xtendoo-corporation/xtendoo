@@ -17,7 +17,7 @@
                 <t t-set="quotations" t-value="doc.get_quotations_today()"/>
                 <div t-if="quotations">
                     <p/>
-                    <table class="table table-striped">
+                    <table class="table table-bordered">
                         <thead>
                             <th>Presupuesto</th>
                             <th>Cliente</th>
@@ -58,7 +58,7 @@
 
                 <t t-set="orders" t-value="doc.get_orders_today()"/>
                 <div t-if="orders">
-                    <table class="table table-striped">
+                    <table class="table table-bordered">
                         <thead>
                             <th>Pedido</th>
                             <th>Cliente</th>
@@ -100,7 +100,7 @@
                 <t t-set="pickings" t-value="doc.get_pickings_today()"/>
                 <div t-if="pickings">
                     <p/>
-                    <table class="table table-striped">
+                    <table class="table table-bordered">
                         <thead>
                             <th>Albaran</th>
                             <th>Cliente</th>
@@ -135,7 +135,7 @@
                 <t t-set="invoices" t-value="doc.get_invoices_today()"/>
                 <div t-if="invoices">
                     <p/>
-                    <table class="table table-striped">
+                    <table class="table table-bordered">
                         <thead>
                             <th>Facturas</th>
                             <th>Cliente</th>
@@ -177,7 +177,7 @@
                 <t t-set="payments" t-value="doc.get_payments_today()"/>
                 <div t-if="payments">
                     <p/>
-                    <table class="table table-striped">
+                    <table class="table table-bordered">
                         <thead>
                             <th>Cobros</th>
                             <th>Cliente</th>
@@ -213,6 +213,42 @@
                                 </td>
                             </tr>
                         </tfoot>
+                    </table>
+                </div>
+
+                <div>
+                    <p/>
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>Resumen diario</th>
+                            <th class="text-right">Importe</th>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total prespuestos</td>
+                                <td align="right">
+                                    <span t-esc="quotation_subtotal"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Total pedidos</td>
+                                <td align="right">
+                                    <span t-esc="order_subtotal"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Total facturas</td>
+                                <td align="right">
+                                    <span t-esc="invoice_subtotal"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Total cobros</td>
+                                <td align="right">
+                                    <span t-esc="payment_subtotal"/>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
 

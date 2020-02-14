@@ -16,22 +16,17 @@
         'sale_stock',
     ],
     'data': [
-        'data/partner_sequence.xml',
-
-        'security/ir.model.access.csv',
-
-        'views/partner_delivery_zone_view.xml',
         'views/res_partner_view.xml',
-        'views/sale_order_view.xml',
-        'views/stock_picking_view.xml',
-        'views/account_payment_view.xml',
+        'views/partner_delivery_zone_view.xml',
         'views/account_invoice_view.xml',
-
-        'views/report_deliveryslip.xml',
+        'views/sale_order_view.xml',
+        'views/account_payment_view.xml',
         'views/report_shipping.xml',
+        'views/stock_picking_view.xml',
 
+        'data/partner_sequence.xml',
+        'security/ir.model.access.csv',
         'reports/report.xml',
-
         'wizards/wizards_select_visits_routes.xml',
         'wizards/wizards_report_sale_delivery_zone.xml',
     ],

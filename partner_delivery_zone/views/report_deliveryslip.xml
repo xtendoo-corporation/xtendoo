@@ -3,15 +3,12 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
     <template id="report_delivery_document" inherit_id="stock.report_delivery_document">
-        <xpath expr="//th[@name='td_sched_date_h']" position="after">
-            <th t-if="o.picking_type_id.code == 'outgoing' and o.delivery_zone_id">
-                <strong>Zone</strong>
-            </th>
-        </xpath>
-        <xpath expr="//td[@name='td_sched_date']" position="after">
-            <td t-if="o.picking_type_id.code == 'outgoing' and o.delivery_zone_id">
-                <span t-field="o.delivery_zone_id"/>
-            </td>
+        <xpath expr="//li[@name=docName]" position="after">
+
+             <li>
+                  <b>Zona:</b>
+                  <spam t-field="o.delivery_zone_id"/>
+             </li>
         </xpath>
     </template>
 </odoo>
