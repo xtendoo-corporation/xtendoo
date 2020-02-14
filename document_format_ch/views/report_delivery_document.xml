@@ -44,6 +44,11 @@
                                 <span t-field="o.name"/>
                             </li>
 
+                            <li t-if="o.delivery_zone_id">
+                                <b>Zona :</b>
+                                <span t-field="o.delivery_zone_id"/>
+                            </li>
+
                             <li>
                                 <b>Estado:</b>
                                 <spam t-field="o.state"/>

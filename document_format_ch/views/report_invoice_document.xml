@@ -41,6 +41,12 @@
                             <b>Vendor Bill</b>
                             <span t-field="o.number"/>
                         </li>
+
+                         <li t-if="o.delivery_zone_id">
+                                <b>Zona :</b>
+                                <span t-field="o.delivery_zone_id"/>
+                         </li>
+
                         <li t-if="o.date_invoice">
                             <b>Fecha:</b>
                             <span t-esc="o.date_invoice.strftime('%d/%m/%Y')"/>
