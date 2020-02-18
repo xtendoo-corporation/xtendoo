@@ -44,10 +44,10 @@
                                 <span t-field="o.name"/>
                             </li>
 
-                            <li t-if="o.delivery_zone_id">
+                           <!-- <li t-if="o.delivery_zone_id">
                                 <b>Zona :</b>
                                 <span t-field="o.delivery_zone_id"/>
-                            </li>
+                            </li> -->
 
                             <li>
                                 <b>Estado:</b>
@@ -201,6 +201,8 @@
                 <t t-set="importeIva10Total" t-value="0"></t>
                 <t t-set="importeIva4" t-value="0"></t>
                 <t t-set="importeIva4Total" t-value="0"></t>
+                <t t-set="importeIva_19" t-value="0"></t>
+                <t t-set="importeIva_19Total" t-value="0"></t>
 
                 <!-- lineas -->
 
@@ -216,8 +218,12 @@
                             <!--Código -->
 
                             <div class="text-left" style="width:25%;float:left;clear:both;">
-                                <span t-field="ml.product_id.default_code"/>
-                                <br/>
+                                <t t-if="ml.product_id.default_code">
+                                    <span t-field="ml.product_id.default_code"/>
+                                </t>
+                                <t t-else="">
+                                    <span style="color:white;">aaaaaa</span>
+                                </t>
                             </div>
 
                             <!--Fin código -->
@@ -358,11 +364,14 @@
 
                                 <t t-if="ml.move_id.sale_line_id">
                                     <t t-foreach="ml.move_id.sale_line_id.tax_id" t-as="tax">
-                                        <t t-set="tax_name" t-value="tax.name"></t>
-                                        <t t-set="isIVA" t-value="tax_name.find('IVA')"></t>
-                                        <span t-if="isIVA > -1" t-esc="'%.0f'%tax.amount"/>%
+                                        <t t-foreach="tax" t-as="tax_id">
+                                            <div>
+                                                <t t-set="tax_name" t-value="tax_id.name"></t>
+                                                <t t-set="isIVA" t-value="tax_name.find('IVA')"></t>
+                                                <span t-esc="'%.0f'%tax_id.amount"/>%
+                                            </div>
 
-                                        <!-- acumulacion de las cantidad de cada iva ventas -->
+                                            <!-- acumulacion de las cantidad de cada iva ventas -->
 
                                         <t t-if="tax.amount == 21.0">
                                             <t t-set="importeIva21"
@@ -386,7 +395,16 @@
                                         </t>
 
 
+                                         <t t-if="tax.amount == -19.0">
+                                            <t t-set="importeIva_19"
+                                               t-value="importeIva_19 +(total_linea* - 0.19 )"></t>
+                                            <t t-set="importeIva_19Total"
+                                               t-value="importeIva_19Total +total_linea"></t>
+                                        </t>
+
                                         <!-- fin acumulaciones de las cantuidades de iva ventas -->
+
+                                        </t>
 
                                     </t>
                                 </t>
@@ -504,6 +522,18 @@
 
                     </div>
 
+                     <div style="clear:both;">
+                        <div t-if="importeIva_19 != 0" style="width:60%;float:left;">
+                            <spam>IVA -19% en</spam>
+                            <span t-esc="'%.2f'%importeIva_19Total"></span>€
+                        </div>
+
+                        <div t-if="importeIva_19 != 0" style="width:35%;text-align:right;float:left;">
+                            <spam t-esc="'%.2f'%importeIva_19"></spam>€
+                        </div>
+
+                    </div>
+
                     <div style="clear:both;">
 
                         <div style="width:35%;float:left;">
@@ -530,8 +560,12 @@
                                 <t t-set="importeTotalIva" t-value="importeTotalIva + round(importeIva4,2)"></t>
 
                             </t>
+                            <t t-if="importeIva_19">
+                                <t t-set="importeTotalIva" t-value="importeTotalIva + round(importeIva_19,2)"></t>
+
+                            </t>
                             <t t-set="importeTotal" t-value="importeTotal + round(importeTotalIva,2)"></t>
-                            <spam t-esc="'%.2f'%importeTotal"></spam>€
+                            <b><spam t-esc="'%.2f'%importeTotal"></spam>€</b>
                         </div>
 
                     </div>
