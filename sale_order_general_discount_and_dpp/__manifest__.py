@@ -7,11 +7,10 @@
     'description': """Add general discount and dpp for the customer for sale orders""",
     'author': 'DDL',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'sale',
-
     ],
     'data': [
         'views/res_partner.xml',
