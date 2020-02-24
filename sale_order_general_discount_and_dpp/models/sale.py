@@ -23,7 +23,7 @@ class SaleOrder(models.Model):
 
     @api.onchange('partner_id')
     def onchange_partner_id(self):
-        super().onchange_partner_id()
+        super(SaleOrder, self).onchange_partner_id()
         self.discount_dpp = self.partner_id.discount_dpp
         self.client_discount = self.partner_id.client_discount
         self.onchange_client_discount_line()
@@ -31,34 +31,56 @@ class SaleOrder(models.Model):
     @api.onchange('discount_dpp')
     def onchange_general_discount(self):
 
-        logging.info("*"*80)
-        logging.info(self.discount_dpp)
+        for order_line in self.order_line:
+            logging.info("*"*80)
+            logging.info(order_line.product_id)
+            logging.info(order_line.product_id.id)
+            logging.info(order_line.product_id.name)
 
-        self.mapped('order_line').update({
-            'discount3': self.discount_dpp,
-        })
-        raise ValidationError("discount_dpp change")        
+            if self._is_a_delivery_product(order_line.product_id):
+                logging.info("lo pongo a cero >>>>>>>>>>>>>>>>")
+                logging.info(order_line.product_id.name)
+                order_line.update({
+                    'discount3': '0.00',
+                })
+            else:
+                logging.info("pongo su valor <<<<<<<<<<<<<<<<<<<<<<")
+                logging.info(order_line.product_id.name)
+                logging.info(self.discount_dpp)
+                order_line.update({
+                    'discount3': self.discount_dpp,
+                })
+        # raise ValidationError("discount_dpp change")        
+
+    def _is_a_delivery_product(self, product_id):
+        for product in (self.env["delivery.carrier"].search([('id', '!=', 0)])):
+            logging.info("search###################################")
+            logging.info(product.product_id)
+            if product.product_id == product_id:
+                return True
+        return False
 
     @api.onchange('client_discount')
     def onchange_client_discount(self):
-        
-        logging.info("*"*80)
-        logging.info(self.client_discount)
-
-        self.mapped('order_line').update({
-            'discount2': self.client_discount,
-        })
-        raise ValidationError("client_discount change")        
+        for order_line in self.order_line:
+            if self._is_a_delivery_product(order_line.product_id):
+                order_line.update({
+                    'discount2': '0.00',
+                })
+            else:
+                order_line.update({
+                    'discount2': self.client_discount,
+                })
 
     @api.onchange('order_line')
     def onchange_client_discount_line(self):
         self.mapped('order_line').update({
-            'discount3': self.discount_dpp,
             'discount2': self.client_discount,
+            'discount3': self.discount_dpp,
         })
 
     def _get_delivery_carrier_products(self):
-        self.env["delivery.carrier"].mapped("product_id")
+        return self.env["delivery.carrier"].mapped("product_id")
 
     @api.multi
     def _action_confirm(self):
@@ -67,27 +89,11 @@ class SaleOrder(models.Model):
         logging.info(delivery_products)
 
         for order_line in self.mapped('order_line'):
-
-            if (order_line.product_id.default_code == 'ENT30' or order_line.product_id.default_code == 'ENT0'):
+            if (order_line.product_id.default_code in delivery_products):
                 order_line.update({
                     'discount3': '0.00',
-                })
-
-                order_line.update({
                     'discount2': '0.00',
                 })
-
-            if( order_line.product_id.default_code !='ENT30' and order_line.product_id.default_code != 'ENT0'):
-
-                if(order_line.discount2 != self.partner_id.client_discount and order_line.discount2 != 0.00):
-
-                    order_line.update({
-                        'discount3': self.discount_dpp,
-                    })
-
-                    order_line.update({
-                        'discount2': self.client_discount,
-                    })
 
         super().onchange_partner_id()
 
