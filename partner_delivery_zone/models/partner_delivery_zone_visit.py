@@ -1,8 +1,9 @@
 # Copyright 2018 Tecnativa - Sergio Teruel
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-
 from odoo import fields, models, api
 from datetime import date
+
+import logging
 
 
 class PartnerDeliveryZoneVisit(models.Model):

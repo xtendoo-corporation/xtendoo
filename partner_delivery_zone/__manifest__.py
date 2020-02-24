@@ -27,7 +27,6 @@
         'views/account_payment_view.xml',
         'views/account_invoice_view.xml',
 
-        'views/report_deliveryslip.xml',
         'views/report_shipping.xml',
 
         'reports/report.xml',

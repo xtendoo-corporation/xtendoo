@@ -5,6 +5,8 @@ from odoo import api, fields, models, _
 from odoo.http import request
 from odoo.exceptions import ValidationError
 
+import logging
+
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'

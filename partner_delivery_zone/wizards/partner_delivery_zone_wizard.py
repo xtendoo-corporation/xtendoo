@@ -13,6 +13,8 @@ class PartnerDeliveryZoneWizard(models.TransientModel):
 
     def _get_partner_delivery_zone(self):
         if 'partner_delivery_zone_id' in request.session:
+            logging.info("***get request.session***")
+            logging.info(request.session)
             return request.session['partner_delivery_zone_id']
         return 0
 
@@ -25,4 +27,6 @@ class PartnerDeliveryZoneWizard(models.TransientModel):
     def button_set_partner_delivery_zone(self):
         self.ensure_one()
         request.session['partner_delivery_zone_id'] = self.partner_delivery_zone.id
+        logging.info("***set request.session***")
+        logging.info(request.session)
 
