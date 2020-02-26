@@ -23,7 +23,7 @@
                    </div>
                    <div style="float:left;width:40%;">
                         <span>Fecha: </span>
-                       <i><span t-esc="time.strftime('%d/%m/%y')"></span></i>
+                       <i><span t-esc="time.strftime('%d/%m/%Y')"></span></i>
                     </div>
 
                 </div>
