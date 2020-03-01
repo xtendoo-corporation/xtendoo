@@ -138,7 +138,10 @@ class SelectPickingPriceLine(models.Model):
             line.cost_price = line.product_id.standard_price
             line.purchase_price = line.move_id.purchase_line_id.price_unit
             line.margin = line.list_price - line.move_id.purchase_line_id.price_unit
-            line.percent_margin = 100 - ((line.move_id.purchase_line_id.price_unit / line.list_price) * 100)
+            if line.list_price != 0:
+                line.percent_margin = 100 - ((line.move_id.purchase_line_id.price_unit / line.list_price) * 100)
+            else:
+                line.percent_margin = 0
 
     @api.multi
     @api.onchange('list_price')
