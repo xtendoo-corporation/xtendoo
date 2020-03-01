@@ -4,7 +4,7 @@
 # docker exec odoo12_odoo_1 /usr/bin/odoo scaffold stock_picking_landed_cost /usr/lib/python3/dist-packages/odoo/aditional_addons
 #
 {
-    'name': "stock_picking_landed_cost",
+    'name': "stock_picking_landed_cost_with_button",
 
     'summary': """
         Show a button to access direct from picking to landed cost
@@ -28,14 +28,8 @@
         'stock',
         'stock_landed_costs'
     ],
-
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
         'views/stock_picking_views.xml',
-    ],
-    # only loaded in demonstration mode
-    'demo': [
-        'demo/demo.xml',
     ],
 }
