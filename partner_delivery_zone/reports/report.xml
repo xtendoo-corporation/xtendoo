@@ -14,6 +14,22 @@
             <div class="page">
                 <div class="oe_structure"/>
 
+                <!-- Titulo -->
+
+                <div style="margin-top:50px;">
+                   <div style="float:left;width:60%;">
+                       <span>Zona:</span>
+                       <i><span t-field="doc.name"></span></i>
+                   </div>
+                   <div style="float:left;width:40%;">
+                        <span>Fecha: </span>
+                       <i><span t-esc="time.strftime('%d/%m/%Y')"></span></i>
+                    </div>
+
+                </div>
+
+                <!-- Fin Titulo -->
+
                 <t t-set="quotations" t-value="doc.get_quotations_today()"/>
                 <div t-if="quotations">
                     <p/>
