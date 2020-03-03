@@ -112,6 +112,7 @@ class LandedCost(models.Model):
                          ('id', 'in', quant_loc_ids)])
                     qty_available = line.product_id.with_context(location=locations.ids).qty_available
                     total_cost = (qty_available * line.product_id.standard_price) + cost_to_add
+                    # Calculate standar_price avoid division by Zero 
                     if qty_available != 0:
                         standard_price = total_cost / qty_available
                     else:
