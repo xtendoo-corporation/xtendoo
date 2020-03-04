@@ -31,9 +31,16 @@ class LandedCost(models.Model):
         :return: list of new line values
         """
         lines = []
+        lines_number=0
+
+        for move in self.mapped('picking_ids').mapped('move_lines'):
+            lines_number=lines_number +1
+
+        landed_cost_per_line = self.amount_total / lines_number
 
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
+
             if move.product_id.valuation != 'real_time' or move.product_id.cost_method not in ('fifo', 'average'):
                 continue
             vals = {
@@ -42,7 +49,8 @@ class LandedCost(models.Model):
                 'quantity': move.product_qty,
                 'former_cost': move.value,
                 'weight': move.product_id.weight * move.product_qty,
-                'volume': move.product_id.volume * move.product_qty
+                'volume': move.product_id.volume * move.product_qty,
+                'cost_variation': landed_cost_per_line / move.product_qty,
             }
             lines.append(vals)
 
@@ -90,6 +98,7 @@ class LandedCost(models.Model):
                     'value': line.move_id.value + line.additional_landed_cost,
                     'remaining_value': line.move_id.remaining_value + cost_to_add,
                     'price_unit': price_unit,
+                    'cost_variation': line.move_id.product_qty,
                 })
                 
                 # `remaining_qty` is negative if the move is out and delivered products that were not
@@ -131,3 +140,5 @@ class AdjustmentLines(models.Model):
     former_cost_per_unit = fields.Float(
         'Former Cost(Per Unit)', compute='_compute_former_cost_per_unit',
         digits=dp.get_precision('Product Price'), store=True)
+
+    cost_variation = fields.Float(string='Variación por unidad')
