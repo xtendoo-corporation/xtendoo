@@ -31,10 +31,10 @@ class LandedCost(models.Model):
         :return: list of new line values
         """
         lines = []
-        lines_number=0
+        lines_number = 0
 
         for move in self.mapped('picking_ids').mapped('move_lines'):
-            lines_number=lines_number +1
+            lines_number = lines_number + 1
 
         landed_cost_per_line = self.amount_total / lines_number
     
@@ -43,6 +43,12 @@ class LandedCost(models.Model):
 
             if move.product_id.valuation != 'real_time' or move.product_id.cost_method not in ('fifo', 'average'):
                 continue
+
+            if move.product_qty != 0:
+                cost_variation = landed_cost_per_line / move.product_qty
+            else:
+                cost_variation = 0.0
+
             vals = {
                 'product_id': move.product_id.id,
                 'move_id': move.id,
@@ -50,7 +56,7 @@ class LandedCost(models.Model):
                 'former_cost': move.value,
                 'weight': move.product_id.weight * move.product_qty,
                 'volume': move.product_id.volume * move.product_qty,
-                'cost_variation': landed_cost_per_line / move.product_qty,
+                'cost_variation': cost_variation,
             }
             lines.append(vals)
 
