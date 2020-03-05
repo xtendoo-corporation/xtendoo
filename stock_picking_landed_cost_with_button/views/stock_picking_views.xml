@@ -34,7 +34,7 @@
             </xpath>
 
            <xpath expr="/form/sheet/field/tree/field[@name='former_cost_per_unit']" position="after">
-                <field name="cost_variation" readonlye="1"></field>
+                <field name="cost_variation" readonly="1"></field>
             </xpath>
         </field>
     </record>

@@ -37,7 +37,7 @@ class LandedCost(models.Model):
             lines_number=lines_number +1
 
         landed_cost_per_line = self.amount_total / lines_number
-
+    
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
 
@@ -141,4 +141,4 @@ class AdjustmentLines(models.Model):
         'Former Cost(Per Unit)', compute='_compute_former_cost_per_unit',
         digits=dp.get_precision('Product Price'), store=True)
 
-    cost_variation = fields.Float(string='Variación por unidad')
+    cost_variation = fields.Float(string='Variación por unidad', digits=dp.get_precision('Product Price'), store=True)
