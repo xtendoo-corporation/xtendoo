@@ -5,10 +5,6 @@ from odoo import api, fields, models, tools, _
 from odoo.exceptions import UserError
 from odoo.addons import decimal_precision as dp
 
-import logging
-
-_logger = logging.getLogger(__name__)
-
 
 class LandedCost(models.Model):
     _inherit = 'stock.landed.cost'
@@ -40,23 +36,21 @@ class LandedCost(models.Model):
     
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
-
             if move.product_id.valuation != 'real_time' or move.product_id.cost_method not in ('fifo', 'average'):
                 continue
 
-            if move.product_qty != 0:
-                cost_variation = landed_cost_per_line / move.product_qty
-            else:
-                cost_variation = 0.0
+            # Only allow positive
+            if move.product_qty <= 0:
+               move.product_qty = 1
 
             vals = {
                 'product_id': move.product_id.id,
                 'move_id': move.id,
                 'quantity': move.product_qty,
-                'former_cost': move.value,
+                'former_cost': abs(move.value),
                 'weight': move.product_id.weight * move.product_qty,
                 'volume': move.product_id.volume * move.product_qty,
-                'cost_variation': cost_variation,
+                'cost_variation': landed_cost_per_line / move.product_qty,
             }
             lines.append(vals)
 
@@ -123,8 +117,9 @@ class LandedCost(models.Model):
                                                                            ['location_id'], ['location_id'])
                     quant_loc_ids = [loc['location_id'][0] for loc in quant_locs]
                     locations = self.env['stock.location'].search(
-                        [('usage', '=', 'internal'), ('company_id', '=', self.env.user.company_id.id),
-                         ('id', 'in', quant_loc_ids)])
+                        [('usage', '=', 'internal'), 
+                        ('company_id', '=', self.env.user.company_id.id),
+                        ('id', 'in', quant_loc_ids)])
                     qty_available = line.product_id.with_context(location=locations.ids).qty_available
                     total_cost = (qty_available * line.product_id.standard_price) + cost_to_add
                     # Calculate standar_price avoid division by Zero 
@@ -143,8 +138,18 @@ class LandedCost(models.Model):
 class AdjustmentLines(models.Model):
     _inherit = 'stock.valuation.adjustment.lines'
 
-    former_cost_per_unit = fields.Float(
-        'Former Cost(Per Unit)', compute='_compute_former_cost_per_unit',
-        digits=dp.get_precision('Product Price'), store=True)
+    def _compute_price_cost(self):
+        for line in self:
+            line.price_cost = line.former_cost + line.cost_variation
 
-    cost_variation = fields.Float(string='Variación por unidad', digits=dp.get_precision('Product Price'), store=True)
+    cost_variation = fields.Float(
+        string='Cost Variation(Per Unit)', 
+        digits=dp.get_precision('Product Price'),
+        store=True
+        )
+
+    price_cost = fields.Float(
+        string='Subsequent Cost(Per Unit)', 
+        compute='_compute_price_cost',
+        digits=dp.get_precision('Product Price'), 
+        )        
