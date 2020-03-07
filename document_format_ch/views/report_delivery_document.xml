@@ -255,6 +255,7 @@
                             <!-- Cantidad -->
 
                             <div class="text-right" style="float:left;width:10%;padding-right:8px;">
+                                <span t-if="o.picking_type_id.id== 9">- </span>
                                 <span t-if="o.state != 'done'" t-esc="'%.1f'%(ml.product_uom_qty)"/>
                                 <span t-if="o.state == 'done'" t-esc="'%.1f'%(ml.qty_done)"/>
                             </div>
@@ -266,6 +267,7 @@
                             <div class="text-right" style="float:left;width:10%;padding-right:12px;">
                                 <div style="width:84px;  display:block;float:left; text-align:right;">
                                     <t t-if="ml.move_id.sale_line_id">
+                                        <span t-if="o.picking_type_id.id== 9">- </span>
                                         <span t-esc="'%.2f'%ml.move_id.sale_line_id.price_unit"/>€
                                     </t>
                                     <t t-if="ml.move_id.purchase_line_id">
@@ -305,6 +307,7 @@
 
                             <div class="text-right" style="float:left;width:10%;">
                                 <t t-if="ml.move_id.sale_line_id">
+                                    <span t-if="o.picking_type_id.id== 9">- </span>
                                     <span t-esc="'%.2f'%(ml.move_id.sale_line_id.price_unit*ml.qty_done)"/>
                                     €
                                 </t>
@@ -480,6 +483,7 @@
                         </div>
 
                         <div style="width:60%;text-align:right;float:left;">
+                            <span t-if="o.picking_type_id.id== 9">- </span>
                             <spam t-esc="'%.2f'%importeTotal"></spam>€
                         </div>
 
@@ -493,6 +497,7 @@
                         </div>
 
                         <div t-if="importeIva21 != 0" style="width:35%;text-align:right;float:left;">
+                            <span t-if="o.picking_type_id.id== 9">- </span>
                             <spam t-esc="'%.2f'%importeIva21"></spam>€
                         </div>
                     </div>
@@ -505,6 +510,7 @@
                         </div>
 
                         <div t-if="importeIva10 != 0" style="width:35%;text-align:right;float:left;">
+                            <span t-if="o.picking_type_id.id== 9">- </span>
                             <spam t-esc="'%.2f'%importeIva10"></spam>€
                         </div>
 
@@ -517,6 +523,7 @@
                         </div>
 
                         <div t-if="importeIva4 != 0" style="width:35%;text-align:right;float:left;">
+                            <span t-if="o.picking_type_id.id== 9">- </span>
                             <spam t-esc="'%.2f'%importeIva4"></spam>€
                         </div>
 
@@ -529,6 +536,7 @@
                         </div>
 
                         <div t-if="importeIva_19 != 0" style="width:35%;text-align:right;float:left;">
+                            <span t-if="o.picking_type_id.id== 9">- </span>
                             <spam t-esc="'%.2f'%importeIva_19"></spam>€
                         </div>
 
@@ -565,7 +573,10 @@
 
                             </t>
                             <t t-set="importeTotal" t-value="importeTotal + round(importeTotalIva,2)"></t>
-                            <b><spam t-esc="'%.2f'%importeTotal"></spam>€</b>
+                            <b>
+                                <span t-if="o.picking_type_id.id== 9">- </span>
+                                <spam t-esc="'%.2f'%importeTotal"></spam>€
+                            </b>
                         </div>
 
                     </div>

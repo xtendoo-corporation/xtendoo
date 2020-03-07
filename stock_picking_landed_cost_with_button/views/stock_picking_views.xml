@@ -24,6 +24,18 @@
             <xpath expr="/form/sheet/field/tree/field[@name='former_cost_per_unit']" position="replace">
                 <field name="former_cost_per_unit" readonly="1"/>
             </xpath>
+
+            <xpath expr="/form/sheet/field/tree/field[@name='weight']" position="replace">
+
+            </xpath>
+
+            <xpath expr="/form/sheet/field/tree/field[@name='volume']" position="replace">
+
+            </xpath>
+
+           <xpath expr="/form/sheet/field/tree/field[@name='former_cost_per_unit']" position="after">
+                <field name="cost_variation" readonly="1"></field>
+            </xpath>
         </field>
     </record>
 
