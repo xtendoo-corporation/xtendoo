@@ -25,6 +25,7 @@
         'views/report_saleorder_document.xml',
         'views/report_invoice_document.xml',
         'views/report_simple_label.xml',
+        'views/report_sale_order_document_without_price.xml',
     ],
     'demo': [],
     'installable': True,

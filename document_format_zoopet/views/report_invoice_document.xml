@@ -745,7 +745,7 @@
                            -<span t-esc="'%.2f'%total_discount3"></span>€
                        </div>
                   </div>
-                    <hr style="height:2px;width:100%;background-color:black;"></hr>
+                    <hr t-if="total_discount3 != 0 or total_discount2 != 0 or total_discount1 != 0" style="height:2px;width:100%;background-color:black;"></hr>
                      <div t-if="total_discount3 != 0 or total_discount2 != 0 or total_discount1 != 0">
                        <div style="width:50%;float:left;margin-top:-15px;">
                            <span>Total descuentos</span>
@@ -771,7 +771,7 @@
               <!-- Fin descuentos aplicados -->
                      <!-- Fin descuentos aplicados -->
 
-                <div style="width:40%;margin-left:8%;float:left;font-size:0.8em;">
+                <div style="width:40%;margin-left:8%;float:right;font-size:0.8em;">
 
               <!-- Base imponible -->
 
@@ -979,6 +979,34 @@
                             <strong class="text-center">The SEPA QR Code informations are not set correctly.</strong><br/>
                         </p>
                     </div>
+
+                <!-- Inversion de sujeto pasivo -->
+
+                <t t-if="o.sale_type_id.name == 'Serie C'">
+                    <!-- Porte y precio -->
+                    <t t-set="PortPrice" t-value="0"></t>
+                    <!-- Fin Porte y precios -->
+
+                     <t t-foreach="o.invoice_line_ids" t-as="line">
+
+                         <t t-if="line.product_id.default_code == 'ENT0'">
+
+                             <t t-set="PortPrice" t-value="line.price_unit"></t>
+
+                         </t>
+
+                     </t>
+
+                    <t t-if="PortPrice != 0">
+                        <span>Inversión del sujeto pasivo</span>
+                    </t>
+
+
+
+                </t>
+
+
+                <!-- Fin inversión del sujeto pasivo-->
 
             </xpath>
 
