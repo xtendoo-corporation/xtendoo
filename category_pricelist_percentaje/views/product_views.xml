@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_next_coming_stock_product_template_tree" model="ir.ui.view">
+            <field name="name">product.next.coming.template.stock.tree.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="stock.view_stock_product_template_tree"/>
+            <field name="arch" type="xml">
+
+                <field name="virtual_available" position="after">
+                    <field name="incoming_qty" attrs="{'invisible':[('type', '!=', 'product')]}"/>
+                    <field name="date_next_coming" attrs="{'invisible':[('type', '!=', 'product')]}"/>
+                    <!--
+                    <field name="create_date" attrs="{'invisible':[('type', '!=', 'product')]}"/>
+                    -->
+                </field>
+
+            </field>
+        </record>
+
+        <record id="product_product_ext_form_view_cost_service" model="ir.ui.view">
+            <field name="name">product_extended.product.form.view</field>
+            <field name="model">product.template</field>
+            <field name="priority">1</field>
+            <field name="inherit_id" ref="product.product_template_form_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='group_standard_price']" position="inside">
+
+                    <label for="date_next_coming" groups="base.group_user"/>
+                    <div name="date_next_coming" groups="base.group_user">
+                        <field name="date_next_coming"/>
+                    </div>
+
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
