@@ -14,4 +14,3 @@ class AccountInvoice(models.Model):
             return super(AccountInvoice, self).default_get(default_fields)
 
         raise ValidationError(_("You are not allowed to create invoices."))
-

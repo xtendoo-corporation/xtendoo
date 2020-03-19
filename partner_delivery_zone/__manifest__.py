@@ -30,6 +30,8 @@
         'views/report_shipping.xml',
 
         'reports/report.xml',
+        'reports/report_sale_delivery_zone.xml',
+        'reports/appointment.xml',
 
         'wizards/wizards_select_visits_routes.xml',
         'wizards/wizards_report_sale_delivery_zone.xml',

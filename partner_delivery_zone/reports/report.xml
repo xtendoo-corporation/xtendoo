@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <template id="invoice_partner_delivery_zone">
+     <template id="invoice_partner_delivery_zone">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-call="partner_delivery_zone.invoice_partner_delivery_zone_document"/>
@@ -25,7 +25,6 @@
                         <span>Fecha: </span>
                        <i><span t-esc="time.strftime('%d/%m/%Y')"></span></i>
                     </div>
-
                 </div>
 
                 <!-- Fin Titulo -->
@@ -274,13 +273,10 @@
     </template>
 
     <report id="invoice_partner_delivery_zone"
-            model="partner.delivery.zone"
             string="Delivery Zone"
+            model="partner.delivery.zone"
             report_type="qweb-pdf"
             name="partner_delivery_zone.invoice_partner_delivery_zone"
-            file="partner_delivery_zone.invoice_partner_delivery_zone"
-            attachment="(object.name + '.pdf')"
-            print_report_name="(object.name)"
-    />
+            file="partner_delivery_zone.invoice_partner_delivery_zone"/>
 
 </odoo>

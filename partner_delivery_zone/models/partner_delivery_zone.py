@@ -80,3 +80,4 @@ class PartnerDeliveryZone(models.Model):
             [('delivery_zone_id', '=', self.id),
              ('payment_date', '=', self.date)]
         )
+
