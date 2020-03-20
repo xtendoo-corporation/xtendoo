@@ -223,7 +223,8 @@
                                     <span t-esc="payment.partner_id.name"/>
                                 </td>
                                 <td align="right">
-                                    <span t-esc="payment.amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    <span t-esc="payment.amount" 
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>
                             <t t-set="payment_subtotal" t-value="payment_subtotal + payment.amount"/>
@@ -237,7 +238,8 @@
                             <td/>
                             <td align="right">
                                 <strong>
-                                    <span t-esc="payment_subtotal" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    <span t-esc="payment_subtotal" 
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </strong>
                             </td>
                         </tr>
