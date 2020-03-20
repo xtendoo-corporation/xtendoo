@@ -22,22 +22,51 @@ class ReportSaleDeliveryZone(models.AbstractModel):
             'date_report': date_report,
             'get_quotations_delivery_zone_date': self.get_quotations_delivery_zone_date,
             'get_sale_orders_delivery_zone_date': self.get_sale_orders_delivery_zone_date,
+            'get_pickings_delivery_zone_date': self.get_pickings_delivery_zone_date,
+            'get_invoices_delivery_zone_date': self.get_invoices_delivery_zone_date,
+            'get_payments_delivery_zone_date': self.get_payments_delivery_zone_date,
         }
 
     @api.model
-    def get_quotations_delivery_zone_date(self, id, date):
+    def get_quotations_delivery_zone_date(self, delivery_zone_id, date):
         return self.env['sale.order'].search(
-            [('delivery_zone_id', '=', id),
+            [('delivery_zone_id', '=', delivery_zone_id),
              ('state', '=', 'draft'),
              ('date_order', '>=', datetime.combine(date, datetime.min.time())),
              ('date_order', '<=', datetime.combine(date, datetime.max.time()))]
         )
 
     @api.model
-    def get_sale_orders_delivery_zone_date(self, id, date):
+    def get_sale_orders_delivery_zone_date(self, delivery_zone_id, date):
         return self.env['sale.order'].search(
-            [('delivery_zone_id', '=', id),
+            [('delivery_zone_id', '=', delivery_zone_id),
              ('state', '!=', 'draft'),
              ('date_order', '>=', datetime.combine(date, datetime.min.time())),
              ('date_order', '<=', datetime.combine(date, datetime.max.time()))]
+        )
+
+    @api.multi
+    def get_pickings_delivery_zone_date(self, delivery_zone_id, date):
+        return self.env['stock.picking'].search(
+            [('delivery_zone_id', '=', delivery_zone_id),
+             ('picking_type_code', '=', 'outgoing'),            
+             ('scheduled_date', '>=', datetime.combine(date, datetime.min.time())),
+             ('scheduled_date', '<=', datetime.combine(date, datetime.max.time()))]
+        )
+
+    @api.multi
+    def get_invoices_delivery_zone_date(self, delivery_zone_id, date):
+        return self.env['account.invoice'].search(
+            [('delivery_zone_id', '=', delivery_zone_id),
+             ('state', '!=', 'draft'),
+             ('type', '=', 'out_invoice'),
+             ('date_invoice', '=', date)]
+        )
+
+    @api.multi
+    def get_payments_delivery_zone_date(self, delivery_zone_id, date):
+        return self.env['account.payment'].search(
+            [('delivery_zone_id', '=', delivery_zone_id),
+             ('payment_type', '=', 'inbound'),
+             ('payment_date', '=', date)]
         )

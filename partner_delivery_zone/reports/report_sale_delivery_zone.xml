@@ -21,12 +21,10 @@
                         <span>Zona:</span>
                         <i><span t-field="doc.name"></span></i>
                     </div>
-
                     <div style="float:left;width:40%;">
                        <span>Fecha: </span>
                        <i><span t-esc="date_report"></span></i>
                     </div>
-
                 </div>
 
                 <!-- Quotations -->
@@ -34,9 +32,9 @@
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th>Presupuesto</th>
-                            <th>Cliente</th>
-                            <th class="text-right">Importe</th>
+                            <th style="width: 25%">Presupuesto</th>
+                            <th style="width: 50%">Cliente</th>
+                            <th style="width: 25%" class="text-right">Importe</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -51,7 +49,8 @@
                                     <span t-esc="quotation.partner_id.name"/>
                                 </td>
                                 <td align="right">
-                                    <span t-esc="quotation.amount_total"/>
+                                    <span t-esc="quotation.amount_total"
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>
                             <t t-set="quotation_subtotal" t-value="quotation_subtotal + quotation.amount_total"/>
@@ -65,80 +64,187 @@
                             <td/>
                             <td align="right">
                                 <strong>
-                                    <span t-esc="quotation_subtotal"/>
+                                    <span t-esc="quotation_subtotal"
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </strong>
                             </td>
                         </tr>
                     </tfoot>
                 </table>
 
-                <!--
-                <tfoot>
-                    <tr>
-                        <td>
-                            <strong>Total presupuesto</strong>
-                        </td>
-                        <td/>
-                        <td align="right">
-                            <strong>
-                                <span t-esc="quotation_subtotal"/>
-                            </strong>
-                        </td>
-                    </tr>
-                </tfoot>
-                -->
+                <!-- Sale Order -->
 
-                <!-- Sale Order
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%"> Pedidos</th>
+                            <th style="width: 50%">Cliente</th>
+                            <th style="width: 25%" class="text-right">Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="sale_orders" t-value="get_sale_orders_delivery_zone_date(doc.id, date_report)"/>
+                        <t t-set="sale_order_subtotal" t-value="0"/>
+                        <t t-foreach="sale_orders" t-as="sale_order">
+                            <tr>
+                                <td>
+                                    <span t-esc="sale_order.name"/>
+                                </td>
+                                <td>
+                                    <span t-esc="sale_order.partner_id.name"/>
+                                </td>
+                                <td align="right">
+                                    <span t-esc="sale_order.amount_total"
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                            </tr>
+                            <t t-set="sale_order_subtotal" 
+                                t-value="sale_order_subtotal + sale_order.amount_total" 
+                                t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <strong>Total pedidos</strong>
+                            </td>
+                            <td/>
+                            <td align="right">
+                                <strong>
+                                    <span t-esc="sale_order_subtotal" 
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
 
-                    <t t-set="sale_orders" t-value="get_sale_orders_delivery_zone_date(doc.id, date_report)"/>
+                <!-- Picking -->
 
-                    <t t-foreach="sale_orders" t-as="sale_order">
-                        <span t-field="sale_order.id"/>
-                    </t>
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Albaranes</th>
+                            <th style="width: 75%">Cliente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="pickings" t-value="get_pickings_delivery_zone_date(doc.id, date_report)"/>
+                        <t t-foreach="pickings" t-as="picking">
+                            <tr>
+                                <td>
+                                    <span t-esc="picking.name"/>
+                                </td>
+                                <td>
+                                    <span t-esc="picking.partner_id.name"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <strong>Total albranes</strong>
+                            </td>
+                            <td align="right">
+                                <strong>
+                                    <span t-esc="len(pickings)"/>
+                                </strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
 
-                -->
+                <!-- Invoice -->
+
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Facturas</th>
+                            <th style="width: 50%">Cliente</th>
+                            <th style="width: 25%" class="text-right">Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="invoices" t-value="get_invoices_delivery_zone_date(doc.id, date_report)"/>
+                        <t t-set="invoice_subtotal" t-value="0"/>
+                        <t t-foreach="invoices" t-as="invoice">
+                            <tr>
+                                <td>
+                                    <span t-esc="invoice.number"/>
+                                </td>
+                                <td>
+                                    <span t-esc="invoice.partner_id.name"/>
+                                </td>
+                                <td align="right">
+                                    <span t-esc="invoice.amount_total_signed"
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                            </tr>
+                            <t t-set="invoice_subtotal" 
+                                t-value="invoice_subtotal + invoice.amount_total_signed"/>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <strong>Total facturas</strong>
+                            </td>
+                            <td/>
+                            <td align="right">
+                                <strong>
+                                    <span t-esc="invoice_subtotal" 
+                                        t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Payment -->
+
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Pagos</th>
+                            <th style="width: 50%">Cliente</th>
+                            <th style="width: 25%" class="text-right">Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="payments" t-value="get_payments_delivery_zone_date(doc.id, date_report)"/>
+                        <t t-set="payment_subtotal" t-value="0"/>
+                        <t t-foreach="payments" t-as="payment">
+                            <tr>
+                                <td>
+                                    <span t-esc="payment.name"/>
+                                </td>
+                                <td>
+                                    <span t-esc="payment.partner_id.name"/>
+                                </td>
+                                <td align="right">
+                                    <span t-esc="payment.amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                            </tr>
+                            <t t-set="payment_subtotal" t-value="payment_subtotal + payment.amount"/>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <strong>Total pagos</strong>
+                            </td>
+                            <td/>
+                            <td align="right">
+                                <strong>
+                                    <span t-esc="payment_subtotal" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
 
             </div>
-        </t>
-    </template>
-
-    <template id="report_sale_delivery_zone_backup">
-        <t t-call="web.html_container">
-            <t t-call="web.external_layout">
-                <div class="page">
-                    <div class="oe_structure"/>
-                    <div class="row">
-                        <table class="table table-condensed">
-                            <thead>
-                                <tr>
-                                    <th style="text-align:left;"><strong>Name </strong></th>
-                                    <th style="text-align:left;"><strong>Date </strong></th>
-                                    <th style="text-align:left;"><strong>Status </strong></th>
-                                    <th style="text-align:left;"><strong>Notes </strong></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-foreach="appointments" t-as="o">
-                                    <tr>
-                                        <td style="text-align:left;">
-                                            <t t-esc="o['name']"/>
-                                        </td>
-                                        <td style="text-align:left;">
-                                            <t t-esc="o['appointment_date']"/>
-                                        </td>
-                                         <td style="text-align:left;">
-                                             <span t-field="o.state"/>
-                                        </td>
-                                        <td style="text-align:left;">
-                                            <t t-esc="o['notes']"/>
-                                        </td>
-                                    </tr>
-                                </t>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </t>
         </t>
     </template>
 
