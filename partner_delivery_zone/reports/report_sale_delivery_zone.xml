@@ -11,7 +11,7 @@
 
     <template id="report_sale_delivery_zone_document">
         <t t-call="web.external_layout">
-            <div class="page">
+            <div class="page" style="font-size: 12px !important;">
                 <div class="oe_structure"/>
 
                 <!-- Titulo -->
@@ -19,11 +19,19 @@
                 <div style="margin-top:50px;">
                     <div style="float:left;width:60%;">
                         <span>Zona:</span>
-                        <i><span t-field="doc.name"></span></i>
+                        <i>
+                            <strong>
+                                <span t-field="doc.name"/>
+                            </strong>
+                        </i>
                     </div>
                     <div style="float:left;width:40%;">
-                       <span>Fecha: </span>
-                       <i><span t-esc="date_report"></span></i>
+                        <span>Fecha: </span>
+                        <i>
+                            <strong>
+                                <span t-esc="date_report"/>
+                            </strong>
+                        </i>
                     </div>
                 </div>
 
@@ -98,8 +106,8 @@
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>
-                            <t t-set="sale_order_subtotal" 
-                                t-value="sale_order_subtotal + sale_order.amount_total" 
+                            <t t-set="sale_order_subtotal"
+                                t-value="sale_order_subtotal + sale_order.amount_total"
                                 t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </t>
                     </tbody>
@@ -111,7 +119,7 @@
                             <td/>
                             <td align="right">
                                 <strong>
-                                    <span t-esc="sale_order_subtotal" 
+                                    <span t-esc="sale_order_subtotal"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </strong>
                             </td>
@@ -119,8 +127,7 @@
                     </tfoot>
                 </table>
 
-                <!-- Picking -->
-
+                <!-- Picking -->/src/xtendoo
                 <table class="table table-condensed">
                     <thead>
                         <tr>
@@ -181,7 +188,7 @@
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>
-                            <t t-set="invoice_subtotal" 
+                            <t t-set="invoice_subtotal"
                                 t-value="invoice_subtotal + invoice.amount_total_signed"/>
                         </t>
                     </tbody>
@@ -193,7 +200,7 @@
                             <td/>
                             <td align="right">
                                 <strong>
-                                    <span t-esc="invoice_subtotal" 
+                                    <span t-esc="invoice_subtotal"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </strong>
                             </td>
@@ -223,7 +230,7 @@
                                     <span t-esc="payment.partner_id.name"/>
                                 </td>
                                 <td align="right">
-                                    <span t-esc="payment.amount" 
+                                    <span t-esc="payment.amount"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>
@@ -238,12 +245,51 @@
                             <td/>
                             <td align="right">
                                 <strong>
-                                    <span t-esc="payment_subtotal" 
+                                    <span t-esc="payment_subtotal"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </strong>
                             </td>
                         </tr>
                     </tfoot>
+                </table>
+
+                <p/>
+
+                <table class="table table-bordered">
+                    <thead>
+                        <th style="width: 75%">Resumen diario</th>
+                        <th style="width: 25%" class="text-right">Importe</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total prespuestos</td>
+                            <td align="right">
+                                <span t-esc="quotation_subtotal"
+                                    t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Total pedidos</td>
+                            <td align="right">
+                                <span t-esc="sale_order_subtotal"
+                                    t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Total facturas</td>
+                            <td align="right">
+                                <span t-esc="invoice_subtotal"
+                                    t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Total cobros</td>
+                            <td align="right">
+                                <span t-esc="payment_subtotal"
+                                    t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
 
             </div>
