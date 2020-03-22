@@ -32,6 +32,7 @@ class SaleOrder(models.Model):
         string="Delivery Zone",
         ondelete='restrict',
         index=True,
+        required=True,
         default=_get_partner_delivery_zone,
     )
 

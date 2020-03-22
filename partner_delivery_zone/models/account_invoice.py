@@ -16,6 +16,7 @@ class AccountInvoice(models.Model):
         comodel_name='partner.delivery.zone',
         string="Delivery Zone",
         ondelete='restrict',
+        required=True,
         index=True,
         default=_get_partner_delivery_zone,
     )
