@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!--User Groups, Access Rights and Security Mechanism in Detail-->
+    <!--User Groups, Access Rights and Security Mechanism in Detail
     <record model="ir.module.category" id="module_">
         <field name="name">Payment Date Management</field>
         <field name="description">Payment date management</field>
@@ -18,5 +18,6 @@
         <field name="category_id" ref="module_"/>
         <field name="implied_ids" eval="[(4, ref('group_payment_manager'))]"/>
     </record>
+    -->
 
 </odoo>
