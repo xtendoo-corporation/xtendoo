@@ -15,13 +15,14 @@
                     <field name="partner_zones_ids">
                         <tree editable="bottom">
                             <field name="sequence" widget="handle"/>
-                            <field name="partner_id"/>
-                            <field name="street"/>
-                            <field name="street2"/>
-                            <field name="city"/>
-                            <field name="state_id"/>
-                            <field name="zip"/>
-                            <field name="phone"/>
+                            <field name="ref" string="Referencia"/>
+                            <field name="partner_id" string="Cliente"/>
+                           <!-- <field name="street"/>
+                            <field name="street2"/> -->
+                            <field name="city" string="Cuidad"/>
+                            <field name="state_id" string="Provincia"/>
+                            <field name="zip" string="C.P."/>
+                            <!--<field name="phone"/> -->
                         </tree>
                     </field>
                 </group>
