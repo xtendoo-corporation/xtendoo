@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 {
     'name': 'Add category pricelist',
     'summary': """Add pricelist to product categories""",
