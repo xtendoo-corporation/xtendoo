@@ -23,6 +23,7 @@
                             <field name="move_id" readonly="1" force_save="1" invisible="1"/>
                             <field name="margin" readonly="1"/>
                             <field name="percent_margin" readonly="1"/>
+                            <field name="percent_sale_category" readonly="1"/>
                             <field name="list_price"/>
                         </tree>
                     </field>
