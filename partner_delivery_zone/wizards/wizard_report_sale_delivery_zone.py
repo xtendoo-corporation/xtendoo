@@ -30,14 +30,4 @@ class WizardReportSaleDeliveryZone(models.TransientModel):
             'form': self.read()[0],
             'active_ids': self._context['active_ids'],
         }
-
-        logging.info("#"*80)
-        logging.info(self.env.ref('partner_delivery_zone.report_sale_delivery_zone'))
-
-        #for zone in self._context['active_ids']:
-        #    logging.info("**************zone****************")
-        #    logging.info(zone)
-
-        #    self.env.ref('partner_delivery_zone.report_sale').report_action(self, data={'date_report': self.date_report, 'zone':zone})
-
         return self.env.ref('partner_delivery_zone.report_sale').report_action(self, data=data)

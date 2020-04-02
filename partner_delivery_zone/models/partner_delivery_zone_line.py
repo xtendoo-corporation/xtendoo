@@ -67,6 +67,11 @@ class DeliveryZonePartnerLine(models.Model):
         store=False,
         readonly=True,
     )
+    ref = fields.Char(
+        related='partner_id.ref',
+        store=False,
+        readonly=True,
+    )
 
     _sql_constraints = [
         ('unique_delivery_zone',
