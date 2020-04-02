@@ -2,7 +2,7 @@
 # Copyright 2020 Xtendoo - Manuel Calero Solís
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
-    'name': 'Partner Delivery Zone',
+    'name': 'Partner Delivery Zonee',
     'summary': 'Create a Delivery Zones and customers in sales orders',
     'version': '12.0.1.0.0',
     'development_status': 'Beta',

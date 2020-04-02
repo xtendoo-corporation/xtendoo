@@ -114,6 +114,9 @@ class SelectPickingPriceLine(models.Model):
     margin = fields.Float('Margin', compute='_compute_text')
     percent_margin = fields.Float('Percent Margin %', compute='_compute_text')
 
+    percent_sale_category = fields.Float('Sale Percent %', compute='_compute_text')
+
+
     @api.onchange('list_price')
     def _onchange_standard_price(self):
         self.selected = True
@@ -121,6 +124,7 @@ class SelectPickingPriceLine(models.Model):
     @api.multi
     def _compute_text(self):
         stock_move = self.env['stock.move']
+        category_pricelist_item= self.env['category.pricelist.item']
 
         for line in self:
             if line.pricelist_id.id == 0:
@@ -142,6 +146,14 @@ class SelectPickingPriceLine(models.Model):
                 line.percent_margin = 100 - ((line.move_id.purchase_line_id.price_unit / line.list_price) * 100)
             else:
                 line.percent_margin = 0
+
+            line.percent_sale_category = category_pricelist_item.get_sale_percent(line.product_id, line.pricelist_id)
+
+            if line.percent_sale_category > 0.00:
+                line.list_price= line.cost_price + (line.cost_price * line.percent_sale_category /100 )
+                logging.info('LIST_PRICE')
+                logging.info(line.list_price)
+
 
     @api.multi
     @api.onchange('list_price')

@@ -94,3 +94,6 @@ class SaleOrder(models.Model):
         self.env['partner.delivery.zone.visit'].create_if_not_exist(vals['delivery_zone_id'], vals['partner_id'])
         return super(SaleOrder, self).create(vals)
 
+    def _get_delivery_zone_id(self):
+        return self._get_partner_delivery_zone()
+

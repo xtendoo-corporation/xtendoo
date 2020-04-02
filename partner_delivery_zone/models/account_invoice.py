@@ -3,6 +3,8 @@
 from odoo import api, exceptions, fields, models, _
 from odoo.http import request
 
+import logging
+
 
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
