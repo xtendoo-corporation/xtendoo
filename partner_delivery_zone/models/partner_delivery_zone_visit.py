@@ -47,3 +47,4 @@ class PartnerDeliveryZoneVisit(models.Model):
     def write_sale_id(self, delivery_zone_id, partner_id, sale_id):
         for record in self.create_if_not_exist(delivery_zone_id, partner_id):
             record['sale_order_id'] = sale_id
+
