@@ -11,7 +11,11 @@ _logger = logging.getLogger(__name__)
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    bar_qty = fields.Float(string='Bar Quantity', digits=dp.get_precision('Product Unit of Measure'), required=True)
+    bar_qty = fields.Float(
+        string='Bar Quantity',
+        digits=dp.get_precision('Product Unit of Measure'),
+        required=True
+    )
 
     change_bar_qty = True
 
