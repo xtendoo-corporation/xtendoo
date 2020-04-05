@@ -10,9 +10,19 @@ class SelectPickingPrice(models.Model):
     _name = 'select.picking.price'
     _description = 'Select Picking Price Wizard'
 
-    picking_id = fields.Many2one('stock.picking', 'Stock Picking')
-    price_line_ids = fields.One2many('select.picking.price.line', 'select_picking_id')
-    date = fields.Datetime('Date', default=datetime.now(), readonly=True)
+    picking_id = fields.Many2one(
+        'stock.picking',
+        'Stock Picking'
+    )
+    price_line_ids = fields.One2many(
+        'select.picking.price.line',
+        'select_picking_id'
+    )
+    date = fields.Datetime(
+        'Date',
+        default=datetime.now(),
+        readonly=True
+    )
 
     @api.model
     def default_get(self, default_fields):
@@ -23,45 +33,21 @@ class SelectPickingPrice(models.Model):
 
     @api.onchange('picking_id')
     def _onchange_picking_id(self):
-        data = []
+        data = [(6, 0, [])]
         product_pricelist_ids = self.env['product.pricelist'].search([('active', '=', True)])
 
-        self.price_line_ids = [(6, 0, [])]
+        logging.info("*"*80)
+        logging.info(product_pricelist_ids)
 
         for move_line in self.picking_id.move_line_ids:
             data.append((0, False, self.get_list_price(move_line)))
-
             for product_pricelist in product_pricelist_ids:
-
                 for pricelist_item in move_line.product_id.pricelist_item_ids.search(
                         [('product_tmpl_id', '=', move_line.product_id.product_tmpl_id.id),
                          ('pricelist_id', '=', product_pricelist.id)]):
                     data.append((0, False, self.get_others_price(move_line, pricelist_item, product_pricelist)))
 
         self.price_line_ids = data
-
-    def _deprecated_get_dict_line(self, line):
-        sale_price_line = {'product_id': line.product_id,
-                           'previous_cost_price': line.move_id.previous_cost_price,
-                           'purchase_price': line.move_id.purchase_line_id.price_unit,
-                           'cost_price': line.product_id.standard_price,
-                           'list_price': line.product_id.list_price,
-                           'eur_price': 0,
-                           'usd_price': 0}
-
-        search = self.get_search_last_purchase(line.product_id)
-        if search:
-            sale_price_line.update({'previous_purchase_date': search.create_date})
-            sale_price_line.update({'previous_purchase_price': search.purchase_line_id.price_unit})
-
-        for price_list_item in line.product_id.pricelist_item_ids:
-            if price_list_item.pricelist_id.name == 'Tarifa pública':
-                sale_price_line.update({'eur_price': price_list_item.fixed_price})
-
-            if price_list_item.pricelist_id.name == 'Tarifa privada':
-                sale_price_line.update({'usd_price': price_list_item.fixed_price})
-
-        return sale_price_line
 
     @staticmethod
     def get_list_price(move_line):
@@ -107,24 +93,22 @@ class SelectPickingPriceLine(models.Model):
     pricelist_id = fields.Many2one('product.pricelist')
     list_price = fields.Float('List Price', digits=dp.get_precision('Product Price'))
 
-    product_text = fields.Text('Product Text', compute='_compute_text')
-    pricelist_text = fields.Text('Price List Text', compute='_compute_text')
-    cost_price = fields.Float('Cost Price', compute='_compute_text')
-    purchase_price = fields.Float('Purchase Price', compute='_compute_text')
-    margin = fields.Float('Margin', compute='_compute_text')
-    percent_margin = fields.Float('Percent Margin %', compute='_compute_text')
-
-    percent_sale_category = fields.Float('Sale Percent %', compute='_compute_text')
-
+    product_text = fields.Text('Product Text', compute='_compute_price_line')
+    pricelist_text = fields.Text('Price List Text', compute='_compute_price_line')
+    cost_price = fields.Float('Cost Price', compute='_compute_price_line')
+    purchase_price = fields.Float('Purchase Price', compute='_compute_price_line')
+    margin = fields.Float('Margin', compute='_compute_price_line')
+    percent_margin = fields.Float('Percent Margin %', compute='_compute_price_line')
+    percent_sale_category = fields.Float('Sale Percent %', compute='_compute_price_line')
 
     @api.onchange('list_price')
     def _onchange_standard_price(self):
         self.selected = True
 
     @api.multi
-    def _compute_text(self):
+    def _compute_price_line(self):
         stock_move = self.env['stock.move']
-        category_pricelist_item= self.env['category.pricelist.item']
+        category_pricelist_item = self.env['category.pricelist.item']
 
         for line in self:
             if line.pricelist_id.id == 0:
@@ -150,9 +134,7 @@ class SelectPickingPriceLine(models.Model):
             line.percent_sale_category = category_pricelist_item.get_sale_percent(line.product_id, line.pricelist_id)
 
             if line.percent_sale_category > 0.00:
-                line.list_price= line.cost_price + (line.cost_price * line.percent_sale_category /100 )
-                logging.info('LIST_PRICE')
-                logging.info(line.list_price)
+                line.list_price = line.cost_price + (line.cost_price * line.percent_sale_category / 100)
 
 
     @api.multi

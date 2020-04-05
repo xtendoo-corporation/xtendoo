@@ -10,15 +10,32 @@ import logging
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-    previous_cost_price = fields.Float('Previous Cost', digits=dp.get_precision('Product Price'))
+    previous_cost_price = fields.Float(
+        'Previous Cost',
+        digits=dp.get_precision('Product Price')
+    )
+
+    def get_search_last_purchase(self, product_id, picking_id):
+        return self.search(
+            [['product_id', '=', product_id.id], ['picking_id', '<>', picking_id.id]], limit=1,
+            order='date desc')
 
 
 class Picking(models.Model):
     _inherit = "stock.picking"
 
-    move_ids_cost_prices = fields.One2many('stock.move', 'picking_id', string="Stock moves cost prices")
-    picking_price_ids = fields.One2many('select.picking.price', 'picking_id')
-    picking_price_count = fields.Integer(compute='_compute_picking_price_count')
+    move_ids_cost_prices = fields.One2many(
+        'stock.move',
+        'picking_id',
+        string="Stock moves cost prices"
+    )
+    picking_price_ids = fields.One2many(
+        'select.picking.price',
+        'picking_id'
+    )
+    picking_price_count = fields.Integer(
+        compute='_compute_picking_price_count'
+    )
 
     @api.multi
     def _compute_picking_price_count(self):
@@ -58,14 +75,4 @@ class Picking(models.Model):
 
         if self.picking_price_ids:
             action['res_id'] = self.picking_price_ids[0].id
-
         return action
-
-
-class StockMove(models.Model):
-    _inherit = 'stock.move'
-
-    def get_search_last_purchase(self, product_id, picking_id):
-        return self.search(
-            [['product_id', '=', product_id.id], ['picking_id', '<>', picking_id.id]], limit=1,
-            order='date desc')
