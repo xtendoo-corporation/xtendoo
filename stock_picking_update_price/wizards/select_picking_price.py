@@ -1,9 +1,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# Manuel Calero Solis - manuelcalerosolis@gmail.com
+
 from odoo import fields, models, api
 from odoo.addons import decimal_precision as dp
 from datetime import datetime
-
-import logging
 
 
 class SelectPickingPrice(models.Model):
@@ -35,9 +35,6 @@ class SelectPickingPrice(models.Model):
     def _onchange_picking_id(self):
         data = [(6, 0, [])]
         product_pricelist_ids = self.env['product.pricelist'].search([('active', '=', True)])
-
-        logging.info("*"*80)
-        logging.info(product_pricelist_ids)
 
         for move_line in self.picking_id.move_line_ids:
             data.append((0, False, self.get_list_price(move_line)))
@@ -135,7 +132,6 @@ class SelectPickingPriceLine(models.Model):
 
             if line.percent_sale_category > 0.00:
                 line.list_price = line.cost_price + (line.cost_price * line.percent_sale_category / 100)
-
 
     @api.multi
     @api.onchange('list_price')

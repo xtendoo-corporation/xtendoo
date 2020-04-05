@@ -145,6 +145,11 @@ msgstr "Producto"
 msgid "Purchase Price"
 msgstr "Precio de compra"
 
+#. module: stock_picking_update_price
+#: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__percent_sale_category
+msgid "Sale Percent %"
+msgstr "Pocentaje de venta %"
+
 #. module: account_invoice_change_price
 #: model_terms:ir.ui.view,arch_db:account_invoice_change_price.view_invoice_supplier_purchase_form
 msgid "Sales Prices"
