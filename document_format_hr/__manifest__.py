@@ -25,7 +25,6 @@
         'views/report_delivery_document_bluetooth.xml',
         'views/report_invoice_document.xml',
         'views/report_invoice_bluetooth.xml',
-        'views/report_payment_receipt_bluetooth.xml',
         'views/saleorder_promotions.xml',
         'views/report_saleorder_document_without_promotions.xml',
         'views/report_saleorder_document_promotions.xml',

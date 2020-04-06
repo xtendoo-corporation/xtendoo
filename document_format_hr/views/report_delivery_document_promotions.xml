@@ -361,17 +361,15 @@
 
                             <!-- fin notas -->
 
-                            <!-- firma digital -->
+                            <!-- Firma del cliente -->
 
-                           <!--<div>
+                        <div t-if="o.digital_signature" style="height:100px;width:30%;border:2px solid black;margin-top:5px;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
+                        </div>
 
-                                <span style="display:block;">
-                                    <b>Firma cliente:</b>
-                                </span>
 
-                           </div> -->
-
-                            <!-- fin firma digital -->
+                        <!-- fin Firmar del cliente -->
 
 
                                         </t>

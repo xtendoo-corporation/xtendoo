@@ -263,6 +263,15 @@
                     <div style="height:2px;background-color:black;clear:both;"></div>
 
                     <!-- Fin separador -->
+                   <!-- Firma del cliente -->
+
+                        <div t-if="o.digital_signature" style="height:100px;width:30%;border:2px solid black;margin-top:5px;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
+                        </div>
+
+
+                        <!-- fin Firmar del cliente -->
 
                     <div class="clearfix" style="display:none;">
                         <div id="total" class="row">

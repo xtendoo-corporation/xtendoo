@@ -446,17 +446,15 @@
                         <span t-field="doc.fiscal_position_id.sudo().note"/>
                     </p>
 
-                    <div t-if="doc.signature" class="mt32 ml16 mr16" name="signature">
-                        <div class="offset-8">
-                            <strong>Signature</strong>
+                    <!-- Firma del cliente -->
+
+                        <div style="height:100px;width:100%;border:2px solid black;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{doc.digital_signature}}"/>
                         </div>
-                        <div class="offset-8">
-                            <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
-                        </div>
-                        <div class="offset-8 text-center">
-                            <p t-field="doc.signed_by"/>
-                        </div>
-                    </div>
+
+
+                        <!-- fin Firmar del cliente -->
 
                     <div class="oe_structure"/>
                 </div>

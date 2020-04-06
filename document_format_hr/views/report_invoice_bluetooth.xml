@@ -392,6 +392,16 @@
 
                   <!-- <hr style="height:3px; background-color:black;clear:both;"></hr>-->
 
+                    <!-- Firma del cliente -->
+
+                        <div style="height:100px;width:100%;border:2px solid black;margin-top:5px;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
+                        </div>
+
+
+                        <!-- fin Firmar del cliente -->
+
                    <!-- Footer empresa -->
 
                    <!--<div style="padding-bottom:30px; text-align:center;">

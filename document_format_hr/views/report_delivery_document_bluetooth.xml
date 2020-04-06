@@ -328,10 +328,10 @@
 
                         <!-- Firma del cliente -->
 
-                       <!-- <div style="height:100px;width:100%;border:2px solid black;">
+                        <div style="height:100px;width:100%;border:2px solid black;">
                               <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
                               <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
-                        </div> -->
+                        </div>
 
 
                         <!-- fin Firmar del cliente -->

@@ -40,7 +40,7 @@
                             <span t-field="o.number"/>
                         </li>
 
-                         <li t-if="o.delivery_zone_id">
+                        <li t-if="o.delivery_zone_id">
                                 <b>Zona:</b>
                                 <spam t-field="o.delivery_zone_id"/>
                          </li>
@@ -320,6 +320,16 @@
                         <!-- FIn Separador -->
 
                     </div>
+
+                     <!-- Firma del cliente -->
+
+                        <div t-if="o.digital_signature" style="height:100px;width:30%;border:2px solid black;margin-top:5px;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
+                        </div>
+
+
+                        <!-- fin Firmar del cliente -->
                     <div class="clearfix" style="display:none;">
                         <div id="total" class="row">
                             <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">

@@ -12,7 +12,7 @@
 
                         <div class="page">
 
-                             <div style="width:50%; float:left;">
+                             <div style="width:50%; float:left;margin-top:10px;">
                                 <ul class="list-unstyled">
                                     <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
                                         <li t-if="doc.state in ['draft','sent']"><b>Presupuesto:  </b> <span t-field="doc.name"/></li>
@@ -21,7 +21,7 @@
 
                                     <li t-if="env.context.get('proforma', False) or is_pro_forma"><b>Factura Pro-Forma: </b><span t-field="doc.name"/></li>
 
-                                     <li t-if="doc.delivery_zone_id">
+                                    <li t-if="doc.delivery_zone_id">
                                             <b>Zona:</b>
                                             <spam t-field="doc.delivery_zone_id"/>
                                      </li>
@@ -51,7 +51,7 @@
                                 </ul>
                             </div>
 
-                       <div style="width:50%;  float:left;">
+                       <div style="width:50%;  float:left;margin-top:10px;">
                         <ul class="list-unstyled">
 
                           <li t-if="doc.partner_id.comercial">
@@ -314,15 +314,15 @@
                             <span t-field="doc.fiscal_position_id.note"/>
                         </p>
 
-                        <div t-if="doc.signature" class="mt32 ml16 mr16" name="signature">
+                         <!-- Firma del cliente -->
 
-                            <div class="offset-8">
-                                <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
-                            </div>
-                            <div class="offset-8 text-center">
-                                <p t-field="doc.signed_by"/>
-                            </div>
+                        <div t-if="doc.digital_signature" style="height:100px;width:30%;border:2px solid black;margin-top:5px;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{doc.digital_signature}}"/>
                         </div>
+
+
+                        <!-- fin Firmar del cliente -->
                         <div class="oe_structure"/>
 
                     </div>
