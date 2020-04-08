@@ -7,15 +7,23 @@ _logger = logging.getLogger(__name__)
 class AccountInvoiceLine(models.Model):
     _inherit = "account.invoice.line"
 
-    bar_qty = fields.Float(
-        string='Bar Quantity',
-        digits=dp.get_precision('Product Unit of Measure'),
-        required=True
-    )
+    bar_qty = fields.Float(string='Bar Quantity', digits=dp.get_precision('Product Unit of Measure'), required=True)
+
     change_bar_qty = True
 
     @api.onchange('bar_qty')
     def onchange_bar_qty(self):
+
+        _logger.info("*bar_qty*")
+        _logger.info(self.bar_qty)
+        _logger.info("*product_id.weight*")
+        _logger.info(self.product_id.weight)
+        _logger.info("*self.bar_qty * self.product_id.weight*")
+        _logger.info(self.bar_qty * self.product_id.weight)
+
+        _logger.info("VALOR DEL FLAG***********************")
+        _logger.info(self.change_bar_qty)
+
         if not self.change_bar_qty:
             self.change_bar_qty = True
             return

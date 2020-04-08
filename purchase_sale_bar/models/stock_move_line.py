@@ -6,9 +6,8 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-# noinspection PyUnresolvedReferences
-class StockMove(models.Model):
-    _inherit = "stock.move"
+class StockMoveLine(models.Model):
+    _inherit = "stock.move.line"
 
     bar_qty = fields.Float(string='Bar Quantity', digits=dp.get_precision('Product Unit of Measure'), store=True)
 
@@ -33,11 +32,11 @@ class StockMove(models.Model):
 
         if self.bar_qty != 0 and self.product_id.weight != 0:
             _logger.info("self.quantity_done")
-            _logger.info(self.quantity_done)
+            _logger.info(self.qty_done)
 
-            self.quantity_done = self.bar_qty * self.product_id.weight
+            self.qty_done = self.bar_qty * self.product_id.weight
 
-    @api.onchange('quantity_done')
+    @api.onchange('qty_done')
     def onchange_quantity_done(self):
 
         _logger.info("*****CAMBIO EN quantity_done****************")
@@ -49,7 +48,7 @@ class StockMove(models.Model):
         _logger.info("self.change_bar_qty")
         _logger.info(self.change_bar_qty)
         _logger.info("self.quantity_done")
-        _logger.info(self.quantity_done)
+        _logger.info(self.qty_done)
         _logger.info("self.product_id.weight")
         _logger.info(self.product_id.weight)
         _logger.info("self.bar_qty")
@@ -57,11 +56,10 @@ class StockMove(models.Model):
 
         self.change_bar_qty = True
 
-        if self.quantity_done == 0 or self.product_id.weight == 0:
+        if self.qty_done == 0 or self.product_id.weight == 0:
             self.bar_qty = 0
         else:
-            self.bar_qty = self.quantity_done / self.product_id.weight
+            self.bar_qty = self.qty_done / self.product_id.weight
 
         _logger.info('BARRAS')
         _logger.info(self.bar_qty)
-
