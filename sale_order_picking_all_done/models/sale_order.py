@@ -12,20 +12,15 @@ class SaleOrder(models.Model):
     @api.multi
     def action_sale_order_confirm_and_delivery(self):
         self.action_confirm()
-
         for picking in self.picking_ids:
-
             for line in picking.move_lines:
                 line.quantity_done = line.product_uom_qty
-
             picking.button_validate()
 
     @api.multi
     def action_sale_order_confirm_and_invoiced(self):
         self.action_sale_order_confirm_and_delivery()
-
         self.action_invoice_create()
-
         for invoice in self.invoice_ids:
             invoice.action_invoice_open()
 
