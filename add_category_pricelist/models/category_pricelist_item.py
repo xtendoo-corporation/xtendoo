@@ -31,6 +31,11 @@ class CategoryPricelistItem(models.Model):
 
         return 0.00
 
+    def get_pricelist_item(self, product_id):
+        item = self.search_read([['categ_id', '=', product_id.categ_id.id]], {'pricelist_id'})
+        return item
+
+
 
 
 
