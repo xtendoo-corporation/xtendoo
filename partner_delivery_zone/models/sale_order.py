@@ -46,10 +46,8 @@ class SaleOrder(models.Model):
         if self.partner_id.id:
             self.env['partner.delivery.zone.visit'].create_if_not_exist(self.delivery_zone_id.id, self.partner_id.id)
 
+        # get next partner
         partner_id = self._get_next_partner()
-
-        print("partner_id*******************", partner_id)
-
         if not partner_id:
             raise ValidationError(_("No more partners in this delivery zone"))
 
