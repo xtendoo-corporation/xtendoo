@@ -27,7 +27,7 @@ class PartnerDeliveryZoneVisit(models.Model):
     def get_visit_zone_today(self, delivery_zone_id):
         return self.search([('date', '=', date.today()), ('delivery_zone_id', '=', delivery_zone_id)])
 
-    def get_partner_visit_today(self, delivery_zone_id):
+    def get_partners_visit_today(self, delivery_zone_id):
         return self.get_visit_zone_today(delivery_zone_id).mapped(lambda x: x.partner_id.id)
 
     def create_if_not_exist(self, delivery_zone_id, partner_id):

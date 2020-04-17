@@ -1,4 +1,4 @@
-# Copyright 2018 Tecnativa - Sergio Teruel
+# Copyright 2020 Xtendoo - Manuel Calero
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 from odoo import fields, models, api
 
@@ -6,7 +6,7 @@ from odoo import fields, models, api
 class DeliveryZonePartnerLine(models.Model):
     _name = 'delivery.zone.partner.line'
     _table = 'delivery_zone_partner_line'
-    _description = 'Partner delivery zone line'
+    _description = 'Partner Delivery Zone Line'
     _rec_name = 'delivery_zone_id'
 
     delivery_zone_id = fields.Many2one(
@@ -77,10 +77,12 @@ class DeliveryZonePartnerLine(models.Model):
          'Partner cannot be subscribed multiple times to the same list!')
     ]
 
-    @api.model
-    def create(self, values):
-        return super(DeliveryZonePartnerLine, self).create(values)
-
-    @api.multi
-    def write(self, values):
-        return super(DeliveryZonePartnerLine, self).write(values)
+    def get_next_partner_not_visited_today(self, zone_id):
+        visit_ids = self.env['partner.delivery.zone.visit'].get_partners_visit_today(zone_id)
+        delivery_zone_partner_line = self.search(
+            [('delivery_zone_id', '=', zone_id),
+             ('partner_id', 'not in', visit_ids)], 
+             limit=1, 
+             order='sequence')
+        if delivery_zone_partner_line:
+            return delivery_zone_partner_line.partner_id
