@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="inherited_account_invoice_form" model="ir.ui.view">
+            <field name="name">inherited.account.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='comment']" position="before">
+                    <group class="oe_center" colspan="2" name="digital_signature">
+                        <label for="digital_signature" string="Digital signature"/>
+                        <h2>
+                            <field name="digital_signature" widget="signature"/>
+                        </h2>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+
