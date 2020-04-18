@@ -3,8 +3,6 @@
 from odoo import fields, models, api
 from datetime import date
 
-import logging
-
 
 class PartnerDeliveryZoneVisit(models.Model):
     _name = 'partner.delivery.zone.visit'
