@@ -11,14 +11,6 @@ class WizardReportSaleDeliveryZone(models.TransientModel):
     _name = "wizard.report.sale.delivery.zone"
     _description = "Report Sale Delivery Zone Wizard"
 
-    user_id = fields.Many2one(
-        'res.users',
-        string='User',
-    )
-    partner_delivery_zone = fields.Many2one(
-        comodel_name='partner.delivery.zone',
-        string='Partner Delivery Zone',
-    )
     date_report = fields.Date(
         required=True,
         default=fields.Date.context_today,

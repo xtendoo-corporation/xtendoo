@@ -6,6 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 12.0\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-19 10:40+0000\n"
+"PO-Revision-Date: 2020-04-19 10:40+0000\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -14,9 +16,66 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: partner_delivery_zone
-#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_delivery_document
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_order_form
+msgid "<i class=\"fa fa-arrow-right\"/>\n"
+"                    <span> Next Partner</span>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "<span>Date </span>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "<span>Zone </span>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "<strong>Total Delivery</strong>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "<strong>Total Invoices</strong>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "<strong>Total Orders</strong>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "<strong>Total Payments</strong>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "<strong>Total Quotations</strong>"
+msgstr ""
+
+#. module: partner_delivery_zone
 #: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_picking
 msgid "<strong>Zone</strong>"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model,name:partner_delivery_zone.model_report_partner_delivery_zone_report_sale_delivery_zone
+msgid "Appointment Report"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.partner_delivery_zone_wizard
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.wizard_report_sale_delivery_zone
+msgid "Cancel"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__city
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_form
+msgid "City"
 msgstr ""
 
 #. module: partner_delivery_zone
@@ -25,64 +84,187 @@ msgid "Click to set a new delivery zone for partners."
 msgstr ""
 
 #. module: partner_delivery_zone
-#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__code
-msgid "Code"
-msgstr ""
-
-#. module: partner_delivery_zone
 #: model:ir.model,name:partner_delivery_zone.model_res_partner
 msgid "Contact"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__create_uid
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__create_uid
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__create_uid
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard__create_uid
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__create_uid
 msgid "Created by"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__create_date
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__create_date
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__create_date
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard__create_date
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__create_date
 msgid "Created on"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Daily Summary"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__date_report
+msgid "Date Report"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__date
+msgid "Date Visit"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Delivery"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_form
+msgid "Delivery Route"
+msgstr ""
+
+#. module: partner_delivery_zone
 #: model:ir.actions.act_window,name:partner_delivery_zone.partner_delivery_zone_action
-#: model:ir.model.fields,field_description:partner_delivery_zone.field_res_partner__delivery_zone_id
-#: model:ir.model.fields,field_description:partner_delivery_zone.field_res_users__delivery_zone_id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_account_invoice__delivery_zone_id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_account_payment__delivery_zone_id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__delivery_zone_id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__sale_order_ids
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__delivery_zone_id
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_sale_order__delivery_zone_id
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_stock_picking__delivery_zone_id
 #: model:ir.ui.menu,name:partner_delivery_zone.partner_delivery_zone_menu
-#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_form
 #: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_search
 #: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_tree
 #: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_picking_internal_search
-#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_res_partner_filter
 #: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_sales_order_filter
 msgid "Delivery Zone"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__visit_ids
+msgid "Delivery Zone Visit"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_res_partner__delivery_zone_ids
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_res_users__delivery_zone_ids
+msgid "Delivery Zones"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__display_name
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__display_name
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__display_name
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard__display_name
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_report_partner_delivery_zone_report_sale_delivery_zone__display_name
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__display_name
 msgid "Display Name"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__id
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard__id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_report_partner_delivery_zone_report_sale_delivery_zone__id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__id
 msgid "ID"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__ref
+msgid "Internal Reference"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model,name:partner_delivery_zone.model_account_invoice
+msgid "Invoice"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Invoices"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line____last_update
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone____last_update
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit____last_update
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard____last_update
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_report_partner_delivery_zone_report_sale_delivery_zone____last_update
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone____last_update
 msgid "Last Modified on"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__write_uid
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__write_uid
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__write_uid
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard__write_uid
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__write_uid
 msgid "Last Updated by"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__write_date
 #: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__write_date
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__write_date
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard__write_date
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__write_date
 msgid "Last Updated on"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: code:addons/partner_delivery_zone/models/sale_order.py:50
+#, python-format
+msgid "No more partners in this delivery zone"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Orders"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__partner_id
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__partner_id
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_form
+msgid "Partner"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_wizard__partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__partner_delivery_zone
+msgid "Partner Delivery Zone"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model,name:partner_delivery_zone.model_delivery_zone_partner_line
+msgid "Partner Delivery Zone Line"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model,name:partner_delivery_zone.model_partner_delivery_zone_wizard
+msgid "Partner Delivery Zone Wizard"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone__partner_zones_ids
+msgid "Partner Zones Line"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: sql_constraint:delivery.zone.partner.line:0
+msgid "Partner cannot be subscribed multiple times to the same list!"
 msgstr ""
 
 #. module: partner_delivery_zone
@@ -91,8 +273,84 @@ msgid "Partner delivery zone"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model,name:partner_delivery_zone.model_partner_delivery_zone_visit
+msgid "Partner delivery zone visit"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model,name:partner_delivery_zone.model_account_payment
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Payments"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__phone
+msgid "Phone"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Quotations"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_form
+msgid "Ref"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.actions.act_window,name:partner_delivery_zone.partner_delivery_zone_wizard_action
+msgid "Report Date"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.actions.act_window,name:partner_delivery_zone.menu_action_report_sale_delivery_zone
+msgid "Report Sale Delivery Zone"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model,name:partner_delivery_zone.model_wizard_report_sale_delivery_zone
+msgid "Report Sale Delivery Zone Wizard"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.actions.act_window,name:partner_delivery_zone.action_report_sale_delivery_zone_visit_day
+msgid "Report Sales Delivery Zones"
+msgstr ""
+
+#. module: partner_delivery_zone
 #: model:ir.model,name:partner_delivery_zone.model_sale_order
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_partner_delivery_zone_visit__sale_order_id
 msgid "Sale Order"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.actions.report,name:partner_delivery_zone.report_sale
+msgid "Sale Report"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.partner_delivery_zone_wizard
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.wizard_report_sale_delivery_zone
+msgid "Select"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.actions.act_window,name:partner_delivery_zone.action_report_partner_visit_day
+#: model:ir.actions.act_window,name:partner_delivery_zone.menu_action_report_partner_delivery_zone
+#: model:ir.ui.menu,name:partner_delivery_zone.menu_action_report_partner_visit_day_wizard
+msgid "Select Delivery Zone"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__state_id
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_form
+msgid "State"
 msgstr ""
 
 #. module: partner_delivery_zone
@@ -101,8 +359,54 @@ msgid "Stock Move"
 msgstr ""
 
 #. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__street
+msgid "Street"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__street2
+msgid "Street2"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Total"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Total Invoices"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Total Orders"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Total Payments"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.report_sale_delivery_zone_document
+msgid "Total Quotations"
+msgstr ""
+
+#. module: partner_delivery_zone
 #: model:ir.model,name:partner_delivery_zone.model_stock_picking
 msgid "Transfer"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_wizard_report_sale_delivery_zone__user_id
+msgid "User"
+msgstr ""
+
+#. module: partner_delivery_zone
+#: model:ir.model.fields,field_description:partner_delivery_zone.field_delivery_zone_partner_line__zip
+#: model_terms:ir.ui.view,arch_db:partner_delivery_zone.view_partner_delivery_zone_form
+msgid "Zip"
 msgstr ""
 
 #. module: partner_delivery_zone

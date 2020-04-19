@@ -5,7 +5,7 @@ from odoo.tools.misc import DEFAULT_SERVER_DATE_FORMAT
 
 class ReportSaleDeliveryZone(models.AbstractModel):
     _name = 'report.partner_delivery_zone.report_sale_delivery_zone'
-    _description = 'Appointment Report'
+    _description = 'Report Sale Delivery Zone'
 
     @api.model
     def _get_report_values(self, docids, data=None):

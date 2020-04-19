@@ -15,10 +15,9 @@
                 <div class="oe_structure"/>
 
                 <!-- Titulo -->
-
                 <div style="margin-top:50px;">
                     <div style="float:left;width:60%;">
-                        <span>Zona:</span>
+                        <span>Zona </span>
                         <i>
                             <strong>
                                 <span t-field="doc.name"/>
@@ -26,7 +25,7 @@
                         </i>
                     </div>
                     <div style="float:left;width:40%;">
-                        <span>Fecha: </span>
+                        <span>Fecha </span>
                         <i>
                             <strong>
                                 <span t-esc="date_report"/>
@@ -36,13 +35,12 @@
                 </div>
 
                 <!-- Quotations -->
-
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th style="width: 25%">Presupuesto</th>
+                            <th style="width: 25%">Presupuestos</th>
                             <th style="width: 50%">Cliente</th>
-                            <th style="width: 25%" class="text-right">Importe</th>
+                            <th style="width: 25%" class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,7 +65,7 @@
                     <tfoot>
                         <tr>
                             <td>
-                                <strong>Total presupuestos</strong>
+                                <strong>Total Presupuestos</strong>
                             </td>
                             <td/>
                             <td align="right">
@@ -81,13 +79,12 @@
                 </table>
 
                 <!-- Sale Order -->
-
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th style="width: 25%"> Pedidos</th>
+                            <th style="width: 25%">Pedido</th>
                             <th style="width: 50%">Cliente</th>
-                            <th style="width: 25%" class="text-right">Importe</th>
+                            <th style="width: 25%" class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,7 +111,7 @@
                     <tfoot>
                         <tr>
                             <td>
-                                <strong>Total pedidos</strong>
+                                <strong>Total Pedidos</strong>
                             </td>
                             <td/>
                             <td align="right">
@@ -127,11 +124,11 @@
                     </tfoot>
                 </table>
 
-                <!-- Picking -->/src/xtendoo
+                <!-- Picking -->
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th style="width: 25%">Albaranes</th>
+                            <th style="width: 25%">Albaran</th>
                             <th style="width: 75%">Cliente</th>
                         </tr>
                     </thead>
@@ -151,7 +148,7 @@
                     <tfoot>
                         <tr>
                             <td>
-                                <strong>Total albranes</strong>
+                                <strong>Total Albaranes</strong>
                             </td>
                             <td align="right">
                                 <strong>
@@ -163,13 +160,12 @@
                 </table>
 
                 <!-- Invoice -->
-
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th style="width: 25%">Facturas</th>
+                            <th style="width: 25%">Factura</th>
                             <th style="width: 50%">Cliente</th>
-                            <th style="width: 25%" class="text-right">Importe</th>
+                            <th style="width: 25%" class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -195,7 +191,7 @@
                     <tfoot>
                         <tr>
                             <td>
-                                <strong>Total facturas</strong>
+                                <strong>Total Facturas</strong>
                             </td>
                             <td/>
                             <td align="right">
@@ -209,13 +205,12 @@
                 </table>
 
                 <!-- Payment -->
-
                 <table class="table table-condensed">
                     <thead>
                         <tr>
                             <th style="width: 25%">Pagos</th>
                             <th style="width: 50%">Cliente</th>
-                            <th style="width: 25%" class="text-right">Importe</th>
+                            <th style="width: 25%" class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -240,7 +235,7 @@
                     <tfoot>
                         <tr>
                             <td>
-                                <strong>Total pagos</strong>
+                                <strong>Total Pagos</strong>
                             </td>
                             <td/>
                             <td align="right">
@@ -257,33 +252,33 @@
 
                 <table class="table table-bordered">
                     <thead>
-                        <th style="width: 75%">Resumen diario</th>
-                        <th style="width: 25%" class="text-right">Importe</th>
+                        <th style="width: 75%">Resumen Diario</th>
+                        <th style="width: 25%" class="text-right">Total</th>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Total prespuestos</td>
+                            <td>Total Quotations</td>
                             <td align="right">
                                 <span t-esc="quotation_subtotal"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td>Total pedidos</td>
+                            <td>Total Orders</td>
                             <td align="right">
                                 <span t-esc="sale_order_subtotal"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td>Total facturas</td>
+                            <td>Total Invoices</td>
                             <td align="right">
                                 <span t-esc="invoice_subtotal"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td>Total cobros</td>
+                            <td>Total Payments</td>
                             <td align="right">
                                 <span t-esc="payment_subtotal"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
@@ -297,8 +292,8 @@
     </template>
 
     <report id="report_sale"
-            string="Appointment"
-            model="hospital.patient"
+            string="Sale Report"
+            model="partner_delivery_zone.report_sale_delivery_zone"
             report_type="qweb-pdf"
             name="partner_delivery_zone.report_sale_delivery_zone"
             file="partner_delivery_zone.report_sale_delivery_zone"/>

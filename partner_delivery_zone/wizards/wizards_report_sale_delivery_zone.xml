@@ -7,12 +7,6 @@
         <field name="arch" type="xml">
             <form>
                 <group>
-<!--                <field name="user_id"
-                           options="{'no_create': True, 'no_open': True}"
-                           required="1"/>
-                    <field name="partner_delivery_zone"
-                           options="{'no_create': True, 'no_open': True}"
-                           required="1"/> -->
                     <field name="date_report"/>
                 </group>
                 <footer>
@@ -44,12 +38,6 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
-
-    <menuitem id="menu_action_report_sale_delivery_zone_visit_day_wizard"
-              name="Sale Report Delivery Zone"
-              parent="sale.menu_sale_report"
-              sequence="2"
-              action="action_report_sale_delivery_zone_visit_day"/>
 
     <act_window id="partner_delivery_zone_wizard_action"
                 name="Report Date"
