@@ -4,7 +4,7 @@
     "name": "Stock Barcodes Internal Transfer",
     "summary": "It provides read barcode for internal transfers.",
     "version": "12.0.1.0.0",
-    "author": "Tecnativa, "
+    "author": "Xtendoo, "
               "Odoo Community Association (OCA)",
     "website": "https://odoo-community.org/",
     "license": "AGPL-3",
@@ -12,5 +12,10 @@
     "depends": [
         'stock_barcodes',
     ],
+    "data": [
+        'views/assets.xml',
+        'views/stock_picking_views.xml',
+        'wizard/stock_barcodes_read_internal_transfer_views.xml',
+    ],    
     'installable': True,
 }
