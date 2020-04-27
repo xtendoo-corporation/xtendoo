@@ -13,7 +13,6 @@
         'stock_barcodes',
     ],
     "data": [
-        'views/assets.xml',
         'views/stock_picking_views.xml',
         'wizard/stock_barcodes_read_internal_transfer_views.xml',
     ],    
