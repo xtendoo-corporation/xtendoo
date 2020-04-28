@@ -27,16 +27,18 @@ class TestStockBarcodesInternalTransfer(TestStockBarcodes):
             'location_dest_id': self.stock_location.id,
             'partner_id': self.partner_agrolite.id,
             'picking_type_id': self.picking_type_in.id,
+            'immediate_transfer': True,
+
         })
         self.picking_in_01.action_confirm()
-        vals = self.picking_in_01.action_barcode_scan()
+        vals = self.picking_in_01.action_barcode_internal_transfer_scan()
         self.wiz_scan_internal_transfer = self.ScanReadInternalTransfer.with_context(
             vals['context']
         ).create({})
 
     def test_wiz_internal_transfer_values(self):
         self.assertEqual(self.wiz_scan_internal_transfer.location_id,
-                         self.picking_in_01.location_dest_id)
+                         self.picking_in_01.location_id)
         self.assertEqual(self.wiz_scan_internal_transfer.res_model_id,
                          self.stock_picking_model)
         self.assertEqual(self.wiz_scan_internal_transfer.res_id,
