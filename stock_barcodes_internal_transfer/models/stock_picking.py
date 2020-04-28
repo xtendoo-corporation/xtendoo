@@ -8,16 +8,6 @@ class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
     def action_barcode_internal_transfer_scan(self):
-
-        print("self.picking_type_code********", self.picking_type_code)
-        print("self.location_id********", self.location_id)
-        print("self.location_dest_id********", self.location_dest_id)
-
-        location_dest = self.location_dest_id
-        out_picking = self.picking_type_code == 'outgoing'
-        location = self.location_id if out_picking else self.location_dest_id
-        location_dest = self.location_dest_id
-
         action = self.env.ref(
             'stock_barcodes_internal_transfer.action_stock_barcodes_read_internal_transfer').read()[0]
         action['context'] = {

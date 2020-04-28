@@ -83,7 +83,10 @@ class WizStockBarcodesReadInternalTransfer(models.TransientModel):
             })
             return
 
+        print("self._prepare_internal_transfer_move()", self._prepare_internal_transfer_move())
+        
         move = StockMove.create(self._prepare_internal_transfer_move())
+        print("ya se ha creado el movimiento *******************")
         StockMoveLine.create(
             self._prepare_internal_transfer_move_line(move)
         )
