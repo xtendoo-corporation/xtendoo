@@ -38,12 +38,15 @@ class WizStockBarcodesReadInternalTransfer(models.TransientModel):
                 self.env.user.name)) for rec in self]
 
     def _prepare_internal_transfer_move(self):
+
+        print("_prepare_internal_transfer_move ***", self.product_qty)
+
         return {
             'picking_id': self.picking_id.id,
             'product_id': self.product_id.id,
             'name': self.product_id.name,
             'product_uom': self.product_id.uom_id.id,
-            'product_uom_qty': 1.0,
+            'product_uom_qty': self.product_qty,
             'location_id': self.location_id.id,
             'location_dest_id': self.location_dest_id.id,
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -62,13 +65,14 @@ class WizStockBarcodesReadInternalTransfer(models.TransientModel):
             'location_dest_id': move.location_dest_id.id,
         }
 
-    def _prepare_internal_transfer_move_line_domain(self):
+    def _prepare_internal_transfer_move_line_domain(self, log_scan=False):
+        record = log_scan or self
         return [
             ('picking_id', '=', self.picking_id.id),
-            ('location_id', '=', self.location_id.id),
-            ('location_dest_id', '=', self.location_dest_id.id),
-            ('product_id', '=', self.product_id.id),
-            ('lot_id', '=', self.lot_id.id),
+            ('location_id', '=', record.location_id.id),
+            ('location_dest_id', '=', record.location_dest_id.id),
+            ('product_id', '=', record.product_id.id),
+            ('lot_id', '=', record.lot_id.id),
         ]
 
     def _add_internal_transfer_move(self):
@@ -79,13 +83,18 @@ class WizStockBarcodesReadInternalTransfer(models.TransientModel):
         )
         if line:
             line.write({
-                'qty_done': line.qty_done + 1.0,
+                'qty_done': line.qty_done + self.product_qty,
             })
             return
         move = StockMove.create(self._prepare_internal_transfer_move())
         StockMoveLine.create(
             self._prepare_internal_transfer_move_line(move)
         )
+
+    def _prepare_scan_log_values(self, log_detail=False):
+        res = super()._prepare_scan_log_values(log_detail)
+        res['location_dest_id'] = self.location_dest_id.id
+        return res
 
     def action_done(self):
         result = super().action_done()
@@ -114,20 +123,23 @@ class WizStockBarcodesReadInternalTransfer(models.TransientModel):
         # Store in read log line each line added with the quantities assigned
         vals = super()._prepare_scan_log_values(log_detail=log_detail)
         vals['picking_id'] = self.picking_id.id
-        if log_detail:
-            vals['log_line_ids'] = [(0, 0, {
-                'move_line_id': x[0],
-                'product_qty': x[1],
-            }) for x in log_detail.items()]
         return vals
-
-    def remove_scanning_log(self, scanning_log):
-        for log in scanning_log:
-            log.unlink()
 
     def action_undo_last_scan(self):
         res = super().action_undo_last_scan()
         log_scan = first(self.scan_log_ids.filtered(
             lambda x: x.create_uid == self.env.user))
-        self.remove_scanning_log(log_scan)
+        if log_scan:
+            move_line = self.env['stock.move.line'].search(
+                self._prepare_internal_transfer_move_line_domain(log_scan=log_scan)
+            )
+            if move_line.picking_id.state == 'done':
+                raise ValidationError(_(
+                    'You can not remove a scanning log from an validated')
+                )
+            if move_line:
+                qty = move_line.qty_done - log_scan.product_qty
+                move_line.qty_done = max(qty, 0.0)
+                self.picking_product_qty = move_line.qty_done
+        log_scan.unlink()
         return res

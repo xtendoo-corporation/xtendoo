@@ -39,6 +39,8 @@ class TestStockBarcodesInternalTransfer(TestStockBarcodes):
     def test_wiz_internal_transfer_values(self):
         self.assertEqual(self.wiz_scan_internal_transfer.location_id,
                          self.picking_in_01.location_id)
+        self.assertEqual(self.wiz_scan_internal_transfer.location_dest_id,
+                         self.picking_in_01.location_dest_id)
         self.assertEqual(self.wiz_scan_internal_transfer.res_model_id,
                          self.stock_picking_model)
         self.assertEqual(self.wiz_scan_internal_transfer.res_id,
@@ -47,8 +49,97 @@ class TestStockBarcodesInternalTransfer(TestStockBarcodes):
                          'Barcode reader - %s - OdooBot' % (
                              self.picking_in_01.name))
 
-    def test_picking_wizard_scan_product(self):
+    def test_wizard_internal_transfer_scan_product(self):
         self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8480000723208')
         self.assertEqual(
             self.wiz_scan_internal_transfer.product_id, self.product_wo_tracking)
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_wo_tracking)
+        self.assertEqual(sml.qty_done, 1.0)
+        # Scan product with tracking lot enable
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8433281006850')
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_tracking)
+        self.assertEqual(sml.qty_done, 0.0)
+        self.assertEqual(self.wiz_scan_internal_transfer.message,
+                         'Barcode: 8433281006850 (Waiting for input lot)')
+        # Scan a lot. Increment quantities if scan product or other lot from
+        # this product
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8411822222568')
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_tracking and x.lot_id)
+        self.assertEqual(sml.lot_id, self.lot_1)
+        self.assertEqual(sml.qty_done, 1.0)
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8433281006850')
+        self.assertEqual(sml.qty_done, 2.0)
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8411822222568')
+        self.assertEqual(sml.qty_done, 3.0)
+        self.assertEqual(self.wiz_scan_internal_transfer.message,
+                         'Barcode: 8411822222568 (Barcode read correctly)')
+        # Scan a package
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '5420008510489')
+        # Package of 5 product units. Already three unit exists
+        self.assertEqual(sml.qty_done, 8.0)
 
+    def test_wizard_internal_transfer_scan_error_lot(self):
+        # Scan product with tracking lot enable
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8433281006850')
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_tracking)
+        self.assertEqual(sml.qty_done, 0.0)
+        self.assertEqual(self.wiz_scan_internal_transfer.message,
+                         'Barcode: 8433281006850 (Waiting for input lot)')
+        # Scan a lot. Increment quantities if scan product or other lot from
+        # this product
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8411822222568')
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_tracking and x.lot_id)
+        self.assertEqual(sml.lot_id, self.lot_1)
+        self.assertEqual(sml.qty_done, 1.0)
+        # Scan an incorrect lot.
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8488888888888')
+        self.assertEqual(self.wiz_scan_internal_transfer.message,
+                         'Barcode: 8488888888888 (Barcode not found)')
+
+    def test_wizard_internal_transfer_scan_the_same_lot(self):
+        # Scan product with tracking lot enable
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8433281006850')
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_tracking)
+        self.assertEqual(sml.qty_done, 0.0)
+        self.assertEqual(self.wiz_scan_internal_transfer.message,
+                         'Barcode: 8433281006850 (Waiting for input lot)')
+        # Scan a lot. Increment quantities if scan product or other lot from
+        # this product
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8411822222568')
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_tracking and x.lot_id)
+        self.assertEqual(sml.lot_id, self.lot_1)
+        self.assertEqual(sml.qty_done, 1.0)
+        # Scan the same lot.
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8411822222568')
+        self.assertEqual(sml.qty_done, 2.0)
+
+    def test_wizard_internal_transfer_scan_product_manual_entry(self):
+        self.wiz_scan_internal_transfer.manual_entry = True
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8480000723208')
+        self.assertEqual(self.wiz_scan_internal_transfer.product_id,
+                         self.product_wo_tracking)
+        self.assertEqual(self.wiz_scan_internal_transfer.product_qty, 0.0)
+        self.wiz_scan_internal_transfer.product_qty = 12.0
+        self.wiz_scan_internal_transfer.action_manual_entry()
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_wo_tracking)
+        self.assertEqual(sml.qty_done, 12.0)
+        self.assertEqual(sml.move_id.quantity_done, 12.0)
+
+    def test_wizard_internal_transfer_remove_last_scan(self):
+        self.action_barcode_scanned(self.wiz_scan_internal_transfer, '8480000723208')
+        self.assertEqual(self.wiz_scan_internal_transfer.product_id,
+                         self.product_wo_tracking)
+        sml = self.picking_in_01.move_line_ids.filtered(
+            lambda x: x.product_id == self.product_wo_tracking)
+        self.assertEqual(sml.qty_done, 1.0)
+        self.wiz_scan_internal_transfer.action_undo_last_scan()
+        self.assertEqual(sml.qty_done, 0.0)
+        self.assertEqual(self.wiz_scan_internal_transfer.picking_product_qty, 0.0)
