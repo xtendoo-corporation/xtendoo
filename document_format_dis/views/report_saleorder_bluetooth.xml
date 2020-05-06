@@ -24,19 +24,19 @@
                 string="Presupuesto / Pedido Bluetooth"
                 model="sale.order"
                 report_type="qweb-pdf"
-                name="document_format_hr.report_saleorder_bluetooth"
+                name="document_format_dis.report_saleorder_bluetooth"
                 file="sale.report_saleorder_document"
                 print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
         />
 
-        <record id="document_format_hr.report_saleorder_bluetooh" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_hr.bluetooth_saleorder"/>
+        <record id="document_format_dis.report_saleorder_bluetooh" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_dis.bluetooth_saleorder"/>
         </record>
 
         <template id="report_saleorder_bluetooth">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="doc">
-                    <t t-call="document_format_hr.report_saleorder_document_bluetooth" t-lang="doc.partner_id.lang"/>
+                    <t t-call="document_format_dis.report_saleorder_document_bluetooth" t-lang="doc.partner_id.lang"/>
                 </t>
             </t>
         </template>

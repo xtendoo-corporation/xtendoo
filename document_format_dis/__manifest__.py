@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'document_format_hr',
-    'summary': """Formatos de documentos HR""",
+    'name': 'document_format_dis',
+    'summary': """Formatos de documentos Discafe""",
     'version': '12.0.1.0.0',
-    'description': """Formatos de documentos HR""",
+    'description': """Formatos de documentos Discafe""",
     'author': 'DDL',
     'company': 'Xtendoo',
     'website': 'http://www.xtendoo.es',

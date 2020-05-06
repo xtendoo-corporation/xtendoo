@@ -24,18 +24,18 @@
                 string="Factura Bluetooth"
                 model="account.invoice"
                 report_type="qweb-pdf"
-                name="document_format_hr.report_invoice_bluetooth"
+                name="document_format_dis.report_invoice_bluetooth"
                 print_report_name="(object._get_report_base_filename())"
         />
 
-         <record id="document_format_hr.report_invoice_bluetooh" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_hr.bluetooth_invoice" />
+         <record id="document_format_dis.report_invoice_bluetooh" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_dis.bluetooth_invoice" />
         </record>
 
         <template id="report_invoice_bluetooth">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
-                   <t t-call="document_format_hr.report_invoice_document_bluetooth" t-lang="o.partner_id.lang"/>
+                   <t t-call="document_format_dis.report_invoice_document_bluetooth" t-lang="o.partner_id.lang"/>
                 </t>
             </t>
         </template>

@@ -17,7 +17,7 @@
         </record>
 
         <record id="sale.action_report_saleorder" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_hr.A4_presupuesto" />
+            <field name="paperformat_id" ref="document_format_dis.A4_presupuesto" />
         </record>
 
         <template id="report_saleorder_document_hr" inherit_id="sale.report_saleorder_document">
