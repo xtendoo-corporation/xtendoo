@@ -20,10 +20,6 @@
             <field name="dpi">90</field>
         </record>
 
-         <record id="document_format_dis.report_delivery_promotions" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_dis.A4_picking"/>
-        </record>
-
          <report id="report_delivery_promotions"
                 string="Vale de entrega"
                 model="stock.picking"
@@ -31,6 +27,10 @@
                 name="document_format_dis.report_delivery_promotions"
                 print_report_name="'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)"
         />
+
+         <record id="document_format_dis.report_delivery_promotions" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_dis.A4_picking"/>
+        </record>
 
         <template id="report_delivery_promotions">
             <t t-call="web.html_container">

@@ -47,7 +47,7 @@
                    <!-- Cabecera documento -->
 
                    <div style="display:block; width:80%; margin:25px auto;" >
-                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:100%"/>
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:60%;margin-left:20%;"/>
                    </div>
 
                     <div style="font-size:1em;font-weight:bolder;text-align:center;">

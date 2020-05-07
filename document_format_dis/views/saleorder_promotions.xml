@@ -20,10 +20,6 @@
             <field name="dpi">90</field>
         </record>
 
-         <record id="document_format_dis.report_saleorder_promotions" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_dis.A4_sale"/>
-        </record>
-
 
         <report id="report_saleorder_promotions"
                 string="Presupuesto / Pedido"
@@ -33,6 +29,10 @@
                 file="sale.report_saleorder_promotions"
                 print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
         />
+
+         <record id="document_format_dis.report_saleorder_promotions" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_dis.A4_sale"/>
+        </record>
 
         <template id="report_saleorder_promotions">
             <t t-call="web.html_container">
