@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'hide_cost_in_so_and_invoice',
+    'name': 'hide_purchase_cost_in_so_and_invoice',
     'summary': """Hide purchase_price in sale orders and invoices """,
     'version': '12.0.1.0.0',
     'description': """Hide purchase_price in sale orders and invoices""",
