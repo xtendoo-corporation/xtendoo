@@ -7,7 +7,6 @@
 #
 
 from odoo.tests.common import TransactionCase, tagged
-import logging
 
 
 class TestPickingChangePrice(TransactionCase):
@@ -15,8 +14,6 @@ class TestPickingChangePrice(TransactionCase):
     @classmethod
     def setUp(cls):
         super(TestPickingChangePrice, cls).setUp()
-
-        logging.info("*"*80)
 
         cls.product_a = cls.env['product.product'].create({
             'name': 'Product A',
@@ -42,9 +39,6 @@ class TestPickingChangePrice(TransactionCase):
     def test_product_created(self):
         """ This method test that product A, B and C was created.
         """
-
-        logging.info("*"*80)
-
         self.assertEqual(self.product_a.name, 'Product A')
         self.assertEqual(self.product_b.name, 'Product X')
         self.assertEqual(self.product_c.name, 'Product C')
