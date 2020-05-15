@@ -24,7 +24,7 @@ class CategoryPricelistItem(models.Model):
         #return self.search_read({'fields': ['percentaje']},
          #   [['categ_id', '=', product_id.categ_id.id], ['pricelist_id', '=', pricelist_id.id]], limit=1)
 
-        percent= self.search_read([['categ_id', '=', product_id.categ_id.id], ['pricelist_id', '=', pricelist_id.id]], {'percentaje'}, offset=0, limit=1, order=None)
+        percent = self.search_read([['categ_id', '=', product_id.categ_id.id], ['pricelist_id', '=', pricelist_id.id]], {'percentaje'}, offset=0, limit=1, order=None)
 
         for percents in percent:
             return percents.get('percentaje')
