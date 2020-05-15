@@ -1,10 +1,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# Copyright 2020 Manuel Calero - Xtendoo
 
 from odoo import api, fields, models, _
 from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError
-
-import logging
 
 
 class StockMove(models.Model):
@@ -17,7 +16,8 @@ class StockMove(models.Model):
 
     def get_search_last_purchase(self, product_id, picking_id):
         return self.search(
-            [['product_id', '=', product_id.id], ['picking_id', '<>', picking_id.id]], limit=1,
+            [['product_id', '=', product_id.id], ['picking_id', '<>', picking_id.id]],
+            limit=1,
             order='date desc')
 
 
@@ -75,4 +75,5 @@ class Picking(models.Model):
 
         if self.picking_price_ids:
             action['res_id'] = self.picking_price_ids[0].id
+
         return action
