@@ -33,7 +33,10 @@
         'views/report_invoice_document_without_promotions.xml',
         'views/delivery_promotions.xml',
         'views/report_delivery_document_promotions.xml',
-        'views/report_delivery_document_without_promotions.xml'
+        'views/report_delivery_document_without_promotions.xml',
+        'views/stock_picking_report.xml',
+	    'views/report_payment_receipt.xml',
+	    'views/report_payment_receipt_bluetooth.xml'
     ],
     'demo': [],
     'installable': True,

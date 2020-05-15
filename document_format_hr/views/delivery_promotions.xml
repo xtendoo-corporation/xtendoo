@@ -5,7 +5,7 @@
     <data>
 
          <report id="report_delivery_promotions"
-                string="VALE DE ENTREGA"
+                string="Vale de Entrega"
                 model="stock.picking"
                 report_type="qweb-pdf"
                 name="document_format_hr.report_delivery_promotions"

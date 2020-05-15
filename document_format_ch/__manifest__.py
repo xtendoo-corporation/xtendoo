@@ -26,7 +26,8 @@
         'views/report_saleorder_bluetooth.xml',
         'views/report_invoice_bluetooth.xml',
         'views/report_delivery_document_bluetooth.xml',
-        'views/report_payment_receipt_bluetooth.xml'
+        'views/report_payment_receipt_bluetooth.xml',
+        'views/report_payment_receipt.xml'
     ],
     'demo': [],
     'installable': True,
