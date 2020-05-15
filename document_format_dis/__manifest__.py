@@ -35,7 +35,8 @@
         'views/report_delivery_document_promotions.xml',
         'views/report_delivery_document_without_promotions.xml',
         'views/report_payment_receipt_bluetooth.xml',
-        'views/stock_picking_report.xml'
+        'views/stock_picking_report.xml',
+	'views/report_payment_receipt.xml'
     ],
     'demo': [],
     'installable': True,
