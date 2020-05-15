@@ -12,10 +12,10 @@ class CategoryPricelistItem(models.Model):
 
     categ_id = fields.Many2one(
         'product.category',
-        string='Categ ID',
+        string='Category',
         ondelete='cascade',
-        help="Specify a product category if this rule only applies to products belonging to this category or its children categories. Keep empty otherwise.")
-
+        help="Specify a product category if this rule only applies to products belonging to this category or its children categories. Keep empty otherwise."
+    )
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist', required=True)
 
     percentaje = fields.Float(string='Percentaje', digits=0 )
@@ -30,11 +30,6 @@ class CategoryPricelistItem(models.Model):
             return percents.get('percentaje')
 
         return 0.00
-
-    def get_pricelist_item(self, product_id):
-        item = self.search_read([['categ_id', '=', product_id.categ_id.id]], {'pricelist_id'})
-        return item
-
 
 
 

@@ -14,16 +14,16 @@ class PricelistItem(models.Model):
     def _get_pricelist_item_name_price(self):
         logging.info('PRICELIST')
         logging.info(self.pricelist_id)
-        pricelist_id=self.pricelist_id[0].id
+        pricelist_id = self.pricelist_id[0].id
 
         self._cr.execute("SELECT percentaje FROM category_pricelist_item WHERE pricelist_id = %s", (pricelist_id,))
         data = self._cr.fetchall()
 
-        percent=data[0][0]
+        percent = data[0][0]
         product_cost= 100
 
         if percent > 0.00:
-            self.fixed_price = product_cost+(product_cost*percent/100)
+            self.fixed_price = product_cost + ( product_cost * percent / 100 )
 
         super(PricelistItem,self)._get_pricelist_item_name_price()
 
