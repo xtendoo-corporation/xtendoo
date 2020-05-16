@@ -1,42 +1,26 @@
-# -*- coding: utf-8 -*-
-#
-# command to create :
-# docker exec odoo12_odoo_1 /usr/bin/odoo scaffold product_next_coming /usr/lib/python3/dist-packages/odoo/aditional_addons
-#
+# Copyright 2020 Xtendoo - DDL
+# Copyright 2020 Xtendoo - Manuel Calero Solís
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+ 
 {
-    'name': "product_next_coming",
-
-    'summary': """
-        Show a column with the date of the next delivery of a product
-    """,
-    'description': """
-        Show a column with the date of the next delivery of a product
-    """,
-
-    'author': "Xtendoo",
-    'website': "http://www.xtendoo.es",
-
-    # Categories can be used to filter modules in modules listing
-    # Check https://github.com/odoo/odoo/blob/12.0/odoo/addons/base/data/ir_module_category_data.xml
-    # for the full list
-    'category': 'Uncategorized',
-    'version': '0.1',
-
-    # any module necessary for this one to work correctly
+    'name': 'Category Pricelist Percentaje',
+    'summary': """Add pricelist to product categories percentaje""",
+    'version': '12.0.1.0.0',
+    'description': """Add pricelist to product categories percentaje""",
+    'author': 'DDL, Manuel Calero Solís',
+    'company': 'Xtendoo',
+    'website': 'http://www.xtendoo.es',
+    'category': 'Extra Tools',
     'depends': [
-        'purchase_stock',
+        'base',
+        'product',
     ],
-
-    # always loaded
+    'license': 'AGPL-3',
     'data': [
-        # 'security/ir.model.access.csv',
-        'views/product_views.xml',
+        'views/category_pricelist_item.xml',
+        'security/ir.model.access.csv',
     ],
-    # only loaded in demonstration mode
-    'demo': [
-        'demo/demo.xml',
-    ],
-
+    'demo': [],
     'installable': True,
-    'application': True,
+    'auto_install': False,
 }

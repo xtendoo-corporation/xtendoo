@@ -1,4 +1,4 @@
-# Copyright 2019 Xtendoo - Manuel Calero Solis
+# Copyright 2020 Xtendoo - Manuel Calero Solis
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     'name': 'Stock Picking Update Price',

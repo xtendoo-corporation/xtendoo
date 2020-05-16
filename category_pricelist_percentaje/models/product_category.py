@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# Copyright 2020 Xtendoo - DDL
+# Copyright 2020 Xtendoo - Manuel Calero Solís
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models, _
-from datetime import datetime
+
 
 class ProductCategory(models.Model):
     _inherit = "product.category"

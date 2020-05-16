@@ -1,5 +1,5 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-# Manuel Calero Solis - manuelcalerosolis@gmail.com
+# Copyright 2020 Xtendoo - Manuel Calero Solis
 
 from odoo import fields, models, api
 from odoo.addons import decimal_precision as dp
@@ -82,7 +82,11 @@ class SelectPickingPriceLine(models.Model):
     _name = 'select.picking.price.line'
     _description = 'Select Picking Price Line Wizard'
 
-    selected = fields.Boolean(string='Selected', default=True, help='Indicate this line is coming to change')
+    selected = fields.Boolean(
+        string='Selected',
+        default=True,
+        help='Indicate this line is coming to change'
+    )
     select_picking_id = fields.Many2one('select.picking.price')
     picking_id = fields.Many2one('stock.picking', required=True)
     product_id = fields.Many2one('product.product', string='Product')

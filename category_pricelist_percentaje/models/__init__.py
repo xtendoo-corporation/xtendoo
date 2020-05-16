@@ -1,3 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from . import product
+from . import category_pricelist_item
+from . import product_category
+from . import product_pricelist

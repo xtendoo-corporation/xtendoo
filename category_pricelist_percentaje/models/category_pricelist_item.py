@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
+# Copyright 2020 Xtendoo - DDL
+# Copyright 2020 Xtendoo - Manuel Calero Solís
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models, _
-from datetime import datetime
 
 
 class CategoryPricelistItem(models.Model):
@@ -12,7 +13,7 @@ class CategoryPricelistItem(models.Model):
         'product.category',
         string='Category',
         ondelete='cascade',
-        help="Specify a product category if this rule only applies to products belonging to this category or its children categories. Keep empty otherwise."
+        help="Specify a product category."
     )
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist', required=True)
 
