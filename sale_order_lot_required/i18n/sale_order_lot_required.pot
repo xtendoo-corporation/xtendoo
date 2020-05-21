@@ -18,10 +18,11 @@ msgstr ""
 #. module: sale_order_lot_required
 #: model:ir.model,name:sale_order_lot_required.model_sale_order
 msgid "Sale Order"
-msgstr "Presupuesto"
+msgstr ""
 
 #. module: sale_order_lot_required
 #: code:addons/sale_order_lot_required/models/sale.py:14
 #, python-format
 msgid "You can't store this document with empty lots"
-msgstr "No puedes guardar un documento con lotes vacios"
+msgstr ""
+
