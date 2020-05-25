@@ -3,6 +3,8 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+import logging
+logger = logging.getLogger(__name__)
 
 
 class SaleOrder(models.Model):
@@ -10,6 +12,7 @@ class SaleOrder(models.Model):
 
     @api.model
     def get_move_from_line(self, line):
+        logger.info("-"*80)
         move = self.env['stock.move']
         # i create this counter to check lot's univocity on move line
         lot_count = 0
@@ -19,10 +22,10 @@ class SaleOrder(models.Model):
                     lambda line: line.lot_id)
                 if move_line_id and line.lot_id == move_line_id[:1].lot_id:
 
-                    print("*"*80)
-                    print(move_line_id)
-                    print(line.lot_id)
-                    print(move_line_id[:1].lot_id)
+                    logger.info("*"*80)
+                    logger.info(move_line_id)
+                    logger.info(line.lot_id)
+                    logger.info(move_line_id[:1].lot_id)
 
                     move = m
                     lot_count += 1
