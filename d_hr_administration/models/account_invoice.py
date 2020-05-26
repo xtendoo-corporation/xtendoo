@@ -21,4 +21,4 @@ class AccountInvoice(models.Model):
         if self.env.context.get('active_model', '') == 'sale.order' or self.env.user.administration or self.env.context.get('is_sale', '') == True:
             return super(AccountInvoice, self).default_get(default_fields)
 
-        raise ValidationError(_("You are not allowed to create invoices."))
+        raise ValidationError(("You are not allowed to create invoices."))

@@ -13,15 +13,14 @@ class AccountInvoice(models.Model):
     is_admin = fields.Boolean(
         comodel_name='account.invoice.line',
         compute='_is_admin',
-        string="isAdmin"
+        string="isAdmin",
+        default=lambda self: self._get_default_admin()
     )
     @api.one
     def _is_admin(self):
         self.is_admin=self.env.user.administration
-        logging.info('isAdmin')
-        if not self.env.user.administration:
-            self.is_admin=True
-        if self.env.user.administration:
-            logging.info('ES TRUE')
-            return
-        logging.info('ES FALSE')
+        return
+
+    @api.model
+    def _get_default_admin(self):
+        return self.env.user.administration
