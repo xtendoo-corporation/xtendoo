@@ -129,7 +129,18 @@
                               <span>Precio/Ud</span>
                             </div>
                             <div class="text-right" groups="sale.group_discount_per_so_line" style="font-weight:bolder; color:#4f4b4b;float:left;width:10%;">
-                              <span>Des.(%)</span>
+                              <t t-set="ifDiscount" t-value="0"></t>
+                                        <t t-foreach="doc.order_line" t-as="ml">
+                                            <t t-if="ml.discount">
+                                                <t t-set="ifDiscount" t-value="1"></t>
+                                            </t>
+                                        </t>
+                                        <t t-if="ifDiscount == 1">
+                                            <span>Dto(%)</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color:white;">Dto%</span>
+                                        </t>
                             </div>
 
 
@@ -217,7 +228,12 @@
                                                 <!-- Descuento -->
 
                                                 <div class="text-right" groups="sale.group_discount_per_so_line" style="float:left;width:10%;">
-                                                  <span t-field="line.discount"/>
+                                                  <t t-if="line.discount">
+                                                        <span t-field="line.discount"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="color:white;">aaa</span>
+                                                    </t>
                                                 </div>
 
                                                 <!-- Fin descuento -->

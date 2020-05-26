@@ -25,10 +25,10 @@
                                 <span t-field="o.name"/>
                             </li>
 
-                            <li t-if="o.delivery_zone_id">
+                            <!--<li t-if="o.delivery_zone_id">
                                 <b>Zona:</b>
                                 <spam t-field="o.delivery_zone_id"/>
-                            </li>
+                            </li> -->
 
                             <li>
                                 <b>Estado:</b>
@@ -164,7 +164,18 @@
                     </div>
 
                     <div class="text-right" style="font-weight:bolder; color:#4f4b4b;float:left;width:8%;">
-                        <span>Desc(%)</span>
+                         <t t-set="ifDiscount" t-value="0"></t>
+                                <t t-foreach="o.move_line_ids" t-as="ml">
+                                    <t t-if="ml.move_id.sale_line_id.discount">
+                                        <t t-set="ifDiscount" t-value="1"></t>
+                                    </t>
+                                </t>
+                                <t t-if="ifDiscount == 1">
+                                    <span>Dto(%)</span>
+                                </t>
+                                <t t-else="">
+                                    <span style="color:white;">Dto%</span>
+                                </t>
                     </div>
 
                     <div class="text-right" style="font-weight:bolder; color:#4f4b4b;float:left;width:10%;">

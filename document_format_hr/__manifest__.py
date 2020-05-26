@@ -23,6 +23,7 @@
         'views/report_saleorder_bluetooth.xml',
         'views/report_delivery_document.xml',
         'views/report_delivery_document_bluetooth.xml',
+        'views/report_delivery_document_bluetooth_b.xml',
         'views/report_invoice_document.xml',
         'views/report_invoice_bluetooth.xml',
         'views/saleorder_promotions.xml',
