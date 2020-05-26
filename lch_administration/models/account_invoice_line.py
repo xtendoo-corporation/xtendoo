@@ -18,7 +18,7 @@ class AccountInvoice(models.Model):
     )
     @api.one
     def _is_admin(self):
-        self.is_admin=self.env.user.administration
+        self.is_admin = self.env.user.administration
         return
 
     @api.model
