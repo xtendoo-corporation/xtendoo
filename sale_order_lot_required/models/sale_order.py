@@ -7,10 +7,13 @@ class SaleOrder(models.Model):
 
 
     @api.multi
-    def _write(self, values):
-        res = super(SaleOrder, self)._write(values)
-        if any(not line.lot_id and line.product_id.tracking == 'lot' for line in self.order_line):
-            raise UserError(
-                _('You can\'t store this document with empty lots')
-                )
+    def action_confirm(self):
+        res = super().action_confirm()
+        for so in self:
+            for line in so.order_line:
+                if not line.lot_id and line.product_id.tracking == 'lot':
+                    raise UserError(
+                        _('You can\'t store this line %s with empty lot') %
+                        line.product_id.name
+                        )
         return res
