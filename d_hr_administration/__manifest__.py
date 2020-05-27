@@ -16,6 +16,7 @@
         'views/account_payment.xml',
         'views/sale_order_views.xml',
         'views/account_invoice_views.xml',
+        'views/product_template_view.xml'
     ],
     "depends": [
         'sale',
