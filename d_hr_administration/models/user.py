@@ -9,5 +9,5 @@ class Users(models.Model):
 
     administration = fields.Boolean(
         string='Administración',
-        default="False"
+        default=False
         )
