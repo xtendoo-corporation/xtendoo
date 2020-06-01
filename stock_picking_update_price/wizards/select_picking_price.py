@@ -39,9 +39,10 @@ class SelectPickingPrice(models.Model):
         for move_line in self.picking_id.move_line_ids:
             data.append((0, False, self.get_list_price(move_line)))
             for product_pricelist in product_pricelist_ids:
-                for pricelist_item in move_line.product_id.pricelist_item_ids.search(
-                        [('product_tmpl_id', '=', move_line.product_id.product_tmpl_id.id),
-                         ('pricelist_id', '=', product_pricelist.id)]):
+                pricelist_item_ids = move_line.product_id.pricelist_item_ids.search(
+                    [('product_tmpl_id', '=', move_line.product_id.product_tmpl_id.id),
+                     ('pricelist_id', '=', product_pricelist.id)])
+                for pricelist_item in pricelist_item_ids:
                     data.append((0, False, self.get_others_price(move_line, pricelist_item, product_pricelist)))
 
         self.price_line_ids = data
@@ -126,9 +127,10 @@ class SelectPickingPriceLine(models.Model):
 
             line.cost_price = line.product_id.standard_price
             line.purchase_price = line.move_id.purchase_line_id.price_unit
+
             line.margin = line.list_price - line.move_id.purchase_line_id.price_unit
             if line.list_price != 0:
-                line.percent_margin = 100 - ((line.move_id.purchase_line_id.price_unit / line.list_price) * 100)
+                line.percent_margin = 100 - (line.move_id.purchase_line_id.price_unit / line.list_price * 100)
             else:
                 line.percent_margin = 0
 
@@ -137,12 +139,13 @@ class SelectPickingPriceLine(models.Model):
             if line.percent_sale_category > 0.00:
                 line.list_price = line.cost_price + (line.cost_price * line.percent_sale_category / 100)
 
+
     @api.multi
     @api.onchange('list_price')
     def _compute_percent_list_price(self):
         for line in self:
             line.margin = line.list_price - line.move_id.purchase_line_id.price_unit
             if line.list_price != 0:
-                line.percent_margin = 100 - ((line.purchase_price / line.list_price) * 100)
+                line.percent_margin = 100 - (line.purchase_price / line.list_price * 100)
             else:
                 line.percent_margin = 0

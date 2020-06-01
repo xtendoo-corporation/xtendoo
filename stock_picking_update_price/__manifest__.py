@@ -10,7 +10,7 @@
     'summary': 'Stock Picking Update Price',
     'depends': [
         'account',
-        'add_category_pricelist',
+        'category_pricelist_percentaje',
     ],
     'data': [
         'wizards/wizards_select_picking_price.xml',

@@ -59,7 +59,6 @@ class Picking(models.Model):
         self.ensure_one()
         if self.state != 'done':
             raise UserError(_('The selected picking does not have validated yet. Please validate the picking.'))
-            return
 
         view = self.env.ref('stock_picking_update_price.select_picking_price_form')
 

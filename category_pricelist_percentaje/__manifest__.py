@@ -1,5 +1,5 @@
 # Copyright 2020 Xtendoo - DDL
-# Copyright 2020 Xtendoo - Manuel Calero Solís
+# Copyright 2020 Xtendoo - Manuel Calero
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
  
 {
@@ -7,7 +7,7 @@
     'summary': """Add pricelist to product categories percentaje""",
     'version': '12.0.1.0.0',
     'description': """Add pricelist to product categories percentaje""",
-    'author': 'DDL, Manuel Calero Solís',
+    'author': 'DDL, Manuel Calero',
     'company': 'Xtendoo',
     'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
