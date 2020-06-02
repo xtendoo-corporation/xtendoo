@@ -11,7 +11,7 @@ class AccountInvoice(models.Model):
     _name = 'account.invoice'
 
     is_admin = fields.Boolean(
-        comodel_name='account.invoice.line',
+        comodel_name='account.invoice',
         compute='_is_admin',
         string="isAdmin",
         default=lambda self: self._get_default_admin()

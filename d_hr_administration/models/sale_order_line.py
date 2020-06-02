@@ -6,7 +6,7 @@ from odoo.exceptions import ValidationError
 import logging
 
 
-class AccountInvoice(models.Model):
+class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
     _name = 'sale.order.line'
 
