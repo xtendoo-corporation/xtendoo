@@ -8,12 +8,15 @@
             <field name="inherit_id" ref="account.invoice_form"/>
             <field name="arch" type="xml">
 
+                <!-- Vista PC -->
+
                  <xpath expr="//field[@name='margin']" position="replace">
-                    <field name="margin" groups="base.administration"/>
+                     <field name="is_admin" invisible="1"/>
+                    <field name="margin" attrs="{'invisible': [('is_admin', '=', False)]}"/>
                 </xpath>
 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='purchase_price']" position="replace">
-                    <field name="purchase_price" groups="base.administration"/>
+                    <field name="purchase_price" attrs="{'invisible': [('is_admin', '=', False)]}"/>
                </xpath>
 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='price_unit']" position="replace">
@@ -48,7 +51,14 @@
 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='prod_lot_ids']" position="replace">
                     <field name="prod_lot_ids"  String="Lote" widget="many2many_tags" attrs="{'readonly': [('is_admin', '=', False)]}"/>
-               </xpath>
+                </xpath>
+
+                <!-- Fin Vista PC -->
+
+                <!-- Vista Tablet -->
+
+
+                <!-- Fin Vista Tablet -->
 
             </field>
 
