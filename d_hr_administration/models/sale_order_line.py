@@ -9,7 +9,6 @@ import logging
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-
     is_admin = fields.Boolean(
         comodel_name='sale.order.line',
         compute='_is_admin',
