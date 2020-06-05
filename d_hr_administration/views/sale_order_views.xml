@@ -8,16 +8,6 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
 
-                <!--Vista PC -->
-
-                 <xpath expr="//field[@name='margin']" position="replace">
-                     <field name="is_admin" invisible="1"/>
-                    <field name="margin" attrs="{'invisible': [('is_admin', '=', False)]}"/>
-                </xpath>
-
-                <xpath expr="//field[@name='order_line']/tree//field[@name='purchase_price']" position="replace">
-                    <field name="purchase_price" attrs="{'invisible': [('is_admin', '=', False)]}"/>
-                </xpath>
 
                 <xpath expr="//field[@name='order_line']/tree//field[@name='price_unit']" position="replace">
                     <field name="is_admin" invisible="1"/>
@@ -43,10 +33,6 @@
                <xpath expr="//page[@name='order_lines']//field[@name='price_unit']" position="replace">
                      <field name="is_admin" invisible="1"/>
                      <field name="price_unit" attrs="{'readonly': [('is_admin', '=', False)]}" force_save="1"></field>
-                </xpath>
-
-                <xpath expr="//page[@name='order_lines']//field[@name='purchase_price']" position="replace">
-                    <field name="purchase_price" attrs="{'invisible': [('is_admin', '=', False)]}" force_save="1"/>
                 </xpath>
 
                 <xpath expr="//page[@name='order_lines']//field[@name='discount']" position="replace">
@@ -76,8 +62,6 @@
                 <!--Fin Vista Tablet -->
 
             </field>
-
-
         </record>
 
     </data>
