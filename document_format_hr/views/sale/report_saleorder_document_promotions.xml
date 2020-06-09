@@ -4,15 +4,24 @@
 
     <data>
 
-        <template id="report_saleorder_document_without_promotions">
+        <template id="report_saleorder_document_promotions">
 
-             <t t-name="report_saleorder_document_without_promotions">
+             <t t-name="document_format_hr.report_saleorder_document_promotions">
 
                    <t t-call="web.external_layout">
 
-                        <div class="page">
+                    <div class="page">
 
-                             <div style="width:50%; float:left;margin-top:10px;">
+                        <t t-set="isPromo" t-value="0"></t>
+
+                 <t t-foreach="doc.order_line" t-as="line">
+                     <t t-if="line.price_unit == 0.0">
+                         <t t-set="isPromo" t-value="1"></t>
+                     </t>
+                 </t>
+                        <t t-if="isPromo == 1">
+
+                        <div style="width:50%; float:left;margin-top:10px;">
                                 <ul class="list-unstyled">
                                     <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
                                         <li t-if="doc.state in ['draft','sent']"><b>Presupuesto:  </b> <span t-field="doc.name"/></li>
@@ -78,9 +87,9 @@
                             CIF:  <span t-field="doc.partner_id.vat"/>
                           </li>
 
-                          <!-- <li t-if="doc.partner_id.ref" >
+                         <!-- <li t-if="doc.partner_id.ref" >
                             REF:  <span t-field="doc.partner_id.ref"/>
-                          </li>-->
+                          </li> -->
 
                         </ul>
                       </div>
@@ -100,6 +109,10 @@
 
                            <div class="oe_structure"/>
 
+                        <div style="width:100%;text-align:center;font-size:1.3em;font-weight:bolder;">
+                            <p>Artículos en Promoción</p>
+                        </div>
+
 
                         <!-- Is there a discount on at least one line? -->
                         <t t-set="display_discount" t-value="any([l.discount for l in doc.order_line])"/>
@@ -112,12 +125,11 @@
                               <span>Código</span>
                             </div>
 
-                             <div class="text-left" style="font-weight:bolder; color:#4f4b4b;width:15%;float:left;">
+                            <div class="text-left" style="font-weight:bolder; color:#4f4b4b;width:15%;float:left;">
                               <span>Lote</span>
                             </div>
 
-
-                            <div class="text-left" style="font-weight:bolder; color:#4f4b4b;float:left;width:26%;">
+                            <div class="text-left" style="font-weight:bolder; color:#4f4b4b;float:left;width:26%%;">
                               <span>Descripción</span>
                             </div>
 
@@ -129,7 +141,7 @@
                               <span>Precio/Ud</span>
                             </div>
                             <div class="text-right" groups="sale.group_discount_per_so_line" style="font-weight:bolder; color:#4f4b4b;float:left;width:10%;">
-                              <t t-set="ifDiscount" t-value="0"></t>
+                               <t t-set="ifDiscount" t-value="0"></t>
                                         <t t-foreach="doc.order_line" t-as="ml">
                                             <t t-if="ml.discount">
                                                 <t t-set="ifDiscount" t-value="1"></t>
@@ -142,7 +154,6 @@
                                             <span style="color:white;">Dto%</span>
                                         </t>
                             </div>
-
 
                             <div class="text-right" style="font-weight:bolder; color:#4f4b4b;float:left;width:12%;">
                               <span>Valor neto</span>
@@ -160,9 +171,9 @@
 
                           <t t-set="current_subtotal" t-value="0"/>
                                 <t t-foreach="doc.order_line" t-as="line">
-                                    <t t-if="line.price_unit > 0.00">
-                                                        <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
-                                                        <t t-set="current_subtotal" t-value="current_subtotal + line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+                                    <t t-if="line.price_unit == 0.00">
+                                         <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
+                                         <t t-set="current_subtotal" t-value="current_subtotal + line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
                                               <div style="clear:both;font-size:0.9em;">
 
                                                     <!--Si es nota -->
@@ -186,8 +197,7 @@
 
                                                   <!-- Fin codigo -->
 
-                                                  <!-- Lote -->
-
+                                               <!-- Lote -->
                                                 <div class="text-left" style="width:15%;float:left;">
                                                     <t t-if="line.lot_id">
                                                         <span t-field="line.lot_id.name"/>
@@ -197,14 +207,12 @@
                                                     </t>
                                                 </div>
 
-                                                  <!-- Fin Lote -->
+                                               <!-- Fin Lote -->
 
                                                 <!-- descripción -->
 
                                                 <div class="text-left" style="float:left;width:26%;">
-                                                    <t t-set="descripcion" t-value="line.name.find(']') +1"></t>
-                                                    <t t-set="linea" t-value="line.name[descripcion:]"></t>
-                                                    <span t-esc="linea"/>
+                                                    <span t-field="line.product_id.name"/>
                                                 </div>
 
                                                 <!-- Fin descripción -->
@@ -220,7 +228,7 @@
                                                 <!-- Precio por unidad -->
 
                                                 <div class="text-right" style="float:left;width:10%;">
-                                                  <span t-field="line.price_unit"/>
+                                                    <span>0.00</span>
                                                 </div>
 
                                                 <!-- Fin precio unidad -->
@@ -228,7 +236,7 @@
                                                 <!-- Descuento -->
 
                                                 <div class="text-right" groups="sale.group_discount_per_so_line" style="float:left;width:10%;">
-                                                  <t t-if="line.discount">
+                                                    <t t-if="line.discount">
                                                         <span t-field="line.discount"/>
                                                     </t>
                                                     <t t-else="">
@@ -237,7 +245,6 @@
                                                 </div>
 
                                                 <!-- Fin descuento -->
-
 
                                                 <!--  Valor Neto -->
 
@@ -251,7 +258,7 @@
 
                                                 <div class="text-right" style="float:left;width:7%;">
                                                   <t t-set="iva" t-value="line.tax_id.amount"></t>
-                                                  <span t-esc="int(iva)"/><span t-if="line.price_tax > 0">%</span>
+                                                  <span t-esc="int(iva)" style="color:white"/><span t-if="line.price_tax > 0">%</span>
                                                 </div>
 
                                                 <!-- Fin IVA -->
@@ -278,66 +285,6 @@
 
                         </div>
 
-                        <!-- Totales -->
-
-                        <div style="width:30%;float:right;clear:both">
-
-
-                          <!-- Subtotal -->
-
-                          <div style="width:40%;float:left">
-                            <span>Subtotal</span>
-                          </div>
-
-                          <div style="width:60%;float:left;text-align:right">
-                            <span t-field="doc.amount_untaxed"/>
-                          </div>
-
-                          <!-- Fin Subtotal -->
-
-                          <!-- Impuestos -->
-
-                          <t t-foreach="doc.amount_by_group" t-as="amount_by_group">
-                            <t t-if="amount_by_group[3] == 1 and doc.amount_untaxed == amount_by_group[2]">
-                              <div style="width:40%;float:left">
-                                <span t-esc="amount_by_group[0]"/>
-                                <span>&amp;nbsp;<span>on</span>&amp;nbsp;<t t-esc="amount_by_group[2]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/></span>
-                              </div>
-
-                              <div class="text-right o_price_total" style="width:60%;float:left;">
-                                <span t-esc="amount_by_group[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
-                              </div>
-                            </t>
-                            <t t-else="">
-                              <div style="width:40%;float:left;">
-                                <span t-esc="amount_by_group[0]"/>
-                              </div>
-
-                              <div class="text-right o_price_total" style="width:60%;float:left;">
-                                <span t-esc="amount_by_group[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
-                              </div>
-                            </t>
-
-                          </t>
-
-                          <!-- Fin impuestos -->
-
-                          <!-- Total -->
-
-                          <div style="font-weight:bolder;width:40%;float:left;">
-                            <span>Total</span>
-                          </div>
-                          <div class="text-right">
-                            <span t-field="doc.amount_total" style="font-weight:bolder;"/>
-                          </div>
-
-                          <!-- FIn total -->
-
-                             <div style="height:2px;background-color:black;clear:both;"></div>
-                          </div>
-
-
-                        <!-- Fin totales -->
 
                         <p t-field="doc.note"/>
 
@@ -346,21 +293,25 @@
                             <span t-field="doc.fiscal_position_id.note"/>
                         </p>
 
-                         <!-- Firma del cliente -->
+                       <!-- Firma del cliente -->
 
-                        <div t-if="doc.digital_signature" style="height:100px;width:30%;border:2px solid black;margin-top:5px;">
+                        <div t-if="doc.digital_signature" style="height:100px;width:20%;border:2px solid black;margin-top:5px;">
                               <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
                               <img style="width:100%;" t-attf-src="data:image/*;base64,{{doc.digital_signature}}"/>
                         </div>
 
 
                         <!-- fin Firmar del cliente -->
+
                         <div class="oe_structure"/>
 
                     </div>
 
-                        </div>
-                   </t>
+                        </t>
+
+
+                    </div>
+                </t>
              </t>
 
 

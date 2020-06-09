@@ -67,23 +67,23 @@
                                          <p>
                                              <b>Desde: </b>
 
-                                             <t t-if="o.location_id.complete_name == 'Physical Locations/WH/Stock'">
+                                             <t t-if="o.location_id.complete_name == 'Physical Locations/PAZ/Stock'">
                                                  <span>La Paz</span>
                                              </t>
 
-                                             <t t-if="o.location_id.complete_name == 'Physical Locations/WH1/Stock'">
+                                             <t t-if="o.location_id.complete_name == 'Physical Locations/FRG1/Stock'">
                                                  <span>Frugón 1 (Juan Andres)</span>
                                              </t>
 
-                                             <t t-if="o.location_id.complete_name == 'Physical Locations/WH2/Stock'">
+                                             <t t-if="o.location_id.complete_name == 'Physical Locations/FRG2/Stock'">
                                                  <span>Frugón 2 (Jose Manuel)</span>
                                              </t>
 
-                                             <t t-if="o.location_id.complete_name == 'Physical Locations/WH3/Stock'">
+                                             <t t-if="o.location_id.complete_name == 'Physical Locations/FRG3/Stock'">
                                                  <span>Furgón 3 (Fernando)</span>
                                              </t>
 
-                                             <t t-if="o.location_id.complete_name == 'Physical Locations/WH4/Stock'">
+                                             <t t-if="o.location_id.complete_name == 'Physical Locations/FRG4/Stock'">
                                                  <span>Frugón 4 (Antonio Vidarte)</span>
                                              </t>
 
@@ -100,19 +100,19 @@
                                                  <span>La Paz</span>
                                              </t>
 
-                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/WH1/Stock'">
+                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/FRG1/Stock'">
                                                  <span>Frugón 1 (Juan Andres)</span>
                                              </t>
 
-                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/WH2/Stock'">
+                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/FRG2/Stock'">
                                                  <span>Frugón 2 (Jose Manuel)</span>
                                              </t>
 
-                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/WH3/Stock'">
+                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/FRG3/Stock'">
                                                  <span>Furgón 3 (Fernando)</span>
                                              </t>
 
-                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/WH4/Stock'">
+                                             <t t-if="o.location_dest_id.complete_name == 'Physical Locations/FRG4/Stock'">
                                                  <span>Frugón 4 (Antonio Vidarte)</span>
                                              </t>
 

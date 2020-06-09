@@ -4,7 +4,7 @@
 
     <data>
 
-        <report id="report_saleorder_promotions"
+        <report id="report_saleorder_promotions_print"
                 string="Presupuesto / Pedido"
                 model="sale.order"
                 report_type="qweb-pdf"

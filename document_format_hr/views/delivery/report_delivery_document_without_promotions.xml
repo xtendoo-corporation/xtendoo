@@ -6,7 +6,7 @@
 
         <template id="report_delivery_document_without_promotions">
 
-             <t t-name="report_delivery_document_without_promotions">
+             <t t-name="document_format_hr.report_delivery_document_without_promotions">
 
                    <t t-call="web.external_layout">
 
@@ -368,8 +368,8 @@
 
                     <div>
 
-                        <div style="width:35%;float:left;">
-                            <spam>Subtotal</spam>
+                        <div style="width:40%;float:left;">
+                            <spam>Base Imponible</spam>
                         </div>
 
                         <div style="width:60%;text-align:right;float:left;">
@@ -381,11 +381,15 @@
                     <div style="clear:both;">
 
                         <div t-if="importeIva21 != 0" style="width:60%;float:left;">
-                            <spam>IVA 21% en</spam>
-                            <span t-esc="'%.2f'%importeIva21Total"></span>€
+                            <div style="clear:both;width:60%;float:left;">
+                                <spam>IVA 21% sobre</spam>
+                            </div>
+                            <div style="width:40%;float:left;text-align:right;">
+                                <span t-esc="'%.2f'%importeIva21Total"></span>€
+                            </div>
                         </div>
 
-                        <div t-if="importeIva21 != 0" style="width:35%;text-align:right;float:left;">
+                        <div t-if="importeIva21 != 0" style="width:40%;text-align:right;float:left;">
                             <spam t-esc="'%.2f'%importeIva21"></spam>€
                         </div>
                     </div>
@@ -393,11 +397,15 @@
                     <div style="clear:both;">
 
                         <div t-if="importeIva10 != 0" style="width:60%;float:left;">
-                            <spam>IVA 10% en</spam>
-                            <span t-esc="'%.2f'%importeIva10Total"></span>€
+                            <div style="clear:both;width:60%;float:left;">
+                                <spam>IVA 10% sobre</spam>
+                            </div>
+                            <div style="width:40%;float:left;text-align:right;">
+                                <span t-esc="'%.2f'%importeIva10Total"></span>€
+                            </div>
                         </div>
 
-                        <div t-if="importeIva10 != 0" style="width:35%;text-align:right;float:left;">
+                        <div t-if="importeIva10 != 0" style="width:40%;text-align:right;float:left;">
                             <spam t-esc="'%.2f'%importeIva10"></spam>€
                         </div>
 
@@ -405,11 +413,15 @@
 
                     <div style="clear:both;">
                         <div t-if="importeIva4 != 0" style="width:60%;float:left;">
-                            <spam>IVA 4% en</spam>
-                            <span t-esc="'%.2f'%importeIva4Total"></span>€
+                            <div style="clear:both;width:60%;float:left;">
+                                <spam>IVA 4% sobre</spam>
+                            </div>
+                            <div style="width:40%;float:left;text-align:right;">
+                                <span t-esc="'%.2f'%importeIva4Total"></span>€
+                            </div>
                         </div>
 
-                        <div t-if="importeIva4 != 0" style="width:35%;text-align:right;float:left;">
+                        <div t-if="importeIva4 != 0" style="width:40%;text-align:right;float:left;">
                             <spam t-esc="'%.2f'%importeIva4"></spam>€
                         </div>
 
@@ -423,7 +435,7 @@
                             </spam>
                         </div>
 
-                        <div style="width:60%;text-align:right;float:left;">
+                        <div style="width:65%;text-align:right;float:left;">
 
                             <t t-if="importeIva21 != 0">
                                 <t t-set="importeTotal" t-value="importeTotal + importeIva21"></t>

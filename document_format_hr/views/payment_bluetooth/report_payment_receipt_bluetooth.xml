@@ -42,15 +42,16 @@
 
         <template id="report_payment_receipt_document_bluetooth">
 
-            <t t-set="o" t-value="o.with_context({'lang': lang})"/>
+            <t t-name="report_payment_receipt_document_bluetooth">
+
+             <t t-set="o" t-value="o.with_context({'lang': lang})"/>
 
             <div class="page">
 
                 <!-- Cabecera documento -->
 
                 <div style="display:block; width:80%; margin:25px auto;">
-                    <img t-if="res_company.logo"
-                         t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:100%"/>
+                    <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:60%;margin-left:20%;"/>
                 </div>
 
                 <div style="font-size:1.6em;font-weight:bolder;text-align:center;">
@@ -60,8 +61,10 @@
                     </div>
 
                     <div>
-                        C/<span t-if="res_company.street"
-                                t-field="res_company.street"/>.
+                        <span t-if="res_company.street" t-field="res_company.street"/>
+                    </div>
+
+                    <div>
                         <span t-if="res_company.zip" t-field="res_company.zip"/>
                         <span t-if="res_company.city" t-field="res_company.city"/>
                     </div>
@@ -74,18 +77,16 @@
                     <div>
                         <div t-if="res_company.phone" style="width:50%;float:left;">
                             <div style="text-align:right;margin-right:5px;">
-                                <span>TLF.:</span>
+                                <span>Tlf:</span>
                                 <span t-field="res_company.phone"/>
                             </div>
                         </div>
 
                         <div t-if="res_company.vat" style="width:50%;float:left;">
-
                             <div style="text-align:left;margin-left:5px;">
-                                <span>N.I.F.:</span>
+                                <span>NIF:</span>
                                 <span t-field="res_company.vat"/>
                             </div>
-
                         </div>
 
                     </div>
@@ -94,35 +95,32 @@
 
                 <!-- Fin Cabecera documento -->
 
-                <hr style="height:3px; background-color:black;clear:both;"></hr>
+                <hr style="height:2px; background-color:black;clear:both;"/>
 
                 <!--Datos del pago -->
 
                 <!--Nombre del pago -->
 
-                <t t-foreach="o.reconciled_invoice_ids" t-as="inv">
                     <div style="text-align:center;font-size:1.4em;">
                         <div>
-                            <span style="font-weight:bolder;">Recibo del pago:</span>
-                        </div>
-
-                        <div>
+                            <span style="font-weight:bolder;">Recibo Pago:</span>
                             <span t-field="o.name"/>
                         </div>
-
                     </div>
+
+                    <hr style="height:2px; background-color:black;clear:both;"/>
 
                     <!-- fin nombre del pago -->
 
                     <!-- columna de la izquierda -->
 
-                    <div style="width:50%;font-size:1.3em;float:left;margin-bottom:15px;">
+                    <div style="width:100%;font-size:1.2em;float:left;margin-bottom:15px;">
 
                         <!-- Fecha del pago -->
 
                         <div>
-                            <span style="display:block;width:100%;font-weight:bolder;">Fecha del pago:</span>
-                            <span t-field="o.payment_date"/>
+                            <span style="display:inline;width:50%;font-weight:bolder;">Fecha:</span>
+                            <span style="display:inline;width:50%;" t-field="o.payment_date"/>
                         </div>
 
                         <!-- FIn fecha del pago -->
@@ -130,8 +128,8 @@
                         <!-- comercial  -->
 
                         <div>
-                            <span style="display:block;width:100%;font-weight:bolder;">Comercial:</span>
-                            <span t-field="inv.user_id"/>
+                            <span style="display:inline;width:50%;font-weight:bolder;">Comercial:</span>
+                            <span style="display:inline;width:50%" t-field="o.create_uid"/>
                         </div>
 
                         <!-- Fin comercial -->
@@ -139,24 +137,16 @@
                         <!-- Cliente -->
 
                         <div>
-                            <span style="display:block;width:100%;font-weight:bolder;">Cliente:</span>
-                            <span t-field="o.partner_id"/>
+                            <span style="display:inline;width:50%;font-weight:bolder;">Cliente:</span>
+                            <span style="display:inline;width:50%;" t-field="o.partner_id"/>
                         </div>
 
                         <!-- fin cliente -->
 
-                    </div>
-
-                    <!-- Fin columna de la izquierda -->
-
-                    <!-- Columna de la derecha -->
-
-                    <div style="width:50%;font-size:1.3em;float:left;">
-
                         <!-- Medotodo de pago -->
 
                         <div>
-                            <span style="display:block;width:100%;font-weight:bolder;">Método de pago:</span>
+                            <span style="display:inline;font-weight:bolder;">Método:</span>
                             <span t-field="o.payment_method_id.name"/>
                         </div>
 
@@ -165,9 +155,8 @@
                         <!-- Cantidad Pagada -->
 
                         <div>
-                            <span style="display:block;width:100%;font-weight:bolder;">Cantidad pagada:</span>
-                            <span t-field="o.amount"
-                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                            <span style="display:inline;font-weight:bolder;">Cantidad:</span>
+                            <span t-field="o.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                         </div>
 
                         <!-- Fin cantidad pagada -->
@@ -175,7 +164,7 @@
                         <!-- Referencia -->
 
                         <div>
-                            <span style="display:block;width:100%;font-weight:bolder;">Referencia:</span>
+                            <span style="display:inline;width:100%;font-weight:bolder;">Referencia:</span>
                             <span t-field="o.communication"/>
                         </div>
 
@@ -189,10 +178,12 @@
 
                     </div>
 
+                <t t-foreach="o.reconciled_invoice_ids" t-as="inv">
+
+
                     <!-- Resumen del pago -->
 
-                    <table class="table table-sm"
-                           style="font-size:1.2em;border-top:4px solid black;border-bottom:4px solid black;margin-left:-10px;width:105%;">
+                    <table class="table table-sm" style="font-size:1.2em;border-top:4px solid black;border-bottom:4px solid black;margin-left:-10px;width:105%;">
                         <thead>
 
                             <tr style="color:black;">
@@ -233,15 +224,12 @@
                                     <span t-field="inv.number"/>
                                 </td>
 
-                                <td class="text-right"
-                                    style="border-right:2px dotted black;border-top:2px dotted black">
+                                <td class="text-right" style="border-right:2px dotted black;border-top:2px dotted black">
                                     <span t-field="inv.amount_total"/>
                                 </td>
 
-                                <td class="text-right"
-                                    style="border-right:2px dotted black;border-top:2px dotted black">
-                                    <span t-esc="inv.amount_total - inv.residual"
-                                          t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                                <td class="text-right" style="border-right:2px dotted black;border-top:2px dotted black">
+                                    <span t-esc="inv.amount_total - inv.residual" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
                                 </td>
 
                                 <td class="text-right" style="border-top:2px dotted black;">
@@ -269,7 +257,7 @@
                 </t>
 
             </div>
-
+            </t>
         </template>
     </data>
 

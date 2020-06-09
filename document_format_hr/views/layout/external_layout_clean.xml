@@ -63,13 +63,11 @@
                                 <ul class="list-unstyled">
                                     <li>
                                         <div t-if="company.phone" style="display:inline">
-                                            <spam>TLF:</spam>
                                             <span t-field="company.phone"/>
                                         </div>
                                     </li>
                                      <li>
                                         <div t-if="company.email" style="clear:both;text-align:left;width:100%;">
-                                            <span>Email:</span>
                                             <span t-field="company.email"/>
                                         </div>
                                     </li>

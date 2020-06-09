@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data>
+
+        <template id="report_invoice_document_bluetooth_without_promotions">
+
+            <t t-name="document_format_hr.report_invoice_document_bluetooth_without_promotions">
+
+                 <t t-set="numLines" t-value="0"></t>
+                <t t-foreach="o.invoice_line_ids" t-as="line">
+                    <t t-if="line.price_unit > 0.0">
+                        <t t-set="numLines" t-value="numLines + 1"></t>
+                    </t>
+                </t>
+
+
+                    <t t-set="esRect" t-value="o.type"></t>
+
+
+               <div class="page">
+
+                   <!-- Cabecera documento -->
+
+                   <div style="display:block; width:35%; margin:0 auto;" >
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:100%"/>
+                   </div>
+
+                    <div style="font-size:1em;font-weight:bolder;text-align:center;">
+                        <div>
+                            <span t-if="res_company.name" t-field="res_company.name" />
+                        </div>
+
+                        <div>
+                            C/ <span t-if="res_company.street" t-field="res_company.street"/>.
+                            <span t-if="res_company.zip" t-field="res_company.zip"/> <span t-if="res_company.city" t-field="res_company.city"/>
+                        </div>
+
+                        <div>
+                <!--        <span t-if="res_company.zip" t-field="res_company.zip"/> <span t-if="res_company.city" t-field="res_company.city"/>
+                            (<span t-if="res_company.state_id.name" t-field="res_company.state_id.name"/>)-->
+                        </div>
+
+                        <div>
+                            <div t-if="res_company.phone" style="width:50%;float:left;">
+
+                                <div style="text-align:right;margin-right:5px;">
+                                     <span>TLF.:</span><span t-field="res_company.phone"/>
+                                </div>
+
+                            </div>
+
+                            <div t-if="res_company.vat"  style="width:50%;float:left;">
+
+                                <div style="text-align:left;margin-left:5px;">
+                                    <span>N.I.F.:</span><span t-field="res_company.vat"/>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Fin Cabecera documento -->
+
+                    <hr style="height:3px; background-color:black;clear:both;"></hr>
+
+                    <!-- Datos del cliente -->
+
+                    <div style="font-size:0.9em;">
+
+                        <div t-if="o.partner_id.name">
+                            <b><span t-field="o.partner_id.name"/></b>
+                        </div>
+
+                        <div t-if="o.partner_id.comercial">
+                                <b><span t-field="o.partner_id.comercial"/></b>
+                            </div>
+
+                        <div t-if="o.partner_id.street">
+                            <b><span t-field="o.partner_id.street" /></b>
+                        </div>
+
+                        <div>
+                            <b><span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/> <span t-if="o.partner_id.city" t-field="o.partner_id.city"/></b>
+                        </div>
+
+                        <div>
+                            <div t-if="o.partner_id.phone" style="width:50%;float:left;">
+
+                                <div>
+                                    <b><span>TLF.:</span></b><span t-field="o.partner_id.phone"/>
+                                </div>
+
+                            </div>
+
+                            <div t-if="o.partner_id.vat"  style="width:50%;float:left;">
+
+                                <div>
+                                    <b><span>N.I.F.:</span></b><span t-field="o.partner_id.vat"/>
+                                </div>
+                            </div>
+                            <div t-if="o.partner_id.ref" style="width:50%;float:left;">
+
+                                    <div>
+                                       <b><span>Ref:</span></b>
+                                        <span t-field="o.partner_id.ref"/>
+                                    </div>
+
+                                </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Fin datos cliente -->
+
+                    <!-- Datos de factura -->
+
+                   <!-- Nombre del documento -->
+
+                   <div style="width:60%; float:left;margin-top:25px;font-size:0.9em;">
+
+                       <div>
+                            <b><span t-if="o.type == 'out_invoice' and o.state in ('open', 'in_payment', 'paid')">Factura</span>
+                            <span t-if="o.type == 'out_invoice' and o.state == 'draft'">Factura Borrador</span>
+                            <span t-if="o.type == 'out_invoice' and o.state == 'cancel'">Factura Cancelada</span>
+                            <span t-if="o.type == 'out_refund'">Factura Rectificativa</span>
+                            <span t-if="o.type == 'in_refund'">Factura Rectificativa</span>
+                            <span t-if="o.type == 'in_invoice'">Factura</span></b>
+                       </div>
+
+                       <div>
+                            <span t-field="o.number"/>
+                        </div>
+
+                   </div>
+
+                   <!-- Fin Nombre documento -->
+
+                   <!-- Fecha documento -->
+
+                   <div style="width:40%; float:left;margin-top:25px;text-align:center;font-size:0.9em;color:black;">
+
+                       <div class="col-auto mw-100 mb-2" t-if="o.date_invoice" name="invoice_date">
+
+                           <div style="width:100%">
+                               <b><span style="color:black;">Fecha:</span></b>
+                           </div>
+
+                            <div style="width:100%">
+                                <span class="m-0" t-field="o.date_invoice"/>
+                            </div>
+
+                       </div>
+
+                   </div>
+
+                   <!-- Fin fecha documento -->
+
+                   <!-- Comercial -->
+
+                   <div t-if="o.user_id.name" class="col-auto mw-100 mb-2" style="clear:both;margin-top:10px;font-size:0.9em;">
+
+                       <b><span style="color:black;">Comercial:</span></b>
+
+                       <div>
+                            <span class="m-0" t-field="o.user_id"/>
+                       </div>
+
+                   </div>
+
+                   <!-- Fin comercial -->
+
+                   <!-- Referencias -->
+
+                   <div style="clear:both;width:60%;font-size:0.9em;float:left;">
+
+                       <div name="reference" class="col-auto mw-100 mb-2" t-if="o.reference">
+                           <div style="width:100%">
+                               <b><span style="color:black;">Referencia:</span></b>
+                           </div>
+
+                           <div style="width:100%">
+                               <span class="m-0" t-field="o.reference"/>
+                           </div>
+
+                       </div>
+
+                   </div>
+
+                   <div style="width:40%;font-size:0.9em;float:left;text-align:center;margin-bottom:10px;">
+
+                       <div class="col-auto mw-100 mb-2" t-if="o.origin" name="origin">
+                           <div style="width:100%">
+                               <b><span style="color:black;">Origen:</span></b>
+                           </div>
+                           <div style="width:100%">
+                               <span class="m-0" t-field="o.origin"/>
+                           </div>
+
+                       </div>
+
+                   </div>
+
+                   <!-- Fin referencias -->
+
+                   <!-- Productos -->
+
+                    <!-- Separador -->
+
+                        <div style="height:2px;background-color:black;clear:both;"></div>
+
+                        <!-- Fin separador -->
+
+                    <!-- Cabecera -->
+
+                        <div style="margin-top:5px;padding-bottom:5px;">
+
+                            <div style="width:25%;float:left;text-align:right;">
+
+                                <b><span>Uds.</span></b>
+
+                            </div>
+
+                            <div style="width:25%;float:left;text-align:right;">
+
+                                <b><span>Precio/U</span></b>
+
+                            </div>
+
+                            <div style="width:25%;float:left;text-align:right;">
+                                <t t-set="ifDiscount" t-value="0"></t>
+                                <t t-foreach="o.invoice_line_ids" t-as="line">
+                                    <t t-if="line.discount">
+                                        <t t-set="ifDiscount" t-value="1"></t>
+                                    </t>
+                                </t>
+                                <t t-if="ifDiscount == 1">
+                                    <b><span>Dto%</span></b>
+                                </t>
+                                <t t-else="">
+                                    <span style="color:white;">Dto%</span>
+                                </t>
+
+                            </div>
+
+                           <!-- <div style="width:15%;float:left;text-align:right;">
+
+                                <b><span>IVA</span></b>
+
+                            </div>-->
+
+                            <div style="width:25%;float:left;text-align:right;">
+
+                                <b><span>Total</span></b>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Fin cabecera -->
+
+                        <!-- Separador -->
+
+                        <div style="height:2px;background-color:black;clear:both;"></div>
+
+                        <!-- Fin separador -->
+
+                         <div style="font-size:0.8em;">
+                             <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
+
+                            <t t-set="ActLine" t-value="0"></t>
+                            <t t-set="addSeparator" t-value="1"></t>
+                            <t t-set="current_subtotal" t-value="0"/>
+                            <t t-foreach="o.invoice_line_ids" t-as="line">
+                                <t t-if="line.price_unit > 0.00">
+                                <t t-set="ActLine" t-value="ActLine +1"></t>
+                                    <t t-if="ActLine == numLines">
+                                        <t t-set="addSeparator" t-value="0"></t>
+                                    </t>
+                                   <!-- Fila 1: Producto -->
+
+                                    <div style="width:100%;clear:both;">
+                                        <span t-field="line.product_id"/>
+                                    </div>
+
+                                     <!-- Fin fila 1: Producto -->
+                                     <!-- Fila 2: Lote -->
+
+                                    <div style="width:97%;margin-left:3%;">
+
+
+                                            <!-- Lote -->
+                                            <div style="width:100%;" t-if="line.prod_lot_ids">
+                                                <span><b>Lote:</b></span>
+                                                <span t-field="line.prod_lot_ids"/>
+                                            </div>
+                                            <!-- Fin Lote -->
+
+                                        </div>
+                                        <!--Fin Fila 2: Lote -->
+                                        <!--Fila 3: datos -->
+                                        <div style="width:100%;">
+
+                                            <!--unidades -->
+                                            <div style="width:25%;float:left;text-align:right;">
+                                                <t t-if="line.quantity">
+                                                    <span style="text-align:right;display:block" t-esc="'%.0f'%(line.quantity)"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span style="text-align:right;display:block;color:white;">aa</span>
+                                                </t>
+                                            </div>
+                                            <!-- Fin unidades -->
+                                            <!-- Precio -->
+                                            <div style="width:25%;float:left;text-align:right;">
+                                                <t t-if="line.price_unit">
+                                                    <span style="text-align:right;display:block;"><span t-esc="'%.2f'%line.price_unit"/>€</span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span style="text-align:right;display:block;">0.00</span>
+                                                </t>
+                                            </div>
+                                            <!-- Fin Precio -->
+
+                                            <!-- Descuento -->
+                                            <div style="width:25%;float:left;text-align:right;">
+                                                <t t-if="line.discount">
+                                                    <span style="text-align:right;display:block;"><span t-esc="'%.2f'%line.discount"/>%</span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span style="text-align:right;display:block;color:white;">aa</span>
+                                                </t>
+                                            </div>
+                                            <!-- Fin Descuento -->
+
+                                            <!-- IVA -->
+                                           <!-- <div style="width:15%;float:left;text-align:right;">
+                                            <t t-foreach="line.invoice_line_tax_ids" t-as="tax">
+                                                <t t-set="tax_name" t-value="tax.name"></t>
+                                                <t t-set="isIVA" t-value="tax_name.find('IVA')"></t>
+                                                <t t-if="isIVA > -1">
+                                                    <span style="text-align:right;display:block;"><span t-esc="'%.0f'%tax.amount"/>%</span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span style="text-align:right;display:block;color:white;">aa</span>
+                                                </t>
+                                            </t>
+                                            </div> -->
+
+                                            <!-- Fin IVA -->
+                                            <!-- Neto -->
+                                             <div style="width:25%;float:left;text-align:right;">
+
+                                                <span style="text-align:right;display:block;"><span t-esc="'%.2f'%(line.price_subtotal)"/>€</span>
+
+                                             </div>
+                                            <!-- Fin Neto -->
+
+
+                                        </div>
+                                        <!--Fila 3: datos -->
+                                <!-- Separador -->
+
+                            <div style="height:1px;background-color:black;clear:both;" t-if="addSeparator == 1"></div>
+
+                            <!-- Fin separador -->
+                            </t>
+                            </t>
+                        </div>
+                            <!-- Fin Lineas -->
+
+                        <!-- Fin productos -->
+
+                        <hr style="height:3px; background-color:black;clear:both;"></hr>
+
+
+
+                   <!-- Totales -->
+
+                    <div style="width:100%;margin-bottom:10px;margin-top:10px;text-align:right;">
+
+                        <!-- Subtotal -->
+
+                        <div>
+                            <div style="width:65%;float:left;text-align:left;">
+                                <span style="font-weight:bolder;">Base imponible</span>
+                            </div>
+
+                            <div style="width:35%;float:left;">
+                                <span t-field="o.amount_untaxed"/>
+                            </div>
+
+                        </div>
+
+                        <!-- Fin subtotal -->
+
+                        <!-- Iva -->
+
+                        <div style="clear:both;">
+
+
+                        <t t-foreach="o.amount_by_group" t-as="amount_by_group">
+                            <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">
+                                <div style="width:65%;float:left;clear:both;text-align:left;">
+                                    <b><span t-esc="amount_by_group[0]"/></b>
+                                </div>
+
+                                <div class="text-right o_price_total" style="width:35%;float:left;text-align:right">
+                                    <span t-if="o.type == 'out_refund'">-</span>
+                                    <span t-esc="amount_by_group[3]"/>
+                                </div>
+
+                            </t>
+                            <t t-else="">
+                                <div style="width:70%;float:left;clear:both;text-align:left;">
+                                    <div style="clear:both;float:left;width:65%;">
+                                        <b><span t-esc="amount_by_group[0]"/></b>
+                                        <span>sobre</span>
+                                    </div>
+
+                                    <div style="text-align:right;float:left;width:35%;">
+                                        <span style="display:block;width:100%;">
+                                        <t t-esc="amount_by_group[4]"/>
+                                    </span>
+
+                                    </div>
+                                </div>
+
+                                <div class="text-right o_price_total" style="width:30%;float:left;text-align:right">
+                                    <span t-if="o.type == 'out_refund'">-</span>
+                                    <span t-esc="amount_by_group[3]"/>
+                                </div>
+                            </t>
+
+                        </t>
+
+
+                        </div>
+
+                        <!-- Fin iva -->
+
+                        <!-- Total documento -->
+
+                        <div style="clear:both;">
+
+                            <div style="width:50%;float:left;text-align:left;">
+                                <span style="font-weight:bolder;">Total</span>
+                            </div>
+
+                            <div style="width:50%;float:left;">
+                                <span t-field="o.amount_total"/>
+                            </div>
+
+                        </div>
+
+                        <div style="clear:both;height:10px;"></div>
+
+                        <!-- Fin total documento -->
+
+                        <hr style="height:3px; background-color:black;clear:both;"></hr>
+
+                    </div>
+
+                    <!-- Fin totales -->
+
+                    <p t-if="o.comment" name="comment">
+                        <span t-field="o.comment"/>
+                    </p>
+
+
+                   <!-- Términos de pago -->
+
+                    <p t-if="o.payment_term_id" name="payment_term">
+                        <span t-field="o.payment_term_id.note"/>
+                    </p>
+
+                   <!-- Fin términos de pago -->
+
+                    <p t-if="o.fiscal_position_id.note" name="note" style="display:none;">
+                        <span t-field="o.fiscal_position_id.note"/>
+                    </p>
+
+                  <!-- <hr style="height:3px; background-color:black;clear:both;"></hr>-->
+
+                    <!-- Firma del cliente -->
+
+                        <div style="height:100px;width:100%;border:2px solid black;margin-top:5px;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
+                        </div>
+
+
+                        <!-- fin Firmar del cliente -->
+
+                   <!-- Footer empresa -->
+
+                   <!--<div style="padding-bottom:30px; text-align:center;">
+                    <span>Footer de la empresa</span>
+
+                        </div> -->
+
+                   <!-- fin footer empresa -->
+
+                   <div style="clear:both;height:10px;"></div>
+
+               </div>
+
+            </t>
+
+        </template>
+
+    </data>
+
+</odoo>
