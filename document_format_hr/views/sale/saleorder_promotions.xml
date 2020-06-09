@@ -4,7 +4,7 @@
 
     <data>
 
-        <report id="report_saleorder_promotions_print"
+        <report id="document_format_hr.report_saleorder_promotions_print"
                 string="Presupuesto / Pedido"
                 model="sale.order"
                 report_type="qweb-pdf"
@@ -13,7 +13,7 @@
                 print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
         />
 
-        <template id="report_saleorder_promotions">
+        <template id="document_format_hr.report_saleorder_promotions">
             <t t-name="document_format_hr.report_saleorder_promotions">
                 <t t-call="web.html_container">
                     <t t-foreach="docs" t-as="doc">

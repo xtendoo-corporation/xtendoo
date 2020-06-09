@@ -4,9 +4,9 @@
 
     <data>
 
-        <template id="report_delivery_document_promotions">
+        <template id="document_format_hr.report_delivery_document_promotions">
 
-             <t t-name="document_format_hr.report_delivery_document_promotions">
+             <t t-name="report_delivery_document_promotions">
 
                    <t t-call="web.external_layout">
 

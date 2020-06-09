@@ -4,7 +4,7 @@
 
     <data>
 
-        <template id="report_invoice_document_bluetooth_with_promotions">
+        <template id="document_format_hr.report_invoice_document_bluetooth_with_promotions">
 
             <t t-name="document_format_hr.report_invoice_document_bluetooth_with_promotions">
 

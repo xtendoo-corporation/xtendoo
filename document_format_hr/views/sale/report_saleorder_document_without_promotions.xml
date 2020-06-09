@@ -4,7 +4,7 @@
 
     <data>
 
-        <template id="report_saleorder_document_without_promotions">
+        <template id="document_format_hr.report_saleorder_document_without_promotions">
 
              <t t-name="document_format_hr.report_saleorder_document_without_promotions">
 
