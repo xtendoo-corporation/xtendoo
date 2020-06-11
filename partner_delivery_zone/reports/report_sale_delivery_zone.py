@@ -25,6 +25,7 @@ class ReportSaleDeliveryZone(models.AbstractModel):
             'get_pickings_delivery_zone_date': self.get_pickings_delivery_zone_date,
             'get_invoices_delivery_zone_date': self.get_invoices_delivery_zone_date,
             'get_payments_delivery_zone_date': self.get_payments_delivery_zone_date,
+            'get_grouped_payments_delivery_zone_date': self.get_grouped_payments_delivery_zone_date,
         }
 
     @api.model
@@ -41,6 +42,7 @@ class ReportSaleDeliveryZone(models.AbstractModel):
         return self.env['sale.order'].search(
             [('delivery_zone_id', '=', delivery_zone_id),
              ('state', '!=', 'draft'),
+             ('invoice_status', '!=', 'invoiced'),
              ('date_order', '>=', datetime.combine(date, datetime.min.time())),
              ('date_order', '<=', datetime.combine(date, datetime.max.time()))]
         )
@@ -49,7 +51,7 @@ class ReportSaleDeliveryZone(models.AbstractModel):
     def get_pickings_delivery_zone_date(self, delivery_zone_id, date):
         return self.env['stock.picking'].search(
             [('delivery_zone_id', '=', delivery_zone_id),
-             ('picking_type_code', '=', 'outgoing'),            
+             ('picking_type_code', '=', 'outgoing'),
              ('scheduled_date', '>=', datetime.combine(date, datetime.min.time())),
              ('scheduled_date', '<=', datetime.combine(date, datetime.max.time()))]
         )
@@ -68,5 +70,17 @@ class ReportSaleDeliveryZone(models.AbstractModel):
         return self.env['account.payment'].search(
             [('delivery_zone_id', '=', delivery_zone_id),
              ('payment_type', '=', 'inbound'),
+             ('communication', '=', False),
              ('payment_date', '=', date)]
         )
+
+    @api.multi
+    def get_grouped_payments_delivery_zone_date(self, delivery_zone_id, date):
+        return self.env['account.payment'].read_group(
+            [('delivery_zone_id', '=', delivery_zone_id),
+             ('payment_type', '=', 'inbound'),
+             ('payment_date', '=', date)],
+             ['journal_id', 'amount'],
+             ['journal_id'],
+        )
+

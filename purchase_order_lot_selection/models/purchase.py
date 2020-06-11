@@ -11,18 +11,17 @@ class PurchaseOrderLine(models.Model):
     @api.multi
     @api.onchange('product_id')
     def onchange_product_id(self):
-        super(PurchaseOrderLine, self).onchange_product_id()
+        super().onchange_product_id()
         self.lot_id = False
 
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
         available_lot_ids = []
         if self.product_id:
-            quants = self.env['stock.quant'].read_group([
+            quants = self.env['stock.production.lot'].search([
                 ('product_id', '=', self.product_id.id),
-                ('lot_id', '!=', False),
-            ], ['lot_id'], 'lot_id')
-            available_lot_ids = [quant['lot_id'][0] for quant in quants]
+            ])
+            available_lot_ids = quants.ids
         self.lot_id = False
         return {
             'domain': {'lot_id': [('id', 'in', available_lot_ids)]}
