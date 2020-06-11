@@ -4,46 +4,20 @@
 
     <data>
 
-        <record id="bluetooth_saleorder" model="report.paperformat">
-            <field name="name">Bluetooth saleorder</field>
-            <field name="default" eval="False"/>
-            <field name="format">custom</field>
-            <field name="margin_top">10</field>
-            <field name="margin_bottom">3</field>
-            <field name="margin_right">1.5</field>
-            <field name="margin_left">1.5</field>
-            <field name="page_height">500</field>
-            <field name="page_width">80</field>
-            <field name="orientation">Portrait</field>
-            <field name="header_line">False</field>
-            <field name="header_spacing">35</field>
-            <field name="dpi">90</field>
-        </record>
+        <template id="report_saleorder_document_bluetooth_with_promotions">
 
-        <report id="report_saleorder_bluetooh"
-                string="Presupuesto / Pedido Bluetooth"
-                model="sale.order"
-                report_type="qweb-pdf"
-                name="document_format_hr.report_saleorder_bluetooth"
-                file="sale.report_saleorder_document"
-                print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
-        />
+            <t t-name="document_format_hr.report_saleorder_document_bluetooth_with_promotions">
 
-        <record id="document_format_hr.report_saleorder_bluetooh" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_hr.bluetooth_saleorder"/>
-        </record>
+                <t t-set="isPromo" t-value="0"></t>
+                <t t-set="numLines" t-value="0"></t>
 
-        <template id="report_saleorder_bluetooth">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="doc">
-                    <t t-call="document_format_hr.report_saleorder_document_bluetooth" t-lang="doc.partner_id.lang"/>
-                </t>
-            </t>
-        </template>
-
-        <template id="report_saleorder_document_bluetooth">
-
-            <t t-name="sale.report_saleorder_document_bluetooth">
+                 <t t-foreach="doc.order_line" t-as="line">
+                     <t t-if="line.price_unit == 0.0">
+                         <t t-set="isPromo" t-value="1"></t>
+                         <t t-set="numLines" t-value="numLines + 1"></t>
+                     </t>
+                 </t>
+                        <t t-if="isPromo == 1">
 
                 <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
                 <div style="display:none;">
@@ -79,7 +53,7 @@
 
                     <!-- Cabecera documento -->
 
-                    <div class="col-6" style="display:block; width:35%; margin:0 auto;margin-top:-20px;">
+                    <div class="col-6" style="display:block; width:35%; margin:0 auto;">
                         <img t-if="res_company.logo"
                              t-att-src="image_data_uri(res_company.logo)" alt="Logo"
                              style="width:100%"/>
@@ -271,19 +245,19 @@
 
                         <div style="margin-top:5px;padding-bottom:5px;">
 
-                            <div style="width:15%;float:left;text-align:right;">
+                            <div style="width:25%;float:left;text-align:right;">
 
                                 <b><span>Uds.</span></b>
 
                             </div>
 
-                            <div style="width:30%;float:left;text-align:right;">
+                            <div style="width:25%;float:left;text-align:right;">
 
                                 <b><span>Precio/U</span></b>
 
                             </div>
 
-                            <div style="width:15%;float:left;text-align:right;">
+                            <div style="width:25%;float:left;text-align:right;">
                                 <t t-set="ifDiscount" t-value="0"></t>
                                 <t t-foreach="doc.order_line" t-as="line">
                                     <t t-if="line.discount">
@@ -299,11 +273,11 @@
 
                             </div>
 
-                            <div style="width:15%;float:left;text-align:right;">
+                            <!--<div style="width:25%;float:left;text-align:right;">
 
                                 <b><span>IVA</span></b>
 
-                            </div>
+                            </div> -->
 
                             <div style="width:25%;float:left;text-align:right;">
 
@@ -324,11 +298,12 @@
                         <!--Lineas -->
 
                     <div style="font-size:0.8em;">
-                        <t t-set="numLines" t-value="len(doc.order_line)"></t>
+
                         <t t-set="ActLine" t-value="0"></t>
                         <t t-set="addSeparator" t-value="1"></t>
                         <t t-set="current_subtotal" t-value="0"/>
                         <t t-foreach="doc.order_line" t-as="line">
+                            <t t-if="line.price_unit == 0.00">
                             <t t-set="ActLine" t-value="ActLine +1"></t>
                                 <t t-if="ActLine == numLines">
                                     <t t-set="addSeparator" t-value="0"></t>
@@ -358,7 +333,7 @@
                                     <div style="width:100%;">
 
                                         <!--unidades -->
-                                        <div style="width:15%;float:left;text-align:right;">
+                                        <div style="width:25%;float:left;text-align:right;">
                                             <t t-if="line.product_uom_qty">
                                                 <span style="text-align:right;display:block" t-esc="'%.0f'%(line.product_uom_qty)"/>
                                             </t>
@@ -368,18 +343,18 @@
                                         </div>
                                         <!-- Fin unidades -->
                                         <!-- Precio -->
-                                        <div style="width:30%;float:left;text-align:right;">
+                                        <div style="width:25%;float:left;text-align:right;">
                                             <t t-if="line.price_unit">
                                                 <span style="text-align:right;display:block;"><span t-esc="'%.2f'%line.price_unit"/>€</span>
                                             </t>
                                             <t t-else="">
-                                                <span style="text-align:right;display:block;color:white;">aa</span>
+                                                <span style="text-align:right;display:block;">0.00</span>
                                             </t>
                                         </div>
                                         <!-- Fin Precio -->
 
                                         <!-- Descuento -->
-                                        <div style="width:15%;float:left;text-align:right;">
+                                        <div style="width:25%;float:left;text-align:right;">
                                             <t t-if="line.discount">
                                                 <span style="text-align:right;display:block;"><span t-esc="'%.2f'%line.discount"/>%</span>
                                             </t>
@@ -390,7 +365,7 @@
                                         <!-- Fin Descuento -->
 
                                         <!-- IVA -->
-                                        <div style="width:15%;float:left;text-align:right;">
+                                        <!--<div style="width:15%;float:left;text-align:right;">
                                         <t t-foreach="line.tax_id" t-as="tax">
                                             <t t-set="tax_name" t-value="tax.name"></t>
                                             <t t-set="isIVA" t-value="tax_name.find('IVA')"></t>
@@ -402,7 +377,7 @@
                                             </t>
                                         </t>
                                         </div>
-
+                                            -->
                                         <!-- Fin IVA -->
                                         <!-- Neto -->
                                          <div style="width:25%;float:left;text-align:right;">
@@ -421,82 +396,14 @@
 
                         <!-- Fin separador -->
                         </t>
+                        </t>
                     </div>
                         <!-- Fin Lineas -->
 
                     <!-- Fin productos -->
 
                     <hr style="height:3px; background-color:black;clear:both;"></hr>
-
-                    <!-- Totales -->
-
-                    <div style="width:50%;margin-left:50%;margin-bottom:10px;margin-top:10px;text-align:right;">
-
-                        <!-- Subtotal -->
-
-                        <div>
-                            <div style="width:50%;float:left;text-align:left;">
-                                <span style="font-weight:bolder;">SubTotal</span>
-                            </div>
-
-                            <div style="width:50%;float:left;">
-                                <span t-field="doc.amount_untaxed"/>
-                            </div>
-
-                        </div>
-
-                        <!-- Fin subtotal -->
-
-                        <!-- Iva -->
-
-                        <div style="clear:both;">
-
-                            <t t-foreach="doc.amount_by_group" t-as="amount_by_group">
-
-                                <t t-if="amount_by_group[3] == 1 and doc.amount_untaxed == amount_by_group[2]">
-                                </t>
-                                <t t-else="">
-                                    <div style="width:50%;float:left;text-align:left;">
-                                        <span t-esc="amount_by_group[0]"/>
-                                    </div>
-
-                                    <div style="width:50%;float:left;">
-                                        <span t-esc="amount_by_group[1]"
-                                              t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
-                                    </div>
-
-                                </t>
-
-                            </t>
-
-                        </div>
-
-                        <!-- Fin iva -->
-
-                        <!-- Total documento -->
-
-                        <div style="clear:both;">
-
-                            <div style="width:50%;float:left;text-align:left;">
-                                <span style="font-weight:bolder;">Total</span>
-                            </div>
-
-                            <div style="width:50%;float:left;">
-                                <span t-field="doc.amount_total"/>
-                            </div>
-
-                        </div>
-
-                        <div style="clear:both;height:10px;"></div>
-
-                        <!-- Fin total documento -->
-
-                        <hr style="height:3px; background-color:black;clear:both;"></hr>
-
-                    </div>
-
-                    <!-- Fin totales -->
-
+                    
                     <!-- Footer empresa -->
                     <!--
                               <div style="padding-bottom:30px; text-align:center;">
@@ -527,8 +434,9 @@
 
                         <!-- fin Firmar del cliente -->
 
-                    <div class="oe_structure"/>
+                    <div style="clear:both;height:10px;" class="oe_structure"/>
                 </div>
+                        </t>
 
             </t>
 

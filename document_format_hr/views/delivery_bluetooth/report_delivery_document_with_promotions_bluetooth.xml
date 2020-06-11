@@ -4,47 +4,23 @@
 
     <data>
 
-        <record id="bluetooth_delivery_b" model="report.paperformat">
-            <field name="name">Bluetooth delivery_b</field>
-            <field name="default" eval="False"/>
-            <field name="format">custom</field>
-            <field name="margin_top">10</field>
-            <field name="margin_bottom">3</field>
-            <field name="margin_right">1.5</field>
-            <field name="margin_left">1.5</field>
-            <field name="page_height">500</field>
-            <field name="page_width">80</field>
-            <field name="orientation">Portrait</field>
-            <field name="header_line">False</field>
-            <field name="header_spacing">35</field>
-            <field name="dpi">90</field>
-        </record>
+        <template id="document_format_hr.report_delivery_bluetooth_with_promotions">
 
-        <report id="report_delivery_bluetooh_b"
-                string="Albarán Bluetooth"
-                model="stock.picking"
-                report_type="qweb-pdf"
-                name="document_format_hr.report_delivery_bluetooth_b"
-                print_report_name="'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)"
-        />
+            <t t-name="document_format_hr.report_delivery_bluetooth_with_promotions">
 
-        <record id="document_format_hr.report_delivery_bluetooh_b" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_hr.bluetooth_delivery_b"/>
-        </record>
+                <t t-set="isPromo" t-value="0"></t>
+                 <t t-set="numLines" t-value="0"></t>
 
-        <template id="report_delivery_bluetooth_b">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="o">
-                    <t t-call="document_format_hr.report_delivery_document_bluetooth_b" t-lang="o.partner_id.lang"/>
-                </t>
-            </t>
-        </template>
+                 <t t-foreach="o.move_line_ids" t-as="move_line">
+                     <t t-if="move_line.move_id.sale_line_id.price_unit == 0.0">
+                         <t t-set="isPromo" t-value="1"></t>
+                         <t t-set="numLines" t-value="numLines + 1"></t>
 
-        <template id="report_delivery_document_bluetooth_b">
+                     </t>
+                 </t>
+                        <t t-if="isPromo == 1">
 
-            <t t-name="stock.report_delivery_document_b">
-
-<t t-call="web.html_container">
+                <t t-call="web.html_container">
 
                     <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
                     <t t-set="partner"
@@ -60,7 +36,7 @@
 
                         <!-- Cabecera documento -->
 
-                        <div style="display:block; width:50%; margin:0 auto;">
+                        <div style="display:block; width:35%; margin:0 auto;">
                             <img t-if="res_company.logo"
                                  t-att-src="image_data_uri(res_company.logo)" alt="Logo"
                                  style="width:100%"/>
@@ -292,11 +268,80 @@
 
                         <!-- Productos hecho -->
 
+                        <!-- Cabecera -->
+
+                        <div>
+
+                            <div style="width:25%;float:left;text-align:right;">
+
+                                <b><span>Uds</span></b>
+
+                            </div>
+
+                            <div style="width:25%;float:left;text-align:right;">
+
+                                <b><span>Precio/U</span></b>
+
+                            </div>
+
+                            <div style="width:25%;float:left;text-align:right;">
+                                <t t-set="ifDiscount" t-value="0"></t>
+                                <t t-foreach="o.move_line_ids" t-as="ml">
+                                    <t t-if="ml.move_id.sale_line_id.discount">
+                                        <t t-set="ifDiscount" t-value="1"></t>
+                                    </t>
+                                </t>
+                                <t t-if="ifDiscount == 1">
+                                    <b><span>Dto%</span></b>
+                                </t>
+                                <t t-else="">
+                                    <span style="color:white;">Dto%</span>
+                                </t>
+
+                            </div>
+
+                           <!-- <div style="width:15%;float:left;text-align:right;">
+
+                                <b><span>IVA</span></b>
+
+                            </div> -->
+
+                            <div style="width:25%;float:left;text-align:right;">
+
+                                <b><span>Total</span></b>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Fin cabecera -->
+
+                        <!-- Separador -->
+
+                        <div style="height:2px;background-color:black;clear:both;"></div>
+
+                        <!-- Fin separador -->
+
                         <div t-if="o.move_line_ids and o.state=='done'" style="font-size:0.8em;margin-top:5px;padding-bottom:5px;">
 
-                            <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
 
+                            <t t-set="importeTotal" t-value="0"></t>
+                            <t t-set="importeIva21" t-value="0"></t>
+                            <t t-set="importeIva21Total" t-value="0"></t>
+                            <t t-set="importeIva10" t-value="0"></t>
+                            <t t-set="importeIva10Total" t-value="0"></t>
+                            <t t-set="importeIva4" t-value="0"></t>
+                            <t t-set="importeIva4Total" t-value="0"></t>
+
+                            <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
+                            <t t-set="ActLine" t-value="0"></t>
+                            <t t-set="addSeparator" t-value="1"></t>
                             <t t-foreach="o.move_line_ids" t-as="move_line">
+                            <t t-if="move_line.move_id.sale_line_id.price_unit == 0.00">
+                                <t t-set="ActLine" t-value="ActLine +1"></t>
+                                <t t-if="ActLine == numLines">
+                                    <t t-set="addSeparator" t-value="0"></t>
+                                </t>
                                <!-- Fila 1: Producto -->
 
                                 <div style="width:100%;clear:both;">
@@ -304,37 +349,91 @@
                                 </div>
 
                                  <!-- Fin fila 1: Producto -->
-                                 <!-- Fila 2: Datos -->
+                                 <!-- Fila 2: Lote -->
 
-                                <div style="width:95%;margin-left:5%;">
+                                <div style="width:97%;margin-left:3%;">
 
-                                    <!-- Lote -->
-                                    <div style="width:50%;float:left;">
-                                        <span><b>Lote:</b></span>
-                                        <span t-field="move_line.lot_id"/>
+
+                                        <!-- Lote -->
+                                        <div style="width:100%;" t-if="move_line.lot_id">
+                                            <span><b>Lote:</b></span>
+                                            <span t-field="move_line.lot_id"/>
+                                        </div>
+                                        <!-- Fin Lote -->
+
                                     </div>
-                                    <!-- Fin Lote -->
+                                    <!--Fin Fila 2: Lote -->
+                                    <!--Fila 3: datos -->
+                                    <div style="width:100%;">
 
-                                    <!-- Descuento -->
-                                    <div style="width:20%;float:left;">
-                                        <span><b>Dto:</b></span>
-                                        <span t-esc="'%.2f'%move_line.move_id.sale_line_id.discount"/>
+                                        <!--Unidades -->
+                                        <div style="width:25%;float:left;text-align:right;">
+                                            <t t-if="move_line.qty_done">
+                                                <span style="text-align:right;display:block" t-esc="'%.0f'%(move_line.qty_done)"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="text-align:right;display:block;color:white;">aa</span>
+                                            </t>
+                                        </div>
+                                        <!-- Fin Unidades -->
+                                        <!-- Precio -->
+                                        <div style="width:25%;float:left;text-align:right;">
+                                            <t t-if="move_line.move_id.sale_line_id.price_unit">
+                                                <span style="text-align:right;display:block;"><span t-esc="'%.2f'%move_line.move_id.sale_line_id.price_unit"/>€</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="text-align:right;display:block;">0.00</span>
+                                            </t>
+                                        </div>
+                                        <!-- Fin Precio -->
+
+                                        <!-- Descuento -->
+                                        <div style="width:25%;float:left;text-align:right;">
+                                            <t t-if="move_line.move_id.sale_line_id.discount">
+                                                <span style="text-align:right;display:block;"><span t-esc="'%.2f'%move_line.move_id.sale_line_id.discount"/>%</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="text-align:right;display:block;color:white;">aa</span>
+                                            </t>
+                                        </div>
+                                        <!-- Fin Descuento -->
+
+                                        <!-- IVA -->
+                                        <!--<div style="width:15%;float:left;text-align:right;">
+                                        <t t-foreach="move_line.move_id.sale_line_id.tax_id" t-as="tax">
+                                            <t t-set="tax_name" t-value="tax.name"></t>
+                                            <t t-set="isIVA" t-value="tax_name.find('IVA')"></t>
+                                            <t t-if="isIVA > -1">
+                                                <span style="text-align:right;display:block;"><span t-esc="'%.0f'%tax.amount"/>%</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="text-align:right;display:block;color:white;">aa</span>
+                                            </t>
+
+                                        </t>
+                                    </div> -->
+
+                                        <!-- Fin IVA -->
+                                        <!-- Neto -->
+                                         <div style="width:25%;float:left;text-align:right;">
+
+                                            <span style="text-align:right;display:block;"><span t-esc="'%.2f'%(move_line.move_id.sale_line_id.price_reduce*move_line.move_id.sale_line_id.qty_delivered)"/>€</span>
+                                            <t t-set="importeTotal"
+                                       t-value="importeTotal + (move_line.move_id.sale_line_id.price_reduce*move_line.move_id.sale_line_id.qty_delivered)"></t>
+                                        </div>
+                                        <!-- Fin Neto -->
+
+
                                     </div>
-                                    <!-- Fin Descuento -->
+                                    <!--Fila 3: datos -->
+                                <!-- Separador -->
 
-                                    <!-- Cantidad -->
-                                    <div style="width:30%;float:left;">
-                                        <span><b>Cantidad:</b></span>
-                                        <span t-esc="'%.1f'%(move_line.qty_done)"/>
-                                    </div>
-                                    <!-- Fin Cantidad -->
+                        <div style="height:1px;background-color:black;clear:both;" t-if="addSeparator == 1"></div>
 
-
-                                </div>
-
-                                 <!-- Fin fila 2: Datos -->
-
+                        <!-- Fin separador -->
                             </t>
+                            </t>
+
 
                         </div>
 
@@ -348,14 +447,17 @@
                         <!-- Fin separador -->
 
                         <!-- Firma del cliente -->
+                        <div style="clear:both;"></div>
 
-                        <div style="height:100px;width:100%;border:2px solid black;margin-top:5px;">
+                        <div style="height:100px;width:100%;border:2px solid black;margin-top:20px;">
                               <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
                               <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
                         </div>
 
+                        <div style="clear:both;height:10px;" class="oe_structure"/>
 
                         <!-- fin Firmar del cliente -->
+
 
                         <p>
                             <t t-if="o.backorder_ids and o.backorder_ids.filtered(lambda x: x.state not in ('done', 'cancel'))">
@@ -368,7 +470,7 @@
 
                 </t>
 
-
+                </t>
             </t>
 
         </template>

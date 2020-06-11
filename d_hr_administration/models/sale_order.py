@@ -6,11 +6,12 @@ from odoo.exceptions import ValidationError
 import logging
 
 
-class SaleOrderLine(models.Model):
-    _inherit = 'sale.order.line'
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+    _name = 'sale.order'
 
     is_admin = fields.Boolean(
-        comodel_name='sale.order.line',
+        comodel_name='sale.order',
         compute='_is_admin',
         string="isAdmin",
         default=lambda self: self._get_default_admin()
