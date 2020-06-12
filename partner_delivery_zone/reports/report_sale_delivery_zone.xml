@@ -35,26 +35,26 @@
                 </div>
 
                 <!-- Quotations -->
-                <table class="table table-condensed">
+                <table class="table table-condensed" style="border: none;">
                     <thead>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
-                            <th style="width: 20%">Presupuestos</th>
-                            <th style="width: 55%">Cliente</th>
-                            <th style="width: 25%" class="text-right">Total</th>
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
+                            <th style="width: 20%;">Presupuestos</th>
+                            <th style="width: 55%;">Cliente</th>
+                            <th style="width: 25%;" class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         <t t-set="quotations" t-value="get_quotations_delivery_zone_date(doc.id, date_report)"/>
                         <t t-set="quotation_subtotal" t-value="0"/>
                         <t t-foreach="quotations" t-as="quotation">
-                            <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
-                                <td>
+                            <tr style="line-height:10px; margin: 0px 0px 0px 0px; border: none;">
+                                <td style="border: none;">
                                     <span t-esc="quotation.name"/>
                                 </td>
-                                <td>
+                                <td style="border: none;">
                                     <span t-esc="quotation.partner_id.display_name"/>
                                 </td>
-                                <td align="right">
+                                <td align="right" style="border: none;">
                                     <span t-esc="quotation.amount_total"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
@@ -63,7 +63,7 @@
                         </t>
                     </tbody>
                     <tfoot>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td/>
                             <td>
                                 <strong>Total Presupuestos</strong>
@@ -79,9 +79,9 @@
                 </table>
 
                 <!-- Sale Order -->
-                <table class="table table-condensed">
+                <table class="table table-condensed" style="border: none;">
                     <thead>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <th style="width: 20%">Pedido Pendientes</th>
                             <th style="width: 55%">Cliente</th>
                             <th style="width: 25%" class="text-right">Total</th>
@@ -91,15 +91,15 @@
                         <t t-set="sale_orders" t-value="get_sale_orders_delivery_zone_date(doc.id, date_report)"/>
                         <t t-set="sale_order_subtotal" t-value="0"/>
                         <t t-foreach="sale_orders" t-as="sale_order">
-                            <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
-                                <td>
+                            <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
+                                <td style="border: none;">
                                     <span t-esc="sale_order.name"/>
                                 </td>
-                                <td>
+                                <td style="border: none;">
                                     <span t-esc="sale_order.partner_id.ref"/>-
                                     <span t-esc="sale_order.partner_id.display_name"/>
                                 </td>
-                                <td align="right">
+                                <td align="right" style="border: none;">
                                     <span t-esc="sale_order.amount_total"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
@@ -110,7 +110,7 @@
                         </t>
                     </tbody>
                     <tfoot>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td/>
                             <td>
                                 <strong>Total Pedidos Pendientes de Facturar</strong>
@@ -163,9 +163,9 @@
                 -->
 
                 <!-- Invoice -->
-                <table class="table table-condensed">
+                <table class="table table-condensed" style="border: none;">
                     <thead>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <th style="width: 20%">Factura</th>
                             <th style="width: 40%">Cliente</th>
                             <th style="width: 20%" class="text-right">Total</th>
@@ -177,19 +177,19 @@
                         <t t-set="invoice_subtotal" t-value="0"/>
                         <t t-set="invoice_payments" t-value="0"/>
                         <t t-foreach="invoices" t-as="invoice">
-                            <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
-                                <td>
+                            <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
+                                <td style="border: none;">
                                     <span t-esc="invoice.number"/>
                                 </td>
-                                <td>
+                                <td style="border: none;">
                                     <span t-esc="invoice.partner_id.ref"/>-
                                     <span t-esc="invoice.partner_id.display_name"/>
                                 </td>
-                                <td align="right">
+                                <td align="right" style="border: none;">
                                     <span t-esc="invoice.amount_total_signed"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
-                                <td align="right">
+                                <td align="right" style="border: none;">
                                     <span t-esc="invoice.amount_total_signed - invoice.residual_signed"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
@@ -201,7 +201,7 @@
                         </t>
                     </tbody>
                     <tfoot>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td/>
                             <td>
                                 <strong>Total Facturas</strong>
@@ -222,10 +222,10 @@
                     </tfoot>
                 </table>
 
-                <!-- Payment Resume -->
-                <table class="table table-condensed">
+                <!-- Payment -->
+                <table class="table table-condensed" style="border: none;">
                     <thead>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <th style="width: 20%">Pagos</th>
                             <th style="width: 60%">Cliente</th>
                             <th style="width: 20%" class="text-right">Total</th>
@@ -235,15 +235,15 @@
                         <t t-set="payments" t-value="get_payments_delivery_zone_date(doc.id, date_report)"/>
                         <t t-set="payment_subtotal" t-value="0"/>
                         <t t-foreach="payments" t-as="payment">
-                            <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
-                                <td>
+                            <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
+                                <td style="border: none;">
                                     <span t-esc="payment.name"/>
                                 </td>
-                                <td>
+                                <td style="border: none;">
                                     <span t-esc="payment.partner_id.ref"/>-
-                                    <span t-esc="payment.partner_id.name"/>
+                                    <span t-esc="payment.partner_id.display_name"/>
                                 </td>
-                                <td align="right">
+                                <td align="right" style="border: none;">
                                     <span t-esc="payment.amount"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
@@ -252,11 +252,11 @@
                         </t>
                     </tbody>
                     <tfoot>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
+                            <td/>
                             <td>
                                 <strong>Total Pagos</strong>
                             </td>
-                            <td/>
                             <td align="right">
                                 <strong>
                                     <span t-esc="payment_subtotal"
@@ -267,39 +267,39 @@
                     </tfoot>
                 </table>
 
-                <!-- Payment -->
-                <table class="table table-condensed">
+                <!-- Payment Grouped -->
+                <table class="table table-condensed" style="border: none;">
                     <thead>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <th style="width: 75%">Forma de Pago</th>
                             <th style="width: 25%" class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         <t t-set="payments_journals" t-value="get_grouped_payments_delivery_zone_date(doc.id, date_report)"/>
-                        <t t-set="payment_subtotal" t-value="0"/>
+                        <t t-set="payment_grouped_subtotal" t-value="0"/>
 
                         <t t-foreach="payments_journals" t-as="payment_journal">
                             <tr>
-                                <td>
+                                <td style="border: none;">
                                     <span t-esc="payment_journal['journal_id'][1]"/>
                                 </td>
-                                <td align="right">
+                                <td align="right" style="border: none;">
                                     <span t-esc="payment_journal['amount']"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>
-                            <t t-set="payment_subtotal" t-value="payment_subtotal + payment_journal['amount']"/>
+                            <t t-set="payment_grouped_subtotal" t-value="payment_grouped_subtotal + payment_journal['amount']"/>
                         </t>
                     </tbody>
                     <tfoot>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td>
                                 <strong>Total Pagos</strong>
                             </td>
                             <td align="right">
                                 <strong>
-                                    <span t-esc="payment_subtotal"
+                                    <span t-esc="payment_grouped_subtotal"
                                         t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </strong>
                             </td>
@@ -309,34 +309,34 @@
 
                 <p/>
 
-                <table class="table table-bordered">
+                <table class="table table-bordered" style="border: none;">
                     <thead>
                         <th style="width: 75%">Resumen Diario</th>
                         <th style="width: 25%" class="text-right">Total</th>
                     </thead>
                     <tbody>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
-                            <td>Total Persupuestos</td>
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
+                            <td>Total Presupuestos</td>
                             <td align="right">
                                 <span t-esc="quotation_subtotal"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td>Total Pedidos Pendientes</td>
                             <td align="right">
                                 <span t-esc="sale_order_subtotal"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td>Total Facturado</td>
                             <td align="right">
                                 <span t-esc="invoice_subtotal"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
-                        <tr style="line-height:6px; margin: 0px 0px 0px 0px;">
+                        <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td>Total Cobrado</td>
                             <td align="right">
                                 <span t-esc="payment_subtotal"
