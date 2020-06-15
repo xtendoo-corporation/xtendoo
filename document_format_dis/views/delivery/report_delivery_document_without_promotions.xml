@@ -4,9 +4,9 @@
 
     <data>
 
-        <template id="report_delivery_document_without_promotions">
+        <template id="document_format_dis.report_delivery_document_without_promotions">
 
-             <t t-name="report_delivery_document_without_promotions">
+             <t t-name="document_format_dis.report_delivery_document_without_promotions">
 
                    <t t-call="web.external_layout">
 
@@ -25,10 +25,10 @@
                                 <span t-field="o.name"/>
                             </li>
 
-                            <li t-if="o.delivery_zone_id">
+                            <!--<li t-if="o.delivery_zone_id">
                                 <b>Zona:</b>
                                 <spam t-field="o.delivery_zone_id"/>
-                            </li>
+                            </li> -->
 
                             <li>
                                 <b>Estado:</b>
@@ -164,7 +164,18 @@
                     </div>
 
                     <div class="text-right" style="font-weight:bolder; color:#4f4b4b;float:left;width:8%;">
-                        <span>Desc(%)</span>
+                         <t t-set="ifDiscount" t-value="0"></t>
+                                <t t-foreach="o.move_line_ids" t-as="ml">
+                                    <t t-if="ml.move_id.sale_line_id.discount">
+                                        <t t-set="ifDiscount" t-value="1"></t>
+                                    </t>
+                                </t>
+                                <t t-if="ifDiscount == 1">
+                                    <span>Dto(%)</span>
+                                </t>
+                                <t t-else="">
+                                    <span style="color:white;">Dto%</span>
+                                </t>
                     </div>
 
                     <div class="text-right" style="font-weight:bolder; color:#4f4b4b;float:left;width:10%;">
@@ -357,8 +368,8 @@
 
                     <div>
 
-                        <div style="width:35%;float:left;">
-                            <spam>Subtotal</spam>
+                        <div style="width:40%;float:left;">
+                            <spam>Base Imponible</spam>
                         </div>
 
                         <div style="width:60%;text-align:right;float:left;">
@@ -370,11 +381,15 @@
                     <div style="clear:both;">
 
                         <div t-if="importeIva21 != 0" style="width:60%;float:left;">
-                            <spam>IVA 21% en</spam>
-                            <span t-esc="'%.2f'%importeIva21Total"></span>€
+                            <div style="clear:both;width:60%;float:left;">
+                                <spam>IVA 21% sobre</spam>
+                            </div>
+                            <div style="width:40%;float:left;text-align:right;">
+                                <span t-esc="'%.2f'%importeIva21Total"></span>€
+                            </div>
                         </div>
 
-                        <div t-if="importeIva21 != 0" style="width:35%;text-align:right;float:left;">
+                        <div t-if="importeIva21 != 0" style="width:40%;text-align:right;float:left;">
                             <spam t-esc="'%.2f'%importeIva21"></spam>€
                         </div>
                     </div>
@@ -382,11 +397,15 @@
                     <div style="clear:both;">
 
                         <div t-if="importeIva10 != 0" style="width:60%;float:left;">
-                            <spam>IVA 10% en</spam>
-                            <span t-esc="'%.2f'%importeIva10Total"></span>€
+                            <div style="clear:both;width:60%;float:left;">
+                                <spam>IVA 10% sobre</spam>
+                            </div>
+                            <div style="width:40%;float:left;text-align:right;">
+                                <span t-esc="'%.2f'%importeIva10Total"></span>€
+                            </div>
                         </div>
 
-                        <div t-if="importeIva10 != 0" style="width:35%;text-align:right;float:left;">
+                        <div t-if="importeIva10 != 0" style="width:40%;text-align:right;float:left;">
                             <spam t-esc="'%.2f'%importeIva10"></spam>€
                         </div>
 
@@ -394,11 +413,15 @@
 
                     <div style="clear:both;">
                         <div t-if="importeIva4 != 0" style="width:60%;float:left;">
-                            <spam>IVA 4% en</spam>
-                            <span t-esc="'%.2f'%importeIva4Total"></span>€
+                            <div style="clear:both;width:60%;float:left;">
+                                <spam>IVA 4% sobre</spam>
+                            </div>
+                            <div style="width:40%;float:left;text-align:right;">
+                                <span t-esc="'%.2f'%importeIva4Total"></span>€
+                            </div>
                         </div>
 
-                        <div t-if="importeIva4 != 0" style="width:35%;text-align:right;float:left;">
+                        <div t-if="importeIva4 != 0" style="width:40%;text-align:right;float:left;">
                             <spam t-esc="'%.2f'%importeIva4"></spam>€
                         </div>
 
@@ -412,7 +435,7 @@
                             </spam>
                         </div>
 
-                        <div style="width:60%;text-align:right;float:left;">
+                        <div style="width:65%;text-align:right;float:left;">
 
                             <t t-if="importeIva21 != 0">
                                 <t t-set="importeTotal" t-value="importeTotal + importeIva21"></t>
