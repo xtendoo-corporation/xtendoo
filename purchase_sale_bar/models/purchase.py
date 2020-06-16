@@ -11,22 +11,16 @@ _logger = logging.getLogger(__name__)
 class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
-    bar_qty = fields.Float(string='Bar Quantity', digits=dp.get_precision('Product Unit of Measure'), required=True)
+    bar_qty = fields.Float(
+        string='Bar Quantity', 
+        digits=dp.get_precision('Product Unit of Measure'), 
+    )
 
     no_change_bar_qty = True
 
     @api.onchange('bar_qty')
     def onchange_bar_qty(self):
-        _logger.info("*"*80)
-        _logger.info(self.bar_qty)
-        _logger.info(self.product_id.weight)
-        _logger.info(self.bar_qty * self.product_id.weight)
-
-        _logger.info("VALOR DEL FLAG***********************")
-        _logger.info(self.no_change_bar_qty)
-
         if not self.no_change_bar_qty:
-            _logger.info("SALIDA por flag***********************")
             self.no_change_bar_qty = True
             return
 
