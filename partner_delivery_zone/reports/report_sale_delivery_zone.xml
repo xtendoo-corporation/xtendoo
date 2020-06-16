@@ -339,7 +339,7 @@
                         <tr style="line-height:10px; margin: 0px 0px 0px 0px;">
                             <td>Total Cobrado</td>
                             <td align="right">
-                                <span t-esc="payment_subtotal"
+                                <span t-esc="payment_subtotal + invoice_payments"
                                     t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
