@@ -33,7 +33,7 @@
                         </div>
 
                         <div>
-                            C/ <span t-if="res_company.street" t-field="res_company.street"/>.
+                            <span t-if="res_company.street" t-field="res_company.street"/>.
                             <span t-if="res_company.zip" t-field="res_company.zip"/> <span t-if="res_company.city" t-field="res_company.city"/>
                         </div>
 
