@@ -34,7 +34,3 @@ class CategoryPricelistItem(models.Model):
             return percent.get('percentaje')
 
         return 0.00
-
-
-
-

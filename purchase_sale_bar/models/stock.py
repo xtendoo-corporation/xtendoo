@@ -14,8 +14,6 @@ class StockMove(models.Model):
         digits=dp.get_precision('Product Unit of Measure'),
     )
 
-    change_bar_qty = True
-
     @api.onchange('bar_qty')
     def onchange_bar_qty(self):
         for record in self:

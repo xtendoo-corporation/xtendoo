@@ -12,31 +12,20 @@ class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
     bar_qty = fields.Float(
-        string='Bar Quantity', 
-        digits=dp.get_precision('Product Unit of Measure'), 
+        string='Bar Quantity',
+        digits=dp.get_precision('Product Unit of Measure'),
     )
-
-    no_change_bar_qty = True
 
     @api.onchange('bar_qty')
     def onchange_bar_qty(self):
-        if not self.no_change_bar_qty:
-            self.no_change_bar_qty = True
-            return
-
-        if self.bar_qty != 0 and self.product_id.weight != 0:
-            self.product_qty = self.bar_qty * self.product_id.weight
+        for record in self:
+            if record.bar_qty != 0 and record.product_id.weight != 0:
+                record.product_qty = record.bar_qty * record.product_id.weight
 
     @api.onchange('product_qty')
     def onchange_product_quantity(self):
-        _logger.info("*"*80)
-        _logger.info(self.product_qty)
-        _logger.info("*"*80)
-
-        self.no_change_bar_qty = False
-        _logger.info("****ENCIENDO EL FLAG***********************")
-
-        if self.product_qty == 0 or self.product_id.weight == 0:
-            self.bar_qty = 0
-        else:
-            self.bar_qty = self.product_qty / self.product_id.weight
+        for record in self:
+            if record.product_qty == 0 or record.product_id.weight == 0:
+                record.bar_qty = 0
+            else:
+                record.bar_qty = record.product_qty / record.product_id.weight
