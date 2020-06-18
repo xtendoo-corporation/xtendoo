@@ -17,7 +17,7 @@
 
                  <xpath expr="//field[@name='picking_ids']" position="replace">
 
-                      <field name="picking_ids" widget="many2many" domain="[('state', 'not in', ('done', 'cancel'))]" options="{'not_delete': True}">
+                      <field name="picking_ids" widget="many2many" domain="[('state', 'not like', 'cancel')]" options="{'not_delete': True}">
                         <tree>
                             <field name="name"/>
                             <field name="partner_id"/>
@@ -26,8 +26,8 @@
                             <field name="scheduled_date"/>
                             <field name="weight"/>
                             <field name="state"/>
-                            <field name="payment_term"/>
-                            <field name="total_amount"/>
+                           <field name="payment_term"/>
+                           <field name="total_amount"/>
                             <button name="action_assign" string="Confirm picking" type="object" icon="fa-check text-success" attrs="{'invisible': [('state', 'in', ('done', 'cancel', 'confirmed', 'assigned'))]}"/>
                             <button name="action_cancel" string="Cancel picking" type="object" icon="fa-times-circle text-danger" attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}"/>
                         </tree>
