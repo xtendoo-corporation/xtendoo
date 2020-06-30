@@ -15,6 +15,10 @@ class StockPickingBatch(models.Model):
 
     payment_term = fields.Char(compute='compute_total_amount', string='Forma de pago')
 
+    lumps_number= fields.Integer(string='Nº de bultos', store=True)
+
+    palets_number = fields.Integer(string='Nº de palets', store=True)
+
     def compute_total_amount(self):
         for line in self:
             if line.sale_id != '':

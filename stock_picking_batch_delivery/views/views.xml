@@ -17,17 +17,19 @@
 
                  <xpath expr="//field[@name='picking_ids']" position="replace">
 
-                      <field name="picking_ids" widget="many2many" domain="[('state', 'not like', 'cancel')]" options="{'not_delete': True}">
-                        <tree>
-                            <field name="name"/>
-                            <field name="partner_id"/>
-                            <field name="partner_phone"/>
-                            <field name="date"/>
-                            <field name="scheduled_date"/>
-                            <field name="weight"/>
-                            <field name="state"/>
-                           <field name="payment_term"/>
-                           <field name="total_amount"/>
+                      <field name="picking_ids" widget="many2many" domain="[('state', 'not in', ('done', 'cancel'))]" options="{'not_delete': True}">
+                        <tree editable="bottom">
+                            <field name="name" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="partner_phone" readonly="1"/>
+                            <field name="date" readonly="1"/>
+                            <field name="scheduled_date" readonly="1"/>
+                            <field name="weight" readonly="1"/>
+                            <field name="lumps_number"/>
+                            <field name="palets_number"/>
+                            <field name="state" readonly="1"/>
+                            <field name="payment_term"/>
+                            <field name="total_amount"/>
                             <button name="action_assign" string="Confirm picking" type="object" icon="fa-check text-success" attrs="{'invisible': [('state', 'in', ('done', 'cancel', 'confirmed', 'assigned'))]}"/>
                             <button name="action_cancel" string="Cancel picking" type="object" icon="fa-times-circle text-danger" attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}"/>
                         </tree>
