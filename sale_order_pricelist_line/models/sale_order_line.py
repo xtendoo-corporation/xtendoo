@@ -2,6 +2,9 @@ from odoo import api, fields, models
 
 import logging
 
+
+
+
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
@@ -23,8 +26,24 @@ class SaleOrderLine(models.Model):
     @api.onchange('product_id')
     def product_id_change(self):
         result=super().product_id_change()
-        self.pricelist_id=self.order_id.pricelist_id.id
-        logging.info(self.pricelist_id)
+        self.pricelist_id = self.order_id.pricelist_id.id
+
+
+        logging.info(result.get('pricelist_id'))
         return result
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        print("*"*40)
+        print(vals_list)
+        for vals in vals_list:
+            vals['pricelist_id'] = self.pricelist_id
+        print(vals_list)
+        print("*"*40)
+        lines=super().create(vals_list)
+        #Lines.append({'pricelist_id':self.pricelist_id})
+        return lines
+
+
 
 
