@@ -21,34 +21,23 @@
 
 from odoo import api, models, fields
 
+
 class SaleOrder(models.Model):
-    _inherit = 'sale.order'
+    _inherit = "sale.order"
 
     @api.multi
-    @api.onchange('partner_id')
+    @api.onchange("partner_id")
     def onchange_partner_id(self):
-        super(SaleOrder, self).onchange_partner_id()
-        partners_invoice = []
-        partners_shipping = []
+        super().onchange_partner_id()
         domain = {}
         for record in self:
             if record.partner_id:
-                if record.partner_id.child_ids:
-                    for partner in record.partner_id.child_ids:
-                        if partner.type == 'invoice':
-                            partners_invoice.append(partner.id)
-                        if partner.type == 'delivery':
-                            partners_shipping.append(partner.id)
-                if partners_invoice:
-                    domain['partner_invoice_id'] =  [('id', 'in', partners_invoice)]
-                else:
-                    domain['partner_invoice_id'] =  []
-                if partners_shipping:
-                    domain['partner_shipping_id'] = [('id', 'in', partners_shipping)]
-                else:
-                    domain['partner_shipping_id'] =  []
-            else:
-                domain['partner_invoice_id'] =  [('type', '=', 'invoice')]
-                domain['partner_shipping_id'] =  [('type', '=', 'delivery')]
-
-        return {'domain': domain}
+                domain["partner_invoice_id"] = [
+                    ("type", "=", "invoice"),
+                    ("id", "child_of", record.partner_id.id),
+                ]
+                domain["partner_shipping_id"] = [
+                    ("type", "=", "delivery"),
+                    ("id", "child_of", record.partner_id.id),
+                ]
+        return {"domain": domain}
