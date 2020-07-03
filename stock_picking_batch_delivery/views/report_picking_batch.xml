@@ -32,6 +32,7 @@
              <t t-name="report_picking_batch_delivery">
                     <t t-call="web.html_container">
                     <t t-foreach="docs" t-as="o">
+                        <t t-set="lang" t-value="o.user_id.lang"/>
                         <t t-call="stock_picking_batch_delivery.report_picking_batch_document" t-lang="lang"/>
                     </t>
                     </t>
@@ -77,10 +78,10 @@
                             <!-- Cabecera -->
 
                             <div style="clear:both;">
-                                <div style="width:12.5%;float:left;">
+                                <div style="width:10.5%;float:left;">
                                     <b><span>Albarán</span></b>
                                 </div>
-                                <div style="width:36.5%;float:left;">
+                                <div style="width:30.5%;float:left;">
                                     <b><span>Cliente</span></b>
                                 </div>
                                 <div style="width:10%;float:left;">
@@ -98,8 +99,11 @@
                                 <div style="width:10%;float:left;text-align:right;">
                                     <b><span>Importe Total</span></b>
                                 </div>
-                                <div style="width:13%;float:left;text-align:right;">
-                                    <b><span>Forma de Pago</span></b>
+                                <div style="width:13%;float:left;text-align:left;">
+                                    <b><span style="margin-left:2px;">Forma de Pago</span></b>
+                                </div>
+                                 <div style="width:8%;float:left;text-align:left;">
+                                    <b><span>Estado</span></b>
                                 </div>
 
                             </div>
@@ -109,11 +113,11 @@
                             <!-- Lineas -->
                             <t t-foreach="o.picking_ids" t-as="pick">
 
-                                <div style="clear:both;">
-                                    <div style="width:12.5%;float:left;">
+                                <div style="clear:both;font-size:0.9em;">
+                                    <div style="width:10.5%;float:left;">
                                         <span t-field="pick.name"/>
                                     </div>
-                                    <div style="width:36.5%;float:left;">
+                                    <div style="width:30.5%;float:left;">
                                         <span t-field="pick.partner_id"/>
                                     </div>
                                     <div style="width:10%;float:left;">
@@ -160,12 +164,27 @@
                                             <span style="color:white;">total</span>
                                         </t>
                                     </div>
-                                    <div style="width:13%;float:left;text-align:right;">
+                                    <div style="width:13%;float:left;text-align:left;">
                                         <t t-if="pick.payment_term">
-                                            <span t-field="pick.payment_term"/>
+                                            <span style="margin-left:2px;" t-field="pick.payment_term"/>
                                         </t>
                                         <t t-else="">
                                             <span style="color:white;">term</span>
+                                        </t>
+                                    </div>
+                                    <div style="width:8%;float:left;text-align:left;">
+
+                                        <t t-if="pick.sale_id.invoice_status == 'no'">
+                                            <span>Presupuesto</span>
+                                        </t>
+                                        <t t-if="pick.sale_id.invoice_status == 'to invoice'">
+
+                                            <span>A facturar</span>
+                                        </t>
+
+                                        <t t-if="pick.sale_id.invoice_status == 'invoiced'">
+
+                                            <span t-field="pick.sale_id.invoice_status"></span>
                                         </t>
                                     </div>
                                 </div>
@@ -177,7 +196,7 @@
                             <!--Totales -->
                             <div style="clear:both;">
 
-                                <div style="margin-left:49%;float:left;width:10%;">
+                                <div style="margin-left:41%;float:left;width:10%;">
                                     <span><b>Totales:</b></span>
                                 </div>
 
