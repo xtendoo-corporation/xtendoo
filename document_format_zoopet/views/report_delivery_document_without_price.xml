@@ -30,7 +30,7 @@
             <field name="paperformat_id" ref="document_format_zoopet.A4_albaran"/>
         </record>-->
 
-        <template id="report_delivery_bluetooth">
+        <template id="document_format_zoopet.report_delivery_bluetooth">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-call="document_format_zoopet.report_delivery_document_bluetooth" t-lang="o.partner_id.lang"/>
