@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="res_partner_hide_comment">
+            <field name="name">res.partner.template.comment</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//page[@name='internal_notes']//field[@name='comment']" position="before">
+                    <label for="comment"/>
+                </xpath>
+
+                <xpath expr="//page[@name='internal_notes']//field[@name='comment']" position="after">
+                    <label for="admin_comment"
+                           groups="res_partner_hide_internal_notes.view_partner_internal_notes"/>
+                    <field name="admin_comment"
+                           placeholder="Restricted notes..."
+                           groups="res_partner_hide_internal_notes.view_partner_internal_notes"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
