@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+         <record model="ir.ui.view" id="product_hide_fields_tree_view">
+            <field name="name">product.hide.fields.tree.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_tree_view"/>
+            <field name="arch" type="xml">
+
+                 <xpath expr="//field[@name='categ_id']" position="before">
+                   <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" string="Etiquetas"/>
+                </xpath>
+
+                <xpath expr="//field[@name='list_price']" position="replace">
+                   <field name="list_price" string="Sales Price"  invisible="1"/>
+                </xpath>
+
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
