@@ -20,5 +20,37 @@
             </field>
         </record>
 
+        <record model="ir.ui.view" id="product_hide_fields_kanban_view">
+            <field name="name">product.hide.fields.kanban.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_kanban_view"/>
+            <field name="arch" type="xml">
+
+                  <xpath expr="//field[@name='currency_id']" position="after">
+                     <field name="item_ids"/>
+                </xpath>
+
+               <xpath expr="//templates/t/div/div/ul/li" position="replace">
+                   <li invisible="1">Price: <field name="lst_price" widget="monetary" invisible="1" options="{'currency_field': 'currency_id', 'field_digits': True}"/></li>
+                </xpath>
+
+                <!-- gestool
+                                    <li>Price: <field name="lst_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}"/></li>
+                                  -->
+                                  <!-- gestool
+                                  <t t-foreach="record.item_ids.raw_value" t-as="o">
+                                      <li>
+                                          <span t-esc="o.pricelist_id[1]"/>
+                                          :
+                                          <t t-esc="o.fixed_price"/>
+                                      </li>
+                                  </t>
+                                  gestool -->
+
+
+
+            </field>
+        </record>
+
     </data>
 </odoo>
