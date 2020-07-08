@@ -33,22 +33,7 @@
                <xpath expr="//templates/t/div/div/ul/li" position="replace">
                    <li invisible="1">Price: <field name="lst_price" widget="monetary" invisible="1" options="{'currency_field': 'currency_id', 'field_digits': True}"/></li>
                 </xpath>
-
-                <!-- gestool
-                                    <li>Price: <field name="lst_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}"/></li>
-                                  -->
-                                  <!-- gestool
-                                  <t t-foreach="record.item_ids.raw_value" t-as="o">
-                                      <li>
-                                          <span t-esc="o.pricelist_id[1]"/>
-                                          :
-                                          <t t-esc="o.fixed_price"/>
-                                      </li>
-                                  </t>
-                                  gestool -->
-
-
-
+                
             </field>
         </record>
 
