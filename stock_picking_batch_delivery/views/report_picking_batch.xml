@@ -29,7 +29,7 @@
 
 
         <template id="stock_picking_batch_delivery.report_picking_batch_delivery">
-             <t t-name="report_picking_batch_delivery">
+             <t t-name="stock_picking_batch_delivery.report_picking_batch_delivery">
                     <t t-call="web.html_container">
                     <t t-foreach="docs" t-as="o">
                         <t t-set="lang" t-value="o.user_id.lang"/>
@@ -103,7 +103,7 @@
                                     <b><span style="margin-left:2px;">Forma de Pago</span></b>
                                 </div>
                                  <div style="width:8%;float:left;text-align:left;">
-                                    <b><span>Estado</span></b>
+                                    <b><span>Factura</span></b>
                                 </div>
 
                             </div>
@@ -174,18 +174,10 @@
                                     </div>
                                     <div style="width:8%;float:left;text-align:left;">
 
-                                        <t t-if="pick.sale_id.invoice_status == 'no'">
-                                            <span>Presupuesto</span>
-                                        </t>
-                                        <t t-if="pick.sale_id.invoice_status == 'to invoice'">
-
-                                            <span>A facturar</span>
+                                        <t t-if="pick.sale_id">
+                                            <span t-field="pick.sale_id"></span>
                                         </t>
 
-                                        <t t-if="pick.sale_id.invoice_status == 'invoiced'">
-
-                                            <span t-field="pick.sale_id.invoice_status"></span>
-                                        </t>
                                     </div>
                                 </div>
 
