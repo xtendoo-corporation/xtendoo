@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-
+        <!-- Vista tree -->
         <record model="ir.ui.view" id="product_hide_fields_tree_view">
             <field name="name">product.hide.fields.tree.view</field>
             <field name="model">product.template</field>
@@ -16,7 +16,8 @@
                 </xpath>
             </field>
         </record>
-
+        <!-- Fin vista tree -->
+        <!-- Vista kanban -->
         <record model="ir.ui.view" id="product_hide_fields_kanban_view">
             <field name="name">product.hide.fields.kanban.view</field>
             <field name="model">product.template</field>
@@ -33,5 +34,18 @@
                 </xpath>
             </field>
         </record>
+        <!-- Fin vista kanban -->
+        <!-- Vista formulario -->
+        <record model="ir.ui.view" id="product_hide_fields_form_view">
+            <field name="name">product.hide.fields.form.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='default_code']" position="replace">
+                     <field name="default_code" attrs="{'invisible': [('product_variant_count', '&gt;', 1)]}" required="1"/>
+                </xpath>
+            </field>
+        </record>
+        <!-- Fin vista formulario -->
     </data>
 </odoo>
