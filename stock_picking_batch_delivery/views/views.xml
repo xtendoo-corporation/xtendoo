@@ -28,6 +28,7 @@
                             <field name="lumps_number"/>
                             <field name="palets_number"/>
                             <field name="state" readonly="1"/>
+                            <field name="invoice_id" readonly="1"/>
                             <field name="payment_term"/>
                             <field name="total_amount"/>
                             <button name="action_assign" string="Confirm picking" type="object" icon="fa-check text-success" attrs="{'invisible': [('state', 'in', ('done', 'cancel', 'confirmed', 'assigned'))]}"/>
