@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="productbarcode_picking">
+            <t t-call="web.basic_layout">
+                    <t t-foreach="docs" t-as="picking">
+                      <t t-foreach="picking.move_lines" t-as="move_line">
+                          <t t-foreach="int(move_line.quantity_done)" t-as="">
+                            <div class="page">
+                                <t t-call="product.report_simple_barcode">
+                                    <t t-set="codebar_128" t-value="'02' + move.product_id.barcode + '10' + ml.lot_id.name + '\x1D'"/>
+                                    <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s&amp;humanreadable=1' % ('QR', codebar_128, 80, 250)" style="width:50%;height:50%;" alt="Barcode"/>
+
+                                </t>
+                            </div>
+                        </t>
+                      </t>
+                    </t>
+            </t>
+    </template>
+</odoo>
