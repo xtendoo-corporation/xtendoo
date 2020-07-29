@@ -11,8 +11,9 @@
     "license": "AGPL-3",
     "depends": ["stock"],
     "data": [
-        "reports/report_print_labels.xml",
-        "reports/report_print_labels_template.xml",
+        "reports/labels_print.xml",
+        "reports/template_labels.xml",
+        "reports/product_label_128.xml",
     ],
     "installable": True,
 }

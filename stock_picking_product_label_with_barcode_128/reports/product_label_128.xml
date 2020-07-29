@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <data>
+
+        <template id="stock_picking_product_label_with_barcode_128.product_label_128">
+
+            <t t-name="stock_picking_product_label_with_barcode_128.product_label_128">
+
+            <div style="width: 32%; display: inline-table; height: 10rem;">
+                <table class="table table-bordered mb-0" style="border: 2px solid black;">
+                    <tr>
+                        <th class="table-active text-left" style="height: 4rem;">
+                            <strong t-field="product.display_name"/>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td class="text-center align-middle" style="height: 6rem;">
+                            <t t-set="codebar_128" t-value="'02' + product_id.barcode + '10' +lot_name + '\x1D'"/>
+                            <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s&amp;humanreadable=1' % ('QR', codebar_128, 80, 250)" style="width:50%;height:50%;" alt="Barcode"/>
+                                <span t-field="product.barcode"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+
+                <!--<t t-set="codebar_128" t-value="'02' + move.product_id.barcode + '10' + ml.lot_id.name + '\x1D'"/>
+                <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s&amp;humanreadable=1' % ('QR', codebar_128, 80, 250)" style="width:50%;height:50%;" alt="Barcode"/> -->
+
+            </t>
+        </template>
+    </data>
+</odoo>
