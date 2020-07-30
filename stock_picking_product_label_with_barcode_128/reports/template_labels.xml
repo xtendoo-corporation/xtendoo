@@ -5,21 +5,15 @@
             <t t-foreach="docs" t-as="o">
                  <t t-foreach="o.move_ids_without_package.sorted(key=lambda m: m.product_id.id)" t-as="move">
                         <t t-set="product_barcode" t-value="move.product_id.barcode"/>
+                        <t t-set="product_name" t-value="move.product_id.name"/>
                         <t t-foreach="move.move_line_ids.sorted(key=lambda ml: ml.location_id.id)" t-as="ml">
-                        <t t-set="product_lot_name" t-value="ml.lot_id.name"/>
-                        <t t-foreach="int(ml.qty_done)" t-as="">
-                            <div class="page">
-                                <span t-esc="product_barcode" style="display:block;"/>
-                                <span t-esc="product_lot_name" style="display:block;"/>
-                                <span t-field="ml.qty_done" style="display:block;"/>
-
-                                <t t-set="codebar_128" t-value="'02' + product_barcode + '10' + product_lot_name + '\x1D'"/>
-                                <span t-esc="codebar_128"/>
-                                <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s&amp;humanreadable=1' % ('QR', codebar_128, 80, 250)" style="width:100%;height:100%;" alt="Barcode"/>
-                            </div>
+                            <t t-set="product_lot_name" t-value="ml.lot_id.name"/>
+                            <t t-set="product_lot_date" t-value="ml.lot_id.life_date"/>
+                            <t t-foreach="int(ml.qty_done)" t-as="">
+                                <t t-call="stock_picking_product_label_with_barcode_128.product_label_128"></t>
+                            </t>
                         </t>
                     </t>
-                </t>
             </t>
         </t>
     </template>

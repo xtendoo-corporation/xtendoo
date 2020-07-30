@@ -1,12 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <report
-        id="report_product_barcode_picking"
-        string="Imprimir Etiquetas"
-        model="stock.picking"
-        report_type="qweb-pdf"
-        name="stock_picking_product_label_with_barcode_128.product_barcode_128_picking"
-        file="stock_picking_product_label_with_barcode_128.product_barcode_128_picking"
-        print_report_name="'Products barcode - %s' % (object.name)"
-    />
+    <data>
+
+    <!--Formato de la etiqueta -->
+       <record id="label_picking" model="report.paperformat">
+            <field name="name">Label Picking</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="margin_top">1</field>
+            <field name="margin_bottom">1</field>
+            <field name="margin_right">1</field>
+            <field name="margin_left">1</field>
+            <field name="page_height">30</field>
+            <field name="page_width">30</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_line">False</field>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+        </record>
+
+
+        <report
+            id="report_product_barcode_picking"
+            string="Imprimir Etiquetas"
+            model="stock.picking"
+            report_type="qweb-pdf"
+            name="stock_picking_product_label_with_barcode_128.product_barcode_128_picking"
+            file="stock_picking_product_label_with_barcode_128.product_barcode_128_picking"
+            print_report_name="'Products barcode - %s' % (object.name)"
+        />
+
+        <record id="stock_picking_product_label_with_barcode_128.report_product_barcode_picking" model="ir.actions.report">
+                <field name="paperformat_id" ref="stock_picking_product_label_with_barcode_128.label_picking"/>
+        </record>
+    </data>
 </odoo>
