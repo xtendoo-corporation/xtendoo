@@ -4,19 +4,19 @@
 
     <data>
 
-         <record id="bluetooth_invoice" model="report.paperformat">
+         <record id="Bluetooth_invoice" model="report.paperformat">
             <field name="name">Bluetooth invoice</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
             <field name="margin_top">10</field>
-            <field name="margin_bottom">3</field>
+            <field name="margin_bottom">0</field>
             <field name="margin_right">1.5</field>
             <field name="margin_left">1.5</field>
             <field name="page_height">500</field>
             <field name="page_width">80</field>
             <field name="orientation">Portrait</field>
             <field name="header_line">False</field>
-            <field name="header_spacing">35</field>
+            <field name="header_spacing">500</field>
             <field name="dpi">90</field>
         </record>
 
@@ -29,7 +29,7 @@
         />
 
          <record id="document_format_ch.report_invoice_bluetooh" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_ch.bluetooth_invoice" />
+            <field name="paperformat_id" ref="document_format_ch.Bluetooth_invoice" />
         </record>
 
         <template id="report_invoice_bluetooth">
@@ -42,7 +42,7 @@
 
         <template id="report_invoice_document_bluetooth">
 
-             <t t-call="web.external_layout">
+            
 
                <div class="page">
 
@@ -168,8 +168,7 @@
                             </div>
 
                        </div>
-
-                   </div>
+                    </div>
 
                    <!-- Fin fecha documento -->
 
@@ -203,6 +202,7 @@
                        </div>
 
                    </div>
+                   
 
                    <div style="width:40%;font-size:0.9em;float:left;font-weight:bolder;text-align:center;margin-bottom:10px;">
 
@@ -224,7 +224,7 @@
 
                    <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
 
-                   <table class="table table-sm o_main_table" name="invoice_line_table" style="width:105%;font-size:0.9em;margin-top:15px;clear:both;border-top:5px solid black;;border-bottom:4px solid black;margin-left:-10px;">
+                   <table name="invoice_line_table" style="width:105%;font-size:0.7em;margin-top:15px;clear:both;border-top:5px solid black;;border-bottom:4px solid black;margin-left:-10px;">
 
                        <thead>
                             <tr style="color:black!important;">
@@ -406,8 +406,7 @@
                    <div style="clear:both;height:10px;"></div>
 
                </div>
-             </t>
-
+       
         </template>
 
     </data>
