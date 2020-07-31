@@ -248,8 +248,25 @@
                 <!-- IVA -->
 
                 <div class="text-right" style="float:left;width:7%;">
-                  <t t-set="iva" t-value="line.tax_id.amount"></t>
-                  <span t-esc="int(iva)"/><span t-if="line.price_tax > 0">%</span>
+                  <!-- <t t-set="iva" t-value="line.tax_id.amount"></t>
+                  <span t-esc="int(iva)"/><span t-if="line.price_tax > 0">%</span> -->
+                  <t t-set="IVALin" t-value="0"/>
+                  <t t-foreach="line.tax_id" t-as="tax">
+                            <t t-set="tax_name" t-value="tax.name"/>
+                            <t t-set="isIVA" t-value="tax_name.find('IVA')"/>
+                            <t t-if="isIVA &gt; -1">
+                                <t t-set="IVALin" t-value="'%.2f'%tax.amount"/>
+                            </t>
+                            <t t-else="">
+                            </t>
+                        </t>
+                        <t t-if="IVALin != 0">
+                            <span t-esc="IVALin"/>
+                        </t>
+                        <t t-else="">
+                            <span style="color:white;">aaa</span>
+                        </t>
+
                 </div>
 
                 <!-- Fin IVA -->
