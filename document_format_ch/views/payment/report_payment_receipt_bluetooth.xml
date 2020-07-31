@@ -31,7 +31,7 @@
             <field name="paperformat_id" ref="document_format_ch.bluetooth_payment"/>
         </record>
 
-        <template id="report_payment_receipt_bluetooth">
+        <template id="document_format_ch.report_payment_receipt_bluetooth">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-set="lang" t-value="o.partner_id.lang"/>
@@ -40,7 +40,7 @@
             </t>
         </template>
 
-        <template id="report_payment_receipt_document_bluetooth">
+        <template id="document_format_ch.report_payment_receipt_document_bluetooth">
 
             <t t-set="o" t-value="o.with_context({'lang': lang})"/>
 
@@ -100,7 +100,7 @@
 
                 <!--Nombre del pago -->
 
-                <t t-foreach="o.reconciled_invoice_ids" t-as="inv">
+                
                     <div style="text-align:center;font-size:1.4em;">
                         <div>
                             <span style="font-weight:bolder;">Recibo del pago:</span>
@@ -131,7 +131,12 @@
 
                         <div>
                             <span style="display:block;width:100%;font-weight:bolder;">Comercial:</span>
-                            <span t-field="inv.user_id"/>
+                            <t t-if="o.reconciled_invoice_ids">
+                                <t t-foreach="o.reconciled_invoice_ids" t-as="inv">
+                                    <t t-set="user_id" t-value="inv.user_id"></t>
+                                </t>
+                            <span t-esc="user_id"/>
+                            </t>
                         </div>
 
                         <!-- Fin comercial -->
@@ -222,34 +227,65 @@
                         </thead>
 
                         <tbody>
+                        <t t-if="o.reconciled_invoice_ids">
+                            <t t-foreach="o.reconciled_invoice_ids" t-as="inv">
+
+                                <tr>
+
+                                    <td style="border-right:2px dotted black;border-top:2px dotted black;width:21%;">
+                                        <span t-field="inv.date_invoice"/>
+                                    </td>
+
+                                    <td style="border-right:2px dotted black;border-top:2px dotted black;width:25%;">
+                                        <span t-field="inv.number"/>
+                                    </td>
+
+                                    <td class="text-right"
+                                        style="border-right:2px dotted black;border-top:2px dotted black">
+                                        <span t-field="inv.amount_total" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                                    </td>
+
+                                    <td class="text-right"
+                                        style="border-right:2px dotted black;border-top:2px dotted black">
+                                        <span t-esc="inv.amount_total - inv.residual"
+                                            t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                                    </td>
+
+                                    <td class="text-right" style="border-top:2px dotted black;">
+                                        <span t-field="inv.residual"/>
+                                    </td>
+
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-else="">
 
                             <tr>
 
-                                <td style="border-right:2px dotted black;border-top:2px dotted black;width:21%;">
-                                    <span t-field="inv.date_invoice"/>
-                                </td>
+                                    <td style="border-right:2px dotted black;border-top:2px dotted black;width:21%;">
+                                        <span t-field="o.payment_date"/>
+                                    </td>
 
-                                <td style="border-right:2px dotted black;border-top:2px dotted black;width:25%;">
-                                    <span t-field="inv.number"/>
-                                </td>
+                                    <td style="border-right:2px dotted black;border-top:2px dotted black;width:25%;">
+                                        <span style="color:white;">aaaa</span>
+                                    </td>
 
-                                <td class="text-right"
-                                    style="border-right:2px dotted black;border-top:2px dotted black">
-                                    <span t-field="inv.amount_total"/>
-                                </td>
+                                    <td class="text-right"
+                                        style="border-right:2px dotted black;border-top:2px dotted black">
+                                        <span style="color:white;">aaaaa</span>
+                                    </td>
 
-                                <td class="text-right"
-                                    style="border-right:2px dotted black;border-top:2px dotted black">
-                                    <span t-esc="inv.amount_total - inv.residual"
-                                          t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
-                                </td>
+                                    <td class="text-right"
+                                        style="border-right:2px dotted black;border-top:2px dotted black">
+                                        <span t-field="o.amount"/>
+                                    </td>
 
-                                <td class="text-right" style="border-top:2px dotted black;">
-                                    <span t-field="inv.residual"/>
-                                </td>
+                                    <td class="text-right" style="border-top:2px dotted black;">
+                                        <span style="color:white;">aaaaa</span>
+                                    </td>
 
-                            </tr>
-
+                                </tr>
+                        </t>
                         </tbody>
 
                     </table>
@@ -266,7 +302,7 @@
 
                     <!-- Fin firma del comercial -->
 
-                </t>
+                
 
             </div>
 
