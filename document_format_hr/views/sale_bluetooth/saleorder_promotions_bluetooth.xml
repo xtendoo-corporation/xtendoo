@@ -21,7 +21,7 @@
         </record>
 
 
-        <report id="report_saleorder_promotions_bluetooth"
+        <report id="document_format_hr.report_saleorder_promotions_bluetooth"
                 string="Presupuesto / Pedido bluetooth"
                 model="sale.order"
                 report_type="qweb-pdf"
@@ -35,7 +35,7 @@
         </record>
 
         <template id="document_format_hr.report_saleorder_promotions_bluetooth">
-            <t t-name="document_format_hr.report_saleorder_promotions_bluetooth">
+            <t t-name="document_format_hr.report_saleorder_promotions_bluetooth"> 
                 <t t-call="web.html_container">
                     <t t-foreach="docs" t-as="doc">
                         <t t-call="document_format_hr.report_saleorder_document_bluetooth_without_promotions" t-lang="doc.partner_id.lang"/>
