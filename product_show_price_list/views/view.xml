@@ -9,13 +9,14 @@
             <field name="inherit_id" ref="product.product_template_tree_view" />
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='standard_price']" position="after">
-                   <!-- <field name="pricelist_1"/> -->
+                    <!-- <field name="pricelist_1"/> -->
                     <field name="pricelist_2"/>
                     <field name="pricelist_3"/>
                     <field name="pricelist_4"/>
-                    <field name="pricelist_5"/>
+                    <!-- <field name="pricelist_5"/>  -->
                     <field name="pricelist_7"/>
                     <field name="pricelist_6"/>
+                    <field name="pricelist_9"/>
                 </xpath>
             </field>
         </record>
