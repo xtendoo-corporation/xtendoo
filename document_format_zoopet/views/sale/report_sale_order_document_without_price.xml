@@ -5,12 +5,12 @@
     <data>
 
 
-      <report id="report_saleorder_without_price"
+      <report id="report_saleorder_without_price_report"
                 string="Presupuesto / Pedido sin valorar"
                 model="sale.order"
                 report_type="qweb-pdf"
-                name="document_format_zoopet.report_saleorder_without_price"
-                file="sale.report_saleorder_document_without_price"
+                name="document_format_zoopet.report_saleorder_without_price_report"
+                file="sale.report_saleorder_document_without_price_report"
                 print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
         />
 
@@ -18,16 +18,16 @@
         <template id="document_format_zoopet.report_saleorder_without_price">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="doc">
-                    <t t-call="document_format_zoopet.report_saleorder_document_without_pice" t-lang="doc.partner_id.lang"/>
+                    <t t-call="document_format_zoopet.report_saleorder_document_without_pice_document" t-lang="doc.partner_id.lang"/>
                 </t>
             </t>
         </template>
 
 
 
-        <template id="report_saleorder_document_without_pice">
+        <template id="report_saleorder_document_without_pice_document">
 
-        <t t-name="sale.report_saleorder_document_without_pice">
+        <t t-name="sale.report_saleorder_document_without_pice_document">
             <t t-call="web.external_layout">
 
                 <div class="page">
