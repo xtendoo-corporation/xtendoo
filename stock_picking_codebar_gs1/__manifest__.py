@@ -14,6 +14,7 @@
         'delivery',
         'stock_barcodes',
         'base_gs1_barcode',
+        'web_notify',
     ],
     'license': 'AGPL-3',
     'data': [
