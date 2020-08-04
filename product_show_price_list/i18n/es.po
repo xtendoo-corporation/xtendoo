@@ -62,3 +62,10 @@ msgstr "T-10"
 msgid "Seventh pricelist"
 msgstr "T-03"
 
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_9
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_9
+msgid "Nineth pricelist"
+msgstr "T-09"
+
+

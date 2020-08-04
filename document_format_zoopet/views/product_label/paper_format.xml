@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <data>
+         <record id="label_zoopet_10x5" model="report.paperformat">
+            <field name="name">Label Zoopet 10x5</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="margin_top">0</field>
+            <field name="margin_bottom">0</field>
+            <field name="margin_right">0</field>
+            <field name="margin_left">0</field>
+            <field name="page_height">50</field>
+            <field name="page_width">100</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_line">False</field>
+            <field name="header_spacing">35</field>
+            <field name="dpi">90</field>
+        </record>
+       <!-- <record id="product.report_producttemplatebarcode" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_zoopet.label_zoopet_10x5"/>
+        </record> -->
+        <record id="label_zoopet" model="report.paperformat">
+            <field name="name">Label Zoopet</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="margin_top">0</field>
+            <field name="margin_bottom">0</field>
+            <field name="margin_right">0</field>
+            <field name="margin_left">0</field>
+            <field name="page_height">25</field>
+            <field name="page_width">30</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_line">False</field>
+            <field name="header_spacing">35</field>
+            <field name="dpi">90</field>
+        </record>
+        <!-- <record id="product.report_producttemplatelabel" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_zoopet.label_zoopet"/>
+        </record> -->
+    </data>
+</odoo>

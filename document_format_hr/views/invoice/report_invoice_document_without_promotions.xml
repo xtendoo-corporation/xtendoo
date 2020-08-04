@@ -274,62 +274,67 @@
 
 
                         <!-- Subtotal -->
+                        <div style="clear:both;">
 
-                        <div style="width:40%;float:left">
-                            <span>Base Imponible</span>
-                        </div>
+                            <div style="width:60%;float:left;">
+                                <span>Base Imponible</span>
+                            </div>
 
-                        <div style="width:60%;float:left;text-align:right">
-                            <span t-if="o.type == 'out_refund'">-</span>
-                            <span t-field="o.amount_untaxed"/>
+                            <div style="width:40%;float:left;text-align:right">
+                                <span t-if="o.type == 'out_refund'">-</span>
+                                <span t-field="o.amount_untaxed"/>
+                            </div>
                         </div>
 
                         <!-- Fin Subtotal -->
 
                         <!-- Impuestos -->
+                        <div style="clear:both;">
 
-                        <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                            <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">
-                                <div style="width:40%;float:left;clear:both;">
-                                    <span t-esc="amount_by_group[0]"/>
-                                </div>
-
-                                <div class="text-right o_price_total" style="width:60%;float:left;text-align:right">
-                                    <span t-if="o.type == 'out_refund'">-</span>
-                                    <span t-esc="amount_by_group[3]"/>
-                                </div>
-
-                            </t>
-                            <t t-else="">
-                                <div style="width:40%;float:left;clear:both;">
-                                    <div style="clear:both;width:60%;float:left;">
+                            <t t-foreach="o.amount_by_group" t-as="amount_by_group">
+                                <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">
+                                    <div style="width:60%;float:left;">
                                         <span t-esc="amount_by_group[0]"/>
-                                        <span>sobre</span>
-                                    </div>
-                                    <div style="width:40%;float:left;text-align:right;">
-                                        <t t-esc="amount_by_group[4]"/>
                                     </div>
 
-                                </div>
+                                    <div class="text-right o_price_total" style="width:40%;float:left;text-align:right">
+                                        <span t-if="o.type == 'out_refund'">-</span>
+                                        <span t-esc="amount_by_group[3]"/>
+                                    </div>
 
-                                <div class="text-right o_price_total" style="width:60%;float:left;text-align:right">
-                                    <span t-if="o.type == 'out_refund'">-</span>
-                                    <span t-esc="amount_by_group[3]"/>
-                                </div>
+                                </t>
+                                <t t-else="">
+                                    <div style="width:60%;float:left;">
+                                        <div style="width:70%;float:left;">
+                                            <span t-esc="amount_by_group[0]"/>
+                                            <span>sobre</span>
+                                        </div>
+                                        <div style="width:30%;float:left;text-align:right;">
+                                            <t t-esc="amount_by_group[4]"/>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="text-right o_price_total" style="width:40%;float:left;text-align:right">
+                                        <span t-if="o.type == 'out_refund'">-</span>
+                                        <span t-esc="amount_by_group[3]"/>
+                                    </div>
+                                </t>
+
                             </t>
-
-                        </t>
+                        </div>
 
                         <!-- Fin impuestos -->
 
                         <!-- Total -->
-
-                        <div style="font-weight:bolder;width:40%;float:left;" id="total">
-                            <span>Total</span>
-                        </div>
-                        <div class="text-right">
-                            <span t-if="o.type == 'out_refund'">-</span>
-                            <span t-field="o.amount_total" style="font-weight:bolder;"/>
+                        <div style="clear:both;">
+                            <div style="font-weight:bolder;width:60%;float:left;" id="total">
+                                <span>Total</span>
+                            </div>
+                            <div class="text-right" style="width:40%;float:left;">
+                                <span t-if="o.type == 'out_refund'">-</span>
+                                <span t-field="o.amount_total" style="font-weight:bolder;"/>
+                            </div>
                         </div>
 
                         <!-- FIn total -->
