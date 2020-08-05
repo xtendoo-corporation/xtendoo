@@ -204,12 +204,18 @@
 
                                 <!-- Fin valor neto -->
 
-                                <!-- IVA -->
+                               <!-- IVA -->
 
                                 <div class="text-right" style="float:left;width:7%;">
-                                    <t t-set="iva" t-value="line.invoice_line_tax_ids.amount"></t>
-                                    <span t-esc="int(iva)"/>
-                                    <span t-if="line.price_tax > 0">%</span>
+                                    <t t-foreach="line.invoice_line_tax_ids" t-as="tax">
+                                        <t t-foreach="tax" t-as="tax_line">
+                                            <t t-set="iva" t-value="tax_line.amount"></t>
+                                            <div>
+                                                <span t-esc="int(iva)"/>
+                                                <span t-if="line.price_tax > 0">%</span>
+                                            </div>
+                                        </t>
+                                    </t>
                                     <!--<span t-esc="', '.join(map(lambda x: str(x.amount), line.invoice_line_tax_ids))"/>-->
                                 </div>
 

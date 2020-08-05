@@ -4,7 +4,7 @@
 
     <data>
 
-         <record id="Bluetooth_invoice" model="report.paperformat">
+         <record id="bluetooth_invoice" model="report.paperformat">
             <field name="name">Bluetooth invoice</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
@@ -29,7 +29,7 @@
         />
 
          <record id="document_format_ch.report_invoice_bluetooh" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_ch.Bluetooth_invoice" />
+            <field name="paperformat_id" ref="document_format_ch.bluetooth_invoice" />
         </record>
 
         <template id="report_invoice_bluetooth">
