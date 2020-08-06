@@ -14,6 +14,9 @@
     "data": [
         "views/layout/external_layout_clean.xml",
         "views/sale/report_saleorder_document.xml",
+        "views/invoice/report_invoice_document.xml",
+        "views/delivery/report_delivery_document.xml",
+        "views/payment/report_payment_receipt_document.xml",
     ],
     "demo": [],
     "installable": True,
