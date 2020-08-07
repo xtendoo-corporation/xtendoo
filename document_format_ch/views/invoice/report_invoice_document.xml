@@ -378,6 +378,10 @@
                             <span t-field="o.reference"/>
                         </b>
                     </p>
+                    <div t-if="o.comment" style="clear:both">
+                        <span style="display:block;">Nota:</span>
+                        <span style="display:block;" t-field="o.comment"></span>
+                    </div>
 
                 </div>
 
