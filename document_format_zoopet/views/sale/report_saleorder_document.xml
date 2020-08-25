@@ -73,9 +73,9 @@
                 <span style="width:20%;display:inline-block">Fecha:</span>
                 <span style="display:inline-block;width:80%;" t-field="doc.create_date" t-options="{&quot;format&quot;: &quot;MM-dd-yyyy&quot;}"/>
 
-                <div t-if="doc.partner_id.comercial">
+                <div t-if="doc.partner_id.commercial_name">
                     <span style="width:20%;display:inline-block">Cliente:</span>
-                    <span style="display:inline-block;width:80%;" t-field="doc.partner_id.comercial"/>
+                    <span style="display:inline-block;width:80%;" t-field="doc.partner_id.commercial_name"/>
                 </div>
 
                 <div t-else="">
@@ -120,9 +120,9 @@
                 <div t-if="doc.partner_id.name">
                     <span t-field="doc.partner_id.name"/>
                 </div>
-                <!-- nombre comercial -->
-                <div t-if="doc.partner_id.comercial">
-                    <span t-field="doc.partner_id.comercial"/>
+                <!-- nombre commercial_name -->
+                <div t-if="doc.partner_id.commercial_name">
+                    <span t-field="doc.partner_id.commercial_name"/>
                 </div>
 
                 <!-- calle -->
@@ -163,9 +163,9 @@
                 <div t-if="doc.partner_id.name">
                     <span t-field="doc.partner_id.name"/>
                 </div>
-                <!-- nombre comercial -->
-                <div t-if="doc.partner_id.comercial">
-                    <span t-field="doc.partner_id.comercial"/>
+                <!-- nombre commercial_name -->
+                <div t-if="doc.partner_id.commercial_name">
+                    <span t-field="doc.partner_id.commercial_name"/>
                 </div>
                 <!-- calle -->
                 <div>
@@ -357,7 +357,7 @@
             </div>
         </div>
 
-        <hr style="height:2px;width:110%;background-color:black;margin-left:-15px;"/>
+        <hr style="height:2px;width:100%;background-color:black;margin-left:-15px;"/>
 
         <!-- Variables -->
         <t t-set="current_subtotal" t-value="0"/>
