@@ -8,6 +8,12 @@
             <field name="partner_id" position="after">
                 <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>
             </field>
+            <field name="move_line_ids_without_package" position="attributes">
+                <attribute name="always_reload">True</attribute>
+            </field>
+            <field name="move_ids_without_package" position="attributes">
+                <attribute name="always_reload">True</attribute>
+            </field>
         </field>
     </record>
 </odoo>
