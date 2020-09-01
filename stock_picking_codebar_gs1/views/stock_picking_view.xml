@@ -10,9 +10,11 @@
             </field>
             <field name="move_line_ids_without_package" position="attributes">
                 <attribute name="always_reload">True</attribute>
+                <attribute name="widget">render_field_one2many</attribute>
             </field>
             <field name="move_ids_without_package" position="attributes">
                 <attribute name="always_reload">True</attribute>
+                <attribute name="widget">render_field_one2many</attribute>
             </field>
         </field>
     </record>

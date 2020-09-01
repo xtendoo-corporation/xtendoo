@@ -18,6 +18,7 @@
     ],
     'license': 'AGPL-3',
     'data': [
+        'views/assets.xml',
         'views/stock_picking_view.xml',
     ],
     'installable': True,

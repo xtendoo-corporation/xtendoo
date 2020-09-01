@@ -4,7 +4,7 @@
     <record id="view_stock_barcodes_read_internal_transfer_form" model="ir.ui.view">
         <field name="name">stock.barcodes.read.internal.transfer.form</field>
         <field name="model">wiz.stock.barcodes.read.internal.transfer</field>
-        <field name="inherit_id" ref="stock_barcodes.view_stock_barcodes_read_form"/>
+        <field name="inherit_id" ref="xtendoo.view_stock_barcodes_read_form"/>
         <field name="arch" type="xml">
             <field name="location_id" position="before">
                 <field name="picking_id"/>
