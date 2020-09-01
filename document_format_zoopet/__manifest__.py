@@ -20,6 +20,8 @@
         # sale_order
         "views/sale/report_saleorder_document.xml",
         "views/sale/report_sale_order_document_without_price.xml",
+        # Purchase_order
+        "views/purchase/report_purchaseorder_document.xml",
         # Invoice
         "views/invoice/report_invoice_document.xml",
         # Product Label

@@ -96,7 +96,7 @@
 
             <!-- DIreccion de facturacion -->
 
-            <div style="width:49%;float:left;clear:both;margin-right:1%;border:2px solid black;height:175px;">
+            <div style="width:49%;float:left;clear:both;margin-right:1%;border:2px solid black;height:195px;">
               <div style="background-color:blue;color:white;text-align:center;">
                   Dirección de facturacíon
               </div>
@@ -171,7 +171,7 @@
             <!-- Fin direccion de facturacion -->
 
              <!-- Direccion de envio -->
-              <div style="width:49%;float:left;border:2px solid black;margin-left:1%;height:175px;">
+              <div style="width:49%;float:left;border:2px solid black;margin-left:1%;height:195px;">
                 <div style="background-color:blue;color:white;text-align:center;">
                   Dirección de envío
                 </div>
@@ -254,6 +254,10 @@
                             <span>Unidades</span>
                           </div>
                        </div>
+
+                       <div class="watermark" style="position:absolute;opacity:0.25;font-size:3em;width:100%;text-align:center;z-index:1000;-webkit-transform: rotate(-37deg);margin-top:150px;">
+                        <p>*NOTA DE ENTREGA*</p>
+                        </div>
                     <!-- lineas -->
                      <t t-set="plazos" t-value="0"></t>
                     <t t-set="weight" t-value="0"></t>
