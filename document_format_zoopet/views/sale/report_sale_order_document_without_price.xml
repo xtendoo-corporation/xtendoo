@@ -5,17 +5,17 @@
     <data>
 
 
-      <report id="report_saleorder_without_price_report"
+      <report id="document_format_zoopet.report_saleorder_without_price_report"
                 string="Presupuesto / Pedido sin valorar"
                 model="sale.order"
                 report_type="qweb-pdf"
                 name="document_format_zoopet.report_saleorder_without_price_report"
-                file="sale.report_saleorder_document_without_price_report"
+                file="document_format_zoopet.report_saleorder_document_without_price_report"
                 print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
         />
 
-
-        <template id="document_format_zoopet.report_saleorder_without_price">
+        <template id="document_format_zoopet.report_saleorder_without_price_report">
+            <t t-name="document_format_zoopet.report_saleorder_without_price_report"/>
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="doc">
                     <t t-call="document_format_zoopet.report_saleorder_document_without_pice_document" t-lang="doc.partner_id.lang"/>
@@ -25,13 +25,13 @@
 
 
 
-        <template id="report_saleorder_document_without_pice_document">
+        <template id="document_format_zoopet.report_saleorder_document_without_pice_document">
 
-        <t t-name="sale.report_saleorder_document_without_pice_document">
+        <t t-name="document_format_zoopet.report_saleorder_document_without_pice_document">
             <t t-call="web.external_layout">
 
                 <div class="page">
-                 <t t-set="isSale" t-value="doc.state"></t>
+                <t t-set="isSale" t-value="doc.state"></t>
                <t t-set="isDep" t-value="doc.type_id.name"></t>
                <t t-set="carrier_delivery" t-value="hola"></t>
 
@@ -436,8 +436,8 @@
                                               <p t-esc="amount_by_group[1]"/>
                                               <p t-esc="amount_by_group[2]"/>
                                               <p t-esc="amount_by_group[3]"/>
-                                              <p t-esc="amount_by_group[4]"/>
-                                              <p t-esc="amount_by_group[5]"/>
+                                              <!--<p t-esc="amount_by_group[4]"/> -->
+                                             <!-- <p t-esc="amount_by_group[5]"/> -->
                                           </t>
                                         </td>
                                     </t>
