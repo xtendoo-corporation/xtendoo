@@ -96,7 +96,7 @@
 
             <!-- DIreccion de facturacion -->
 
-            <div style="width:49%;float:left;clear:both;margin-right:1%;border:2px solid black;height:175px;">
+            <div style="width:49%;float:left;clear:both;margin-right:1%;border:2px solid black;height:195px;">
               <div style="background-color:blue;color:white;text-align:center;">
                   Dirección de facturacíon
               </div>
@@ -171,7 +171,7 @@
             <!-- Fin direccion de facturacion -->
 
              <!-- Direccion de envio -->
-              <div style="width:49%;float:left;border:2px solid black;margin-left:1%;height:175px;">
+              <div style="width:49%;float:left;border:2px solid black;margin-left:1%;height:195px;">
                 <div style="background-color:blue;color:white;text-align:center;">
                   Dirección de envío
                 </div>
@@ -254,6 +254,7 @@
                             <span>Unidades</span>
                           </div>
                        </div>
+
                     <!-- lineas -->
                      <t t-set="plazos" t-value="0"></t>
                     <t t-set="weight" t-value="0"></t>
@@ -264,52 +265,44 @@
 
                                      <t t-set="plazos" t-value="move_line.move_id.sale_line_id.order_id.payment_term_id.name"></t>
 
-                                 <!-- codigo -->
-                                 <div style="font-size:0.9em;clear:both;">
-                                     <t t-if="move_line.product_id.default_code">
-                                        <div style="width:20%; display:block; float:left; margin-left:-15px;">
-                                          <span t-field="move_line.product_id.default_code"/>
+                                 <!-- codigo ventas-->
+                                    <t t-if="move_line.move_id.sale_line_id">
+                                        <div style="width:20%; display:block;clear:both; float:left;height:16px;margin-left: -15px;">
+                                            <span t-field="move_line.move_id.sale_line_id.product_id.default_code"/>
                                         </div>
-                                     </t>
-                                     <t t-else="">
-                                         <div style="width:20%; display:block; float:left; margin-left:-15px;color:white;">
-                                             <span>aaa</span>
+                                    </t>
+                                <!-- Fin codigo ventas-->
+                                <!-- codigo compras-->
+                                    <t t-if="move_line.move_id.purchase_line_id">
+                                        <div style="width:20%; display:block;clear:both; float:left;height:16px;margin-left: -15px;">
+                                            <span t-field="move_line.move_id.purchase_line_id.product_id.default_code"/>
                                         </div>
-                                     </t>
-                                 <!-- Fin codigo -->
-                                 <!-- Descripcion -->
-                                     <t t-if="move_line.product_id.name">
+                                    </t>
+                                <!-- Fin codigo compras-->
+                                <!-- Descripcion ventas y compras-->
+                                    <t t-if="move_line.product_id.name">
                                         <div style="width:70%; display:block;float:left;">
                                             <span t-field="move_line.product_id.name"/>
                                         </div>
-                                     </t>
-
-                                     <t t-else="">
-                                          <div style="width:70%; display:block;float:left;color:white;">
-                                              <span>aaa</span>
+                                    </t>
+                                    <t t-else="">
+                                        <div style="width:70%; display:block;float:left;color:white;">
+                                            <span>aaa</span>
                                         </div>
-                                     </t>
-                                  <!-- Fin descripcion -->
+                                    </t>
+                                <!-- Fin descripcion ventas y compras-->
 
-                                  <!-- Cantidad entregada -->
-                                     <t t-if="move_line.move_id.sale_line_id.qty_delivered">
-                                            <div style="width:10%;  display:block; float:left;text-align:right">
-                                                 <span t-esc="'%.2f'%move_line.move_id.sale_line_id.qty_delivered"/>
-                                            </div>
-                                     </t>
-                                     <t t-else="">
-                                          <div style="width:10%;  display:block; float:left;text-align:right;color:white;">
-                                              <span>aaaa</span>
-                                            </div>
-                                     </t>
-                                  <!-- Fin cantidad entregada -->
+                                    <!-- Cantidad entregada -->
+                                <div style="width:10%;  display:block; float:left;text-align:right;">
+                                    <span t-esc="'%.2f'%move_line.move_id.quantity_done"/>
+                                </div>
+                                <!-- Fin cantidad entregada -->
 
                                       <t t-if="move_line.move_id.sale_line_id.product_id.weight">
                                         <t t-set="weight" t-value="weight + move_line.move_id.sale_line_id.product_id.weight * move_line.move_id.sale_line_id.qty_delivered"></t>
                                     </t>
 
 
-                                </div>
                                 </t>
                           </div>
                     <!-- Fin lineas -->
