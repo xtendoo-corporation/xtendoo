@@ -4,7 +4,7 @@
     <record id="view_stock_barcodes_read_picking_form" model="ir.ui.view">
         <field name="name">stock.barcodes.read.picking.form</field>
         <field name="model">wiz.stock.barcodes.read.picking</field>
-        <field name="inherit_id" ref="xtendoo.view_stock_barcodes_read_form"/>
+        <field name="inherit_id" ref="xtendoo_stock_picking_barcodes.view_stock_barcodes_read_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='manual_entry']/.." position="before">
                 <field name="candidate_picking_ids" mode="kanban" attrs="{'invisible': [('candidate_picking_ids', '=', [])]}" nolabel="1">
@@ -19,6 +19,7 @@
                         <field name="product_uom_qty"/>
                         <field name="product_qty_done"/>
                         <field name="scan_count"/>
+                        <field name="move_line_ids_without_package"/>
                         <templates>
                             <t t-name="kanban-box">
                                 <div class="oe_kanban_color_alert">
@@ -61,6 +62,9 @@
                                             <field name="product_qty_done"/>
                                         </div>
                                         <div>
+                                            <field name="move_line_ids_without_package"/>
+                                        </div>
+                                        <div>
                                             <!-- FIXME:  Fix confirm question -->
                                             <a name="action_validate_picking" type="object"
                                                class="pull-right"
@@ -75,12 +79,19 @@
                     </kanban>
                 </field>
             </xpath>
+
             <xpath expr="//field[@name='manual_entry']" position="after">
-                <label for="confirmed_moves">
-                    Confirmed moves allowed
-                </label>
-                <field name="confirmed_moves" widget="barcode_boolean_toggle"/>
+                <field name="move_ids_without_package">
+                    <tree string="Stock Moves" editable="bottom">
+                        <field name="state" invisible="1" readonly="0"/>
+                        <field name="product_id"/>
+                        <!-- <field name="product_uom_qty" string="Initial Demand"/>
+                        <field name="reserved_availability" string="Reserved"/> -->
+                        <field name="quantity_done" string="Done"/> 
+                    </tree> 
+                </field>
             </xpath>
+
             <field name="location_id" position="before">
                 <field name="picking_type_code" invisible="1" force_save="1"/>
                 <field name="picking_id"/>
