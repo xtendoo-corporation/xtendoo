@@ -9,7 +9,8 @@
     "company": "Xtendoo",
     "website": "http://www.xtendoo.com",
     "category": "Extra Tools",
-    "depends": ["base", "account", "sale", "web", "stock", "product"],
+    "depends": ["base", "account", "sale", "web", "stock", "product",
+        'sale_triple_discount_zoopet'],
     "license": "AGPL-3",
     "data": [
         # layout

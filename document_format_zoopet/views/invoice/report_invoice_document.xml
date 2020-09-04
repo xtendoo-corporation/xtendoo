@@ -194,28 +194,33 @@
 
     </div>
 
-    <!-- Descuentos -->
-
+    <!--  Descuentos  -->
     <t t-set="total_discount1" t-value="0"/>
+    <t t-set="total_discount2" t-value="0"/>
+    <t t-set="total_discount3" t-value="0"/>
     <t t-set="delivery" t-value="0"/>
-
     <t t-foreach="o.invoice_line_ids" t-as="line">
         <t t-set="line_discount1" t-value="0"/>
+        <t t-set="line_discount2" t-value="0"/>
         <t t-set="unit_price" t-value="line.price_unit"/>
         <t t-if="line.product_id">
-            <t t-if="line.discount != 0">
-                <t t-set="line_discount1" t-value="unit_price * line.discount / 100 * line.quantity"/>
-                <t t-set="unit_price" t-value="unit_price - (unit_price * line.discount / 100)"/>
-            </t>
-
-            <t t-if="line_discount1 != 0">
-                <t t-set="total_discount1" t-value="total_discount1 + line_discount1"/>
-            </t>
-
+        <t t-if="line.discount != 0">
+            <t t-set="line_discount1" t-value="unit_price * line.discount / 100 * line.quantity"/>
+            <t t-set="unit_price" t-value="unit_price - (unit_price * line.discount / 100)"/>
+        </t>
+        <t t-if="line.discount2 != 0">
+            <t t-set="line_discount2" t-value="(unit_price * line.discount2 /100) * line.quantity"/>
+            <t t-set="unit_price" t-value="unit_price - (unit_price * line.discount2 /100)"/>
+        </t>
+        <t t-if="line_discount1 != 0">
+            <t t-set="total_discount1" t-value="total_discount1 + line_discount1"/>
+        </t>
+        <t t-if="line_discount2 != 0">
+            <t t-set="total_discount2" t-value="total_discount2 + line_discount2"/>
         </t>
     </t>
-
-    <!-- fin descuentos -->
+</t>
+<!--  fin descuentos  -->
 
     <!--Fin datos documento -->
 
@@ -227,7 +232,7 @@
             <div style="height:14px; width:10%; display:block; float:left; margin-left:-15px;font-size:1.2em;">
                 <span><b>Código</b></span>
             </div>
-            <div style="height:14px; width:41%; display:block;float:left;font-size:1.2em;">
+            <div style="height:14px; width:31%; display:block;float:left;font-size:1.2em;">
                 <span><b>Descripción</b></span>
             </div>
             <div style="height:14px; width:7%; display:block; float:left;font-size:1.2em;text-align:right;">
@@ -244,7 +249,11 @@
                     <span><b>Desc.%</b></span>
                 </t>
             </div>
-
+            <div style="height:14px; width:10%; display:block; float:left;font-size:1.2em;text-align:right;">
+                <t t-if="total_discount2 != 0">
+                    <span><b>Desc.(2)%</b></span>
+                </t>
+            </div>
             <div style="height:14px; width:8%; display:block; float:left;font-size:1.2em;text-align:right;">
                 <span><b>Neto</b></span>
             </div>
@@ -336,7 +345,7 @@
                     <!-- Fin codigo -->
 
                     <!-- Descripcion -->
-                    <div style="width:41%; display:block;float:left;">
+                    <div style="width:31%; display:block;float:left;">
                         <t t-if="line.name">
                         <t t-set="productName" t-value="line.name"/>
                         <t t-set="name_num" t-value="productName.find(']') + 1 "/>
@@ -396,9 +405,19 @@
                         <span style="color:white;">abc</span>
                     </div>
                     <!-- Fin descuento -->
-
-
-
+                    <!-- Descuento 2-->
+                    <div t-if="line.discount2 != 0.00" style="width:10%; display:block; float:left;text-align:right;">
+                        <t t-if="line.discount2 != 0.00">
+                            <span t-field="line.discount2"/>
+                        </t>
+                        <t t-else="">
+                            <span style="color:white;">abc</span>
+                        </t>
+                    </div>
+                    <div t-else="" style="width:10%;display:block; float:left;text-align:right;">
+                        <span style="color:white;">abc</span>
+                    </div>
+                    <!-- Fin descuento 2-->
                     <!-- Precio Neto / u -->
                     <div style="width:8%;  display:block; float:left;text-align:right;">
                         <t t-set="neto_linea" t-value="line.price_unit"/>
@@ -649,35 +668,42 @@
 
         <!-- desgloses IVA y RECARAGO  serie C-->
         <t t-if="o.sale_type_id.name == 'Serie C'">
-            <!-- Descuentos aplicados -->
+           <!--  Descuentos aplicados  -->
             <div style="width:40%;margin-right:10%;float:left;font-size:0.8em;">
                 <div t-if="total_discount1 != 0">
                     <div style="width:50%;float:left;">
                         <span>Total descuento 1</span>
                     </div>
                     <div style="width:50%;float:left;text-align:right;">
-                        -<span t-esc="total_discount1" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                        -<span t-esc="total_discount1" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </div>
                 </div>
-
-                <hr t-if="total_discount1 != 0" style="height:2px;width:100%;background-color:black;"/>
-                    <div t-if="total_discount1 != 0">
-                    <div style="width:50%;float:left;margin-top:-15px;">
-                        <span>Total descuentos</span>
+                <div t-if="total_discount2 != 0">
+                    <div style="width:50%;float:left;">
+                        <span>Total descuento 2</span>
                     </div>
-
+                    <div style="width:50%;float:left;text-align:right;">
+                        -<span t-esc="total_discount2" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                    </div>
+                </div>
+                <hr t-if="total_discount2 != 0 or total_discount1 != 0" style="height:2px;width:100%;background-color:black;"/>
+                <div t-if="total_discount2 != 0 or total_discount1 != 0">
+                    <div style="width:50%;float:left;margin-top:-15px;">
+                        <span>Total descuentos linea</span>
+                    </div>
                     <div style="width:50%;float:left;text-align:right;margin-top:-15px;">
                         <t t-set="total_discounts" t-value="0"/>
                         <t t-if="total_discount1 != 0">
                             <t t-set="total_discounts" t-value="total_discounts + total_discount1"/>
                         </t>
-                        -<span t-esc="total_discounts" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                        <t t-if="total_discount2 != 0">
+                            <t t-set="total_discounts" t-value="total_discounts + total_discount2"/>
+                        </t>
+                        -<span t-esc="total_discounts" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </div>
                 </div>
-
             </div>
-
-            <!-- Fin descuentos aplicados -->
+            <!--  Fin descuentos aplicados  -->
 
 
             <div style="width:40%;margin-left:8%;float:right;font-size:0.8em;">
@@ -766,34 +792,42 @@
         <t t-if="o.sale_type_id.name != 'Serie C'">
         <!-- Desglose -->
 
-            <!-- Descuentos aplicados -->
+           <!--  Descuentos aplicados  -->
             <div style="width:40%;margin-right:10%;float:left;font-size:0.8em;">
                 <div t-if="total_discount1 != 0">
                     <div style="width:50%;float:left;">
-                        <span>Total descuento Producto</span>
+                        <span>Total descuento 1</span>
                     </div>
                     <div style="width:50%;float:left;text-align:right;">
-                        -<span t-esc="total_discount1" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                        -<span t-esc="total_discount1" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </div>
                 </div>
-                <hr t-if="total_discount1 != 0" style="height:2px;width:100%;background-color:black;"/>
-                    <div t-if="total_discount1 != 0">
-                    <div style="width:50%;float:left;margin-top:-15px;">
-                        <span>Total descuentos</span>
+                <div t-if="total_discount2 != 0">
+                    <div style="width:50%;float:left;">
+                        <span>Total descuento 2</span>
                     </div>
-
+                    <div style="width:50%;float:left;text-align:right;">
+                        -<span t-esc="total_discount2" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                    </div>
+                </div>
+                <hr t-if="total_discount2 != 0 or total_discount1 != 0" style="height:2px;width:100%;background-color:black;"/>
+                <div t-if="total_discount2 != 0 or total_discount1 != 0">
+                    <div style="width:50%;float:left;margin-top:-15px;">
+                        <span>Total descuentos linea</span>
+                    </div>
                     <div style="width:50%;float:left;text-align:right;margin-top:-15px;">
                         <t t-set="total_discounts" t-value="0"/>
                         <t t-if="total_discount1 != 0">
                             <t t-set="total_discounts" t-value="total_discounts + total_discount1"/>
                         </t>
-                        -<span t-esc="total_discounts" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                        <t t-if="total_discount2 != 0">
+                            <t t-set="total_discounts" t-value="total_discounts + total_discount2"/>
+                        </t>
+                        -<span t-esc="total_discounts" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </div>
                 </div>
-
             </div>
-
-            <!-- Fin descuentos aplicados -->
+            <!--  Fin descuentos aplicados  -->
 
             <div style="width:40%;margin-left:8%;float:right;font-size:0.8em;">
 
