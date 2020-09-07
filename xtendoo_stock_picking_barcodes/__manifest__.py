@@ -12,13 +12,13 @@
     "depends": [
         "barcodes",
         "stock",
+        'web_notify',
     ],
     "data": [
         'security/ir.model.access.csv',
         'views/assets.xml',
         'views/stock_picking_views.xml',
         'wizard/stock_barcodes_read_views.xml',
-        'wizard/stock_barcodes_read_picking_views.xml',
     ],
     "installable": True,
 }

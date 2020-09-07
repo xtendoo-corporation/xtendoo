@@ -1,4 +1,4 @@
-# Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
+# Copyright 2020
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import logging
 from odoo import api, _, fields, models
@@ -20,6 +20,21 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         string='Picking',
         readonly=True,
     )
+    picking_partner = fields.Many2one(
+        comodel_name='res.partner',
+        related='picking_id.partner_id',
+        readonly=True,
+        string='Partner',
+    )
+    picking_state = fields.Selection(
+        related='picking_id.state',
+        readonly=True,
+    )
+    picking_date = fields.Datetime(
+        related='picking_id.date',
+        readonly=True,
+        string='Creation Date',
+    )
     move_ids_without_package = fields.One2many(
         related='picking_id.move_ids_without_package',
         readonly=True,
@@ -29,6 +44,12 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         comodel_name='wiz.candidate.picking',
         inverse_name='wiz_barcode_id',
         string='Candidate pickings',
+        readonly=True,
+    )
+    line_picking_ids = fields.One2many(
+        comodel_name='wiz.line.picking',
+        inverse_name='wiz_barcode_id',
+        string='Line pickings',
         readonly=True,
     )
     picking_product_qty = fields.Float(
@@ -75,17 +96,29 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self._set_default_picking()
 
     def action_done(self):
+        print("action_done***********************************************")
         if self.check_done_conditions():
+            print("check_done_conditions******************************************")
             res = self._process_stock_move_line()
+
+            print("dentro de action done res----------------------------------", res)
             if res:
-                self._add_read_log(res)
-                self.candidate_picking_ids.scan_count += 1
+                self._update_line_picking(res)
 
     def action_manual_entry(self):
         result = super().action_manual_entry()
         if result:
             self.action_done()
         return result
+
+    def _update_line_picking(self, res):
+        print("entro en el metodo _update_line_picking")
+        for line in self.line_picking_ids.filtered(
+            lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
+        ):
+            print("_update_line_picking", self.product_qty)
+            line.quantity_done = line.quantity_done + self.product_qty
+            break
 
     def _prepare_move_line_values(self, candidate_move, available_qty):
         """When we've got an out picking, the logical workflow is that
@@ -134,9 +167,17 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self._set_line_pickings(candidate_pickings)
 
     def _set_line_pickings(self, candidate_pickings):
+        vals = [(5, 0, 0)]
         for p in candidate_pickings:
             for l in p.move_ids_without_package:
-                print(l.product_id, l.quantity_done)
+                vals.extend([(0, 0, {
+                    'picking_id': p.id,
+                    'product_id': l.product_id,
+                    'reserved_availability': l.reserved_availability,
+                    'product_uom_qty': l.product_uom_qty,
+                    'quantity_done': l.quantity_done,
+                })])
+        self.line_picking_ids = vals
 
     def _search_candidate_pickings(self, moves_todo=False):
         if not moves_todo:
@@ -161,9 +202,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         scanned product the interface allow to select what picking to work.
         If only there is one picking the scan data is assigned to it.
         """
-        StockMove = self.env['stock.move']
-        StockMoveLine = self.env['stock.move.line']
-        moves_todo = StockMove.search(self._prepare_stock_moves_domain())
+        moves_todo = self.env['stock.move'].search(self._prepare_stock_moves_domain())
         if not self._search_candidate_pickings(moves_todo):
             return False
         lines = moves_todo.mapped('move_line_ids').filtered(
@@ -184,12 +223,12 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             if assigned_qty:
                 move_lines_dic[line.id] = assigned_qty
             if float_compare(
-                    available_qty, 0.0,
-                    precision_rounding=line.product_id.uom_id.rounding) < 1:
+                available_qty, 0.0,
+                precision_rounding=line.product_id.uom_id.rounding) < 1:
                 break
         if float_compare(
-                available_qty, 0,
-                precision_rounding=self.product_id.uom_id.rounding) > 0:
+            available_qty, 0,
+            precision_rounding=self.product_id.uom_id.rounding) > 0:
             # Create an extra stock move line if this product has an
             # initial demand.
             moves = self.picking_id.move_lines.filtered(lambda m: (
@@ -202,66 +241,32 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                     _('There are no stock moves to assign this operation'))
                 return False
             else:
-                line = StockMoveLine.create(
+                line = self.env['stock.move.line'].create(
                     self._prepare_move_line_values(moves[0], available_qty))
                 move_lines_dic[line.id] = available_qty
         self.picking_product_qty = sum(moves_todo.mapped('quantity_done'))
         return move_lines_dic
-
-    def _candidate_picking_selected(self):
-        if len(self.candidate_picking_ids) == 1:
-            return self.candidate_picking_ids.picking_id
-        else:
-            return self.env['stock.picking'].browse()
 
     def check_done_conditions(self):
         res = super().check_done_conditions()
         if self.product_id.tracking != 'none' and not self.lot_id:
             self._set_messagge_info('info', _('Waiting for input lot'))
             return False
-        if not self.picking_id:
-            if not self._search_candidate_pickings():
-                self._set_messagge_info(
-                    'info', _('Click on picking pushpin to lock it'))
-                return False
-        if self.picking_id != self._candidate_picking_selected():
-            self._set_messagge_info(
-                'info', _('Click on picking pushpin to lock it'))
+
+        for l in self.line_picking_ids:
+            print(l.quantity_done)
+            print(self.product_qty)
+            print(l.product_uom_qty)
+            print(l.quantity_done + self.product_qty)
+            print(l.product_uom_qty >= l.quantity_done + self.product_qty)
+
+        lines = self.line_picking_ids.filtered(
+            lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
+        )
+        print("lines*******************************************", lines)
+        if not lines:
+            raise ValidationError(_('There are no lines to assign that quantity'))
             return False
-        return res
-
-    def _prepare_scan_log_values(self, log_detail=False):
-        # Store in read log line each line added with the quantities assigned
-        vals = super()._prepare_scan_log_values(log_detail=log_detail)
-        vals['picking_id'] = self.picking_id.id
-        if log_detail:
-            vals['log_line_ids'] = [(0, 0, {
-                'move_line_id': x[0],
-                'product_qty': x[1],
-            }) for x in log_detail.items()]
-        return vals
-
-    def remove_scanning_log(self, scanning_log):
-        for log in scanning_log:
-            for log_scan_line in log.log_line_ids:
-                if log_scan_line.move_line_id.state not in ['assigned',
-                                                            'confirmed']:
-                    raise ValidationError(_(
-                        'You can not remove an entry linked to a stock move '
-                        'line in state assigned or confirmed')
-                    )
-                qty = (log_scan_line.move_line_id.qty_done -
-                       log_scan_line.product_qty)
-                log_scan_line.move_line_id.qty_done = max(qty, 0.0)
-            self.picking_product_qty = sum(log.log_line_ids.mapped(
-                'move_line_id.move_id.quantity_done'))
-            log.unlink()
-
-    def action_undo_last_scan(self):
-        res = super().action_undo_last_scan()
-        log_scan = first(self.scan_log_ids.filtered(
-            lambda x: x.create_uid == self.env.user))
-        self.remove_scanning_log(log_scan)
         return res
 
 
@@ -393,44 +398,23 @@ class WizLinePicking(models.TransientModel):
         string='Picking',
         readonly=True,
     )
-    wiz_picking_id = fields.Many2one(
-        comodel_name='stock.picking',
-        related='wiz_barcode_id.picking_id',
-        string='Wizard Picking',
-        readonly=True,
+    product_id = fields.Many2one(
+        comodel_name="product.product",
+        string='Product',
+        required=True,
     )
-    name = fields.Char(
-        related='picking_id.name',
-        readonly=True,
-        string='Candidate Picking',
-    )
-    partner_id = fields.Many2one(
-        comodel_name='res.partner',
-        related='picking_id.partner_id',
-        readonly=True,
-        string='Partner',
-    )
-    state = fields.Selection(
-        related='picking_id.state',
-        readonly=True,
-    )
-    date = fields.Datetime(
-        related='picking_id.date',
-        readonly=True,
-        string='Creation Date',
-    )
-    product_qty_reserved = fields.Float(
-        'Reserved', compute='_compute_picking_quantity',
+    reserved_availability = fields.Float(
+        string='Reserved',
         digits=dp.get_precision('Product Unit of Measure'),
         readonly=True,
     )
     product_uom_qty = fields.Float(
-        'Demand', compute='_compute_picking_quantity',
+        string='Demand',
         digits=dp.get_precision('Product Unit of Measure'),
         readonly=True,
     )
-    product_qty_done = fields.Float(
-        'Done', compute='_compute_picking_quantity',
+    quantity_done = fields.Float(
+        string='Done',
         digits=dp.get_precision('Product Unit of Measure'),
         readonly=True,
     )
@@ -458,27 +442,3 @@ class WizLinePicking(models.TransientModel):
     def _get_wizard_barcode_read(self):
         return self.env['wiz.stock.barcodes.read.picking'].browse(
             self.env.context['wiz_barcode_id'])
-
-    def action_lock_picking(self):
-        wiz = self._get_wizard_barcode_read()
-        picking_id = self.env.context['picking_id']
-        wiz.picking_id = picking_id
-        wiz._set_candidate_pickings(wiz.picking_id)
-        return wiz.action_done()
-
-    def action_unlock_picking(self):
-        wiz = self._get_wizard_barcode_read()
-        wiz.update({
-            'picking_id': False,
-            'candidate_picking_ids': False,
-            'message_type': False,
-            'message': False,
-        })
-        return wiz.action_cancel()
-
-    def action_validate_picking(self):
-        picking = self.env['stock.picking'].browse(
-            self.env.context.get('picking_id', False)
-        )
-        return picking.button_validate()
-

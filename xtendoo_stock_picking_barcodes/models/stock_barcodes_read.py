@@ -2,10 +2,11 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
 from odoo.addons import decimal_precision as dp
+from odoo.exceptions import ValidationError, UserError
 
 
 class WizStockBarcodesRead(models.AbstractModel):
-    _name = 'wiz.stock.barcodes.read.picking'
+    _name = 'wiz.stock.barcodes.read'
     _inherit = 'barcodes.barcode_events_mixin'
     _description = 'Wizard to read barcode'
     # To prevent remove the record wizard until 2 days old
@@ -73,7 +74,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             self.message = '%s' % message
 
     def process_barcode(self, barcode):
-        # self._set_messagge_info('success', _('Barcode read correctly'))
+        self._set_messagge_info('success', _('Barcode read correctly'))
         domain = self._barcode_domain(barcode)
         product = self.env['product.product'].search(domain)
         if product:
@@ -129,7 +130,9 @@ class WizStockBarcodesRead(models.AbstractModel):
         return True
 
     def action_done(self):
-        return self.check_done_conditions()
+        if not self.check_done_conditions():
+            return False
+        return True
 
     def action_cancel(self):
         return True
@@ -163,3 +166,5 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.product_qty = 0
         self.packaging_qty = 0
 
+    def action_undo_last_scan(self):
+        return True

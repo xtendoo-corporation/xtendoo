@@ -43,12 +43,6 @@ class WizStockBarcodesRead(models.AbstractModel):
     manual_entry = fields.Boolean(
         string='Manual entry data',
     )
-    # Computed field for display all scanning logs from res_model and res_id
-    # when change product_id
-    scan_log_ids = fields.Many2many(
-        comodel_name='stock.barcodes.read.log',
-        compute='_compute_scan_log_ids',
-    )
     message_type = fields.Selection([
         ('info', 'Barcode read with additional info'),
         ('not_found', 'No barcode found'),
@@ -137,7 +131,6 @@ class WizStockBarcodesRead(models.AbstractModel):
     def action_done(self):
         if not self.check_done_conditions():
             return False
-        self._add_read_log()
         return True
 
     def action_cancel(self):
@@ -167,35 +160,6 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def action_manual_entry(self):
         return True
-
-    def _prepare_scan_log_values(self, log_detail=False):
-        return {
-            'name': self.barcode,
-            'location_id': self.location_id.id,
-            'product_id': self.product_id.id,
-            'packaging_id': self.packaging_id.id,
-            'lot_id': self.lot_id.id,
-            'packaging_qty': self.packaging_qty,
-            'product_qty': self.product_qty,
-            'manual_entry': self.manual_entry,
-            'res_model_id': self.res_model_id.id,
-            'res_id': self.res_id,
-        }
-
-    def _add_read_log(self, log_detail=False):
-        if self.product_qty:
-            vals = self._prepare_scan_log_values(log_detail)
-            self.env['stock.barcodes.read.log'].create(vals)
-
-    @api.depends('product_id', 'lot_id')
-    def _compute_scan_log_ids(self):
-        logs = self.env['stock.barcodes.read.log'].search([
-            ('res_model_id', '=', self.res_model_id.id),
-            ('res_id', '=', self.res_id),
-            ('location_id', '=', self.location_id.id),
-            ('product_id', '=', self.product_id.id),
-        ], limit=10)
-        self.scan_log_ids = logs
 
     def reset_qty(self):
         self.product_qty = 0
