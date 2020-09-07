@@ -112,11 +112,9 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         return result
 
     def _update_line_picking(self, res):
-        print("entro en el metodo _update_line_picking")
         for line in self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         ):
-            print("_update_line_picking", self.product_qty)
             line.quantity_done = line.quantity_done + self.product_qty
             break
 
