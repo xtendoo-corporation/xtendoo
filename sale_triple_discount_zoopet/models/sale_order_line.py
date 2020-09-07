@@ -41,26 +41,26 @@ class SaleOrderLine(models.Model):
     def _discount_fields(self):
         return ['discount', 'discount2', 'discount3']
 
-    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id', 'discount2', 'discount3', 'discounting_type')
+    @api.one
+    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id','discount2','discount3')
     def _compute_amount(self):
-    """
-    Compute the amounts of the SO line.
-    """
-    for line in self:
-        #price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+        """
+        Compute the amounts of the SO line.
+        """
+        for line in self:
+            # to avoid coupling these calculations must be passed to a method
+            price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
+            price *= (1 - (self.discount2 or 0.0) / 100.0)
+            price *= (1 - (self.discount3 or 0.0) / 100.0)
 
-        # to avoid coupling these calculations must be passed to a method
-        price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
-        price *= (1 - (self.discount2 or 0.0) / 100.0)
-        price *= (1 - (self.discount3 or 0.0) / 100.0)
+            taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.product_uom_qty,
+                                            product=line.product_id, partner=line.order_id.partner_shipping_id)
+            line.update({
+                'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])),
+                'price_total': taxes['total_included'],
+                'price_subtotal': taxes['total_excluded'],
+            })
 
-        taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.product_uom_qty, product=line.product_id,
-                                        partner=line.order_id.partner_shipping_id)
-        line.update({
-            'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])),
-            'price_total': taxes['total_included'],
-            'price_subtotal': taxes['total_excluded'],
-        })
 
     discount2 = fields.Float(
         'Disc. 2 (%)',
@@ -123,9 +123,9 @@ class SaleOrderLine(models.Model):
         this method is called multiple times.
         Updating the cache provides consistency through recomputations."""
         prev_values = dict()
-        self.invalidate_cache(
-            fnames=['discount', 'discount2', 'discount3'],
-            ids=self.ids)
+        #self.invalidate_cache(
+         #   fnames=['discount', 'discount2', 'discount3'],
+          #  ids=self.ids)
         for line in self:
             prev_values[line] = dict(
                 discount=line.discount,
