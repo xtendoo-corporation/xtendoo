@@ -7,10 +7,16 @@ class SaleOrderLine(models.Model):
 
     lot_id = fields.Many2one(
         'stock.production.lot', 'Lot', copy=False)
+    first_selection = fields.Boolean(
+        comodel_name='sale.order.line',
+        string="firstSelection",
+        default=False
+    )
 
     @api.multi
     @api.onchange('product_id')
     def product_id_change(self):
+        self.first_selection=True
         super(SaleOrderLine, self).product_id_change()
         self.lot_id = False
 
@@ -33,12 +39,18 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('product_uom_qty','lot_id','product_uom')
     def _onchage_quantity_or_lot(self):
-        if self.product_id.tracking == 'lot':
-            if not self.lot_id:
-                raise UserError(_("You must select a lot"))
-            if not self.lot_id.product_qty or self.lot_id.product_qty < self.product_uom_qty:
-                raise UserError(_("Not enough stock for this lot"))
-            
+        if self.first_selection !=True:
+            if self.product_id:
+                if self.product_id.tracking == 'lot':
+                    if not self.lot_id:
+                        raise UserError(_("Debe selecionar un Lote"))
+                    if not self.lot_id.product_qty:
+                        raise UserError(_("No hay suficiente stock para este lote"))   
+                    if self.lot_id.product_qty < self.product_uom_qty:
+                        raise UserError(_("No hay suficiente stock para este lote"))
+                    if self.lot_id.product_qty < (self.product_uom_qty * self.product_uom.factor_inv):
+                        raise UserError(_("No hay suficiente stock para este lote"))
+            self.first_selection=False
 
 
 class SaleOrder(models.Model):

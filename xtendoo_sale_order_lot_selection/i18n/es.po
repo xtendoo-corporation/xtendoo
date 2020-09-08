@@ -55,3 +55,13 @@ msgstr "Movimiento de existencia"
 
 #~ msgid "Procurement Group"
 #~ msgstr "Grupo de Abastecimiento"
+
+#. module: sale_order_lot_selection
+#: model:ir.model,name:sale_order_lot_selection.model_sale_order_line_not_lot
+msgid "You must select a lot"
+msgstr "Debes seleccionar un lote"
+
+#. module: sale_order_lot_selection
+#: model:ir.model,name:sale_order_lot_selection.model_sale_order_line_not_stock
+msgid "Not enough stock for this lot"
+msgstr "No hay suficiente stock para este lote"

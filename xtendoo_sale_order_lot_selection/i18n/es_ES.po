@@ -27,10 +27,10 @@ msgid "Can't reserve products for lot %s"
 msgstr ""
 
 #. module: sale_order_lot_selection
-#: code:addons/sale_order_lot_selection/models/sale.py:52
+#: code:addons/sale_order_lot_selection/models/sale.py:61
 #, python-format
 msgid "Can't retrieve lot on stock"
-msgstr ""
+msgstr "No se puede recuperar lote en stock"
 
 #. module: sale_order_lot_selection
 #: model:ir.model.fields,field_description:sale_order_lot_selection.field_sale_order_line__lot_id
@@ -53,3 +53,15 @@ msgstr ""
 #: model:ir.model,name:sale_order_lot_selection.model_stock_move
 msgid "Stock Move"
 msgstr ""
+
+#. module: sale_order_lot_selection
+#: code:addons/sale_order_lot_selection/models/sale.py:39
+#, python-format
+msgid "You must select a lot"
+msgstr "Debe seleccionar un lote"
+
+#. module: sale_order_lot_selection
+#: code:addons/sale_order_lot_selection/models/sale.py:41
+#, python-format
+msgid "Not enough stock for this lot"
+msgstr "No hay suficiente stock para este lote"
