@@ -59,7 +59,10 @@
         'views/payment_bluetooth/report_payment_receipt_bluetooth.xml',
 
         #Informe de carga
-        'views/workload/stock_picking_report.xml'
+        'views/workload/stock_picking_report.xml',
+
+        #Compras
+        'views/purchase/report_purchase_document.xml'
 
 
 
