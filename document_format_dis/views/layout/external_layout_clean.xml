@@ -8,7 +8,7 @@
 
             <xpath expr="//div[@class='o_clean_header']" position="replace">
                 <div>
-                    <div class="col-6" style="display:block; width:30%;float:left;margin-left:-5%;">
+                    <div class="col-6" style="display:block; width:27%;float:left;margin-left:-5%;margin-top:15px;">
                         <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"
                              style="width:100%;max-height:200px;"/>
                     </div>

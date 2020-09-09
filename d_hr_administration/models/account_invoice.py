@@ -38,3 +38,9 @@ class AccountInvoice(models.Model):
             return super(AccountInvoice, self).default_get(default_fields)
 
         raise ValidationError(("You are not allowed to create invoices."))
+
+    @api.multi
+    def action_invoice_cancel(self):
+        if not self.env.user.administration:
+            raise ValidationError(("No tiene permisos para cancelar facturas"))
+        return self.filtered(lambda inv: inv.state != 'cancel').action_cancel()
