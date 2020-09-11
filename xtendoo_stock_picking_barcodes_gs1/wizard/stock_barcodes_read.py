@@ -50,7 +50,8 @@ class WizStockBarcodesRead(models.AbstractModel):
             product = self.env['product.product'].search(
                 self._barcode_domain(product_barcode))
             if not product:
-                self.env.user.notify_danger({'message': 'Barcode for product not found', 'sticky': True})
+                self.env.user.notify_danger(
+                    message='Barcode for product not found')
                 return False
             else:
                 processed = True
@@ -59,11 +60,13 @@ class WizStockBarcodesRead(models.AbstractModel):
             packaging = self.env['product.packaging'].search(
                 self._barcode_domain(package_barcode))
             if not packaging:
-                self.env.user.notify_danger({'message': 'Barcode for product packaging not found', 'sticky': True})
+                self.env.user.notify_danger(
+                    message='Barcode for product packaging not found')
                 return False
             else:
                 if len(packaging) > 1:
-                    self.env.user.notify_danger({'message': 'More than one package found', 'sticky': True})
+                    self.env.user.notify_danger(
+                        message='More than one package found')
                     #self._set_messagge_info(
                     #    'more_match', _('More than one package found'))
                     return False
@@ -76,6 +79,6 @@ class WizStockBarcodesRead(models.AbstractModel):
             self.product_qty = product_qty
         if processed:
             self.action_done()
-            self._set_messagge_info('success', _('Barcode read correctly'))
+            # self._set_messagge_info('success', _('Barcode read correctly'))
             return True
         return super().process_barcode(barcode)

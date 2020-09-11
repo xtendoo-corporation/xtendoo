@@ -234,7 +234,8 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 m.state in self._states_move_allowed()))
             if not moves:
                 # TODO: Add picking if picking_id to message
-                self.env.user.notify_danger({'message': 'There are no stock moves to assign this operation', 'sticky': True})
+                self.env.user.notify_danger(
+                    message='There are no stock moves to assign this operation')
                 # self._set_messagge_info(
                 #     'info',
                 #     _('There are no stock moves to assign this operation'))
@@ -250,7 +251,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         res = super().check_done_conditions()
         if self.product_id.tracking != 'none' and not self.lot_id:
             self.env.user.notify_danger(
-                {'message': 'Waiting for input lot', 'sticky': True})
+                message='Waiting for input lot')
             # self._set_messagge_info('info', _('Waiting for input lot'))
             return False
 
@@ -266,7 +267,9 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         )
         print("lines*******************************************", lines)
         if not lines:
-            raise ValidationError(_('There are no lines to assign that quantity'))
+            self.env.user.notify_danger(
+                message="There are no lines to assign that quantity")
+            # raise ValidationError(_('There are no lines to assign that quantity'))
             return False
         return res
 

@@ -6,13 +6,6 @@
         <field name="arch" type="xml">
             <form string="Barcodes">
 
-                <div id="oe_notification_alert" class="ui-state-error">
-                    <a class="ui-notify-cross ui-notify-close" href="#">x</a>
-                    <span style="float:left; margin:2px 5px 0 0;" class="ui-icon ui-icon-alert"></span>
-                    <h1>title</h1>
-                    <p>text</p>
-                </div>
-
                 <sheet>
                     <div class="text-center">
                         <div class="alert alert-success" role="status" attrs="{'invisible': [('message_type', '!=', 'success')]}">
