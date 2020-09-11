@@ -1,13 +1,12 @@
 odoo.define('web_notify.Notification', function (require) {
     "use strict";
 
-
-
-    var Notification = require('web.Notification');
+    const Notification = require('web.Notification');
 
     Notification.include({
         // properties
         _audio: null,
+
         icon_mapping: {
             'success': 'fa-thumbs-up',
             'danger': 'fa-exclamation-triangle',
@@ -15,7 +14,8 @@ odoo.define('web_notify.Notification', function (require) {
             'info': 'fa-info',
             'default': 'fa-lightbulb-o',
         },
-        init: function () {
+
+        init()  {
             this._super.apply(this, arguments);
             // Delete default classes
             this.className = this.className.replace(' o_error', '');
@@ -28,9 +28,9 @@ odoo.define('web_notify.Notification', function (require) {
 
         },
 
-        _beep: function () {
+        _beep() {
+            console.log("_beep")
             if (typeof (Audio) !== "undefined") {
-
                 if (!this._audio) {
                     this._audio = new Audio();
                     var ext = this._audio.canPlayType("audio/ogg; codecs=vorbis") ? ".ogg" : ".mp3";

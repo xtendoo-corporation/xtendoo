@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook/page[1]" position="after">
-                <page string="Test web notify" name="test_web_notify">
+                <page string="Xtendoo web notify" name="test_web_notify">
                     <group>
                         <group>
                             <button name="notify_success"

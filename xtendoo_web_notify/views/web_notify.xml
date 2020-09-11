@@ -5,8 +5,8 @@
             <link rel="stylesheet" type="text/scss" href="/web_notify/static/src/scss/webclient.scss"/>
         </link>
         <xpath expr="." position="inside">
-            <script type="text/javascript" src="/web_notify/static/src/js/web_client.js"/>
-            <script type="text/javascript" src="/web_notify/static/src/js/widgets/notification.js"/>
+            <script type="text/javascript" src="/xtendoo_web_notify/static/src/js/web_client.js"/>
+            <script type="text/javascript" src="/xtendoo_web_notify/static/src/js/widgets/notification.js"/>
         </xpath>
     </template>
 </odoo>

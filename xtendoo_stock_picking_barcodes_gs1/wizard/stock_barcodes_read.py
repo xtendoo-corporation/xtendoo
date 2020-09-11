@@ -1,4 +1,4 @@
-# Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
+# Copyright 2020 Manuel Calero - Xtendoo
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, models
 
@@ -31,6 +31,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         """ Only has been implemented AI (01, 02, 10, 37), so is possible that
         scanner reads a barcode ok but this one is not precessed.
         """
+        print("process_barcode:::::::::::", barcode)
         try:
             barcode_decoded = self.env['gs1_barcode'].decode(barcode)
         except Exception:
@@ -49,8 +50,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             product = self.env['product.product'].search(
                 self._barcode_domain(product_barcode))
             if not product:
-                self._set_messagge_info(
-                    'not_found', _('Barcode for product not found'))
+                self.env.user.notify_danger({'message': 'Barcode for product not found', 'sticky': True})
                 return False
             else:
                 processed = True
@@ -59,13 +59,13 @@ class WizStockBarcodesRead(models.AbstractModel):
             packaging = self.env['product.packaging'].search(
                 self._barcode_domain(package_barcode))
             if not packaging:
-                self._set_messagge_info(
-                    'not_found', _('Barcode for product packaging not found'))
+                self.env.user.notify_danger({'message': 'Barcode for product packaging not found', 'sticky': True})
                 return False
             else:
                 if len(packaging) > 1:
-                    self._set_messagge_info(
-                        'more_match', _('More than one package found'))
+                    self.env.user.notify_danger({'message': 'More than one package found', 'sticky': True})
+                    #self._set_messagge_info(
+                    #    'more_match', _('More than one package found'))
                     return False
                 processed = True
                 self.action_packaging_scaned_post(packaging)

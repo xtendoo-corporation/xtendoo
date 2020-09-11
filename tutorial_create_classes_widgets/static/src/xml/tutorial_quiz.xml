@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+    <div t-name="tutorial.ClientAction">
+      <h1 class="text-center">Tutorial Quizzzzzzzzzzzzzzzzz</h1>
+    </div>
+
+  <!--
+    All our templates that we need to render from the JS side.
+    These are called from the JS through the Widget extensions.
+    All the t-esc calls escape values that are set through the JavaScript side
+  -->
+  <div t-name="tutorial.QuizSelection" class="tutorial-quiz">
+    <h2>Choose a quiz:</h2>
+    <ul>
+      <li t-foreach="widget.quizzes" t-as="quiz">
+        <button t-att-data-quiz="quiz"><t t-esc="quiz.toUpperCase()"/></button>
+      </li>
+    </ul>
+  </div>
+
+  <div t-name="tutorial.Quiz" class="tutorial-quiz">
+    <t t-set="current" t-value="widget.questions[widget.current]"/>
+    <h2 class="question">
+      <t t-esc="current.question"/>
+    </h2>
+    <div class="answers">
+      <div t-foreach="current.choices" t-as="choice">
+        <button t-att-data-choice="choice"><t t-esc="choice"/>. <t t-esc="choice_value"/></button>
+      </div>
+    </div>
+    <div class="float-right">Quiz: <t t-esc="widget.quizName"/>. <t t-esc="widget.current + 1"/>/<t t-esc="widget.questions.length"/> </div>
+  </div>
+
+  <div t-name="tutorial.QuizSummary" class="tutorial-quiz">
+    <h2>Summary</h2>
+    <div>
+      <div t-foreach="widget.questions" t-as="current" class="quiz-correction">
+        <div>Question <t t-esc="current_index + 1"/>: <t t-esc="current.question"/></div>
+        <div>Correct answer: <t t-esc="current.answer"/> (<t t-esc="current.choices[current.answer]"/>)</div>
+        <t t-set="user_answer" t-value="widget.result.answers[current_index]"/>
+        <div>Your answer: <t t-esc="user_answer"/>. (<t t-esc="current.choices[user_answer]"/>)</div>
+      </div>
+    </div>
+    <button>Back</button>
+  </div>
+
+</templates>

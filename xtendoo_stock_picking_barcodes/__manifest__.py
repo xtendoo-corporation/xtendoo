@@ -12,7 +12,7 @@
     "depends": [
         "barcodes",
         "stock",
-        'web_notify',
+        'xtendoo_web_notify',
     ],
     "data": [
         'security/ir.model.access.csv',
