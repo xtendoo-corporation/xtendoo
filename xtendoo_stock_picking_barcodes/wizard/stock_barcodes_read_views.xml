@@ -24,13 +24,12 @@
                     </div>
                     -->
 
-                    <div>
-                        <group>
-                            <field name="picking_type_code" invisible="1" force_save="1"/>
-                            <field name="picking_id" nolabel="1"/>
-                            <field name="picking_partner" nolabel="1"/>
-                            <field name="picking_date" nolabel="1"/>
-                        </group>
+                    <div class="row">
+                        <field name="picking_type_code" invisible="1" force_save="1"/>
+                        <field name="picking_partner" nolabel="1"/> [<field name="picking_id" nolabel="1"/>]
+                    </div>
+                    <div class="row">
+                        <field name="picking_date" nolabel="1"/>
                     </div>
 
                     <field name="line_picking_ids" options="{'no_open': True}" nolabel="1" mode="tree,kanban">
@@ -52,19 +51,21 @@
                                     <div t-attf-class="oe_kanban_card oe_kanban_color_2">
                                     -->
                                         <div class="row">
-                                            <div class="col-8">
+                                            <div class="col-12">
                                                 <strong>
-                                                    <span><t t-esc="record.product_id.value"/></span>
-                                                </strong>
-                                            </div>
-                                            <div class="col-4">
-                                                <strong>
-                                                    <span class="pull-right text-right">
-                                                        <t t-esc="record.product_uom_qty.value"/>
-                                                        /
-                                                        <t t-esc="record.quantity_done.value"/>
+                                                    <span>
+                                                        <t t-esc="record.product_id.value"/>
                                                     </span>
                                                 </strong>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <span class="pull-right text-right">
+                                                    <t t-esc="record.quantity_done.value"/>
+                                                     de
+                                                    <t t-esc="record.product_uom_qty.value"/>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
