@@ -96,12 +96,8 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self._set_default_picking()
 
     def action_done(self):
-        print("action_done***********************************************")
         if self.check_done_conditions():
-            print("check_done_conditions******************************************")
             res = self._process_stock_move_line()
-
-            print("dentro de action done res----------------------------------", res)
             if res:
                 self._update_line_picking(res)
 
@@ -255,17 +251,9 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             # self._set_messagge_info('info', _('Waiting for input lot'))
             return False
 
-        for l in self.line_picking_ids:
-            print(l.quantity_done)
-            print(self.product_qty)
-            print(l.product_uom_qty)
-            print(l.quantity_done + self.product_qty)
-            print(l.product_uom_qty >= l.quantity_done + self.product_qty)
-
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
-        print("lines*******************************************", lines)
         if not lines:
             self.env.user.notify_danger(
                 message="There are no lines to assign that quantity")
