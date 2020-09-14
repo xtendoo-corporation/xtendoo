@@ -3,8 +3,6 @@
 import logging
 from odoo import api, _, fields, models
 from odoo.tools.float_utils import float_compare
-from odoo.exceptions import ValidationError
-from odoo.fields import first
 from odoo.addons import decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
@@ -12,7 +10,9 @@ _logger = logging.getLogger(__name__)
 
 class WizStockBarcodesReadPicking(models.TransientModel):
     _name = 'wiz.stock.barcodes.read.picking'
+
     _inherit = 'wiz.stock.barcodes.read'
+
     _description = 'Wizard to read barcode on picking'
 
     picking_id = fields.Many2one(
@@ -62,9 +62,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         ('outgoing', 'Customers'),
         ('internal', 'Internal'),
     ], 'Type of Operation')
-    confirmed_moves = fields.Boolean(
-        string='Confirmed moves',
-    )
 
     def name_get(self):
         return [
@@ -136,10 +133,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         }
 
     def _states_move_allowed(self):
-        move_states = ['assigned']
-        if self.confirmed_moves:
-            move_states.append('confirmed')
-        return move_states
+        return ['assigned','confirmed']
 
     def _prepare_stock_moves_domain(self):
         domain = [
@@ -225,6 +219,12 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             precision_rounding=self.product_id.uom_id.rounding) > 0:
             # Create an extra stock move line if this product has an
             # initial demand.
+
+            moves = self.picking_id.move_lines.filtered(lambda m: (
+                m.product_id == self.product_id))
+            for m in moves:
+                print("m.state::::::::::",m.state)
+
             moves = self.picking_id.move_lines.filtered(lambda m: (
                 m.product_id == self.product_id and
                 m.state in self._states_move_allowed()))
@@ -251,9 +251,20 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             # self._set_messagge_info('info', _('Waiting for input lot'))
             return False
 
+        for l in self.line_picking_ids:
+            print("l.product_id:::::",l.product_id)
+            print("l.product_id.id:::::",l.product_id.id)
+            print("l.product_uom_qty:::::",l.product_uom_qty)
+            print("l.quantity_done:::::",l.quantity_done)
+            print("self.product_id:::::",self.product_id)
+            print("self.product_qty:::::",self.product_qty)
+
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
+
+        print("lines::::::",lines)
+
         if not lines:
             self.env.user.notify_danger(
                 message="There are no lines to assign that quantity")

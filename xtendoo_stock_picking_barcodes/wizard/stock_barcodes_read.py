@@ -5,8 +5,10 @@ from odoo.addons import decimal_precision as dp
 
 
 class WizStockBarcodesRead(models.AbstractModel):
-    _name = 'wiz.stock.barcodes.read.picking'
+    _name = 'wiz.stock.barcodes.read'
+
     _inherit = 'barcodes.barcode_events_mixin'
+
     _description = 'Wizard to read barcode'
     # To prevent remove the record wizard until 2 days old
     _transient_max_hours = 48
@@ -75,28 +77,37 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def process_barcode(self, barcode):
         # self._set_messagge_info('success', _('Barcode read correctly'))
+        print("barcode en parent:::::::::",barcode)
         domain = self._barcode_domain(barcode)
         product = self.env['product.product'].search(domain)
+        if not product:
+            self.env.user.notify_danger(
+                message='Product not found')
+            return
         if product:
             if len(product) > 1:
-                self.env.user.notify_danger({'message': 'More than one product found', 'sticky': True})
+                self.env.user.notify_danger(
+                    message='More than one product found')
                 # self._set_messagge_info(
                 #     'more_match', _('More than one product found'))
                 return
             self.action_product_scaned_post(product)
             self.action_done()
             return
+
         if self.env.user.has_group('product.group_stock_packaging'):
             packaging = self.env['product.packaging'].search(domain)
             if packaging:
                 if len(packaging) > 1:
-                    self.env.user.notify_danger({'message': 'More than one package found', 'sticky': True})
+                    self.env.user.notify_danger(
+                        message='More than one package found')
                     # self._set_messagge_info(
                     #     'more_match', _('More than one package found'))
                     return
                 self.action_packaging_scaned_post(packaging)
                 self.action_done()
                 return
+
         if self.env.user.has_group('stock.group_production_lot'):
             lot_domain = [('name', '=', barcode)]
             if self.product_id:
@@ -111,10 +122,12 @@ class WizStockBarcodesRead(models.AbstractModel):
         location = self.env['stock.location'].search(domain)
         if location:
             self.location_id = location
-            self.env.user.notify_danger({'message': 'Waiting product', 'sticky': True})
+            self.env.user.notify_danger(
+                message='Waiting product')
             # self._set_messagge_info('info', _('Waiting product'))
             return
-        self.env.user.notify_danger({'message': 'Barcode not found', 'sticky': True})
+        self.env.user.notify_danger(
+            message='Barcode not found')
         # self._set_messagge_info('not_found', _('Barcode not found'))
 
     def _barcode_domain(self, barcode):
@@ -128,11 +141,13 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def check_done_conditions(self):
         if not self.product_qty:
-            self.env.user.notify_danger({'message': 'Waiting quantities', 'sticky': True})
+            self.env.user.notify_danger(
+                message='Waiting quantities')
             # self._set_messagge_info('info', _('Waiting quantities'))
             return False
         if self.manual_entry:
-            self.env.user.notify_danger({'message': 'Manual entry OK', 'sticky': True})
+            self.env.user.notify_danger(
+                message='Manual entry OK')
             # self._set_messagge_info('success', _('Manual entry OK'))
         return True
 

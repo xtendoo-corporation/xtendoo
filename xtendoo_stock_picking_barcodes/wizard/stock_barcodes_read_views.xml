@@ -7,6 +7,7 @@
             <form string="Barcodes">
 
                 <sheet>
+                    <!--
                     <div class="text-center">
                         <div class="alert alert-success" role="status" attrs="{'invisible': [('message_type', '!=', 'success')]}">
                             <field name="message"/>
@@ -21,6 +22,7 @@
                             <field name="message"/>
                         </div>
                     </div>
+                    -->
 
                     <div>
                         <group>
