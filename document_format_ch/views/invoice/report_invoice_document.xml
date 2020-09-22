@@ -372,13 +372,10 @@
                         </div>
                     </div>
 
-                    <div t-if="doc.signature" class="mt32 ml16 mr16" name="signature">
+                    <div t-if="o.digital_signature" class="mt32 ml16 mr16" name="signature">
 
                         <div class="offset-8">
-                            <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
-                        </div>
-                        <div class="offset-8 text-center">
-                            <p t-field="doc.signed_by"/>
+                            <img t-att-src="image_data_uri(o.digital_signature)" style="max-height: 4cm; max-width: 8cm;"/>
                         </div>
                     </div>
 
