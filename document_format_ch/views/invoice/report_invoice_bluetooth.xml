@@ -392,7 +392,16 @@
                         <span t-field="o.fiscal_position_id.note"/>
                     </p>
 
-                  <!-- <hr style="height:3px; background-color:black;clear:both;"></hr>-->
+                  <hr style="height:3px; background-color:black;clear:both;"></hr>
+                  <div t-if="doc.signature" class="mt32 ml16 mr16" name="signature">
+
+                        <div class="offset-8">
+                            <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                        </div>
+                        <div class="offset-8 text-center">
+                            <p t-field="doc.signed_by"/>
+                        </div>
+                    </div>
 
                    <!-- Footer empresa -->
 
