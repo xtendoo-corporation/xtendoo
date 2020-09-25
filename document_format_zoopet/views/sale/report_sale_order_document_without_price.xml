@@ -311,6 +311,17 @@
               <!-- Fin si es nota -->
 
                        <t t-if="line.product_id">
+                         <!-- verificar que no sea portes = 0€ -->
+                        <t t-set="mostrar" t-value="True"/>
+                        <t t-if="line.price_unit &lt; 0.01">
+                            <t t-if="line.product_id.default_code == 'ENT0'">
+                                <t t-set="mostrar" t-value="False"/>
+                            </t>
+                        </t>
+
+                        <t t-if="mostrar == True">
+                        <!-- verificar que no sea portes = 0€ -->
+
                          <!-- codigo -->
                              <div style="font-size:0.9em;clear:both;margin-top:5px;">
 
@@ -346,6 +357,7 @@
 
                            </div>
                            </t>
+                    </t>
                     </t>
 
 
