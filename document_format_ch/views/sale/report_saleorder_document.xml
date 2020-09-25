@@ -247,9 +247,16 @@
 
                 <!-- IVA -->
 
+                 <!-- IVA -->
+
                 <div class="text-right" style="float:left;width:7%;">
-                  <t t-set="iva" t-value="line.tax_id.amount"></t>
-                  <span t-esc="int(iva)"/><span t-if="line.price_tax > 0">%</span>
+                <t t-foreach="line.tax_id" t-as="tax">
+                    <t t-set="iva" t-value="tax.amount"></t>
+                    <div>
+                        <span t-esc="int(iva)"/>
+                        <span t-if="line.price_tax > 0">%</span>
+                    </div>
+                 </t>
                 </div>
 
                 <!-- Fin IVA -->

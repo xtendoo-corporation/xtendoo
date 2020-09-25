@@ -385,6 +385,14 @@
                         </div>
                     </div>
 
+                    <div t-if="o.digital_signature" class="mt32 ml16 mr16" name="signature">
+
+                        <div class="offset-8">
+                            <img t-att-src="image_data_uri(o.digital_signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                        </div>
+                       
+                    </div>
+
                     <p t-if="o.reference" style="display:none;">
                         Please use the following communication for your payment :
                         <b>

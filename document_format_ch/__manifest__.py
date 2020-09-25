@@ -31,7 +31,8 @@
         'views/invoice/report_invoice_document_2_discounts.xml',
         'views/invoice/report_invoice_bluetooth.xml',
         #payment
-        'views/payment/report_payment_receipt_bluetooth.xml'
+        'views/payment/report_payment_receipt_bluetooth.xml',
+        'views/payment/report_payment_receipt.xml'
     ],
     'demo': [],
     'installable': True,

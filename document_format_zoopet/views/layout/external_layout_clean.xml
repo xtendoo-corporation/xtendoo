@@ -251,8 +251,15 @@
                         Libro 0, Folio 192, Hoja H-12333, Inscrip. 1ª
                     </span>
                 </div>
-                <div style="width:95%; float:left; font-size:0.5em">
-                    <span t-field="company.report_footer"/>
+
+                <div>
+                    <span style="display:block;width:100%;font-size:0.5em">
+                        En cumplimiento de la Ley Vigente de Protección de Datos, le informamos que sus datos quedarán incorporados y serán tratados en los ficheros titularidad de
+Zoo Pet S.L.U. con CIF. ESB21361506, con el fin de poder prestarle nuestros servicios, así como para mantenerle informado sobre cuestiones relativas a la
+actividad de la empresa y sus servicios. Sus datos no serán cedidos a terceros, salvo para cumplir con obligaciones legales o cuando la prestación de un servicio
+así lo requiera. Puede ejercer sus derechos de acceso, rectificación, cancelación o supresión, dirigiéndose a: Zoo Pet S.L.U. C/ Granado Nº 4, 21400 Ayamonte -
+Huelva
+                    </span>
                 </div>
                 <!-- <div class="col-1" style="width:5%; float:left;">
                      <ul style="background-color:red; border-color:red; display:none;" t-if="report_type == 'pdf'" class="list-inline pagenumber float-right text-center">
