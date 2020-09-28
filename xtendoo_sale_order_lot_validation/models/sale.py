@@ -63,8 +63,16 @@ class SaleOrderLine(models.Model):
             return
         if not self.lot_id:
             return
-            #raise UserError(_("Please select a lot"))
-        product_lot_qty = self._product_lot_qty()
+        # get lot quantity
+        product_lot_qty = 0
+        if self.order_id.warehouse_id:
+            quants = self.env['stock.quant'].search([
+                ('location_id', 'child_of', self.order_id.warehouse_id.lot_stock_id.id),
+                ('product_id', '=', self.product_id.id),
+                ('lot_id', '=', self.lot_id.id),
+            ])
+            if quants:
+                product_lot_qty = sum(quants.mapped('quantity'))
         product_uom_qty = self.product_uom_qty * self.product_uom.factor_inv
         if product_lot_qty < product_uom_qty:
             raise UserError(
@@ -72,13 +80,3 @@ class SaleOrderLine(models.Model):
                 (self.lot_id.name, product_lot_qty, self.product_id.name )
                 )
 
-    def _product_lot_qty(self):
-        if self.order_id.warehouse_id and self.product_id:
-            quants = self.env['stock.quant'].search([
-                ('location_id', 'child_of', self.order_id.warehouse_id.lot_stock_id.id),
-                ('product_id', '=', self.product_id.id),
-                ('lot_id', '=', self.lot_id.id),
-            ])
-            if quants:
-                return sum(quants.mapped('quantity'))
-        return 0
