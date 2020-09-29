@@ -9,8 +9,8 @@ class SaleOrder(models.Model):
     def action_confirm(self):
         res = super().action_confirm()
         for so in self:
-            for line in so.order_line:
-                if not line.lot_id and line.product_id.tracking == 'lot':
+            for line in so.order_line.filtered(lambda l: l.product_id.tracking == 'lot'):
+                if not line.lot_id:
                     raise UserError(
                         _('You can\'t store this line %s with empty lot') %
                         line.product_id.name
@@ -28,7 +28,7 @@ class SaleOrder(models.Model):
                     raise UserError(
                         _('Not enough stock in lot %s, only %.2f for product : %s') %
                         (line.lot_id.name, product_lot_qty, line.product_id.name )
-                    )
+                )
         return res
 
 
