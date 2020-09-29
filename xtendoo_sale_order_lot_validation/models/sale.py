@@ -36,23 +36,13 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     lot_id = fields.Many2one(
-        'stock.production.lot', 'Lot', copy=False)
-    # first_selection = fields.Boolean(
-    #     comodel_name='sale.order.line',
-    #     string="firstSelection",
-    #     default=False
-    # )
-    #
-    # @api.multi
-    # @api.onchange('product_id')
-    # def product_id_change(self):
-    #     self.first_selection=True
-    #     super(SaleOrderLine, self).product_id_change()
-    #     self.lot_id = False
+        'stock.production.lot',
+        'Lot',
+        copy=False
+    )
 
-    @api.onchange('product_uom_qty','lot_id','product_uom')
+    @api.onchange('product_uom_qty', 'lot_id', 'product_uom')
     def _onchage_quantity_or_lot(self):
-    #     if self.first_selection != True:
         if not self.product_id:
             return
         if self.product_id.tracking != 'lot':
