@@ -1,28 +1,56 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools.float_utils import float_compare, float_round
 
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
+    state = fields.Selection(
+        related='order_id.state'
+    )
+    is_pricelist_change = fields.Boolean(
+        'The pricelist has changed',
+        compute='_compute_is_pricelist_change',
+    )
+
     @api.onchange('price_unit')
     def _onchage_price_unit(self):
-        # Comprar el precio con el de la tarifa
-        # if precio es menor q coste:
-        #    error por pantalla precio pequeño
-
+        if not self.product_id:
+            return
         if self.price_unit < self.product_id.standard_price:
             raise UserError(
                 _('The unit price can\'t be lower than cost price %.2f') %
                 (self.product_id.standard_price)
             )
 
-        raise UserError(
-            self.order_id.pricelist_id.name
+    @api.depends('price_unit')
+    def _compute_is_pricelist_change(self):
+        precision = self.env['decimal.precision'].precision_get(
+            'Payment Terms'
         )
+        for line in self:
+            pricelist_price_unit = self.env['account.tax']._fix_tax_included_price_company(
+                line._get_display_price(line.product_id), line.product_id.taxes_id, line.tax_id, line.company_id
+            )
+            print("float_compare", float_compare(line.price_unit, pricelist_price_unit, precision_rounding=precision))
+            line.is_pricelist_change = ( (line.price_unit - pricelist_price_unit ) != 0.0 )
 
-        # if precio_nuevo != precio_tarifa:
-        #    if queire cambiar el precio en la tarifa:
-        #       cambiar o crear precio en la tarifa
-        #    else
-        #       return
+    def action_update_pricelist(self):
+        for line in self:
+            items = self.env['product.pricelist.item'].search([
+                ('pricelist_id', '=', line.order_id.pricelist_id.id),
+                ('product_tmpl_id', '=', line.product_id.product_tmpl_id.id),
+                ('applied_on', '=', '1_product'),
+                ('compute_price', '=', 'fixed'),
+            ])
+            if items:
+                items.write({'fixed_price': line.price_unit})
+            else:
+                self.env['product.pricelist.item'].create([
+                    {'pricelist_id': line.order_id.pricelist_id.id,
+                     'product_tmpl_id': line.product_id.product_tmpl_id.id,
+                     'fixed_price': line.price_unit,
+                     'applied_on': '1_product',
+                     'base': 'list_price',
+                     'compute_price': 'fixed'}])
