@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="comercial_group" model="res.groups">
+            <field name="name">comerciales</field>
+            <field name="comment">grupo de comerciales </field>
+        </record>
+    </data>
+</odoo>
