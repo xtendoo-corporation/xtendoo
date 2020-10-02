@@ -734,23 +734,6 @@
 
                     <!-- Desglose -->
 
-                  <!--  Descuentos aplicados  -->
-                    <div style="width:40%;margin-right:10%;float:left;font-size:0.8em;">
-
-                    <div t-if="total_discount1 != 0">
-                        <div style="width:50%;float:left;margin-top:-15px;">
-                            <span>Total descuentos Linea</span>
-                        </div>
-                        <div style="width:50%;float:left;text-align:right;margin-top:-15px;">
-                            <t t-set="total_discounts" t-value="0"/>
-                            <t t-if="total_discount1 != 0">
-                                <t t-set="total_discounts" t-value="total_discounts + total_discount1"/>
-                            </t>
-                            -<span t-esc="total_discounts" t-options='{"widget": "monetary", "display_currency": o.sale_id.pricelist_id.currency_id}'/>
-                        </div>
-                    </div>
-                </div>
-                <!--  Fin descuentos aplicados  -->
                     <div style="width:40%;margin-left:8%;float:right;font-size:0.8em;">
 
                     <!-- Base imponible sin descuentos -->

@@ -241,7 +241,9 @@
                  <div>
 
                       <span style="display:block;clear:both;" >Las incidencias en transporte (roturas, falta de mercancía, etc.), deberán ser comunicadas antes de 24 horas.</span>
-                     <span style="display:block;clear:both;text-align:center;">La posesión de esta Factura no justifica su pago</span>
+                     <t t-if="isInvoice">
+                        <span style="display:block;clear:both;text-align:center;">La posesión de esta Factura no justifica su pago</span>
+                    </t>
                  </div>
 
                 <hr style="height:2px;width:100%;background-color:black;margin-top:-3px;clear:both;"></hr>
