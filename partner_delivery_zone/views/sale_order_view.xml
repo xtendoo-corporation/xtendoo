@@ -8,14 +8,14 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_id']" position="after">
-                <button name="button_next_partner"
-                        type="object"
-                        class="oe_inline oe_link oe_edit_only">
-                    <i class="fa fa-arrow-right"/>
-                    <span> Next Partner</span>
-                </button>
-            </xpath>
+<!--            <xpath expr="//field[@name='partner_id']" position="after">-->
+<!--                <button name="button_next_partner"-->
+<!--                        type="object"-->
+<!--                        class="oe_inline oe_link oe_edit_only">-->
+<!--                    <i class="fa fa-arrow-right"/>-->
+<!--                    <span> Next Partner</span>-->
+<!--                </button>-->
+<!--            </xpath>-->
 
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="delivery_zone_id" attrs="{'readonly':[('state','in', ['done', 'cancel'])]}"/>
