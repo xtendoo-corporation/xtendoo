@@ -30,5 +30,16 @@ msgstr "Pedido de venta"
 msgid "Confirm and invoiced"
 msgstr "Confirmar y facturar"
 
+#. module: sale_order_picking_all_done
+#: model_terms:ir.ui.view,arch_db:sale_order_picking_all_done.view_order_form_inherit
+msgid "Delivery all"
+msgstr "Entregar todo"
+
+#. module: sale_order_picking_all_done
+#: model_terms:ir.ui.view,arch_db:sale_order_picking_all_done.view_order_form_inherit
+msgid "Delivery and invoiced"
+msgstr "Entregar y facturar"
+
+
 
 
