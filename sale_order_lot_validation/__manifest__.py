@@ -1,5 +1,5 @@
 {
-    'name': 'Xtendoo Sale Order Lot Validation',
+    'name': 'Sale Order Lot Validation',
     'version': '12.0.1.0.0',
     'category': 'Sales Management',
     'author': "Manuel Calero, Daniel Dominguez",
