@@ -37,6 +37,7 @@ class SaleOrderLine(models.Model):
             line.is_pricelist_change = ( (line.price_unit - pricelist_price_unit ) != 0.0 )
 
     def action_update_pricelist(self):
+        print("action_update_pricelist*****************************************************")
         for line in self:
             items = self.env['product.pricelist.item'].search([
                 ('pricelist_id', '=', line.order_id.pricelist_id.id),
