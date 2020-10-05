@@ -22,9 +22,16 @@ class SaleOrder(models.Model):
             show_all_clients = False
         # self.env.user.create_direct_invoice
         if show_all_clients == True:
-            domain = {"partner_id": [("customer", "=", True)]}
+            domain = {
+                "partner_id": [("customer", "=", True), ("parent_id", "=", False)]
+            }
         else:
-            domain = {"partner_id": [("user_id", "=", self.env.user.id)]}
+            domain = {
+                "partner_id": [
+                    ("user_id", "=", self.env.user.id),
+                    ("parent_id", "=", False),
+                ]
+            }
 
         return {"domain": domain}
 
