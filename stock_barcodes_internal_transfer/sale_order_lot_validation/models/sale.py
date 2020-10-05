@@ -3,7 +3,6 @@ from odoo.exceptions import UserError
 
 
 class SaleOrder(models.Model):
-
     _inherit = "sale.order"
 
     @api.multi
@@ -34,7 +33,6 @@ class SaleOrder(models.Model):
 
 
 class SaleOrderLine(models.Model):
-
     _inherit = 'sale.order.line'
 
     lot_id = fields.Many2one(
