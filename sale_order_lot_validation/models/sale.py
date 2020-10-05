@@ -3,6 +3,7 @@ from odoo.exceptions import UserError
 
 
 class SaleOrder(models.Model):
+
     _inherit = "sale.order"
 
     @api.multi
@@ -33,6 +34,7 @@ class SaleOrder(models.Model):
 
 
 class SaleOrderLine(models.Model):
+
     _inherit = 'sale.order.line'
 
     lot_id = fields.Many2one(
@@ -65,4 +67,3 @@ class SaleOrderLine(models.Model):
                 _('Not enough stock in lot %s, only %.2f for product : %s') %
                 (self.lot_id.name, product_lot_qty, self.product_id.name )
                 )
-
