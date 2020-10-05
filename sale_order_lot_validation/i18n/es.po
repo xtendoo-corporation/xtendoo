@@ -25,7 +25,7 @@ msgstr "Lote"
 #: code:addons/sale_order_lot_validation/models/sale.py:67
 #, python-format
 msgid "Not enough stock in lot %s, only %.2f for product : %s"
-msgstr "No hay suficiente stock en el lote %s, solo %.2f para el producto : %s"
+msgstr "No hay suficiente stock en el lote %s, solo dispone de %.2f para el producto : %s"
 
 #. module: sale_order_lot_validation
 #: model:ir.model,name:sale_order_lot_validation.model_sale_order
@@ -41,4 +41,4 @@ msgstr "Línea de pedido de venta"
 #: code:addons/sale_order_lot_validation/models/sale.py:16
 #, python-format
 msgid "You can't store this line %s with empty lot"
-msgstr "No puedes guardar esta linea %s con el lote vaío"
+msgstr "No puedes guardar esta línea %s con el lote vacío"
