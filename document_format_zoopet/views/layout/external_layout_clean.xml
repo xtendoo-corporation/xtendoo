@@ -192,18 +192,18 @@
 
                     <t t-if="weight">
                         <t t-if="weight != 0">
-                            <div style="width:33%;float:left;clear:both;margin-top:-3px;">
+                            <div style="width:15%;float:left;clear:both;margin-top:-3px;">
                                 <b><span t-esc="'%.1f'%weight"></span></b>
                             </div>
                         </t>
                         <t t-else="">
-                            <div style="width:33%;float:left;clear:both;color:white;margin-top:-3px">
+                            <div style="width:15%;float:left;clear:both;color:white;margin-top:-3px">
                                 <b><span>aa</span></b>
                             </div>
                         </t>
                     </t>
                     <t t-else="">
-                            <div style="width:33%;float:left;clear:both;color:white;margin-top:-3px">
+                            <div style="width:15%;float:left;clear:both;color:white;margin-top:-3px">
                                 <b><span>aa</span></b>
                             </div>
                         </t>
@@ -227,12 +227,12 @@
 
                       <!-- Plazos de pago -->
                 <t t-if="plazos">
-                    <div t-if="plazos" style="width:33%;float:left;margin-top:-3px;">
+                    <div t-if="plazos" style="width:48%;float:left;margin-top:-3px;">
                       <span>Forma de Pago: </span><b><span t-esc="plazos"/></b>
                     </div>
                 </t>
                 <t t-else="">
-                    <div t-if="plazos" style="width:33%;float:left;color:white;margin-top:-3px">
+                    <div t-if="plazos" style="width:48%;float:left;color:white;margin-top:-3px">
                       <span>Forma de Pago: </span>
                     </div>
                 </t>
