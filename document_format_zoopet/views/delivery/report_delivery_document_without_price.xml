@@ -224,7 +224,7 @@
                 <span style="margin-left:2px;"><b>Cliente:</b></span><span t-field="o.partner_id.ref"/>
               </div>
               <div style="width:50%;float:left;border-bottom:2px solid black;border-right:2px solid black;height:25px;">
-               <span style="margin-left:2px;"><b>Pedido:</b></span><span t-field="o.origin"/>
+               <span style="margin-left:2px;"><b>Factura:</b></span><span t-field="o.sale_id.name"/>
               </div>
             </div>
           <!-- fin datos documento -->

@@ -335,7 +335,7 @@
             <!-- verificar que no sea portes = 0€ -->
             <t t-set="mostrar" t-value="True"/>
             <t t-if="line.price_unit &lt; 0.01">
-                <t t-if="line.product_id.default_code == 'ENT0'">
+                <t t-if="line.product_id.type == 'service'">
                     <t t-set="mostrar" t-value="False"/>
                 </t>
             </t>
@@ -754,23 +754,6 @@
         <!-- desgloses IVA y RECARAGO -->
         <t t-if="o.sale_type_id.name != 'Serie C'">
         <!-- Desglose -->
-
-           <!--  Descuentos aplicados  -->
-            <div style="width:40%;margin-right:10%;float:left;font-size:0.8em;">
-                <div t-if="total_discount1 != 0">
-                    <div style="width:50%;float:left;margin-top:-15px;">
-                        <span>Total descuentos linea</span>
-                    </div>
-                    <div style="width:50%;float:left;text-align:right;margin-top:-15px;">
-                        <t t-set="total_discounts" t-value="0"/>
-                        <t t-if="total_discount1 != 0">
-                            <t t-set="total_discounts" t-value="total_discounts + total_discount1"/>
-                        </t>
-                        -<span t-esc="total_discounts" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                    </div>
-                </div>
-            </div>
-            <!--  Fin descuentos aplicados  -->
 
             <div style="width:40%;margin-left:8%;float:right;font-size:0.8em;">
 
