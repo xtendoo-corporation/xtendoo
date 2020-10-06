@@ -111,6 +111,7 @@
                             <!--Fin cabecera -->
 
                             <!-- Lineas -->
+                            <t t-set="cash_amount" t-value="0"></t>
                             <t t-foreach="o.picking_ids" t-as="pick">
 
                                 <div style="clear:both;font-size:0.9em;">
@@ -166,6 +167,9 @@
                                     </div>
                                     <div style="width:13%;float:left;text-align:left;">
                                         <t t-if="pick.payment_term">
+                                            <t t-if="pick.payment_term == 'Efectivo'">
+                                                <t t-set="cash_amount" t-value="cash_amount+pick.total_amount"></t>
+                                            </t>
                                             <span style="margin-left:2px;" t-field="pick.payment_term"/>
                                         </t>
                                         <t t-else="">
@@ -208,6 +212,20 @@
 
                             </div>
                     </div>
+
+                            <!--Fin Totales -->
+                            <!--Totales -->
+                            <div style="clear:both;">
+
+                                <div style="margin-left:41%;float:left;width:27.85%;">
+                                    <span><b>Total efectivo:</b></span>
+                                </div>
+
+                                <div style="float:left;width:10%;text-align:right;">
+                                    <span style="display:block;width:100%;text-align:right;"><b><span t-esc="round(cash_amount,2)"/>€</b></span>
+                                </div>
+
+                            </div>
 
                             <!--Fin Totales -->
 
