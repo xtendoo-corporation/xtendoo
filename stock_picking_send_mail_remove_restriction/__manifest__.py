@@ -1,5 +1,5 @@
 {
-    'name': 'Remove Restriction Stock Picking Seng Mail',
+    'name': 'Stock Picking Send Mail Remove Restriction',
     'version': '12.0.1.0.0',
     'category': 'Sales Management',
     'author': "Manuel Calero, Javier Lagares",
