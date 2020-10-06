@@ -6,8 +6,7 @@
 Product Pricelist Margin Base
 ==============================
 
-This Module Allows calculate the real discount in a sale so the discount does not affect the cost price and don't lost money.
-
+This Module Allows calculate the price based on the desired margin, we do not run the risk of incurring negative margins when, for example, launching a promotion
 
 Credits
 =======
