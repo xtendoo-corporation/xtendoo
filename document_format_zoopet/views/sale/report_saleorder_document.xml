@@ -347,7 +347,7 @@
         </div>
         <!-- fin marca de agua -->
 
-        <hr style="height:2px;width:120%;background-color:black;margin-left:-15px;"/>
+        <hr style="height:2px;width:101%;background-color:black;margin-left:-15px;"/>
 
         <!-- Variables -->
         <t t-set="current_subtotal" t-value="0"/>
@@ -503,7 +503,7 @@
             </t>
         </t>
 
-        <hr style="height:2px;width:110%;background-color:black;margin-left:-15px;"/>
+        <hr style="height:2px;width:101%;background-color:black;margin-left:-15px;"/>
 
         <p t-if="doc.payment_term_id.note" style="display:none;">
             <span t-field="doc.payment_term_id.note"/>
@@ -674,7 +674,7 @@
                 </div>
             </div>
             <!-- Desglose -->
-            <div style="width:40%;margin-left:8%;float:right;font-size:0.8em;">
+            <div style="width:40%;margin-left:8%;float:right;font-size:0.8em;margin-right:2.65%;margin-top:-10px;">
 
                 <!-- Base imponible sin descuentos -->
                 <div t-if="doc.amount_global_discount != 0" style="width:50%;float:left;">
@@ -733,14 +733,18 @@
                                 </div>
                             </t>
                             <t t-else="">
-                                <div style="width:60%;float:left;">
-                                    <span t-esc="amount_by_group[0]"/>
-                                    <span>en</span>
-                                    <span t-esc="amount_by_group[2]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
-                                </div>
-                                <div style="width:40%;float:left;text-align:right;">
-                                    <span t-esc="amount_by_group[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
-                                </div>
+                                <t t-if="amount_by_group[1] != 0.0">
+                                    <div style="width:60%;float:left;">
+                                        <span t-esc="amount_by_group[0]"/>
+                                        <span>en</span>
+                                        <span t-esc="amount_by_group[2]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                                    </div>
+                                    <div style="width:40%;float:left;text-align:right;">
+                                        <span t-esc="amount_by_group[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                </t>
                             </t>
                         </div>
                     </t>
