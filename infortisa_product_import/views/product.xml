@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 Manuel Calero - Xtendoo.es
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <menuitem id="menu_infortisa_product_import"
+              name="Infortisa"
+              action="infortisa_product_import_action"
+              parent="sale.product_menu_catalog"
+              sequence="5"/>
+
+</odoo>

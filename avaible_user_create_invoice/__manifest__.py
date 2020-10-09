@@ -1,11 +1,11 @@
 {
     'name': 'Avaible User Create Invoice',
     'summary': """Avaible User Create Invoice and modify payment date""",
-    'version': '12.0.1.0.0', 
+    'version': '12.0.1.0.0',
     'description': """Avaible User create Invoice""",
     'author': 'DDL',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.com',
+    'website': 'http://www.xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'base',
