@@ -272,6 +272,13 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             return False
         return res
 
+    def action_validate_picking(self):
+        print("context:::::::::::", self.env.context.get('picking_id', False))
+        picking = self.env['stock.picking'].browse(
+            self.env.context.get('picking_id', False)
+        )
+        return picking.button_validate()
+
 
 class WizCandidatePicking(models.TransientModel):
     """
@@ -380,6 +387,7 @@ class WizCandidatePicking(models.TransientModel):
         return wiz.action_cancel()
 
     def action_validate_picking(self):
+        print("context:::::::::::", self.env.context.get('picking_id', False))
         picking = self.env['stock.picking'].browse(
             self.env.context.get('picking_id', False)
         )

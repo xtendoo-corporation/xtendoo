@@ -18,7 +18,9 @@ class WizStockBarcodesRead(models.AbstractModel):
         comodel_name='ir.model',
         index=True,
     )
-    res_id = fields.Integer(index=True)
+    res_id = fields.Integer(
+        index=True
+    )
     product_id = fields.Many2one(
         comodel_name='product.product',
     )
@@ -50,8 +52,12 @@ class WizStockBarcodesRead(models.AbstractModel):
         ('not_found', 'No barcode found'),
         ('more_match', 'More than one matches found'),
         ('success', 'Barcode read correctly'),
-    ], readonly=True)
-    message = fields.Char(readonly=True)
+        ],
+        readonly=True
+    )
+    message = fields.Char(
+        readonly=True
+    )
 
     @api.onchange('location_id')
     def onchange_location_id(self):
@@ -146,7 +152,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             # self._set_messagge_info('info', _('Waiting quantities'))
             return False
         if self.manual_entry:
-            self.env.user.notify_danger(
+            self.env.user.notify_success(
                 message='Manual entry OK')
             # self._set_messagge_info('success', _('Manual entry OK'))
         return True
