@@ -15,7 +15,6 @@ class StockPicking(models.Model):
         string='Line pickings',
         readonly=True,
     )
-    barcode = fields.Char()
 
     @api.multi
     def read(self, fields=None, load='_classic_read'):
@@ -70,26 +69,33 @@ class StockPicking(models.Model):
         self.packaging_qty = 1.0
         self.product_qty = packaging.qty * self.packaging_qty
 
-    def _prepare_move_line_values(self, candidate_move, available_qty):
+    def _prepare_move_line_values(self, candidate_move, available_qty, product, lot):
         """When we've got an out picking, the logical workflow is that
            the scanned location is the location we're getting the stock
            from"""
-        out_move = candidate_move.picking_code == 'outgoing'
-        location_id = (
-            self.location_id if out_move else self.picking_id.location_id)
+        picking = self._origin
+        out_move = picking.picking_type_id.code == 'outgoing'
         location_dest_id = (
-            self.picking_id.location_dest_id if out_move else self.location_id)
+            self.location_dest_id if out_move else self.location_id)
         return {
-            'picking_id': self.picking_id.id,
+            'picking_id': picking.id,
             'move_id': candidate_move.id,
             'qty_done': available_qty,
-            'product_uom_id': self.product_id.uom_po_id.id,
-            'product_id': self.product_id.id,
-            'location_id': location_id.id,
+            'product_id': product.id,
+            'product_uom_id': product.uom_po_id.id,
+            'location_id': self.location_id.id,
             'location_dest_id': location_dest_id.id,
-            'lot_id': self.lot_id.id,
-            'lot_name': self.lot_id.name,
+            'lot_id': lot.id,
+            'lot_name': lot.name,
         }
+
+    def _prepare_stock_moves_domain(self, product):
+        domain = [
+            ('product_id', '=', product.id),
+            ('picking_id', '=', self._origin.id),
+        ]
+        print("domain::::", domain)
+        return domain
 
     def _process_stock_move_line(self, product, lot):
         """
@@ -98,11 +104,33 @@ class StockPicking(models.Model):
         scanned product the interface allow to select what picking to work.
         If only there is one picking the scan data is assigned to it.
         """
-        lines = self.mapped('move_line_ids').filtered(
-            lambda l: (l.product_id == product.id and l.lot_id == lot.id)
-        )
+
         available_qty = 1.0
-        move_lines_dic = {}
+
+        print("self.picking_id::::",self.id)
+        print("self.move_lines::::",self.move_lines)
+        print("self.move_line_ids::::",self.move_line_ids)
+        print("self.move_ids_without_package::::",self.move_ids_without_package)
+        print("self.move_ids_without_package.mapped()::::",self.move_ids_without_package.mapped('move_line_ids'))
+
+        moves = self.env['stock.move'].search(
+            self._prepare_stock_moves_domain(product)
+        )
+        print("moves::::", moves)
+        print("moves.mapped('move_line_ids')::::", moves.mapped('move_line_ids'))
+
+        lines = moves.filtered(
+            lambda l: l.product_id == product and l.product_uom_qty >= l.quantity_done + available_qty
+        )
+        if not lines:
+            self.env.user.notify_danger(
+                message="There are no lines to assign that quantity")
+            # raise ValidationError(_('There are no lines to assign that quantity'))
+            return False
+
+        lines = moves.mapped('move_line_ids').filtered(
+            lambda l: (l.product_id == product and l.lot_id == lot)
+        )
         for line in lines:
             if line.product_uom_qty:
                 assigned_qty = min(
@@ -114,8 +142,6 @@ class StockPicking(models.Model):
                 {'qty_done': line.qty_done + assigned_qty}
             )
             available_qty -= assigned_qty
-            if assigned_qty:
-                move_lines_dic[line.id] = assigned_qty
             if float_compare(
                 available_qty, 0.0,
                 precision_rounding=line.product_id.uom_id.rounding) < 1:
@@ -126,36 +152,28 @@ class StockPicking(models.Model):
             # Create an extra stock move line if this product has an
             # initial demand.
 
-            moves = self.move_lines.filtered(lambda m: (
-                m.product_id == self.product_id))
+            moves = moves.mapped('move_line_ids').filtered(
+                lambda l: (l.product_id == product)
+            )
             if not moves:
                 self.env.user.notify_danger(
                     message='There are no stock moves to assign this operation')
                 return False
             else:
-                line = self.env['stock.move.line'].create(
-                    self._prepare_move_line_values(moves[0], available_qty))
-                move_lines_dic[line.id] = available_qty
-        return move_lines_dic
-
-    def _update_line_picking(self, res):
-        for line in self.line_picking_ids.filtered(
-            lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
-        ):
-            line.quantity_done = line.quantity_done + self.product_qty
-            break
-
-    def check_done_conditions(self):
-        if not self.product_qty:
-            self.env.user.notify_danger(
-                message='Waiting quantities')
-            return False
+                self.env['stock.move.line'].create(
+                    self._prepare_move_line_values(moves[0], available_qty, product, lot))
         return True
 
-    def action_done(self, product, lot):
-        res = self._process_stock_move_line(product, lot)
-        if res:
-            self._update_line_picking(res)
+    def _update_line_picking(self, product):
+        for line in self.line_picking_ids.filtered(
+            lambda l: l.product_id == product and l.product_uom_qty >= l.quantity_done + 1.0
+        ):
+            line.quantity_done = line.quantity_done + 1.0
+            break
+
+    def process_done(self, product, lot):
+        if self._process_stock_move_line(product, lot):
+            self._update_line_picking(product)
 
     def process_barcode_gs1(self, barcode):
         """ Only has been implemented AI (01, 02, 10, 37), so is possible that
@@ -194,9 +212,9 @@ class StockPicking(models.Model):
                             message='Lot for product not found')
                         return False
                 processed = True
-                self.action_product_scaned_post(product)
+                # self.action_product_scaned_post(product)
         if processed:
-            self.action_done(product, lot)
+            self.process_done(product, lot)
             return True
         return self.process_barcode(barcode)
 
@@ -216,7 +234,7 @@ class StockPicking(models.Model):
                 #     'more_match', _('More than one product found'))
                 return
             self.action_product_scaned_post(product)
-            self.action_done()
+            self.process_done()
             return
 
         if self.env.user.has_group('product.group_stock_packaging'):
@@ -227,7 +245,7 @@ class StockPicking(models.Model):
                         message='More than one package found')
                     return
                 self.action_packaging_scaned_post(packaging)
-                self.action_done()
+                self.process_done()
                 return
 
         if self.env.user.has_group('stock.group_production_lot'):
@@ -239,7 +257,7 @@ class StockPicking(models.Model):
                 self.product_id = lot.product_id
             if lot:
                 self.action_lot_scaned_post(lot)
-                self.action_done()
+                self.process_done()
                 return
         location = self.env['stock.location'].search(domain)
         if location:
@@ -250,16 +268,10 @@ class StockPicking(models.Model):
         self.env.user.notify_danger(
             message='Barcode not found')
 
-    def reset_qty(self):
-        self.product_qty = 0
-        self.packaging_qty = 0
-
     def _barcode_domain(self, barcode):
         return [('barcode', '=', barcode)]
 
     def on_barcode_scanned(self, barcode):
-        self.barcode = barcode
-        self.reset_qty()
         self.process_barcode_gs1(barcode)
 
     def action_barcode_scan(self):

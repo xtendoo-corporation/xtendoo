@@ -82,6 +82,8 @@ class WizStockBarcodesRead(models.AbstractModel):
         """
 
     def process_barcode(self, barcode):
+        barcode="02084800007201911099999"
+
         # self._set_messagge_info('success', _('Barcode read correctly'))
         print("barcode en parent:::::::::",barcode)
         domain = self._barcode_domain(barcode)

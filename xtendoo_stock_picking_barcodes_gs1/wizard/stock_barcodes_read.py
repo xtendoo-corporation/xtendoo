@@ -31,6 +31,8 @@ class WizStockBarcodesRead(models.AbstractModel):
         """ Only has been implemented AI (01, 02, 10, 37), so is possible that
         scanner reads a barcode ok but this one is not precessed.
         """
+        barcode="02084800007201911099999"
+
         print("Barcode::::::::::::::",barcode)
         try:
             barcode_decoded = self.env['gs1_barcode'].decode(barcode)
