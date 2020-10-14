@@ -14,8 +14,13 @@
                             <t t-set="isPromo" t-value="0"></t>
 
                              <t t-foreach="o.invoice_line_ids" t-as="line">
-                                 <t t-if="line.price_unit == 0.0">
-                                     <t t-set="isPromo" t-value="1"></t>
+                                  <t t-if="line.price_unit == 0.0">
+                                    <t t-if="not line.product_id">
+                                        <t t-set="isPromo" t-value="0"></t>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-set="isPromo" t-value="1"></t>
+                                    </t>
                                  </t>
                              </t>
 
