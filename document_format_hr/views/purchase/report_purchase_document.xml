@@ -3,7 +3,7 @@
     <data>
         <template id="document_format_hr.report_purchase_document_dis" inherit_id="purchase.report_purchaseorder_document">
 
-        <xpath expr="//t[@t-set='information_block']" position="replace">
+            <xpath expr="//t[@t-set='information_block']" position="replace">
             
             </xpath>
 

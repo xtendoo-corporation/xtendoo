@@ -259,6 +259,13 @@
                                     </div>
 
                         </t>
+                        <t t-else="">
+                            <div t-if="not line.product_id">
+                                <div class="text-left" style="width:100%;">
+                                    <span t-field="line.name"/>
+                                </div>
+                            </div>
+                        </t>
                     </t>
 
                     <!-- Fin lineas -->
