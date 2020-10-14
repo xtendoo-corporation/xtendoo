@@ -104,28 +104,16 @@ class StockPicking(models.Model):
         scanned product the interface allow to select what picking to work.
         If only there is one picking the scan data is assigned to it.
         """
-
         available_qty = 1.0
-
-        print("self.picking_id::::",self.id)
-        print("self.move_lines::::",self.move_lines)
-        print("self.move_line_ids::::",self.move_line_ids)
-        print("self.move_ids_without_package::::",self.move_ids_without_package)
-        print("self.move_ids_without_package.mapped()::::",self.move_ids_without_package.mapped('move_line_ids'))
-
         moves = self.env['stock.move'].search(
             self._prepare_stock_moves_domain(product)
         )
-        print("moves::::", moves)
-        print("moves.mapped('move_line_ids')::::", moves.mapped('move_line_ids'))
-
         lines = moves.filtered(
             lambda l: l.product_id == product and l.product_uom_qty >= l.quantity_done + available_qty
         )
         if not lines:
             self.env.user.notify_danger(
                 message="There are no lines to assign that quantity")
-            # raise ValidationError(_('There are no lines to assign that quantity'))
             return False
 
         lines = moves.mapped('move_line_ids').filtered(
@@ -151,7 +139,6 @@ class StockPicking(models.Model):
             precision_rounding=product.uom_id.rounding) > 0:
             # Create an extra stock move line if this product has an
             # initial demand.
-
             moves = moves.mapped('move_line_ids').filtered(
                 lambda l: (l.product_id == product)
             )
@@ -161,7 +148,8 @@ class StockPicking(models.Model):
                 return False
             else:
                 self.env['stock.move.line'].create(
-                    self._prepare_move_line_values(moves[0], available_qty, product, lot))
+                    self._prepare_move_line_values(moves[0], available_qty, product, lot)
+                )
         return True
 
     def _update_line_picking(self, product):
@@ -180,7 +168,6 @@ class StockPicking(models.Model):
         scanner reads a barcode ok but this one is not precessed.
         """
         barcode="02084800007201911099999"
-        print("Barcode::::::::::::::",barcode)
         try:
             barcode_decoded = self.env['gs1_barcode'].decode(barcode)
         except Exception:
@@ -212,7 +199,6 @@ class StockPicking(models.Model):
                             message='Lot for product not found')
                         return False
                 processed = True
-                # self.action_product_scaned_post(product)
         if processed:
             self.process_done(product, lot)
             return True
