@@ -11,7 +11,7 @@ class StockMoveLine(models.Model):
     label_qty = fields.Float(
         'Label Quantity',
         digits=dp.get_precision('Product Unit of Measure'),
-        help="Informative, not used in matching"
+        help="Informative, not used in matching",
     )
 
     def action_edit_label(self):
@@ -30,4 +30,12 @@ class StockMoveLine(models.Model):
             'context': dict(
                 self.env.context
             ),
+        }
+
+    def action_plus_label(self):
+        self.ensure_one()
+        self.label_qty += 1
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload'
         }

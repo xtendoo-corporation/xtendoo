@@ -21,6 +21,10 @@
         <field name="arch" type="xml">
             <field name="product_uom_id" position="after">
                 <field name="label_qty" readonly="0"/>
+                <button name="action_plus_label"
+                        string="Plus label"
+                        type="object"
+                        icon="fa-plus" />
                 <button name="action_edit_label"
                         string="Edit label"
                         type="object"
