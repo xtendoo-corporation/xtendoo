@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import api, fields, models
+from odoo.addons import decimal_precision as dp
 
 
 class ProductPrintingQty(models.TransientModel):
@@ -15,7 +16,7 @@ class ProductPrintingQty(models.TransientModel):
         required=True,
         domain="[('id', '=', product_id)]",
     )
-    quantity = fields.Float("Quantity", digits="Product Unit of Measure", required=True)
+    quantity = fields.Float("Quantity", digits=dp.get_precision('Product Unit of Measure'), required=True)
     label_qty = fields.Integer("Quantity of Labels")
     uom_id = fields.Many2one(
         "uom.uom",
@@ -23,9 +24,9 @@ class ProductPrintingQty(models.TransientModel):
         related="move_line_id.product_uom_id",
         readonly=False,
     )
+    lot_id = fields.Many2one("stock.production.lot", string="Lot/Serial Number")
     wizard_id = fields.Many2one("stock.picking.print", string="Wizard")
     move_line_id = fields.Many2one("stock.move.line", "Move")
-    do_print = fields.Boolean(string="Print?")
 
 
 class WizStockBarcodeSelectionPrinting(models.TransientModel):
@@ -41,21 +42,14 @@ class WizStockBarcodeSelectionPrinting(models.TransientModel):
             res.update({"picking_ids": picking_ids.ids})
         return res
 
-    company_id = fields.Many2one(
-        comodel_name="res.company",
-        string="Company",
-        required=True,
-        default=lambda self: self.env.company,
-    )
     picking_ids = fields.Many2many("stock.picking")
     product_print_moves = fields.One2many(
         "stock.picking.line.print", "wizard_id", "Moves"
     )
     barcode_format = fields.Selection(
-        [("gs1_128", "Display GS1_128 format for barcodes")],
+        selection=[("gs1_128", "Display GS1_128 format for barcodes")],
         string="Barcode format",
-        related="company_id.barcode_default_format",
-        readonly=False,
+        default=lambda self: self.env['res.company'].barcode_default_format,
     )
 
     @api.onchange("picking_ids")
@@ -83,16 +77,16 @@ class WizStockBarcodeSelectionPrinting(models.TransientModel):
             return {
                 "product_id": move_line.product_id.id,
                 "quantity": move_line.qty_done,
-                "label_qty": 1,
+                "label_qty": move_line.qty_done,
                 "move_line_id": move_line.id,
                 "uom_id": move_line.product_uom_id.id,
-                "do_print": True,
+                "lot_id": move_line.lot_id,
             }
         else:
             return {}
 
     def print_labels(self):
-        print_move = self.product_print_moves.filtered(lambda p: p.do_print)
+        print_move = self.product_print_moves.filtered(lambda p: p.label_qty > 0)
         if print_move:
             return self.env.ref(
                 "stock_picking_product_barcode_report.action_label_barcode_report"

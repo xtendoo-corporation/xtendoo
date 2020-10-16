@@ -59,7 +59,6 @@ class TestStockPickingProductBarcodeReport(TransactionCase):
         self.wizard._onchange_picking_ids()
         self.assertEqual(1, len(self.wizard.product_print_moves.ids))
         line = self.wizard.product_print_moves[0]
-        self.assertTrue(line.do_print)
         self.assertEqual(line.label_qty, 1)
         self.assertEqual(line.product_id.id, self.product_barcode.id)
         # This two sentences are added just for check that not throw an exception

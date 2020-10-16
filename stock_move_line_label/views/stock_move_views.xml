@@ -2,6 +2,7 @@
 <!-- Copyright 2020 Xtendoo - Manuel Calero
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
+
 <!--    <record id="view_stock_move_operations" model="ir.ui.view">-->
 <!--        <field name="name">stock.move.operations.form</field>-->
 <!--        <field name="model">stock.move</field>-->
@@ -29,6 +30,9 @@
                         string="Edit label"
                         type="object"
                         icon="fa-list" />
+            </field>
+            <field name="move_line_ids" position="after">
+                <field name="label_qty"/>
             </field>
         </field>
     </record>
