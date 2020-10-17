@@ -187,9 +187,6 @@ class WizStockBarcodesRead(models.AbstractModel):
     def action_clean_lot(self):
         self.lot_id = False
 
-    def action_manual_entry(self):
-        return True
-
     def reset_qty(self):
         self.product_qty = 0
         self.packaging_qty = 0

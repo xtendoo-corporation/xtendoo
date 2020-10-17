@@ -38,10 +38,11 @@ odoo.define('stock_barcodes.FormController', function (require) {
                     .css({'display': 'none'});
             }
         },
+        */
         canBeDiscarded: function (recordID) {
             /*
-             Silent the warning that says that the record has been modified.
-             */
+            Silent the warning that says that the record has been modified.
+            */
             if (!this.modelName.includes('wiz.stock.barcodes.read.')) {
                 return this._super.apply(this, arguments);
             }
