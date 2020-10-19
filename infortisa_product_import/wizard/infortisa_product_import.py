@@ -110,4 +110,8 @@ class InfortisaProductImport(models.TransientModel):
             self.parse_product(row)
 
         return
+        for row in csv_data:
+            print("*"*80)
+            print(list(row))
+
 

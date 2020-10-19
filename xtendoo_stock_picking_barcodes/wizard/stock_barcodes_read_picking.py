@@ -99,10 +99,10 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 self._update_line_picking(res)
 
     def action_manual_entry(self):
-        result = super().action_manual_entry()
-        if result:
-            self.action_done()
-        return result
+        self.action_done()
+        return {
+            "type": "ir.action.do_nothing",
+        }
 
     def _update_line_picking(self, res):
         for line in self.line_picking_ids.filtered(

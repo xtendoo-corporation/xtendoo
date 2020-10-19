@@ -7,7 +7,7 @@
     'summary': 'Invoices include margin calculation.',
     'description': """
 Invoices include margin calculation.
-If the invoice line comes from a sale order line, the cost will come 
+If the invoice line comes from a sale order line, the cost will come
 from the sale order line.
     """,
     'website': 'https://hibou.io/',
@@ -16,7 +16,7 @@ from the sale order line.
         'sale_margin',
     ],
     'data': [
-        'views/account_invoice_views.xml',
+        'views/stock_move_views.xml',
     ],
     'installable': True,
     'application': False,

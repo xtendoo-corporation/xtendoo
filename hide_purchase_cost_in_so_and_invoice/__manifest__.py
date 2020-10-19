@@ -16,7 +16,7 @@
     ],
     'license': 'AGPL-3',
     'data': [
-        'views/account_invoice_views.xml',
+        'views/stock_move_views.xml',
         'views/sale_order_views.xml'
     ],
     'demo': [],

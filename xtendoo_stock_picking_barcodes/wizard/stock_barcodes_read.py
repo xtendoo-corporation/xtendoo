@@ -82,6 +82,8 @@ class WizStockBarcodesRead(models.AbstractModel):
         """
 
     def process_barcode(self, barcode):
+        barcode="02084800007201911099999"
+
         # self._set_messagge_info('success', _('Barcode read correctly'))
         print("barcode en parent:::::::::",barcode)
         domain = self._barcode_domain(barcode)
@@ -184,9 +186,6 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def action_clean_lot(self):
         self.lot_id = False
-
-    def action_manual_entry(self):
-        return True
 
     def reset_qty(self):
         self.product_qty = 0
