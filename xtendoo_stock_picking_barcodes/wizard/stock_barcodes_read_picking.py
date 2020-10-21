@@ -105,10 +105,14 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         }
 
     def _update_line_picking(self, res):
+        print("self.product_id::::::::::", self.product_id)
+        print("self.product_qty:::::::::", self.product_qty)
         for line in self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         ):
+            print("line::::::::::", line.product_id)
             line.quantity_done = line.quantity_done + self.product_qty
+            print("quantity_done::::::::::", line.quantity_done)
             break
 
     def _prepare_move_line_values(self, candidate_move, available_qty):
@@ -221,20 +225,12 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             # initial demand.
 
             moves = self.picking_id.move_lines.filtered(lambda m: (
-                m.product_id == self.product_id))
-            for m in moves:
-                print("m.state::::::::::",m.state)
-
-            moves = self.picking_id.move_lines.filtered(lambda m: (
                 m.product_id == self.product_id and
                 m.state in self._states_move_allowed()))
             if not moves:
                 # TODO: Add picking if picking_id to message
                 self.env.user.notify_danger(
                     message='There are no stock moves to assign this operation')
-                # self._set_messagge_info(
-                #     'info',
-                #     _('There are no stock moves to assign this operation'))
                 return False
             else:
                 line = self.env['stock.move.line'].create(
@@ -248,32 +244,18 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         if self.product_id.tracking != 'none' and not self.lot_id:
             self.env.user.notify_danger(
                 message='Waiting for input lot')
-            # self._set_messagge_info('info', _('Waiting for input lot'))
             return False
-
-        for l in self.line_picking_ids:
-            print("l.product_id:::::",l.product_id)
-            print("l.product_id.id:::::",l.product_id.id)
-            print("l.product_uom_qty:::::",l.product_uom_qty)
-            print("l.quantity_done:::::",l.quantity_done)
-            print("self.product_id:::::",self.product_id)
-            print("self.product_qty:::::",self.product_qty)
 
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
-
-        print("lines::::::",lines)
-
         if not lines:
             self.env.user.notify_danger(
                 message="There are no lines to assign that quantity")
-            # raise ValidationError(_('There are no lines to assign that quantity'))
             return False
         return res
 
     def action_validate_picking(self):
-        print("context:::::::::::", self.env.context.get('picking_id', False))
         picking = self.env['stock.picking'].browse(
             self.env.context.get('picking_id', False)
         )
