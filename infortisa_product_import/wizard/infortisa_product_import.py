@@ -3,6 +3,7 @@
 from odoo import api, fields, models, _
 from base64 import b64decode
 from io import StringIO
+from odoo.exceptions import UserError
 
 import logging
 
@@ -39,25 +40,17 @@ class InfortisaProductImport(models.TransientModel):
         self._parse_file(data_file)
 
     def parse_categories(self, row, parent_id):
-        # if self.category != row[5]:
 
         category = self.env['product.category'].search([
             ('name', '=', row[5]),
         ])
-        if category:
-            print('Existe categoria')
-        else:
-            print('Creando categoria')
+        if not category:
             self.env['product.category'].create({
                 'name': row[5],
                 'parent_id': parent_id,
             })
-        #    self.category = row[5]
 
-    def parse_product(self, row):
-        print("*" * 80)
-        #           print(list(row))
-        print(row[2])
+    def parse_product(self, row, iva_id):
         price = float(row[10].replace(',', '.'))
 
         category = self.env['product.category'].search([
@@ -74,19 +67,24 @@ class InfortisaProductImport(models.TransientModel):
         ])
 
         if product:
-            print('Existe')
             product.write({'name': row[1],
-                           # 'barcode': row[8],
                            'categ_id': category_id,
-                           'list_price': price,
+                           'standard_price': price,
+                           'taxes_id': [
+                               (6, 0, [iva_id])
+                           ]
                            })
         else:
-            print('No Existe')
             self.env['product.template'].create({
                 'name': row[1],
                 'default_code': row[2],
                 'categ_id': category_id,
-                'list_price': price,
+                'standard_price': price,
+                'type': 'product',
+                'invoice_policy': 'delivery',
+                'taxes_id': [
+                               (6, 0, [iva_id])
+                            ]
             })
 
     def get_parent_id(self):
@@ -98,19 +96,25 @@ class InfortisaProductImport(models.TransientModel):
         return 0
 
     def _parse_file(self, data_file):
-        data = StringIO(data_file.decode('utf-8'))
-        print(data)
-        csv_data = reader(data)
-        print(list(next(csv_data)))
+        try:
+            data = StringIO(data_file.decode('utf-8'))
+            csv_data = reader(data)
+            next(csv_data)
+        except Exception:
+            raise UserError(_('Can not read the file'))
 
         parent_id = self.get_parent_id()
+        iva = self.env['account.tax'].search([
+            ('name', '=', 'IVA 21% (Bienes)'),
+        ])
+
+        if iva:
+            iva_id = iva.id
+        else:
+            iva_id = 0
 
         for row in csv_data:
             self.parse_categories(row, parent_id)
-            self.parse_product(row)
+            self.parse_product(row, iva_id)
 
         return
-
-        # for row in csv_data:
-        #     print("*"*80)
-        #     print(list(row))
