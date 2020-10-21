@@ -13,7 +13,7 @@
                 <button name="action_update_pricelist"
                         string="Update Pricelist"
                         type="object"
-                        icon="fa-arrow-right "
+                        icon="fa-money"
                         class="text-success"
                         attrs="{'invisible': ['|',
                                               ('state','in',('done','cancel')),
