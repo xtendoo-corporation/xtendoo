@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<odoo noupdate="1">
-    <record model="ir.sequence" id="seq_res_partner_delivery_zone">
-        <field name="name">Partner delivery zone sequence</field>
-        <field name="code">res.partner.delivery.zone</field>
-        <field name="prefix"></field>
-        <field name="padding">6</field>
-    </record>
-</odoo>
