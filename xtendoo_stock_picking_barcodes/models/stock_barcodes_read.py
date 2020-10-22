@@ -44,13 +44,6 @@ class WizStockBarcodesRead(models.AbstractModel):
     manual_entry = fields.Boolean(
         string='Manual entry data',
     )
-    message_type = fields.Selection([
-        ('info', 'Barcode read with additional info'),
-        ('not_found', 'No barcode found'),
-        ('more_match', 'More than one matches found'),
-        ('success', 'Barcode read correctly'),
-    ], readonly=True)
-    message = fields.Char(readonly=True)
 
     @api.onchange('location_id')
     def onchange_location_id(self):
@@ -61,17 +54,6 @@ class WizStockBarcodesRead(models.AbstractModel):
     def onchange_packaging_qty(self):
         if self.packaging_id:
             self.product_qty = self.packaging_qty * self.packaging_id.qty
-
-    def _set_messagge_info(self, message_type, message):
-        """
-        Set message type and message description.
-        For manual entry mode barcode is not set so is not displayed
-        """
-        self.message_type = message_type
-        if self.barcode:
-            self.message = _('Barcode: %s (%s)') % (self.barcode, message)
-        else:
-            self.message = '%s' % message
 
     def process_barcode(self, barcode):
         self._set_messagge_info('success', _('Barcode read correctly'))
@@ -109,9 +91,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         location = self.env['stock.location'].search(domain)
         if location:
             self.location_id = location
-            self._set_messagge_info('info', _('Waiting product'))
             return
-        self._set_messagge_info('not_found', _('Barcode not found'))
 
     def _barcode_domain(self, barcode):
         return [('barcode', '=', barcode)]
