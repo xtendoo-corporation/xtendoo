@@ -83,3 +83,6 @@ class StockProductionLot(models.Model):
                 return self.env.ref("xtendoo_stock_lock_lot.mt_lock_lot")
             return self.env.ref("xtendoo_stock_lock_lot.mt_unlock_lot")
         return super()._track_subtype(init_values)
+
+    def action_set_locked(self):
+        print('action_locker')
