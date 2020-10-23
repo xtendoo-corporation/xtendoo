@@ -44,7 +44,6 @@
             </filter>
         </field>
     </record>
-
 <!--    <act_window id="action_set_locked"-->
 <!--            name="Locker"-->
 <!--            src_model="stock_production_lot"-->
@@ -61,4 +60,17 @@
 <!--              parent="view_production_lot_form"-->
 <!--              name="Lock Lots"-->
 <!--              sequence="3"/>-->
+=======
+    <record id="action_lock_stock_lot" model="ir.actions.server">
+        <field name="name">Lock Lot</field>
+        <field name="model_id" ref="stock.model_stock_production_lot"/>
+        <field name="binding_model_id" ref="stock.model_stock_production_lot"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+                records.action_lock_stock_lot()
+        </field>
+    </record>
+
+>>>>>>> 8aa2b24959a20ef7326296d89904d26fc3d1e4c8
 </odoo>

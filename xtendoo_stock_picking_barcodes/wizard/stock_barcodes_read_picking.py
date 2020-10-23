@@ -74,7 +74,16 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         picking_id = self.env.context.get('default_picking_id', False)
         if picking_id:
             self._set_candidate_pickings(
-                self.env['stock.picking'].browse(picking_id))
+                self.env['stock.picking'].browse(picking_id)
+            )
+
+    def _set_default_location(self):
+        location_id = self.env.context.get('default_location_id', False)
+        if location_id:
+            self._set_location(
+                self.env['stock.location'].browse(location_id)
+            )
+
 
     @api.model
     def create(self, vals):
@@ -100,19 +109,23 @@ class WizStockBarcodesReadPicking(models.TransientModel):
 
     def action_manual_entry(self):
         self.action_done()
-        return {
-            "type": "ir.action.do_nothing",
+        if self.picking_id.picking_type_code == 'outgoing':
+            location = self.picking_id.location_id
+        else:
+            location = self.picking_id.location_dest_id
+        action = self.env.ref(
+            'xtendoo_stock_picking_barcodes.action_stock_barcodes_read_picking').read()[0]
+        action['context'] = {
+            'default_picking_id': self.picking_id.id,
+            'default_location_id': location.id,
         }
+        return action
 
     def _update_line_picking(self, res):
-        print("self.product_id::::::::::", self.product_id)
-        print("self.product_qty:::::::::", self.product_qty)
         for line in self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         ):
-            print("line::::::::::", line.product_id)
             line.quantity_done = line.quantity_done + self.product_qty
-            print("quantity_done::::::::::", line.quantity_done)
             break
 
     def _prepare_move_line_values(self, candidate_move, available_qty):
@@ -157,6 +170,9 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self.candidate_picking_ids = vals
         # Only for test
         self._set_line_pickings(candidate_pickings)
+
+    def _set_location(self, location):
+        self.location_id = location
 
     def _set_line_pickings(self, candidate_pickings):
         vals = [(5, 0, 0)]

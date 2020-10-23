@@ -86,3 +86,6 @@ class StockProductionLot(models.Model):
 
     def action_set_locked(self):
         print('action_locker')
+    def action_lock_stock_lot(self):
+        for product in self:
+            product.locked = True

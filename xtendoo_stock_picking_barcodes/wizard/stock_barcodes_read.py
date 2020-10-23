@@ -151,12 +151,10 @@ class WizStockBarcodesRead(models.AbstractModel):
         if not self.product_qty:
             self.env.user.notify_danger(
                 message='Waiting quantities')
-            # self._set_messagge_info('info', _('Waiting quantities'))
             return False
         if self.manual_entry:
             self.env.user.notify_success(
                 message='Manual entry OK')
-            # self._set_messagge_info('success', _('Manual entry OK'))
         return True
 
     def action_done(self):
