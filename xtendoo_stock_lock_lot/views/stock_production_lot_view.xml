@@ -60,7 +60,6 @@
 <!--              parent="view_production_lot_form"-->
 <!--              name="Lock Lots"-->
 <!--              sequence="3"/>-->
-=======
     <record id="action_lock_stock_lot" model="ir.actions.server">
         <field name="name">Lock Lot</field>
         <field name="model_id" ref="stock.model_stock_production_lot"/>
@@ -72,5 +71,4 @@
         </field>
     </record>
 
->>>>>>> 8aa2b24959a20ef7326296d89904d26fc3d1e4c8
 </odoo>
