@@ -44,22 +44,7 @@
             </filter>
         </field>
     </record>
-<!--    <act_window id="action_set_locked"-->
-<!--            name="Locker"-->
-<!--            src_model="stock_production_lot"-->
-<!--    />-->
 
-<!--    <record id="lock_lot" model="ir.actions.act_window">-->
-<!--        <field name="name">lock.lot</field>-->
-<!--        <field name="res_model">stock.production.lot</field>-->
-<!--        <field name="view_type">form</field>-->
-<!--        <field name="view_mode">list,form</field>-->
-<!--    </record>-->
-
-<!--    <menuitem id="locker_lots"-->
-<!--              parent="view_production_lot_form"-->
-<!--              name="Lock Lots"-->
-<!--              sequence="3"/>-->
     <record id="action_lock_stock_lot" model="ir.actions.server">
         <field name="name">Lock Lot</field>
         <field name="model_id" ref="stock.model_stock_production_lot"/>
@@ -70,7 +55,6 @@
                 records.action_lock_stock_lot()
         </field>
     </record>
-
     <record id="action_unlock_stock_lot" model="ir.actions.server">
         <field name="name">Unlock Lot</field>
         <field name="model_id" ref="stock.model_stock_production_lot"/>
