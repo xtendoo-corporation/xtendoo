@@ -15,7 +15,7 @@
                             <field name="selected"/>
                             <field name="product_id" readonly="1" force_save="1" invisible="1"/>
                             <field name="picking_id" readonly="1" force_save="1" invisible="1"/>
-                            <field name="product_text" readonly="1" force_save="1"/>
+                            <field name="product_text" String="Descripción" readonly="1" force_save="1"/>
                             <field name="cost_price" readonly="1"/>
                             <field name="purchase_price" readonly="1"/>
                             <field name="pricelist_id" readonly="1" force_save="1" invisible="1"/>
