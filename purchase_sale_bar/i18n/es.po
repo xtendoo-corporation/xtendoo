@@ -17,6 +17,10 @@ msgstr ""
 
 #. module: purchase_sale_bar
 #: model:ir.model.fields,field_description:purchase_sale_bar.field_purchase_order_line__bar_qty
+#: model:ir.model.fields,field_description:purchase_sale_bar.field_sale_order_line__bar_qty
+#: model:ir.model.fields,field_description:purchase_sale_bar.field_stock_move_line__bar_qty
+#: model:ir.model.fields,field_description:purchase_sale_bar.field_stock_move__bar_qty
+#: model:ir.model.fields,field_description:purchase_sale_bar.field_account_invoice_line__bar_qty
 msgid "Bar Quantity"
 msgstr "Barras"
 
