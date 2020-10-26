@@ -6,6 +6,7 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form" />
             <field name="arch" type="xml">
+
                 <xpath expr="//field[@name='note']" position="before">
                     <group class="oe_center" colspan="2" name="digital_signature">
                         <label for="digital_signature" string="Digital signature"/>
@@ -14,6 +15,7 @@
                         </h2>
                     </group>
                 </xpath>
+
             </field>
         </record>
     </data>

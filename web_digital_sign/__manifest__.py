@@ -1,10 +1,10 @@
 # See LICENSE file for full copyright and licensing details.
 
 {
-    'name': 'Web Digital Signature v12.0',
+    'name': 'Xtendoo Web Digital Signature',
     'version': '12.0.1.0.0',
-    'author': 'Serpent Consulting Services Pvt. Ltd.',
-    'maintainer': 'Serpent Consulting Services Pvt. Ltd.',
+    'author': 'Xtendoo',
+    'maintainer': 'Javier Lagares',
     'complexity': 'easy',
     'depends': ['web'],
     "license": "AGPL-3",
@@ -19,7 +19,7 @@
         Digital signature can be very usefull for documents.
     ''',
     'images': ['static/description/Digital_Signature.jpg'],
-    'depends': ['sale'],    
+    'depends': ['sale'],
     'data': [
         'views/web_digital_sign_view.xml',
         'views/users_view.xml',

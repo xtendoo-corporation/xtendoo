@@ -7,6 +7,10 @@
             <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='move_ids_without_package']" position="after">
+                    <group>
+                        <field name="name_receiver"/>
+                        <field name="vat_receiver"/>
+                    </group>
                     <group class="oe_center" colspan="2" name="digital_signature">
                         <label for="digital_signature" string="Digital signature"/>
                         <h2>
