@@ -15,10 +15,8 @@ class LandedCost(models.Model):
         using the default values computed for the other fields.
         """
         res = super(LandedCost, self).default_get(default_fields)
-
         if self._context.get('default_picking_id') is not None:
             res['picking_ids'] = [self._context.get('default_picking_id')]
-
         return res
 
     def get_valuation_lines(self):
@@ -33,7 +31,7 @@ class LandedCost(models.Model):
             lines_number = lines_number + 1
 
         landed_cost_per_line = self.amount_total / lines_number
-    
+
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
             if move.product_id.valuation != 'real_time' or move.product_id.cost_method not in ('fifo', 'average'):
@@ -100,7 +98,7 @@ class LandedCost(models.Model):
                     'price_unit': price_unit,
                     'cost_variation': line.move_id.product_qty,
                 })
-                
+
                 # `remaining_qty` is negative if the move is out and delivered products that were not
                 # in stock.
                 qty_out = 0
@@ -113,16 +111,17 @@ class LandedCost(models.Model):
                 # Need to set the standard price directly on the product.
                 if line.product_id.cost_method == 'average':
                     # From product.do_change_standard_price
-                    quant_locs = self.env['stock.quant'].sudo().read_group([('product_id', '=', line.product_id.id)],
-                                                                           ['location_id'], ['location_id'])
+                    quant_locs = self.env['stock.quant'].sudo().read_group(
+                        [('product_id', '=', line.product_id.id)],
+                        ['location_id'], ['location_id'])
                     quant_loc_ids = [loc['location_id'][0] for loc in quant_locs]
                     locations = self.env['stock.location'].search(
-                        [('usage', '=', 'internal'), 
+                        [('usage', '=', 'internal'),
                         ('company_id', '=', self.env.user.company_id.id),
                         ('id', 'in', quant_loc_ids)])
                     qty_available = line.product_id.with_context(location=locations.ids).qty_available
                     total_cost = (qty_available * line.product_id.standard_price) + cost_to_add
-                    # Calculate standar_price avoid division by Zero 
+                    # Calculate standar_price avoid division by Zero
                     if qty_available != 0:
                         standard_price = total_cost / qty_available
                     else:
@@ -140,16 +139,15 @@ class AdjustmentLines(models.Model):
 
     def _compute_price_cost(self):
         for line in self:
-            line.price_cost = line.former_cost + line.cost_variation
+            line.price_cost = line.former_cost_per_unit + line.cost_variation
 
     cost_variation = fields.Float(
-        string='Cost Variation(Per Unit)', 
+        string='Cost Variation(Per Unit)',
         digits=dp.get_precision('Product Price'),
         store=True
-        )
-
+    )
     price_cost = fields.Float(
-        string='Subsequent Cost(Per Unit)', 
+        string='Subsequent Cost(Per Unit)',
         compute='_compute_price_cost',
-        digits=dp.get_precision('Product Price'), 
-        )        
+        digits=dp.get_precision('Product Price'),
+    )

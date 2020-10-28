@@ -25,20 +25,11 @@ class StockPicking(models.Model):
                   'views': [(view.id, 'form')],
                   'type': 'ir.actions.act_window',
                   'context': {'default_picking_id': self.id}}
-
         if self.landing_ids:
             landing_ids = set([line.id for line in self.landing_ids])
-            action['domain'] = "[('id', 'in', %s)]" % list(landing_ids)
-
-            import logging 
-            logging.info("*"*80)
-            logging.info(landing_ids)
-            logging.info("*"*80)
-
-#            if len(landing_ids) == 1:
-#                action['res_id'] = list(landing_ids)[0]
-#            else:
-#                action['domain'] = "[('id', 'in', %s)]" % list(landing_ids)
-
+            if len(landing_ids) == 1:
+               action['res_id'] = list(landing_ids)[0]
+            else:
+               action['domain'] = "[('id', 'in', %s)]" % list(landing_ids)
         return action
 
