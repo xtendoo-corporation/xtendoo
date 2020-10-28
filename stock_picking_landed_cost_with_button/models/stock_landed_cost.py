@@ -37,9 +37,6 @@ class LandedCost(models.Model):
 
         print("landed_cost_per_line**********", landed_cost_per_line)
 
-        raise UserError(
-            "lines number %d , self.amount %d " % (lines_number, self.amunt_total))
-
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
             if move.product_id.valuation != 'real_time' or move.product_id.cost_method not in ('fifo', 'average'):
@@ -58,6 +55,9 @@ class LandedCost(models.Model):
                 'volume': move.product_id.volume * move.product_qty,
                 'cost_variation': landed_cost_per_line / move.product_qty,
             }
+
+            print("vals**********",vals)
+
             lines.append(vals)
 
         if not lines and self.mapped('picking_ids'):
