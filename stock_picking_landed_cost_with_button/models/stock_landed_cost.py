@@ -24,8 +24,9 @@ class LandedCost(models.Model):
         Override for allowing Average value inventory.
         :return: list of new line values
         """
-        print("get_valuation_lines*********************************")
-
+        raise UserError(_(
+            'get_valuation_lines*********************************'
+        ))
         lines = []
         lines_number = 0
 
