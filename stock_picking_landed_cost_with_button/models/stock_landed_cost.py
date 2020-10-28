@@ -30,7 +30,12 @@ class LandedCost(models.Model):
         for move in self.mapped('picking_ids').mapped('move_lines'):
             lines_number = lines_number + 1
 
+        print("lines number******************", lines_number)
+        print("self.amount_total*************", self.amount_total)
+
         landed_cost_per_line = self.amount_total / lines_number
+
+        print("landed_cost_per_line**********", landed_cost_per_line)
 
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
