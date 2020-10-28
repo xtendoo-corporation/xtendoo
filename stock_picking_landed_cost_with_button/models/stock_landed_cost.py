@@ -37,6 +37,9 @@ class LandedCost(models.Model):
 
         print("landed_cost_per_line**********", landed_cost_per_line)
 
+        raise UserError(
+            "lines number %d , self.amount %d " % (lines_number, self.amunt_total))
+
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
             if move.product_id.valuation != 'real_time' or move.product_id.cost_method not in ('fifo', 'average'):
