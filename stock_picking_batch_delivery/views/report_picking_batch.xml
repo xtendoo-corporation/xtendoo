@@ -177,10 +177,11 @@
                                         </t>
                                     </div>
                                     <div style="width:8%;float:left;text-align:left;">
-
-                                        <t t-if="pick.sale_id">
-                                            <span t-field="pick.sale_id"></span>
+                                        <t t-set="invoice_name" t-value=""/>
+                                        <t t-if="pick.invoice_id.number != 'account.invoice()'">
+                                            <t t-set="invoice_name" t-value="pick.invoice_id.number"/>
                                         </t>
+                                        <span t-esc="invoice_name"></span>
 
                                     </div>
                                 </div>
