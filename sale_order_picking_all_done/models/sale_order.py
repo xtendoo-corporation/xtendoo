@@ -2,18 +2,13 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models, _
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    # Pedido no confirmado(Es aun presupuesto)
 
     def action_sale_order_confirm_and_delivery(self):
-
         self.action_confirm()
         for picking in self.picking_ids:
             for line in picking.move_lines:
@@ -24,9 +19,14 @@ class SaleOrder(models.Model):
         # logging.info('Cambiamos el env')
         self = self.with_context({"is_sale": True,})
         self.action_sale_order_confirm_and_delivery()
-        self.action_invoice_create()
-        for invoice in self.invoice_ids:
-            invoice.action_invoice_open()
+
+        action = self.env.ref('sale.action_sale_order_confirm_and_delivery').read()[0]
+        action['context'] = {'default_advance_payment_method': 'percentage'}
+        return action
+
+        # self.action_invoice_create()
+        # for invoice in self.invoice_ids:
+        #     invoice.action_invoice_open()
 
     # Pedido confirmado( ya es un pedido de ventas)
 
