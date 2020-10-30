@@ -7,7 +7,6 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//button[@name='action_confirm']" position="before">
-                <field name="invoice_status"></field>
                 <button name="action_sale_order_confirm_and_delivery"
                         string="Confirm and delivery"
                         type="object"
