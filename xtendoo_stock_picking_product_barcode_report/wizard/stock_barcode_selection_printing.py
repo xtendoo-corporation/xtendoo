@@ -88,5 +88,5 @@ class WizStockBarcodeSelectionPrinting(models.TransientModel):
         print_move = self.product_print_moves.filtered(lambda p: p.label_qty > 0)
         if print_move:
             return self.env.ref(
-                "stock_picking_product_barcode_report.action_label_barcode_report"
+                "xtendoo_stock_picking_product_barcode_report.action_label_barcode_report"
             ).report_action(self.product_print_moves)
