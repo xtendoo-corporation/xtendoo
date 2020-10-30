@@ -5,8 +5,8 @@
         string="Label Impresion"
         model="stock.picking.line.print"
         report_type="qweb-pdf"
-        file="stock_picking_product_barcode_report.label_barcode_report"
-        name="stock_picking_product_barcode_report.label_barcode_report"
-        paperformat="stock_picking_product_barcode_report.paperformat_label"
+        file="xtendoo_stock_picking_product_barcode_report.label_barcode_report"
+        name="xtendoo_stock_picking_product_barcode_report.label_barcode_report"
+        paperformat="xtendoo_stock_picking_product_barcode_report.paperformat_label"
     />
 </odoo>
