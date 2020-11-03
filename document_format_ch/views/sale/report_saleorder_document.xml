@@ -339,7 +339,7 @@
 
                  <div style="height:2px;background-color:black;clear:both;"></div>
               </div>
-
+</div>
 
             <!-- Fin totales -->
 
@@ -350,18 +350,18 @@
                 <span t-field="doc.fiscal_position_id.note"/>
             </p>
 
-            <div t-if="doc.signature" class="mt32 ml16 mr16" name="signature">
+            <div t-if="doc.digital_signature" class="mt32 ml16 mr16" name="signature">
 
                 <div class="offset-8">
-                    <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                    <img t-att-src="image_data_uri(doc.digital_signature)" style="max-height: 4cm; max-width: 8cm;"/>
                 </div>
-                <div class="offset-8 text-center">
+               <!-- <div class="offset-8 text-center">
                     <p t-field="doc.signed_by"/>
-                </div>
+                </div> -->
             </div>
             <div class="oe_structure"/>
 
-        </div>
+        
            </xpath>
         </template>
 
