@@ -8,7 +8,6 @@ from odoo import api, models
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    @api.multi
     def product_price_update_before_done(self):
         super(StockMove, self).product_price_update_before_done()
         for move in self.filtered(
