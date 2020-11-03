@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 13.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-03 08:05+0000\n"
-"PO-Revision-Date: 2020-11-03 08:05+0000\n"
+"POT-Creation-Date: 2020-11-03 08:19+0000\n"
+"PO-Revision-Date: 2020-11-03 08:19+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -24,7 +24,7 @@ msgstr "Método de coste"
 #: model_terms:ir.ui.view,arch_db:xtendoo_stock_cost_method_last.product_variant_easy_edit_view_inherit
 #: model_terms:ir.ui.view,arch_db:xtendoo_stock_cost_method_last.view_template_property_form
 msgid "Force Cost Update"
-msgstr "Actualizar Coste"
+msgstr "Actualiza Costo"
 
 #. module: xtendoo_stock_cost_method_last
 #: model:ir.model.fields.selection,name:xtendoo_stock_cost_method_last.selection__product_category__property_cost_method__last
