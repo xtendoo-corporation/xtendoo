@@ -3,7 +3,6 @@
 import logging
 from odoo import api, _, fields, models
 from odoo.tools.float_utils import float_compare
-from odoo.addons import decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
     )
     picking_product_qty = fields.Float(
         string='Picking quantities',
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
         readonly=True,
     )
     picking_type_code = fields.Selection([
@@ -84,6 +83,12 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 self.env['stock.location'].browse(location_id)
             )
 
+    def _set_default_manual_entry(self):
+        manual_entry = self.env.context.get('default_manual_entry', False)
+        if manual_entry:
+            self.manual_entry = manual_entry
+
+
     @api.model
     def create(self, vals):
         # When user click any view button the wizard record is create and the
@@ -99,15 +104,16 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         # view, so for create a candidate picking with the same default picking
         # we need create it in this onchange
         self._set_default_picking()
+        self._set_default_manual_entry()
 
     def action_done(self):
-        if self.check_done_conditions():
-            res = self._process_stock_move_line()
-            if res:
-                self._update_line_picking(res)
+        res = self._process_stock_move_line()
+        if res:
+            self._update_line_picking(res)
 
     def action_manual_entry(self):
-        self.action_done()
+        if self.check_done_conditions():
+            self.action_done()
         if self.picking_id.picking_type_code == 'outgoing':
             location = self.picking_id.location_id
         else:
@@ -116,6 +122,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             'xtendoo_stock_picking_barcodes.action_stock_barcodes_read_picking').read()[0]
         action['context'] = {
             'default_picking_id': self.picking_id.id,
+            'default_manual_entry': self.manual_entry,
             'default_location_id': location.id,
         }
         return action
@@ -179,7 +186,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             for l in p.move_ids_without_package:
                 vals.extend([(0, 0, {
                     'picking_id': p.id,
-                    'product_id': l.product_id,
+                    'product_id': l.product_id.id,
                     'reserved_availability': l.reserved_availability,
                     'product_uom_qty': l.product_uom_qty,
                     'quantity_done': l.quantity_done,
@@ -260,7 +267,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             self.env.user.notify_danger(
                 message='Waiting for input lot')
             return False
-
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
@@ -275,6 +281,36 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             self.env.context.get('picking_id', False)
         )
         return picking.button_validate()
+
+    def action_set_manual_entry(self):
+        self.manual_entry = True
+        if self.picking_id.picking_type_code == 'outgoing':
+            location = self.picking_id.location_id
+        else:
+            location = self.picking_id.location_dest_id
+        action = self.env.ref(
+            'xtendoo_stock_picking_barcodes.action_stock_barcodes_read_picking').read()[0]
+        action['context'] = {
+            'default_picking_id': self.picking_id.id,
+            'default_manual_entry': self.manual_entry,
+            'default_location_id': location.id,
+        }
+        return action
+
+    def action_quit_manual_entry(self):
+        self.manual_entry = False
+        if self.picking_id.picking_type_code == 'outgoing':
+            location = self.picking_id.location_id
+        else:
+            location = self.picking_id.location_dest_id
+        action = self.env.ref(
+            'xtendoo_stock_picking_barcodes.action_stock_barcodes_read_picking').read()[0]
+        action['context'] = {
+            'default_picking_id': self.picking_id.id,
+            'default_manual_entry': self.manual_entry,
+            'default_location_id': location.id,
+        }
+        return action
 
 
 class WizCandidatePicking(models.TransientModel):
@@ -327,18 +363,21 @@ class WizCandidatePicking(models.TransientModel):
         string='Lines',
     )
     product_qty_reserved = fields.Float(
-        'Reserved', compute='_compute_picking_quantity',
-        digits=dp.get_precision('Product Unit of Measure'),
+        'Reserved',
+        compute='_compute_picking_quantity',
+        digits='Product Unit of Measure',
         readonly=True,
     )
     product_uom_qty = fields.Float(
-        'Demand', compute='_compute_picking_quantity',
-        digits=dp.get_precision('Product Unit of Measure'),
+        'Demand',
+        compute='_compute_picking_quantity',
+        digits='Product Unit of Measure',
         readonly=True,
     )
     product_qty_done = fields.Float(
-        'Done', compute='_compute_picking_quantity',
-        digits=dp.get_precision('Product Unit of Measure'),
+        'Done',
+        compute='_compute_picking_quantity',
+        digits='Product Unit of Measure',
         readonly=True,
     )
     # For reload kanban view
@@ -384,7 +423,6 @@ class WizCandidatePicking(models.TransientModel):
         return wiz.action_cancel()
 
     def action_validate_picking(self):
-        print("context:::::::::::", self.env.context.get('picking_id', False))
         picking = self.env['stock.picking'].browse(
             self.env.context.get('picking_id', False)
         )
@@ -413,17 +451,17 @@ class WizLinePicking(models.TransientModel):
     )
     reserved_availability = fields.Float(
         string='Reserved',
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
         readonly=True,
     )
     product_uom_qty = fields.Float(
         string='Demand',
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
         readonly=True,
     )
     quantity_done = fields.Float(
         string='Done',
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
         readonly=True,
     )
     # For reload kanban view

@@ -6,17 +6,21 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//button[@name='preview_sale_order']" position="before">
-            <!-- Pedido sin confirmar(Presupuesto-->
-                <button name="action_sale_order_confirm_and_delivery" string="Confirm and delivery"
-                        type="object" attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
-                <button name="action_sale_order_confirm_and_invoiced" string="Confirm and invoiced"
-                        type="object" attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
-            <!-- Pedido confirmado(Pedido de ventas)-->
+            <xpath expr="//button[@name='action_confirm']" position="before">
+                <button name="action_sale_order_confirm_and_delivery"
+                        string="Confirm and delivery"
+                        type="object"
+                        attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
+                <button name="action_sale_order_confirm_and_invoice"
+                        string="Confirm and Invoice"
+                        type="object"
+                        attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
+            <!-- Pedido confirmado(Pedido de ventas)
                 <button name="action_sale_order_delivery" string="Delivery all"
-                        type="object" attrs="{'invisible': [('invoice_status', 'not in', ['no'])]}"/>
+                        type="object" attrs="{'invisible': [('state', 'not in', ['sale'])]}"/>
                 <button name="action_sale_order_delivery_and_invoiced" string="Delivery and invoiced"
-                        type="object" attrs="{'invisible': [('invoice_status', 'not in', ['to invoice'])]}"/>
+                        type="object" attrs="{'invisible': [('state', 'not in', ['sale'])]}"/>
+            -->
             </xpath>
         </field>
     </record>
