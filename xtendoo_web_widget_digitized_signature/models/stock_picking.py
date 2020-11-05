@@ -14,11 +14,9 @@ class StockPicking(models.Model):
     vat_receiver = fields.Char(
         'Vat receiver',
         help='This is the Vat receiver',
-        required=True,
     )
     name_receiver = fields.Char(
         'Name receiver',
         help='This is the Name receiver',
-        required=True,
     )
 
