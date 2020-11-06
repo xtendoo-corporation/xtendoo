@@ -13,6 +13,7 @@ class ProductProduct(models.Model):
     def _compute_picking_waiting_product_qty(self):
         domain = [
             ('state', 'not in', ['done', 'cancel']),
+            ('picking_type_id','=',2),
             ('product_id', 'in', self.ids),
         ]
         order_lines = self.env['stock.move'].read_group(domain, ['product_id', 'product_uom_qty'], ['product_id'])

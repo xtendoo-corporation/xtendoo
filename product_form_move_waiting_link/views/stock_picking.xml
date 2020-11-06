@@ -8,14 +8,14 @@
         <field name="name">Stock Move</field>
         <field name="res_model">stock.move</field>
         <field name="context">{}</field>
-        <field name="domain">[('state', 'not in', ['done', 'cancel']), ('product_id.product_tmpl_id', 'in', active_ids)]</field>
+        <field name="domain">[('state', 'not in', ['done', 'cancel']), ('picking_type_id','=',2), ('product_id.product_tmpl_id', 'in', active_ids)]</field>
     </record>
 
     <record id="action_product_product_sale_list" model="ir.actions.act_window">
         <field name="name">Stock Move</field>
         <field name="res_model">stock.move</field>
         <field name="context">{}</field>
-        <field name="domain">[('state', 'not in', ['done', 'cancel']), ('product_id', 'in', active_ids)]</field>
+        <field name="domain">[('state', 'not in', ['done', 'cancel']), ('picking_type_id','=',2), ('product_id', 'in', active_ids)]</field>
     </record>
 
 </odoo>
