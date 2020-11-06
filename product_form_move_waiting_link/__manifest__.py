@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 {
-    "name": "Product Form Move Waiting Link",
-    "summary": """Add an option to display the waiting moves from product""",
+    "name": "product form move waiting link",
+    "summary": """Añade un smart button al producto, para acceder a un listado de pedidos que están a la espera de ese producto""",
     "version": "13.0.1.0.0",
-    "author": "Manuel Calero, Daniel Dominguez",
+    "description": """Añade un smart button al producto, para acceder a un listado de pedidos que están a la espera de ese producto""",
+    "author": "DDL",
     "company": "Xtendoo",
     "website": "https://xtendoo.es",
     "category": "Extra Tools",
