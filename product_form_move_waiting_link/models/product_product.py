@@ -5,7 +5,7 @@ from odoo.tools.float_utils import float_round
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
-    picking_count = fields.Float(
+    move_product_qty = fields.Float(
         compute='_compute_picking_waiting_product_qty',
         string='Pickings'
     )

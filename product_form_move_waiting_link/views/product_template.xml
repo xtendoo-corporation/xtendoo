@@ -16,7 +16,7 @@
                         type="action"
                         icon="fa-truck">
                     <field string="Delivery"
-                           name="picking_count"
+                           name="move_product_qty"
                            widget="statinfo"/>
                 </button>
             </button>
