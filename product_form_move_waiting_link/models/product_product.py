@@ -11,9 +11,11 @@ class ProductProduct(models.Model):
     )
 
     def _compute_picking_waiting_product_qty(self):
+        pick_type = self.env['stock.picking.type'].search([('code', '=', 'outgoing')])
+
         domain = [
             ('state', 'not in', ['done', 'cancel']),
-            ('picking_type_id','=',2),
+            ('picking_type_id','=',pick_type[0].id),
             ('product_id', 'in', self.ids),
         ]
         order_lines = self.env['stock.move'].read_group(domain, ['product_id', 'product_uom_qty'], ['product_id'])
