@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="action_product_picking_sale" model="ir.actions.act_window">
-        <field name="name">Stock Move</field>
+    <record id="action_product_template_sale_list" model="ir.actions.act_window">
+        <field name="name">Stock Picking</field>
         <field name="res_model">stock.move</field>
         <field name="context">{}</field>
-        <field name="domain">[('state', 'not in', ['done', 'cancel']), ('product_id.product_tmpl_id', 'in', active_ids)]</field>
+        <field name="domain">[('state', 'not in', ['done', 'cancel']), ('picking_type_id.code','=','outgoing')]</field>
     </record>
 
-   <record model="ir.ui.view" id="purchase_picking_view">
+   <record model="ir.ui.view" id="product_form_move_waiting_purchase_link.purchase_picking_view">
         <field name="name">puchase_picking_view</field>
-        <field name="model">stock.picking</field>
+           <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            <button name="button_box" position="after">
+            <div name="button_box" position="inside">
                 <button class="oe_stat_button"
-                        name="%(product_form_move_waiting_link.action_product_picking_sale)d"
+                        name="%(product_form_move_waiting_purchase_link.action_product_template_sale_list)d"
                         type="action"
                         icon="fa-truck">
-                    <!--<field string="Delivery"
+                   <field string="Delivery"
                            name="move_product_qty"
-                           widget="statinfo"/> -->
+                           widget="statinfo"/>
                 </button>
-            </button>
+            </div>
         </field>
     </record>
 </odoo>
