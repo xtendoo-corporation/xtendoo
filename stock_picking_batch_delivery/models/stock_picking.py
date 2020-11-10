@@ -19,21 +19,18 @@ class StockPickingBatch(models.Model):
 
     partner_phone = fields.Char('TLF', related='partner_id.phone', readonly=True)
 
-    total_amount = fields.Float(compute='compute_total_amount', string='Importe')
+    total_amount = fields.Float(compute='compute_total_amount', string='Amount')
 
-    payment_term = fields.Char(compute='compute_total_amount', string='Forma de pago')
+    payment_term = fields.Char(compute='compute_total_amount', string='Payment Term')
 
-    lumps_number= fields.Integer(string='Nº de bultos', store=True)
+    lumps_number= fields.Integer(string='Lumps', store=True)
 
-    palets_number = fields.Integer(string='Nº de palets', store=True)
+    palets_number = fields.Integer(string='Pallets', store=True)
 
-    invoice_id=fields.Many2one('account.invoice', compute='get_invoice_id', string='Factura')
+    invoice_id=fields.Many2one('account.invoice', compute='get_invoice_id', string='Invoice')
 
     def compute_total_amount(self):
         for line in self:
             if line.sale_id != '':
-
-                logging.info('entra en calculo')
-                logging.info(line.sale_id.payment_term_id.name)
                 line.total_amount+=line.sale_id.amount_total
                 line.payment_term=line.sale_id.payment_term_id.name
