@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 {
-    "name": "product form move waiting purchase link",
-    "summary": """Añade un smart button al picking, para acceder a un listado de las cantidad pendientes de entregar de sus productos""",
+    "name": "Product Form Move Waiting Purchase Link",
+    "summary": """
+    Add a smart button to picking, to access a list of the pending delivery quantities of your products""",
     "version": "13.0.1.0.0",
-    "description": """Añade un smart button al picking, para acceder a un listado de las cantidad pendientes de entregar de sus productos""",
-    "author": "DDL",
+    "author": "Daniel Dominguez, Manuel Calero",
     "company": "Xtendoo",
     "website": "https://xtendoo.es",
     "category": "Extra Tools",
-    "depends": ["sale",],
+    "depends": ["sale", ],
     "license": "AGPL-3",
     "data": [
-            'views/stock_picking_view.xml',
-            ]
+        'views/stock_picking_view.xml',
+    ]
 }

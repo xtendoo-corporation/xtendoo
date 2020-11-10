@@ -9,9 +9,9 @@
                 <button class="oe_stat_button"
                         name="action_picking_template_sale_list"
                         type="object"
-                        icon="fa-truck"
-                        attrs="{'invisible': [('move_product_qty', '=', 0)]}">
-                   <field string="Delivery"
+                        icon="fa-list"
+                        attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}">
+                   <field string="Pending Delivery"
                            name="move_product_qty"
                            widget="statinfo"/>
                 </button>

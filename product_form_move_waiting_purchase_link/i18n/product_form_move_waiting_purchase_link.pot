@@ -19,19 +19,19 @@ msgstr ""
 #: code:addons/product_form_move_waiting_purchase_link/models/stock_picking.py:0
 #, python-format
 msgid "Detailed Operations"
-msgstr "Operaciones detalladas"
+msgstr ""
 
 #. module: product_form_move_waiting_purchase_link
 #: model_terms:ir.ui.view,arch_db:product_form_move_waiting_purchase_link.purchase_picking_view
 msgid "Pending Delivery"
-msgstr "Entregas Pendientes"
+msgstr ""
 
 #. module: product_form_move_waiting_purchase_link
 #: model:ir.model.fields,field_description:product_form_move_waiting_purchase_link.field_stock_picking__move_product_qty
 msgid "Pickings"
-msgstr "Albaranes"
+msgstr ""
 
 #. module: product_form_move_waiting_purchase_link
 #: model:ir.model,name:product_form_move_waiting_purchase_link.model_stock_picking
 msgid "Transfer"
-msgstr "Albarán"
+msgstr ""
