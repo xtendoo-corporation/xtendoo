@@ -52,6 +52,9 @@
         'views/invoice_bluetooth/report_invoice_document_without_promotions_bluetooth.xml',
         'views/invoice_bluetooth/invoice_promotions_bluetooth.xml',
 
+        #Factura Sin promociones
+        'views/invoice_without_promotions/invoice_without_promotions.xml',
+
         #Pagos
         'views/payment/report_payment_receipt.xml',
 

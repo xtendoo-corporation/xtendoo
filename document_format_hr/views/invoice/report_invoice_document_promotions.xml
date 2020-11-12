@@ -6,10 +6,9 @@
 
         <template id="document_format_hr.report_invoice_document_promotions">
 
-             <?xml version="1.0"?>
-<t t-name="document_format_hr.report_invoice_document_promotions">
+            <t t-name="document_format_hr.report_invoice_document_promotions">
 
-             <t t-name="document_format_hr.report_invoice_document_promotions">
+                <t t-name="document_format_hr.report_invoice_document_promotions">
 
                    <t t-call="web.external_layout">
 
