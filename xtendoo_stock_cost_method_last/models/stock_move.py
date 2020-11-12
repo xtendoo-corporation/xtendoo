@@ -8,8 +8,8 @@ from odoo import api, models
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    def product_price_update_before_done(self):
-        super(StockMove, self).product_price_update_before_done()
+    def product_price_update_before_done(self, forced_qty=None):
+        super(StockMove, self).product_price_update_before_done(forced_qty)
         for move in self.filtered(
                 lambda move: move.location_id.usage == 'supplier' and
                 move.product_id.cost_method == 'last'):
