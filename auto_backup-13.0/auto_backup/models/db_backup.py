@@ -238,7 +238,7 @@ class DbBackup(models.Model):
                                       "\n\nError details: " + tools.ustr(e) + \
                                       "\n\nWith kind regards"
                             catch_all_domain = self.env["ir.config_parameter"].sudo().get_param("mail.catchall.domain")
-                            response_mail = "auto_backup@%s" % catch_all_domain if catch_all_domain else self.env.user.partner_id.email
+                            response_mail = "xtenddo_auto_backup@%s" % catch_all_domain if catch_all_domain else self.env.user.partner_id.email
                             msg = ir_mail_server.build_email(response_mail, [rec.email_to_notify],
                                                              "Backup from " + rec.host + "(" + rec.sftp_host +
                                                              ") failed",
@@ -279,7 +279,7 @@ class DbBackup(models.Model):
         """Dump database `db` into file-like object `stream` if stream is None
         return a file object with the dump """
 
-        cron_user_id = self.env.ref('auto_backup.backup_scheduler').user_id.id
+        cron_user_id = self.env.ref('xtenddo_auto_backup.backup_scheduler').user_id.id
         if self._name != 'db.backup' or cron_user_id != self.env.user.id:
             _logger.error('Unauthorized database operation. Backups should only be available from the cron job.')
             raise AccessDenied()
