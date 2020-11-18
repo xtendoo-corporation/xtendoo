@@ -13,7 +13,7 @@ class ProductEan13(models.Model):
     _description = "List of EAN13 for a product."
     _order = "sequence, id"
 
-    name = fields.Char(string="EAN13", size=13, required=True)
+    name = fields.Char(string="EAN13", required=True)
     sequence = fields.Integer(string="Sequence", default=0)
     product_id = fields.Many2one(
         string="Product", comodel_name="product.product", required=True
