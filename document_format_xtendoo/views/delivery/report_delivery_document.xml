@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="report_delivery_document_xtendoo" inherit_id="stock.report_delivery_document">
+            <!-- Datos cabecera -->
+            <xpath expr="//div[@name='div_origin']" position="replace">
+                <div t-if="o.origin" class="col-auto" name="div_origin">
+                    <strong>Pedido:</strong>
+                    <p t-field="o.origin"/>
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='div_sched_date']" position="replace">
+                <div t-if="o.state" class="col-auto" name="div_sched_date">
+                    <strong>Fecha:</strong>
+                    <t t-if="o.state == 'done'">
+                        <p t-field="o.date_done" t-options='{"format": "dd/MM/yyyy"}'/>
+                    </t>
+                    <t t-if="o.state != 'done'">
+                        <p t-field="o.scheduled_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                    </t>
+                </div>
+            </xpath>
+            <!-- Fin Datos cabecera -->
+            <!-- Lineas -->
+            <xpath expr="//table[@class='table table-sm']" position="replace">
+                <!-- Separador -->
+                <div style="height:2px;background-color:black;clear:both;"></div>
+                <!-- Fin separador -->
+                <!-- Cabecera lineas -->
+                <div>
+                    <div style="width:85%;float:left;">
+                        <b>
+                            <span>Descripción</span>
+                        </b>
+                    </div>
+                    <div style="width:15%;float:left;text-align:right;">
+                        <b>
+                            <span>Cantidad</span>
+                        </b>
+                    </div>
+                </div>
+                <!-- Fin cabecera lineas -->
+                <!-- Body lineas -->
+                <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+                <t t-foreach="lines" t-as="move">
+                    <div style="clear:both;font-size:0.9em;">
+                        <div style="width:85%;float:left;">
+                            <span t-field="move.product_id"></span>
+                        </div>
+                        <div style="width:15%;float:left;text-align:right">
+                            <span t-field="move.product_uom_qty"/>
+                            <span t-field="move.product_uom" groups="uom.group_uom"/>
+                        </div>
+                    </div>
+                </t>
+                <!-- Fin body lineas -->
+            </xpath>
+            <!-- Fin lineas -->
+        </template>
+    </data>
+</odoo>
