@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* xtendoo_web_widget_digitized_signature
+# 	* xtendoo_web_widget_digitized_signature_
 #
 msgid ""
 msgstr ""
