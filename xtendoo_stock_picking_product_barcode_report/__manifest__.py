@@ -10,6 +10,7 @@
     "maintainers": ["CarlosRoca13"],
     "category": "Extra Tools",
     "depends": ["stock"],
+    "external_dependencies": {"python": ["python-barcode"]},
     "data": [
         "views/res_config_settings_view.xml",
         "data/paperformat_label.xml",
