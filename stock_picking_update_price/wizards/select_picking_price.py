@@ -172,6 +172,8 @@ class SelectPickingPriceLine(models.Model):
                 line.pricelist_text = line.pricelist_id.name
 
             line.cost_price = line.product_id.standard_price
+            line.percent_sale_category = category_pricelist_item.get_sale_percent(line.product_id, line.pricelist_id)
+            line.purchase_price = line.move_id.purchase_line_id.price_unit
 
             if line.percent_sale_category > 0.00:
                 line.suggested_price = line.cost_price + (line.cost_price * line.percent_sale_category / 100)
@@ -184,10 +186,6 @@ class SelectPickingPriceLine(models.Model):
                 line.percent_margin = ( (line.suggested_price - line.cost_price) / line.suggested_price * 100 )
             else:
                 line.percent_margin = 0
-
-            line.purchase_price = line.move_id.purchase_line_id.price_unit
-
-            line.percent_sale_category = category_pricelist_item.get_sale_percent(line.product_id, line.pricelist_id)
 
     @api.multi
     @api.onchange('list_price')
