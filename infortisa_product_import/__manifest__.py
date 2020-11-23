@@ -2,7 +2,7 @@
 {
     'name': 'Infortisa Product Import',
     'category': 'Product',
-    'version': '12.0.1.0',
+    'version': '13.0.1.0',
     'depends': ['product'],
     'description':
         """

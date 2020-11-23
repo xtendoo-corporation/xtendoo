@@ -5,7 +5,7 @@
     'version': '12.0.1.0.0',
     'category': 'Accounting & Finance',
     'author': 'Xtendoo',
-    'website': 'https://www.xtendoo.es',
+    'website': 'https://xtendoo.es',
     'license': 'AGPL-3',
     'summary': 'Stock Picking Update Price',
     'depends': [
@@ -13,6 +13,7 @@
         'category_pricelist_percentaje',
     ],
     'data': [
+        'data/stock_picking_update_price_data.xml',
         'wizards/wizards_select_picking_price.xml',
         'security/ir.model.access.csv',
         'views/stock_picking_view.xml',

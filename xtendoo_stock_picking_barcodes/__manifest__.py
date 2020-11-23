@@ -3,7 +3,7 @@
 {
     "name": "Xtendoo Stock Picking Barcodes",
     "summary": "It provides read barcode on stock operations.",
-    "version": "12.0.1.1.2",
+    "version": "13.0.1.1.2",
     "author": "Xtendoo, "
               "Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/stock-logistics-barcode",
