@@ -53,17 +53,6 @@ class SelectPickingPrice(models.Model):
                     data.append((0, False, self.get_others_price(move_line, pricelist_item, product_pricelist)))
         self.price_line_ids = data
 
-    # @api.onchange('picking_id')
-    # def _onchange_picking_id(self):
-    #     data = [(6, 0, [])]
-    #     product_pricelist_ids = self.env['product.pricelist'].search([('active', '=', True)])
-    #     for move_line in self.picking_id.move_line_ids:
-    #         data.append((0, False, self.get_list_price(move_line)))
-    #         for product_pricelist in product_pricelist_ids:
-    #             for pricelist_item in move_line.product_id.pricelist_item_ids:
-    #                 data.append((0, False, self.get_others_price(move_line, pricelist_item, product_pricelist)))
-    #     self.price_line_ids = data
-
     @staticmethod
     def get_list_price(move_line):
         return {'picking_id': move_line.picking_id,
@@ -183,21 +172,22 @@ class SelectPickingPriceLine(models.Model):
                 line.pricelist_text = line.pricelist_id.name
 
             line.cost_price = line.product_id.standard_price
-            line.purchase_price = line.move_id.purchase_line_id.price_unit
 
-            line.margin = line.list_price - line.move_id.purchase_line_id.price_unit
-            if line.list_price != 0:
-                line.percent_margin = 100 - (line.move_id.purchase_line_id.price_unit / line.list_price * 100)
+            if line.percent_sale_category > 0.00:
+                line.suggested_price = line.cost_price + (line.cost_price * line.percent_sale_category / 100)
+            else:
+                line.suggested_price = line.cost_price
+
+            line.margin = line.cost_price - line.suggested_price
+
+            if line.suggested_price != 0:
+                line.percent_margin = ( (line.suggested_price - line.cost_price) / line.suggested_price * 100 )
             else:
                 line.percent_margin = 0
 
+            line.purchase_price = line.move_id.purchase_line_id.price_unit
+
             line.percent_sale_category = category_pricelist_item.get_sale_percent(line.product_id, line.pricelist_id)
-
-            if line.percent_sale_category > 0.00:
-                line.list_price = line.cost_price + (line.cost_price * line.percent_sale_category / 100)
-
-            line.suggested_price = line.cost_price + (line.cost_price * line.percent_sale_category / 100)
-
 
     @api.multi
     @api.onchange('list_price')
