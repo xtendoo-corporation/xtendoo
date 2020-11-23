@@ -3,7 +3,7 @@
 {
     "name": "Xtendoo Stock Picking Barcodes QR",
     "summary": "It provides read QR barcode on stock operations.",
-    "version": "12.0.1.0.2",
+    "version": "13.0.1.0.2",
     "author": "Xtendoo, "
               "Odoo Community Association (OCA)",
     "website": "https://odoo-community.org/",

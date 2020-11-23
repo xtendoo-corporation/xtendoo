@@ -1,7 +1,6 @@
 # Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
-from odoo.addons import decimal_precision as dp
 
 
 class WizStockBarcodesRead(models.AbstractModel):
@@ -39,10 +38,11 @@ class WizStockBarcodesRead(models.AbstractModel):
     )
     packaging_qty = fields.Float(
         string='Package Qty',
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
     )
     product_qty = fields.Float(
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
+        default=1,
     )
     manual_entry = fields.Boolean(
         string='Manual entry data',
@@ -68,18 +68,6 @@ class WizStockBarcodesRead(models.AbstractModel):
     def onchange_packaging_qty(self):
         if self.packaging_id:
             self.product_qty = self.packaging_qty * self.packaging_id.qty
-
-    def _set_messagge_info(self, message_type, message):
-        """
-        Set message type and message description.
-        For manual entry mode barcode is not set so is not displayed
-        print("message::::::::::::::::::::::::", message)
-        self.message_type = message_type
-        if self.barcode:
-            self.message = _('Barcode: %s (%s)') % (self.barcode, message)
-        else:
-            self.message = '%s' % message
-        """
 
     def process_barcode(self, barcode):
         barcode="02084800007201911099999"

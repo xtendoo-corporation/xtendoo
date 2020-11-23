@@ -1,4 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sale_promotion_qty,access_sale_promotion_qty,model_sale_promotion_qty,base.group_user,1,1,1,1
-access_sale_promotion,access_sale_promotion,model_sale_promotion,base.group_user,1,1,1,1
-access_sale_campaign,access_sale_campaign,model_sale_campaign,base.group_user,1,1,1,1

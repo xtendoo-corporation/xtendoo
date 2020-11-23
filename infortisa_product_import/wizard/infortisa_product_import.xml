@@ -6,7 +6,7 @@
         <field name="model">infortisa.product.import</field>
         <field name="priority">1</field>
         <field name="arch" type="xml">
-            <form string="Import Bank Statements">
+            <form string="Import Infortisa Product">
                 <h2>Select a file to import</h2>
                 <field name="data_file" filename="filename" placeholder="Choose a file to import..."/>
                 <field name="filename" invisible="1"/>
@@ -21,7 +21,6 @@
     <record id="infortisa_product_import_action" model="ir.actions.act_window">
         <field name="name">Infortisa Products Import</field>
         <field name="res_model">infortisa.product.import</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
