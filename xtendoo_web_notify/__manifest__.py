@@ -6,7 +6,7 @@
     "name": "Xtendoo Web Notify",
     "summary": """
         Send notification messages to user""",
-    "version": "13.0.1.0.1",
+    "version": "12.0.1.0.1",
     "license": "AGPL-3",
     "author": "Xtendoo, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/web",

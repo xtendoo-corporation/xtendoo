@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="invoice_margin_form_ihnerit" model="ir.ui.view">
+            <field name="name">account.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+
+                 <xpath expr="//field[@name='margin']" position="replace">
+                    <field name="margin" groups="base.administration"/>
+                </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='purchase_price']" position="replace">
+                    <field name="purchase_price" groups="base.administration"/>
+               </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='price_unit']" position="replace">
+                    <field name="is_admin" invisible="1"/>
+                    <field name="price_unit" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+               </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='account_id']" position="replace">
+                    <field name="account_id" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+               </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='quantity']" position="replace">
+                    <field name="quantity" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+               </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='discount']" position="replace">
+                    <field name="discount" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+               </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='invoice_line_tax_ids']" position="replace">
+                    <field name="invoice_line_tax_ids" widget="many2many_tags" options="{'no_create': True}" context="{'type':parent.type, 'tree_view_ref': 'account.account_tax_view_tree', 'search_view_ref': 'account.account_tax_view_search'}" domain="[('type_tax_use','=','sale'),('company_id', '=', parent.company_id)]" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+                  <!--  <field name="invoice_line_tax_ids" attrs="{'readonly': [('is_admin', '=', False)]}"/> -->
+               </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='product_id']" position="replace">
+                    <field name="product_id" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+               </xpath>
+
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='name']" position="replace">
+                    <field name="name" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+               </xpath>
+
+               <!-- <xpath expr="//field[@name='invoice_line_ids']//field[@name='prod_lot_ids']" position="replace">
+                    <field name="prod_lot_ids"  String="Lote" widget="many2many_tags" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+               </xpath> -->
+
+            </field>
+
+        </record>
+
+        <record id="invoice_form_cancel_inherit_lch" model="ir.ui.view">
+            <field name="name">invoice.form.cancel.inherit.lch</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_invoice_cancel']" position="replace">
+                    <field name="is_admin" invisible='1'/>
+                    <button name="action_invoice_cancel" attrs="{'invisible': [('is_admin', '=', False)]}" type="object" states="draft,open,in_payment,paid" string="Cancel" groups="account.group_account_invoice"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

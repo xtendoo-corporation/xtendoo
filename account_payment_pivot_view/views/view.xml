@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_account_payment_pivot" model="ir.ui.view">
+        <field name="name">account.payment.pivot</field>
+        <field name="model">account.payment</field>
+        <field name="arch" type="xml">
+            <pivot string="Invoices">
+                <field name="payment_type" type="row"/>
+                <field name="journal_id"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="account.action_account_payments" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+    </record>
+
+    <record id="account.action_account_payments_payable" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+    </record>
+
+    <record id="account.action_account_payments_transfer" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+    </record>
+
+</odoo>

@@ -11,6 +11,7 @@ class ProductTemplate(models.Model):
         selection_add=[('last', 'Last Price')]
     )
 
+
 class ProductCategory(models.Model):
     _inherit = 'product.category'
 

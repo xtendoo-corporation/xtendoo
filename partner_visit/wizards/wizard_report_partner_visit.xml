@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="report_partner_visit" model="ir.ui.view">
+        <field name="name">report.partner.visit.wizard</field>
+        <field name="model">report.partner.visit</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="user_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                    <field name="date_begin" required="1"/>
+                    <field name="date_end" required="1"/>
+                </group>
+                <footer>
+                    <button string="Generate Report" name="run_wizard" type="object"
+                            default_focus="1"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_report_partner_visit_tree">
+        <field name="name">view.report.partner.visit.tree</field>
+        <field name="model">partner.visit.line</field>
+        <field name="arch" type="xml">
+            <tree string="Visit Days">
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="sale_order_id" widget="res_partner_many2one"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_report_partner_visit" model="ir.actions.act_window">
+        <field name="name">Report Visits of the Day</field>
+        <field name="res_model">report.partner.visit</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_action_report_partner_visit_wizard"
+              name="Partner Visit Line"
+              parent="base.menu_administration"
+              sequence="30"
+              action="action_report_partner_visit"/>
+
+</odoo>

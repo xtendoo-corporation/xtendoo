@@ -1,6 +1,8 @@
 # Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
+from odoo.addons import decimal_precision as dp
+from odoo.exceptions import ValidationError, UserError
 
 
 class WizStockBarcodesRead(models.AbstractModel):
@@ -34,10 +36,10 @@ class WizStockBarcodesRead(models.AbstractModel):
     )
     packaging_qty = fields.Float(
         string='Package Qty',
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
     )
     product_qty = fields.Float(
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
     )
     manual_entry = fields.Boolean(
         string='Manual entry data',
@@ -103,6 +105,8 @@ class WizStockBarcodesRead(models.AbstractModel):
         if not self.product_qty:
             self._set_messagge_info('info', _('Waiting quantities'))
             return False
+        if self.manual_entry:
+            self._set_messagge_info('success', _('Manual entry OK'))
         return True
 
     def action_done(self):

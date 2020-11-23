@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data>
+
+        <record id="bluetooth_delivery" model="report.paperformat">
+            <field name="name">Bluetooth delivery</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">3</field>
+            <field name="margin_right">1.5</field>
+            <field name="margin_left">1.5</field>
+            <field name="page_height">500</field>
+            <field name="page_width">80</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_line">False</field>
+            <field name="header_spacing">35</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <report id="report_delivery_bluetooh"
+                string="Albarán Bluetooth"
+                model="stock.picking"
+                report_type="qweb-pdf"
+                name="document_format_ch.report_delivery_bluetooth"
+                print_report_name="'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)"
+        />
+
+        <record id="document_format_ch.report_delivery_bluetooh" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_ch.bluetooth_delivery"/>
+        </record>
+
+        <template id="report_delivery_bluetooth">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="document_format_ch.report_delivery_document_bluetooth" t-lang="o.partner_id.lang"/>
+                </t>
+            </t>
+        </template>
+
+        <template id="report_delivery_document_bluetooth">
+
+            <t t-name="stock.report_delivery_document">
+
+                <t t-call="web.html_container">
+
+                    <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+                    <t t-set="partner"
+                       t-value="o.partner_id or (o.move_lines and o.move_lines[0].partner_id) or False"/>
+                    <t t-if="partner" name="partner_header">
+                        <t t-set="address">
+                            <div style="display:none;" t-esc="partner"
+                                 t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True}"/>
+                        </t>
+                    </t>
+
+                    <div class="page">
+
+                        <!-- Cabecera documento -->
+
+                        <div style="display:block; width:80%; margin:25px auto;">
+                            <img t-if="res_company.logo"
+                                 t-att-src="image_data_uri(res_company.logo)" alt="Logo"
+                                 style="width:100%"/>
+                        </div>
+
+                        <div style="font-size:1em;font-weight:bolder;text-align:center;">
+
+                            <div>
+                                <span t-if="res_company.name"
+                                      t-field="res_company.name"/>
+                            </div>
+
+                            <div>
+                                C/<span t-if="res_company.street"
+                                        t-field="res_company.street"/>.
+                                <span t-if="res_company.zip"
+                                      t-field="res_company.zip"/>
+                                <span t-if="res_company.city"
+                                      t-field="res_company.city"/>
+                            </div>
+
+                            <div>
+                                <!--<span t-if="res_company.zip" t-field="res_company.zip"/> <span t-if="res_company.city" t-field="res_company.city"/>
+                                (<span t-if="res_company.state_id.name" t-field="res_company.state_id.name"/>)-->
+                            </div>
+
+                            <div>
+
+                                <div t-if="res_company.phone" style="width:50%;float:left;">
+
+                                    <div style="text-align:right;margin-right:5px;">
+                                        <span>TLF.:</span>
+                                        <span t-field="res_company.phone"/>
+                                    </div>
+
+                                </div>
+
+                                <div t-if="res_company.vat" style="width:50%;float:left;">
+
+                                    <div style="text-align:left;margin-left:5px;">
+                                        <span>N.I.F.:</span>
+                                        <span t-field="res_company.vat"/>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Fin Cabecera documento -->
+
+                        <hr style="height:3px; background-color:black;clear:both;"></hr>
+
+                        <!-- Datos del cliente -->
+
+                        <div style="font-size:1em;font-weight:bolder;">
+
+                            <div t-if="o.partner_id.name">
+                                <span t-field="o.partner_id.name"/>
+                            </div>
+
+                            <div t-if="o.partner_id.street">
+                                C/<span t-field="o.partner_id.street"/>.
+                                <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
+                                <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>
+                            </div>
+
+                            <div>
+
+                                <div t-if="o.partner_id.phone" style="width:50%;float:left;">
+
+                                    <div>
+                                        <span>TLF.:</span>
+                                        <span t-field="o.partner_id.phone"/>
+                                    </div>
+
+                                </div>
+
+                                <div t-if="o.partner_id.vat" style="width:50%;float:left;">
+
+                                    <div>
+                                        <span>N.I.F.:</span>
+                                        <span t-field="o.partner_id.vat"/>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+                        <!-- Fin datos cliente -->
+
+                        <!-- Datos del documento -->
+
+                        <div style="margin-top:20px;width:60%;float:left;margin-bottom:10px;">
+
+                            <div t-if="o.picking_type_id.id == 5">
+                                <span style="font-weight:bolder;color:black;display:block;">Albarán de entrega:</span>
+                            </div>
+
+                            <div t-if="o.picking_type_id.id == 3">
+                                <span style="font-weight:bolder;color:black;display:block;">Devolución:</span>
+                            </div>
+                            <span t-field="o.name"/>
+
+                            <div>
+
+                                <div>
+                                    <span style="font-weight:bolder;">Pedido:</span>
+                                </div>
+
+                                <div>
+                                    <span t-field="o.origin"/>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Fin datos del documento -->
+
+                        <!-- referencias -->
+
+                        <div style="margin-top:15px;margin-bottom:15px;float:left;width:40%;">
+
+                            <div>
+                                <span style="font-weight:bolder;">Fecha:</span>
+                                <t t-if="o.state == 'done'">
+
+                                    <div>
+                                        <span t-field="o.date_done"
+                                              t-options="{&quot;format&quot;: &quot;MM-dd-yyyy&quot;}"/>
+                                    </div>
+
+                                </t>
+
+                                <t t-if="o.state != 'done'">
+                                    <div>
+                                        <span t-field="o.scheduled_date"
+                                              t-options="{&quot;format&quot;: &quot;MM-dd-yyyy&quot;}"/>
+                                    </div>
+
+                                </t>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Fin referencias -->
+
+                        <!-- Productos no hecho -->
+
+                        <table t-if="o.state!='done'"
+                               style="font-size:0.8em;border-top:4px solid black;border-bottom:4px solid black;clear:both;padding-top:10px;">
+
+                            <thead>
+
+                                <tr style="font-weight:bolder;color:black;">
+
+                                    <th style="width:60%;">
+                                        Producto
+                                    </th>
+
+                                    <th style="width:40%;">
+                                        Cantidad
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+
+                                <t t-foreach="lines" t-as="move">
+
+                                    <tr padding="0">
+
+                                        <!-- Producto -->
+
+                                        <td style="width:60%;padding:0px">
+                                            <span t-field="move.product_id"/>
+                                        </td>
+
+                                        <!-- Fin Producto -->
+
+                                        <!-- Cantidad -->
+
+                                        <td style="width:40%;padding:0px;text-align:center;">
+                                            <span t-field="move.product_uom_qty"/>
+                                            <!--<span t-field="move.product_uom"/>-->
+                                        </td>
+
+                                        <!-- Fin cantidad -->
+
+                                    </tr>
+
+                                </t>
+
+                            </tbody>
+
+                        </table>
+
+                        <!-- Fin productos no hecho -->
+
+                        <!-- Productos hecho -->
+
+                        <table t-if="o.move_line_ids and o.state=='done'"
+                               style="font-size:0.8em;border-top:4px solid black;border-bottom:4px solid black;clear:both;width:100%;margin-bottom:15px;">
+
+                            <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
+
+                            <thead>
+
+                                <tr style="font-weight:bolder;color:black;">
+
+                                    <th style="margin-left:30px;">
+                                        Prodcuto
+                                    </th>
+
+                                    <th style="margin-left:30px;">
+                                        Cantidad
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <t t-foreach="o.move_line_ids" t-as="move_line">
+
+                                    <tr>
+
+                                        <!-- Producto -->
+
+                                        <td style="width:60%;padding:0px">
+                                            <span t-field="move_line.product_id"/>
+                                        </td>
+
+                                        <!-- Producto -->
+
+                                        <!-- Cantidad -->
+
+                                        <td style="width:40%;padding:0px;text-align:center;">
+                                            <span t-field="move_line.qty_done"/>
+                                            <!--  <span t-field="move_line.product_uom_id"/>-->
+                                        </td>
+
+                                        <!-- Cantidad -->
+
+                                    </tr>
+
+                                </t>
+
+                            </tbody>
+
+                        </table>
+
+                        <!-- Fin Productos hecho-->
+
+                        <!-- Firma del cliente -->
+
+                        <div style="height:100px;width:100%;border:2px solid black;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
+                        </div>
+
+
+                        <!-- fin Firmar del cliente -->
+
+                        <p>
+                            <t t-if="o.backorder_ids and o.backorder_ids.filtered(lambda x: x.state not in ('done', 'cancel'))">
+                                All items couldn't be shipped, the remaining ones will be shipped as soon as they become
+                                available.
+                            </t>
+                        </p>
+
+                    </div>
+
+                </t>
+
+            </t>
+
+        </template>
+
+    </data>
+
+</odoo>

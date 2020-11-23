@@ -1,0 +1,14 @@
+<odoo>
+        <record id="show_cost_price" model="res.groups">
+            <field name="name">Show cost price</field>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+        <record id="show_sale_price" model="res.groups">
+            <field name="name">Show sale price</field>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+        <record id="show_purchase_page" model="res.groups">
+            <field name="name">Show Purcahse Page</field>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+</odoo>

@@ -1,0 +1,71 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* product_show_price_list
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 12.0-20190906\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-09-24 08:18+0000\n"
+"PO-Revision-Date: 2019-09-24 08:18+0000\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_5
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_5
+msgid "Fifth pricelist"
+msgstr "T-04"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_1
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_1
+msgid "First pricelist"
+msgstr "Tarifa pública"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_4
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_4
+msgid "Fourth pricelist"
+msgstr "T-06"
+
+#. module: product_show_price_list
+#: model:ir.model,name:product_show_price_list.model_product_template
+msgid "Product Template"
+msgstr "Plantilla de producto"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_2
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_2
+msgid "Second pricelist"
+msgstr "T-12"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_6
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_6
+msgid "Sixth pricelist"
+msgstr "T-01"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_3
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_3
+msgid "Third pricelist"
+msgstr "T-10"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_7
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_7
+msgid "Seventh pricelist"
+msgstr "T-03"
+
+#. module: product_show_price_list
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_product__pricelist_9
+#: model:ir.model.fields,field_description:product_show_price_list.field_product_template__pricelist_9
+msgid "Nineth pricelist"
+msgstr "T-09"
+
+

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <data>
+
+        <template id="stock_picking_product_label_with_barcode_128.product_label_128">
+
+            <t t-name="stock_picking_product_label_with_barcode_128.product_label_128">
+                    <t t-set="codebar_128" t-value="'02' + product_barcode + '10' + product_lot_name + '\x1D'"/>
+                    <div>
+                        <table style="width:100%;">
+                            <tr>
+                                <td>
+                                    <div style="font-size:0.45em;">
+                                        <b><span t-esc="product_name"/></b>
+                                    </div>
+                                    <div style="font-size:0.45em;">
+                                        <b><span>Lote: </span></b>
+                                        <span t-esc="product_lot_name"/>
+                                    </div>
+                                    <div style="font-size:0.45em;">
+                                        <b><span>Caducidad: </span></b>
+                                        <span t-esc="product_lot_date.strftime('%d/%m/%Y')"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr height="60">
+                                <td>
+                                    <img style="widht:100%;margin: 0 auto;" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s&amp;humanreadable=1' % ('QR', codebar_128, 80, 80)" alt="Barcode"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            </t>
+        </template>
+    </data>
+</odoo>

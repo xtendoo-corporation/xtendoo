@@ -27,15 +27,20 @@ class InfortisaProductImport(models.TransientModel):
     filename = fields.Char()
     category = fields.Char()
 
+    @api.multi
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
         self.ensure_one()
+
         data_file = b64decode(self.data_file)
+
         if not data_file:
             return
+
         self._parse_file(data_file)
 
     def parse_categories(self, row, parent_id):
+
         category = self.env['product.category'].search([
             ('name', '=', row[5]),
         ])
@@ -47,9 +52,11 @@ class InfortisaProductImport(models.TransientModel):
 
     def parse_product(self, row, iva_id):
         price = float(row[10].replace(',', '.'))
+
         category = self.env['product.category'].search([
             ('name', '=', row[5]),
         ])
+
         if category:
             category_id = category.id
         else:
@@ -95,15 +102,19 @@ class InfortisaProductImport(models.TransientModel):
             next(csv_data)
         except Exception:
             raise UserError(_('Can not read the file'))
+
         parent_id = self.get_parent_id()
         iva = self.env['account.tax'].search([
             ('name', '=', 'IVA 21% (Bienes)'),
         ])
+
         if iva:
             iva_id = iva.id
         else:
             iva_id = 0
+
         for row in csv_data:
             self.parse_categories(row, parent_id)
             self.parse_product(row, iva_id)
+
         return

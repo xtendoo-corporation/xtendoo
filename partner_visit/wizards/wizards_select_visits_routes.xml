@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <record id="partner_visit_day" model="ir.ui.view">
+        <field name="name">partner.visit.day.wizard</field>
+        <field name="model">partner.visit.day</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="user_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                    <field name="next_date" required="1"/>
+                </group>
+                <footer>
+                    <button string="Generate Report" name="run_wizard" type="object" default_focus="1"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+<!--    <record id="view_res_users_form_inherit" model="ir.ui.view">-->
+<!--        <field name="name">res.users.form.inherit</field>-->
+<!--        <field name="model">res.users</field>-->
+<!--        <field name="inherit_id" ref="base.view_users_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <div name="button_box" position="inside">-->
+<!--                <button class="oe_stat_button" name="action_open_visits_routes" icon="fa-flag" type="object" string="Visits"/>-->
+<!--            </div>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <record model="ir.ui.view" id="view_partner_visit_tree">
+        <field name="name">res.partner.visit.tree</field>
+        <field name="model">partner.visit</field>
+        <field name="arch" type="xml">
+            <tree string="Visit Days" create="0">
+                <field name="user_id"/>
+                <field name="order"/>
+                <field name="partner_id"/>
+                <field name="week_day"/>
+                <field name="phone"/>
+                <field name="email"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_report_partner_visit_day" model="ir.actions.act_window">
+        <field name="name">Visits of the Day</field>
+        <field name="res_model">partner.visit.day</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_action_report_partner_visit_day_wizard"
+            name="Visit"
+            parent="base.menu_administration"
+            sequence="40"
+            action="action_report_partner_visit_day"/>
+
+</odoo>

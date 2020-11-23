@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="saleorder_form_ihnerit_margin" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_margin.sale_margin_sale_order_line_form"/>
+            <field name="arch" type="xml">
+
+                 <xpath expr="//field[@name='margin']" position="replace">
+                     <field name="is_admin" invisible="1"/>
+                    <field name="margin" attrs="{'invisible': [('is_admin', '=', False)]}"/>
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']/tree//field[@name='purchase_price']" position="replace">
+                    <field name="purchase_price" attrs="{'invisible': [('is_admin', '=', False)]}"/>
+                </xpath>
+
+                <xpath expr="//page[@name='order_lines']//field[@name='purchase_price']" position="replace">
+                    <field name="purchase_price" attrs="{'invisible': [('is_admin', '=', False)]}" force_save="1"/>
+             </xpath>
+
+            </field>
+
+
+        </record>
+
+    </data>
+</odoo>

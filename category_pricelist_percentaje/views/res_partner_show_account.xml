@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2020 Xtendoo
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="res_partner_show_accounts" model="ir.ui.view">
+        <field name="name">res.partner.show_account</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+                <field name="display_name" position="before">
+                <field name="ref"/>
+            </field>
+            <field name="phone" position="replace">
+                <field name="property_account_receivable_id"/>
+                <field name="property_account_payable_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

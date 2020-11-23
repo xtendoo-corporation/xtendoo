@@ -147,9 +147,9 @@
                 </xpath>
                 <!-- Fin totales -->
                 <!-- Quitar texto referencia -->
-                <!--<xpath expr="//p[@id='link_text']" position="replace">
+                <xpath expr="//p[@id='link_text']" position="replace">
 
-             </xpath> -->
+             </xpath>
                 <!-- Fin quitar texto referencia -->
         </template>
 

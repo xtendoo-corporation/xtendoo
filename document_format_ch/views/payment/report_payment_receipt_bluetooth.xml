@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data>
+
+        <record id="bluetooth_payment" model="report.paperformat">
+            <field name="name">Bluetooth payment</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">3</field>
+            <field name="margin_right">1.5</field>
+            <field name="margin_left">1.5</field>
+            <field name="page_height">500</field>
+            <field name="page_width">80</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_line">False</field>
+            <field name="header_spacing">35</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <report id="report_payment_receipt_bluetooth"
+                string="Recibo de Pago Bluetooth"
+                model="account.payment"
+                report_type="qweb-pdf"
+                name="document_format_ch.report_payment_receipt_bluetooth"
+        />
+
+        <record id="document_format_ch.report_payment_receipt_bluetooth" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_ch.bluetooth_payment"/>
+        </record>
+
+        <template id="report_payment_receipt_bluetooth">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="lang" t-value="o.partner_id.lang"/>
+                    <t t-call="document_format_ch.report_payment_receipt_document_bluetooth" t-lang="lang"/>
+                </t>
+            </t>
+        </template>
+
+        <template id="report_payment_receipt_document_bluetooth">
+
+            <t t-set="o" t-value="o.with_context({'lang': lang})"/>
+
+            <div class="page">
+
+                <!-- Cabecera documento -->
+
+                <div style="display:block; width:80%; margin:25px auto;">
+                    <img t-if="res_company.logo"
+                         t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:100%"/>
+                </div>
+
+                <div style="font-size:1.6em;font-weight:bolder;text-align:center;">
+
+                    <div>
+                        <span t-if="res_company.name" t-field="res_company.name"/>
+                    </div>
+
+                    <div>
+                        C/<span t-if="res_company.street"
+                                t-field="res_company.street"/>.
+                        <span t-if="res_company.zip" t-field="res_company.zip"/>
+                        <span t-if="res_company.city" t-field="res_company.city"/>
+                    </div>
+
+                    <div>
+                        <!--<span t-if="res_company.zip" t-field="res_company.zip"/> <span t-if="res_company.city" t-field="res_company.city"/>
+                      (<span t-if="res_company.state_id.name" t-field="res_company.state_id.name"/>)-->
+                    </div>
+
+                    <div>
+                        <div t-if="res_company.phone" style="width:50%;float:left;">
+                            <div style="text-align:right;margin-right:5px;">
+                                <span>TLF.:</span>
+                                <span t-field="res_company.phone"/>
+                            </div>
+                        </div>
+
+                        <div t-if="res_company.vat" style="width:50%;float:left;">
+
+                            <div style="text-align:left;margin-left:5px;">
+                                <span>N.I.F.:</span>
+                                <span t-field="res_company.vat"/>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Fin Cabecera documento -->
+
+                <hr style="height:3px; background-color:black;clear:both;"></hr>
+
+                <!--Datos del pago -->
+
+                <!--Nombre del pago -->
+
+                <t t-foreach="o.reconciled_invoice_ids" t-as="inv">
+                    <div style="text-align:center;font-size:1.4em;">
+                        <div>
+                            <span style="font-weight:bolder;">Recibo del pago:</span>
+                        </div>
+
+                        <div>
+                            <span t-field="o.name"/>
+                        </div>
+
+                    </div>
+
+                    <!-- fin nombre del pago -->
+
+                    <!-- columna de la izquierda -->
+
+                    <div style="width:50%;font-size:1.3em;float:left;margin-bottom:15px;">
+
+                        <!-- Fecha del pago -->
+
+                        <div>
+                            <span style="display:block;width:100%;font-weight:bolder;">Fecha del pago:</span>
+                            <span t-field="o.payment_date"/>
+                        </div>
+
+                        <!-- FIn fecha del pago -->
+
+                        <!-- comercial  -->
+
+                        <div>
+                            <span style="display:block;width:100%;font-weight:bolder;">Comercial:</span>
+                            <span t-field="inv.user_id"/>
+                        </div>
+
+                        <!-- Fin comercial -->
+
+                        <!-- Cliente -->
+
+                        <div>
+                            <span style="display:block;width:100%;font-weight:bolder;">Cliente:</span>
+                            <span t-field="o.partner_id"/>
+                        </div>
+
+                        <!-- fin cliente -->
+
+                    </div>
+
+                    <!-- Fin columna de la izquierda -->
+
+                    <!-- Columna de la derecha -->
+
+                    <div style="width:50%;font-size:1.3em;float:left;">
+
+                        <!-- Medotodo de pago -->
+
+                        <div>
+                            <span style="display:block;width:100%;font-weight:bolder;">Método de pago:</span>
+                            <span t-field="o.payment_method_id.name"/>
+                        </div>
+
+                        <!-- Fin metodo de pago -->
+
+                        <!-- Cantidad Pagada -->
+
+                        <div>
+                            <span style="display:block;width:100%;font-weight:bolder;">Cantidad pagada:</span>
+                            <span t-field="o.amount"
+                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        </div>
+
+                        <!-- Fin cantidad pagada -->
+
+                        <!-- Referencia -->
+
+                        <div>
+                            <span style="display:block;width:100%;font-weight:bolder;">Referencia:</span>
+                            <span t-field="o.communication"/>
+                        </div>
+
+                        <!-- Fin referencia -->
+
+                    </div>
+
+                    <!-- Fin columna de la derecha -->
+
+                    <div class="row mt64" style="clear:both;">
+
+                    </div>
+
+                    <!-- Resumen del pago -->
+
+                    <table class="table table-sm"
+                           style="font-size:1.2em;border-top:4px solid black;border-bottom:4px solid black;margin-left:-10px;width:105%;">
+                        <thead>
+
+                            <tr style="color:black;">
+
+                                <th style="border-right:2px dotted black;width:21%">
+                                    Fecha
+                                </th>
+
+                                <th style="border-right:2px dotted black;width:25%;">
+                                    Factura
+                                </th>
+
+                                <th class="text-center" style="border-right:2px dotted black;">
+                                    Total
+                                </th>
+
+                                <th class="text-center" style="border-right:2px dotted black;">
+                                    Pagado
+                                </th>
+
+                                <th class="text-center">
+                                    Dif.
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+
+                                <td style="border-right:2px dotted black;border-top:2px dotted black;width:21%;">
+                                    <span t-field="inv.date_invoice"/>
+                                </td>
+
+                                <td style="border-right:2px dotted black;border-top:2px dotted black;width:25%;">
+                                    <span t-field="inv.number"/>
+                                </td>
+
+                                <td class="text-right"
+                                    style="border-right:2px dotted black;border-top:2px dotted black">
+                                    <span t-field="inv.amount_total"/>
+                                </td>
+
+                                <td class="text-right"
+                                    style="border-right:2px dotted black;border-top:2px dotted black">
+                                    <span t-esc="inv.amount_total - inv.residual"
+                                          t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                                </td>
+
+                                <td class="text-right" style="border-top:2px dotted black;">
+                                    <span t-field="inv.residual"/>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                    <!-- Fin resumen del pago -->
+
+                    <!-- Firma del comercial -->
+
+                   <div style="height:200px;width:100%;border:2px solid black;display:block;margin-top:20px;">
+                        <span style="text-align:left!important;display:block;width:1005;font-size:1.1em;margin-left:10px;">Firma del Comercial:</span>
+                        <img t-attf-src="data:image/*;base64,{{inv.user_id.digital_signature}}"/>
+                       <!-- <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/> -->
+                    </div>
+
+                    <!-- Fin firma del comercial -->
+
+                </t>
+
+            </div>
+
+        </template>
+    </data>
+
+</odoo>

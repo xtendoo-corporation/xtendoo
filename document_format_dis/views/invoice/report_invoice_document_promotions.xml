@@ -182,15 +182,9 @@
 
                                         <div t-if="line.product_id">
 
-                                           
                                             <!-- Código -->
                                             <div class="text-left" style="width:13%;float:left;">
-                                                <t t-if="line.product_id.default_code">
-                                                    <span t-field="line.product_id.default_code"/>
-                                                </t>
-                                                <t t-else="">
-                                                    <span style="color:white">aaa</span>
-                                                </t>
+                                                <span t-field="line.product_id.default_code"/>
                                             </div>
                                             <!-- Fin codigo -->
 

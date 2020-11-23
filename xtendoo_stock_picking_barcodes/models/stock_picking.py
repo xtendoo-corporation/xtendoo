@@ -1,6 +1,7 @@
 # Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
+from odoo.addons import decimal_precision as dp
 from odoo.tools.float_utils import float_compare
 
 
@@ -287,17 +288,17 @@ class TrnLinePicking(models.TransientModel):
     )
     reserved_availability = fields.Float(
         string='Reserved',
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
         readonly=True,
     )
     product_uom_qty = fields.Float(
         string='Demand',
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
         readonly=True,
     )
     quantity_done = fields.Float(
         string='Done',
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
         readonly=True,
     )
     # For reload kanban view

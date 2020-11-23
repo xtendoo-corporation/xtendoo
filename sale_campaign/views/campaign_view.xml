@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_campaign_form" model="ir.ui.view">
+            <field name="name">view.campaign.form</field>
+            <field name="model">sale.campaign</field>
+            <field name="arch" type="xml">
+                <form string="Campaign">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="toggle_active" type="object"
+                                    class="oe_stat_button" icon="fa-archive">
+                                <field name="active" widget="boolean_button"
+                                       options='{"terminology": "archive"}'/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Name"/>
+                            </h1>
+                        </div>
+                        <group name="main">
+                            <group>
+                                <field name="start_date"/>
+                            </group>
+                            <group>
+                                <field name="end_date"/>
+                            </group>
+                            <group>
+                                <field name="all_partners"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name='pricelists' string='Pricelists'>
+                                <field name="pricelist_ids"/>
+                            </page>
+                            <page name='partners' string='Partners' attrs="{'invisible': [('all_partners', '=', True)]}">
+                                <field name="partner_ids"/>
+                            </page>
+                            <page name='promotions' string='Promotions'>
+                                <field name="promotion_ids"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_campaign_tree" model="ir.ui.view">
+            <field name="name">view.campaign.tree</field>
+            <field name="model">sale.campaign</field>
+            <field name="arch" type="xml">
+                <tree string="Campaign">
+                    <field name="name"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="pricelist_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
+                    <!-- <field name="promotion_ids" widget="many2many_tags" options="{'no_create_edit': True}"/> -->
+                    <field name="promotion_ids"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_campaign_search" model="ir.ui.view">
+            <field name="name">view.campaign.search</field>
+            <field name="model">sale.campaign</field>
+            <field name="arch" type="xml">
+                <search string="Campaign">
+                    <field name="name"/>
+                    <group string="Group By" name="groupby">
+                        <filter name="name_groupby" string="name" context="{'group_by': 'name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="campaign_action" model="ir.actions.act_window">
+            <field name="name">Campaigns</field>
+            <field name="res_model">sale.campaign</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a new Campaign.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="campaign_menu" parent="sale.product_menu_catalog" action="campaign_action" sequence="20"/>
+
+    </data>
+</odoo>

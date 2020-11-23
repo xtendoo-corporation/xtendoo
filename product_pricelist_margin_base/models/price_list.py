@@ -10,6 +10,7 @@ from odoo.exceptions import UserError, ValidationError
 class Pricelist(models.Model):
     _inherit = "product.pricelist"
 
+    @api.multi
     def _compute_price_rule(self, products_qty_partner, date=False, uom_id=False):
         """ Low-level method - Mono pricelist, multi products
         Returns: dict{product_id: (price, suitable_rule) for the given pricelist}

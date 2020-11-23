@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record model="ir.ui.view" id="view_picking_form">
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button"
+                        name="action_open_landed_cost"
+                        icon="fa-ship"
+                        type="object"
+                        string="Landed costs">
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record id='view_stock_landed_cost_form' model='ir.ui.view'>
+        <field name="name">stock.landed.cost.form</field>
+        <field name="inherit_id" ref="stock_landed_costs.view_stock_landed_cost_form"/>
+        <field name="model">stock.landed.cost</field>
+        <field name="arch" type="xml">
+            
+            <xpath expr="/form/sheet/field/tree/field[@name='former_cost_per_unit']" position="replace">
+                <field name="former_cost_per_unit" readonly="1"/>
+            </xpath>
+
+            <xpath expr="/form/sheet/field/tree/field[@name='weight']" position="replace"/>
+
+            <xpath expr="/form/sheet/field/tree/field[@name='volume']" position="replace"/>
+
+            <xpath expr="/form/sheet/field/tree/field[@name='former_cost_per_unit']" position="after">
+                <field name="cost_variation" readonly="1"></field>
+                <field name="price_cost" readonly="1"></field>
+            </xpath>
+
+            <xpath expr="/form/sheet/field/tree/field[@name='former_cost']" position="replace"/>
+
+        </field>
+    </record>
+
+</odoo>

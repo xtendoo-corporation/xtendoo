@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pricelist_promotion_form" model="ir.ui.view">
+        <field name="name">product.pricelist.promotion.form</field>
+        <field name="model">product.pricelist</field>
+        <field name="inherit_id" ref="product.product_pricelist_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='item_ids']" position="after">
+                <div>
+                    <separator string="Campaign"/>
+                    <field name="campaign_ids" nolabel='1'/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

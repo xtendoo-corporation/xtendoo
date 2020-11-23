@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="add_invoice_comment.account_invoice_form_comment" inherit_id="account.invoice_form">
+            <xpath expr="//field[@name='comment']" position="replace">
+                <group class="oe_inline oe_left">
+                    <label for="comment" string="Notas :"/><br/>
+                    <field name="comment" placeholder="Notas..." attrs="{'readonly': False}"/>
+                </group>
+            </xpath>
+        </template>
+    </data>
+</odoo>

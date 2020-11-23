@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="campaign_01" model="sale.campaign">
+            <field name="name">Campaign01</field>
+            <field name="start_date">01/01/2018</field>
+            <field name="end_date">01/01/2024</field>
+            <field name="all_partners">True</field>
+            <field name="pricelist_ids" eval="[(6,0,[ref('product.list0')])]"/>
+        </record>
+
+        <record id="campaign_02" model="sale.campaign">
+            <field name="name">Campaign02</field>
+            <field name="start_date">01/01/2018</field>
+            <field name="end_date">01/01/2024</field>
+            <field name="all_partners">True</field>
+            <field name="pricelist_ids" eval="[(6,0,[ref('product.list0')])]"/>
+        </record>
+
+        <record id="campaign_03" model="sale.campaign">
+            <field name="name">Campaign02</field>
+            <field name="start_date">01/01/2018</field>
+            <field name="end_date">01/01/2024</field>
+            <field name="all_partners">False</field>
+            <field name="pricelist_ids" eval="[(6,0,[ref('product.list0')])]"/>
+            <field name="partner_ids" eval="[(6,0,[ref('base.res_partner_1')])]"/>
+        </record>
+
+    </data>
+</odoo>

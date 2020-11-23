@@ -69,7 +69,7 @@ class Picking(models.Model):
                   'view_id': view.id,
                   'views': [(view.id, 'form')],
                   'type': 'ir.actions.act_window',
-                  'target': 'current',
+                  'target': 'new',
                   'context': {'default_picking_id': self.id}}
 
         if self.picking_price_ids:

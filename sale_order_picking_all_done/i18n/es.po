@@ -37,7 +37,7 @@ msgstr "Entregar todo"
 
 #. module: sale_order_picking_all_done
 #: model_terms:ir.ui.view,arch_db:sale_order_picking_all_done.view_order_form_inherit
-msgid "Delivery and invoice"
+msgid "Delivery and invoiced"
 msgstr "Entregar y facturar"
 
 

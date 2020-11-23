@@ -1,6 +1,7 @@
 # Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import fields, models
+from odoo.addons import decimal_precision as dp
 
 
 class StockBarcodesReadLog(models.Model):
@@ -30,11 +31,11 @@ class StockBarcodesReadLog(models.Model):
     )
     packaging_qty = fields.Float(
         string='Package Qty',
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
     )
     product_qty = fields.Float(
         string='Quantity',
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
     )
     manual_entry = fields.Boolean(
         string='Manual entry',
@@ -73,6 +74,6 @@ class StockBarcodesReadLogLine(models.Model):
     )
     product_qty = fields.Float(
         string='Quantity scanned',
-        digits='Product Unit of Measure',
+        digits=dp.get_precision('Product Unit of Measure'),
         readonly=True,
     )

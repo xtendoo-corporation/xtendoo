@@ -17,7 +17,6 @@
         "views/invoice/report_invoice_document.xml",
         "views/delivery/report_delivery_document.xml",
         "views/payment/report_payment_receipt_document.xml",
-        "views/product_label/product_label.xml",
     ],
     "demo": [],
     "installable": True,

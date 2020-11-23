@@ -1,0 +1,18 @@
+
+.tutorial-quiz {
+    margin: auto;
+    margin-top: 50px;
+    padding: 30px;
+    width: 450px;
+    min-height: 300px;
+    border: 1px solid gray;
+    background-color: #ddd;
+}
+
+.quiz-correction {
+    margin: 15px;
+}
+
+.quiz-correction div:first-child {
+    font-weight: bold;
+}
