@@ -180,7 +180,7 @@ class SelectPickingPriceLine(models.Model):
             else:
                 line.suggested_price = line.cost_price
 
-            line.margin = line.cost_price - line.suggested_price
+            line.margin = line.suggested_price - line.cost_price
 
             if line.suggested_price != 0:
                 line.percent_margin = ( (line.suggested_price - line.cost_price) / line.suggested_price * 100 )
