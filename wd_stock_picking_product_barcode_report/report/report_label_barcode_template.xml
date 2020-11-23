@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <template id="report_label_barcode">
-        <t t-call="web.basic_layout">
-            <t t-foreach="doc.label_qty" t-as="i">
+        <t t-foreach="doc.label_qty" t-as="i">
+            <t t-call="web.basic_layout">
                 <div class="page text-justify">
                     <div class="text-center">
                         <div style="font-size:0.7em;text-align:center;">
