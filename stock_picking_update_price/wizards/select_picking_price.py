@@ -44,7 +44,7 @@ class SelectPickingPrice(models.Model):
         data = [(6, 0, [])]
         product_pricelist_ids = self.env['product.pricelist'].search([('active', '=', True)])
         for move_line in self.picking_id.move_line_ids:
-            # data.append((0, False, self.get_list_price(move_line)))
+            data.append((0, False, self.get_list_price(move_line)))
             for product_pricelist in product_pricelist_ids:
                 pricelist_item_ids = move_line.product_id.pricelist_item_ids.search(
                     [('product_tmpl_id', '=', move_line.product_id.product_tmpl_id.id),
