@@ -2,8 +2,8 @@
 <odoo>
     <template id="report_label_barcode">
         <t t-call="web.basic_layout">
-            <div class="page text-justify">
-                <t t-foreach="doc.label_qty" t-as="i">
+            <t t-foreach="doc.label_qty" t-as="i">
+                <div class="page text-justify">
                     <div class="text-center">
                         <div style="font-size:0.7em;text-align:center;">
                             <span t-field="product.name"/>
@@ -34,8 +34,8 @@
                             <span t-field="product.list_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: product.currency_id}"/>
                         </div>
                     </div>
-                </t>
-            </div>
+                </div>
+            </t>
         </t>
     </template>
     <template id="label_barcode_report">
