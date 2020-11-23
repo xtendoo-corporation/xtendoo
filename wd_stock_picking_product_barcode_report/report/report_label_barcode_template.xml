@@ -4,23 +4,34 @@
         <t t-call="web.basic_layout">
             <div class="page text-justify">
                 <t t-foreach="doc.label_qty" t-as="i">
-                    <div class="page">
-                        <div style="width:100%;">
-                            <div style="font-size:0.7em;text-align:center;">
-                                <span t-field="product.name"/>
-                            </div>
-                            <div class="text-center align-middle">
+                    <div class="text-center">
+                        <div style="font-size:0.7em;text-align:center;">
+                            <span t-field="product.name"/>
+                        </div>
+                        <div class="text-center align-middle">
                             <t t-if="product.barcode">
-                                    <img alt="Barcode" t-if="len(product.barcode) == 13" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN13', quote_plus(product.barcode or ''), 600, 150)" style="width:100%;height::4rem;"/>
-                                    <img alt="Barcode" t-elif="len(product.barcode) == 8" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN8', quote_plus(product.barcode or ''), 600, 150)" style="width:100%;height::4rem;"/>
-                                    <img alt="Barcode" t-else="" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(product.barcode or ''), 600, 150)" style="width:100%;height::4rem;"/>
-                                    <span style="font-size:0.7em;" t-field="product.barcode"/>
-                                </t>
-                                <t t-else=""><span class="text-muted">No barcode available</span></t>
-                            </div>
-                            <div style="text-align:center;font-size:0.8em;">
-                                <span t-field="product.list_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: product.currency_id}"/>
-                            </div>
+                                <img
+                                    t-if="len(doc.product_id.barcode) == 13"
+                                    t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN13', doc.product_id.barcode, 600, 100)"
+                                    style="width:100%;height:35px"
+                                    alt="Barcode"
+                                />
+                                <img
+                                    t-elif="len(doc.product_id.barcode) == 8"
+                                    t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN8', doc.product_id.barcode, 600, 100)"
+                                    style="width:100%;height:35px"
+                                    alt="Barcode"
+                                />
+                                <img
+                                    t-else=""
+                                    t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', doc.product_id.barcode, 600, 100)"
+                                    style="width:100%;height:35px"
+                                    alt="Barcode"
+                                />
+                            </t>
+                        </div>
+                        <div style="text-align:center;font-size:0.8em;">
+                            <span t-field="product.list_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: product.currency_id}"/>
                         </div>
                     </div>
                 </t>
@@ -31,7 +42,7 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-if="doc.label_qty > 0">
-                    <t t-call="wd_stock_picking_product_barcode_report.report_simple_label">
+                    <t t-call="wd_stock_picking_product_barcode_report.report_label_barcode">
                             <t t-set="product" t-value="doc.product_id"/>
                         </t>
                 </t>
