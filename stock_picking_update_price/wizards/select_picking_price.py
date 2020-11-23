@@ -39,20 +39,6 @@ class SelectPickingPrice(models.Model):
             result['picking_id'] = self._context.get('default_picking_id')
         return result
 
-    # @api.onchange('picking_id')
-    # def _onchange_picking_id(self):
-    #     data = [(6, 0, [])]
-    #     product_pricelist_ids = self.env['product.pricelist'].search([('active', '=', True)])
-    #     for move_line in self.picking_id.move_line_ids:
-    #         data.append((0, False, self.get_list_price(move_line)))
-    #         for product_pricelist in product_pricelist_ids:
-    #             pricelist_item_ids = move_line.product_id.pricelist_item_ids.search(
-    #                 [('product_tmpl_id', '=', move_line.product_id.product_tmpl_id.id),
-    #                  ('pricelist_id', '=', product_pricelist.id)])
-    #             for pricelist_item in pricelist_item_ids:
-    #                 data.append((0, False, self.get_others_price(move_line, pricelist_item, product_pricelist)))
-    #     self.price_line_ids = data
-
     @api.onchange('picking_id')
     def _onchange_picking_id(self):
         data = [(6, 0, [])]
@@ -60,9 +46,23 @@ class SelectPickingPrice(models.Model):
         for move_line in self.picking_id.move_line_ids:
             data.append((0, False, self.get_list_price(move_line)))
             for product_pricelist in product_pricelist_ids:
-                for pricelist_item in move_line.product_id.pricelist_item_ids:
+                pricelist_item_ids = move_line.product_id.pricelist_item_ids.search(
+                    [('product_tmpl_id', '=', move_line.product_id.product_tmpl_id.id),
+                     ('pricelist_id', '=', product_pricelist.id)])
+                for pricelist_item in pricelist_item_ids:
                     data.append((0, False, self.get_others_price(move_line, pricelist_item, product_pricelist)))
         self.price_line_ids = data
+
+    # @api.onchange('picking_id')
+    # def _onchange_picking_id(self):
+    #     data = [(6, 0, [])]
+    #     product_pricelist_ids = self.env['product.pricelist'].search([('active', '=', True)])
+    #     for move_line in self.picking_id.move_line_ids:
+    #         data.append((0, False, self.get_list_price(move_line)))
+    #         for product_pricelist in product_pricelist_ids:
+    #             for pricelist_item in move_line.product_id.pricelist_item_ids:
+    #                 data.append((0, False, self.get_others_price(move_line, pricelist_item, product_pricelist)))
+    #     self.price_line_ids = data
 
     @staticmethod
     def get_list_price(move_line):
