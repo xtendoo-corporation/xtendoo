@@ -1,215 +1,19 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-#	* account_invoice_change_price
+#	* stock_picking_update_price
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 12.0-20190926\n"
+"Project-Id-Version: Odoo Server 12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-16 09:56+0000\n"
-"PO-Revision-Date: 2019-10-16 09:56+0000\n"
+"POT-Creation-Date: 2020-11-25 11:06+0000\n"
+"PO-Revision-Date: 2020-11-25 11:06+0000\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
-
-#. module: account_invoice_change_price
-#: model_terms:ir.ui.view,arch_db:account_invoice_change_price.select_sale_price_form
-msgid "Cancel"
-msgstr "Cancelar"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__cost_price
-msgid "Cost Price"
-msgstr "Precio de coste"
-
-#. module: account_invoice_change_price
-#: model_terms:ir.ui.view,arch_db:account_invoice_change_price.select_sale_price_form
-msgid "Costs lines"
-msgstr "Líneas de costes"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__create_uid
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__create_uid
-msgid "Created by"
-msgstr "Creado por"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__create_date
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__create_date
-msgid "Created on"
-msgstr "Creado el"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__current_cost_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_stock_move__current_cost_price
-msgid "Current Cost"
-msgstr "Coste actual"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__display_name
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__display_name
-msgid "Display Name"
-msgstr "Nombre mostrado"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__id
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__id
-msgid "ID"
-msgstr "identificador"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,help:account_invoice_change_price.field_select_sale_price_line__selected
-msgid "Indicate this line is coming to change"
-msgstr "Indica que esta línea va a ser cambiada"
-
-#. module: account_invoice_change_price
-#: model:ir.model,name:account_invoice_change_price.model_account_invoice
-msgid "Invoice"
-msgstr "Factura"
-
-#. module: account_invoice_change_price
-#: model:ir.model,name:account_invoice_change_price.model_account_invoice_line
-msgid "Invoice Line"
-msgstr "Linea de Factura"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_account_invoice__invoice_price_line_ids
-msgid "Invoice Lines"
-msgstr "Líneas de factura"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price____last_update
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line____last_update
-msgid "Last Modified on"
-msgstr "Última modificación en"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__write_uid
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__write_uid
-msgid "Last Updated by"
-msgstr "Última actualización por"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__write_date
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__write_date
-msgid "Last Updated on"
-msgstr "Última actualización el"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_account_invoice_line__price_old
-msgid "Old Price"
-msgstr "Antiguo precio"
-
-#. module: account_invoice_change_price
-#: code:addons/account_invoice_change_price/models/stock_move.py:43
-#, python-format
-msgid "Picking Prices"
-msgstr "Precio de albarán"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__previous_cost_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_stock_move__previous_cost_price
-msgid "Previous Cost"
-msgstr "Coste previo"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__previous_purchase_date
-msgid "Previous Purchase Date"
-msgstr "Fecha de compra anterior"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__previous_purchase_price
-msgid "Previous Purchase Price"
-msgstr "Precio de compra anterior"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__price_line_ids
-msgid "Price Line"
-msgstr "Linea de precios"
-
-#. module: account_invoice_change_price
-#: model_terms:ir.ui.view,arch_db:account_invoice_change_price.view_picking_form_inherit
-msgid "Prices"
-msgstr "Precios"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__product_id
-msgid "Product"
-msgstr "Producto"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__purchase_price
-msgid "Purchase Price"
-msgstr "Precio de compra"
-
-#. module: stock_picking_update_price
-#: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__percent_sale_category
-msgid "Sale Percent %"
-msgstr "Pocentaje de venta %"
-
-#. module: account_invoice_change_price
-#: model_terms:ir.ui.view,arch_db:account_invoice_change_price.view_invoice_supplier_purchase_form
-msgid "Sales Prices"
-msgstr "Precio de ventas"
-
-#. module: account_invoice_change_price
-#: model_terms:ir.ui.view,arch_db:account_invoice_change_price.select_sale_price_form
-msgid "Select Sale Price"
-msgstr "Selección de precio de venta"
-
-#. module: account_invoice_change_price
-#: model:ir.model,name:account_invoice_change_price.model_select_sale_price_line
-msgid "Select Sale Price Line Wizard"
-msgstr "Assistente para la selección de línea de precio de venta"
-
-#. module: account_invoice_change_price
-#: model:ir.model,name:account_invoice_change_price.model_select_sale_price
-msgid "Select Sale Price Wizard"
-msgstr "Assistente para la selección de precio de venta"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__selected
-msgid "Selected"
-msgstr "Seleccionado"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price_line__standard_price
-msgid "Standard Price"
-msgstr "Precio estandar"
-
-#. module: account_invoice_change_price
-#: model:ir.model,name:account_invoice_change_price.model_stock_move
-msgid "Stock Move"
-msgstr "Movimiento de existencias"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_select_sale_price__picking_id
-msgid "Stock Picking"
-msgstr "Albarán"
-
-#. module: account_invoice_change_price
-#: model:ir.model.fields,field_description:account_invoice_change_price.field_stock_picking__move_ids_cost_prices
-msgid "Stock moves cost prices"
-msgstr "Linea de selección de precios"
-
-#. module: account_invoice_change_price
-#: model_terms:ir.ui.view,arch_db:account_invoice_change_price.select_sale_price_form
-msgid "Submit"
-msgstr "Enviar"
-
-#. module: account_invoice_change_price
-#: code:addons/account_invoice_change_price/models/stock_move.py:38
-#, python-format
-msgid "The selected picking does not have validated yet. Please validate the picking and retry "
-msgstr "La albarán seleccionado aún no se ha validado. Por favor, valide el albarán y vuelva a intentar"
-
-#. module: account_invoice_change_price
-#: model:ir.model,name:account_invoice_change_price.model_stock_picking
-msgid "Transfer"
-msgstr "Albarán"
 
 #. module: stock_picking_update_price
 #: model_terms:ir.ui.view,arch_db:stock_picking_update_price.select_picking_price_form
@@ -236,7 +40,7 @@ msgstr "Creado por"
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__create_date
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__create_date
 msgid "Created on"
-msgstr "Creado en"
+msgstr "Creado el"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__date
@@ -247,13 +51,13 @@ msgstr "Fecha"
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__display_name
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__display_name
 msgid "Display Name"
-msgstr "Nombre"
+msgstr "Nombre mostrado"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__id
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__id
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,help:stock_picking_update_price.field_select_picking_price_line__selected
@@ -264,29 +68,34 @@ msgstr "Indica que esta línea viene a cambiar"
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price____last_update
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line____last_update
 msgid "Last Modified on"
-msgstr ""
+msgstr "Última modificación en"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__write_uid
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__write_uid
 msgid "Last Updated by"
-msgstr "Última modificación"
+msgstr "Última actualización por"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__write_date
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__write_date
 msgid "Last Updated on"
-msgstr "Última actualización"
+msgstr "Última actualización el"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__list_price
 msgid "List Price"
-msgstr "Precio"
+msgstr "Precio Tarifa"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__margin
 msgid "Margin"
 msgstr "Margen"
+
+#. module: stock_picking_update_price
+#: model:ir.model.fields,help:stock_picking_update_price.field_select_picking_price__name
+msgid "Name Select Picking Price"
+msgstr ""
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__move_id
@@ -301,12 +110,12 @@ msgstr "Margen %"
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__picking_id
 msgid "Picking"
-msgstr ""
+msgstr "Albarán"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_stock_picking__picking_price_ids
 msgid "Picking Price"
-msgstr ""
+msgstr "Precio Venta"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_stock_picking__picking_price_count
@@ -314,10 +123,10 @@ msgid "Picking Price Count"
 msgstr ""
 
 #. module: stock_picking_update_price
-#: code:addons/stock_picking_update_price/models/stock_move.py:66
+#: code:addons/stock_picking_update_price/models/stock_move.py:65
 #, python-format
 msgid "Picking Prices"
-msgstr ""
+msgstr "Precio Albarán"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_stock_move__previous_cost_price
@@ -337,7 +146,7 @@ msgstr "Tarifa"
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__pricelist_id
 msgid "Pricelist"
-msgstr "Precio"
+msgstr "Tarifa"
 
 #. module: stock_picking_update_price
 #: model_terms:ir.ui.view,arch_db:stock_picking_update_price.view_picking_form_inherit
@@ -362,14 +171,15 @@ msgstr "Precio de compra"
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__percent_sale_category
 msgid "Sale Percent %"
-msgstr "Porcentaje de ventas %"
+msgstr "Venta %"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__select_picking_id
 msgid "Select Picking"
-msgstr ""
+msgstr "Seleccionar Albarán"
 
 #. module: stock_picking_update_price
+#: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__name
 #: model_terms:ir.ui.view,arch_db:stock_picking_update_price.select_picking_price_form
 msgid "Select Picking Price"
 msgstr ""
@@ -392,7 +202,7 @@ msgstr "Seleccionado"
 #. module: stock_picking_update_price
 #: model:ir.model,name:stock_picking_update_price.model_stock_move
 msgid "Stock Move"
-msgstr "Albarán"
+msgstr "Movimiento de existencias"
 
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price__picking_id
@@ -407,7 +217,12 @@ msgstr ""
 #. module: stock_picking_update_price
 #: model_terms:ir.ui.view,arch_db:stock_picking_update_price.select_picking_price_form
 msgid "Submit"
-msgstr "Aceptar"
+msgstr "Enviar"
+
+#. module: stock_picking_update_price
+#: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__suggested_price
+msgid "Suggested Price"
+msgstr "Precio Sugerido"
 
 #. module: stock_picking_update_price
 #: code:addons/stock_picking_update_price/models/stock_move.py:61
@@ -418,6 +233,5 @@ msgstr ""
 #. module: stock_picking_update_price
 #: model:ir.model,name:stock_picking_update_price.model_stock_picking
 msgid "Transfer"
-msgstr "Transferencia"
-
+msgstr "Albarán"
 

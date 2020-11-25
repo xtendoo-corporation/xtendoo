@@ -20,17 +20,7 @@ class CategoryPricelistItem(models.Model):
         string='Pricelist',
         required=True
     )
-    percentaje = fields.Float(
-        string='Percentaje',
+    percentage = fields.Float(
+        string='Percentage',
         digits=0
     )
-
-    def get_sale_percent(self, product_id, pricelist_id):
-        percents = self.search_read([['categ_id', '=', product_id.categ_id.id],
-                                     ['pricelist_id', '=', pricelist_id.id]],
-                                     {'percentaje'}, offset=0, limit=1, order=None)
-
-        for percent in percents:
-            return percent.get('percentaje')
-
-        return 0.00
