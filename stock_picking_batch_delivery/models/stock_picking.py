@@ -7,30 +7,61 @@ import logging
 
 
 class StockPickingBatch(models.Model):
-    _inherit = ['stock.picking']
+    _inherit = ["stock.picking"]
 
     def get_invoice_id(self):
-      for picking in self:
-        if picking.picking_type_id.id == 8:
-            if picking.origin != '':
-                invoice_id = self.env['account.invoice'].search([('origin', '=', picking.origin)], limit=1)
-                picking.invoice_id = invoice_id
+        for picking in self:
+            if picking.picking_type_id.id == 8:
+                if picking.origin != "":
+                    invoice_id = self.env["account.invoice"].search(
+                        [("origin", "=", picking.origin)], limit=1
+                    )
+                    picking.invoice_id = invoice_id
 
+    def set_is_back_order(self):
+        for picking in self:
+            if picking.origin is not False:
+                is_back_order = picking.origin.startswith("Retorno")
+                if is_back_order is True:
+                    picking.is_backorder = True
+                else:
+                    picking.is_backorder = False
+            else:
+                picking.is_backorder = False
 
-    partner_phone = fields.Char('TLF', related='partner_id.phone', readonly=True)
+    def _get_default_is_backorder(self):
+        if self.origin is not False:
+            is_back_order = self.origin.startswith("Retorno")
+            if is_back_order is True:
+                return True
+            else:
+                return False
+        else:
+            return False
 
-    total_amount = fields.Float(compute='compute_total_amount', string='Amount')
+    partner_phone = fields.Char("TLF", related="partner_id.phone", readonly=True)
 
-    payment_term = fields.Char(compute='compute_total_amount', string='Payment Term')
+    total_amount = fields.Float(compute="compute_total_amount", string="Amount")
 
-    lumps_number= fields.Integer(string='Lumps', store=True)
+    payment_term = fields.Char(compute="compute_total_amount", string="Payment Term")
 
-    palets_number = fields.Integer(string='Pallets', store=True)
+    lumps_number = fields.Integer(string="Lumps", store=True)
 
-    invoice_id=fields.Many2one('account.invoice', compute='get_invoice_id', string='Invoice')
+    palets_number = fields.Integer(string="Pallets", store=True)
+
+    invoice_id = fields.Many2one(
+        "account.invoice", compute="get_invoice_id", string="Invoice"
+    )
+
+    is_backorder = fields.Boolean(
+        compute="set_is_back_order",
+        string="is BackOrder",
+        default=lambda self: self._get_default_is_backorder(),
+        store=True,
+    )
 
     def compute_total_amount(self):
         for line in self:
-            if line.sale_id != '':
-                line.total_amount+=line.sale_id.amount_total
-                line.payment_term=line.sale_id.payment_term_id.name
+            if line.sale_id != "":
+                line.total_amount += line.sale_id.amount_total
+                line.payment_term = line.sale_id.payment_term_id.name
