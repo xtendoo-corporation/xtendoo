@@ -25,6 +25,7 @@
                             <field name="percent_margin" readonly="1" force_save="1"/>
                             <field name="percent_sale_category" readonly="1" force_save="1"/>
                             <field name="list_price" readonly="1" force_save="1"/>
+                            <field name="reference_price" readonly="1" force_save="1"/>
                             <field name="suggested_price"/>
                         </tree>
                     </field>

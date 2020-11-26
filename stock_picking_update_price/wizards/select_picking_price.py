@@ -104,7 +104,6 @@ class SelectPickingPrice(models.Model):
                 if product_pricelist:
                     product_pricelist.fixed_price = line.suggested_price
 
-
 class SelectPickingPriceLine(models.Model):
     _name = 'select.picking.price.line'
     _description = 'Select Picking Price Line Wizard'
@@ -133,40 +132,51 @@ class SelectPickingPriceLine(models.Model):
         'product.pricelist',
     )
     list_price = fields.Float(
-        'List Price',
+        'Precio Tarifa',
         digits=dp.get_precision('Product Price'),
     )
     suggested_price = fields.Float(
-        'Suggested Price',
+        'Precio Sugerido',
         digits=dp.get_precision('Product Price'),
     )
     product_text = fields.Text(
-        'Product Text',
+        'Producto',
     )
     pricelist_text = fields.Text(
         'Price List Text',
     )
     cost_price = fields.Float(
-        'Cost Price',
+        'Costo Medio',
     )
     purchase_price = fields.Float(
-        'Purchase Price',
+        'Precio Compra',
+    )
+    percent_sale_category = fields.Float(
+        'Venta %',
     )
     margin = fields.Float(
-        'Margin',
+        'Margen',
         compute='_compute_margin_price',
     )
     percent_margin = fields.Float(
-        'Percent Margin %',
+        'Margen %',
         compute='_compute_percent_margin',
     )
-    percent_sale_category = fields.Float(
-        'Sale Percent %',
+    reference_price = fields.Float(
+        'Precio Referencia',
+        compute='_compute_reference_price',
     )
 
     @api.onchange('suggested_price')
     def _onchange_standard_price(self):
         self.selected = True
+
+    def _compute_reference_price(self):
+        for line in self:
+            if line.percent_sale_category > 0.00:
+                line.reference_price = line.cost_price + ( line.cost_price * line.percent_sale_category / 100)
+            else:
+                line.reference_price = line.cost_price
 
     @api.depends('suggested_price')
     def _compute_margin_price(self):

@@ -23,7 +23,7 @@ msgstr "Cancelar"
 #. module: stock_picking_update_price
 #: model:ir.model.fields,field_description:stock_picking_update_price.field_select_picking_price_line__cost_price
 msgid "Cost Price"
-msgstr "Coste"
+msgstr "Costo Medio"
 
 #. module: stock_picking_update_price
 #: model_terms:ir.ui.view,arch_db:stock_picking_update_price.select_picking_price_form
