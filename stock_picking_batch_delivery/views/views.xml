@@ -17,7 +17,7 @@
 
                  <xpath expr="//field[@name='picking_ids']" position="replace">
 
-                      <field name="picking_ids" widget="many2many" domain="[('state', 'not in', ['cancel']),('sale_id','!=',False),('batch_id','=',False),('is_backorder','=','False')]" options="{'not_delete': True}">
+                      <field name="picking_ids" widget="many2many" domain="[('state', 'not in', ['cancel']),('sale_id','!=',False),('batch_id','=',False),('is_backorder','!=',True)]" options="{'not_delete': True}">
                         <tree editable="bottom">
                             <field name="name" readonly="1"/>
                             <field name="partner_id" readonly="1"/>

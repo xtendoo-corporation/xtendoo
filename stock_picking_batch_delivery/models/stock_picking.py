@@ -18,16 +18,26 @@ class StockPickingBatch(models.Model):
                     )
                     picking.invoice_id = invoice_id
 
-    def get_is_back_order(self):
+    def set_is_back_order(self):
         for picking in self:
             if picking.origin is not False:
                 is_back_order = picking.origin.startswith("Retorno")
                 if is_back_order is True:
-                    picking.is_backorder = picking.origin.startswith("Retorno")
+                    picking.is_backorder = True
                 else:
-                    picking.is_backorder = "False"
+                    picking.is_backorder = False
             else:
-                picking.is_backorder = "False"
+                picking.is_backorder = False
+
+    def _get_default_is_backorder(self):
+        if self.origin is not False:
+            is_back_order = self.origin.startswith("Retorno")
+            if is_back_order is True:
+                return True
+            else:
+                return False
+        else:
+            return False
 
     partner_phone = fields.Char("TLF", related="partner_id.phone", readonly=True)
 
@@ -43,7 +53,12 @@ class StockPickingBatch(models.Model):
         "account.invoice", compute="get_invoice_id", string="Invoice"
     )
 
-    is_backorder = fields.Char(compute="get_is_back_order", string="is BackOrder")
+    is_backorder = fields.Boolean(
+        compute="set_is_back_order",
+        string="is BackOrder",
+        default=lambda self: self._get_default_is_backorder(),
+        store=True,
+    )
 
     def compute_total_amount(self):
         for line in self:
