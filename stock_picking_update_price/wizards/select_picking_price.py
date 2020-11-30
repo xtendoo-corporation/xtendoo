@@ -109,7 +109,7 @@ class SelectPickingPriceLine(models.Model):
     _description = 'Select Picking Price Line Wizard'
 
     selected = fields.Boolean(
-        string='Selected',
+        string='Seleccionado',
         default=True,
         help='Indicate this line is coming to change'
     )
@@ -122,11 +122,11 @@ class SelectPickingPriceLine(models.Model):
     )
     product_id = fields.Many2one(
         'product.product',
-        string='Product',
+        string='Producto',
     )
     move_id = fields.Many2one(
         'stock.move',
-        string='Operations',
+        string='Operación',
     )
     pricelist_id = fields.Many2one(
         'product.pricelist',
@@ -140,26 +140,26 @@ class SelectPickingPriceLine(models.Model):
         digits=dp.get_precision('Product Price'),
     )
     product_text = fields.Text(
-        'Producto',
+        'Nombre Producto',
     )
     pricelist_text = fields.Text(
-        'Price List Text',
+        'Tarífa',
     )
     cost_price = fields.Float(
-        'Costo Medio',
+        'Precio Medio Costo',
     )
     purchase_price = fields.Float(
         'Precio Compra',
     )
     percent_sale_category = fields.Float(
-        'Venta %',
+        '% Margen Familia',
     )
     margin = fields.Float(
         'Margen',
         compute='_compute_margin_price',
     )
     percent_margin = fields.Float(
-        'Margen %',
+        '% Margen Real',
         compute='_compute_percent_margin',
     )
     reference_price = fields.Float(
