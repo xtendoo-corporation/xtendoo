@@ -2,8 +2,7 @@ from odoo import api, fields, models, _
 
 
 class SaleOrderLine(models.Model):
-    _name = 'sale.order.line'
-
+    _inherit = 'sale.order.line'
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
