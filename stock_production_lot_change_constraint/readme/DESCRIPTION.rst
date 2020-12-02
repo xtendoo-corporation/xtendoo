@@ -1,6 +1,5 @@
-==========================
-Stock picking send by mail
-==========================
+======================================
+Stock Production Lot Change Constraint
+======================================
 
-This module was written to extend the functionality of stock picking and allow
-you to send the picking order by email.
+This module was written to update a constraint to allow receptions of products with the same lot.
