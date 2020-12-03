@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2020 Tecnativa - Carlos Roca -->
+
+<odoo>
+
+    <record id="sale_order_route_view_list" model="ir.ui.view">
+        <field name="name">sale.order.route.tree</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="route_id" options="{'no_create': True}" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_order_tree" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.sale.order.global.route</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="route_id" options="{'no_create': True}" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <field name="payment_term_id" position="after">
+                <field name="route_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>
