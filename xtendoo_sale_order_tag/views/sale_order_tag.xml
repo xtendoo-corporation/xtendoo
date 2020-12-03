@@ -31,6 +31,7 @@
                                    widget="boolean_button"
                                    options='{"terminology": "archive"}'/>
                         </button>
+                        <field name="color" widget="color" />
                     </div>
                     <div class="oe_title">
                         <label for="name" class="oe_edit_only" string="Name"/>

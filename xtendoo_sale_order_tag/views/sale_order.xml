@@ -11,6 +11,7 @@
         <field name="arch" type="xml">
             <field name="partner_id" position="before">
                 <field name="so_tag_ids"
+                       options="{'color_field': 'color'}"
                        widget="many2many_tags"/>
             </field>
         </field>
@@ -26,7 +27,7 @@
                 <field name="so_tag_ids"
                        placeholder="tag..."
                        widget="many2many_tags"
-                       options="{'color_field': 'color', 'no_create': True, 'no_create_edit': True}"
+                       options="{'color_field': 'color'}"
                        domain="['|',('team_ids', 'in', team_id), ('team_ids', '=', False)]"/>
             </field>
         </field>
