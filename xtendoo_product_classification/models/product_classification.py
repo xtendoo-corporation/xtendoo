@@ -24,7 +24,7 @@ class ProductClassification(models.Model):
     product_ids = fields.One2many(
         comodel_name="product.template",
         inverse_name="product_classification_id",
-        string="State Products",
+        string="Classification Products",
     )
     products_count = fields.Integer(
         string="Number of products",

@@ -98,6 +98,18 @@
             </field>
         </field>
     </record>
+
+    <record id="product_normal_form_view" model="ir.ui.view">
+        <field name="name">product.product.form.classification</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view" />
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="product_classification_id"/>
+            </field>
+        </field>
+    </record>
+
     <record model="ir.actions.act_window" id="action_product_classification">
         <field name="name">Classification</field>
         <field name="res_model">product.classification</field>
