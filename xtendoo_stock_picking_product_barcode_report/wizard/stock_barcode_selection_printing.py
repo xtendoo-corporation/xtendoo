@@ -76,7 +76,7 @@ class WizStockBarcodeSelectionPrinting(models.TransientModel):
             return {
                 "product_id": move_line.product_id.id,
                 "quantity": move_line.qty_done,
-                "label_qty": 1,
+                "label_qty": move_line.qty_done,
                 "move_line_id": move_line.id,
                 "uom_id": move_line.product_uom_id.id,
                 "lot_id": move_line.lot_id,
