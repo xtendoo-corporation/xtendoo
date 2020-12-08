@@ -6,7 +6,7 @@
             <div class="page text-justify">
                 <t t-foreach="doc.label_qty" t-as="i">
                     <div class="text-center">
-                        <t t-set="qr_code" t-value="doc.product_id.barcode + ',' + doc.lot_id.name"/>
+                        <t t-set="qr_code" t-value="doc.product_id.barcode + ';' + doc.lot_id.name"/>
                         <img
                             t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', qr_code, 600, 100)"
                             style="width:140px;height:50px;"
