@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models, tools, _
@@ -29,23 +28,14 @@ class LandedCost(models.Model):
 
         for move in self.mapped('picking_ids').mapped('move_lines'):
             lines_number = lines_number + 1
-
-        print("lines number******************", lines_number)
-        print("self.amount_total*************", self.amount_total)
-
         landed_cost_per_line = self.amount_total / lines_number
-
-        print("landed_cost_per_line**********", landed_cost_per_line)
-
         for move in self.mapped('picking_ids').mapped('move_lines'):
             # Only allow for real time valuated products with 'average' or 'fifo' cost
             if move.product_id.valuation != 'real_time' or move.product_id.cost_method not in ('fifo', 'average'):
                 continue
-
             # Only allow positive
             if move.product_qty <= 0:
                move.product_qty = 1
-
             vals = {
                 'product_id': move.product_id.id,
                 'move_id': move.id,
@@ -55,9 +45,6 @@ class LandedCost(models.Model):
                 'volume': move.product_id.volume * move.product_qty,
                 'cost_variation': landed_cost_per_line / move.product_qty,
             }
-
-            print("vals**********",vals)
-
             lines.append(vals)
 
         if not lines and self.mapped('picking_ids'):

@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
-import logging
 
 from odoo import api, fields, models, _
 
@@ -10,26 +7,35 @@ class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
     landing_ids = fields.Many2many(
-        'stock.landed.cost', string='Landed',
-        copy=False, states={'done': [('readonly', True)]})
+        'stock.landed.cost',
+        string='Landed',
+        copy=False,
+        states={'done': [('readonly', True)]}
+    )
 
     @api.multi
     def action_open_landed_cost(self):
         self.ensure_one()
-        view = self.env.ref('stock_landed_costs.view_stock_landed_cost_form')
         action = {'name': _('Landed Costs'),
                   'view_type': 'form',
                   'view_mode': 'tree',
                   'res_model': 'stock.landed.cost',
-                  'view_id': view.id,
-                  'views': [(view.id, 'form')],
                   'type': 'ir.actions.act_window',
                   'context': {'default_picking_id': self.id}}
-        if self.landing_ids:
-            landing_ids = set([line.id for line in self.landing_ids])
-            if len(landing_ids) == 1:
-               action['res_id'] = list(landing_ids)[0]
-            else:
-               action['domain'] = "[('id', 'in', %s)]" % list(landing_ids)
+        landings = self.mapped('landing_ids')
+        if len(landings) > 1:
+            action['domain'] = [('id', 'in', landings.ids)]
+            action['views'] = [
+                (self.env.ref('stock_landed_costs.view_stock_landed_cost_tree').id, 'tree'),
+                (self.env.ref('stock_landed_costs.view_stock_landed_cost_form').id, 'form'),
+            ]
+            return action
+        if len(landings) == 1:
+            action['views'] = [
+                (self.env.ref('stock_landed_costs.view_stock_landed_cost_form').id, 'form')]
+            action['res_id'] = landings.id
+            return action
+        action['views'] = [
+            (self.env.ref('stock_landed_costs.view_stock_landed_cost_form').id, 'form')]
         return action
 
