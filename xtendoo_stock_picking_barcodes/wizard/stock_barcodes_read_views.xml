@@ -14,46 +14,21 @@
                     <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>
                     <field name="manual_entry" invisible="1"/>
 
-                    <header>
-                        <button string="Validate"
-                                name="action_validate_picking"
-                                class="btn-primary"
-                                type="object"
-                                default_focus="1"
-                                confirm="Are you sure to validate the picking ?"
-                                context="{'picking_id': picking_id}"/>
-                       <button string="Manual Entry On"
+                    <group col="1">
+                        <b>
+                            <field name="picking_partner" nolabel="1"/>
+                        </b>
+                        <field name="picking_id" nolabel="1"/>
+                        <field name="picking_date" nolabel="1"/>
+                        <button string="Manual Entry On"
                                 name="action_set_manual_entry"
                                 attrs="{'invisible':[('manual_entry', '=', True)]}"
                                 type="object"/>
-                       <button string="Manual Entry Off"
+                        <button string="Manual Entry Off"
                                 name="action_quit_manual_entry"
                                 attrs="{'invisible':[('manual_entry', '=', False)]}"
                                 type="object"/>
-                    </header>
-
-<!--                    <group>-->
-<!--                        <button string="Validate"-->
-<!--                                name="action_validate_picking"-->
-<!--                                class="btn-primary"-->
-<!--                                type="object"-->
-<!--                                default_focus="1"-->
-<!--                                confirm="Are you sure to validate the picking ?"-->
-<!--                                context="{'picking_id': picking_id}"/>-->
-<!--                    </group>-->
-
-                    <group>
-                        <b><field name="picking_partner" nolabel="1"/></b>
-                        <field name="picking_id" nolabel="1"/>
-                        <field name="picking_date" nolabel="1"/>
                     </group>
-
-<!--                    <div>-->
-<!--                        <label for="manual_entry">-->
-<!--                            Manual entry data-->
-<!--                        </label>-->
-<!--                        <field name="manual_entry" tabindex="-1"/>-->
-<!--                    </div>-->
 
                     <group>
                         <field name="product_id" options="{'no_create': True}"
@@ -78,7 +53,6 @@
                                attrs="{'readonly': [('manual_entry', '=', False)], 'required': [('manual_entry', '=', True)], 'invisible': [('manual_entry', '=', False)]}"
                                force_save="1"/>
                     </group>
-
                     <group>
                         <button name="action_manual_entry"
                                 type="object"
@@ -104,10 +78,6 @@
                                 <t t-name="kanban-box">
                                     <div
                                         t-attf-class="oe_kanban_card #{record.product_uom_qty.raw_value > record.quantity_done.raw_value ? 'oe_kanban_color_white' : 'oe_kanban_color_10'}">
-                                        <!--
-                                        <div t-attf-class="#{record.stat_my.raw_value ? 'oe_kanban_color_5' : 'oe_kanban_color_white'}">
-                                        <div t-attf-class="oe_kanban_card oe_kanban_color_2">
-                                        -->
                                         <div class="row">
                                             <div class="col-12">
                                                 <strong>
@@ -131,6 +101,16 @@
                             </templates>
                         </kanban>
                     </field>
+
+                    <footer>
+                        <button string="Validate"
+                                name="action_validate_picking"
+                                class="btn-primary"
+                                type="object"
+                                default_focus="1"
+                                confirm="Are you sure to validate the picking ?"
+                                context="{'picking_id': picking_id}"/>
+                    </footer>
 
                 </sheet>
             </form>

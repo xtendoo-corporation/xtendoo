@@ -10,31 +10,30 @@ class WizStockBarcodesRead(models.AbstractModel):
         """ Only has been implemented AI (01, 02, 10, 37), so is possible that
         scanner reads a barcode ok but this one is not precessed.
         """
+
+        barcode="790069430305;LOT0003"
+
         self.product_qty = 1
-        try:
-            index = barcode.find(';')
-            if index == -1:
-                return super().process_barcode(barcode)
-            product_barcode = barcode[:index]
-            lot_barcode = barcode[index+1:]
-        except Exception:
-            print("Salida por Exception::::::::::::::", barcode)
+        index = barcode.find(';')
+        if index == -1:
+            return super().process_barcode(barcode)
+        product_barcode = barcode[:index]
+        lot_barcode = barcode[index+1:]
 
-        processed = False
+        if not product_barcode or not lot_barcode:
+            return False
 
-        if product_barcode:
-            product = self.env['product.product'].search(
-                [('barcode', '=', product_barcode)]
-            )
-            if not product:
-                self.env.user.notify_danger(
-                    message='Barcode for product not found')
-                return False
-            else:
-                processed = True
-                self.action_product_scaned_post(product)
+        product = self.env['product.product'].search(
+            [('barcode', '=', product_barcode)]
+        )
+        if product:
+            self.action_product_scaned_post(product)
+        else:
+            self.env.user.notify_danger(
+                message='Barcode for product not found')
+            return False
 
-        if lot_barcode and product.tracking != 'none':
+        if product.tracking != 'none':
             lot = self.env['stock.production.lot'].search([
                 ('product_id', '=', product.id),
                 ('name', '=', lot_barcode),
@@ -43,9 +42,18 @@ class WizStockBarcodesRead(models.AbstractModel):
                 self.env.user.notify_danger(
                     message='Lot for product not found')
                 return False
+            if lot.locked:
+                self.env.user.notify_danger(
+                    message='Lot is locked')
+                return False
             self.lot_id = lot
-            processed = True
-        if processed:
-            self.action_done()
-            return True
-        return super().process_barcode(barcode)
+
+        lines = self.line_picking_ids.filtered(
+            lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
+        )
+        if not lines:
+            self.env.user.notify_danger(
+                message="There are no lines to assign that quantity")
+            return False
+
+        self.action_done()

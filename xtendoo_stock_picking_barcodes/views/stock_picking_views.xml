@@ -6,10 +6,6 @@
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
 
-<!--            <field name="partner_id" position="after">-->
-<!--                <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>-->
-<!--            </field>-->
-
             <div name="button_box" position="inside">
                 <button name="action_barcode_scan"
                     class="oe_stat_button"
@@ -21,51 +17,6 @@
                     </div>
                 </button>
             </div>
-
-<!--            <xpath expr="//page[1]" position="before">-->
-<!--                <page string="Scan">-->
-<!--                    <field name="line_picking_ids"-->
-<!--                           options="{'no_open': True}"-->
-<!--                           nolabel="1"-->
-<!--                           mode="tree,kanban">-->
-<!--                        <tree string="Stock Moves" editable="bottom">-->
-<!--                            <field name="product_id"/>-->
-<!--                            <field name="product_uom_qty" string="Initial Demand"/>-->
-<!--                            <field name="quantity_done" string="Done"/>-->
-<!--                        </tree>-->
-<!--                        <kanban class="o_kanban_mobile">-->
-<!--                            <field name="product_id"/>-->
-<!--                            <field name="product_uom_qty"/>-->
-<!--                            <field name="quantity_done"/>-->
-<!--                            <templates>-->
-<!--                                <t t-name="kanban-box">-->
-<!--                                    <div t-attf-class="oe_kanban_card #{record.product_uom_qty.raw_value > record.quantity_done.raw_value ? 'oe_kanban_color_white' : 'oe_kanban_color_10'}">-->
-<!--                                        <div class="row">-->
-<!--                                            <div class="col-12">-->
-<!--                                                <strong>-->
-<!--                                                    <span>-->
-<!--                                                        <t t-esc="record.product_id.value"/>-->
-<!--                                                    </span>-->
-<!--                                                </strong>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                        <div class="row">-->
-<!--                                            <div class="col-12">-->
-<!--                                                <span class="pull-right text-right">-->
-<!--                                                    <t t-esc="record.quantity_done.value"/>-->
-<!--                                                     de-->
-<!--                                                    <t t-esc="record.product_uom_qty.value"/>-->
-<!--                                                </span>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </t>-->
-<!--                            </templates>-->
-<!--                        </kanban>-->
-<!--                    </field>-->
-<!--                </page>-->
-<!--            </xpath>-->
-
         </field>
     </record>
 
