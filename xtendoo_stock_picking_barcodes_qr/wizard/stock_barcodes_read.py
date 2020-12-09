@@ -10,9 +10,6 @@ class WizStockBarcodesRead(models.AbstractModel):
         """ Only has been implemented AI (01, 02, 10, 37), so is possible that
         scanner reads a barcode ok but this one is not precessed.
         """
-
-        barcode="790069430305;LOT0003"
-
         self.product_qty = 1
         index = barcode.find(';')
         if index == -1:

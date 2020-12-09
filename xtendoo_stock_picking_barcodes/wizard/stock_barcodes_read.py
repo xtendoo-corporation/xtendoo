@@ -70,10 +70,6 @@ class WizStockBarcodesRead(models.AbstractModel):
             self.product_qty = self.packaging_qty * self.packaging_id.qty
 
     def process_barcode(self, barcode):
-        barcode="02084800007201911099999"
-
-        # self._set_messagge_info('success', _('Barcode read correctly'))
-        print("barcode en parent:::::::::",barcode)
         domain = self._barcode_domain(barcode)
         product = self.env['product.product'].search(domain)
         if not product:
