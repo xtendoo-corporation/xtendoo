@@ -108,4 +108,18 @@
         </field>
     </record>
 
+    <!--buscar mas... (ventas)-->
+
+     <record model="ir.ui.view" id="product_template_tree_view_inherit">
+        <field name="name"> product.template.tree.view.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+             <xpath expr="//field[@name='standard_price']" position="attributes">
+                <attribute name="groups">xtendoo_product_hide_cost.show_cost_price</attribute>
+            </xpath>
+        </field>
+    </record>
+    <!-- Fin buscar mas... (ventas) -->
+
 </odoo>
