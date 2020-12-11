@@ -21,10 +21,12 @@
                         <field name="picking_id" nolabel="1"/>
                         <field name="picking_date" nolabel="1"/>
                         <button string="Manual Entry On"
+                                class="btn-primary"
                                 name="action_set_manual_entry"
                                 attrs="{'invisible':[('manual_entry', '=', True)]}"
                                 type="object"/>
                         <button string="Manual Entry Off"
+                                class="btn-primary"
                                 name="action_quit_manual_entry"
                                 attrs="{'invisible':[('manual_entry', '=', False)]}"
                                 type="object"/>
@@ -103,12 +105,14 @@
                     </field>
 
                     <footer>
+                        <button string="Cancel"
+                                class="btn-secondary"
+                                special="cancel" />
                         <button string="Validate"
                                 name="action_validate_picking"
                                 class="btn-primary"
                                 type="object"
                                 default_focus="1"
-                                confirm="Are you sure to validate the picking ?"
                                 context="{'picking_id': picking_id}"/>
                     </footer>
 
