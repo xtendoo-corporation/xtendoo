@@ -12,6 +12,8 @@ class ProductTemplate(models.Model):
 
     def _compute_move_waiting_product_qty(self):
         for template in self:
-            template.move_product_qty = float_round(
-                sum([p.move_product_qty for p in template.product_variant_ids]),
-                precision_rounding=template.uom_id.rounding)
+            product_qty = sum([p.move_product_qty for p in template.product_variant_ids])
+            if product_qty:
+                template.move_product_qty = float_round(product_qty, precision_rounding=template.uom_id.rounding)
+            else:
+                template.move_product_qty = 0
