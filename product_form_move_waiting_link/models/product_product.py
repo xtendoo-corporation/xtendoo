@@ -22,6 +22,8 @@ class ProductProduct(models.Model):
 
         order_lines = self.env['stock.move'].read_group(domain, ['product_id', 'product_uom_qty'], ['product_id'])
         moved_data = dict([(data['product_id'][0], data['product_uom_qty']) for data in order_lines])
+
+        self.move_product_qty = 0
         for product in self:
             if not product.id:
                 product.purchased_product_qty = 0.0

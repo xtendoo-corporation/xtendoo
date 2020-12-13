@@ -18,6 +18,7 @@ class StockPicking(models.Model):
 
     def _compute_picking_waiting_product_qty(self):
         total_quantity = 0
+        self.move_product_qty = 0
         for move_id in self.move_ids_without_package:
             pick_lines = self.env['stock.move.line'].search(
                 [('picking_id', '=', self.id),
