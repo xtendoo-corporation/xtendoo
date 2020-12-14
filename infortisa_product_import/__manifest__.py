@@ -13,7 +13,7 @@
     ],
     'data': [
         'wizard/infortisa_product_import.xml',
-        'views/product.xml',
+        'views/stock_production_lot.xml',
     ],
     'installable': True,
     'auto_install': True,
