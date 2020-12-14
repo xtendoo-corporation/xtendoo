@@ -16,8 +16,8 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: stock_picking_batch_delivery
-#: model:ir.model.fields,field_description:stock_picking_batch_delivery.field_stock_picking__pallets_number
-msgid "Pallets"
+#: model:ir.model.fields,field_description:stock_picking_batch_delivery.field_stock_picking__palets_number
+msgid "Palets"
 msgstr "Nº de Palets"
 
 #. module: stock_picking_batch_delivery

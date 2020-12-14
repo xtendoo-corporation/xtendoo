@@ -22,7 +22,7 @@
     'license': 'AGPL-3',
     'data': [
         'views/views.xml',
-        'views/report_picking_batch.xml'
+        'views/report_picking_batch.xml',
     ],
     'demo': [],
     'installable': True,
