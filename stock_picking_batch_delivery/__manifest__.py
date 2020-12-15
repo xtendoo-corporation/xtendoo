@@ -16,7 +16,8 @@
     'category': 'Extra Tools',
     'depends': [
         'stock',
-        'delivery'
+        'delivery',
+        'stock_picking_and_sale_order_pallets_and_lumps',
 
     ],
     'license': 'AGPL-3',
