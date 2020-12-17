@@ -1,6 +1,6 @@
 # Xtendoo - V 12  
-###Este repositorio contiene todos los módulos mas generales de xtendoo.  
-###Lista:  
+# Este repositorio contiene todos los módulos mas generales de xtendoo.  
+# Lista:  
 # account_invoice_margin --> Añade margen en facturas.  
 # account_triple_discount_fix --> Repara un bug de account_triple discount y depende del mismo.  
 # account_triple_discount_zoopet --> Personalización del modulo account_triple_discount para zoopet.  
