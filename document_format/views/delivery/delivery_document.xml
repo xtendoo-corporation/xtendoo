@@ -1,0 +1,353 @@
+<odoo>
+    <data>
+        <template id="document_format.report_delivery_document_xtendoo" inherit_id="stock.report_delivery_document">
+            <!-- Quitar direccion defecto odoo -->
+            <xpath expr="//t[@name='partner_header']" position="replace">
+            </xpath>
+            <!-- Fin quitar dirección defecto odoo -->
+            <xpath expr="//div[hasclass('page')]" position="replace">
+                <div style="width:50%; float:left;">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b>Albarán:</b>
+                            <span t-field="o.name"/>
+                        </li>
+
+                        <li>
+                            <b>Fecha:</b>
+                            <span t-esc="o.date_done.strftime('%d/%m/%Y')"/>
+                        </li>
+
+                        <li t-if="o.origin">
+                            <b>Pedido:</b>
+                            <span t-field="o.origin"/>
+                        </li>
+
+                    </ul>
+                </div>
+
+                <div style="width:50%; float:left;">
+                    <ul class="list-unstyled">
+                        <li t-if="o.partner_id.name">
+                            <span t-field="o.partner_id.name"/>
+                        </li>
+                        <li t-if="o.partner_id.street">
+                            <span t-field="o.partner_id.street"/>
+                        </li>
+                        <li>
+                            <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
+                            <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>,
+                            <span t-if="o.partner_id.state_id" t-field="o.partner_id.state_id.name"/>
+                        </li>
+                        <li>
+                            <span t-if="o.partner_id.country_id" t-field="o.partner_id.country_id"/>
+                        </li>
+                        <li t-if="o.partner_id.vat">
+                            NIF:
+                            <span t-field="o.partner_id.vat"/>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Fin datos documento -->
+                <table class="table" style="border:none;">
+                    <thead>
+                        <tr>
+                            <th name="th_code" class="text-left"
+                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">
+                                Código
+                            </th>
+                            <th name="th_description" class="text-left"
+                                style="solid; black; padding: 0px; margin: 0px; width:35%; !important;">
+                                Descripción
+                            </th>
+                            <th name="th_quantity" class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                Unds
+                            </th>
+                            <th name="th_priceunit" class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                Importe
+                            </th>
+                            <th name="th_discount" t-if="display_discount" class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;"
+                                groups="product.group_discount_per_so_line">
+                                <span>Dto.%</span>
+                            </th>
+                            <th name="th_taxes" class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                IVA
+                            </th>
+                            <th name="th_subtotal" class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:12%; !important;">
+                                Total
+                            </th>
+                        </tr>
+                    </thead>
+                    <!-- Fin cabecera -->
+
+                    <t t-set="importeTotal" t-value="0"/>
+                    <t t-set="importeTotalwithGD" t-value="0"/>
+                    <t t-set="importeIva21" t-value="0"/>
+                    <t t-set="importeRec52" t-value="0"/>
+                    <t t-set="importeIva21Total" t-value="0"/>
+                    <t t-set="importeRec52Total" t-value="0"/>
+                    <t t-set="importeIva10" t-value="0"/>
+                    <t t-set="importeRec14" t-value="0"/>
+                    <t t-set="importeIva10Total" t-value="0"/>
+                    <t t-set="importeRec14Total" t-value="0"/>
+                    <t t-set="importeIva4" t-value="0"/>
+                    <t t-set="importeRec05" t-value="0"/>
+                    <t t-set="importeIva4Total" t-value="0"/>
+                    <t t-set="importeRec05Total" t-value="0"/>
+
+                    <tbody class="sale_tbody">
+                        <!-- Fin datos documento -->
+                        <!--Lineas -->
+                        <div>
+                            <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
+                            <t t-set="importeTotal" t-value="0"/>
+                            <t t-foreach="o.move_ids_without_package.sorted(key=lambda m: m.product_id.id)" t-as="move">
+                                <t t-foreach="move.move_line_ids.sorted(key=lambda ml: ml.location_id.id)"
+                                   t-as="line">
+                                    <tr>
+                                        <td name="td_code" class="text-left"
+                                            style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">
+                                            <span t-field="line.product_id.default_code"/>
+                                        </td>
+
+                                        <td name="td_name" class="text-left"
+                                            style="solid; black; padding: 0px; margin: 0px; width:35%; !important;">
+                                            <span t-field="line.product_id.name"/>
+                                        </td>
+
+                                        <td name="td_quantity" class="text-right"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                            <span t-field="line.move_id.quantity_done"/>
+                                        </td>
+
+                                        <td name="td_price_unit" class="text-right"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                            <span t-esc="line.move_id.sale_line_id.price_unit"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                        </td>
+
+                                        <td name="td_discount" t-if="display_discount" class="text-right"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                            <span t-field="line.move_id.sale_line_id.discount"/>
+                                        </td>
+
+                                        <td name="td_tax" class="text-right"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                            <t t-set="iva"
+                                               t-value="line.move_id.sale_line_id.tax_id.amount"/>
+                                            <span t-esc="int(iva)"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+
+                                        <td name="td_total" class="text-right"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                            <t t-set="total_linea"
+                                               t-value="line.move_id.quantity_done * line.move_id.sale_line_id.price_unit * ((100 - line.move_id.sale_line_id.discount) / 100)"/>
+                                            <span t-esc="total_linea"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                            <t t-set="importeTotal"
+                                               t-value="importeTotal + round( total_linea, 2 )"/>
+                                        </td>
+
+                                        <div class="text-right" style="float:left;width:5%;">
+                                            <t t-if="line.move_id.sale_line_id">
+                                                <t t-foreach="line.move_id.sale_line_id.tax_id"
+                                                   t-as="tax">
+                                                    <t t-set="tax_name" t-value="tax.name"/>
+                                                    <t t-set="isIVA" t-value="tax_name.find('IVA')"/>
+                                                    <!--  acumulacion de las cantidad de cada iva ventas  -->
+                                                    <t t-if="tax.amount == 21.0">
+                                                        <t t-set="importeIva21"
+                                                           t-value="importeIva21 + ( importeTotal * 0.21 )"/>
+                                                        <t t-set="importeIva21Total"
+                                                           t-value="importeIva21Total + importeTotal"/>
+                                                    </t>
+                                                    <t t-if="tax.amount == 5.2">
+                                                        <t t-set="importeRec52"
+                                                           t-value="importeRec52 + importeTotal * 0.052"/>
+                                                    </t>
+                                                    <t t-if="tax.amount == 10.0">
+                                                        <t t-set="importeIva10"
+                                                           t-value="importeIva10 + ( importeTotal * 0.10 )"/>
+                                                        <t t-set="importeIva10Total"
+                                                           t-value="importeIva10Total + importeTotal"/>
+                                                    </t>
+                                                    <t t-if="tax.amount == 1.4">
+                                                        <t t-set="importeRec14"
+                                                           t-value="importeRec14 + importeTotal * 0.014"/>
+                                                    </t>
+                                                    <t t-if="tax.amount == 4.0">
+                                                        <t t-set="importeIva4"
+                                                           t-value="importeIva4 + ( importeTotal* 0.04 )"/>
+                                                        <t t-set="importeIva4Total"
+                                                           t-value="importeIva4Total + importeTotal"/>
+                                                    </t>
+                                                    <t t-if="tax.amount == 0.50">
+                                                        <t t-set="importeRec05"
+                                                           t-value="importeRec05 + importeTotal * 0.005"/>
+                                                    </t>
+                                                    <!--  fin acumulaciones de las cantidades de iva ventas  -->
+                                                </t>
+                                            </t>
+                                            <t t-if="line.move_id.purchase_line_id">
+                                                <t t-foreach="line.move_id.purchase_line_id.taxes_id"
+                                                   t-as="tax">
+                                                    <t t-set="tax_name" t-value="tax.name"/>
+                                                    <t t-set="isIVA" t-value="tax_name.find('IVA')"/>
+                                                    <!--  acumulacion de las cantidad de cada iva compras  -->
+                                                    <t t-if="tax.amount == 21.0">
+                                                        <t t-set="importeIva21"
+                                                           t-value="importeIva21 + ( total_linea * 0.21 )"/>
+                                                        <t t-set="importeIva21Total"
+                                                           t-value="importeIva21Total + total_linea"/>
+                                                    </t>
+                                                    <t t-if="tax.amount == 10.0">
+                                                        <t t-set="importeIva10"
+                                                           t-value="importeIva10 + ( total_linea * 0.10 )"/>
+                                                        <t t-set="importeIva10Total"
+                                                           t-value="importeIva10Total + total_linea"/>
+                                                    </t>
+                                                    <t t-if="tax.amount == 4.0">
+                                                        <t t-set="importeIva4"
+                                                           t-value="importeIva4 + ( total_linea * 0.04 )"/>
+                                                        <t t-set="importeIva4Total"
+                                                           t-value="importeIva4Total + total_linea"/>
+                                                    </t>
+                                                    <!--  fin acumulaciones de las cantuidades de iva compras  -->
+                                                </t>
+                                            </t>
+                                        </div>
+
+                                    </tr>
+                                </t>
+                            </t>
+                        </div>
+                    </tbody>
+                </table>
+                <!--            <div style="height:2px;background-color:black;clear:both;"/>-->
+                <!-- Fin Lineas -->
+                <!--  calculo del total  -->
+
+                <t t-set="importeTotalIva" t-value="0.00"/>
+                <t t-if="importeIva21 != 0">
+                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeIva21, 2 )"/>
+                </t>
+                <t t-if="importeRec52 != 0">
+                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeRec52, 2 )"/>
+                </t>
+                <t t-if="importeIva10">
+                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeIva10, 2 )"/>
+                </t>
+                <t t-if="importeRec14">
+                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeRec14, 2 )"/>
+                </t>
+                <t t-if="importeIva4">
+                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeIva4, 2 )"/>
+                </t>
+                <t t-if="importeRec05">
+                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeRec05, 2 )"/>
+                </t>
+                <t t-set="importeTotalImp" t-value="importeTotal + round( importeTotalIva, 2 )"/>
+                <!--  fin calculo del total  -->
+                <!--  Desglose  -->
+
+                <div class="clearfix" name="so_total_summary">
+                    <div id="total" class="row" name="total">
+                        <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
+                            <table class="table table-sm">
+                                <tr class="border-black o_subtotal" style="">
+                                    <td name="td_amount_untaxed_label"
+                                        style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <strong>Subtotal</strong>
+                                    </td>
+                                    <td name="td_amount_untaxed" class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <span t-esc="importeTotal"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <t t-foreach="o.sale_id.amount_by_group" t-as="amount_by_group">
+                                    <tr style="">
+                                        <td name="td_amount_by_group_label_3"
+                                            style="solid; black; padding: 0px; margin: 0px; !important;">
+                                            <span t-esc="amount_by_group[0]"/>
+                                            <span> en </span>
+                                            <span>
+                                                <t t-esc="amount_by_group[2]"
+                                                   t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                            </span>
+                                        </td>
+                                        <td name="td_amount_by_group_3" class="text-right o_price_total"
+                                            style="solid; black; padding: 0px; margin: 0px; !important;">
+                                            <span t-esc="amount_by_group[1]"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr class="border-black o_total">
+                                    <td name="td_amount_total_label"
+                                        style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <strong>Total</strong>
+                                    </td>
+
+                                    <t t-set="importe_total_doc" t-value="importeTotal"/>
+                                    <t t-if="importeIva21Total != 0">
+                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importeIva21"/>
+                                        <t t-if="importeRec52 != 0">
+                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importeRec52"/>
+                                        </t>
+                                    </t>
+                                    <t t-if="importeIva10Total != 0">
+                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importeIva10"/>
+                                        <t t-if="importeRec14 != 0">
+                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importeRec14"/>
+                                        </t>
+                                    </t>
+                                    <t t-if="importeIva4Total != 0">
+                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importeIva4"/>
+                                        <t t-if="importeRec05 != 0">
+                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importeRec05"/>
+                                        </t>
+                                    </t>
+
+                                    <td name="td_amount_total" class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <span t-esc="importe_total_doc"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Firma-->
+                <p/>
+                <div t-if="'digital_signature' in o.fields_get() and o.digital_signature"
+                     style="clear:both; float:center;"
+                     name="digital_signature">
+                    <div style="height:20px;"/>
+                    <div class="text-center">
+                        <span t-field="o.name_receiver"/>
+                    </div>
+                    <div class="text-center">
+                        <span t-field="o.vat_receiver"/>
+                    </div>
+                    <div class="text-center">
+                        <img t-att-src="image_data_uri(o.digital_signature)"
+                             style="max-height: 4cm; max-width: 8cm;"/>
+                    </div>
+                </div>
+                <!-- Fin firma-->
+
+            </xpath>
+
+        </template>
+    </data>
+</odoo>
