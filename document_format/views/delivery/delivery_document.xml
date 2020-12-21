@@ -1,10 +1,10 @@
 <odoo>
     <data>
-        <template id="document_format.report_delivery_document_xtendoo" inherit_id="stock.report_delivery_document">
+        <template id="document_format.report_delivery_document_xtendoo"
+                  inherit_id="stock.report_delivery_document">
+
             <!-- Quitar direccion defecto odoo -->
-            <xpath expr="//t[@name='partner_header']" position="replace">
-            </xpath>
-            <!-- Fin quitar dirección defecto odoo -->
+
             <xpath expr="//div[hasclass('page')]" position="replace">
                 <div style="width:50%; float:left;">
                     <ul class="list-unstyled">
@@ -22,7 +22,6 @@
                             <b>Pedido:</b>
                             <span t-field="o.origin"/>
                         </li>
-
                     </ul>
                 </div>
 
@@ -48,6 +47,9 @@
                         </li>
                     </ul>
                 </div>
+
+                <!-- Is there a discount on at least one line? -->
+                <t t-set="display_discount" t-value="any([l.discount for l in o.sale_id.order_line])"/>
 
                 <!-- Fin datos documento -->
                 <table class="table" style="border:none;">

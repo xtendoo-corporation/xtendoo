@@ -18,6 +18,7 @@
     "depends": ["stock"],
     "data": [
         "views/delivery/delivery_document.xml",
+        "views/invoice/invoice_document.xml",
         "views/sale/sale_order_document.xml",
     ],
     "installable": True,
