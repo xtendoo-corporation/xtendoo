@@ -3,7 +3,9 @@
         <template id="document_format.report_delivery_document_xtendoo"
                   inherit_id="stock.report_delivery_document">
 
-            <!-- Quitar direccion defecto odoo -->
+            <xpath expr="//t[@name='partner_header']" position="replace">
+                <div/>
+            </xpath>
 
             <xpath expr="//div[hasclass('page')]" position="replace">
                 <div style="width:50%; float:left;">
@@ -88,27 +90,27 @@
                     </thead>
                     <!-- Fin cabecera -->
 
-                    <t t-set="importeTotal" t-value="0"/>
-                    <t t-set="importeTotalwithGD" t-value="0"/>
-                    <t t-set="importeIva21" t-value="0"/>
-                    <t t-set="importeRec52" t-value="0"/>
-                    <t t-set="importeIva21Total" t-value="0"/>
-                    <t t-set="importeRec52Total" t-value="0"/>
-                    <t t-set="importeIva10" t-value="0"/>
-                    <t t-set="importeRec14" t-value="0"/>
-                    <t t-set="importeIva10Total" t-value="0"/>
-                    <t t-set="importeRec14Total" t-value="0"/>
-                    <t t-set="importeIva4" t-value="0"/>
-                    <t t-set="importeRec05" t-value="0"/>
-                    <t t-set="importeIva4Total" t-value="0"/>
-                    <t t-set="importeRec05Total" t-value="0"/>
+                    <t t-set="importe_total" t-value="0"/>
+                    <t t-set="importe_totalwithGD" t-value="0"/>
+                    <t t-set="importe_iva_21" t-value="0"/>
+                    <t t-set="importe_rec_52" t-value="0"/>
+                    <t t-set="importe_iva_21_total" t-value="0"/>
+                    <t t-set="importe_rec_52Total" t-value="0"/>
+                    <t t-set="importe_iva_10" t-value="0"/>
+                    <t t-set="importe_rec_14" t-value="0"/>
+                    <t t-set="importe_iva_10_total" t-value="0"/>
+                    <t t-set="importe_rec_14Total" t-value="0"/>
+                    <t t-set="importe_iva_4" t-value="0"/>
+                    <t t-set="importe_rec_05" t-value="0"/>
+                    <t t-set="importe_iva_4_total" t-value="0"/>
+                    <t t-set="importe_rec_05Total" t-value="0"/>
 
                     <tbody class="sale_tbody">
                         <!-- Fin datos documento -->
                         <!--Lineas -->
                         <div>
                             <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
-                            <t t-set="importeTotal" t-value="0"/>
+                            <t t-set="importe_total" t-value="0"/>
                             <t t-foreach="o.move_ids_without_package.sorted(key=lambda m: m.product_id.id)" t-as="move">
                                 <t t-foreach="move.move_line_ids.sorted(key=lambda ml: ml.location_id.id)"
                                    t-as="line">
@@ -150,11 +152,11 @@
                                         <td name="td_total" class="text-right"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                             <t t-set="total_linea"
-                                               t-value="line.move_id.quantity_done * line.move_id.sale_line_id.price_unit * ((100 - line.move_id.sale_line_id.discount) / 100)"/>
+                                               t-value="line.move_id.quantity_done * line.move_id.sale_line_id.price_unit * ( ( 100 - line.move_id.sale_line_id.discount ) / 100 )"/>
                                             <span t-esc="total_linea"
                                                   t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
-                                            <t t-set="importeTotal"
-                                               t-value="importeTotal + round( total_linea, 2 )"/>
+                                            <t t-set="importe_total"
+                                               t-value="importe_total + round( total_linea, 2 )"/>
                                         </td>
 
                                         <div class="text-right" style="float:left;width:5%;">
@@ -165,34 +167,34 @@
                                                     <t t-set="isIVA" t-value="tax_name.find('IVA')"/>
                                                     <!--  acumulacion de las cantidad de cada iva ventas  -->
                                                     <t t-if="tax.amount == 21.0">
-                                                        <t t-set="importeIva21"
-                                                           t-value="importeIva21 + ( importeTotal * 0.21 )"/>
-                                                        <t t-set="importeIva21Total"
-                                                           t-value="importeIva21Total + importeTotal"/>
+                                                        <t t-set="importe_iva_21"
+                                                           t-value="importe_iva_21 + ( importe_total * 0.21 )"/>
+                                                        <t t-set="importe_iva_21_total"
+                                                           t-value="importe_iva_21_total + importe_total"/>
                                                     </t>
                                                     <t t-if="tax.amount == 5.2">
-                                                        <t t-set="importeRec52"
-                                                           t-value="importeRec52 + importeTotal * 0.052"/>
+                                                        <t t-set="importe_rec_52"
+                                                           t-value="importe_rec_52 + importe_total * 0.052"/>
                                                     </t>
                                                     <t t-if="tax.amount == 10.0">
-                                                        <t t-set="importeIva10"
-                                                           t-value="importeIva10 + ( importeTotal * 0.10 )"/>
-                                                        <t t-set="importeIva10Total"
-                                                           t-value="importeIva10Total + importeTotal"/>
+                                                        <t t-set="importe_iva_10"
+                                                           t-value="importe_iva_10 + ( importe_total * 0.10 )"/>
+                                                        <t t-set="importe_iva_10_total"
+                                                           t-value="importe_iva_10_total + importe_total"/>
                                                     </t>
                                                     <t t-if="tax.amount == 1.4">
-                                                        <t t-set="importeRec14"
-                                                           t-value="importeRec14 + importeTotal * 0.014"/>
+                                                        <t t-set="importe_rec_14"
+                                                           t-value="importe_rec_14 + importe_total * 0.014"/>
                                                     </t>
                                                     <t t-if="tax.amount == 4.0">
-                                                        <t t-set="importeIva4"
-                                                           t-value="importeIva4 + ( importeTotal* 0.04 )"/>
-                                                        <t t-set="importeIva4Total"
-                                                           t-value="importeIva4Total + importeTotal"/>
+                                                        <t t-set="importe_iva_4"
+                                                           t-value="importe_iva_4 + ( importe_total* 0.04 )"/>
+                                                        <t t-set="importe_iva_4_total"
+                                                           t-value="importe_iva_4_total + importe_total"/>
                                                     </t>
                                                     <t t-if="tax.amount == 0.50">
-                                                        <t t-set="importeRec05"
-                                                           t-value="importeRec05 + importeTotal * 0.005"/>
+                                                        <t t-set="importe_rec_05"
+                                                           t-value="importe_rec_05 + importe_total * 0.005"/>
                                                     </t>
                                                     <!--  fin acumulaciones de las cantidades de iva ventas  -->
                                                 </t>
@@ -204,22 +206,22 @@
                                                     <t t-set="isIVA" t-value="tax_name.find('IVA')"/>
                                                     <!--  acumulacion de las cantidad de cada iva compras  -->
                                                     <t t-if="tax.amount == 21.0">
-                                                        <t t-set="importeIva21"
-                                                           t-value="importeIva21 + ( total_linea * 0.21 )"/>
-                                                        <t t-set="importeIva21Total"
-                                                           t-value="importeIva21Total + total_linea"/>
+                                                        <t t-set="importe_iva_21"
+                                                           t-value="importe_iva_21 + ( total_linea * 0.21 )"/>
+                                                        <t t-set="importe_iva_21_total"
+                                                           t-value="importe_iva_21_total + total_linea"/>
                                                     </t>
                                                     <t t-if="tax.amount == 10.0">
-                                                        <t t-set="importeIva10"
-                                                           t-value="importeIva10 + ( total_linea * 0.10 )"/>
-                                                        <t t-set="importeIva10Total"
-                                                           t-value="importeIva10Total + total_linea"/>
+                                                        <t t-set="importe_iva_10"
+                                                           t-value="importe_iva_10 + ( total_linea * 0.10 )"/>
+                                                        <t t-set="importe_iva_10_total"
+                                                           t-value="importe_iva_10_total + total_linea"/>
                                                     </t>
                                                     <t t-if="tax.amount == 4.0">
-                                                        <t t-set="importeIva4"
-                                                           t-value="importeIva4 + ( total_linea * 0.04 )"/>
-                                                        <t t-set="importeIva4Total"
-                                                           t-value="importeIva4Total + total_linea"/>
+                                                        <t t-set="importe_iva_4"
+                                                           t-value="importe_iva_4 + ( total_linea * 0.04 )"/>
+                                                        <t t-set="importe_iva_4_total"
+                                                           t-value="importe_iva_4_total + total_linea"/>
                                                     </t>
                                                     <!--  fin acumulaciones de las cantuidades de iva compras  -->
                                                 </t>
@@ -232,32 +234,31 @@
                         </div>
                     </tbody>
                 </table>
-                <!--            <div style="height:2px;background-color:black;clear:both;"/>-->
-                <!-- Fin Lineas -->
-                <!--  calculo del total  -->
 
-                <t t-set="importeTotalIva" t-value="0.00"/>
-                <t t-if="importeIva21 != 0">
-                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeIva21, 2 )"/>
+                <!-- Fin lineas -->
+                <!-- Calculo del total  -->
+                <t t-set="importe_total_iva" t-value="0.00"/>
+                <t t-if="importe_iva_21 != 0">
+                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_iva_21, 2 )"/>
                 </t>
-                <t t-if="importeRec52 != 0">
-                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeRec52, 2 )"/>
+                <t t-if="importe_rec_52 != 0">
+                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_rec_52, 2 )"/>
                 </t>
-                <t t-if="importeIva10">
-                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeIva10, 2 )"/>
+                <t t-if="importe_iva_10">
+                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_iva_10, 2 )"/>
                 </t>
-                <t t-if="importeRec14">
-                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeRec14, 2 )"/>
+                <t t-if="importe_rec_14">
+                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_rec_14, 2 )"/>
                 </t>
-                <t t-if="importeIva4">
-                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeIva4, 2 )"/>
+                <t t-if="importe_iva_4">
+                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_iva_4, 2 )"/>
                 </t>
-                <t t-if="importeRec05">
-                    <t t-set="importeTotalIva" t-value="importeTotalIva + round( importeRec05, 2 )"/>
+                <t t-if="importe_rec_05">
+                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_rec_05, 2 )"/>
                 </t>
-                <t t-set="importeTotalImp" t-value="importeTotal + round( importeTotalIva, 2 )"/>
-                <!--  fin calculo del total  -->
-                <!--  Desglose  -->
+                <t t-set="importe_total_imp" t-value="importe_total + round( importe_total_iva, 2 )"/>
+                <!-- Fin calculo del total  -->
+                <!-- Desglose  -->
 
                 <div class="clearfix" name="so_total_summary">
                     <div id="total" class="row" name="total">
@@ -270,10 +271,18 @@
                                     </td>
                                     <td name="td_amount_untaxed" class="text-right"
                                         style="solid; black; padding: 0px; margin: 0px; !important;">
-                                        <span t-esc="importeTotal"
+                                        <span t-esc="importe_total"
                                               t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
                                     </td>
                                 </tr>
+
+                                <t t-set="importe_total_doc" t-value="importe_total"/>
+
+                                <td t-if="importe_iva_21 != 0" style="solid; black; padding: 0px; margin: 0px; !important;">
+                                    <span t-esc="importe_iva_21"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                </td>
+
                                 <t t-foreach="o.sale_id.amount_by_group" t-as="amount_by_group">
                                     <tr style="">
                                         <td name="td_amount_by_group_label_3"
@@ -298,23 +307,23 @@
                                         <strong>Total</strong>
                                     </td>
 
-                                    <t t-set="importe_total_doc" t-value="importeTotal"/>
-                                    <t t-if="importeIva21Total != 0">
-                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importeIva21"/>
-                                        <t t-if="importeRec52 != 0">
-                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importeRec52"/>
+                                    <t t-set="importe_total_doc" t-value="importe_total"/>
+                                    <t t-if="importe_iva_21_total != 0">
+                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importe_iva_21"/>
+                                        <t t-if="importe_rec_52 != 0">
+                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importe_rec_52"/>
                                         </t>
                                     </t>
-                                    <t t-if="importeIva10Total != 0">
-                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importeIva10"/>
-                                        <t t-if="importeRec14 != 0">
-                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importeRec14"/>
+                                    <t t-if="importe_iva_10_total != 0">
+                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importe_iva_10"/>
+                                        <t t-if="importe_rec_14 != 0">
+                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importe_rec_14"/>
                                         </t>
                                     </t>
-                                    <t t-if="importeIva4Total != 0">
-                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importeIva4"/>
-                                        <t t-if="importeRec05 != 0">
-                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importeRec05"/>
+                                    <t t-if="importe_iva_4_total != 0">
+                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importe_iva_4"/>
+                                        <t t-if="importe_rec_05 != 0">
+                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importe_rec_05"/>
                                         </t>
                                     </t>
 
