@@ -15,7 +15,10 @@
                 "web",
                 "stock"],
     "license": "AGPL-3",
-    "depends": ["stock"],
+    "depends": [
+        "stock",
+        "stock_picking_report_valued",
+    ],
     "data": [
         "views/delivery/delivery_document.xml",
         "views/invoice/invoice_document.xml",

@@ -76,11 +76,11 @@
                             <th name="th_discount" t-if="display_discount" class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;"
                                 groups="product.group_discount_per_so_line">
-                                <span>Dto.%</span>
+                                Dto.%
                             </th>
                             <th name="th_taxes" class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                IVA
+                                IVA%
                             </th>
                             <th name="th_subtotal" class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:12%; !important;">
@@ -90,246 +90,101 @@
                     </thead>
                     <!-- Fin cabecera -->
 
-                    <t t-set="importe_total" t-value="0"/>
-                    <t t-set="importe_totalwithGD" t-value="0"/>
-                    <t t-set="importe_iva_21" t-value="0"/>
-                    <t t-set="importe_rec_52" t-value="0"/>
-                    <t t-set="importe_iva_21_total" t-value="0"/>
-                    <t t-set="importe_rec_52Total" t-value="0"/>
-                    <t t-set="importe_iva_10" t-value="0"/>
-                    <t t-set="importe_rec_14" t-value="0"/>
-                    <t t-set="importe_iva_10_total" t-value="0"/>
-                    <t t-set="importe_rec_14Total" t-value="0"/>
-                    <t t-set="importe_iva_4" t-value="0"/>
-                    <t t-set="importe_rec_05" t-value="0"/>
-                    <t t-set="importe_iva_4_total" t-value="0"/>
-                    <t t-set="importe_rec_05Total" t-value="0"/>
-
                     <tbody class="sale_tbody">
-                        <!-- Fin datos documento -->
-                        <!--Lineas -->
-                        <div>
-                            <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
-                            <t t-set="importe_total" t-value="0"/>
-                            <t t-foreach="o.move_ids_without_package.sorted(key=lambda m: m.product_id.id)" t-as="move">
-                                <t t-foreach="move.move_line_ids.sorted(key=lambda ml: ml.location_id.id)"
-                                   t-as="line">
-                                    <tr>
-                                        <td name="td_code" class="text-left"
-                                            style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">
-                                            <span t-field="line.product_id.default_code"/>
-                                        </td>
-
-                                        <td name="td_name" class="text-left"
-                                            style="solid; black; padding: 0px; margin: 0px; width:35%; !important;">
-                                            <span t-field="line.product_id.name"/>
-                                        </td>
-
-                                        <td name="td_quantity" class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                            <span t-field="line.move_id.quantity_done"/>
-                                        </td>
-
-                                        <td name="td_price_unit" class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                            <span t-esc="line.move_id.sale_line_id.price_unit"
-                                                  t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
-                                        </td>
-
-                                        <td name="td_discount" t-if="display_discount" class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                            <span t-field="line.move_id.sale_line_id.discount"/>
-                                        </td>
-
-                                        <td name="td_tax" class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                            <t t-set="iva"
-                                               t-value="line.move_id.sale_line_id.tax_id.amount"/>
-                                            <span t-esc="int(iva)"
-                                                  t-options="{'widget': 'float', 'precision': 2}"/>
-                                        </td>
-
-                                        <td name="td_total" class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                            <t t-set="total_linea"
-                                               t-value="line.move_id.quantity_done * line.move_id.sale_line_id.price_unit * ( ( 100 - line.move_id.sale_line_id.discount ) / 100 )"/>
-                                            <span t-esc="total_linea"
-                                                  t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
-                                            <t t-set="importe_total"
-                                               t-value="importe_total + round( total_linea, 2 )"/>
-                                        </td>
-
-                                        <div class="text-right" style="float:left;width:5%;">
-                                            <t t-if="line.move_id.sale_line_id">
-                                                <t t-foreach="line.move_id.sale_line_id.tax_id"
-                                                   t-as="tax">
-                                                    <t t-set="tax_name" t-value="tax.name"/>
-                                                    <t t-set="isIVA" t-value="tax_name.find('IVA')"/>
-                                                    <!--  acumulacion de las cantidad de cada iva ventas  -->
-                                                    <t t-if="tax.amount == 21.0">
-                                                        <t t-set="importe_iva_21"
-                                                           t-value="importe_iva_21 + ( importe_total * 0.21 )"/>
-                                                        <t t-set="importe_iva_21_total"
-                                                           t-value="importe_iva_21_total + importe_total"/>
-                                                    </t>
-                                                    <t t-if="tax.amount == 5.2">
-                                                        <t t-set="importe_rec_52"
-                                                           t-value="importe_rec_52 + importe_total * 0.052"/>
-                                                    </t>
-                                                    <t t-if="tax.amount == 10.0">
-                                                        <t t-set="importe_iva_10"
-                                                           t-value="importe_iva_10 + ( importe_total * 0.10 )"/>
-                                                        <t t-set="importe_iva_10_total"
-                                                           t-value="importe_iva_10_total + importe_total"/>
-                                                    </t>
-                                                    <t t-if="tax.amount == 1.4">
-                                                        <t t-set="importe_rec_14"
-                                                           t-value="importe_rec_14 + importe_total * 0.014"/>
-                                                    </t>
-                                                    <t t-if="tax.amount == 4.0">
-                                                        <t t-set="importe_iva_4"
-                                                           t-value="importe_iva_4 + ( importe_total* 0.04 )"/>
-                                                        <t t-set="importe_iva_4_total"
-                                                           t-value="importe_iva_4_total + importe_total"/>
-                                                    </t>
-                                                    <t t-if="tax.amount == 0.50">
-                                                        <t t-set="importe_rec_05"
-                                                           t-value="importe_rec_05 + importe_total * 0.005"/>
-                                                    </t>
-                                                    <!--  fin acumulaciones de las cantidades de iva ventas  -->
-                                                </t>
-                                            </t>
-                                            <t t-if="line.move_id.purchase_line_id">
-                                                <t t-foreach="line.move_id.purchase_line_id.taxes_id"
-                                                   t-as="tax">
-                                                    <t t-set="tax_name" t-value="tax.name"/>
-                                                    <t t-set="isIVA" t-value="tax_name.find('IVA')"/>
-                                                    <!--  acumulacion de las cantidad de cada iva compras  -->
-                                                    <t t-if="tax.amount == 21.0">
-                                                        <t t-set="importe_iva_21"
-                                                           t-value="importe_iva_21 + ( total_linea * 0.21 )"/>
-                                                        <t t-set="importe_iva_21_total"
-                                                           t-value="importe_iva_21_total + total_linea"/>
-                                                    </t>
-                                                    <t t-if="tax.amount == 10.0">
-                                                        <t t-set="importe_iva_10"
-                                                           t-value="importe_iva_10 + ( total_linea * 0.10 )"/>
-                                                        <t t-set="importe_iva_10_total"
-                                                           t-value="importe_iva_10_total + total_linea"/>
-                                                    </t>
-                                                    <t t-if="tax.amount == 4.0">
-                                                        <t t-set="importe_iva_4"
-                                                           t-value="importe_iva_4 + ( total_linea * 0.04 )"/>
-                                                        <t t-set="importe_iva_4_total"
-                                                           t-value="importe_iva_4_total + total_linea"/>
-                                                    </t>
-                                                    <!--  fin acumulaciones de las cantuidades de iva compras  -->
-                                                </t>
-                                            </t>
-                                        </div>
-
-                                    </tr>
-                                </t>
+                        <tr t-foreach="o.move_line_ids" t-as="move_line">
+                            <td name="td_code" class="text-left"
+                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">
+                                <span t-field="move_line.product_id.default_code"/>
+                            </td>
+                            <td name="td_name" class="text-left"
+                                style="solid; black; padding: 0px; margin: 0px; width:35%; !important;">
+                                <span t-field="move_line.product_id.name"/>
+                                <p t-if="move_line.move_id.description_picking != move_line.product_id.name">
+                                    <span t-field="move_line.product_id.name"/>
+                                </p>
+                            </td>
+                            <td t-if="has_serial_number and move_line.lot_id.name"
+                                groups="stock.group_lot_on_delivery_slip"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                <span t-field="move_line.lot_id.name"/>
+                            </td>
+                            <td t-elif="has_serial_number"
+                                groups="stock.group_lot_on_delivery_slip"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                <span t-field="move_line.lot_name"/>
+                            </td>
+                            <td class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                <span t-field="move_line.qty_done"/>
+                            </td>
+                            <t t-if="move_line.picking_id.state != 'done'">
+                                <td class="text-right"
+                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                    <span t-field="move_line.product_uom_id"/>
+                                </td>
                             </t>
-                        </div>
+                            <td class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                <span t-field="move_line.sale_price_unit"/>
+                            </td>
+                            <td class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;"
+                                groups="product.group_discount_per_so_line">
+                                <span t-field="move_line.sale_discount" />
+                            </td>
+                            <td class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                <t t-set="iva"
+                                   t-value="move_line.sale_tax_id.amount"/>
+                                <span t-esc="int(iva)"
+                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                            </td>
+                            <td class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                <span t-field="move_line.sale_price_subtotal"/>
+                            </td>
+
+                        </tr>
+
                     </tbody>
                 </table>
-
-                <!-- Fin lineas -->
-                <!-- Calculo del total  -->
-                <t t-set="importe_total_iva" t-value="0.00"/>
-                <t t-if="importe_iva_21 != 0">
-                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_iva_21, 2 )"/>
-                </t>
-                <t t-if="importe_rec_52 != 0">
-                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_rec_52, 2 )"/>
-                </t>
-                <t t-if="importe_iva_10">
-                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_iva_10, 2 )"/>
-                </t>
-                <t t-if="importe_rec_14">
-                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_rec_14, 2 )"/>
-                </t>
-                <t t-if="importe_iva_4">
-                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_iva_4, 2 )"/>
-                </t>
-                <t t-if="importe_rec_05">
-                    <t t-set="importe_total_iva" t-value="importe_total_iva + round( importe_rec_05, 2 )"/>
-                </t>
-                <t t-set="importe_total_imp" t-value="importe_total + round( importe_total_iva, 2 )"/>
-                <!-- Fin calculo del total  -->
-                <!-- Desglose  -->
 
                 <div class="clearfix" name="so_total_summary">
                     <div id="total" class="row" name="total">
                         <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
                             <table class="table table-sm">
-                                <tr class="border-black o_subtotal" style="">
+                                <tr class="border-black o_subtotal">
                                     <td name="td_amount_untaxed_label"
                                         style="solid; black; padding: 0px; margin: 0px; !important;">
                                         <strong>Subtotal</strong>
                                     </td>
                                     <td name="td_amount_untaxed" class="text-right"
                                         style="solid; black; padding: 0px; margin: 0px; !important;">
-                                        <span t-esc="importe_total"
+                                        <span t-field="o.amount_untaxed"
                                               t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
                                     </td>
                                 </tr>
 
-                                <t t-set="importe_total_doc" t-value="importe_total"/>
+                                <tr class="border-black o_subtotal">
+                                    <td name="td_amount_untaxed_label"
+                                        style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <strong>Impuestos</strong>
+                                    </td>
+                                    <td name="td_amount_tax" class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <span t-field="o.amount_tax"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                    </td>
+                                </tr>
 
-                                <td t-if="importe_iva_21 != 0" style="solid; black; padding: 0px; margin: 0px; !important;">
-                                    <span t-esc="importe_iva_21"
-                                          t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
-                                </td>
-
-                                <t t-foreach="o.sale_id.amount_by_group" t-as="amount_by_group">
-                                    <tr style="">
-                                        <td name="td_amount_by_group_label_3"
-                                            style="solid; black; padding: 0px; margin: 0px; !important;">
-                                            <span t-esc="amount_by_group[0]"/>
-                                            <span> en </span>
-                                            <span>
-                                                <t t-esc="amount_by_group[2]"
-                                                   t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
-                                            </span>
-                                        </td>
-                                        <td name="td_amount_by_group_3" class="text-right o_price_total"
-                                            style="solid; black; padding: 0px; margin: 0px; !important;">
-                                            <span t-esc="amount_by_group[1]"
-                                                  t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
-                                        </td>
-                                    </tr>
-                                </t>
                                 <tr class="border-black o_total">
                                     <td name="td_amount_total_label"
                                         style="solid; black; padding: 0px; margin: 0px; !important;">
                                         <strong>Total</strong>
                                     </td>
-
-                                    <t t-set="importe_total_doc" t-value="importe_total"/>
-                                    <t t-if="importe_iva_21_total != 0">
-                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importe_iva_21"/>
-                                        <t t-if="importe_rec_52 != 0">
-                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importe_rec_52"/>
-                                        </t>
-                                    </t>
-                                    <t t-if="importe_iva_10_total != 0">
-                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importe_iva_10"/>
-                                        <t t-if="importe_rec_14 != 0">
-                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importe_rec_14"/>
-                                        </t>
-                                    </t>
-                                    <t t-if="importe_iva_4_total != 0">
-                                        <t t-set="importe_total_doc" t-value="importe_total_doc + importe_iva_4"/>
-                                        <t t-if="importe_rec_05 != 0">
-                                            <t t-set="importe_total_doc" t-value="importe_total_doc + importe_rec_05"/>
-                                        </t>
-                                    </t>
-
-                                    <td name="td_amount_total" class="text-right"
+                                    <td name="td_amount_tax" class="text-right"
                                         style="solid; black; padding: 0px; margin: 0px; !important;">
-                                        <span t-esc="importe_total_doc"
+                                        <span t-field="o.amount_total"
                                               t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
                                     </td>
                                 </tr>
@@ -337,6 +192,10 @@
                         </div>
                     </div>
                 </div>
+
+                <p t-if="o.note" name="note">
+                    <span t-field="o.note"/>
+                </p>
 
                 <!-- Firma-->
                 <p/>

@@ -7,10 +7,6 @@
 
             <t t-set="o" t-value="o.with_context(lang=lang)"/>
 
-            <xpath expr="/t/t/t/p" position="replace">
-                <div/>
-            </xpath>
-
             <xpath expr="//address" position="replace">
                 <ul class="list-unstyled">
                     <li t-if="o.partner_id.name">
