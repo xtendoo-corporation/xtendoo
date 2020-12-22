@@ -9,7 +9,7 @@
     'website': 'https://xtendoo.es',
     'description': """ Set inventory line to 10000""",
     'version': '12.0',
-    'depends': ['base'],
+    'depends': ['base','stock'],
     'data': ['views/stock_inventory_views.xml',],
     'installable': True,
     'application': True,
