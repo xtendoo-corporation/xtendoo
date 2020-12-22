@@ -90,6 +90,7 @@
 ### xtendoo_stock_picking_barcodes_gs1 -->  
 ### xtendoo_stock_picking_barcodes_qr -->  
 ### xtendoo_stock_picking_product_barcode_report -->  
+### set_inventory_line_to_10000 --> Añade en ajustes de inventario un boton para actualizar todas las lineas a 10000
 ### xtendoo_web_notify -->  
 ### xtendoo_web_sound -->  
 ### xtendoo_web_widget_digitized_signature -->
