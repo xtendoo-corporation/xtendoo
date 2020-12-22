@@ -45,7 +45,6 @@ class StockPickingBatch(models.Model):
 
     payment_term = fields.Char(compute="compute_total_amount", string="Payment Term")
 
-
     invoice_id = fields.Many2one(
         "account.invoice", compute="get_invoice_id", string="Invoice"
     )

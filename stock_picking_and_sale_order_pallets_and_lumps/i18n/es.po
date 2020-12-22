@@ -24,3 +24,23 @@ msgstr "Nº de Palets"
 #: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_stock_picking__lumps_number
 msgid "Lumps"
 msgstr "Nº de Bultos"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_sale_order__palets_number
+msgid "Palets"
+msgstr "Nº de Palets"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_sale_order__lumps_number
+msgid "Lumps"
+msgstr "Nº de Bultos"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_account_invoice__palets_number
+msgid "Palets"
+msgstr "Nº de Palets"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_account_invoice__lumps_number
+msgid "Lumps"
+msgstr "Nº de Bultos"
