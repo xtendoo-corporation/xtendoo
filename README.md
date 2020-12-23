@@ -93,4 +93,5 @@
 ### set_inventory_line_to_10000 --> Añade en ajustes de inventario un boton para actualizar todas las lineas a 10000
 ### xtendoo_web_notify -->  
 ### xtendoo_web_sound -->  
-### xtendoo_web_widget_digitized_signature -->
+### xtendoo_web_widget_digitized_signature -->  
+### sale_order_product_default_uom --> Añade un numero en la ficha del articulo que indica cuantas unidades se venden juntas, y en ventas. recalcula la cantidad en funcion a ese dato.
