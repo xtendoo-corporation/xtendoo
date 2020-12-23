@@ -8,7 +8,8 @@
     'website': 'http://xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
-        'sale'
+        'sale',
+        'stock'
     ],
     'license': 'AGPL-3',
     'data': [

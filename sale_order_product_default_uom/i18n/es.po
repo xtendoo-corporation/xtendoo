@@ -32,7 +32,7 @@ msgid "Sales Order Line"
 msgstr "Línea de pedido de venta"
 
 #. module: sale_order_product_default_uom
-#: model_terms:ir.ui.view,arch_db:sale_order_product_default_uom.product_template_form_view
+#: model_terms:ir.ui.view,arch_db:sale_order_product_default_uom.product_template_form_view__uom_qty_group
 msgid "Units"
 msgstr "Unidades"
 
