@@ -47,6 +47,10 @@
                             NIF:
                             <span t-field="o.partner_id.vat"/>
                         </li>
+                        <li t-if="o.partner_id.phone">
+                            <i class="fa fa-phone"/>
+                            <span t-field="o.partner_id.phone"/>
+                        </li>
                     </ul>
                 </div>
 
