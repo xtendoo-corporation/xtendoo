@@ -48,7 +48,7 @@
                     name="under_minimum"/>
                 <filter string="Over Maximum"
                     domain="[('product_over_maximum','=',True)]"
-                    name="under_minimum"/>
+                    name="over_maximum"/>
             </xpath>
             <xpath expr="//group[1]" position="inside">
                 <filter

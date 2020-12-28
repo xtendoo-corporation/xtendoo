@@ -21,6 +21,11 @@
                             <span t-if="doc.lot_id">/ Lot:
                                 <span t-field="doc.lot_id.name"/>
                             </span>
+                            <br/>
+                            <span t-if="doc.lot_id">Cad:
+                                <span t-field="doc.lot_id.life_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                            </span>
+
                         </div>
                         <p style="page-break-after:always;"/>
                     </div>

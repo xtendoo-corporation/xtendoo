@@ -64,21 +64,21 @@ class StockWarehouseOrderpoint(models.Model):
                         "incoming_location_qty": product["incoming_qty"],
                         "outgoing_location_qty": product["outgoing_qty"],
                         "virtual_location_qty": product["virtual_available"],
+                        'product_under_minimum': product['qty_available'] < order.product_min_qty,
+                        'product_over_maximum': product['qty_available'] > order.product_max_qty,
                     }
                 )
 
     def _search_product_under_minimum(self, operator, value):
         if operator == '=':
-            recs = self.search([]).filtered(lambda x : x.product_under_minimum is True)
+            recs = self.search([]).filtered(lambda x: x.product_under_minimum is True)
         else:
-            recs = self.search([]).filtered(lambda x : x.product_under_minimum is False)
-        if recs:
-            return [('id', 'in', [x.id for x in recs])]
+            recs = self.search([]).filtered(lambda x: x.product_under_minimum is False)
+        return [('id', 'in', [x.id for x in recs])]
 
     def _search_product_over_maximum(self, operator, value):
         if operator == '=':
-            recs = self.search([]).filtered(lambda x : x.product_over_maximum is True)
+            recs = self.search([]).filtered(lambda x: x.product_over_maximum is True)
         else:
-            recs = self.search([]).filtered(lambda x : x.product_over_maximum is False)
-        if recs:
-            return [('id', 'in', [x.id for x in recs])]
+            recs = self.search([]).filtered(lambda x: x.product_over_maximum is False)
+        return [('id', 'in', [x.id for x in recs])]

@@ -21,6 +21,7 @@
     ],
     "data": [
         "views/delivery/delivery_document.xml",
+        "views/delivery/delivery_commodity.xml",
         "views/invoice/invoice_document.xml",
         "views/sale/sale_order_document.xml",
     ],
