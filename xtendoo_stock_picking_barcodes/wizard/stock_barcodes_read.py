@@ -70,21 +70,29 @@ class WizStockBarcodesRead(models.AbstractModel):
             self.product_qty = self.packaging_qty * self.packaging_id.qty
 
     def process_barcode(self, barcode):
-        domain = self._barcode_domain(barcode)
+        domain = [('barcode', '=', barcode)]
+
+        print("domain :::", domain)
+
         product = self.env['product.product'].search(domain)
-        if not product:
-            self.env.user.notify_danger(
-                message='Product not found')
-            return
         if product:
-            if len(product) > 1:
-                self.env.user.notify_danger(
-                    message='More than one product found')
-                # self._set_messagge_info(
-                #     'more_match', _('More than one product found'))
-                return
             self.action_product_scaned_post(product)
-            self.action_done()
+        else:
+            self.env.user.notify_danger(
+                message='Barcode for product not found')
+            return
+
+        if len(product) > 1:
+            self.env.user.notify_danger(
+                message='More than one product found')
+            return
+
+        lines = self.line_picking_ids.filtered(
+            lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
+        )
+        if not lines:
+            self.env.user.notify_danger(
+                message="There are no lines to assign that quantity")
             return
 
         if self.env.user.has_group('product.group_stock_packaging'):
@@ -93,8 +101,6 @@ class WizStockBarcodesRead(models.AbstractModel):
                 if len(packaging) > 1:
                     self.env.user.notify_danger(
                         message='More than one package found')
-                    # self._set_messagge_info(
-                    #     'more_match', _('More than one package found'))
                     return
                 self.action_packaging_scaned_post(packaging)
                 self.action_done()
@@ -116,11 +122,9 @@ class WizStockBarcodesRead(models.AbstractModel):
             self.location_id = location
             self.env.user.notify_danger(
                 message='Waiting product')
-            # self._set_messagge_info('info', _('Waiting product'))
             return
-        self.env.user.notify_danger(
-            message='Barcode not found')
-        # self._set_messagge_info('not_found', _('Barcode not found'))
+
+        self.action_done()
 
     def _barcode_domain(self, barcode):
         return [('barcode', '=', barcode)]
