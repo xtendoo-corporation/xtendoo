@@ -9,7 +9,7 @@
 
     <record id="group_manager" model="res.groups">
       <field name="name">Manager</field>
-      <field name="category_id" ref="auto_backup.module_management"/>
+      <field name="category_id" ref="xtendoo_auto_backup.module_management"/>
     </record>
   </data>
 </odoo>
