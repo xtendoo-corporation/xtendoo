@@ -178,7 +178,7 @@
                                             <span t-field="line.product_uom_qty"/>
                                             <span t-field="line.product_uom" groups="uom.group_uom"/>
                                         </td>
-                                        <td name="td_priceunit" class="text-right"
+                                        <td name="td_price_unit" class="text-right"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                             <span t-field="line.price_unit"/>
                                         </td>

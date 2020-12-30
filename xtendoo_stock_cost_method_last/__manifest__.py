@@ -14,6 +14,6 @@
                 'stock_account',
                 'purchase'
                 ],
-    'data': ['views/stock_production_lot.xml'],
+    'data': ['views/product.xml'],
     'installable': True,
 }
