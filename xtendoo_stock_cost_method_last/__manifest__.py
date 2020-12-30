@@ -10,10 +10,13 @@
     'summary': "Add a new Costing Method 'Last Price'",
     'author': 'Akretion,Odoo Community Association (OCA)',
     'website': 'https://github.com/OCA/stock-logistics-workflow',
-    'depends': ['stock',
-                'stock_account',
-                'purchase'
-                ],
-    'data': ['views/product.xml'],
+    'depends': [
+        'stock',
+        'stock_account',
+        'purchase',
+    ],
+    'data': [
+        'views/product.xml',
+    ],
     'installable': True,
 }
