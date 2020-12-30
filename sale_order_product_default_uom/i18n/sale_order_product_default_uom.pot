@@ -15,20 +15,20 @@ msgstr ""
 #. module: sale_order_product_default_uom
 #: model:ir.model,name:sale_order_product_default_uom.model_product_template
 msgid "Product Template"
-msgstr "Plantilla de producto"
+msgstr ""
 
 #. module: sale_order_product_default_uom
 #: model:ir.model.fields,field_description:sale_order_product_default_uom.field_product_product__uom_qty
 #: model:ir.model.fields,field_description:sale_order_product_default_uom.field_product_template__uom_qty
 msgid "Sale default units"
-msgstr "Unidades por defecto"
+msgstr ""
 
 #. module: sale_order_product_default_uom
 #: model:ir.model,name:sale_order_product_default_uom.model_sale_order_line
 msgid "Sales Order Line"
-msgstr "Línea de pedido de venta"
+msgstr ""
 
 #. module: sale_order_product_default_uom
 #: model_terms:ir.ui.view,arch_db:sale_order_product_default_uom.product_template_form_view
 msgid "Units"
-msgstr "Unidades"
+msgstr ""
