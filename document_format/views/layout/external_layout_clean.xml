@@ -10,7 +10,7 @@
                 <div class="row">
                     <div class="col-6">
                         <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"
-                             style="width:100%;max-height:200px;"/>
+                             style="max-height:160px;"/>
                     </div>
                     <div class="col-5 offset-1" name="company_address">
                         <ul class="list-unstyled">
@@ -50,7 +50,7 @@
                     </div>
                     <div class="col-4 text-right">
                         <span class="company_address" t-field="company.partner_id"
-                              t-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>
+                              t-options='{"widget": "contact", "fields": ["email", "phone"], "no_marker": true}'/>
                     </div>
                     <div class="col-2">
                         <ul t-if="report_type == 'pdf'" class="list-inline pagenumber float-right text-center">
