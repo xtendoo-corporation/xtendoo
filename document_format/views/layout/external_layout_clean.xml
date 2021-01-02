@@ -3,84 +3,14 @@
 
     <data>
 
-        <template id="xtendoo_external_layout_clean">
-            <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
-                <div class="o_clean_header">
-                    <div class="row">
-                        <div class="col-6">
-                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
-                        </div>
-                        <div class="col-5 offset-1" name="company_address">
-                            <ul class="list-unstyled">
-                                <strong>
-                                    <li t-if="company.name">
-                                        <span t-field="company.name"/>
-                                    </li>
-                                </strong>
-                                <li t-if="company.street">
-                                    <span t-field="company.street"/>
-                                </li>
-                                <li t-if="company.street2">
-                                    <span t-field="company.street2"/>
-                                </li>
-                                <li t-if="company.zip" style="display:inline">
-                                    <span t-field="company.zip"/>
-                                </li>
-                                <li t-if="company.city" style="display:inline">
-                                    <span t-field="company.city"/>
-                                </li>
-                                <li t-if="company.state_id">
-                                    <span t-field="company.state_id"/>
-                                </li>
-                                <li t-if="company.vat">
-                                    <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
-                                    <span t-field="company.vat"/>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div t-attf-class="article o_report_layout_clean o_company_#{company.id}_layout"
-                 t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id"
-                 t-att-data-oe-lang="o and o.env.context.get('lang')">
-                <t t-call="web.address_layout"/>
-                <t t-raw="0"/>
-            </div>
-
-            <div t-attf-class="footer o_clean_footer o_company_#{company.id}_layout">
-                <div class="row mt8">
-                    <div class="col-3">
-                        <span t-field="company.report_footer"/>
-                    </div>
-                    <div class="col-4 text-right">
-                        <span class="company_address" t-field="company.partner_id"
-                              t-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>
-                    </div>
-                    <div class="col-4">
-                        <h4 class="mt0 mb0 text-uppercase" t-field="company.report_header"/>
-                    </div>
-                    <div class="col-1">
-                        <ul t-if="report_type == 'pdf'" class="list-inline pagenumber float-right text-center">
-                            <li class="list-inline-item">
-                                <strong>
-                                    <span class="page"/>
-                                </strong>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </template>
-
         <template id="document_format.external_layout_clean_xtendoo"
                   inherit_id="web.external_layout_clean">
 
             <xpath expr="//div[hasclass('o_clean_header')]" position="replace">
                 <div class="row">
                     <div class="col-6">
-                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"
+                             style="width:100%;max-height:200px;"/>
                     </div>
                     <div class="col-5 offset-1" name="company_address">
                         <ul class="list-unstyled">
@@ -115,7 +45,6 @@
 
             <xpath expr="//div[@class='row mt8']" position="replace">
                 <div class="row mt8">
-
                     <div class="col-6">
                         <span t-field="company.report_footer"/>
                     </div>
@@ -134,31 +63,12 @@
                             </li>
                         </ul>
                     </div>
-
                 </div>
-
-                <!--                <div class="col-11">-->
-                <!--                    <ul class="list-unstyled">-->
-                <!--                        <li t-if="company.report_footer">-->
-                <!--                            <span class="company_address"-->
-                <!--                                  t-field="company.partner_id"-->
-                <!--                                  t-options='{"widget": "contact", "fields": ["phone", "mobile", "email"], "no_marker": true}'/>-->
-                <!--                        </li>-->
-                <!--                        <br/>-->
-                <!--                        <li t-if="company.report_footer">-->
-                <!--                            <span t-field="company.report_footer"/>-->
-                <!--                        </li>-->
-                <!--                    </ul>-->
-                <!--                </div>-->
-                <!--                <div class="col-1">-->
-                <!--                    <ul t-if="report_type == 'pdf'" class="list-inline pagenumber float-right text-center">-->
-                <!--                        <li class="list-inline-item">-->
-                <!--                            <strong>-->
-                <!--                                <span class="page"/>-->
-                <!--                            </strong>-->
-                <!--                        </li>-->
-                <!--                    </ul>-->
-                <!--                </div>-->
+                <div class="row mt8">
+                    <div class="col-12">
+                        <span t-field="company.report_header"/>
+                    </div>
+                </div>
 
             </xpath>
 
