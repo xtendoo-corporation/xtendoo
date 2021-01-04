@@ -29,12 +29,6 @@ class ReportSaleOrderLine(models.AbstractModel):
                                 'product_classification_name': product.product_classification_id.name,
                                 'product_qty': line['product_uom_qty']})
         records.sort(key=lambda x: x['product_classification_sequence'])
-
-        for record in records:
-            print(record['product_name'])
-            print(record['product_classification_sequence'])
-            print(record['product_classification_name'])
-
         return records
 
 
