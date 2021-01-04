@@ -69,6 +69,16 @@
                                 style="solid; black; padding: 0px; margin: 0px; width:35%; !important;">
                                 Descripción
                             </th>
+                            <th t-if="has_serial_number and move_line.lot_id.name"
+                                groups="stock.group_lot_on_delivery_slip"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                Num. serie
+                            </th>
+                            <th t-elif="has_serial_number"
+                                groups="stock.group_lot_on_delivery_slip"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                Lote
+                            </th>
                             <th name="th_quantity" class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 Unds
@@ -131,7 +141,7 @@
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 <span t-field="move_line.sale_price_unit"/>
                             </td>
-                            <td class="text-right"
+                            <td class="text-right" t-if="display_discount"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;"
                                 groups="product.group_discount_per_so_line">
                                 <span t-field="move_line.sale_discount" />
