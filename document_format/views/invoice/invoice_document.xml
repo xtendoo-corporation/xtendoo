@@ -6,60 +6,72 @@
                   inherit_id="account.report_invoice_document">
 
             <t t-set="o" t-value="o.with_context(lang=lang)"/>
-
-            <xpath expr="//address" position="replace">
-                <ul class="list-unstyled">
-                    <li t-if="o.partner_id.name">
-                        <span t-field="o.partner_id.name"/>
-                    </li>
-                    <li t-if="o.partner_id.street">
-                        <span t-field="o.partner_id.street"/>
-                    </li>
-                    <li>
-                        <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
-                        <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>,
-                        <span t-if="o.partner_id.state_id" t-field="o.partner_id.state_id.name"/>
-                    </li>
-                    <li>
-                        <span t-if="o.partner_id.country_id" t-field="o.partner_id.country_id"/>
-                    </li>
-                </ul>
+            <xpath expr="//t[@t-set='address']" position="replace">
+                <div/>
             </xpath>
-
             <xpath expr="//div[hasclass('page')]" position="replace">
-                <ul class="list-unstyled">
-                    <li>
-                        <b>
-                            <span t-if="o.type == 'out_invoice' and o.state == 'posted'">Factura:</span>
-                            <span t-if="o.type == 'out_invoice' and o.state == 'draft'">Factura Borrador:</span>
-                            <span t-if="o.type == 'out_invoice' and o.state == 'cancel'">Factura Cancelada:</span>
-                            <span t-if="o.type == 'out_refund'">Nota de Credito:</span>
-                            <span t-if="o.type == 'in_refund'">Nota Credito Proveedor:</span>
-                            <span t-if="o.type == 'in_invoice'">Factura Proveedor:</span>
-                            <span t-if="o.name != '/'" t-field="o.name"/>
-                        </b>
-                    </li>
-                    <li t-if="o.invoice_date" name="invoice_date">
-                        <strong>Fecha:</strong>
-                        <span class="m-0" t-field="o.invoice_date"/>
-                    </li>
-                    <li t-if="o.invoice_origin" name="origin">
-                        <strong>Pedido:</strong>
-                        <span class="m-0" t-field="o.invoice_origin"/>
-                    </li>
-                    <li t-if="o.partner_id.ref" name="customer_code">
-                        <strong>Código Cliente:</strong>
-                        <span class="m-0" t-field="o.partner_id.ref"/>
-                    </li>
-                    <li t-if="o.ref" name="reference">
-                        <strong>Referencia:</strong>
-                        <span class="m-0" t-field="o.ref"/>
-                    </li>
-                </ul>
-
+                <div style="width:50%;float:left;clear:both;margin-top:5px;">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'posted'">Factura:</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'draft'">Factura Borrador:</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel'">Factura Cancelada:</span>
+                                <span t-if="o.type == 'out_refund'">Nota de Credito:</span>
+                                <span t-if="o.type == 'in_refund'">Nota Credito Proveedor:</span>
+                                <span t-if="o.type == 'in_invoice'">Factura Proveedor:</span>
+                                <span t-if="o.name != '/'" t-field="o.name"/>
+                            </b>
+                        </li>
+                        <li t-if="o.invoice_date" name="invoice_date">
+                            <strong>Fecha:</strong>
+                            <span class="m-0" t-field="o.invoice_date"/>
+                        </li>
+                        <li t-if="o.invoice_origin" name="origin">
+                            <strong>Pedido:</strong>
+                            <span class="m-0" t-field="o.invoice_origin"/>
+                        </li>
+                        <li t-if="o.ref" name="reference">
+                            <strong>Referencia:</strong>
+                            <span class="m-0" t-field="o.ref"/>
+                        </li>
+                        <li t-if="o.invoice_payment_term_id" name="reference">
+                            <strong>Forma de Pago:</strong>
+                            <span class="m-0" t-field="o.invoice_payment_term_id"/>
+                        </li>
+                    </ul>
+                </div>
+                <div style="width:50%;float:left;margin-top:5px;">
+                    <ul class="list-unstyled">
+                         <li t-if="o.partner_id.ref">
+                            <strong>Código Cliente:</strong>
+                            <span class="m-0" t-field="o.partner_id.ref"/>
+                        </li>
+                        <li t-if="o.partner_id.name">
+                            <span t-field="o.partner_id.name"/>
+                        </li>
+                        <li t-if="o.partner_id.street">
+                            <span t-field="o.partner_id.street"/>
+                        </li>
+                        <li>
+                            <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
+                            <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>,
+                            <span t-if="o.partner_id.state_id" t-field="o.partner_id.state_id.name"/>
+                        </li>
+                        <li t-if="o.partner_id.country_id">
+                            <t t-if="o.partner_id.country_id.name != 'España'">
+                                <span t-field="o.partner_id.country_id.name"/>
+                            </t>
+                        </li>
+                       <li t-if="o.partner_id.vat">
+                       <strong>NIF:</strong>
+                            <span t-field="o.partner_id.vat"/>
+                        </li>
+                    </ul>
+                </div>
                 <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
 
-                <table class="table table-sm o_main_table" name="invoice_line_table">
+                <table class="table table-sm o_main_table" name="invoice_line_table" style="clear:both;">
                     <thead>
                         <tr>
                             <th name="th_code" class="text-left"
@@ -225,15 +237,15 @@
                 <p t-if="o.invoice_payment_term_id" name="payment_term">
                     <span t-field="o.invoice_payment_term_id.note"/>
                 </p>
-                <p t-if="o.fiscal_position_id.note" name="note">
+                <p t-if="o.fiscal_position_id.note" name="note" style="display:none;">
                     <span t-field="o.fiscal_position_id.note"/>
                 </p>
-                <div id="qrcode" t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)">
+                <div id="qrcode" t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)" style="display:none;">
                     <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
                         <strong class="text-center">Scan me with your banking app.</strong><br/><br/>
                         <img class="border border-dark rounded" t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual, o.invoice_payment_ref or o.ref or o.name)"/>
                     </p>
-                    <p t-if="(o.invoice_partner_bank_id.qr_code_valid == False)">
+                    <p t-if="(o.invoice_partner_bank_id.qr_code_valid == False)" style="display:none;">
                         <strong class="text-center">The SEPA QR Code informations are not set correctly.</strong><br/>
                     </p>
                 </div>
@@ -241,5 +253,15 @@
 
         </template>
 
+        <!-- Bank Account -->
+        <template id="document_format.without_bank_account"
+                  inherit_id="account_payment_partner.report_invoice_payment_mode">
+            <xpath expr="//p[@t-if='o.payment_mode_id.note']" position="replace">
+                <p></p>
+            </xpath>
+            <xpath expr="//p[@t-as='partner_bank']" position="replace">
+                <p></p>
+            </xpath>
+        </template>
     </data>
 </odoo>
