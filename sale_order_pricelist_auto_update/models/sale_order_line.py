@@ -18,12 +18,12 @@ class SaleOrderLine(models.Model):
     def _onchange_price_unit(self):
         if not self.product_id:
             return
-        if self.product_id.standard_price == 0.0:
+        if self.price_unit == 0.0:
             return
         if self.price_unit < self.product_id.standard_price:
             raise UserError(
-                _('The unit price can\'t be lower than cost price %.2f') %
-                (self.product_id.standard_price)
+                _('The unit price of %s, can\'t be lower than cost price %.2f') %
+                (self.product_id.name, self.product_id.standard_price)
             )
 
     @api.depends('price_unit')
