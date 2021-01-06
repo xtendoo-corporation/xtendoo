@@ -96,8 +96,7 @@
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 IVA%
                             </th>
-                            <th t-if="move_line.currency_id"
-                                name="th_subtotal" class="text-right"
+                            <th name="th_subtotal" class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:12%; !important;">
                                 Total
                             </th>
@@ -159,7 +158,11 @@
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 <span t-field="move_line.sale_price_subtotal"/>
                             </td>
-
+                            <td t-if="not move_line.currency_id"
+                                class="text-right"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                0
+                            </td>
                         </tr>
 
                     </tbody>
