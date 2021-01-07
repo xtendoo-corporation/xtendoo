@@ -131,12 +131,6 @@
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 <span t-field="move_line.qty_done"/>
                             </td>
-                            <t t-if="move_line.picking_id.state != 'done'">
-                                <td class="text-right"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                    <span t-field="move_line.product_uom_id"/>
-                                </td>
-                            </t>
                             <td class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 <span t-field="move_line.sale_price_unit"/>
