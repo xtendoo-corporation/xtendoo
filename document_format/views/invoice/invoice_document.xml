@@ -230,7 +230,36 @@
                             </table>
                         </div>
                     </div>
+                    <t t-set="due_list" t-value="o.get_multi_due_list()" />
+                    <div id="duelist" class="row">
+                        <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ml-auto">
+                            <table class="table table-sm" style="page-break-inside: avoid;font-size:0.8em;">
+
+                                    <tr >
+                                        <td style="solid; black; padding: 0px; margin: 0px; !important;"><b>Fecha de vencimiento</b></td>
+                                        <td style="solid; black; padding: 0px; margin: 0px; !important;" class="text-right"><b>Importe</b></td>
+                                    </tr>
+
+
+                                    <tr t-foreach="due_list" t-as="due_tuple">
+                                        <td style="solid; black; padding: 0px; margin: 0px; !important;">
+                                            <span
+                                                t-esc="due_tuple[0]"
+                                                t-options="{'widget': 'date'}"
+                                            />
+                                        </td>
+                                        <td class="text-right" style="solid; black; padding: 0px; margin: 0px; !important;">
+                                            <span
+                                                t-esc="due_tuple[1]"
+                                                t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
+                                            />
+                                        </td>
+                                    </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+                <div style="clear:both;"></div>
                 <p t-if="o.narration" name="comment">
                     <span t-field="o.narration"/>
                 </p>
@@ -254,7 +283,7 @@
         </template>
 
         <!-- Bank Account -->
-        <template id="document_format.without_bank_account"
+         <template id="document_format.without_bank_account"
                   inherit_id="account_payment_partner.report_invoice_payment_mode">
             <xpath expr="//p[@t-if='o.payment_mode_id.note']" position="replace">
                 <p></p>
