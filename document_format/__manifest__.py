@@ -7,7 +7,7 @@
     "description": """Formatos de documentos entregados por Xtendoo""",
     "author": "DDL",
     "company": "Xtendoo",
-    "website": "http://www.xtendoo.es",
+    "website": "http://xtendoo.es",
     "category": "Extra Tools",
     "depends": [
         "base",
@@ -21,6 +21,7 @@
         "stock",
         "stock_picking_report_valued",
         "account_invoice_report_due_list",
+        "account_payment_partner"
     ],
     "data": [
         "views/stock_picking_view.xml",
