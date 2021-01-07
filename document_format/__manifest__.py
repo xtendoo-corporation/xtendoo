@@ -20,6 +20,7 @@
     "depends": [
         "stock",
         "stock_picking_report_valued",
+        "account_invoice_report_due_list",
     ],
     "data": [
         "views/stock_picking_view.xml",
