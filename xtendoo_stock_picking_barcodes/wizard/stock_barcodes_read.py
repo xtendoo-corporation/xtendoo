@@ -130,7 +130,6 @@ class WizStockBarcodesRead(models.AbstractModel):
         return [('barcode', '=', barcode)]
 
     def on_barcode_scanned(self, barcode):
-        print("barcode scanned:::::::::::::", barcode)
         self.barcode = barcode
         self.reset_qty()
         self.process_barcode(barcode)
