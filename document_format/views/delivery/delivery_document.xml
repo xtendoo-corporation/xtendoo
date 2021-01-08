@@ -59,25 +59,26 @@
 
                 <!-- Fin datos documento -->
                 <table class="table" style="border:none;">
+                    <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
                     <thead>
                         <tr>
-                            <th name="th_code" class="text-left"
-                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">
-                                Código
-                            </th>
+<!--                            <th name="th_code" class="text-left"-->
+<!--                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">-->
+<!--                                Código-->
+<!--                            </th>-->
                             <th name="th_description" class="text-left"
                                 style="solid; black; padding: 0px; margin: 0px; width:35%; !important;">
                                 Descripción
                             </th>
-                            <th t-if="has_serial_number and move_line.lot_id.name"
-                                groups="stock.group_lot_on_delivery_slip"
-                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                Num. serie
-                            </th>
-                            <th t-elif="has_serial_number"
+                            <th t-if="has_serial_number"
                                 groups="stock.group_lot_on_delivery_slip"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 Lote
+                            </th>
+                            <th t-if="has_serial_number"
+                                groups="stock.group_lot_on_delivery_slip"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                Caducidad
                             </th>
                             <th name="th_quantity" class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
@@ -106,10 +107,10 @@
 
                     <tbody class="sale_tbody">
                         <tr t-foreach="o.move_line_ids" t-as="move_line">
-                            <td name="td_code" class="text-left"
-                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">
-                                <span t-field="move_line.product_id.default_code"/>
-                            </td>
+<!--                            <td name="td_code" class="text-left"-->
+<!--                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important;">-->
+<!--                                <span t-field="move_line.product_id.default_code"/>-->
+<!--                            </td>-->
                             <td name="td_name" class="text-left"
                                 style="solid; black; padding: 0px; margin: 0px; width:35%; !important;">
                                 <span t-field="move_line.product_id.name"/>
@@ -126,6 +127,11 @@
                                 groups="stock.group_lot_on_delivery_slip"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 <span t-field="move_line.lot_name"/>
+                            </td>
+                            <td t-if="has_serial_number"
+                                groups="stock.group_lot_on_delivery_slip"
+                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
+                                <span t-esc="move_line.lot_id.life_date.strftime('%d/%m/%Y')"/>
                             </td>
                             <td class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
