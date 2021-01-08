@@ -11,6 +11,7 @@
                 position="after"
             >
                 <field name="sale_line_id" optional="hide"/>
+                <field name="id" optional="hide"/>
             </xpath>
         </field>
     </record>

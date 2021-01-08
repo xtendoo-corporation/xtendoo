@@ -282,7 +282,7 @@
 
         </template>
 
-        <!-- Bank Account -->
+        <!-- Bank Account
          <template id="document_format.without_bank_account"
                   inherit_id="account_payment_partner.report_invoice_payment_mode">
             <xpath expr="//p[@t-if='o.payment_mode_id.note']" position="replace">
@@ -292,5 +292,6 @@
                 <p></p>
             </xpath>
         </template>
+        -->
     </data>
 </odoo>
