@@ -39,11 +39,18 @@
                             <strong>Forma de Pago:</strong>
                             <span class="m-0" t-field="o.invoice_payment_term_id"/>
                         </li>
+                        <div class="col-auto mw-100 mb-2"
+                             t-if="o.invoice_date_due and o.type == 'out_invoice' and o.state == 'posted'"
+                             name="due_date" style="display:none;">
+                            <strong>Due Date:</strong>
+                            <p class="m-0" t-field="o.invoice_date_due"/>
+                        </div>
+
                     </ul>
                 </div>
                 <div style="width:50%;float:left;margin-top:5px;">
                     <ul class="list-unstyled">
-                         <li t-if="o.partner_id.ref">
+                        <li t-if="o.partner_id.ref">
                             <strong>Código Cliente:</strong>
                             <span class="m-0" t-field="o.partner_id.ref"/>
                         </li>
@@ -63,8 +70,8 @@
                                 <span t-field="o.partner_id.country_id.name"/>
                             </t>
                         </li>
-                       <li t-if="o.partner_id.vat">
-                       <strong>NIF:</strong>
+                        <li t-if="o.partner_id.vat">
+                            <strong>NIF:</strong>
                             <span t-field="o.partner_id.vat"/>
                         </li>
                     </ul>
@@ -109,11 +116,14 @@
 
                     <tbody class="invoice_tbody">
                         <t t-set="current_subtotal" t-value="0"/>
-                        <t t-set="lines" t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
+                        <t t-set="lines"
+                           t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
 
                         <t t-foreach="lines" t-as="line">
-                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
-                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
+                               groups="account.group_show_line_subtotals_tax_excluded"/>
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
+                               groups="account.group_show_line_subtotals_tax_included"/>
 
                             <tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
                                 <t t-if="not line.display_type" name="account_invoice_line_accountable">
@@ -141,12 +151,15 @@
                                     </td>
                                     <td t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
                                         style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                        <span t-esc="', '.join(map(lambda x: str(x.amount), line.tax_ids))" id="line_tax_ids"/>
+                                        <span t-esc="', '.join(map(lambda x: str(x.amount), line.tax_ids))"
+                                              id="line_tax_ids"/>
                                     </td>
                                     <td class="text-right o_price_total"
                                         style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                        <span class="text-nowrap" t-field="line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
-                                        <span class="text-nowrap" t-field="line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+                                        <span class="text-nowrap" t-field="line.price_subtotal"
+                                              groups="account.group_show_line_subtotals_tax_excluded"/>
+                                        <span class="text-nowrap" t-field="line.price_total"
+                                              groups="account.group_show_line_subtotals_tax_included"/>
                                     </td>
                                 </t>
                                 <t t-if="line.display_type == 'line_section'">
@@ -170,7 +183,8 @@
                                     <td colspan="99"
                                         style="solid; black; padding: 0px; margin: 0px; !important;">
                                         <strong class="mr16">Subtotal</strong>
-                                        <span t-esc="current_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                        <span t-esc="current_subtotal"
+                                              t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                                     </td>
                                 </tr>
                             </t>
@@ -205,7 +219,7 @@
                                         <t t-else="">
                                             <td style="solid; black; padding: 0px; margin: 0px; !important;">
                                                 <span t-esc="amount_by_group[0]"/>
-                                                <span class="text-nowrap"> on
+                                                <span class="text-nowrap">on
                                                     <t t-esc="amount_by_group[4]"/>
                                                 </span>
                                             </td>
@@ -230,36 +244,38 @@
                             </table>
                         </div>
                     </div>
-                    <t t-set="due_list" t-value="o.get_multi_due_list()" />
+                    <t t-set="due_list" t-value="o.get_multi_due_list()"/>
                     <div id="duelist" class="row">
                         <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ml-auto">
                             <table class="table table-sm" style="page-break-inside: avoid;font-size:0.8em;">
 
-                                    <tr >
-                                        <td style="solid; black; padding: 0px; margin: 0px; !important;"><b>Fecha de vencimiento</b></td>
-                                        <td style="solid; black; padding: 0px; margin: 0px; !important;" class="text-right"><b>Importe</b></td>
-                                    </tr>
-
-
-                                    <tr t-foreach="due_list" t-as="due_tuple">
-                                        <td style="solid; black; padding: 0px; margin: 0px; !important;">
-                                            <span
-                                                t-esc="due_tuple[0]"
-                                                t-options="{'widget': 'date'}"
-                                            />
-                                        </td>
-                                        <td class="text-right" style="solid; black; padding: 0px; margin: 0px; !important;">
-                                            <span
-                                                t-esc="due_tuple[1]"
-                                                t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
-                                            />
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <b>Fecha de vencimiento</b>
+                                    </td>
+                                    <td style="solid; black; padding: 0px; margin: 0px; !important;" class="text-right">
+                                        <b>Importe</b>
+                                    </td>
+                                </tr>
+                                <tr t-foreach="due_list" t-as="due_tuple">
+                                    <td style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <span
+                                            t-esc="due_tuple[0]"
+                                            t-options="{'widget': 'date'}"
+                                        />
+                                    </td>
+                                    <td class="text-right" style="solid; black; padding: 0px; margin: 0px; !important;">
+                                        <span
+                                            t-esc="due_tuple[1]"
+                                            t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
+                                        />
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                     </div>
                 </div>
-                <div style="clear:both;"></div>
+                <div style="clear:both;"/>
                 <p t-if="o.narration" name="comment">
                     <span t-field="o.narration"/>
                 </p>
@@ -269,20 +285,26 @@
                 <p t-if="o.fiscal_position_id.note" name="note" style="display:none;">
                     <span t-field="o.fiscal_position_id.note"/>
                 </p>
-                <div id="qrcode" t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)" style="display:none;">
+                <div id="qrcode"
+                     t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)"
+                     style="display:none;">
                     <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
-                        <strong class="text-center">Scan me with your banking app.</strong><br/><br/>
-                        <img class="border border-dark rounded" t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual, o.invoice_payment_ref or o.ref or o.name)"/>
+                        <strong class="text-center">Scan me with your banking app.</strong>
+                        <br/>
+                        <br/>
+                        <img class="border border-dark rounded"
+                             t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual, o.invoice_payment_ref or o.ref or o.name)"/>
                     </p>
                     <p t-if="(o.invoice_partner_bank_id.qr_code_valid == False)" style="display:none;">
-                        <strong class="text-center">The SEPA QR Code informations are not set correctly.</strong><br/>
+                        <strong class="text-center">The SEPA QR Code informations are not set correctly.</strong>
+                        <br/>
                     </p>
                 </div>
             </xpath>
 
         </template>
 
-        <!-- Bank Account
+        <!-- Bank Account -->
          <template id="document_format.without_bank_account"
                   inherit_id="account_payment_partner.report_invoice_payment_mode">
             <xpath expr="//p[@t-if='o.payment_mode_id.note']" position="replace">
@@ -292,6 +314,6 @@
                 <p></p>
             </xpath>
         </template>
-        -->
+
     </data>
 </odoo>
