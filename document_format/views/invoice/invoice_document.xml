@@ -287,7 +287,6 @@
                 </t>
             </t>
         </template>
-<<<<<<< HEAD
 
         <!-- Bank Account -->
          <template id="document_format.without_bank_account"
@@ -300,7 +299,5 @@
             </xpath>
         </template>
 
-=======
->>>>>>> 550b6011e4730aba2e3fe3f06359a6857d133c45
     </data>
 </odoo>
