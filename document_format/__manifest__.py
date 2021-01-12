@@ -21,13 +21,15 @@
         "stock",
         "stock_picking_report_valued",
         "account_invoice_report_due_list",
-        "account_payment_partner"
+        "account_payment_partner",
+        "account_invoice_report_grouped_by_picking",
     ],
     "data": [
-        "views/stock_picking_view.xml",
+        "views/stock_picking/stock_picking_view.xml",
         "views/delivery/delivery_document.xml",
         "views/delivery/delivery_commodity.xml",
         "views/invoice/invoice_document.xml",
+        "views/invoice/invoice_gruped_by_picking.xml",
         "views/layout/external_layout_clean.xml",
         "views/sale/sale_order_document.xml",
     ],
