@@ -128,7 +128,7 @@
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 <span t-field="move_line.lot_name"/>
                             </td>
-                            <td t-if="has_serial_number"
+                            <td t-if="has_serial_number and move_line.lot_id.life_date"
                                 groups="stock.group_lot_on_delivery_slip"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
                                 <span t-esc="move_line.lot_id.life_date.strftime('%d/%m/%Y')"/>
@@ -161,7 +161,7 @@
                             <td t-if="not move_line.currency_id"
                                 class="text-right"
                                 style="solid; black; padding: 0px; margin: 0px; width:10%; !important;">
-                                0
+                                0.00
                             </td>
                         </tr>
 

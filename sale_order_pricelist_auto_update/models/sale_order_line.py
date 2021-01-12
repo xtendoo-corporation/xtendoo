@@ -38,7 +38,6 @@ class SaleOrderLine(models.Model):
                     pricelist_price_unit = self.env['account.tax']._fix_tax_included_price_company(
                         display_price, line.product_id.taxes_id, line.tax_id, line.company_id
                     )
-                    print("float_compare", float_compare(line.price_unit, pricelist_price_unit, precision_rounding=precision))
                     line.is_pricelist_change = ((line.price_unit - pricelist_price_unit) != 0.0)
                 except:
                     line.is_pricelist_change = False
@@ -46,7 +45,6 @@ class SaleOrderLine(models.Model):
                 line.is_pricelist_change = False
 
     def action_update_pricelist(self):
-        print("action_update_pricelist*****************************************************")
         for line in self:
             items = self.env['product.pricelist.item'].search([
                 ('pricelist_id', '=', line.order_id.pricelist_id.id),
