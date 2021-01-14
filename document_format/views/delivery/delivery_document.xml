@@ -82,11 +82,11 @@
                             <thead>
                                 <tr>
                                     <th name="th_code" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:12%; !important; font-size:0.9em;">
                                         Código
                                     </th>
                                     <th name="th_description" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:34%; !important; font-size:0.9em;">
                                         Descripción
                                     </th>
                                     <th t-if="has_serial_number" groups="stock.group_lot_on_delivery_slip"
@@ -106,16 +106,16 @@
                                         Importe
                                     </th>
                                     <th name="th_discount" t-if="display_discount" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:6%; !important;"
                                         groups="product.group_discount_per_so_line">
                                         Dto.%
                                     </th>
                                     <th name="th_taxes" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:6%; !important; font-size:0.9em;">
                                         IVA%
                                     </th>
                                     <th name="th_subtotal" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:12%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:16%; !important; font-size:0.9em;">
                                         Total
                                     </th>
                                 </tr>
@@ -125,11 +125,11 @@
                             <tbody class="sale_tbody">
                                 <tr t-foreach="o.move_line_ids" t-as="move_line">
                                     <td name="td_code" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:12%; !important; font-size:0.9em;">
                                         <span t-field="move_line.product_id.default_code"/>
                                     </td>
                                     <td name="td_name" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:34%; !important; font-size:0.9em;">
                                         <span t-field="move_line.product_id.name"/>
                                         <p t-if="move_line.move_id.description_picking != move_line.product_id.name">
                                             <t t-set="productName" t-value="move_line.product_id.name"/>
@@ -160,22 +160,22 @@
                                         <span t-field="move_line.sale_price_unit"/>
                                     </td>
                                     <td class="text-right" t-if="display_discount"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:6%; !important; font-size:0.9em;"
                                         groups="product.group_discount_per_so_line">
                                         <span t-field="move_line.sale_discount"/>
                                     </td>
                                     <td class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:6%; !important; font-size:0.9em;">
                                         <t t-set="iva" t-value="move_line.sale_tax_id.amount"/>
                                         <span t-esc="int(iva)" t-options="{'widget': 'float', 'precision': 2}"/>
                                     </td>
                                     <td t-if="move_line.currency_id" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                        style="solid; black; padding: 0px; margin: 0px; width:16%; !important; font-size:0.9em;">
                                         <span t-field="move_line.sale_price_subtotal"/>
                                     </td>
                                     <td t-if="not move_line.currency_id" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
-                                        0
+                                        style="solid; black; padding: 0px; margin: 0px; width:16%; !important; font-size:0.9em;">
+                                        0.00
                                     </td>
                                 </tr>
 
