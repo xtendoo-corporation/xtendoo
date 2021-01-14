@@ -6,6 +6,12 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form" />
         <field name="arch" type="xml">
+         <xpath expr="//button[@name='181']" position="before">
+                <button name="sale_order_line_pair"
+                        string="Emparejar"
+                        type="object"
+                        />
+            </xpath>
             <xpath expr="//field[@name='move_ids_without_package']/tree//field[@name='quantity_done']" position="after">
                 <field name="sale_line_id" optional="hide"/>
                 <field name="id" optional="hide"/>

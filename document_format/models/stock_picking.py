@@ -8,6 +8,10 @@ class Picking(models.Model):
     _inherit = "stock.picking"
 
     def button_validate(self):
+        self.sale_order_line_pair()
+        return super(Picking, self).button_validate()
+
+    def sale_order_line_pair(self):
         for line in self.move_line_ids:
             if not line.move_id.sale_line_id and line.picking_id.sale_id:
                 move_line = line.picking_id.sale_id.order_line.filtered(
@@ -15,4 +19,3 @@ class Picking(models.Model):
                 )
                 if move_line:
                     line.move_id.sale_line_id = move_line.id
-        return super(Picking, self).button_validate()
