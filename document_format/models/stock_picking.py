@@ -11,15 +11,6 @@ class Picking(models.Model):
         self.sale_order_line_pair()
         return super(Picking, self).button_validate()
 
-    # def sale_order_line_pair(self):
-    #     for line in self.move_line_ids:
-    #         if not line.move_id.sale_line_id and line.picking_id.sale_id:
-    #             move_line = line.picking_id.sale_id.order_line.filtered(
-    #                 lambda l: l.product_id == line.product_id
-    #             )
-    #             if move_line:
-    #                 line.move_id.sale_line_id = move_line.id
-
     def sale_order_line_pair(self):
         for lines in self.move_ids_without_package:
             for line in lines.move_line_ids:

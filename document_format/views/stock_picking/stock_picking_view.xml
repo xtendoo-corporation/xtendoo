@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
          <xpath expr="//button[@name='181']" position="before">
                 <button name="sale_order_line_pair"
-                        string="Emparejar"
+                        string="Asociar líneas"
                         type="object"
                         />
             </xpath>
