@@ -5,11 +5,8 @@ from odoo import _, api, fields, models
 
 class WizStockBarcodesRead(models.AbstractModel):
     _name = 'wiz.stock.barcodes.read'
-
     _inherit = 'barcodes.barcode_events_mixin'
-
     _description = 'Wizard to read barcode'
-    # To prevent remove the record wizard until 2 days old
     _transient_max_hours = 48
 
     barcode = fields.Char()
@@ -48,15 +45,13 @@ class WizStockBarcodesRead(models.AbstractModel):
         string='Manual entry data',
     )
     message_type = fields.Selection([
-        ('info', 'Barcode read with additional info'),
-        ('not_found', 'No barcode found'),
-        ('more_match', 'More than one matches found'),
+        ('error', 'Barcode not read correctly'),
         ('success', 'Barcode read correctly'),
         ],
-        readonly=True
+        readonly=True,
     )
     message = fields.Char(
-        readonly=True
+        readonly=True,
     )
 
     @api.onchange('location_id')
@@ -69,42 +64,29 @@ class WizStockBarcodesRead(models.AbstractModel):
         if self.packaging_id:
             self.product_qty = self.packaging_qty * self.packaging_id.qty
 
+    @api.onchange('message_type')
+    def onchange_message_type(self):
+        self.message = self.message_type
+
     def process_barcode(self, barcode):
         domain = [('barcode', '=', barcode)]
-
-        print("domain :::", domain)
-
         product = self.env['product.product'].search(domain)
         if product:
             self.action_product_scaned_post(product)
         else:
-            self.env.user.notify_danger(
-                message='Barcode for product not found')
+            self._set_message_error('Código de barras para producto no encontrado')
             return
 
         if len(product) > 1:
-            self.env.user.notify_danger(
-                message='More than one product found')
+            self._set_message_error('Mas de un producto encontrado')
             return
 
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
         if not lines:
-            self.env.user.notify_danger(
-                message="There are no lines to assign that quantity")
+            self._set_message_error('No hay líneas para asignar este producto')
             return
-
-        if self.env.user.has_group('product.group_stock_packaging'):
-            packaging = self.env['product.packaging'].search(domain)
-            if packaging:
-                if len(packaging) > 1:
-                    self.env.user.notify_danger(
-                        message='More than one package found')
-                    return
-                self.action_packaging_scaned_post(packaging)
-                self.action_done()
-                return
 
         if self.env.user.has_group('stock.group_production_lot'):
             lot_domain = [('name', '=', barcode)]
@@ -120,14 +102,10 @@ class WizStockBarcodesRead(models.AbstractModel):
         location = self.env['stock.location'].search(domain)
         if location:
             self.location_id = location
-            self.env.user.notify_danger(
-                message='Waiting product')
+            self._set_message_error('No hay almacen asignado')
             return
 
         self.action_done()
-
-    def _barcode_domain(self, barcode):
-        return [('barcode', '=', barcode)]
 
     def on_barcode_scanned(self, barcode):
         self.barcode = barcode
@@ -135,13 +113,16 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.process_barcode(barcode)
 
     def check_done_conditions(self):
-        if not self.product_qty:
-            self.env.user.notify_danger(
-                message='Waiting quantities')
+        if not self.product_id:
+            self._set_message_error('Producto no encontrado')
             return False
+
+        if not self.product_qty:
+            self._set_message_error('Esperando cantidades')
+            return False
+
         if self.manual_entry:
-            self.env.user.notify_success(
-                message='Manual entry OK')
+            self._set_message_success('Entrada correcta')
         return True
 
     def action_done(self):
@@ -176,3 +157,16 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.product_qty = 0
         self.packaging_qty = 0
 
+    def _set_message_success(self, message):
+        self.message_type = 'success'
+        if self.barcode:
+            self.message = _("Código de barras: %s (%s)") % (self.barcode, message)
+        else:
+            self.message = "%s" % message
+
+    def _set_message_error(self, message):
+        self.message_type = 'error'
+        if self.barcode:
+            self.message = _("¡Error! Código de barras: %s (%s)") % (self.barcode, message)
+        else:
+            self.message = "¡Error! %s" % message

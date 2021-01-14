@@ -6,6 +6,24 @@
         <field name="arch" type="xml">
             <form string="Barcodes">
                 <sheet>
+
+                    <div class="text-center">
+                        <div class="alert alert-success alert-dismissible"
+                             role="status"
+                             attrs="{'invisible': [('message_type', '!=', 'success')]}">
+                            <field name="message"
+                                   widget="field_char_sound"
+                                   attrs="{'invisible': [('message_type', '!=', 'success')]}"/>
+                        </div>
+                        <div class="alert alert-danger alert-dismissible"
+                             role="status"
+                             attrs="{'invisible': [('message_type', '!=', 'error')]}">
+                            <field name="message"
+                                   widget="field_char_sound"
+                                   attrs="{'invisible': [('message_type', '!=', 'error')]}"/>
+                        </div>
+                    </div>
+
                     <field name="message_type" invisible="1"/>
                     <field name="barcode" invisible="1" force_save="1"/>
                     <field name="product_tracking" invisible="1" force_save="1"/>
@@ -20,6 +38,9 @@
                         </b>
                         <field name="picking_id" nolabel="1"/>
                         <field name="picking_date" nolabel="1"/>
+
+<!--                        <field name="manual_entry" widget="barcode_boolean_toggle" />-->
+
                         <button string="Manual Entry On"
                                 class="btn-primary"
                                 name="action_set_manual_entry"
@@ -107,7 +128,7 @@
                     <footer>
                         <button string="Cancel"
                                 class="btn-secondary"
-                                special="cancel" />
+                                special="cancel"/>
                         <button string="Validate"
                                 name="action_validate_picking"
                                 class="btn-primary"

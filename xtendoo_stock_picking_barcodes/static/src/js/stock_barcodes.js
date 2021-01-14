@@ -7,6 +7,12 @@ odoo.define("stock_barcodes.FormController", function(require) {
     var FormController = require("web.FormController");
 
     FormController.include({
+
+//        start: function() {
+//            alert('__start__');
+//            return this._super
+//                .apply(this, arguments);
+//        },
         _barcodeScanned: function(barcode, target) {
             var self = this;
 

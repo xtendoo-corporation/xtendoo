@@ -5,8 +5,13 @@
         <xpath expr="." position="inside">
             <script type="application/javascript"
                     src="/xtendoo_stock_picking_barcodes/static/src/js/stock_barcodes.js"/>
+
             <script type="application/javascript"
                     src="/xtendoo_stock_picking_barcodes/static/src/js/basic_fields.js"/>
+
+            <script type="application/javascript"
+                    src="/xtendoo_stock_picking_barcodes/static/src/js/sound_field.js"/>
+
             <link rel="stylesheet" href="/xtendoo_stock_picking_barcodes/static/src/css/stock.css"/>
         </xpath>
     </template>

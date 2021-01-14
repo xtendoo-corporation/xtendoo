@@ -76,18 +76,20 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 self.env['stock.picking'].browse(picking_id)
             )
 
-    def _set_default_location(self):
-        location_id = self.env.context.get('default_location_id', False)
-        if location_id:
-            self._set_location(
-                self.env['stock.location'].browse(location_id)
-            )
+    def _set_default_message_type(self):
+        message_type = self.env.context.get('default_message_type', False)
+        if message_type:
+            self.message_type = message_type
+
+    def _set_default_message(self):
+        message = self.env.context.get('default_message', False)
+        if message:
+            self.message = message
 
     def _set_default_manual_entry(self):
         manual_entry = self.env.context.get('default_manual_entry', False)
         if manual_entry:
             self.manual_entry = manual_entry
-
 
     @api.model
     def create(self, vals):
@@ -105,6 +107,8 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         # we need create it in this onchange
         self._set_default_picking()
         self._set_default_manual_entry()
+        self._set_default_message_type()
+        self._set_default_message()
 
     def action_done(self):
         res = self._process_stock_move_line()
@@ -124,6 +128,8 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             'default_picking_id': self.picking_id.id,
             'default_manual_entry': self.manual_entry,
             'default_location_id': location.id,
+            'default_message_type': self.message_type,
+            'default_message': self.message,
         }
         return action
 
@@ -176,9 +182,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self.candidate_picking_ids = vals
         # Only for test
         self._set_line_pickings(candidate_pickings)
-
-    def _set_location(self, location):
-        self.location_id = location
 
     def _set_line_pickings(self, candidate_pickings):
         vals = [(5, 0, 0)]
@@ -250,9 +253,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 m.product_id == self.product_id and
                 m.state in self._states_move_allowed()))
             if not moves:
-                # TODO: Add picking if picking_id to message
-                self.env.user.notify_danger(
-                    message='There are no stock moves to assign this operation')
+                self._set_message_error('No hay líneas para asignar este producto')
                 return False
             else:
                 line = self.env['stock.move.line'].create(
@@ -262,19 +263,21 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         return move_lines_dic
 
     def check_done_conditions(self):
-        res = super().check_done_conditions()
-        if self.product_id.tracking != 'none' and not self.lot_id:
-            self.env.user.notify_danger(
-                message='Waiting for input lot')
+        if not super().check_done_conditions():
             return False
+
+        if self.product_id.tracking != 'none' and not self.lot_id:
+            self._set_message_error("Esperando lote")
+            return False
+
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
         if not lines:
-            self.env.user.notify_danger(
-                message="There are no lines to assign that quantity")
+            self._set_message_error('No hay líneas para asignar este producto')
             return False
-        return res
+
+        return True
 
     def action_validate_picking(self):
         picking = self.env['stock.picking'].browse(
