@@ -115,9 +115,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         if res:
             self._update_line_picking(res)
 
-    def action_manual_entry(self):
-        if self.check_done_conditions():
-            self.action_done()
+    def _get_action(self):
         if self.picking_id.picking_type_code == 'outgoing':
             location = self.picking_id.location_id
         else:
@@ -132,6 +130,11 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             'default_message': self.message,
         }
         return action
+
+    def action_manual_entry(self):
+        if self.check_done_conditions():
+            self.action_done()
+        # return self._get_action()
 
     def _update_line_picking(self, res):
         for line in self.line_picking_ids.filtered(
@@ -287,33 +290,13 @@ class WizStockBarcodesReadPicking(models.TransientModel):
 
     def action_set_manual_entry(self):
         self.manual_entry = True
-        if self.picking_id.picking_type_code == 'outgoing':
-            location = self.picking_id.location_id
-        else:
-            location = self.picking_id.location_dest_id
-        action = self.env.ref(
-            'xtendoo_stock_picking_barcodes.action_stock_barcodes_read_picking').read()[0]
-        action['context'] = {
-            'default_picking_id': self.picking_id.id,
-            'default_manual_entry': self.manual_entry,
-            'default_location_id': location.id,
-        }
-        return action
+        self._reset_message()
+        # return self._get_action()
 
     def action_quit_manual_entry(self):
         self.manual_entry = False
-        if self.picking_id.picking_type_code == 'outgoing':
-            location = self.picking_id.location_id
-        else:
-            location = self.picking_id.location_dest_id
-        action = self.env.ref(
-            'xtendoo_stock_picking_barcodes.action_stock_barcodes_read_picking').read()[0]
-        action['context'] = {
-            'default_picking_id': self.picking_id.id,
-            'default_manual_entry': self.manual_entry,
-            'default_location_id': location.id,
-        }
-        return action
+        self._reset_message()
+        # return self._get_action()
 
 
 class WizCandidatePicking(models.TransientModel):

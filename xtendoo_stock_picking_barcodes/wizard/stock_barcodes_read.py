@@ -99,6 +99,7 @@ class WizStockBarcodesRead(models.AbstractModel):
                 self.action_lot_scaned_post(lot)
                 self.action_done()
                 return
+
         location = self.env['stock.location'].search(domain)
         if location:
             self.location_id = location
@@ -160,13 +161,17 @@ class WizStockBarcodesRead(models.AbstractModel):
     def _set_message_success(self, message):
         self.message_type = 'success'
         if self.barcode:
-            self.message = _("Código de barras: %s (%s)") % (self.barcode, message)
+            self.message = "Código de barras: %s (%s)" % (self.barcode, message)
         else:
             self.message = "%s" % message
 
     def _set_message_error(self, message):
         self.message_type = 'error'
         if self.barcode:
-            self.message = _("¡Error! Código de barras: %s (%s)") % (self.barcode, message)
+            self.message = "¡Error! Código de barras: %s (%s)" % (self.barcode, message)
         else:
             self.message = "¡Error! %s" % message
+
+    def _reset_message(self):
+        self.message_type = ''
+        self.message = ''
