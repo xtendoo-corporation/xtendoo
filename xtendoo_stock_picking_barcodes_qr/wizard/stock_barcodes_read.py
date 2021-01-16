@@ -23,10 +23,9 @@ class WizStockBarcodesRead(models.AbstractModel):
             [('barcode', '=', product_barcode)]
         )
         if product:
-            self.action_product_scaned_post(product)
+            self.action_product_scanned_post(product)
         else:
-            self.env.user.notify_danger(
-                message='Barcode for product not found')
+            self._set_message_error('Código de barras no encontrado')
             return False
 
         if product.tracking != 'none':
@@ -35,12 +34,10 @@ class WizStockBarcodesRead(models.AbstractModel):
                 ('name', '=', lot_barcode),
             ])
             if not lot:
-                self.env.user.notify_danger(
-                    message='Lot for product not found')
+                self._set_message_error('Lote no encontrado')
                 return False
             if lot.locked:
-                self.env.user.notify_danger(
-                    message='Lot is locked')
+                self._set_message_error('El lote esta bloqueado')
                 return False
             self.lot_id = lot
 
@@ -48,8 +45,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
         if not lines:
-            self.env.user.notify_danger(
-                message="There are no lines to assign that quantity")
+            self._set_message_error('No hay líneas para asignar este producto')
             return False
 
         self.action_done()

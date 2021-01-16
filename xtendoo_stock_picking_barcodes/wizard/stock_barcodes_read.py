@@ -69,10 +69,11 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.message = self.message_type
 
     def process_barcode(self, barcode):
+        self.barcode = barcode
         domain = [('barcode', '=', barcode)]
         product = self.env['product.product'].search(domain)
         if product:
-            self.action_product_scaned_post(product)
+            self.action_product_scanned_post(product)
         else:
             self._set_message_error('Código de barras para producto no encontrado')
             return
@@ -96,7 +97,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             if len(lot) == 1:
                 self.product_id = lot.product_id
             if lot:
-                self.action_lot_scaned_post(lot)
+                self.action_lot_scanned_post(lot)
                 self.action_done()
                 return
 
@@ -109,7 +110,6 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.action_done()
 
     def on_barcode_scanned(self, barcode):
-        self.barcode = barcode
         self.reset_qty()
         self.process_barcode(barcode)
 
@@ -132,31 +132,28 @@ class WizStockBarcodesRead(models.AbstractModel):
     def action_cancel(self):
         return True
 
-    def action_product_scaned_post(self, product):
+    def _set_product_quantity(self):
+        if self.product_id.uom_qty:
+            self.product_qty = self.product_id.uom_qty
+        else:
+            self.product_qty = 0.0 if self.manual_entry else 1.0
+
+    def action_product_scanned_post(self, product):
         self.packaging_id = False
         if self.product_id != product:
             self.lot_id = False
         self.product_id = product
-        self.product_qty = 0.0 if self.manual_entry else 1.0
+        self._set_product_quantity()
 
-    def action_packaging_scaned_post(self, packaging):
-        self.packaging_id = packaging
-        if self.product_id != packaging.product_id:
-            self.lot_id = False
-        self.product_id = packaging.product_id
-        self.packaging_qty = 0.0 if self.manual_entry else 1.0
-        self.product_qty = packaging.qty * self.packaging_qty
-
-    def action_lot_scaned_post(self, lot):
+    def action_lot_scanned_post(self, lot):
         self.lot_id = lot
-        self.product_qty = 0.0 if self.manual_entry else 1.0
+        self._set_product_quantity()
 
     def action_clean_lot(self):
         self.lot_id = False
 
     def reset_qty(self):
         self.product_qty = 0
-        self.packaging_qty = 0
 
     def _set_message_success(self, message):
         self.message_type = 'success'

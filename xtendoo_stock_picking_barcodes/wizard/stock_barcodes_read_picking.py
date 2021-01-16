@@ -299,6 +299,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         # return self._get_action()
 
 
+
 class WizCandidatePicking(models.TransientModel):
     """
     TODO: explain

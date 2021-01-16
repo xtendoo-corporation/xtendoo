@@ -13,6 +13,7 @@
         "barcodes",
         "stock",
         'xtendoo_web_notify',
+        'sale_order_product_default_uom',
     ],
     "data": [
         'security/ir.model.access.csv',
