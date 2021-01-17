@@ -11,7 +11,6 @@ class StockProductionLot(models.Model):
 
     @api.onchange('life_date')
     def _onchange_life_date(self):
-        alert_time = self.product_id.alert_time
-        if alert_time:
-            self.alert_date = self.life_date - timedelta(days=alert_time)
+        if self.product_id.alert_time and self.life_date:
+            self.alert_date = self.life_date - timedelta(days=self.product_id.alert_time)
 
