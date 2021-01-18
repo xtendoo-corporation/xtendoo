@@ -62,7 +62,7 @@ class WizStockBarcodesRead(models.AbstractModel):
                 self._set_messagge_info(
                     'more_match', _('More than one product found'))
                 return
-            self.action_product_scaned_post(product)
+            self.action_product_scanned_post(product)
             self.action_done()
             return
         if self.env.user.has_group('product.group_stock_packaging'):
@@ -72,7 +72,7 @@ class WizStockBarcodesRead(models.AbstractModel):
                     self._set_messagge_info(
                         'more_match', _('More than one package found'))
                     return
-                self.action_packaging_scaned_post(packaging)
+                self.action_packaging_scanned_post(packaging)
                 self.action_done()
                 return
         if self.env.user.has_group('stock.group_production_lot'):
@@ -83,7 +83,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             if len(lot) == 1:
                 self.product_id = lot.product_id
             if lot:
-                self.action_lot_scaned_post(lot)
+                self.action_lot_scanned_post(lot)
                 self.action_done()
                 return
         location = self.env['stock.location'].search(domain)
@@ -113,14 +113,14 @@ class WizStockBarcodesRead(models.AbstractModel):
     def action_cancel(self):
         return True
 
-    def action_product_scaned_post(self, product):
+    def action_product_scanned_post(self, product):
         self.packaging_id = False
         if self.product_id != product:
             self.lot_id = False
         self.product_id = product
         self.product_qty = 0.0 if self.manual_entry else 1.0
 
-    def action_packaging_scaned_post(self, packaging):
+    def action_packaging_scanned_post(self, packaging):
         self.packaging_id = packaging
         if self.product_id != packaging.product_id:
             self.lot_id = False
@@ -128,7 +128,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.packaging_qty = 0.0 if self.manual_entry else 1.0
         self.product_qty = packaging.qty * self.packaging_qty
 
-    def action_lot_scaned_post(self, lot):
+    def action_lot_scanned_post(self, lot):
         self.lot_id = lot
         self.product_qty = 0.0 if self.manual_entry else 1.0
 

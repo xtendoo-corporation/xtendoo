@@ -64,10 +64,6 @@ class WizStockBarcodesRead(models.AbstractModel):
         if self.packaging_id:
             self.product_qty = self.packaging_qty * self.packaging_id.qty
 
-    @api.onchange('message_type')
-    def onchange_message_type(self):
-        self.message = self.message_type
-
     def process_barcode(self, barcode):
         self.barcode = barcode
         domain = [('barcode', '=', barcode)]
@@ -133,10 +129,12 @@ class WizStockBarcodesRead(models.AbstractModel):
         return True
 
     def _set_product_quantity(self):
-        if self.product_id.uom_qty:
-            self.product_qty = self.product_id.uom_qty
-        else:
-            self.product_qty = 0.0 if self.manual_entry else 1.0
+        self.product_qty = 0.0 if self.manual_entry else 1.0
+
+        # if self.product_id.uom_qty:
+        #     self.product_qty = self.product_id.uom_qty
+        # else:
+        #     self.product_qty = 0.0 if self.manual_entry else 1.0
 
     def action_product_scanned_post(self, product):
         self.packaging_id = False
