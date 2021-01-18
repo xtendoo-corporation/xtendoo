@@ -113,7 +113,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
     def action_done(self):
         res = self._process_stock_move_line()
         if res:
-            self._update_line_picking(res)
+            self._update_line_picking()
 
     def _get_action(self):
         if self.picking_id.picking_type_code == 'outgoing':
@@ -136,7 +136,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             self.action_done()
         # return self._get_action()
 
-    def _update_line_picking(self, res):
+    def _update_line_picking(self):
         for line in self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
         ):
@@ -299,7 +299,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         # return self._get_action()
 
 
-
 class WizCandidatePicking(models.TransientModel):
     """
     TODO: explain
@@ -451,26 +450,20 @@ class WizLinePicking(models.TransientModel):
         digits='Product Unit of Measure',
         readonly=True,
     )
+    lots = fields.Char(
+        compute='_compute_lots',
+        string='Lots',
+        readonly=True)
     # For reload kanban view
     scan_count = fields.Integer()
 
-    @api.depends('scan_count')
-    def _compute_picking_quantity(self):
-        for candidate in self:
-            qty_reserved = 0
-            qty_demand = 0
-            qty_done = 0
-            candidate.product_qty_reserved = sum(candidate.picking_id.mapped(
-                'move_lines.reserved_availability'))
-            for move in candidate.picking_id.move_lines:
-                qty_reserved += move.reserved_availability
-                qty_demand += move.product_uom_qty
-                qty_done += move.quantity_done
-            candidate.update({
-                'product_qty_reserved': qty_reserved,
-                'product_uom_qty': qty_demand,
-                'product_qty_done': qty_done,
-            })
+    @api.depends('quantity_done')
+    def _compute_lots(self):
+        lots = ''
+        for line in self:
+            for lot in line.picking_id.move_line_ids_without_package:
+                lots += lot.lot_id.name + ' (' + str(lot.qty_done) + '),'
+            self.lots = lots
 
     def _get_wizard_barcode_read(self):
         return self.env['wiz.stock.barcodes.read.picking'].browse(

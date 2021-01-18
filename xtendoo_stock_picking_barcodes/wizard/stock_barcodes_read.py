@@ -30,13 +30,6 @@ class WizStockBarcodesRead(models.AbstractModel):
     location_id = fields.Many2one(
         comodel_name='stock.location',
     )
-    packaging_id = fields.Many2one(
-        comodel_name='product.packaging',
-    )
-    packaging_qty = fields.Float(
-        string='Package Qty',
-        digits='Product Unit of Measure',
-    )
     product_qty = fields.Float(
         digits='Product Unit of Measure',
         default=1,
@@ -56,52 +49,51 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     @api.onchange('location_id')
     def onchange_location_id(self):
-        self.packaging_id = False
         self.product_id = False
 
-    @api.onchange('packaging_qty')
-    def onchange_packaging_qty(self):
-        if self.packaging_id:
-            self.product_qty = self.packaging_qty * self.packaging_id.qty
+    def _is_product_lot_valid(self, product, lot=False):
+        if product.tracking != 'none':
+            lot = self.env['stock.production.lot'].search([
+                ('product_id', '=', product.id),
+                ('name', '=', lot),
+            ])
+            if not lot:
+                self._set_message_error('Lote no encontrado')
+                return False
+            if lot.locked:
+                self._set_message_error('El lote esta bloqueado')
+                return False
+            self.lot_id = lot
+
+    def _has_lines_to_assign(self, product):
+        lines = self.line_picking_ids.filtered(
+            lambda l: l.product_id == product and l.product_uom_qty >= l.quantity_done + self.product_qty
+        )
+        if lines:
+            return True
+
+        self._set_message_error('No hay líneas para asignar este producto')
+        return False
 
     def process_barcode(self, barcode):
         self.barcode = barcode
         domain = [('barcode', '=', barcode)]
         product = self.env['product.product'].search(domain)
-        if product:
-            self.action_product_scanned_post(product)
-        else:
+        if not product:
             self._set_message_error('Código de barras para producto no encontrado')
             return
 
         if len(product) > 1:
-            self._set_message_error('Mas de un producto encontrado')
+            self._set_message_error('Más de un producto encontrado')
             return
 
-        lines = self.line_picking_ids.filtered(
-            lambda l: l.product_id == self.product_id and l.product_uom_qty >= l.quantity_done + self.product_qty
-        )
-        if not lines:
-            self._set_message_error('No hay líneas para asignar este producto')
+        if not self._has_lines_to_assign(product):
             return
 
-        if self.env.user.has_group('stock.group_production_lot'):
-            lot_domain = [('name', '=', barcode)]
-            if self.product_id:
-                lot_domain.append(('product_id', '=', self.product_id.id))
-            lot = self.env['stock.production.lot'].search(lot_domain)
-            if len(lot) == 1:
-                self.product_id = lot.product_id
-            if lot:
-                self.action_lot_scanned_post(lot)
-                self.action_done()
-                return
-
-        location = self.env['stock.location'].search(domain)
-        if location:
-            self.location_id = location
-            self._set_message_error('No hay almacen asignado')
+        if not self._is_product_lot_valid(self, product):
             return
+
+        self.action_product_scanned_post(product)
 
         self.action_done()
 
@@ -123,7 +115,8 @@ class WizStockBarcodesRead(models.AbstractModel):
         return True
 
     def action_done(self):
-        return self.check_done_conditions()
+        if self.check_done_conditions():
+            self.candidate_picking_ids.scan_count += 1
 
     def action_cancel(self):
         return True
@@ -137,10 +130,9 @@ class WizStockBarcodesRead(models.AbstractModel):
         #     self.product_qty = 0.0 if self.manual_entry else 1.0
 
     def action_product_scanned_post(self, product):
-        self.packaging_id = False
         if self.product_id != product:
+            self.product_id = product
             self.lot_id = False
-        self.product_id = product
         self._set_product_quantity()
 
     def action_lot_scanned_post(self, lot):
