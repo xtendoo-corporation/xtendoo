@@ -14,5 +14,5 @@ class Picking(models.Model):
                     lambda l: l.product_id == line.product_id
                 )
                 if move_line:
-                    line.move_id.sale_line_id = move_line.id
+                    line.move_id.sale_line_id = move_line.id[:1]
         return super(Picking, self).button_validate()
