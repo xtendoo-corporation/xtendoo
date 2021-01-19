@@ -119,7 +119,9 @@
                             <tbody class="invoice_tbody">
                                 <!-- Variables -->
                                 <t t-set="subtotal" t-value="0.0" />
-                                <t t-set="lines_grouped" t-value="o.lines_grouped_by_picking()" />
+                              
+                                <t t-set="lines_grouped" t-value="o.lines_grouped_by_picking()"/>
+                              
                                 <t t-set="current_subtotal" t-value="0"/>
                                 <t t-set="lines" t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
                                 <!-- Fin Variables -->
@@ -197,6 +199,7 @@
                                             <!--Fin subtotal -->
                                             <t t-set="last_picking" t-value="picking" />
                                         </t>
+                                        
                                     </tr>
                                 </t>
                             </tbody>
