@@ -8,11 +8,11 @@ odoo.define("stock_barcodes.FormController", function(require) {
 
     FormController.include({
 
-//        start: function() {
-//            alert('__start__');
-//            return this._super
-//                .apply(this, arguments);
-//        },
+        events: {
+            'click .o_button_cancel_scanner': '_onCancelScanner',
+            'mouseup .o_button_validate_scanner': '_onCancelScanner'
+        },
+
         _barcodeScanned: function(barcode, target) {
             var self = this;
 
@@ -24,16 +24,12 @@ odoo.define("stock_barcodes.FormController", function(require) {
             this._super(barcode, target).then(function() {
                 var manual_entry_mode = self.$("div[name='manual_entry'] input").val();
                 if (manual_entry_mode) {
-                    var packaging = self.$("div[name='packaging_id'] input").val();
-                    if (packaging) {
-                        self.$("input[name='packaging_qty']").focus();
-                    } else {
-                        self.$("input[name='product_qty']").focus();
-                    }
+                    self.$("input[name='product_qty']").focus();
                 }
             });
         },
         renderButtons: function($node) {
+
             /* Hide save and discard buttons from wizard, for this form do
                anything and confuse the user if he wants do a manual entry. All
                extended models from  wiz.stock.barcodes.read do not have this
@@ -44,15 +40,57 @@ odoo.define("stock_barcodes.FormController", function(require) {
             if (this.modelName.includes("wiz.stock.barcodes.read.")) {
                 this.$buttons.find(".o_form_buttons_edit").css({display: "none"});
             }
+
         },
         canBeDiscarded: function(recordID) {
+
             /*
              Silent the warning that says that the record has been modified.
              */
+
             if (!this.modelName.includes("wiz.stock.barcodes.read.")) {
                 return this._super(recordID);
             }
             return Promise.resolve(false);
+        },
+        _onValidateScanner: function () {
+            var self = this;
+            var prom = Promise.resolve();
+            var recordID = this.renderer.getEditableRecordID();
+            if (recordID) {
+                // If user's editing a record, we wait to save it before to try to
+                // validate the inventory.
+                prom = this.saveRecord(recordID);
+            }
+
+            prom.then(function () {
+                self._rpc({
+                    model: 'wiz.stock.barcodes.read.picking',
+                    method: 'action_validate_picking'
+                }).then(function (res) {
+                    var exitCallback = function (infos) {
+                        // In case we discarded a wizard, we do nothing to stay on
+                        // the same view...
+                        if (infos && infos.special) {
+                            return;
+                        }
+                        // ... but in any other cases, we go back on the inventory form.
+                        self.do_notify(
+                            _t("Success"),
+                            _t("The picking has been validated"));
+                        self.trigger_up('history_back');
+                    };
+
+                    if (_.isObject(res)) {
+                        self.do_action(res, { on_close: exitCallback });
+                    } else {
+                        return exitCallback();
+                    }
+                });
+            });
+        },
+        _onCancelScanner: function () {
+            this.trigger_up('history_back');
         },
     });
 });
