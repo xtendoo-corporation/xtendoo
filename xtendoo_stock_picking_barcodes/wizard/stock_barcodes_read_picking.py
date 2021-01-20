@@ -463,7 +463,7 @@ class WizLinePicking(models.TransientModel):
         for line in self:
             for lot in line.picking_id.move_line_ids_without_package:
                 lots += lot.lot_id.name + ' (' + str(lot.qty_done) + '),'
-            self.lots = lots[:-1]
+            line.lots = lots[:-1]
 
     def _get_wizard_barcode_read(self):
         return self.env['wiz.stock.barcodes.read.picking'].browse(
