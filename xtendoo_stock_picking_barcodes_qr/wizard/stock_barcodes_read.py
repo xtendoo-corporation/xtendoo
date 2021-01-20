@@ -35,10 +35,9 @@ class WizStockBarcodesRead(models.AbstractModel):
             self._set_message_error('No hay líneas para asignar este producto')
             return False
 
-        if not self._is_product_lot_valid(self, product, lot):
+        if not self._is_product_lot_valid(product, lot):
             return False
 
         self.lot_id = lot
-
 
         self.action_done()
