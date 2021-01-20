@@ -7,16 +7,27 @@ class WizStockBarcodesRead(models.AbstractModel):
     _inherit = 'wiz.stock.barcodes.read'
 
     def process_barcode(self, barcode):
-        """ Only has been implemented AI (01, 02, 10, 37), so is possible that
-        scanner reads a barcode ok but this one is not precessed.
-        """
+
+        print("barcode read ::::::", barcode)
+
         index = barcode.find(';')
         if index == -1:
+
+            print("llamada al super :::::")
+
             return super().process_barcode(barcode)
         product_barcode = barcode[:index]
         lot = barcode[index+1:]
 
-        if not product_barcode or not lot:
+        print("product_barcode :::::", product_barcode)
+        print("lot :::::", lot)
+
+        if not product_barcode:
+            self._set_message_error('Código de barras no valido')
+            return False
+
+        if not lot:
+            self._set_message_error('Lote no valido')
             return False
 
         product = self.env['product.product'].search(
@@ -37,7 +48,5 @@ class WizStockBarcodesRead(models.AbstractModel):
 
         if not self._is_product_lot_valid(product, lot):
             return False
-
-        self.lot_id = lot
 
         self.action_done()

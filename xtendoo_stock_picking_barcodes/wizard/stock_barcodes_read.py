@@ -53,10 +53,18 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def _is_product_lot_valid(self, product, lot=False):
         if product.tracking != 'none':
-            lot = self.env['stock.production.lot'].search([
+
+            print("product :::::", product)
+            print("product.id :::::", product.id)
+            print("lot :::::", lot)
+
+            lot = self.env['stock.production.lot'].sudo().search([
                 ('product_id', '=', product.id),
                 ('name', '=', lot),
             ])
+
+            print("despues de buscar :::::")
+
             if not lot:
                 self._set_message_error('Lote no encontrado')
                 return False
@@ -64,6 +72,7 @@ class WizStockBarcodesRead(models.AbstractModel):
                 self._set_message_error('El lote esta bloqueado')
                 return False
             self.lot_id = lot
+        return True
 
     def _has_lines_to_assign(self, product):
         lines = self.line_picking_ids.filtered(
@@ -98,7 +107,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.action_done()
 
     def on_barcode_scanned(self, barcode):
-        self.reset_qty()
+        self._reset_qty()
         self.process_barcode(barcode)
 
     def check_done_conditions(self):
@@ -135,15 +144,14 @@ class WizStockBarcodesRead(models.AbstractModel):
             self.lot_id = False
         self._set_product_quantity()
 
-    def action_lot_scanned_post(self, lot):
-        self.lot_id = lot
-        self._set_product_quantity()
-
-    def action_clean_lot(self):
+    def _reset_lot(self):
         self.lot_id = False
 
-    def reset_qty(self):
-        self.product_qty = 0
+    def _reset_qty(self):
+        self.product_qty = 0.0 if self.manual_entry else 1.0
+
+    def _reset_product(self):
+        self.product_id = False
 
     def _set_message_success(self, message):
         self.message_type = 'success'

@@ -85,7 +85,7 @@
                     <group>
                         <button name="action_manual_entry"
                                 type="object"
-                                string="Añadir Entrada"
+                                string="Registrar Entrada"
                                 icon="fa-plus"
                                 attrs="{'invisible': [('manual_entry', '=', False)]}"
                                 class="btn-success"
@@ -94,10 +94,16 @@
 
                     <notebook>
                         <!-- Reservation hidden -->
-                        <page string="Detailed Operations">
+                        <page string="Operaciones en curso">
 
                             <field name="line_picking_ids" options="{'no_open': True}" nolabel="1" mode="tree,kanban">
-                                <tree string="Stock Moves" editable="bottom">
+
+                                <tree string="Stock Moves"
+                                      decoration-danger="state == 'none'"
+                                      decoration-warning="state == 'any'"
+                                      decoration-success="state == 'all'"
+                                >
+                                    <field name="state" invisible="1"/>
                                     <field name="product_id"/>
                                     <field name="product_uom_qty" string="Demanda Inicial"/>
                                     <field name="quantity_done" string="Hecho"/>
