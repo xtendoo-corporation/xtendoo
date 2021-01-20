@@ -90,7 +90,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         if not self._has_lines_to_assign(product):
             return
 
-        if not self._is_product_lot_valid(self, product):
+        if not self._is_product_lot_valid(product):
             return
 
         self.action_product_scanned_post(product)
