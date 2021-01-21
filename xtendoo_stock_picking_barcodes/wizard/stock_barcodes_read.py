@@ -118,9 +118,6 @@ class WizStockBarcodesRead(models.AbstractModel):
         if not self.product_qty:
             self._set_message_error('Esperando cantidades')
             return False
-
-        if self.manual_entry:
-            self._set_message_success('Entrada correcta')
         return True
 
     def action_done(self):

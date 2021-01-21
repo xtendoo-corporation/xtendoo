@@ -111,9 +111,11 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self._set_default_message()
 
     def action_done(self):
-        res = self._process_stock_move_line()
-        if res:
+        if self._process_stock_move_line():
             self._update_line_picking()
+
+
+
 
     def _get_action(self):
         if self.picking_id.picking_type_code == 'outgoing':
@@ -132,8 +134,12 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         return action
 
     def action_manual_entry(self):
-        if self.check_done_conditions():
-            self.action_done()
+        if not self.check_done_conditions():
+            return
+        if not self._process_stock_move_line():
+            return
+        self._update_line_picking()
+        self._set_message_success("Entrada correcta")
         self._reset_manual_entry()
 
     def _update_line_picking(self):
@@ -212,7 +218,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             if candidate_pickings_count == 1:
                 self.picking_id = candidate_pickings
                 self._set_candidate_pickings(candidate_pickings)
-            _logger.info('No picking assigned')
         return True
 
     def _process_stock_move_line(self):
@@ -313,14 +318,15 @@ class WizStockBarcodesReadPicking(models.TransientModel):
 
     def action_set_manual_entry(self):
         self.manual_entry = True
+        self._reset_message()
         self._reset_manual_entry()
 
     def action_quit_manual_entry(self):
         self.manual_entry = False
+        self._reset_message()
         self._reset_manual_entry()
 
     def _reset_manual_entry(self):
-        self._reset_message()
         self._reset_product()
         self._reset_lot()
         self._reset_qty()
