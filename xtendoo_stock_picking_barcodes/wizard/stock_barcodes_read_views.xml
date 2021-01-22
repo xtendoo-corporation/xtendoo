@@ -97,7 +97,6 @@
                         <page string="En Curso">
 
                             <field name="line_picking_ids"
-                                   domain="[('quantity_done', '<', 'product_uom_qty')]"
                                    options="{'no_open': True}"
                                    nolabel="1"
                                    mode="tree,kanban">
