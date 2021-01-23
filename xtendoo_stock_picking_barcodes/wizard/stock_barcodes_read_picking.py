@@ -51,6 +51,12 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         string='Line pickings',
         readonly=True,
     )
+    # line_picking_ids_not_done = fields.One2many(
+    #     comodel_name='wiz.line.picking',
+    #     inverse_name='wiz_barcode_id',
+    #     compute='_compute_picking_ids',
+    #     store=True,
+    # )
     picking_product_qty = fields.Float(
         string='Picking quantities',
         digits='Product Unit of Measure',
@@ -61,6 +67,26 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         ('outgoing', 'Customers'),
         ('internal', 'Internal'),
     ], 'Type of Operation')
+
+    # @api.depends("picking_id")
+    # def _compute_picking_ids(self):
+    #     vals = [(5, 0, 0)]
+    #
+    #     print("picking id :::::", self.picking_id)
+    #
+    #     for line in self.picking_id.move_ids_without_package:
+    #         # .filtered(lambda l: l.product_uom_qty > l.quantity_done):
+    #         vals.extend([(0, 0, {
+    #             'picking_id': self.picking_id.id,
+    #             'product_id': line.product_id.id,
+    #             'reserved_availability': line.reserved_availability,
+    #             'product_uom_qty': line.product_uom_qty,
+    #             'quantity_done': line.quantity_done,
+    #         })])
+    #
+    #         print("line :::::", line)
+    #
+    #     self.line_picking_ids_not_done = vals
 
     def name_get(self):
         return [
@@ -113,9 +139,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
     def action_done(self):
         if self._process_stock_move_line():
             self._update_line_picking()
-
-
-
+            self._clean_line_picking()
 
     def _get_action(self):
         if self.picking_id.picking_type_code == 'outgoing':
@@ -141,6 +165,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self._update_line_picking()
         self._set_message_success("Entrada correcta")
         self._reset_manual_entry()
+        self._clean_line_picking()
 
     def _update_line_picking(self):
         for line in self.line_picking_ids.filtered(
@@ -148,6 +173,10 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         ):
             line.quantity_done = line.quantity_done + self.product_qty
             break
+
+    def _clean_line_picking(self):
+        self.line_picking_ids = [(2, line.id) for line in self.line_picking_ids.filtered(
+            lambda l: l.quantity_done >= l.product_uom_qty)]
 
     def _prepare_move_line_values(self, candidate_move, available_qty):
         """When we've got an out picking, the logical workflow is that
@@ -195,13 +224,13 @@ class WizStockBarcodesReadPicking(models.TransientModel):
     def _set_line_pickings(self, candidate_pickings):
         vals = [(5, 0, 0)]
         for p in candidate_pickings:
-            for l in p.move_ids_without_package:
+            for line in p.move_ids_without_package.filtered(lambda l: l.product_uom_qty > l.quantity_done):
                 vals.extend([(0, 0, {
                     'picking_id': p.id,
-                    'product_id': l.product_id.id,
-                    'reserved_availability': l.reserved_availability,
-                    'product_uom_qty': l.product_uom_qty,
-                    'quantity_done': l.quantity_done,
+                    'product_id': line.product_id.id,
+                    'reserved_availability': line.reserved_availability,
+                    'product_uom_qty': line.product_uom_qty,
+                    'quantity_done': line.quantity_done,
                 })])
         self.line_picking_ids = vals
 
@@ -273,6 +302,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             # initial demand.
 
             print("pasada la comparativa :::::", available_qty)
+            print("self.picking_id.move_lines :::::", self.picking_id.move_lines)
 
             moves = self.picking_id.move_lines.filtered(lambda m: (
                 m.product_id == self.product_id and
@@ -281,7 +311,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             print("movimientos asignados :::::", moves)
 
             if not moves:
-                self._set_message_error('No hay líneas para asignar este producto')
+                self._set_message_error('No hay líneas para asignar este producto.')
                 return False
             else:
 
@@ -483,10 +513,14 @@ class WizLinePicking(models.TransientModel):
         digits='Product Unit of Measure',
         readonly=True,
     )
-    state = fields.Char(
+    state = fields.Selection(selection=[
+        ('none', 'None'),
+        ('any', 'Any'),
+        ('all', 'All')],
         compute='_compute_state',
         string='State',
-        readonly=True)
+        store=True,
+    )
     lots = fields.Char(
         compute='_compute_lots',
         string='Lots',
@@ -507,12 +541,11 @@ class WizLinePicking(models.TransientModel):
     def _compute_state(self):
         for line in self:
             if line.quantity_done == 0:
-                state = 'none'
+                line.state = 'none'
             elif 0 < line.quantity_done < line.product_uom_qty:
-                state = 'any'
+                line.state = 'any'
             else:
-                state = 'all'
-            line.state = state
+                line.state = 'all'
 
     def _get_wizard_barcode_read(self):
         return self.env['wiz.stock.barcodes.read.picking'].browse(
