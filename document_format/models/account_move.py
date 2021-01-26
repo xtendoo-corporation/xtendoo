@@ -60,22 +60,3 @@ class AccountMove(models.Model):
         ]
         return no_picking + self._sort_grouped_lines(with_picking)
 
-    def get_multi_due_list(self):
-        self.ensure_one()
-        due_list = []
-        if self.type in ["in_invoice", "out_refund"]:
-            due_move_line_ids = self.line_ids.filtered(
-                lambda ml: ml.account_id.internal_type == "payable" and ml.date_maturity is not False
-            )
-        else:
-            due_move_line_ids = self.line_ids.filtered(
-                lambda ml: ml.account_id.internal_type == "receivable" and ml.date_maturity is not False
-            )
-        if self.currency_id != self.company_id.currency_id:
-            due_list = [
-                (ml.date_maturity, ml.amount_currency) for ml in due_move_line_ids
-            ]
-        else:
-            due_list = [(ml.date_maturity, ml.balance) for ml in due_move_line_ids]
-        due_list.sort()
-        return due_list

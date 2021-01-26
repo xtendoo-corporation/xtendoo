@@ -29,13 +29,10 @@
                                 </li>
                                 <li t-if="company.city" style="display:inline">
                                     <span t-field="company.city"/>
-                                </li>
-                                <li t-if="company.state_id">
-                                    <span t-field="company.state_id"/>
+                                    <span t-if="company.state_id" t-field="company.state_id"/>
                                 </li>
                                 <li t-if="company.vat">
                                     <t t-esc="company.country_id.vat_label or 'Tax ID'"/>
-:
                                     <span t-field="company.vat"/>
                                 </li>
                             </ul>

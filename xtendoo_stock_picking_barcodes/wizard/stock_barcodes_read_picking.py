@@ -214,9 +214,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
 
     def _set_candidate_pickings(self, candidate_pickings):
         vals = [(5, 0, 0)]
-        vals.extend([(0, 0, {
-            'picking_id': p.id,
-        }) for p in candidate_pickings])
+        vals.extend([(0, 0, {'picking_id': p.id,}) for p in candidate_pickings])
         self.candidate_picking_ids = vals
         # Only for test
         self._set_line_pickings(candidate_pickings)
