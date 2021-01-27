@@ -59,4 +59,3 @@ class AccountMove(models.Model):
             for key, value in picking_dict.items()
         ]
         return no_picking + self._sort_grouped_lines(with_picking)
-

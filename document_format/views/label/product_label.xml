@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+        <template id="document_format.report_simple_barcode" inherit_id="product.report_simple_barcode">
+            <xpath expr="//table" position="replace">
+                <div class="page text-justify">
+                    <div class="text-center">
+                        <div style="text-align:center;font-size:0.9em;min-height:80px;padding-top:5px;">
+                            <span t-field="product.name"/>
+                        </div>
+                        <div style="text-align:center;">
+                            <t t-if="product.barcode">
+                                <img alt="Barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(product.barcode or ''), 600, 220)" style="width:120%;height:6rem;margin-left:-10%;"/>
+                                 <span style="text-align: center;" t-field="product.barcode"/>
+                            </t>
+                        </div>
+                       <div style="text-align:center;">
+                            <span t-field="product.default_code"/>
+                        </div>
+                    </div>
+                </div>
+
+
+            </xpath>
+        </template>
+    </data>
+</odoo>

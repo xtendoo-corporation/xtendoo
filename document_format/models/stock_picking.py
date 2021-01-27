@@ -16,6 +16,3 @@ class Picking(models.Model):
                 if move_line:
                     line.move_id.sale_line_id = move_line[:1].id
         return super(Picking, self).button_validate()
-
-
-
