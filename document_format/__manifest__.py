@@ -15,6 +15,7 @@
         "sale",
         "web",
         "stock",
+        "product",
     ],
     "license": "AGPL-3",
     "depends": [
@@ -32,6 +33,7 @@
         "views/invoice/invoice_gruped_by_picking.xml",
         "views/layout/external_layout_clean.xml",
         "views/sale/sale_order_document.xml",
+        "views/label/product_label.xml",
     ],
     "installable": True,
     "auto_install": False,
