@@ -1,7 +1,7 @@
 <odoo>
     <data>
         <template id="document_format.report_simple_barcode" inherit_id="product.report_simple_barcode">
-            <xpath expr="//table" position="replace">
+            <xpath expr="//div" position="replace">
                 <div class="page text-justify">
                     <div class="text-center">
                         <div style="text-align:center;font-size:0.9em;min-height:80px;padding-top:5px;">
