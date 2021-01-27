@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# Copyright 2020 Manuel Calero - Xtendoo
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+
 
 {
     'name': 'Margins Percent in Sales Orders ',
@@ -7,19 +8,20 @@
     'category': 'Sales/Sales',
     'description': """
 This module adds the 'Margin Percent' on sales order.
-=============================================
-
-This gives the profitability by calculating the difference between the Unit
-Price and Cost Price.
     """,
     'depends':
         [
             'sale_management',
-            'sale_margin'
+            'sale_margin',
+            'product',
+        ],
+    'demo':
+        [
+            'data/product_demo.xml',
         ],
     'data':
         [
             'security/ir.model.access.csv',
-            'views/sale_margin_view.xml'
+            'views/sale_oder_line_margin_percent_view.xml',
         ],
 }

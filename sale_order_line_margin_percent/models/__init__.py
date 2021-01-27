@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# Copyright 2020 Manuel Calero - Xtendoo
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from . import sale_order
