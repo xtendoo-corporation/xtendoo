@@ -33,6 +33,7 @@
         "views/invoice/invoice_gruped_by_picking.xml",
         "views/layout/external_layout_clean.xml",
         "views/sale/sale_order_document.xml",
+        "views/sale/sale_order_blank_document.xml",
         "views/label/product_label.xml",
     ],
     "installable": True,

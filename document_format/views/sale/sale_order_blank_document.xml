@@ -2,22 +2,24 @@
 <odoo>
     <data>
 
-        <report id="report_sale_order_format" string="Pedido/Presupuesto" model="sale.order"
+        <report id="report_sale_order_blank_format"
+                string="Pedido/Presupuesto sin Cabecera"
+                model="sale.order"
                 report_type="qweb-pdf"
-                name="document_format.format_report_sale_order_document"
+                name="document_format.format_report_sale_order_blank_document"
                 print_report_name="(object._get_report_base_filename())"/>
 
-        <template id="format_report_sale_order_document">
+        <template id="format_report_sale_order_blank_document">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="doc">
-                    <t t-call="document_format.report_saleorder_document_xtendoo"/>
+                    <t t-call="document_format.report_saleorder_blank_document_xtendoo"/>
                 </t>
             </t>
         </template>
 
-        <template id="document_format.report_saleorder_document_xtendoo">
-            <t t-name="document_format.report_saleorder_document_xtendoo">
-                <t t-call="web.external_layout">
+        <template id="document_format.report_saleorder_blank_document_xtendoo">
+            <t t-name="document_format.report_saleorder_blank_document_xtendoo">
+                <t t-call="web.basic_layout">
                     <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
                     <div class="page">
                         <!-- Datos del documento -->
@@ -293,7 +295,6 @@
                     </div>
                 </t>
             </t>
-
         </template>
 
     </data>
