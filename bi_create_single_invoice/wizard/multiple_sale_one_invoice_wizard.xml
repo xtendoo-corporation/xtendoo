@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_multiple_invoice_sale_wizard_form" model="ir.ui.view">
+            <field name="name">multiple.sale.one.invoice.wizard.form</field>
+            <field name="model">multiple.sale.one.invoice.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+
+                    <group>
+                        <div>
+                            <h2 style="color:red;">Make sure all the sale order have same customer and sale order should
+                                be fully uninvoiced and confirmed.
+                            </h2>
+                            <h3>Do you want to create single invoice ?</h3>
+                        </div>
+                    </group>
+
+                    <footer>
+                        <button string="Yes" class="oe_highlight"
+                                name="create_invoices_for_sale_order" type="object"/>
+                        or
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

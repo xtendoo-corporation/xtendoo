@@ -40,7 +40,7 @@
                                     <b>Factura Pro-Forma:</b>
                                     <span t-field="doc.name"/>
                                 </li>
-                                <li t-if="doc.date_order and doc.state not in ['draft','sent']">
+                                <li t-if="doc.date_order">
                                     <b>Fecha:</b>
                                     <span t-esc="doc.date_order.strftime('%d/%m/%Y')"/>
                                 </li>
