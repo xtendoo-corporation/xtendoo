@@ -8,10 +8,6 @@
     "website": "https://xtendoo.es",
     "author": "ddl",
     "license": "AGPL-3",
-    "depends": [
-        "sale_management",
-    ],
-    "data": [
-        "views/sale_order_view.xml",
-    ],
+    "depends": ["sale_management",],
+    "data": ["views/sale_order_view.xml",],
 }

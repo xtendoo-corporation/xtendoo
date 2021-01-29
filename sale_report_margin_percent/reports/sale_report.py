@@ -8,18 +8,15 @@ class SaleReport(models.Model):
     _inherit = "sale.report"
 
     margin_percent = fields.Float(
-        string='Margin Percent',
-        readonly=True,
-        digits=(16, 2),
-        )
+        string="Margin Percent", readonly=True, digits=(16, 2),
+    )
 
     def _query(self, with_clause="", fields=None, groupby="", from_clause=""):
         if fields is None:
             fields = {}
         fields.update(
             {
-                "margin_percent":
-                " , CASE"
+                "margin_percent": " , CASE"
                 "       WHEN"
                 "           l.untaxed_amount_to_invoice = 0"
                 "       THEN"
@@ -31,7 +28,7 @@ class SaleReport(models.Model):
                 "            margin_percent"
             }
         )
-        groupby += ', l.untaxed_amount_to_invoice'
+        groupby += ", l.untaxed_amount_to_invoice"
 
         return super()._query(
             with_clause=with_clause,
@@ -39,6 +36,7 @@ class SaleReport(models.Model):
             groupby=groupby,
             from_clause=from_clause,
         )
+
 
 # "margin_percent": " ,SUM("
 # "((l.margin / l.untaxed_amount_to_invoice)"

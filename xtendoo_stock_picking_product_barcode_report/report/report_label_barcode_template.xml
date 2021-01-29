@@ -1,39 +1,43 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <template id="report_label_barcode">
         <t t-call="web.basic_layout">
             <div class="page text-justify">
                 <t t-foreach="doc.label_qty" t-as="i">
                     <div class="text-center">
-                        <t t-set="qr_code" t-value="doc.product_id.barcode + ';' + doc.lot_id.name"/>
+                        <t
+                            t-set="qr_code"
+                            t-value="doc.product_id.barcode + ';' + doc.lot_id.name"
+                        />
                         <img
                             t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', qr_code, 256, 256)"
                             style="width:50px;height:50px;"
-                            alt="Barcode"/>
+                            alt="Barcode"
+                        />
                         <div class="text-center" style="font-size: 9px;">
                             <span
                                 t-field="doc.product_id.display_name"
                                 style="font-weight: bold"
                             />
-                            <br/>
-                            <span t-field="doc.product_id.barcode"/>
+                            <br />
+                            <span t-field="doc.product_id.barcode" />
                             <span t-if="doc.lot_id">/ Lot:
-                                <span t-field="doc.lot_id.name"/>
+                                <span t-field="doc.lot_id.name" />
                             </span>
-                            <br/>
+                            <br />
                             <span t-if="doc.lot_id">Cad:
-                                <span t-field="doc.lot_id.life_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                                <span
+                                    t-field="doc.lot_id.life_date"
+                                    t-options='{"format": "dd/MM/yyyy"}'
+                                />
                             </span>
-
                         </div>
-                        <p style="page-break-after:always;"/>
+                        <p style="page-break-after:always;" />
                     </div>
                 </t>
             </div>
         </t>
     </template>
-
     <template id="label_barcode_report">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
@@ -46,5 +50,4 @@
             </t>
         </t>
     </template>
-
 </odoo>

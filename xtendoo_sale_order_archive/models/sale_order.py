@@ -8,4 +8,3 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     active = fields.Boolean(default=True)
-

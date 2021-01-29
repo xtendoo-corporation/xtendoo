@@ -9,26 +9,19 @@ class ProductClassification(models.Model):
     _order = "sequence, id"
 
     name = fields.Char(
-        comodel_name="Classification Name",
-        required=True,
-        translate=True,
+        comodel_name="Classification Name", required=True, translate=True,
     )
     sequence = fields.Integer(
-        string="Sequence",
-        help="Used to order the Classification",
-        default=1,
+        string="Sequence", help="Used to order the Classification", default=1,
     )
-    description = fields.Text(
-        translate=True,
-    )
+    description = fields.Text(translate=True,)
     product_ids = fields.One2many(
         comodel_name="product.template",
         inverse_name="product_classification_id",
         string="Classification Products",
     )
     products_count = fields.Integer(
-        string="Number of products",
-        compute="_compute_products_count",
+        string="Number of products", compute="_compute_products_count",
     )
 
     @api.depends("product_ids")
@@ -39,7 +32,9 @@ class ProductClassification(models.Model):
             ["product_classification_id"],
         )
         mapped_data = {
-            record["product_classification_id"][0]: record["product_classification_id_count"]
+            record["product_classification_id"][0]: record[
+                "product_classification_id_count"
+            ]
             for record in data
         }
         for classification in self:

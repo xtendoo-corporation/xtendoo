@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 {
     "name": "report_sale_order_accumulate",
     "summary": """Informe de ventas acumulados por tipo de producto""",
@@ -9,20 +7,10 @@
     "company": "Xtendoo",
     "website": "https://xtendoo.es",
     "category": "Extra Tools",
-    "depends": [
-        "base",
-        "account",
-        "sale",
-        "web",
-        "stock",
-    ],
+    "depends": ["base", "account", "sale", "web", "stock",],
     "license": "AGPL-3",
-    "depends": [
-        "stock",
-    ],
-    "data": [
-        "reports/report_saleorder_accumulate.xml",
-    ],
+    "depends": ["stock",],
+    "data": ["reports/report_saleorder_accumulate.xml",],
     "installable": True,
     "auto_install": False,
 }

@@ -1,21 +1,20 @@
 <odoo>
     <data>
-
-        <report id="report_delivery_format"
-                string="Albarán de entrega"
-                model="stock.picking"
-                report_type="qweb-pdf"
-                name="document_format.format_report_delivery_document"
-                print_report_name="'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)"/>
-
+        <report
+            id="report_delivery_format"
+            string="Albarán de entrega"
+            model="stock.picking"
+            report_type="qweb-pdf"
+            name="document_format.format_report_delivery_document"
+            print_report_name="'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)"
+        />
         <template id="format_report_delivery_document">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
-                    <t t-call="document_format.report_delivery_document_xtendoo"/>
+                    <t t-call="document_format.report_delivery_document_xtendoo" />
                 </t>
             </t>
         </template>
-
         <template id="document_format.report_delivery_document_xtendoo">
             <t t-name="document_format.report_delivery_document_xtendoo">
                 <t t-call="web.external_layout">
@@ -26,17 +25,15 @@
                             <ul class="list-unstyled">
                                 <li>
                                     <b>Albarán:</b>
-                                    <span t-field="o.name"/>
+                                    <span t-field="o.name" />
                                 </li>
-
                                 <li t-if="o.date_done">
                                     <b>Fecha:</b>
-                                    <span t-esc="o.date_done.strftime('%d/%m/%Y')"/>
+                                    <span t-esc="o.date_done.strftime('%d/%m/%Y')" />
                                 </li>
-
                                 <li t-if="o.origin">
                                     <b>Pedido:</b>
-                                    <span t-field="o.origin"/>
+                                    <span t-field="o.origin" />
                                 </li>
                             </ul>
                         </div>
@@ -45,77 +42,123 @@
                         <div style="width:50%; float:left;">
                             <ul class="list-unstyled">
                                 <li t-if="o.partner_id.name">
-                                    <span t-field="o.partner_id.name"/>
+                                    <span t-field="o.partner_id.name" />
                                 </li>
                                 <li t-if="o.partner_id.comercial">
-                                    <span  t-field="o.partner_id.comercial"/>
+                                    <span t-field="o.partner_id.comercial" />
                                 </li>
                                 <li t-if="o.partner_id.street">
-                                    <span t-field="o.partner_id.street"/>
+                                    <span t-field="o.partner_id.street" />
                                 </li>
                                 <li>
-                                    <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
-                                    <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>
+                                    <span
+                                        t-if="o.partner_id.zip"
+                                        t-field="o.partner_id.zip"
+                                    />
+                                    <span
+                                        t-if="o.partner_id.city"
+                                        t-field="o.partner_id.city"
+                                    />
                                     ,
-                                    <span t-if="o.partner_id.state_id" t-field="o.partner_id.state_id.name"/>
+                                    <span
+                                        t-if="o.partner_id.state_id"
+                                        t-field="o.partner_id.state_id.name"
+                                    />
                                 </li>
                                 <li>
-                                    <span t-if="o.partner_id.country_id" t-field="o.partner_id.country_id"/>
+                                    <span
+                                        t-if="o.partner_id.country_id"
+                                        t-field="o.partner_id.country_id"
+                                    />
                                 </li>
                                 <li t-if="o.partner_id.vat">
                                     NIF:
-                                    <span t-field="o.partner_id.vat"/>
+                                    <span t-field="o.partner_id.vat" />
                                 </li>
                                 <li t-if="o.partner_id.phone">
-                                    <i class="fa fa-phone"/>
-                                    <span t-field="o.partner_id.phone"/>
+                                    <i class="fa fa-phone" />
+                                    <span t-field="o.partner_id.phone" />
                                 </li>
                             </ul>
                         </div>
                         <!-- Fin datos del cliente -->
                         <!-- Fin datos documento -->
                         <!-- Is there a discount on at least one line? -->
-                        <t t-set="display_discount" t-value="any([l.discount for l in o.sale_id.order_line])"/>
+                        <t
+                            t-set="display_discount"
+                            t-value="any([l.discount for l in o.sale_id.order_line])"
+                        />
                         <table class="table" style="border:none;">
-                            <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"/>
+                            <t
+                                t-set="has_serial_number"
+                                t-value="o.move_line_ids.mapped('lot_id')"
+                            />
                             <!-- Cabecera -->
                             <thead>
                                 <tr>
-                                    <th name="th_code" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;">
+                                    <th
+                                        name="th_code"
+                                        class="text-left"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
+                                    >
                                         Código
                                     </th>
-                                    <th name="th_description" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;">
+                                    <th
+                                        name="th_description"
+                                        class="text-left"
+                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;"
+                                    >
                                         Descripción
                                     </th>
-                                    <th t-if="has_serial_number" groups="stock.group_lot_on_delivery_slip"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                    <th
+                                        t-if="has_serial_number"
+                                        groups="stock.group_lot_on_delivery_slip"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
                                         Lote
                                     </th>
-                                    <th t-if="has_serial_number" groups="stock.group_lot_on_delivery_slip"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                    <th
+                                        t-if="has_serial_number"
+                                        groups="stock.group_lot_on_delivery_slip"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
                                         Caducidad
                                     </th>
-                                    <th name="th_quantity" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                    <th
+                                        name="th_quantity"
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
                                         Unds
                                     </th>
-                                    <th name="th_priceunit" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                    <th
+                                        name="th_priceunit"
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
                                         Importe
                                     </th>
-                                    <th name="th_discount" t-if="display_discount" class="text-right"
+                                    <th
+                                        name="th_discount"
+                                        t-if="display_discount"
+                                        class="text-right"
                                         style="solid; black; padding: 0px; margin: 0px; width:10%; !important;"
-                                        groups="product.group_discount_per_so_line">
+                                        groups="product.group_discount_per_so_line"
+                                    >
                                         Dto.%
                                     </th>
-                                    <th name="th_taxes" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                    <th
+                                        name="th_taxes"
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
                                         IVA%
                                     </th>
-                                    <th name="th_subtotal" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:12%; !important; font-size:0.9em;">
+                                    <th
+                                        name="th_subtotal"
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:12%; !important; font-size:0.9em;"
+                                    >
                                         Total
                                     </th>
                                 </tr>
@@ -124,63 +167,115 @@
                             <!-- Lineas -->
                             <tbody class="sale_tbody">
                                 <tr t-foreach="o.move_line_ids" t-as="move_line">
-                                    <td name="td_code" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;">
-                                        <span t-field="move_line.product_id.default_code"/>
+                                    <td
+                                        name="td_code"
+                                        class="text-left"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
+                                    >
+                                        <span
+                                            t-field="move_line.product_id.default_code"
+                                        />
                                     </td>
-                                    <td name="td_name" class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;">
-                                        <span t-field="move_line.product_id.name"/>
-                                        <p t-if="move_line.move_id.description_picking != move_line.product_id.name">
-                                            <t t-set="productName" t-value="move_line.product_id.name"/>
-                                            <t t-set="name_num" t-value="productName.find(']') + 1 "/>
-                                            <t t-set="name" t-value="productName[name_num:]"/>
-                                            <span t-esc="name" t-options="{'widget': 'text'}"/>
+                                    <td
+                                        name="td_name"
+                                        class="text-left"
+                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;"
+                                    >
+                                        <span t-field="move_line.product_id.name" />
+                                        <p
+                                            t-if="move_line.move_id.description_picking != move_line.product_id.name"
+                                        >
+                                            <t
+                                                t-set="productName"
+                                                t-value="move_line.product_id.name"
+                                            />
+                                            <t
+                                                t-set="name_num"
+                                                t-value="productName.find(']') + 1 "
+                                            />
+                                            <t
+                                                t-set="name"
+                                                t-value="productName[name_num:]"
+                                            />
+                                            <span
+                                                t-esc="name"
+                                                t-options="{'widget': 'text'}"
+                                            />
                                         </p>
                                     </td>
-                                    <td t-if="has_serial_number and move_line.lot_id.name"
+                                    <td
+                                        t-if="has_serial_number and move_line.lot_id.name"
                                         groups="stock.group_lot_on_delivery_slip"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
-                                        <span t-field="move_line.lot_id.name"/>
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
+                                        <span t-field="move_line.lot_id.name" />
                                     </td>
-                                    <td t-elif="has_serial_number" groups="stock.group_lot_on_delivery_slip"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
-                                        <span t-field="move_line.lot_name"/>
+                                    <td
+                                        t-elif="has_serial_number"
+                                        groups="stock.group_lot_on_delivery_slip"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
+                                        <span t-field="move_line.lot_name" />
                                     </td>
-                                    <td t-if="has_serial_number" groups="stock.group_lot_on_delivery_slip"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                    <td
+                                        t-if="has_serial_number"
+                                        groups="stock.group_lot_on_delivery_slip"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
                                         <t t-if="move_line.lot_id.life_date">
-                                            <span t-esc="move_line.lot_id.life_date.strftime('%d/%m/%Y')"/>
+                                            <span
+                                                t-esc="move_line.lot_id.life_date.strftime('%d/%m/%Y')"
+                                            />
                                         </t>
                                     </td>
-                                    <td class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
-                                        <span t-field="move_line.qty_done"/>
-                                    </td>
-                                    <td class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
-                                        <span t-field="move_line.sale_price_unit"/>
-                                    </td>
-                                    <td class="text-right" t-if="display_discount"
+                                    <td
+                                        class="text-right"
                                         style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                        groups="product.group_discount_per_so_line">
-                                        <span t-field="move_line.sale_discount"/>
+                                    >
+                                        <span t-field="move_line.qty_done" />
                                     </td>
-                                    <td class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
-                                        <t t-set="iva" t-value="move_line.sale_tax_id.amount"/>
-                                        <span t-esc="int(iva)" t-options="{'widget': 'float', 'precision': 2}"/>
+                                    <td
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
+                                        <span t-field="move_line.sale_price_unit" />
                                     </td>
-                                    <td t-if="move_line.currency_id" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
-                                        <span t-field="move_line.sale_price_subtotal"/>
+                                    <td
+                                        class="text-right"
+                                        t-if="display_discount"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                        groups="product.group_discount_per_so_line"
+                                    >
+                                        <span t-field="move_line.sale_discount" />
                                     </td>
-                                    <td t-if="not move_line.currency_id" class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;">
+                                    <td
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
+                                        <t
+                                            t-set="iva"
+                                            t-value="move_line.sale_tax_id.amount"
+                                        />
+                                        <span
+                                            t-esc="int(iva)"
+                                            t-options="{'widget': 'float', 'precision': 2}"
+                                        />
+                                    </td>
+                                    <td
+                                        t-if="move_line.currency_id"
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
+                                        <span t-field="move_line.sale_price_subtotal" />
+                                    </td>
+                                    <td
+                                        t-if="not move_line.currency_id"
+                                        class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                    >
                                         0
                                     </td>
                                 </tr>
-
                             </tbody>
                             <!-- Fin Lineas -->
                         </table>
@@ -188,41 +283,61 @@
                             <!-- Totales -->
                             <div id="total" class="row" name="total">
                                 <div
-                                    t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
+                                    t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto"
+                                >
                                     <table class="table table-sm">
                                         <tr class="border-black o_subtotal">
-                                            <td name="td_amount_untaxed_label"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;">
+                                            <td
+                                                name="td_amount_untaxed_label"
+                                                style="solid; black; padding: 0px; margin: 0px; !important;"
+                                            >
                                                 <strong>Subtotal</strong>
                                             </td>
-                                            <td name="td_amount_untaxed" class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;">
-                                                <span t-field="o.amount_untaxed"
-                                                      t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                            <td
+                                                name="td_amount_untaxed"
+                                                class="text-right"
+                                                style="solid; black; padding: 0px; margin: 0px; !important;"
+                                            >
+                                                <span
+                                                    t-field="o.amount_untaxed"
+                                                    t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"
+                                                />
                                             </td>
                                         </tr>
-
                                         <tr class="border-black o_subtotal">
-                                            <td name="td_amount_untaxed_label"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;">
+                                            <td
+                                                name="td_amount_untaxed_label"
+                                                style="solid; black; padding: 0px; margin: 0px; !important;"
+                                            >
                                                 <strong>Impuestos</strong>
                                             </td>
-                                            <td name="td_amount_tax" class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;">
-                                                <span t-field="o.amount_tax"
-                                                      t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                            <td
+                                                name="td_amount_tax"
+                                                class="text-right"
+                                                style="solid; black; padding: 0px; margin: 0px; !important;"
+                                            >
+                                                <span
+                                                    t-field="o.amount_tax"
+                                                    t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"
+                                                />
                                             </td>
                                         </tr>
-
                                         <tr class="border-black o_total">
-                                            <td name="td_amount_total_label"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;">
+                                            <td
+                                                name="td_amount_total_label"
+                                                style="solid; black; padding: 0px; margin: 0px; !important;"
+                                            >
                                                 <strong>Total</strong>
                                             </td>
-                                            <td name="td_amount_tax" class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;">
-                                                <span t-field="o.amount_total"
-                                                      t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"/>
+                                            <td
+                                                name="td_amount_tax"
+                                                class="text-right"
+                                                style="solid; black; padding: 0px; margin: 0px; !important;"
+                                            >
+                                                <span
+                                                    t-field="o.amount_total"
+                                                    t-options="{'widget': 'monetary', 'display_currency': o.sale_id.pricelist_id.currency_id}"
+                                                />
                                             </td>
                                         </tr>
                                     </table>
@@ -230,25 +345,28 @@
                             </div>
                             <!-- Fin totales -->
                         </div>
-
                         <p t-if="o.note" name="note">
-                            <span t-field="o.note"/>
+                            <span t-field="o.note" />
                         </p>
-
                         <!-- Firma-->
-                        <p/>
-                        <div t-if="'digital_signature' in o.fields_get() and o.digital_signature"
-                             style="clear:both; float:center;" name="digital_signature">
-                            <div style="height:20px;"/>
+                        <p />
+                        <div
+                            t-if="'digital_signature' in o.fields_get() and o.digital_signature"
+                            style="clear:both; float:center;"
+                            name="digital_signature"
+                        >
+                            <div style="height:20px;" />
                             <div class="text-center">
-                                <span t-field="o.name_receiver"/>
+                                <span t-field="o.name_receiver" />
                             </div>
                             <div class="text-center">
-                                <span t-field="o.vat_receiver"/>
+                                <span t-field="o.vat_receiver" />
                             </div>
                             <div class="text-center">
-                                <img t-att-src="image_data_uri(o.digital_signature)"
-                                     style="max-height: 4cm; max-width: 8cm;"/>
+                                <img
+                                    t-att-src="image_data_uri(o.digital_signature)"
+                                    style="max-height: 4cm; max-width: 8cm;"
+                                />
                             </div>
                         </div>
                         <!-- Fin firma-->

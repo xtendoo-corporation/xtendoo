@@ -5,8 +5,7 @@
     "name": "Stock Production Lot Change Constraint",
     "summary": "Stock Production Lot Change Constraint",
     "version": "13.0.1.0.0",
-    "author": "Manuel Calero Solis - Xtendoo"
-    "Odoo Community Association (OCA)",
+    "author": "Manuel Calero Solis - Xtendoo" "Odoo Community Association (OCA)",
     "website": "https://xtendoo.es",
     "category": "Warehouse Management",
     "license": "AGPL-3",

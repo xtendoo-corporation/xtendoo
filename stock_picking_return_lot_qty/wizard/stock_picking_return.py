@@ -1,7 +1,7 @@
 # Copyright 2020 Xtendoo - Manuel Calero
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 
 
 class ReturnPicking(models.TransientModel):
@@ -10,7 +10,9 @@ class ReturnPicking(models.TransientModel):
     @api.model
     def _prepare_stock_return_picking_line_vals_from_move(self, stock_move):
         val = super()._prepare_stock_return_picking_line_vals_from_move(stock_move)
-        val["lot_id"] = self.env["stock.return.picking.line"].get_returned_lot_id(stock_move)
+        val["lot_id"] = self.env["stock.return.picking.line"].get_returned_lot_id(
+            stock_move
+        )
         return val
 
     def _create_returns(self):
@@ -38,12 +40,9 @@ class ReturnPicking(models.TransientModel):
 class ReturnPickingLine(models.TransientModel):
     _inherit = "stock.return.picking.line"
 
-    lot_id = fields.Many2one(
-        comodel_name='stock.production.lot',
-    )
+    lot_id = fields.Many2one(comodel_name="stock.production.lot",)
 
     def get_returned_lot_id(self, stock_move):
         if len(stock_move.move_line_ids) == 1 and stock_move.move_line_ids[:1].lot_id:
             return stock_move.move_line_ids[:1].lot_id
         return False
-

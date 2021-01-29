@@ -5,12 +5,13 @@ odoo.define("stock_barcodes.FormController", function(require) {
     "use strict";
 
     var FormController = require("web.FormController");
+    var core = require("web.core");
+    var _t = core._t;
 
     FormController.include({
-
         events: {
-            'click .o_button_cancel_scanner': '_onCancelScanner',
-            'mouseup .o_button_validate_scanner': '_onCancelScanner'
+            "click .o_button_cancel_scanner": "_onCancelScanner",
+            "mouseup .o_button_validate_scanner": "_onCancelScanner",
         },
 
         _barcodeScanned: function(barcode, target) {
@@ -29,7 +30,6 @@ odoo.define("stock_barcodes.FormController", function(require) {
             });
         },
         renderButtons: function($node) {
-
             /* Hide save and discard buttons from wizard, for this form do
                anything and confuse the user if he wants do a manual entry. All
                extended models from  wiz.stock.barcodes.read do not have this
@@ -40,10 +40,8 @@ odoo.define("stock_barcodes.FormController", function(require) {
             if (this.modelName.includes("wiz.stock.barcodes.read.")) {
                 this.$buttons.find(".o_form_buttons_edit").css({display: "none"});
             }
-
         },
         canBeDiscarded: function(recordID) {
-
             /*
              Silent the warning that says that the record has been modified.
              */
@@ -53,7 +51,7 @@ odoo.define("stock_barcodes.FormController", function(require) {
             }
             return Promise.resolve(false);
         },
-        _onValidateScanner: function () {
+        _onValidateScanner: function() {
             var self = this;
             var prom = Promise.resolve();
             var recordID = this.renderer.getEditableRecordID();
@@ -63,12 +61,12 @@ odoo.define("stock_barcodes.FormController", function(require) {
                 prom = this.saveRecord(recordID);
             }
 
-            prom.then(function () {
+            prom.then(function() {
                 self._rpc({
-                    model: 'wiz.stock.barcodes.read.picking',
-                    method: 'action_validate_picking'
-                }).then(function (res) {
-                    var exitCallback = function (infos) {
+                    model: "wiz.stock.barcodes.read.picking",
+                    method: "action_validate_picking",
+                }).then(function(res) {
+                    var exitCallback = function(infos) {
                         // In case we discarded a wizard, we do nothing to stay on
                         // the same view...
                         if (infos && infos.special) {
@@ -77,20 +75,21 @@ odoo.define("stock_barcodes.FormController", function(require) {
                         // ... but in any other cases, we go back on the inventory form.
                         self.do_notify(
                             _t("Success"),
-                            _t("The picking has been validated"));
-                        self.trigger_up('history_back');
+                            _t("The picking has been validated")
+                        );
+                        self.trigger_up("history_back");
                     };
 
                     if (_.isObject(res)) {
-                        self.do_action(res, { on_close: exitCallback });
+                        self.do_action(res, {on_close: exitCallback});
                     } else {
                         return exitCallback();
                     }
                 });
             });
         },
-        _onCancelScanner: function () {
-            this.trigger_up('history_back');
+        _onCancelScanner: function() {
+            this.trigger_up("history_back");
         },
     });
 });

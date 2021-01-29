@@ -7,8 +7,6 @@ odoo.define("stock_barcodes.FieldFloatNumericMode", function(require) {
     var basic_fields = require("web.basic_fields");
     var field_registry = require("web.field_registry");
 
-    var FieldChar = basic_fields.FieldChar;
-
     var FieldFloatNumericMode = basic_fields.FieldFloat.extend({
         events: _.extend({}, basic_fields.FieldFloat.prototype.events, {
             focusin: "_onFocusIn",

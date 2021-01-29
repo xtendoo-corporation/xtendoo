@@ -8,9 +8,5 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     status_id = fields.Many2one(
-        comodel_name="sale.order.status",
-        string="Status",
-        store=True,
-        readonly=False,
+        comodel_name="sale.order.status", string="Status", store=True, readonly=False,
     )
-

@@ -8,11 +8,7 @@
     "author": "Xtendoo, Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "website": "https://github.com/OCA/stock-logistics-workflow",
-    "depends": [
-        "product_expiry",
-    ],
-    "data": [
-        "views/stock_production_lot.xml",
-    ],
+    "depends": ["product_expiry",],
+    "data": ["views/stock_production_lot.xml",],
     "installable": True,
 }

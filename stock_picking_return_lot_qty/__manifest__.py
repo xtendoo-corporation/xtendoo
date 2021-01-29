@@ -9,7 +9,5 @@
     "author": "Xtendoo, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/stock-logistics-workflow/",
     "depends": ["stock"],
-    'data': [
-        'wizard/stock_picking_return_views.xml',
-    ],
+    "data": ["wizard/stock_picking_return_views.xml",],
 }

@@ -1,13 +1,13 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* sale_order_line_margin_percent
+# 	* purchase_order_create_invoice
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 13.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-26 11:42+0000\n"
-"PO-Revision-Date: 2021-01-26 11:42+0000\n"
+"POT-Creation-Date: 2021-01-29 07:07+0000\n"
+"PO-Revision-Date: 2021-01-29 07:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -15,23 +15,100 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
-#. module: sale_order_line_margin_percent
-#: model_terms:ir.ui.view,arch_db:sale_order_line_margin_percent.view_order_form
-msgid "Margin (%)"
-msgstr "Margen (%)"
+#. module: purchase_order_create_invoice
+#: code:addons/purchase_order_create_invoice/wizard/multiple_purchase_one_invoice_wizard.py:0
+#, python-format
+msgid "All Purchase Order should be confirmed and uninvoiced"
+msgstr "Todas los pedidos de compras deben estar confirmados y no facturados"
 
-#. module: sale_order_line_margin_percent
-#: model:ir.model.fields,field_description:sale_order_line_margin_percent.field_sale_order_line__margin_percent
-#: model:ir.model.fields,field_description:sale_order_line_margin_percent.field_sale_report__margin_percent
-msgid "Margin Percent"
-msgstr "Margen Porcentaje"
+#. module: purchase_order_create_invoice
+#: code:addons/purchase_order_create_invoice/wizard/multiple_purchase_one_invoice_wizard.py:0
+#, python-format
+msgid "All Purchase Order should have same Payment Terms"
+msgstr "Todas los pedidos de compras deben tener formas de pago"
 
-#. module: sale_order_line_margin_percent
-#: model:ir.model,name:sale_order_line_margin_percent.model_sale_report
-msgid "Sales Analysis Report"
-msgstr "Informe de análisis de ventas"
+#. module: purchase_order_create_invoice
+#: code:addons/purchase_order_create_invoice/wizard/multiple_purchase_one_invoice_wizard.py:0
+#, python-format
+msgid "All Purchase Order should have same Supplier"
+msgstr "Todas los pedidos de compras deben tener el mismo proveedor"
 
-#. module: sale_order_line_margin_percent
-#: model:ir.model,name:sale_order_line_margin_percent.model_sale_order_line
-msgid "Sales Order Line"
-msgstr "Línea de pedido de venta"
+#. module: purchase_order_create_invoice
+#: model_terms:ir.ui.view,arch_db:purchase_order_create_invoice.view_multiple_invoice_purchase_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: purchase_order_create_invoice
+#: model:ir.actions.act_window,name:purchase_order_create_invoice.action_view_multiple_purchase_one_invoice_wizard
+msgid "Create Invoice"
+msgstr "Crear Factura"
+
+#. module: purchase_order_create_invoice
+#: model_terms:ir.ui.view,arch_db:purchase_order_create_invoice.view_multiple_invoice_purchase_wizard_form
+msgid "Create and View Invoices"
+msgstr "Crear y ver Facturas"
+
+#. module: purchase_order_create_invoice
+#: model:ir.model.fields,field_description:purchase_order_create_invoice.field_multiple_purchase_one_invoice_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: purchase_order_create_invoice
+#: model:ir.model.fields,field_description:purchase_order_create_invoice.field_multiple_purchase_one_invoice_wizard__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: purchase_order_create_invoice
+#: model:ir.model.fields,field_description:purchase_order_create_invoice.field_multiple_purchase_one_invoice_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre"
+
+#. module: purchase_order_create_invoice
+#: model:ir.model.fields,field_description:purchase_order_create_invoice.field_multiple_purchase_one_invoice_wizard__id
+msgid "ID"
+msgstr ""
+
+#. module: purchase_order_create_invoice
+#: model_terms:ir.ui.view,arch_db:purchase_order_create_invoice.view_multiple_invoice_purchase_wizard_form
+msgid ""
+"Invoices will be created in draft so that you can review\n"
+"                        them before validation."
+msgstr ""
+"Las facturas se crearan en modo borrador, debe revisarlas\n"
+"                        antes de ser validadas."
+
+#. module: purchase_order_create_invoice
+#: model:ir.model.fields,field_description:purchase_order_create_invoice.field_multiple_purchase_one_invoice_wizard____last_update
+msgid "Last Modified on"
+msgstr "Última modificación en"
+
+#. module: purchase_order_create_invoice
+#: model:ir.model.fields,field_description:purchase_order_create_invoice.field_multiple_purchase_one_invoice_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: purchase_order_create_invoice
+#: model:ir.model.fields,field_description:purchase_order_create_invoice.field_multiple_purchase_one_invoice_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización en"
+
+#. module: purchase_order_create_invoice
+#: code:addons/purchase_order_create_invoice/wizard/multiple_purchase_one_invoice_wizard.py:0
+#, python-format
+msgid ""
+"There is no expense account defined for this product: \"%s\". You may have "
+"to install a chart of account from Accounting app, settings menu."
+msgstr ""
+"No hay cuenta de gasto definida para este producto: \"%s\". Debe "
+"instalar un plan contable en la aplicación de Facturación/Contabilidad."
+
+#. module: purchase_order_create_invoice
+#: code:addons/purchase_order_create_invoice/wizard/multiple_purchase_one_invoice_wizard.py:0
+#, python-format
+msgid "Vendor Invoice"
+msgstr "Factura de Compra"
+
+#. module: purchase_order_create_invoice
+#: model:ir.model,name:purchase_order_create_invoice.model_multiple_purchase_one_invoice_wizard
+msgid "multiple.purchase.one.invoice.wizard"
+msgstr ""

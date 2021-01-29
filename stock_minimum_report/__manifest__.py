@@ -3,21 +3,15 @@
 
 {
     "name": "Stock Minimum Report",
-    'description': """
+    "description": """
     Report to show products under minimum
     """,
     "version": "13.0.1.3.6",
     "category": "Stock",
-    "author": "Xtendoo,"
-    "Odoo Community Association (OCA)",
+    "author": "Xtendoo," "Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/sale-workflow",
     "license": "AGPL-3",
-    "depends": [
-        "base",
-        "stock",
-    ],
-    "data": [
-        'views/wizards.xml',
-    ],
+    "depends": ["base", "stock",],
+    "data": ["views/wizards.xml",],
     "installable": True,
 }

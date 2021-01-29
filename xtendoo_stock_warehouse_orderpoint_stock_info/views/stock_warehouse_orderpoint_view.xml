@@ -43,12 +43,16 @@
                 <field name="product_over_maximum" />
             </field>
             <xpath expr="//filter[@name='inactive']" position="after">
-                <filter string="Under Minimum"
+                <filter
+                    string="Under Minimum"
                     domain="[('product_under_minimum','=',True)]"
-                    name="under_minimum"/>
-                <filter string="Over Maximum"
+                    name="under_minimum"
+                />
+                <filter
+                    string="Over Maximum"
                     domain="[('product_over_maximum','=',True)]"
-                    name="over_maximum"/>
+                    name="over_maximum"
+                />
             </xpath>
             <xpath expr="//group[1]" position="inside">
                 <filter

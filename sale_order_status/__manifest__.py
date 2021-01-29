@@ -5,8 +5,7 @@
     "name": "Sale Order Status",
     "version": "13.0.1.3.6",
     "category": "Sales Management",
-    "author": "Xtendoo,"
-    "Odoo Community Association (OCA)",
+    "author": "Xtendoo," "Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/sale-workflow",
     "license": "AGPL-3",
     "depends": ["sale_stock", "account", "sale_management"],

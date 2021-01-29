@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
-
 
     def action_sale_order_confirm_and_delivery(self):
         self.action_confirm()
@@ -43,4 +41,3 @@ class SaleOrder(models.Model):
         self.action_invoice_create()
         for invoice in self.invoice_ids:
             invoice.action_invoice_open()
-

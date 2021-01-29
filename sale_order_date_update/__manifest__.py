@@ -8,7 +8,5 @@
     "website": "xtendoo.es",
     "author": "ddl",
     "license": "AGPL-3",
-    "depends": [
-        "sale_management",
-    ],
+    "depends": ["sale_management",],
 }

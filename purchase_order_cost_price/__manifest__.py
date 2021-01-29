@@ -8,9 +8,6 @@
     "website": "xtendoo.es",
     "author": "ddl",
     "license": "AGPL-3",
-    "depends": [
-        "purchase",
-    ],
-    "data": [
-    ],
+    "depends": ["purchase",],
+    "data": [],
 }

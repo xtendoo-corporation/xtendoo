@@ -30,14 +30,14 @@ class StockWarehouseOrderpoint(models.Model):
         string="Product Category", related="product_id.categ_id", store=True
     )
     product_under_minimum = fields.Boolean(
-        string='Product Under Minimum',
-        compute='_compute_product_available_qty',
-        search='_search_product_under_minimum'
+        string="Product Under Minimum",
+        compute="_compute_product_available_qty",
+        search="_search_product_under_minimum",
     )
     product_over_maximum = fields.Boolean(
-        string='Product Over Maximum',
-        compute='_compute_product_available_qty',
-        search='_search_product_over_maximum'
+        string="Product Over Maximum",
+        compute="_compute_product_available_qty",
+        search="_search_product_over_maximum",
     )
 
     def _compute_product_available_qty(self):
@@ -64,21 +64,23 @@ class StockWarehouseOrderpoint(models.Model):
                         "incoming_location_qty": product["incoming_qty"],
                         "outgoing_location_qty": product["outgoing_qty"],
                         "virtual_location_qty": product["virtual_available"],
-                        'product_under_minimum': product['qty_available'] < order.product_min_qty,
-                        'product_over_maximum': product['qty_available'] > order.product_max_qty,
+                        "product_under_minimum": product["qty_available"]
+                        < order.product_min_qty,
+                        "product_over_maximum": product["qty_available"]
+                        > order.product_max_qty,
                     }
                 )
 
     def _search_product_under_minimum(self, operator, value):
-        if operator == '=':
+        if operator == "=":
             recs = self.search([]).filtered(lambda x: x.product_under_minimum is True)
         else:
             recs = self.search([]).filtered(lambda x: x.product_under_minimum is False)
-        return [('id', 'in', [x.id for x in recs])]
+        return [("id", "in", [x.id for x in recs])]
 
     def _search_product_over_maximum(self, operator, value):
-        if operator == '=':
+        if operator == "=":
             recs = self.search([]).filtered(lambda x: x.product_over_maximum is True)
         else:
             recs = self.search([]).filtered(lambda x: x.product_over_maximum is False)
-        return [('id', 'in', [x.id for x in recs])]
+        return [("id", "in", [x.id for x in recs])]

@@ -10,9 +10,6 @@
     "version": "13.0.1.0.1",
     "license": "AGPL-3",
     "depends": ["product", "sale"],
-    "data": [
-        "security/ir.model.access.csv",
-        "views/product_template.xml",
-    ],
+    "data": ["security/ir.model.access.csv", "views/product_template.xml",],
     "application": True,
 }

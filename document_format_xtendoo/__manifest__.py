@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 {
     "name": "document_format_xtendoo",
     "summary": """Formatos de documentos Xtendoo""",

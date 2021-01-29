@@ -1,16 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <record id="view_quotation_tree_total_invoiced" model="ir.ui.view">
         <field name="name">sale.order.tree</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="inherit_id" ref="sale.view_quotation_tree" />
         <field name="type">tree</field>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='amount_total']" position="after">
-                <field name="total_invoiced" sum="Total Invoiced" widget="monetary" optional="show"/>
+                <field
+                    name="total_invoiced"
+                    sum="Total Invoiced"
+                    widget="monetary"
+                    optional="show"
+                />
             </xpath>
         </field>
     </record>
-
 </odoo>

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 ###################################################################################
 #
 #    Xtendoo Technologies
@@ -22,23 +20,18 @@
 ###################################################################################
 
 {
-    'name': 'Sale Order Picking All Done',
-    'summary': """Sale Order Picking All Done""",
-    'version': '13.0.1.0.0',
-    'description': """Sale Order Picking All Done""",
-    'author': 'Manuel Calero Solís',
-    'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.es',
-    'category': 'Extra Tools',
-    'depends': [
-        'stock',
-        'sale'
-    ],
-    'license': 'AGPL-3',
-    'data': [
-        'views/product_template_views.xml',
-    ],
-    'demo': [],
-    'installable': True,
-    'auto_install': False,
+    "name": "Sale Order Picking All Done",
+    "summary": """Sale Order Picking All Done""",
+    "version": "13.0.1.0.0",
+    "description": """Sale Order Picking All Done""",
+    "author": "Manuel Calero Solís",
+    "company": "Xtendoo",
+    "website": "http://www.xtendoo.es",
+    "category": "Extra Tools",
+    "depends": ["stock", "sale"],
+    "license": "AGPL-3",
+    "data": ["views/product_template_views.xml",],
+    "demo": [],
+    "installable": True,
+    "auto_install": False,
 }
