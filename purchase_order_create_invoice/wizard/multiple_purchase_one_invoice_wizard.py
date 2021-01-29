@@ -32,15 +32,8 @@ class multiple_purchase_one_invoice_wizard(models.TransientModel):
             raise UserError(_("All Purchase Order should have same Payment Terms"))
 
         # restrict partial invoiced
-        valid_purchase_orders = purchase_order_obj.search(
-            [
-                ("partner_id", "=", partner_ids[0].id),
-                ("state", "in", ["done", "purchase"]),
-            ]
-        )
-        valid_purchase_order_ids = map(int, valid_purchase_orders)
         for po in purchases:
-            if po.id not in valid_purchase_order_ids or po.invoice_count != 0:
+            if po.state not in ["done", "purchase"] or po.invoice_count != 0:
                 raise UserError(
                     _("All Purchase Order should be confirmed and uninvoiced")
                 )
