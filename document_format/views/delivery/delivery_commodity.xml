@@ -50,11 +50,10 @@
                                     t-field="o.partner_id.state_id.name"
                                 />
                             </li>
-                            <li>
-                                <span
-                                    t-if="o.partner_id.country_id"
-                                    t-field="o.partner_id.country_id"
-                                />
+                            <li
+                                t-if="o.partner_id.country_id and o.partner_id.country_id.name not in ['España','Spain']"
+                            >
+                                <span t-field="o.partner_id.country_id.name" />
                             </li>
                             <li t-if="o.partner_id.vat">
                                 NIF:

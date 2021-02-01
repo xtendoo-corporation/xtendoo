@@ -108,10 +108,10 @@
                                         t-field="o.partner_id.state_id.name"
                                     />
                                 </li>
-                                <li t-if="o.partner_id.country_id">
-                                    <t t-if="o.partner_id.country_id.name != 'España'">
-                                        <span t-field="o.partner_id.country_id.name" />
-                                    </t>
+                                <li
+                                    t-if="o.partner_id.country_id and o.partner_id.country_id.name not in ['España','Spain']"
+                                >
+                                    <span t-field="o.partner_id.country_id.name" />
                                 </li>
                                 <li t-if="o.partner_id.vat">
                                     <strong>NIF:</strong>
@@ -135,28 +135,28 @@
                                     <th
                                         name="th_code"
                                         class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                     >
                                         Código
                                     </th>
                                     <th
                                         name="th_description"
                                         class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                     >
                                         Descripción
                                     </th>
                                     <th
                                         name="th_quantity"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                     >
                                         Unds
                                     </th>
                                     <th
                                         name="th_priceunit"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                     >
                                         Importe
                                     </th>
@@ -164,7 +164,7 @@
                                         name="th_discount"
                                         t-if="display_discount"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         groups="product.group_discount_per_so_line"
                                     >
                                         Dto.%
@@ -172,14 +172,14 @@
                                     <th
                                         name="th_taxes"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                     >
                                         IVA
                                     </th>
                                     <th
                                         name="th_subtotal"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:12%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
                                     >
                                         <t
                                             groups="account.group_show_line_subtotals_tax_excluded"

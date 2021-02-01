@@ -29,22 +29,28 @@
                                     <b>
                                         <span
                                             t-if="o.type == 'out_invoice' and o.state == 'posted'"
-                                        >Factura:</span>
+                                        >Factura:
+                                        </span>
                                         <span
                                             t-if="o.type == 'out_invoice' and o.state == 'draft'"
-                                        >Factura Borrador:</span>
+                                        >Factura Borrador:
+                                        </span>
                                         <span
                                             t-if="o.type == 'out_invoice' and o.state == 'cancel'"
-                                        >Factura Cancelada:</span>
+                                        >Factura Cancelada:
+                                        </span>
                                         <span
                                             t-if="o.type == 'out_refund'"
-                                        >Nota de Credito:</span>
+                                        >Nota de Credito:
+                                        </span>
                                         <span
                                             t-if="o.type == 'in_refund'"
-                                        >Nota Credito Proveedor:</span>
+                                        >Nota Credito Proveedor:
+                                        </span>
                                         <span
                                             t-if="o.type == 'in_invoice'"
-                                        >Factura Proveedor:</span>
+                                        >Factura Proveedor:
+                                        </span>
                                         <span t-if="o.name != '/'" t-field="o.name" />
                                     </b>
                                 </li>
@@ -101,16 +107,16 @@
                                         t-if="o.partner_id.city"
                                         t-field="o.partner_id.city"
                                     />
-,
+                                    ,
                                     <span
                                         t-if="o.partner_id.state_id"
                                         t-field="o.partner_id.state_id.name"
                                     />
                                 </li>
-                                <li t-if="o.partner_id.country_id">
-                                    <t t-if="o.partner_id.country_id.name != 'España'">
-                                        <span t-field="o.partner_id.country_id.name" />
-                                    </t>
+                                <li
+                                    t-if="o.partner_id.country_id and o.partner_id.country_id.name not in ['España','Spain']"
+                                >
+                                    <span t-field="o.partner_id.country_id.name" />
                                 </li>
                                 <li t-if="o.partner_id.vat">
                                     <strong>NIF:</strong>
@@ -182,10 +188,12 @@
                                     >
                                         <t
                                             groups="account.group_show_line_subtotals_tax_excluded"
-                                        >Total</t>
+                                        >Total
+                                        </t>
                                         <t
                                             groups="account.group_show_line_subtotals_tax_included"
-                                        >Total I.I.</t>
+                                        >Total I.I.
+                                        </t>
                                     </th>
                                 </tr>
                             </thead>
@@ -518,7 +526,8 @@
                             <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
                                 <strong
                                     class="text-center"
-                                >Scan me with your banking app.</strong>
+                                >Scan me with your banking app.
+                                </strong>
                                 <br />
                                 <br />
                                 <img
@@ -532,7 +541,8 @@
                             >
                                 <strong
                                     class="text-center"
-                                >The SEPA QR Code informations are not set correctly.</strong>
+                                >The SEPA QR Code informations are not set correctly.
+                                </strong>
                                 <br />
                             </p>
                         </div>
