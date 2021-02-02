@@ -90,7 +90,7 @@ class multiple_purchase_one_invoice_wizard(models.TransientModel):
                 "account_id": invoice_line_account_id,
                 "price_unit": purchase_line.price_unit,
                 "quantity": qty,
-                "discount": 0.0,
+                "discount": purchase_line.discount,
                 "product_uom_id": purchase_line.product_id.uom_id.id,
                 "product_id": purchase_line.product_id.id,
                 "purchase_line_id": purchase_line.id,

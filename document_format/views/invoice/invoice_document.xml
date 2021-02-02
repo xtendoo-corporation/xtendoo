@@ -56,7 +56,7 @@
                                 </li>
                                 <li t-if="o.invoice_date" name="invoice_date">
                                     <strong>Fecha:</strong>
-                                    <span class="m-0" t-field="o.invoice_date.strftime('%d/%m/%Y')" />
+                                    <span class="m-0" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
                                 </li>
                                 <li t-if="o.invoice_origin" name="origin">
                                     <strong>Pedido:</strong>
@@ -80,7 +80,7 @@
                                     style="display:none;"
                                 >
                                     <strong>Due Date:</strong>
-                                    <p class="m-0" t-field="o.invoice_date_due.strftime('%d/%m/%Y')" />
+                                    <p class="m-0" t-esc="o.invoice_date_due.strftime('%d/%m/%Y')" />
                                 </div>
                             </ul>
                         </div>
@@ -140,28 +140,28 @@
                                     <th
                                         name="th_code"
                                         class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:13%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                     >
                                         Código
                                     </th>
                                     <th
                                         name="th_description"
                                         class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:35%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                     >
                                         Descripción
                                     </th>
                                     <th
                                         name="th_quantity"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                     >
                                         Unds
                                     </th>
                                     <th
                                         name="th_priceunit"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                     >
                                         Importe
                                     </th>
@@ -169,7 +169,7 @@
                                         name="th_discount"
                                         t-if="display_discount"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         groups="product.group_discount_per_so_line"
                                     >
                                         Dto.%
@@ -177,14 +177,14 @@
                                     <th
                                         name="th_taxes"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                     >
                                         IVA
                                     </th>
                                     <th
                                         name="th_subtotal"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:12%; !important;font-size:0.9em;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
                                     >
                                         <t
                                             groups="account.group_show_line_subtotals_tax_excluded"
@@ -230,7 +230,7 @@
                                         >
                                             <td
                                                 class="text-left"
-                                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     t-field="line.product_id.default_code"
@@ -238,7 +238,7 @@
                                             </td>
                                             <td
                                                 name="account_invoice_line_name"
-                                                style="solid; black; padding: 0px; margin: 0px; width:35%; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                             >
                                                 <t
                                                     t-set="productName"
@@ -259,7 +259,7 @@
                                             </td>
                                             <td
                                                 class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span t-field="line.quantity" />
                                                 <span
@@ -269,7 +269,7 @@
                                             </td>
                                             <td
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     class="text-nowrap"
@@ -279,7 +279,7 @@
                                             <td
                                                 t-if="display_discount"
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     class="text-nowrap"
@@ -288,7 +288,7 @@
                                             </td>
                                             <td
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     t-esc="', '.join(map(lambda x: str(x.amount), line.tax_ids))"
@@ -297,7 +297,7 @@
                                             </td>
                                             <td
                                                 class="text-right o_price_total"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     class="text-nowrap"
@@ -314,7 +314,7 @@
                                         <t t-if="line.display_type == 'line_section'">
                                             <td
                                                 colspan="99"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     t-field="line.name"
@@ -327,7 +327,7 @@
                                         <t t-if="line.display_type == 'line_note'">
                                             <td
                                                 colspan="99"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     t-field="line.name"
@@ -344,7 +344,7 @@
                                         <tr class="is-subtotal text-right">
                                             <td
                                                 colspan="99"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                             >
                                                 <strong class="mr16">Subtotal</strong>
                                                 <span
@@ -417,7 +417,7 @@
                                                         <span
                                                             t-esc="amount_by_group[0]"
                                                         />
-                                                        <span class="text-nowrap">on
+                                                        <span class="text-nowrap">en
                                                             <t
                                                                 t-esc="amount_by_group[4]"
                                                             />

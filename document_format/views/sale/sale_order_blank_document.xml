@@ -99,11 +99,8 @@
                                         t-field="doc.partner_id.state_id.name"
                                     />
                                 </li>
-                                <li>
-                                    <span
-                                        t-if="doc.partner_id.country_id"
-                                        t-field="doc.partner_id.country_id"
-                                    />
+                                <li t-if="doc.partner_id.country_id and doc.partner_id.country_id.name not in ['España','Spain']">
+                                    <span t-field="doc.partner_id.country_id.name"/>
                                 </li>
                                 <li t-if="doc.partner_id.vat">
                                     NIF:
@@ -157,28 +154,28 @@
                                         <th
                                             name="th_code"
                                             class="text-left"
-                                            style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                         >
                                             Código
                                         </th>
                                         <th
                                             name="th_description"
                                             class="text-left"
-                                            style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                         >
                                             Descripción
                                         </th>
                                         <th
                                             name="th_quantity"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             Unds
                                         </th>
                                         <th
                                             name="th_priceunit"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             Importe
                                         </th>
@@ -186,7 +183,7 @@
                                             name="th_discount"
                                             t-if="display_discount"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             groups="product.group_discount_per_so_line"
                                         >
                                             Dto.%
@@ -194,14 +191,14 @@
                                         <th
                                             name="th_taxes"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
-                                            IVA
+                                            IVA%
                                         </th>
                                         <th
                                             name="th_subtotal"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:12%; !important; font-size:0.9em;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
                                         >
                                             <t
                                                 groups="account.group_show_line_subtotals_tax_excluded"
@@ -238,7 +235,7 @@
                                             <t t-if="not line.display_type">
                                                 <td
                                                     class="text-left"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                                 >
                                                     <span
                                                         t-field="line.product_id.default_code"
@@ -246,7 +243,7 @@
                                                 </td>
                                                 <td
                                                     name="td_name"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                                 >
                                                     <t
                                                         t-set="productName"
@@ -268,7 +265,7 @@
                                                 <td
                                                     name="td_quantity"
                                                     class="text-right"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                 >
                                                     <span
                                                         t-field="line.product_uom_qty"
@@ -281,14 +278,14 @@
                                                 <td
                                                     name="td_price_unit"
                                                     class="text-right"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                 >
                                                     <span t-field="line.price_unit" />
                                                 </td>
                                                 <td
                                                     t-if="display_discount"
                                                     class="text-right"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                     groups="product.group_discount_per_so_line"
                                                 >
                                                     <span t-field="line.discount" />
@@ -296,7 +293,7 @@
                                                 <td
                                                     name="td_taxes"
                                                     class="text-right"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                 >
                                                     <t
                                                         t-set="iva"
@@ -310,7 +307,7 @@
                                                 <td
                                                     name="td_subtotal"
                                                     class="text-right o_price_total"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                 >
                                                     <span
                                                         t-field="line.price_subtotal"
@@ -328,7 +325,7 @@
                                                 <td
                                                     name="td_section_line"
                                                     colspan="99"
-                                                    style="solid; black; padding: 0px; margin: 0px; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                                 >
                                                     <span t-field="line.name" />
                                                 </td>
@@ -345,7 +342,7 @@
                                                 <td
                                                     name="td_note_line"
                                                     colspan="99"
-                                                    style="solid; black; padding: 0px; margin: 0px; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                                 >
                                                     <span t-field="line.name" />
                                                 </td>
