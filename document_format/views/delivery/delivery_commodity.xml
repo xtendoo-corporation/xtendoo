@@ -76,10 +76,10 @@
                         <div t-if="o.state" class="col-auto" name="div_sched_date">
                             <strong>Fecha de envío:</strong>
                             <t t-if="o.state == 'done'">
-                                <p t-field="o.date_done" />
+                                <p t-field="o.date_done.strftime('%d/%m/%Y')" />
                             </t>
                             <t t-if="o.state != 'done'">
-                                <p t-field="o.scheduled_date" />
+                                <p t-field="o.scheduled_date.strftime('%d/%m/%Y')" />
                             </t>
                         </div>
                     </div>

@@ -68,7 +68,7 @@
                                     t-if="doc.validity_date and doc.state in ['draft', 'sent']"
                                 >
                                     <b>Fecha de validez:</b>
-                                    <span t-field="doc.validity_date" />
+                                    <span t-field="doc.validity_date.strftime('%d/%m/%Y')" />
                                 </li>
                             </ul>
                         </div>

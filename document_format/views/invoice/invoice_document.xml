@@ -56,7 +56,7 @@
                                 </li>
                                 <li t-if="o.invoice_date" name="invoice_date">
                                     <strong>Fecha:</strong>
-                                    <span class="m-0" t-field="o.invoice_date" />
+                                    <span class="m-0" t-field="o.invoice_date.strftime('%d/%m/%Y')" />
                                 </li>
                                 <li t-if="o.invoice_origin" name="origin">
                                     <strong>Pedido:</strong>
@@ -80,7 +80,7 @@
                                     style="display:none;"
                                 >
                                     <strong>Due Date:</strong>
-                                    <p class="m-0" t-field="o.invoice_date_due" />
+                                    <p class="m-0" t-field="o.invoice_date_due.strftime('%d/%m/%Y')" />
                                 </div>
                             </ul>
                         </div>
