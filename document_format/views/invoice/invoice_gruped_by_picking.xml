@@ -227,7 +227,7 @@
                                         <tr t-if="picking">
                                             <td
                                                 colspan="10"
-                                                style="solid; black; padding: 0px; margin: 0px; width:30%; !important;margin-left:5px; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:30%; !important;margin-left:5px; font-size:0.8em; "
                                             >
                                                 <strong>
                                                     <span>Albarán:</span>
@@ -249,7 +249,7 @@
                                         <t name="account_invoice_line_accountable">
                                             <td
                                                 class="text-left"
-                                                style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     t-field="line.product_id.default_code"
@@ -257,7 +257,7 @@
                                             </td>
                                             <td
                                                 name="account_invoice_line_name"
-                                                style="solid; black; padding: 0px; margin: 0px; width:35%; !important; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                             >
                                                 <t
                                                     t-set="productName"
@@ -278,9 +278,12 @@
                                             </td>
                                             <td
                                                 class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                <span t-field="line.quantity" />
+                                                <span
+                                                    t-esc="lines_group['quantity']"
+                                                    t-options='{"widget": "float", "decimal_precision": "Product Unit of Measure"}'
+                                                />
                                                 <span
                                                     t-field="line.product_uom_id"
                                                     groups="uom.group_uom"
@@ -288,7 +291,7 @@
                                             </td>
                                             <td
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     class="text-nowrap"
@@ -298,7 +301,7 @@
                                             <td
                                                 t-if="display_discount"
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     class="text-nowrap"
@@ -307,7 +310,7 @@
                                             </td>
                                             <td
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <span
                                                     t-esc="', '.join(map(lambda x: str(x.amount), line.tax_ids))"
@@ -316,18 +319,8 @@
                                             </td>
                                             <td
                                                 class="text-right o_price_total"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                <span
-                                                    class="text-nowrap"
-                                                    t-field="line.price_subtotal"
-                                                    groups="account.group_show_line_subtotals_tax_excluded"
-                                                />
-                                                <span
-                                                    class="text-nowrap"
-                                                    t-field="line.price_total"
-                                                    groups="account.group_show_line_subtotals_tax_included"
-                                                />
                                                 <t
                                                     t-if="lines_group['quantity'] != l.quantity"
                                                     id="picking_subtotal"
@@ -352,7 +345,19 @@
                                                         t-set="subtotal"
                                                         t-value="(subtotal or 0.0) + l.price_subtotal"
                                                     />
+
+                                                    <span
+                                                        class="text-nowrap"
+                                                        t-field="line.price_subtotal"
+                                                        groups="account.group_show_line_subtotals_tax_excluded"
+                                                    />
+                                                    <span
+                                                        class="text-nowrap"
+                                                        t-field="line.price_total"
+                                                        groups="account.group_show_line_subtotals_tax_included"
+                                                    />
                                                 </t>
+
                                             </td>
                                             <!-- Fin lineas impresión-->
                                             <!--Subtotal -->
@@ -360,7 +365,7 @@
                                                 <td
                                                     colspan="10"
                                                     class="text-right"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:30%; !important; font-size:0.9em;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:30%; font-size:0.8em; !important;"
                                                 >
                                                     <strong>Subtotal: </strong>
                                                     <strong
@@ -483,7 +488,7 @@
                                 >
                                     <table
                                         class="table table-sm"
-                                        style="page-break-inside: avoid;font-size:0.8em;"
+                                        style="page-break-inside: avoid; font-size:0.8em;"
                                     >
                                         <tr>
                                             <td
