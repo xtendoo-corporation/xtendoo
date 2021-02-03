@@ -5,8 +5,6 @@ import logging
 from odoo import _, api, fields, models
 from odoo.tools.float_utils import float_compare
 
-_logger = logging.getLogger(__name__)
-
 
 class WizStockBarcodesReadPicking(models.TransientModel):
     _name = "wiz.stock.barcodes.read.picking"
@@ -372,7 +370,22 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         picking = self.env["stock.picking"].browse(
             self.env.context.get("picking_id", False)
         )
-        return picking.button_validate()
+        if picking:
+            picking.button_validate()
+        return {
+            'view_mode': 'form',
+            'res_model': 'stock.picking',
+            'res_id': picking.id,
+            'type': 'ir.actions.act_window',
+        }
+
+    def action_validate_print_picking(self):
+        picking = self.env["stock.picking"].browse(
+            self.env.context.get("picking_id", False)
+        )
+        if picking:
+            # picking.do_print_picking()
+            self.env.ref('document_format.report_delivery_format').report_action(picking)
 
     def action_set_manual_entry(self):
         self.manual_entry = True

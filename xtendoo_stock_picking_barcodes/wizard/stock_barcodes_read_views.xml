@@ -9,6 +9,10 @@
                         string="Cancelar"
                         class="btn-secondary o_button_cancel_scanner"
                     />
+<!--                    <button-->
+<!--                        string="Test"-->
+<!--                        class="btn-secondary o_button_test_scanner"-->
+<!--                    />-->
                     <button
                         string="Validar"
                         name="action_validate_picking"

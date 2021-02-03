@@ -1,8 +1,8 @@
 <odoo>
     <data>
         <report
-            id="report_delivery_format"
             string="Albarán de entrega"
+            id="report_delivery_format"
             model="stock.picking"
             report_type="qweb-pdf"
             name="document_format.format_report_delivery_document"

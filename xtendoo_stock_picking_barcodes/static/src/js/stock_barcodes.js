@@ -11,7 +11,8 @@ odoo.define("stock_barcodes.FormController", function(require) {
     FormController.include({
         events: {
             "click .o_button_cancel_scanner": "_onCancelScanner",
-            "mouseup .o_button_validate_scanner": "_onCancelScanner",
+            "click .o_button_validate_scanner": "_onValidateScanner",
+            "click .o_button_test_scanner": "_onValidateScanner",
         },
 
         _barcodeScanned: function(barcode, target) {
@@ -30,6 +31,7 @@ odoo.define("stock_barcodes.FormController", function(require) {
             });
         },
         renderButtons: function($node) {
+
             /* Hide save and discard buttons from wizard, for this form do
                anything and confuse the user if he wants do a manual entry. All
                extended models from  wiz.stock.barcodes.read do not have this
@@ -90,6 +92,12 @@ odoo.define("stock_barcodes.FormController", function(require) {
         },
         _onCancelScanner: function() {
             this.trigger_up("history_back");
+        },
+        _onValidateScanner: function() {
+            this.trigger_up("history_back");
+        },
+        _onTestScanner: function() {
+            alert("Test Scanner.");
         },
     });
 });
