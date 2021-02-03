@@ -295,14 +295,8 @@
                                                     class="text-right"
                                                     style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                 >
-                                                    <t
-                                                        t-set="iva"
-                                                        t-value="line.tax_id.amount"
-                                                    />
-                                                    <span
-                                                        t-esc="int(iva)"
-                                                        t-options="{'widget': 'float', 'precision': 2}"
-                                                    />
+                                                    <span t-esc="', '.join(map(lambda x: (str(x.amount)), line.tax_id))"
+                                                          id="line.tax_id"/>
                                                 </td>
                                                 <td
                                                     name="td_subtotal"
