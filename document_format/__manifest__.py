@@ -3,7 +3,7 @@
     "summary": """Formatos de documentos entregados por Xtendoo""",
     "version": "13.0.1.0.0",
     "description": """Formatos de documentos entregados por Xtendoo""",
-    "author": "DDL",
+    "author": "Manuel Calero, Daniel Dominguez",
     "company": "Xtendoo",
     "website": "http://xtendoo.es",
     "category": "Extra Tools",
