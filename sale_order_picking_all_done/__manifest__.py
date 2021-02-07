@@ -26,12 +26,16 @@
     "description": """Sale Order Picking All Done""",
     "author": "Manuel Calero Solís",
     "company": "Xtendoo",
-    "website": "http://www.xtendoo.es",
+    "website": "http://xtendoo.es",
     "category": "Extra Tools",
-    "depends": ["stock", "sale"],
+    "depends": [
+        "stock",
+        "sale",
+    ],
     "license": "AGPL-3",
-    "data": ["views/product_template_views.xml",],
-    "demo": [],
+    "data": [
+        "views/views.xml",
+    ],
     "installable": True,
     "auto_install": False,
 }
