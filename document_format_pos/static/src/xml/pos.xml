@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="PosTicket">
+        <t t-jquery="t[t-esc='order.name']" t-operation="before">
+            <br/>
+            <span>###NUEVO###</span>
+        </t>
+    </t>
+
+<!--    <t t-jquery="tr[t-foreach='orderlines'] > td:nth-child(1)" t-operation="replace">-->
+<!--        <td rowspan="6">-->
+<!--            <t t-esc="orderline.get_product().display_name"/>-->
+<!--            <t t-if="orderline.get_discount() > 0">-->
+<!--                <div class="pos-disc-font">-->
+<!--                    With a <t t-esc="orderline.get_discount()"/>% discount-->
+<!--                </div>-->
+<!--            </t>-->
+<!--        </td>-->
+<!--    </t>-->
+
+
+</templates>

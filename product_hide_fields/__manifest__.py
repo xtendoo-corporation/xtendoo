@@ -8,11 +8,12 @@
     'description': """Hides the cost and pvp fields, and adds labels in the product view""",
     'author': 'DDL',
     'company': 'Xtendoo',
-    'website': 'http://www.xtendoo.es',
+    'website': 'https://xtendoo.es',
     'category': 'Extra Tools',
     'depends': [
         'base',
-        'product'
+        'product',
+        'product_template_tags',
     ],
     'license': 'AGPL-3',
     'data': [
