@@ -48,14 +48,12 @@ class multiple_purchase_one_invoice_wizard(models.TransientModel):
         invoice_line_ids = []
 
         # Create Invoice Line
-        for purchase_line in purchase_order_lines:
-            invoice_line_account_id = False
-            if purchase_line.product_id.id:
-                invoice_line_account_id = (
-                    purchase_line.product_id.property_account_expense_id.id
-                    or purchase_line.product_id.categ_id.property_account_expense_categ_id.id
-                    or False
-                )
+        for purchase_line in purchase_order_lines.filtered(lambda l: l.product_id):
+            invoice_line_account_id = (
+                purchase_line.product_id.property_account_expense_id.id
+                or purchase_line.product_id.categ_id.property_account_expense_categ_id.id
+                or False
+            )
             if not invoice_line_account_id:
                 inc_acc = ir_property_obj.get(
                     "property_account_expense_categ_id", "product.category"

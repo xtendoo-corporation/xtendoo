@@ -8,7 +8,9 @@ class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     margin_percent = fields.Float(
-        compute="_compute_margin_percent", digits=(16, 2), store=True,
+        compute="_compute_margin_percent",
+        digits=(16, 2),
+        store=True,
     )
 
     @api.depends("margin")
