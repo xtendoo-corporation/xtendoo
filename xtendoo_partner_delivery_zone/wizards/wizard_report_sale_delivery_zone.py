@@ -22,4 +22,4 @@ class WizardReportSaleDeliveryZone(models.TransientModel):
             'form': self.read()[0],
             'active_ids': self._context['active_ids'],
         }
-        return self.env.ref('partner_delivery_zone.report_sale').report_action(self, data=data)
+        return self.env.ref('xtendoo_partner_delivery_zone.report_sale').report_action(self, data=data)

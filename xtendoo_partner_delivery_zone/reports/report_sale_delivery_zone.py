@@ -4,7 +4,7 @@ from odoo.tools.misc import DEFAULT_SERVER_DATE_FORMAT
 
 
 class ReportSaleDeliveryZone(models.AbstractModel):
-    _name = 'report.partner_delivery_zone.report_sale_delivery_zone'
+    _name = 'report.xtendoo_partner_delivery_zone.report_sale_delivery_zone'
     _description = 'Report Sale Delivery Zone'
 
     @api.model
