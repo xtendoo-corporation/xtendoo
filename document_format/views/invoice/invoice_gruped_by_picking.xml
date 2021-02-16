@@ -237,6 +237,10 @@
                                                         t-field="picking.date_done"
                                                         t-options="{'widget': 'date'}"
                                                     />
+                                                    <t t-if="picking.note">
+                                                        <span> - </span>
+                                                        <span t-field="picking.note" />
+                                                    </t>
                                                 </strong>
                                             </td>
                                         </tr>
