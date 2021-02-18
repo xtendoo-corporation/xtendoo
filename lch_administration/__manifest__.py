@@ -13,6 +13,7 @@
         'product',
         'sale_margin',
         'product',
+        'account',
     ],
     'license': 'AGPL-3',
     'data': [

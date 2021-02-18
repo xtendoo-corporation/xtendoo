@@ -7,6 +7,6 @@ import logging
 
 
 class AccountInvoice(models.Model):
-    _inherit = ["account.invoice.line", "administrator.mixin.rule"]
+    _inherit = 'account.invoice.line'
     _name = 'account.invoice.line'
 
