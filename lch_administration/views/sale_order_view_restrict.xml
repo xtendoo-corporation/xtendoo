@@ -22,6 +22,11 @@
                  <xpath expr="//field[@name='order_line']/tree//field[@name='purchase_price']" position="replace">
                     <field name="purchase_price" groups="lch_administration.show_cost_price" attrs="{'readonly': [('is_admin', '=', False)]}"/>
                 </xpath>
+            <!--  Abrir:Lineas del pedido  -->
+                <xpath expr="//page[@name='order_lines']//field[@name='purchase_price']" position="attributes">
+                    <attribute name="groups">lch_administration.show_cost_price</attribute>
+                </xpath>
+            <!--  Fin Abrir.Lineas del pedido  -->
             <!-- Fin ocultar coste en linea y no dejar editarlo a comerciales-->
             <!-- No editar IVA -->
                 <xpath expr="//field[@name='order_line']/tree//field[@name='tax_id']" position="replace">
@@ -64,6 +69,7 @@
         </field>
         </record>
         <!--   Fin buscar mas... (ventas)   -->
+        
     
    
     </data>
