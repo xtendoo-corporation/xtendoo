@@ -5,7 +5,7 @@
     "name": "Stock Picking Over Processed Transfer",
     "summary": "Stock Picking Over Processed Transfer",
     "version": "13.0.1.0.0",
-    "author": "Manuel Calero Solís, " "Xtendoo, " "Odoo Community Association (OCA)",
+    "author": "Manuel Calero, Xtendoo, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/stock-logistics-workflow",
     "category": "Warehouse Management",
     "license": "AGPL-3",
