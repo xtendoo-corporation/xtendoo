@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-       
         <record id="product_template_common_form_inherit" model="ir.ui.view">
             <field name="name">product.template.common.form.inherit</field>
             <field name="model">product.template</field>
@@ -21,6 +20,11 @@
                     <attribute name="attrs">{'readonly': [('is_admin', '=', False)]}</attribute>
                 </xpath>
                 <!-- Fin no editar categ_id-->
+                <!-- no editar type -->
+                <xpath expr="//field[@name='type']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('is_admin', '=', False)]}</attribute>
+                </xpath>
+                <!-- Fin no editar type-->
                 <!-- no editar company_id -->
                 <xpath expr="//field[@name='company_id']" position="attributes">
                     <attribute name="attrs">{'readonly': [('is_admin', '=', False)]}</attribute>
@@ -60,14 +64,11 @@
             </field>
         </record>
 
-         <record id="product_product_common_form_inherit" model="ir.ui.view">
-            <field name="name">product.product.common.form.inherit</field>
+        <record id="product_product_common_form_inherit_no_edit" model="ir.ui.view">
+            <field name="name">product.product.common.form.inherit.no.edit</field>
             <field name="model">product.product</field>
             <field name="inherit_id" ref="product.product_normal_form_view"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='name']" position="after">
-                    <field name="is_admin" invisible="1"/>
-                </xpath>
                 <!-- no editar barcode -->
                 <xpath expr="//field[@name='barcode']" position="attributes">
                     <attribute name="attrs">{'readonly': [('is_admin', '=', False)]}</attribute>
@@ -78,13 +79,11 @@
                     <attribute name="attrs">{'readonly': [('is_admin', '=', False)]}</attribute>
                 </xpath>
                 <!-- Fin no editar default_code-->
-           
             </field>
         </record>
-        
         <!-- No editar impuesto -->
-        <record id="product_template_form_view_inherit" model="ir.ui.view">
-            <field name="name">product.template.form.view.inherit</field>
+        <record id="product_template_form_view_inherit_tax" model="ir.ui.view">
+            <field name="name">product.template.form.view.inherit.tax</field>
             <field name="model">product.template</field>
             <field name="inherit_id" ref="account.product_template_form_view"/>
             <field name="arch" type="xml">
@@ -97,7 +96,7 @@
         <!-- Fin no editar impuesto -->
         <!--  Purchase Page  -->
         <record model="ir.ui.view" id="show_purchase_page_form_product_product">
-            <field name="name">show_purchase_page_form_product_product</field>
+            <field name="name">show.purchase.page.form.product.product</field>
             <field name="model">product.template</field>
             <field name="inherit_id" ref="purchase.view_product_supplier_inherit"/>
             <field name="arch" type="xml">
@@ -109,7 +108,7 @@
         <!--  Fin purchase page  -->
         <!--  Inventory Page  -->
         <record model="ir.ui.view" id="show_inventory_page_form_product_product">
-            <field name="name">show_inventory_page_form_product_product</field>
+            <field name="name">show.inventory.page.form.product.product</field>
             <field name="model">product.template</field>
             <field name="inherit_id" ref="product.product_template_form_view"/>
             <field name="arch" type="xml">
@@ -121,7 +120,7 @@
         <!--  Fin Inventory page  -->
         <!--  Accounting Page  -->
         <record model="ir.ui.view" id="show_accounting_page_form_product_product">
-            <field name="name">show_accounting_page_form_product_product</field>
+            <field name="name">show.accounting.page.form.product.product</field>
             <field name="model">product.template</field>
             <field name="inherit_id" ref="account.product_template_form_view"/>
             <field name="arch" type="xml">
@@ -133,7 +132,7 @@
         <!--  Fin Accounting page  -->
         <!--  Inventory Page  -->
         <record model="ir.ui.view" id="show_sale_page_form_product_product">
-            <field name="name">show_sale_page_form_product_product</field>
+            <field name="name">show.sale.page.form.product.product</field>
             <field name="model">product.template</field>
             <field name="inherit_id" ref="product.product_template_form_view"/>
             <field name="arch" type="xml">

@@ -14,13 +14,15 @@
         'sale_margin',
         'product',
         'account',
+        'account_invoice_margin',
+        'account_invoice_margin_sale',
+
     ],
     'license': 'AGPL-3',
     'data': [
-        #'views/view_users_form_create_invoice.xml',
         'views/sale_order_view_restrict.xml',
-        #'views/account_payment.xml',
-        #'views/account_invoice_restrict.xml',
+        'views/account_payment.xml',
+        'views/account_invoice_restrict.xml',
         'views/product_template_restrict.xml',
         'security/security.xml',
     ],
