@@ -11,6 +11,10 @@ class Picking(models.Model):
 
     @api.multi
     def action_all_as_done(self):
+
+        #_logger.info("*" * 80)
+        #_logger.info("action_all_as_done")
+
         if not self.move_lines and not self.move_line_ids and not self.move_ids_without_package:
             raise UserError(_('Please add some items to move.'))
 
