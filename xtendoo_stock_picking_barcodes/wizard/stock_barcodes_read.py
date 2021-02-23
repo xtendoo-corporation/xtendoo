@@ -100,6 +100,11 @@ class WizStockBarcodesRead(models.AbstractModel):
         if not self.product_qty:
             self._set_message_error("Esperando cantidades")
             return False
+
+        if self.product_id.tracking != "none" and not self.lot_id:
+            self._set_message_error("Esperando lote")
+            return False
+
         return True
 
     def action_done(self):

@@ -1,6 +1,5 @@
 # Copyright 2020
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-import logging
 
 from odoo import _, api, fields, models
 from odoo.tools.float_utils import float_compare
@@ -8,13 +7,13 @@ from odoo.tools.float_utils import float_compare
 
 class WizStockBarcodesReadPicking(models.TransientModel):
     _name = "wiz.stock.barcodes.read.picking"
-
     _inherit = "wiz.stock.barcodes.read"
-
     _description = "Wizard to read barcode on picking"
 
     picking_id = fields.Many2one(
-        comodel_name="stock.picking", string="Picking", readonly=True,
+        comodel_name="stock.picking",
+        string="Picking",
+        readonly=True,
     )
     picking_partner = fields.Many2one(
         comodel_name="res.partner",
@@ -22,12 +21,19 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         readonly=True,
         string="Partner",
     )
-    picking_state = fields.Selection(related="picking_id.state", readonly=True,)
+    picking_state = fields.Selection(
+        related="picking_id.state",
+        readonly=True,
+    )
     picking_date = fields.Datetime(
-        related="picking_id.date", readonly=True, string="Creation Date",
+        related="picking_id.date",
+        readonly=True,
+        string="Creation Date",
     )
     move_ids_without_package = fields.One2many(
-        related="picking_id.move_ids_without_package", readonly=True, string="Lines",
+        related="picking_id.move_ids_without_package",
+        readonly=True,
+        string="Lines",
     )
     candidate_picking_ids = fields.One2many(
         comodel_name="wiz.candidate.picking",
@@ -41,39 +47,19 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         string="Line pickings",
         readonly=True,
     )
-    # line_picking_ids_not_done = fields.One2many(
-    #     comodel_name='wiz.line.picking',
-    #     inverse_name='wiz_barcode_id',
-    #     compute='_compute_picking_ids',
-    #     store=True,
-    # )
     picking_product_qty = fields.Float(
-        string="Picking quantities", digits="Product Unit of Measure", readonly=True,
+        string="Picking quantities",
+        digits="Product Unit of Measure",
+        readonly=True,
     )
     picking_type_code = fields.Selection(
-        [("incoming", "Vendors"), ("outgoing", "Customers"), ("internal", "Internal"),],
+        [
+            ("incoming", "Vendors"),
+            ("outgoing", "Customers"),
+            ("internal", "Internal"),
+        ],
         "Type of Operation",
     )
-
-    # @api.depends("picking_id")
-    # def _compute_picking_ids(self):
-    #     vals = [(5, 0, 0)]
-    #
-    #     print("picking id :::::", self.picking_id)
-    #
-    #     for line in self.picking_id.move_ids_without_package:
-    #         # .filtered(lambda l: l.product_uom_qty > l.quantity_done):
-    #         vals.extend([(0, 0, {
-    #             'picking_id': self.picking_id.id,
-    #             'product_id': line.product_id.id,
-    #             'reserved_availability': line.reserved_availability,
-    #             'product_uom_qty': line.product_uom_qty,
-    #             'quantity_done': line.quantity_done,
-    #         })])
-    #
-    #         print("line :::::", line)
-    #
-    #     self.line_picking_ids_not_done = vals
 
     def name_get(self):
         return [
@@ -151,13 +137,52 @@ class WizStockBarcodesReadPicking(models.TransientModel):
 
     def action_manual_entry(self):
         if not self.check_done_conditions():
-            return
-        if not self._process_stock_move_line():
-            return
-        self._update_line_picking()
-        self._set_message_success("Entrada correcta")
-        self._reset_manual_entry()
-        self._clean_line_picking()
+            return False
+        if not self.is_available_lines():
+            self._set_message_error("Demasiadas unidades para asignar este producto")
+            return False
+        self.insert_manual_entry()
+
+    def action_over_processed_manual_entry(self):
+        if not self.check_done_conditions():
+            return False
+        # self.update_sale_order()
+        self.insert_manual_entry()
+
+    def action_update_sale_order(self):
+        if self.picking_id.sale_id:
+            move_line = self.picking_id.sale_id.order_line.filtered(
+                lambda l: l.product_id == self.product_id
+                and self.product_qty > (l.product_uom_qty - l.qty_delivered)
+            )
+            if not move_line:
+                return False
+            move_line.product_uom_qty = self.product_qty
+
+            picking_line = self.picking_id.move_ids_without_package.filtered(
+                lambda l: l.product_id == self.product_id
+            )
+            if picking_line:
+                picking_line.product_uom_qty = self.product_qty
+
+            # picking_line = self.picking_id.move_line_ids_without_package.filtered(
+            #     lambda l: l.product_id == self.product_id
+            # )
+            # if picking_line:
+            #     picking_line.product_uom_qty = self.product_qty
+
+            picking_line = self.line_picking_ids.filtered(
+                lambda l: l.product_id == self.product_id
+            )
+            if picking_line:
+                picking_line.product_uom_qty = self.product_qty
+
+    def insert_manual_entry(self):
+        if self._process_stock_move_line():
+            self._update_line_picking()
+            self._set_message_success("Entrada correcta")
+            self._reset_manual_entry()
+            self._clean_line_picking()
 
     def _update_line_picking(self):
         for line in self.line_picking_ids.filtered(
@@ -351,18 +376,17 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self.picking_product_qty = sum(moves_todo.mapped("quantity_done"))
         return move_lines_dic
 
-    def check_done_conditions(self):
-        if not super().check_done_conditions():
-            return False
-        if self.product_id.tracking != "none" and not self.lot_id:
-            self._set_message_error("Esperando lote")
-            return False
-        lines = self.line_picking_ids.filtered(
+    def is_available_lines(self):
+        return self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id
             and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
-        if not lines:
-            self._set_message_error("No hay líneas para asignar este producto")
+
+    def check_done_conditions(self):
+        if not super().check_done_conditions():
+            return False
+        if not self.line_picking_ids.filtered(lambda l: l.product_id == self.product_id):
+            self._set_message_error("El producto no esta presente en este albarán")
             return False
         return True
 
