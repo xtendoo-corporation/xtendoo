@@ -6,7 +6,10 @@ class WizardReportStockMinimum(models.TransientModel):
     _description = "Products Report Under Minimum"
 
     warehouse_option = fields.Selection(
-        [("1", "All warehouses"), ("2", "Specific warehouse")],
+        [
+            ("1", "All warehouses"),
+            ("2", "Specific warehouse")
+        ],
         "Show: ",
         default="1",
         required=True,
