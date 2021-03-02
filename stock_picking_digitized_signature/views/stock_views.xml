@@ -9,10 +9,12 @@
             <xpath expr="//field[@name='origin']" position="after">
                 <field name="user_id"/>
             </xpath>
-            <xpath expr="//field[@name='pack_operation_product_ids']" position="after">
+            <xpath expr="//field[@name='move_ids_without_package']" position="after">
                 <div class="oe_clear"/>
-                <label for="customer_signature" class="oe_edit_only" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
-                <field name="customer_signature" widget="signature" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+                <label for="customer_signature" class="oe_edit_only"/>
+<!--                <label for="customer_signature" class="oe_edit_only" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>-->
+                <field name="customer_signature" widget="signature"/>
+<!--                <field name="customer_signature" widget="signature" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>-->
             </xpath>
         </field>
     </record>

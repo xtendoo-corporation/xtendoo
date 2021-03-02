@@ -26,7 +26,6 @@ class StockPicking(models.Model):
             picking._track_signature(values, 'customer_signature')
         return picking
 
-    @api.multi
     def write(self, values):
         self._track_signature(values, 'customer_signature')
         return super().write(values)
