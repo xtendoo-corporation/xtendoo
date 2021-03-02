@@ -16,14 +16,37 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: lch_administration
-#: model:res.groups,name:lch_administration.comercial_group
-msgid "Comercials"
-msgstr "Comerciales"
+#: model:res.groups,name:lch_administration.administration_group
+msgid "Administrators"
+msgstr "Administradores"
 
 #. module: lch_administration
-#: model:res.groups,comment:lch_administration.comercial_group
-msgid "Comercials Group"
-msgstr "Grupo de comerciales"
+#: model:res.groups,comment:lch_administration.administration_group
+msgid "Administrators Group:\n"
+"                                   * Permission to edit in products:\n"
+"                                      - Name\n"
+"                                      - Category\n"
+"                                      - Type\n"
+"                                      - Company\n"
+"                                      - Internal Notes\n"
+"                                      - Sale ok\n"
+"                                      - Purchase ok\n"
+"                                      - Barcode\n"
+"                                      - Default code\n"
+"            "
+msgstr "Grupo de administradores:\n"
+"                                   * Permiso para editar en productos:\n"
+"                                      - Nombre\n"
+"                                      - Categoria\n"
+"                                      - Tipo\n"
+"                                      - Empresa\n"
+"                                      - Notas Internas\n"
+"                                      - Puede ser vendido\n"
+"                                      - Puede ser comprado\n"
+"                                      - Código de barras\n"
+"                                      - Código interno\n""
+"            "
+
 
 #. module: lch_administration
 #: model:res.groups,name:lch_administration.show_margins
@@ -31,9 +54,21 @@ msgid "Show Margins"
 msgstr "Mostrar Márgenes"
 
 #. module: lch_administration
+#: model:res.groups,comment:lch_administration.show_margins
+msgid "Permission to view margins"
+msgstr "Permiso para ver márgenes"
+
+
+#. module: lch_administration
 #: model:res.groups,name:lch_administration.show_cost_price
 msgid "Show cost price"
 msgstr "Mostrar precio de coste"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.show_cost_price
+msgid "Permission to view costs"
+msgstr "Permiso pata ver costes"
+
 
 #. module: lch_administration
 #: model:res.groups,name:lch_administration.edit_sale_price
@@ -41,12 +76,116 @@ msgid "Edit sale price"
 msgstr "Editar precio de venta"
 
 #. module: lch_administration
+#: model:res.groups,comment:lch_administration.edit_sale_price
+msgid "Permission to edit sale price"
+msgstr "Permiso para editar precio de venta"
+
+
+#. module: lch_administration
 #: model:res.groups,name:lch_administration.edit_tax
 msgid "Edit tax"
 msgstr "Editar impuestos"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.edit_tax
+msgid "Permission to edit taxes"
+msgstr "Permiso para editar impuestos"
+
 
 #. module: lch_administration
 #: model:res.groups,name:lch_administration.edit_discounts
 msgid "Edit discounts"
 msgstr "Editar descuentos"
 
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.edit_discounts
+msgid "Permission to edit discounts"
+msgstr "Permiso para editar descuentos"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.edit_account
+msgid "Edit accounts invoice"
+msgstr "Editar cuenta en linea de factura"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.edit_account
+msgid "Permission to edit accounts invoice"
+msgstr "Permiso para editar cuenta en linea de factura"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.edit_quantity
+msgid "Edit quantity invoice"
+msgstr "Editar cantidad en linea de factura"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.edit_quantity
+msgid "Permission to edit quantity invoice"
+msgstr "Permiso para editar cantidad en linea de factura"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.edit_product_desc
+msgid "Edit product description in invoice"
+msgstr "Editar cantidad en linea de factura"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.edit_product_desc
+msgid "Permission to edit product description in invoice"
+msgstr "Permiso para editar descripción de producto en linea de factura"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.edit_product_id
+msgid "Edit product in invoice"
+msgstr "Editar producto en linea de factura"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.edit_product_id
+msgid "Permission to edit product in invoice"
+msgstr "Permiso para editar producto en linea de factura"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.cancel_invoice
+msgid "Cancel invoice"
+msgstr "Cancelar factura"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.cancel_invoice
+msgid "Permission to cancel invoice"
+msgstr "Permiso para cancelar facturas"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.show_purchase_page
+msgid "Show Purcahse Page"
+msgstr "Mostrar pestaña de compras"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.show_purchase_page
+msgid "Permission to view purchase page"
+msgstr "Permiso para ver pestaña de compras"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.show_accounting_page
+msgid "Show Accounting Page"
+msgstr "Mostrar pestaña de facturación"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.show_accounting_page
+msgid "Permission to view accounting page"
+msgstr "Permiso para ver pestaña de facturación"
+
+
+#. module: lch_administration
+#: model:res.groups,name:lch_administration.show_sale_page
+msgid "Show Sale Page"
+msgstr "Mostrar pestaña de ventas"
+
+#. module: lch_administration
+#: model:res.groups,comment:lch_administration.show_sale_page
+msgid "Permission to view sale page"
+msgstr "Permiso para ver pestaña de ventas"
