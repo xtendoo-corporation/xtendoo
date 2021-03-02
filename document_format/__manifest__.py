@@ -17,6 +17,7 @@
         "account_invoice_report_grouped_by_picking",
     ],
     "data": [
+        "data/paper_format_label.xml",
         "views/stock_picking/stock_picking_view.xml",
         "views/delivery/delivery_document.xml",
         "views/delivery/delivery_commodity.xml",
@@ -27,6 +28,8 @@
         "views/sale/sale_order_document.xml",
         "views/sale/sale_order_blank_document.xml",
         "views/label/product_label.xml",
+        "report/report_label_barcode.xml",
+        "report/report_label_barcode_template.xml",
     ],
     "installable": True,
     "auto_install": False,
