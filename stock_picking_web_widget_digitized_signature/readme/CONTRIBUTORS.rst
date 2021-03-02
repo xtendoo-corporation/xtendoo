@@ -3,4 +3,4 @@
 * Pedro M. Baeza <pedro.baeza@gmail.com>
 * Vicent Cubells <vicent@vcubells.net>
 * Mayank Gosai <mgosai@opensourceintegrators.com>
-* Maxime Chambreuil <mchambreuil@opensourceintegrators.com>
+* Maxime Chambreuil <manuelcalerosolis@gmail.com>

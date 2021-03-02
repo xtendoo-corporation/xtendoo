@@ -1,7 +1,3 @@
-# Copyright 2004-2010 OpenERP SA (<http://www.openerp.com>)
-# Copyright 2011-2015 Serpent Consulting Services Pvt. Ltd.
-# Copyright 2017 Tecnativa - Vicent Cubells
-# Copyright 2019 Open Source Integrators
 # Copyright 2020 Xtendoo
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
@@ -16,7 +12,12 @@
     "website": "https://github.com/OCA/web",
     "license": "AGPL-3",
     "category": "Web",
-    "depends": ["web", "mail", "stock",],
+    "depends": [
+        "web",
+        "mail",
+        "stock",
+        "web_widget_digitized_signature",
+    ],
     "data": [
         "views/web_digital_sign_view.xml",
         "views/res_users_view.xml",
@@ -25,5 +26,4 @@
     "qweb": ["static/src/xml/digital_sign.xml",],
     "installable": True,
     "development_status": "Production/Stable",
-    "maintainers": ["mgosai", "javier lagares", "manuel calero"],
 }
