@@ -12,6 +12,7 @@
     "depends": [
         "stock",
         "stock_picking_report_valued",
+        "stock_picking_product_barcode_report",
         "account_invoice_report_due_list",
         "account_payment_partner",
         "account_invoice_report_grouped_by_picking",
