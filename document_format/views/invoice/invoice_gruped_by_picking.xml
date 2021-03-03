@@ -63,10 +63,11 @@
                                 </li>
                                 <li t-if="o.invoice_payment_term_id" name="reference">
                                     <strong>Forma de Pago:</strong>
-                                    <span
-                                        class="m-0"
-                                        t-field="o.invoice_payment_term_id"
-                                    />
+                                    <span class="m-0" t-field="o.invoice_payment_term_id"/>
+                                </li>
+                                <li t-if="o.invoice_user_id" name="user">
+                                    <strong>Comercial:</strong>
+                                    <span class="m-0" t-field="o.invoice_user_id"/>
                                 </li>
                                 <div
                                     class="col-auto mw-100 mb-2"
@@ -89,6 +90,9 @@
                                 </li>
                                 <li t-if="o.partner_id.name">
                                     <span t-field="o.partner_id.name" />
+                                </li>
+                                <li t-if="o.partner_id.comercial">
+                                    (<span t-field="o.partner_id.comercial" />)
                                 </li>
                                 <li t-if="o.partner_id.street">
                                     <span t-field="o.partner_id.street" />

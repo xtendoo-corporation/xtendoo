@@ -12,14 +12,14 @@
         <template id="format_report_invoice_document">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
-                    <t t-call="document_format.report_invoice_document_xtendoo" />
+                    <t t-call="document_format.report_invoice_document_xtendoo"/>
                 </t>
             </t>
         </template>
         <template id="document_format.report_invoice_document_xtendoo">
             <t t-name="document_format.report_invoice_document_xtendoo">
                 <t t-call="web.external_layout">
-                    <t t-set="o" t-value="o.with_context(lang=lang)" />
+                    <t t-set="o" t-value="o.with_context(lang=lang)"/>
                     <div class="page">
                         <!-- Datos del Documento-->
                         <!-- Datos del movimiento -->
@@ -27,60 +27,53 @@
                             <ul class="list-unstyled">
                                 <li>
                                     <b>
-                                        <span
-                                            t-if="o.type == 'out_invoice' and o.state == 'posted'"
-                                        >Factura:
+                                        <span t-if="o.type == 'out_invoice' and o.state == 'posted'">
+                                            Factura:
                                         </span>
-                                        <span
-                                            t-if="o.type == 'out_invoice' and o.state == 'draft'"
-                                        >Factura Borrador:
+                                        <span t-if="o.type == 'out_invoice' and o.state == 'draft'">
+                                            Factura Borrador:
                                         </span>
-                                        <span
-                                            t-if="o.type == 'out_invoice' and o.state == 'cancel'"
-                                        >Factura Cancelada:
+                                        <span t-if="o.type == 'out_invoice' and o.state == 'cancel'">
+                                            Factura Cancelada:
                                         </span>
-                                        <span
-                                            t-if="o.type == 'out_refund'"
-                                        >Nota de Credito:
+                                        <span t-if="o.type == 'out_refund'">
+                                            Nota de Credito:
                                         </span>
-                                        <span
-                                            t-if="o.type == 'in_refund'"
-                                        >Nota Credito Proveedor:
+                                        <span t-if="o.type == 'in_refund'">
+                                            Nota Credito Proveedor:
                                         </span>
-                                        <span
-                                            t-if="o.type == 'in_invoice'"
-                                        >Factura Proveedor:
+                                        <span t-if="o.type == 'in_invoice'">
+                                            Factura Proveedor:
                                         </span>
-                                        <span t-if="o.name != '/'" t-field="o.name" />
+                                        <span t-if="o.name != '/'" t-field="o.name"/>
                                     </b>
                                 </li>
                                 <li t-if="o.invoice_date" name="invoice_date">
                                     <strong>Fecha:</strong>
-                                    <span class="m-0" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
+                                    <span class="m-0" t-esc="o.invoice_date.strftime('%d/%m/%Y')"/>
                                 </li>
                                 <li t-if="o.invoice_origin" name="origin">
                                     <strong>Pedido:</strong>
-                                    <span class="m-0" t-field="o.invoice_origin" />
+                                    <span class="m-0" t-field="o.invoice_origin"/>
                                 </li>
                                 <li t-if="o.ref" name="reference">
                                     <strong>Referencia:</strong>
-                                    <span class="m-0" t-field="o.ref" />
+                                    <span class="m-0" t-field="o.ref"/>
                                 </li>
                                 <li t-if="o.invoice_payment_term_id" name="reference">
                                     <strong>Forma de Pago:</strong>
-                                    <span
-                                        class="m-0"
-                                        t-field="o.invoice_payment_term_id"
-                                    />
+                                    <span class="m-0" t-field="o.invoice_payment_term_id"/>
                                 </li>
-                                <div
-                                    class="col-auto mw-100 mb-2"
-                                    t-if="o.invoice_date_due and o.type == 'out_invoice' and o.state == 'posted'"
-                                    name="due_date"
-                                    style="display:none;"
-                                >
+                                <li t-if="o.invoice_user_id" name="user">
+                                    <strong>Comercial:</strong>
+                                    <span class="m-0" t-field="o.invoice_user_id"/>
+                                </li>
+                                <div class="col-auto mw-100 mb-2"
+                                     t-if="o.invoice_date_due and o.type == 'out_invoice' and o.state == 'posted'"
+                                     name="due_date"
+                                     style="display:none;">
                                     <strong>Due Date:</strong>
-                                    <p class="m-0" t-esc="o.invoice_date_due.strftime('%d/%m/%Y')" />
+                                    <p class="m-0" t-esc="o.invoice_date_due.strftime('%d/%m/%Y')"/>
                                 </div>
                             </ul>
                         </div>
@@ -90,13 +83,16 @@
                             <ul class="list-unstyled">
                                 <li t-if="o.partner_id.ref">
                                     <strong>Código Cliente:</strong>
-                                    <span class="m-0" t-field="o.partner_id.ref" />
+                                    <span class="m-0" t-field="o.partner_id.ref"/>
                                 </li>
                                 <li t-if="o.partner_id.name">
-                                    <span t-field="o.partner_id.name" />
+                                    <span t-field="o.partner_id.name"/>
+                                </li>
+                                <li t-if="o.partner_id.comercial">
+                                    (<span t-field="o.partner_id.comercial" />)
                                 </li>
                                 <li t-if="o.partner_id.street">
-                                    <span t-field="o.partner_id.street" />
+                                    <span t-field="o.partner_id.street"/>
                                 </li>
                                 <li>
                                     <span
@@ -116,11 +112,11 @@
                                 <li
                                     t-if="o.partner_id.country_id and o.partner_id.country_id.name not in ['España','Spain']"
                                 >
-                                    <span t-field="o.partner_id.country_id.name" />
+                                    <span t-field="o.partner_id.country_id.name"/>
                                 </li>
                                 <li t-if="o.partner_id.vat">
                                     <strong>NIF:</strong>
-                                    <span t-field="o.partner_id.vat" />
+                                    <span t-field="o.partner_id.vat"/>
                                 </li>
                             </ul>
                         </div>
@@ -199,7 +195,7 @@
                             <!-- Lineas -->
                             <tbody class="invoice_tbody">
                                 <!-- Variables -->
-                                <t t-set="current_subtotal" t-value="0" />
+                                <t t-set="current_subtotal" t-value="0"/>
                                 <t
                                     t-set="lines"
                                     t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"
@@ -259,7 +255,7 @@
                                                 class="text-right"
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                <span t-field="line.quantity" />
+                                                <span t-field="line.quantity"/>
                                                 <span
                                                     t-field="line.product_uom_id"
                                                     groups="uom.group_uom"
@@ -319,8 +315,8 @@
                                                     t-options="{'widget': 'text'}"
                                                 />
                                             </td>
-                                            <t t-set="current_section" t-value="line" />
-                                            <t t-set="current_subtotal" t-value="0" />
+                                            <t t-set="current_section" t-value="line"/>
+                                            <t t-set="current_subtotal" t-value="0"/>
                                         </t>
                                         <t t-if="line.display_type == 'line_note'">
                                             <td
@@ -377,7 +373,7 @@
                                                 class="text-right"
                                                 style="solid; black; padding: 0px; margin: 0px; !important;"
                                             >
-                                                <span t-field="o.amount_untaxed" />
+                                                <span t-field="o.amount_untaxed"/>
                                             </td>
                                         </tr>
                                         <t
@@ -456,7 +452,7 @@
                             </div>
                             <!-- Fin totales documento -->
                             <!-- Desglose de vencimientos -->
-                            <t t-set="due_list" t-value="o.get_multi_due_list()" />
+                            <t t-set="due_list" t-value="o.get_multi_due_list()"/>
                             <div id="duelist" class="row">
                                 <div
                                     t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ml-auto"
@@ -502,19 +498,19 @@
                             </div>
                             <!-- Fin desglose de vencimientos -->
                         </div>
-                        <div style="clear:both;" />
+                        <div style="clear:both;"/>
                         <p t-if="o.narration" name="comment">
-                            <span t-field="o.narration" />
+                            <span t-field="o.narration"/>
                         </p>
                         <p t-if="o.invoice_payment_term_id" name="payment_term">
-                            <span t-field="o.invoice_payment_term_id.note" />
+                            <span t-field="o.invoice_payment_term_id.note"/>
                         </p>
                         <p
                             t-if="o.fiscal_position_id.note"
                             name="note"
                             style="display:none;"
                         >
-                            <span t-field="o.fiscal_position_id.note" />
+                            <span t-field="o.fiscal_position_id.note"/>
                         </p>
                         <div
                             id="qrcode"
@@ -526,8 +522,8 @@
                                     class="text-center"
                                 >Scan me with your banking app.
                                 </strong>
-                                <br />
-                                <br />
+                                <br/>
+                                <br/>
                                 <img
                                     class="border border-dark rounded"
                                     t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual, o.invoice_payment_ref or o.ref or o.name)"
@@ -541,7 +537,7 @@
                                     class="text-center"
                                 >The SEPA QR Code informations are not set correctly.
                                 </strong>
-                                <br />
+                                <br/>
                             </p>
                         </div>
                     </div>
@@ -554,10 +550,10 @@
             inherit_id="account_payment_partner.report_invoice_payment_mode"
         >
             <xpath expr="//p[@t-if='o.payment_mode_id.note']" position="replace">
-                <p />
+                <p/>
             </xpath>
             <xpath expr="//p[@t-as='partner_bank']" position="replace">
-                <p />
+                <p/>
             </xpath>
         </template>
     </data>
