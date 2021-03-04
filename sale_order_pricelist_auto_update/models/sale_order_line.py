@@ -8,9 +8,12 @@ from odoo.exceptions import UserError
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    state = fields.Selection(related="order_id.state")
+    state = fields.Selection(
+        related="order_id.state"
+    )
     is_pricelist_change = fields.Boolean(
-        "The pricelist has changed", compute="_compute_is_pricelist_change",
+        "The pricelist has changed",
+        compute="_compute_is_pricelist_change",
     )
 
     @api.onchange("price_unit")
