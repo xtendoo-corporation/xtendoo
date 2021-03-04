@@ -5,7 +5,12 @@
     "author": "Manuel Calero, Javier Lagares",
     "website": "https://github.com/xtendoo-corporation/xtendoo",
     "license": "AGPL-3",
-    "depends": ["sale_stock"],
-    "data": ["views/sale_order_line.xml",],
+    "depends": [
+        "sale_stock",
+    ],
+    "data": [
+        "security/security_group.xml",
+        "views/sale_order_line.xml",
+    ],
     "installable": True,
 }

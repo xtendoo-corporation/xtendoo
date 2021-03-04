@@ -22,6 +22,7 @@
                     attrs="{'invisible': ['|',
                                               ('state','in',('done','cancel')),
                                               ('is_pricelist_change','=',False)]}"
+                    groups="sale_order_pricelist_auto_update.pricelist_update_group"
                 />
             </xpath>
         </field>

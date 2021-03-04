@@ -1,6 +1,8 @@
+# Copyright 2021 Manuel Calero - Xtendoo
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools.float_utils import float_compare, float_round
 
 
 class SaleOrderLine(models.Model):
@@ -25,7 +27,6 @@ class SaleOrderLine(models.Model):
 
     @api.depends("price_unit")
     def _compute_is_pricelist_change(self):
-        precision = self.env["decimal.precision"].precision_get("Payment Terms")
         for line in self:
             if line.product_id:
                 try:
