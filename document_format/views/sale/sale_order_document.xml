@@ -106,35 +106,11 @@
                                 </li>
                             </ul>
                         </div>
-                        <t
-                            t-if="doc.partner_shipping_id == doc.partner_invoice_id and doc.partner_invoice_id != doc.partner_id or doc.partner_shipping_id != doc.partner_invoice_id"
-                        >
-                            <t t-set="information_block">
-                                <strong
-                                    t-if="doc.partner_shipping_id == doc.partner_invoice_id"
-                                >Dirección de
-                                    facturación y
-                                    envio:
-                                </strong>
-                                <strong
-                                    t-if="doc.partner_shipping_id != doc.partner_invoice_id"
-                                >Dirección de
-                                    facturación:
-                                </strong>
-                                <div
-                                    t-field="doc.partner_invoice_id"
-                                    t-options="{'widget': 'contact', 'fields': ['address', 'name', 'phone'], 'no_marker': True, 'phone_icons': True}"
-                                />
-                                <t
-                                    t-if="doc.partner_shipping_id != doc.partner_invoice_id"
-                                >
-                                    <strong>Dirección de envio:</strong>
-                                    <div
-                                        t-field="doc.partner_shipping_id"
-                                        t-options="{'widget': 'contact', 'fields': ['address', 'name', 'phone'], 'no_marker': True, 'phone_icons': True}"
-                                    />
-                                </t>
-                            </t>
+                        <t t-if="doc.partner_shipping_id != doc.partner_id">
+                            <span style="width:50%;margin-left:50%;">
+                                <strong>Dirección de envio:</strong>
+                                <div style="width:50%;margin-left:50%;" t-field="doc.partner_shipping_id" t-options="{'widget': 'contact', 'fields': ['address', 'name', 'phone'], 'no_marker': True, 'phone_icons': True}"/>
+                            </span>
                         </t>
                         <!-- Fin datos del cliente -->
                         <!-- Fin datos del documento -->
