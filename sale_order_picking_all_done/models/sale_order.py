@@ -27,7 +27,6 @@ class SaleOrder(models.Model):
     # Pedido confirmado( ya es un pedido de ventas)
 
     def action_sale_order_delivery(self):
-
         for picking in self.picking_ids:
             if picking.state != "done":
                 for line in picking.move_lines:
