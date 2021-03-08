@@ -1,44 +1,88 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <record id="view_picking_form" model="ir.ui.view">
         <field name="model">stock.picking</field>
-        <field name="inherit_id" ref="stock.view_picking_form" />
+        <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
+
+<!--            <field name="partner_id" position="after">-->
+<!--                <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>-->
+<!--            </field>-->
+
             <div name="button_box" position="inside">
-                <button
-                    name="action_barcode_scan"
+                <button name="action_barcode_scan"
                     class="oe_stat_button"
                     icon="fa-barcode"
                     type="object"
-                    help="Start barcode interface"
-                >
+                    help="Start barcode interface">
                     <div class="o_form_field o_stat_info">
                         <span class="o_stat_text">Scan</span>
                     </div>
                 </button>
             </div>
+
+<!--            <xpath expr="//page[1]" position="before">-->
+<!--                <page string="Scan">-->
+<!--                    <field name="line_picking_ids"-->
+<!--                           options="{'no_open': True}"-->
+<!--                           nolabel="1"-->
+<!--                           mode="tree,kanban">-->
+<!--                        <tree string="Stock Moves" editable="bottom">-->
+<!--                            <field name="product_id"/>-->
+<!--                            <field name="product_uom_qty" string="Initial Demand"/>-->
+<!--                            <field name="quantity_done" string="Done"/>-->
+<!--                        </tree>-->
+<!--                        <kanban class="o_kanban_mobile">-->
+<!--                            <field name="product_id"/>-->
+<!--                            <field name="product_uom_qty"/>-->
+<!--                            <field name="quantity_done"/>-->
+<!--                            <templates>-->
+<!--                                <t t-name="kanban-box">-->
+<!--                                    <div t-attf-class="oe_kanban_card #{record.product_uom_qty.raw_value > record.quantity_done.raw_value ? 'oe_kanban_color_white' : 'oe_kanban_color_10'}">-->
+<!--                                        <div class="row">-->
+<!--                                            <div class="col-12">-->
+<!--                                                <strong>-->
+<!--                                                    <span>-->
+<!--                                                        <t t-esc="record.product_id.value"/>-->
+<!--                                                    </span>-->
+<!--                                                </strong>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="row">-->
+<!--                                            <div class="col-12">-->
+<!--                                                <span class="pull-right text-right">-->
+<!--                                                    <t t-esc="record.quantity_done.value"/>-->
+<!--                                                     de-->
+<!--                                                    <t t-esc="record.product_uom_qty.value"/>-->
+<!--                                                </span>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </t>-->
+<!--                            </templates>-->
+<!--                        </kanban>-->
+<!--                    </field>-->
+<!--                </page>-->
+<!--            </xpath>-->
+
         </field>
     </record>
+
     <record id="stock_picking_type_kanban" model="ir.ui.view">
         <field name="model">stock.picking.type</field>
-        <field name="inherit_id" ref="stock.stock_picking_type_kanban" />
+        <field name="inherit_id" ref="stock.stock_picking_type_kanban"/>
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('o_kanban_card_content')]" position="after">
                 <div class="container o_kanban_card_content o_visible">
-                    <div
-                        class="text-center"
-                        t-if="['incoming', 'outgoing', 'internal'].indexOf(record.code.raw_value) > -1"
-                    >
-                        <button
-                            name="action_barcode_scan"
-                            type="object"
-                            class="btn btn-info"
-                        >
-                            <i class="fa fa-barcode fa-2x" />
+                    <div class="text-center" t-if="['incoming', 'outgoing', 'internal'].indexOf(record.code.raw_value) > -1">
+                        <button name="action_barcode_scan" type="object" class="btn btn-info">
+                            <i class="fa fa-barcode fa-2x"/>
                         </button>
                     </div>
                 </div>
             </xpath>
         </field>
     </record>
+
 </odoo>

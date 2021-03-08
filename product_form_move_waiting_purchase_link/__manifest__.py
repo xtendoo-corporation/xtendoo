@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 {
     "name": "Product Form Move Waiting Purchase Link",
     "summary": """
@@ -7,7 +9,10 @@
     "company": "Xtendoo",
     "website": "https://xtendoo.es",
     "category": "Extra Tools",
-    "depends": ["sale",],
+    "depends": ["sale", ],
     "license": "AGPL-3",
-    "data": ["views/stock_picking_view.xml", "views/stock_move_view.xml",],
+    "data": [
+        'views/stock_picking_view.xml',
+        'views/stock_move_view.xml',
+    ]
 }

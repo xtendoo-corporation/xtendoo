@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 {
     "name": "Product Form Move Waiting Link",
     "summary": """Añade un smart button al producto, para acceder a un listado de pedidos que están a la espera de ese producto""",
@@ -10,8 +12,8 @@
     "depends": ["sale",],
     "license": "AGPL-3",
     "data": [
-        "views/stock_picking.xml",
-        "views/product_product.xml",
-        "views/product_template.xml",
-    ],
+            'views/stock_picking.xml',
+            'views/product_product.xml',
+            'views/product_template.xml',
+            ]
 }

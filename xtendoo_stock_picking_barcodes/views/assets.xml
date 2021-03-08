@@ -1,35 +1,14 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <odoo>
-    <template
-        id="assets_backend"
-        name="stock_barcodes Assets"
-        inherit_id="web.assets_backend"
-    >
+
+    <template id="assets_backend" name="stock_barcodes Assets" inherit_id="web.assets_backend">
         <xpath expr="." position="inside">
-<<<<<<< HEAD
             <script type="application/javascript"
                     src="/stock_barcodes/static/src/js/stock_barcodes.js"/>
             <script type="application/javascript"
                     src="/stock_barcodes/static/src/js/basic_fields.js"/>
             <link rel="stylesheet" href="/stock_barcodes/static/src/css/stock.css"/>
-=======
-            <script
-                type="application/javascript"
-                src="/xtendoo_stock_picking_barcodes/static/src/js/stock_barcodes.js"
-            />
-            <script
-                type="application/javascript"
-                src="/xtendoo_stock_picking_barcodes/static/src/js/basic_fields.js"
-            />
-            <script
-                type="application/javascript"
-                src="/xtendoo_stock_picking_barcodes/static/src/js/sound_field.js"
-            />
-            <link
-                rel="stylesheet"
-                href="/xtendoo_stock_picking_barcodes/static/src/css/stock.css"
-            />
->>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
         </xpath>
     </template>
+
 </odoo>

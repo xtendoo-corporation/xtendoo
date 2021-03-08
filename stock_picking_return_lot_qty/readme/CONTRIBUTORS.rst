@@ -1,3 +1,4 @@
-* `Xtendoo <https://xtendoo.es>`_:
+* `Tecnativa <https://www.tecnativa.com>`_:
 
-  * Manuel Calero
+  * Carlos Roca
+  * Sergio Teruel

@@ -1,71 +1,56 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-        <template
-            id="external_layout_clean_xtendoo"
-            inherit_id="web.external_layout_clean"
-        >
+
+        <template id="external_layout_clean_xtendoo" inherit_id="web.external_layout_clean">
+
             <!-- Header -->
+
             <xpath expr="//div[@class='o_clean_header']" position="replace">
-                <div>
+               <div>
                     <div>
                         <div style="width:60%;float:left;">
-                            <img
-                                t-if="company.logo"
-                                t-att-src="image_data_uri(company.logo)"
-                                alt="Logo"
-                                style="width:32%;margin-left:20%;"
-                            />
+                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo" style="width:32%;margin-left:20%;"/>
                         </div>
                         <div style="width:40%;float:left;" name="company_address">
                             <ul class="list-unstyled" style="margin-top:30px;">
-                                <strong>
-                                    <li t-if="company.name">
-                                        <span t-field="company.name" />
-                                    </li>
-                                </strong>
-                                <li t-if="company.vat"><t
-                                        t-esc="company.country_id.vat_label or 'Tax ID'"
-                                    />: <span t-field="company.vat" /></li>
-                                <li t-if="company.phone">Tel: <span
-                                        t-field="company.phone"
-                                    /></li>
-                                <li t-if="company.email">
-                                    <span t-field="company.email" />
-                                </li>
-                                <li t-if="company.website">
-                                    <span t-field="company.website" />
-                                </li>
+                                <strong><li t-if="company.name"><span t-field="company.name"/></li></strong>
+                                <li t-if="company.vat"><t t-esc="company.country_id.vat_label or 'Tax ID'"/>: <span t-field="company.vat"/></li>
+                                <li t-if="company.phone">Tel: <span t-field="company.phone"/></li>
+                                <li t-if="company.email"><span t-field="company.email"/></li>
+                                <li t-if="company.website"><span t-field="company.website"/></li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </xpath>
+
             <!-- Fin Header -->
+
             <!-- Footer -->
             <xpath expr="//div[@class='col-4 text-right']" position="replace">
-                <div class="col-4 text-right">
+               <div class="col-4 text-right">
                     <div>
-                        <span t-field="company.partner_id.street" />
+                        <span t-field="company.partner_id.street"></span>
                     </div>
                     <div>
-                        <span t-field="company.partner_id.zip" />
-                        <span t-field="company.partner_id.city" />
+                        <span t-field="company.partner_id.zip"></span>
+                        <span t-field="company.partner_id.city"></span>
                     </div>
                     <div>
-                        <span t-field="company.partner_id.state_id.name" />,
-                        <span t-field="company.partner_id.country_id.name" />
+                        <span t-field="company.partner_id.state_id.name"></span>,
+                        <span t-field="company.partner_id.country_id.name"></span>
                     </div>
                     <div>
-                        <span>
-                            <i class="fa fa-phone" />
-                            <span t-field="company.partner_id.phone" />
-                        </span>
+
+                       <span><i class="fa fa-phone"></i><span t-field="company.partner_id.phone"></span></span>
                     </div>
-                    <!-- <span class="company_address" t-field="company.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;], &quot;no_marker&quot;: true}"/> -->
+                   <!-- <span class="company_address" t-field="company.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;], &quot;no_marker&quot;: true}"/> -->
                 </div>
             </xpath>
+
             <!-- Fin Footer -->
+
         </template>
     </data>
 </odoo>
