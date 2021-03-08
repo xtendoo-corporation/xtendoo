@@ -27,20 +27,19 @@
                 name="document_format_ch.report_payment_receipt_bluetooth"
         />
 
-        <record id="document_format_ch.report_payment_receipt_bluetooth" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_ch.bluetooth_payment"/>
-        </record>
-
-        <template id="report_payment_receipt_bluetooth">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="o">
-                    <t t-set="lang" t-value="o.partner_id.lang"/>
-                    <t t-call="document_format_ch.report_payment_receipt_document_bluetooth" t-lang="lang"/>
+        <template id="document_format_ch.report_payment_receipt_bluetooth">
+            <t t-name="document_format_ch.report_payment_receipt_bluetooth">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-set="lang" t-value="o.partner_id.lang"/>
+                        <t t-call="document_format_ch.report_payment_receipt_document_bluetooth" t-lang="lang"/>
+                    </t>
                 </t>
             </t>
         </template>
 
-        <template id="report_payment_receipt_document_bluetooth">
+        <template id="document_format_ch.report_payment_receipt_document_bluetooth">
+            <t t-name="document_format_ch.report_payment_receipt_document_bluetooth">
 
             <t t-set="o" t-value="o.with_context({'lang': lang})"/>
 
@@ -49,8 +48,7 @@
                 <!-- Cabecera documento -->
 
                 <div style="display:block; width:80%; margin:25px auto;">
-                    <img t-if="res_company.logo"
-                         t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:100%"/>
+                    <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:100%"/>
                 </div>
 
                 <div style="font-size:1.6em;font-weight:bolder;text-align:center;">
@@ -60,8 +58,7 @@
                     </div>
 
                     <div>
-                        C/<span t-if="res_company.street"
-                                t-field="res_company.street"/>.
+                        C/<span t-if="res_company.street" t-field="res_company.street"/>.
                         <span t-if="res_company.zip" t-field="res_company.zip"/>
                         <span t-if="res_company.city" t-field="res_company.city"/>
                     </div>
@@ -94,7 +91,7 @@
 
                 <!-- Fin Cabecera documento -->
 
-                <hr style="height:3px; background-color:black;clear:both;"></hr>
+                <hr style="height:3px; background-color:black;clear:both;"/>
 
                 <!--Datos del pago -->
 
@@ -166,8 +163,7 @@
 
                         <div>
                             <span style="display:block;width:100%;font-weight:bolder;">Cantidad pagada:</span>
-                            <span t-field="o.amount"
-                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                            <span t-field="o.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                         </div>
 
                         <!-- Fin cantidad pagada -->
@@ -191,8 +187,7 @@
 
                     <!-- Resumen del pago -->
 
-                    <table class="table table-sm"
-                           style="font-size:1.2em;border-top:4px solid black;border-bottom:4px solid black;margin-left:-10px;width:105%;">
+                    <table class="table table-sm" style="font-size:1.2em;border-top:4px solid black;border-bottom:4px solid black;margin-left:-10px;width:105%;">
                         <thead>
 
                             <tr style="color:black;">
@@ -233,15 +228,12 @@
                                     <span t-field="inv.number"/>
                                 </td>
 
-                                <td class="text-right"
-                                    style="border-right:2px dotted black;border-top:2px dotted black">
+                                <td class="text-right" style="border-right:2px dotted black;border-top:2px dotted black">
                                     <span t-field="inv.amount_total"/>
                                 </td>
 
-                                <td class="text-right"
-                                    style="border-right:2px dotted black;border-top:2px dotted black">
-                                    <span t-esc="inv.amount_total - inv.residual"
-                                          t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                                <td class="text-right" style="border-right:2px dotted black;border-top:2px dotted black">
+                                    <span t-esc="inv.amount_total - inv.residual" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
                                 </td>
 
                                 <td class="text-right" style="border-top:2px dotted black;">
@@ -261,7 +253,6 @@
                    <div style="height:200px;width:100%;border:2px solid black;display:block;margin-top:20px;">
                         <span style="text-align:left!important;display:block;width:1005;font-size:1.1em;margin-left:10px;">Firma del Comercial:</span>
                         <img t-attf-src="data:image/*;base64,{{inv.user_id.digital_signature}}"/>
-                       <!-- <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/> -->
                     </div>
 
                     <!-- Fin firma del comercial -->
@@ -270,6 +261,7 @@
 
             </div>
 
+        </t>
         </template>
     </data>
 
