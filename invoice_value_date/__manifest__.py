@@ -16,6 +16,7 @@
     ],
     'data': [
         'views/account_invoice.xml',
+        'reports/account_invoice_report_view.xml',
     ],
     'installable': True,
     'auto_install': False,
