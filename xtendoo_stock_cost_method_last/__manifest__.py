@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 {
+<<<<<<< HEAD
     'name': 'Xtendoo Last Price Costing Method',
     'version': '12.0.1.0.0',
     'category': 'Warehouse',
@@ -16,4 +17,16 @@
                 ],
     'data': ['views/product.xml'],
     'installable': True,
+=======
+    "name": "Xtendoo Last Price Costing Method",
+    "version": "13.0.1.0.0",
+    "category": "Warehouse",
+    "license": "AGPL-3",
+    "summary": "Add a new Costing Method 'Last Price'",
+    "author": "Akretion,Odoo Community Association (OCA)",
+    "website": "https://github.com/OCA/stock-logistics-workflow",
+    "depends": ["stock", "stock_account", "purchase",],
+    "data": ["views/product.xml",],
+    "installable": True,
+>>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
 }

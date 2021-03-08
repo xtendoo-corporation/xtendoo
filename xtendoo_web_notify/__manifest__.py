@@ -11,7 +11,6 @@
     "author": "Xtendoo, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/web",
     "depends": ["web", "bus", "base"],
-    "data": ["views/web_notify.xml",
-             "views/res_users_demo.xml"],
+    "data": ["views/web_notify.xml", "views/res_users_demo.xml"],
     "installable": True,
 }

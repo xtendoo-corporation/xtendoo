@@ -28,4 +28,4 @@ msgstr "Dejarlo vacío para utilizar la fecha actual."
 #. module: invoice_value_date
 #: model:ir.model.fields,field_description:invoice_value_date.field_account_invoice__date_value
 msgid "Value Date"
-msgstr ""
+msgstr "Fecha Valor"
