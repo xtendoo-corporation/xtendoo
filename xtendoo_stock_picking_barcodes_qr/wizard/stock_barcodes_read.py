@@ -4,50 +4,48 @@ from odoo import _, models
 
 
 class WizStockBarcodesRead(models.AbstractModel):
-    _inherit = "wiz.stock.barcodes.read"
+    _inherit = 'wiz.stock.barcodes.read'
 
     def process_barcode(self, barcode):
+        """ Only has been implemented AI (01, 02, 10, 37), so is possible that
+        scanner reads a barcode ok but this one is not precessed.
+        """
+        self.product_qty = 1
+        try:
+            index = barcode.find(';')
+            if index == -1:
+                return super().process_barcode(barcode)
+            product_barcode = barcode[:index]
+            lot_barcode = barcode[index+1:]
+        except Exception:
+            print("Salida por Exception::::::::::::::", barcode)
 
-        print("barcode read ::::::", barcode)
+        processed = False
 
-        index = barcode.find(";")
-        if index == -1:
+        if product_barcode:
+            product = self.env['product.product'].search(
+                [('barcode', '=', product_barcode)]
+            )
+            if not product:
+                self.env.user.notify_danger(
+                    message='Barcode for product not found')
+                return False
+            else:
+                processed = True
+                self.action_product_scaned_post(product)
 
-            print("llamada al super :::::")
-
-            return super().process_barcode(barcode)
-        product_barcode = barcode[:index]
-        lot = barcode[index + 1 :]
-
-        print("product_barcode :::::", product_barcode)
-        print("lot :::::", lot)
-
-        if not product_barcode:
-            self._set_message_error("Código de barras no valido")
-            return False
-
-        if not lot:
-            self._set_message_error("Lote no valido")
-            return False
-
-        product = self.env["product.product"].search(
-            [("barcode", "=", product_barcode)]
-        )
-        if product:
-            self.action_product_scanned_post(product)
-        else:
-            self._set_message_error("Código de barras no encontrado")
-            return False
-
-        lines = self.line_picking_ids.filtered(
-            lambda l: l.product_id == self.product_id
-            and l.product_uom_qty >= l.quantity_done + self.product_qty
-        )
-        if not lines:
-            self._set_message_error("No hay líneas para asignar este producto")
-            return False
-
-        if not self._is_product_lot_valid(product, lot):
-            return False
-
-        self.action_done()
+        if lot_barcode and product.tracking != 'none':
+            lot = self.env['stock.production.lot'].search([
+                ('product_id', '=', product.id),
+                ('name', '=', lot_barcode),
+            ])
+            if not lot:
+                self.env.user.notify_danger(
+                    message='Lot for product not found')
+                return False
+            self.lot_id = lot
+            processed = True
+        if processed:
+            self.action_done()
+            return True
+        return super().process_barcode(barcode)

@@ -1,41 +1,11 @@
 <odoo>
+
     <record id="view_stock_barcodes_read_form" model="ir.ui.view">
         <field name="name">stock.barcodes.read.form</field>
         <field name="model">wiz.stock.barcodes.read.picking</field>
         <field name="arch" type="xml">
             <form string="Barcodes">
-                <header>
-                    <button
-                        string="Cancelar"
-                        class="btn-secondary o_button_cancel_scanner"
-                    />
-                    <button
-                        string="Validar"
-                        name="action_validate_picking"
-                        class="btn-primary o_button_validate_scanner"
-                        type="object"
-                        default_focus="1"
-                        context="{'picking_id': picking_id}"
-                        attrs="{'invisible': [('picking_state', 'in', ('done'))]}"
-                        groups="stock.group_stock_user"
-                    />
-                    <button
-                        string="Manual On"
-                        class="btn-secondary"
-                        name="action_set_manual_entry"
-                        attrs="{'invisible':[('manual_entry', '=', True)]}"
-                        type="object"
-                    />
-                    <button
-                        string="Manual Off"
-                        class="btn-secondary"
-                        name="action_quit_manual_entry"
-                        attrs="{'invisible':[('manual_entry', '=', False)]}"
-                        type="object"
-                    />
-                </header>
                 <sheet>
-<<<<<<< HEAD
                     <field name="message_type" invisible="1"/>
                     <field name="barcode" invisible="1" force_save="1"/>
                     <field name="product_tracking" invisible="1" force_save="1"/>
@@ -86,196 +56,92 @@
                         <field name="location_id" options="{'no_create': True}"
                                attrs="{'readonly': [('manual_entry', '=', False)], 'required': [('manual_entry', '=', True)], 'invisible': [('manual_entry', '=', False)]}"
                                force_save="1"/>
-=======
-                    <div class="text-center">
-                        <div
-                            class="alert alert-success alert-dismissible"
-                            role="status"
-                            attrs="{'invisible': [('message_type', '!=', 'success')]}"
-                        >
-                            <field
-                                name="message"
-                                widget="field_char_sound"
-                                attrs="{'invisible': [('message_type', '!=', 'success')]}"
-                            />
-                        </div>
-                        <div
-                            class="alert alert-danger alert-dismissible"
-                            role="status"
-                            attrs="{'invisible': [('message_type', '!=', 'error')]}"
-                        >
-                            <field
-                                name="message"
-                                widget="field_char_sound"
-                                attrs="{'invisible': [('message_type', '!=', 'error')]}"
-                            />
-                        </div>
-                    </div>
-                    <field name="message_type" invisible="1" />
-                    <field name="barcode" invisible="1" force_save="1" />
-                    <field name="product_tracking" invisible="1" force_save="1" />
-                    <field name="res_model_id" invisible="1" />
-                    <field name="res_id" invisible="1" />
-                    <field
-                        name="_barcode_scanned"
-                        widget="barcode_handler"
-                        invisible="1"
-                    />
-                    <field name="manual_entry" invisible="1" />
-                    <field name="picking_id" invisible="1" />
-                    <field name="picking_state" invisible="1" />
-                    <group col="1">
-                        <b>
-                            <field name="picking_partner" nolabel="1" />
-                        </b>
->>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
                     </group>
+
                     <group>
-                        <field
-                            name="product_id"
-                            options="{'no_create': True}"
-                            attrs="{'readonly': [('manual_entry', '=', False)], 'invisible': [('manual_entry', '=', False)]}"
-                            force_save="1"
-                        />
-                        <field
-                            name="lot_id"
-                            options="{'no_create': True}"
-                            domain="[('product_id', '=', product_id)]"
-                            context="{'default_product_id': product_id}"
-                            attrs="{'readonly': [('manual_entry', '=', False)], 'invisible': ['|', ('product_tracking', 'in', [False, 'none']), ('manual_entry', '=', False)]}"
-                            force_save="1"
-                        />
-                        <field
-                            name="product_qty"
-                            attrs="{'invisible': [('manual_entry', '=', False)], 'readonly': [('manual_entry', '=', False)], 'required': [('manual_entry', '=', True)]}"
-                            force_save="1"
-                            widget="FieldFloatNumericMode"
-                        />
-                        <field
-                            name="location_id"
-                            options="{'no_create': True}"
-                            attrs="{'readonly': [('manual_entry', '=', False)], 'required': [('manual_entry', '=', True)], 'invisible': [('manual_entry', '=', False)]}"
-                            force_save="1"
+                        <button name="action_manual_entry"
+                                type="object"
+                                string="Manual entry"
+                                icon="fa-plus"
+                                attrs="{'invisible': [('manual_entry', '=', False)]}"
+                                class="btn-primary"
                         />
                     </group>
-                    <button
-                        name="action_manual_entry"
-                        type="object"
-                        string="Registrar"
-                        icon="fa-plus"
-                        attrs="{'invisible': [('manual_entry', '=', False)]}"
-                        class="btn-primary"
-                    />
-<!--                    <span></span>-->
-<!--                    <button-->
-<!--                        name="action_update_sale_order"-->
-<!--                        type="object"-->
-<!--                        string="Actualizar cantidades"-->
-<!--                        attrs="{'invisible': [('manual_entry', '=', False)]}"-->
-<!--                        class="btn-success"-->
-<!--                    />-->
-                    <notebook>
-                        <!-- Reservation hidden -->
-                        <page string="En Curso">
-                            <field
-                                name="line_picking_ids"
-                                options="{'no_open': True}"
-                                nolabel="1"
-                                mode="tree,kanban"
-                            >
-                                <tree
-                                    string="Stock Moves"
-                                    decoration-danger="quantity_done == 0"
-                                    decoration-warning="quantity_done > 0"
-                                >
-                                    <field name="product_id" />
-                                    <field
-                                        name="product_uom_qty"
-                                        string="Demanda Inicial"
-                                    />
-                                    <field name="quantity_done" string="Hecho" />
-                                    <field name="lots" string="Lotes" />
-                                </tree>
-                                <kanban class="o_kanban_mobile">
-                                    <field name="product_id" />
-                                    <field name="product_uom_qty" />
-                                    <field name="quantity_done" />
-                                    <templates>
-                                        <t t-name="kanban-box">
-                                            <div
-                                                t-attf-class="oe_kanban_card #{record.product_uom_qty.raw_value > record.quantity_done.raw_value ? 'oe_kanban_color_white' : 'oe_kanban_color_10'}"
-                                            >
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <strong>
-                                                            <span>
-                                                                <t
-                                                                    t-esc="record.product_id.value"
-                                                                />
-                                                            </span>
-                                                        </strong>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <span
-                                                            class="pull-right text-right"
-                                                        >
-                                                            <t
-                                                                t-esc="record.quantity_done.value"
-                                                            />
-                                                            de
-                                                            <t
-                                                                t-esc="record.product_uom_qty.value"
-                                                            />
-                                                        </span>
-                                                    </div>
-                                                </div>
+
+                    <field name="line_picking_ids" options="{'no_open': True}" nolabel="1" mode="tree,kanban">
+                        <tree string="Stock Moves" editable="bottom">
+                            <field name="product_id"/>
+                            <field name="product_uom_qty" string="Initial Demand"/>
+                            <field name="quantity_done" string="Done"/>
+                        </tree>
+
+                        <kanban class="o_kanban_mobile">
+                            <field name="product_id"/>
+                            <field name="product_uom_qty"/>
+                            <field name="quantity_done"/>
+                            <templates>
+                                <t t-name="kanban-box">
+                                    <div
+                                        t-attf-class="oe_kanban_card #{record.product_uom_qty.raw_value > record.quantity_done.raw_value ? 'oe_kanban_color_white' : 'oe_kanban_color_10'}">
+                                        <!--
+                                        <div t-attf-class="#{record.stat_my.raw_value ? 'oe_kanban_color_5' : 'oe_kanban_color_white'}">
+                                        <div t-attf-class="oe_kanban_card oe_kanban_color_2">
+                                        -->
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <strong>
+                                                    <span>
+                                                        <t t-esc="record.product_id.value"/>
+                                                    </span>
+                                                </strong>
                                             </div>
-                                        </t>
-                                    </templates>
-                                </kanban>
-                            </field>
-                        </page>
-                    </notebook>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <span class="pull-right text-right">
+                                                    <t t-esc="record.quantity_done.value"/>
+                                                    de
+                                                    <t t-esc="record.product_uom_qty.value"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </templates>
+                        </kanban>
+                    </field>
+
                 </sheet>
             </form>
         </field>
     </record>
+
     <!--
      Open wizard in current target option to avoid that the wizard is
      closed after any button click,
     -->
     <record id="action_stock_barcodes_read" model="ir.actions.act_window">
         <field name="res_model">wiz.stock.barcodes.read</field>
-<<<<<<< HEAD
         <field name="name">Barcodes Read</field>
         <field name="view_type">form</field>
-=======
-        <field name="name">Lector de codigos de barras</field>
->>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
         <field name="view_mode">form</field>
         <field name="context">{}</field>
-        <field name="view_id" ref="view_stock_barcodes_read_form" />
-        <!--        <field name="target">new</field>-->
-        <field name="target">current</field>
+        <field name="view_id" ref="view_stock_barcodes_read_form"/>
+        <field name="target">new</field>
     </record>
+
     <!--
      Open wizard in current target option to avoid that the wizard is
      closed after any button click,
     -->
     <record id="action_stock_barcodes_read_picking" model="ir.actions.act_window">
         <field name="res_model">wiz.stock.barcodes.read.picking</field>
-<<<<<<< HEAD
         <field name="name">Barcodes Read</field>
         <field name="view_type">form</field>
-=======
-        <field name="name">Lector de codigos de barras</field>
->>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
         <field name="view_mode">form</field>
         <field name="context">{}</field>
-        <field name="view_id" ref="view_stock_barcodes_read_form" />
-        <!--        <field name="target">new</field>-->
-        <field name="target">current</field>
+        <field name="view_id" ref="view_stock_barcodes_read_form"/>
+        <field name="target">new</field>
     </record>
+
 </odoo>

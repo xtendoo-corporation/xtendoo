@@ -1,24 +1,18 @@
+# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-<<<<<<< HEAD
 from odoo import api, fields, models, _
 import logging
 
 _logger = logging.getLogger(__name__)
-=======
-from odoo import _, api, fields, models
->>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
 
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-<<<<<<< HEAD
     # Pedido no confirmado(Es aun presupuesto)
 
     @api.multi
-=======
->>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
     def action_sale_order_confirm_and_delivery(self):
 
         self.action_confirm()
@@ -55,3 +49,4 @@ class SaleOrder(models.Model):
         self.action_invoice_create()
         for invoice in self.invoice_ids:
             invoice.action_invoice_open()
+
