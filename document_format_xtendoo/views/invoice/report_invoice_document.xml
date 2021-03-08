@@ -10,7 +10,7 @@
                 <div class="row mt32 mb32" id="informations">
                     <div class="col-auto mw-100 mb-2" t-if="o.ref" name="reference">
                         <strong>Reference:</strong>
-                        <p class="m-0" t-field="o.ref" />
+                        <p class="m-0" t-field="o.ref"/>
                     </div>
                     <div
                         class="col-auto mw-100 mb-2"
@@ -18,7 +18,7 @@
                         name="invoice_date"
                     >
                         <strong>Fecha:</strong>
-                        <p class="m-0" t-field="o.invoice_date" />
+                        <p class="m-0" t-field="o.invoice_date"/>
                     </div>
                     <div
                         class="col-auto mw-100 mb-2"
@@ -26,7 +26,7 @@
                         name="customer_code"
                     >
                         <strong>Comercial:</strong>
-                        <p class="m-0" t-field="o.partner_id.ref" />
+                        <p class="m-0" t-field="o.partner_id.ref"/>
                     </div>
                 </div>
             </xpath>
@@ -37,7 +37,7 @@
                 position="replace"
             >
                 <!-- Separador -->
-                <div style="height:2px;background-color:black;clear:both;" />
+                <div style="height:2px;background-color:black;clear:both;"/>
                 <!-- Fin separador -->
                 <!--Cabecera -->
                 <div>
@@ -64,7 +64,7 @@
                 </div>
                 <!-- Fin Cabecera -->
                 <!-- Body Lineas -->
-                <t t-set="current_subtotal" t-value="0" />
+                <t t-set="current_subtotal" t-value="0"/>
                 <t
                     t-set="lines"
                     t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"
@@ -82,17 +82,17 @@
                     />
                     <div style="clear:both;font-size:0.9em;">
                         <div style="width:55%;float:left;">
-                            <span t-field="line.name" />
+                            <span t-field="line.name"/>
                         </div>
                         <div style="width:15%;float:left;text-align:right">
-                            <span t-field="line.quantity" />
+                            <span t-field="line.quantity"/>
                             <span
                                 t-field="line.product_uom_id"
                                 groups="uom.group_uom"
                             />
                         </div>
                         <div style="width:15%;float:left;text-align:right">
-                            <span t-field="line.price_unit" />
+                            <span t-field="line.price_unit"/>
                         </div>
                         <div style="width:15%;float:left;text-align:right">
                             <span
@@ -117,82 +117,70 @@
             <!-- Totales -->
             <xpath expr="//div[@id='total']/div/table">
 
-             </xpath>
+            </xpath>
             <xpath expr="//div[@class='clearfix']" position="replace">
                 <div class="clearfix" style="width:40%;margin-left:60%;">
-                    <div id="total" name="total" style="clear:both;">
-                        <!-- Subtotal -->
-                        <div style="clear:both;">
-                            <div style="width:70%;float:left;">
-                                <b>
-                                    <span>Subtotal</span>
-                                </b>
+                <div id="total" name="total" style="clear:both;">
+                    <!-- Subtotal -->
+                    <div style="clear:both;">
+                        <div style="width:70%;float:left;">
+                            <b>
+                                <span>Subtotal</span>
+                            </b>
+                        </div>
+                        <div style="width:30%;float:left;text-align:right;">
+                            <span
+                                t-field="o.amount_untaxed"
+                                t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"
+                            />
+                        </div>
+                    </div>
+                    <!--Fin Subtotal -->
+                    <!--Tax -->
+                    <div style="clear:both;">
+                        <t t-foreach="o.amount_by_group" t-as="amount_by_group">
+                            <div style="width:70%;float:left;clear:both;">
+                                <span t-esc="amount_by_group[0]"/>
                             </div>
-                            <div style="width:30%;float:left;text-align:right;">
+                            <div style="float:left;width:30%;text-align:right;">
                                 <span
-                                    t-field="o.amount_untaxed"
+                                    t-esc="amount_by_group[1]"
                                     t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"
                                 />
                             </div>
-                        </div>
-                        <!--Fin Subtotal -->
-                        <!--Tax -->
-                        <div style="clear:both;">
-                            <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                                <div style="width:70%;float:left;clear:both;">
-                                    <span t-esc="amount_by_group[0]" />
-                                </div>
-                                <div style="float:left;width:30%;text-align:right;">
-                                    <span
-                                        t-esc="amount_by_group[1]"
-                                        t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"
-                                    />
-                                </div>
-                            </t>
-                        </div>
-                        <!--Fin Tax -->
-                        <!-- Separador -->
-                        <div
-                            style="height:2px;background-color:black;clear:both;margin-top:5px;"
-                        />
-                        <!-- Fin separador -->
-                        <!-- Total -->
-                        <div style="clear:both;">
-                            <div style="width:70%;float:left;">
-                                <b>
-                                    <span>Total</span>
-                                </b>
-                            </div>
-                            <div style="width:30%;float:left;text-align:right;">
-                                <b>
-                                    <span t-if="o.type == 'out_refund'">-</span>
-                                    <span
-                                        t-field="o.amount_total"
-                                        t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"
-                                    />
-                                </b>
-                            </div>
-                        </div>
-                        <!-- Fin Total -->
+                        </t>
                     </div>
-<<<<<<< HEAD
-                </xpath>
-                <!-- Fin totales -->
-                <!-- Quitar texto referencia -->
-                <xpath expr="//p[@id='link_text']" position="replace">
-
-             </xpath>
-                <!-- Fin quitar texto referencia -->
-=======
+                    <!--Fin Tax -->
+                    <!-- Separador -->
+                    <div
+                        style="height:2px;background-color:black;clear:both;margin-top:5px;"
+                    />
+                    <!-- Fin separador -->
+                    <!-- Total -->
+                    <div style="clear:both;">
+                        <div style="width:70%;float:left;">
+                            <b>
+                                <span>Total</span>
+                            </b>
+                        </div>
+                        <div style="width:30%;float:left;text-align:right;">
+                            <b>
+                                <span t-if="o.type == 'out_refund'">-</span>
+                                <span
+                                    t-field="o.amount_total"
+                                    t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"
+                                />
+                            </b>
+                        </div>
+                    </div>
+                    <!-- Fin Total -->
                 </div>
             </xpath>
             <!-- Fin totales -->
             <!-- Quitar texto referencia -->
-            <!--<xpath expr="//p[@id='link_text']" position="replace">
-
-             </xpath> -->
+            <xpath expr="//p[@id='link_text']" position="replace">
+            </xpath>
             <!-- Fin quitar texto referencia -->
->>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
         </template>
     </data>
 </odoo>
