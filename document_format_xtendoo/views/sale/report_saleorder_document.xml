@@ -1,29 +1,39 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data>
-        <template id="document_format_xtendoo.report_saleorder_document_xtendoo" inherit_id="sale.report_saleorder_document">
+        <template
+            id="document_format_xtendoo.report_saleorder_document_xtendoo"
+            inherit_id="sale.report_saleorder_document"
+        >
             <!--datos de cabecera -->
             <xpath expr="//div[@id='informations']" position="replace">
                 <div class="row mt32 mb32" id="informations">
                     <div t-if="doc.client_order_ref" class="col-auto mw-100 mb-2">
                         <strong>Referencia:</strong>
-                        <p class="m-0" t-field="doc.client_order_ref"/>
+                        <p class="m-0" t-field="doc.client_order_ref" />
                     </div>
                     <div t-if="doc.date_order" class="col-auto mw-100 mb-2">
                         <strong>Fecha:</strong>
-                        <p class="m-0" t-field="doc.date_order" t-options="{&quot;widget&quot;: &quot;date&quot;}"/>
+                        <p
+                            class="m-0"
+                            t-field="doc.date_order"
+                            t-options="{&quot;widget&quot;: &quot;date&quot;}"
+                        />
                     </div>
                     <div t-if="doc.user_id.name" class="col-auto mw-100 mb-2">
                         <strong>Comercial:</strong>
-                        <p class="m-0" t-field="doc.user_id"/>
+                        <p class="m-0" t-field="doc.user_id" />
                     </div>
                 </div>
             </xpath>
             <!-- Fin datos de cabecera -->
             <!-- lineas -->
-           <xpath expr="//table[@class='table table-sm o_main_table']" position="replace">
+            <xpath
+                expr="//table[@class='table table-sm o_main_table']"
+                position="replace"
+            >
                 <!-- Separador -->
-                <div style="height:2px;background-color:black;clear:both;"></div>
+                <div style="height:2px;background-color:black;clear:both;" />
                 <!-- Fin separador -->
                 <!--Cabecera -->
                 <div style="border">
@@ -50,34 +60,46 @@
                 </div>
                 <!-- Fin Cabecera -->
                 <!-- Body Lineas -->
-                <t t-set="current_subtotal" t-value="0"/>
+                <t t-set="current_subtotal" t-value="0" />
                 <t t-foreach="doc.order_line" t-as="line">
                     <div style="clear:both;font-size:0.9em;">
                         <div style="width:55%;float:left;">
-                            <span t-field="line.name"></span>
+                            <span t-field="line.name" />
                         </div>
                         <div style="width:15%;float:left;text-align:right">
-                            <span t-field="line.product_uom_qty"/>
-                            <span t-field="line.product_uom" groups="uom.group_uom"/>
+                            <span t-field="line.product_uom_qty" />
+                            <span t-field="line.product_uom" groups="uom.group_uom" />
                         </div>
                         <div style="width:15%;float:left;text-align:right">
-                            <span t-field="line.price_unit"/>
+                            <span t-field="line.price_unit" />
                         </div>
                         <div style="width:15%;float:left;text-align:right">
-                            <span t-field="line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
-                            <span t-field="line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+                            <span
+                                t-field="line.price_subtotal"
+                                groups="account.group_show_line_subtotals_tax_excluded"
+                            />
+                            <span
+                                t-field="line.price_total"
+                                groups="account.group_show_line_subtotals_tax_included"
+                            />
                         </div>
                     </div>
                 </t>
                 <!-- Separador -->
-                <div style="height:2px;background-color:black;clear:both;margin-top:5px;"></div>
+                <div
+                    style="height:2px;background-color:black;clear:both;margin-top:5px;"
+                />
                 <!-- Fin separador -->
                 <!-- Fin Body Lineas -->
             </xpath>
             <!-- Fin lineas -->
             <!-- Totales -->
             <xpath expr="//div[@name='so_total_summary']" position="replace">
-                <div class="clearfix" name="so_total_summary" style="width:40%;margin-left:60%;">
+                <div
+                    class="clearfix"
+                    name="so_total_summary"
+                    style="width:40%;margin-left:60%;"
+                >
                     <div id="total" name="total" style="clear:both;">
                         <!-- Subtotal -->
                         <div style="clear:both;">
@@ -87,27 +109,35 @@
                                 </b>
                             </div>
                             <div style="width:30%;float:left;text-align:right;">
-                                <span t-field="doc.amount_untaxed" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                                <span
+                                    t-field="doc.amount_untaxed"
+                                    t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"
+                                />
                             </div>
                         </div>
                         <!--Fin Subtotal -->
                         <!--Tax -->
                         <div style="clear:both;">
                             <t t-foreach="doc.amount_by_group" t-as="amount_by_group">
-                                    <div style="width:70%;float:left;clear:both;">
-                                        <span t-esc="amount_by_group[0]"/>
-                                    </div>
-                                    <div style="float:left;width:30%;text-align:right;">
-                                        <span t-esc="amount_by_group[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
-                                    </div>
+                                <div style="width:70%;float:left;clear:both;">
+                                    <span t-esc="amount_by_group[0]" />
+                                </div>
+                                <div style="float:left;width:30%;text-align:right;">
+                                    <span
+                                        t-esc="amount_by_group[1]"
+                                        t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"
+                                    />
+                                </div>
                             </t>
                         </div>
                         <!--Fin Tax -->
                         <!-- Separador -->
-                        <div style="height:2px;background-color:black;clear:both;margin-top:5px;"></div>
+                        <div
+                            style="height:2px;background-color:black;clear:both;margin-top:5px;"
+                        />
                         <!-- Fin separador -->
                         <!-- Total -->
-                         <div style="clear:both;">
+                        <div style="clear:both;">
                             <div style="width:70%;float:left;">
                                 <b>
                                     <span>Total</span>
@@ -115,7 +145,10 @@
                             </div>
                             <div style="width:30%;float:left;text-align:right;">
                                 <b>
-                                    <span t-field="doc.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                                    <span
+                                        t-field="doc.amount_total"
+                                        t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"
+                                    />
                                 </b>
                             </div>
                         </div>

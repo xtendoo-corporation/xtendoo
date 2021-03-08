@@ -20,6 +20,7 @@
 #################################################################################
 
 {
+<<<<<<< HEAD
     'name': "Customer Invoice and Delivery Address",
     'author': 'Ascetic Business Solution',
     'category': 'Sales',
@@ -35,4 +36,19 @@
     'installable': True,
     'application': True,
     'auto_install': False,
+=======
+    "name": "Customer Invoice and Delivery Address",
+    "author": "Ascetic Business Solution",
+    "category": "Sales",
+    "summary": """Customer Invoice and Delivery address""",
+    "license": "AGPL-3",
+    "website": "http://www.asceticbs.com",
+    "version": "13.0.1.0",
+    "depends": ["sale_management"],
+    "data": [],
+    "images": ["static/description/banner.png"],
+    "installable": True,
+    "application": True,
+    "auto_install": False,
+>>>>>>> 95fb20d3cde5b134ce9d049d5b7cf09b7f6ce708
 }

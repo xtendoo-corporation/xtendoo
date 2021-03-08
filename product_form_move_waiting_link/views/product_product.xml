@@ -1,26 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!-- Copyright 2020 Xtendoo.es
      License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
-
 <odoo>
-
     <record model="ir.ui.view" id="product_product_form_view">
-        <field name="name">product.product.form (in product_form_move_waiting_link)</field>
+        <field
+            name="name"
+        >product.product.form (in product_form_move_waiting_link)</field>
         <field name="model">product.product</field>
-        <field name="groups_id" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
-        <field name="inherit_id" ref="sale.product_form_view_sale_order_button"/>
+        <field name="groups_id" eval="[(4, ref('sales_team.group_sale_salesman'))]" />
+        <field name="inherit_id" ref="sale.product_form_view_sale_order_button" />
         <field name="arch" type="xml">
             <button name="action_view_sales" position="after">
-                <button class="oe_stat_button"
-                        name="%(product_form_move_waiting_link.action_product_product_sale_list)d"
-                        type="action"
-                        icon="fa-truck">
-                    <field string="Delivery"
-                           name="move_product_qty"
-                           widget="statinfo"/>
+                <button
+                    class="oe_stat_button"
+                    name="%(product_form_move_waiting_link.action_product_product_sale_list)d"
+                    type="action"
+                    icon="fa-truck"
+                >
+                    <field
+                        string="Delivery"
+                        name="move_product_qty"
+                        widget="statinfo"
+                    />
                 </button>
             </button>
         </field>
     </record>
-
 </odoo>

@@ -32,8 +32,6 @@
     'installable': True,
     'development_status': 'Production/Stable',
     'maintainers': [
-        'mgosai',
-        'javier lagares',
         'manuel calero'
     ],
 }

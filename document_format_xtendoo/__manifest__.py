@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 {
     "name": "document_format_xtendoo",
     "summary": """Formatos de documentos Xtendoo""",
@@ -13,9 +11,9 @@
     "license": "AGPL-3",
     "data": [
         "views/layout/external_layout_clean.xml",
-        "views/sale/report_saleorder_document.xml",
-        "views/invoice/report_invoice_document.xml",
-        "views/delivery/report_delivery_document.xml",
+        "views/sale/sale_order_document.xml",
+        "views/invoice/invoice_document.xml",
+        "views/delivery/delivery_document.xml",
         "views/payment/report_payment_receipt_document.xml",
     ],
     "demo": [],

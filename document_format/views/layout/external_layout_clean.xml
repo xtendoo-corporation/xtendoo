@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <template
+            id="document_format.external_layout_clean_xtendoo"
+            inherit_id="web.external_layout_clean"
+        >
+            <xpath expr="//div[hasclass('o_clean_header')]" position="replace">
+                <div class="o_clean_header">
+                    <div class="row">
+                        <div class="col-6">
+                            <img
+                                t-if="company.logo"
+                                t-att-src="image_data_uri(company.logo)"
+                                alt="Logo"
+                                style="max-height:200px"
+                            />
+                        </div>
+                        <div class="col-5 offset-1" name="company_address">
+                            <ul class="list-unstyled">
+                                <strong>
+                                    <li t-if="company.name">
+                                        <span t-field="company.name" />
+                                    </li>
+                                </strong>
+                                <li t-if="company.street">
+                                    <span t-field="company.street" />
+                                </li>
+                                <li t-if="company.street2">
+                                    <span t-field="company.street2" />
+                                </li>
+                                <li t-if="company.zip" style="display:inline">
+                                    <span t-field="company.zip" />
+                                </li>
+                                <li t-if="company.city" style="display:inline">
+                                    <span t-field="company.city" />
+                                </li>
+                                <li t-if="company.state_id">
+                                    <span t-field="company.state_id" />
+                                </li>
+                                <li t-if="company.vat">
+                                    <t
+                                        t-esc="company.country_id.vat_label or 'Tax ID'"
+                                    />
+:
+                                    <span t-field="company.vat" />
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    style="height:2px;width:100%;background-color:black;margin-top:2px;"
+                >
+                </div>
+            </xpath>
+            <xpath expr="//div[@class='row mt8']" position="replace">
+                <div class="row mt8">
+                    <div class="col-6">
+                        <span t-field="company.report_footer" />
+                    </div>
+                    <div class="col-4 text-right">
+                        <span
+                            class="company_address"
+                            t-field="company.partner_id"
+                            t-options='{"widget": "contact", "fields": ["email", "phone"], "no_marker": true}'
+                        />
+                    </div>
+                    <div class="col-2">
+                        <ul
+                            t-if="report_type == 'pdf'"
+                            class="list-inline pagenumber float-right text-center"
+                        >
+                            <li class="list-inline-item">
+                                <strong>
+                                    <span class="page" />
+                                    /
+                                    <span class="topage" />
+                                </strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt8">
+                    <div class="col-12">
+                        <span
+                            style="font-size: 10px; line-height: 0px;"
+                            t-field="company.report_header"
+                        />
+                    </div>
+                </div>
+                <div class="row mt8">
+                    <div class="col-12">
+                        <span
+                            style="font-size: 10px; line-height: 0px;"
+                            t-field="company.company_registry"
+                        />
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

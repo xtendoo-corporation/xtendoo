@@ -1,20 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data>
-
-        <template id="document_format_xtendoo.report_payment_receipt_xtendoo" inherit_id="account.report_payment_receipt_document">
+        <template
+            id="document_format_xtendoo.report_payment_receipt_xtendoo"
+            inherit_id="account.report_payment_receipt_document"
+        >
             <xpath expr="//div[@class='page']" position="replace">
-                 <div class="page">
-                 <!--Datos de cabecera -->
+                <div class="page">
+                    <!--Datos de cabecera -->
                     <h2 class="mt16">
                         <strong>
                             Recibo de Pago:
-                            <span t-field="o.name"/>
+                            <span t-field="o.name" />
                         </strong>
                     </h2>
                     <div class="row mt64">
                         <div class="col-6" t-if="o.payment_date">
-                            <strong>Fecha: </strong> <span t-field="o.payment_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                            <strong>Fecha: </strong>
+                            <span
+                                t-field="o.payment_date"
+                                t-options='{"format": "dd/MM/yyyy"}'
+                            />
                         </div>
                     </div>
                     <div class="row">
@@ -25,23 +31,31 @@
                             <t t-if="o.partner_type == 'supplier'">
                                 <strong>Comercial: </strong>
                             </t>
-                            <span t-field="o.partner_id"/>
+                            <span t-field="o.partner_id" />
                         </div>
                         <div class="col-6" t-if="o.payment_method_id">
-                            <strong>Método de pago: </strong><span t-field="o.payment_method_id.name"/>
+                            <strong>Método de pago: </strong>
+                            <span t-field="o.payment_method_id.name" />
                         </div>
                     </div>
                     <div class="row mb64">
                         <div class="col-6" t-if="o.amount">
-                            <strong>Cantidad Pagada: </strong><span t-field="o.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                            <strong>Cantidad Pagada: </strong>
+                            <span
+                                t-field="o.amount"
+                                t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
+                            />
                         </div>
                         <div class="col-6" t-if="o.communication">
-                            <strong>Referencia: </strong><span t-field="o.communication"/>
+                            <strong>Referencia: </strong>
+                            <span t-field="o.communication" />
                         </div>
                     </div>
                     <!--Fin datos de cabecera -->
                     <!-- Separador -->
-                    <div style="height:2px;background-color:black;clear:both;margin-top:5px;"></div>
+                    <div
+                        style="height:2px;background-color:black;clear:both;margin-top:5px;"
+                    />
                     <!-- Fin separador -->
                     <!-- Lineas -->
                     <!-- Cabecera lineas -->
@@ -78,7 +92,10 @@
                         <div style="clear:both;">
                             <div style="width:20%;float:left">
                                 <t t-if="inv.invoice_date">
-                                    <span t-field="inv.invoice_date" t-options='{"format": "dd/MM/yyyy"}'></span>
+                                    <span
+                                        t-field="inv.invoice_date"
+                                        t-options='{"format": "dd/MM/yyyy"}'
+                                    />
                                 </t>
                                 <t t-else="">
                                     <span style="color:white">aaaa</span>
@@ -86,7 +103,7 @@
                             </div>
                             <div style="width:20%;float:left">
                                 <t t-if="inv.name">
-                                    <span t-field="inv.name"></span>
+                                    <span t-field="inv.name" />
                                 </t>
                                 <t t-else="">
                                     <span style="color:white">aaaa</span>
@@ -94,16 +111,22 @@
                             </div>
                             <div style="width:20%;float:left;text-align:right;">
                                 <t t-if="inv.amount_total">
-                                    <span t-field="inv.amount_total"></span>
+                                    <span t-field="inv.amount_total" />
                                 </t>
                                 <t t-else="">
                                     <span style="color:white">aaaa</span>
                                 </t>
                             </div>
                             <div style="width:20%;float:left;text-align:right;">
-                                <t t-set="amount_pay" t-value="o._get_invoice_payment_amount(inv)"></t>
+                                <t
+                                    t-set="amount_pay"
+                                    t-value="o._get_invoice_payment_amount(inv)"
+                                />
                                 <t t-if="amount_pay >0">
-                                    <span t-esc="amount_pay" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"></span>
+                                    <span
+                                        t-esc="amount_pay"
+                                        t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"
+                                    />
                                 </t>
                                 <t t-else="">
                                     <span style="color:white">aaaa</span>
@@ -111,10 +134,10 @@
                             </div>
                             <div style="width:20%;float:left;text-align:right;">
                                 <t t-if="inv.amount_residual">
-                                    <span t-field="inv.amount_residual"></span>
+                                    <span t-field="inv.amount_residual" />
                                 </t>
                                 <t t-else="">
-                                     <span>0.00 €</span>
+                                    <span>0.00 €</span>
                                 </t>
                             </div>
                         </div>
