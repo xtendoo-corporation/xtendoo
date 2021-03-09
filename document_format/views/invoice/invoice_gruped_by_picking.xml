@@ -27,7 +27,7 @@
                         <div style="width:50%;float:left;clear:both;margin-top:5px;">
                             <ul class="list-unstyled">
                                 <li>
-                                    <b>
+                                    <h2 class="mt16">
                                         <span
                                             t-if="o.type == 'out_invoice' and o.state == 'posted'"
                                         >Factura:</span>
@@ -47,7 +47,7 @@
                                             t-if="o.type == 'in_invoice'"
                                         >Factura Proveedor:</span>
                                         <span t-if="o.name != '/'" t-field="o.name" />
-                                    </b>
+                                    </h2>
                                 </li>
                                 <li t-if="o.invoice_date" name="invoice_date">
                                     <strong>Fecha:</strong>

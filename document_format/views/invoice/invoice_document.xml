@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data>
-        <report
-            id="report_invoice_format"
-            string="Factura"
-            model="account.move"
-            report_type="qweb-pdf"
-            name="document_format.format_report_invoice_document"
-            print_report_name="(object._get_report_base_filename())"
-        />
-        <template id="format_report_invoice_document">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="o">
-                    <t t-call="document_format.report_invoice_document_xtendoo"/>
-                </t>
-            </t>
+
+        <!-- Herencia del tenplate del informe Factura-->
+         <template id="document_format.format_report_invoice_document"
+              inherit_id="account.report_invoice">
+            <xpath expr='//t[@t-call="account.report_invoice_document"]' position="replace">
+                <t t-call="document_format.report_invoice_document_xtendoo" t-lang="lang"/>
+            </xpath>
         </template>
+    <!-- Fin Herencia del tenplate del informe Factura-->
+
+    <!-- Herencia del tenplate del informe Factura sin pagos-->
+         <template id="document_format.format_report_invoice_document_with_payments"
+              inherit_id="account.report_invoice_with_payments">
+            <xpath expr='//t[@t-call="account.report_invoice_document_with_payments"]' position="replace">
+                <t t-call="document_format.report_invoice_document_xtendoo" t-lang="lang"/>
+            </xpath>
+        </template>
+    <!-- Fin Herencia del tenplate del informe Factura sin pagos-->
+
         <template id="document_format.report_invoice_document_xtendoo">
             <t t-name="document_format.report_invoice_document_xtendoo">
                 <t t-call="web.external_layout">
-                    <t t-set="o" t-value="o.with_context(lang=lang)"/>
                     <div class="page">
                         <!-- Datos del Documento-->
                         <!-- Datos del movimiento -->
                         <div style="width:50%;float:left;clear:both;margin-top:5px;">
                             <ul class="list-unstyled">
                                 <li>
-                                    <b>
+                                    <h2 class="mt16">
                                         <span t-if="o.type == 'out_invoice' and o.state == 'posted'">
                                             Factura:
                                         </span>
@@ -46,7 +49,7 @@
                                             Factura Proveedor:
                                         </span>
                                         <span t-if="o.name != '/'" t-field="o.name"/>
-                                    </b>
+                                    </h2>
                                 </li>
                                 <li t-if="o.invoice_date" name="invoice_date">
                                     <strong>Fecha:</strong>
@@ -543,18 +546,6 @@
                     </div>
                 </t>
             </t>
-        </template>
-        <!-- Bank Account -->
-        <template
-            id="document_format.without_bank_account"
-            inherit_id="account_payment_partner.report_invoice_payment_mode"
-        >
-            <xpath expr="//p[@t-if='o.payment_mode_id.note']" position="replace">
-                <p/>
-            </xpath>
-            <xpath expr="//p[@t-as='partner_bank']" position="replace">
-                <p/>
-            </xpath>
         </template>
     </data>
 </odoo>

@@ -10,8 +10,11 @@
     "depends": ["base", "account", "sale", "web", "stock", "product",],
     "license": "AGPL-3",
     "depends": [
+        "sale",
         "stock",
         "stock_picking_report_valued",
+        "product",
+        "account",
         "stock_picking_product_barcode_report",
         "account_invoice_report_due_list",
         "account_payment_partner",
