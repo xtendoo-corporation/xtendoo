@@ -34,12 +34,16 @@
                                     t-if="not (env.context.get('proforma', False) or is_pro_forma)"
                                 >
                                     <li t-if="doc.state in ['draft','sent']">
-                                        <b>Presupuesto:</b>
-                                        <span t-field="doc.name" />
+                                        <h2 class="mt16">
+                                            <b>Presupuesto:</b>
+                                            <span t-field="doc.name" />
+                                        </h2>
                                     </li>
                                     <li t-if="doc.state not in ['draft','sent']">
-                                        <b>Pedido:</b>
-                                        <span t-field="doc.name" />
+                                        <h2 class="mt16">
+                                            <b>Pedido:</b>
+                                            <span t-field="doc.name" />
+                                        </h2>
                                     </li>
                                 </t>
                                 <li
