@@ -3,7 +3,7 @@
     "summary": """Sale Order Show Partner City""",
     "version": "13.0.1.0.0",
     "description": """Sale Order Show Partner City""",
-    "author": " Manuel Calero",
+    "author": " Dani Domínguez",
     "company": "Xtendoo",
     "website": "https://xtendoo.es",
     "category": "Extra Tools",
