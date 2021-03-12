@@ -20,12 +20,12 @@ class SaleReport(models.Model):
                 "       WHEN"
                 "           l.untaxed_amount_to_invoice = 0"
                 "       THEN"
-                "            0"
+                "           0"
                 "       ELSE"
-                "            SUM((l.margin / l.untaxed_amount_to_invoice) / COALESCE(s.currency_rate, 1.0)) * 100"
+                "           SUM((l.margin / l.untaxed_amount_to_invoice) / COALESCE(s.currency_rate, 1.0)) * 100"
                 "       END"
                 "       AS"
-                "            margin_percent"
+                "           margin_percent"
             }
         )
         groupby += ", l.untaxed_amount_to_invoice"
@@ -36,14 +36,3 @@ class SaleReport(models.Model):
             groupby=groupby,
             from_clause=from_clause,
         )
-
-
-# "margin_percent": " ,SUM("
-# "((l.margin / l.untaxed_amount_to_invoice)"
-# " / COALESCE(s.currency_rate, 1.0)) * 100)"
-# "AS margin_percent"
-# "margin_percent":
-#     " ,SUM("
-#                 "(l.untaxed_amount_to_invoice)"
-#                 " / (1.0)) * 100)"
-#                 "AS margin_percent"

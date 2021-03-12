@@ -71,7 +71,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         domain = [("barcode", "=", barcode)]
         product = self.env["product.product"].search(domain)
         if not product:
-            self._set_message_error("Código de barras para producto no encontrado")
+            self._set_message_error("Código de barras % para producto no encontrado")
             return
 
         if len(product) > 1:
