@@ -14,6 +14,9 @@
         "stock_account",
         "purchase",
     ],
-    "data": ["views/product.xml",],
+    "data": [
+        "views/purchase_view.xml",
+        "security/security_group.xml",
+    ],
     "installable": True,
 }
