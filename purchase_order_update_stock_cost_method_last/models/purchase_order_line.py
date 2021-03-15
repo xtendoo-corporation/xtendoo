@@ -5,7 +5,6 @@ class PurchaseOrderLine(models.Model):
     _inherit = "purchase.order.line"
 
     def action_update_cost_price(self):
-        print("action_update_cost_price :::::")
         for line in self.filtered(
             lambda l: l.product_id.cost_method == "last"
         ):
