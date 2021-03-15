@@ -15,6 +15,10 @@ class PurchaseOrderLine(models.Model):
                 {"standard_price": new_standard_price}
             )
             line.product_id.message_post(
-                body=(_("Cost price updated from %s to %s.") % (old_standard_price, new_standard_price))
-            )
-            # items.write({"fixed_price": line.price_unit})
+                body=_("<li>"
+                       + "<span>Cost price updated:</span> "
+                       + "<span>{} </span>".format(old_standard_price)
+                       + "<span class='fa fa-long-arrow-right' role='img' />"
+                       + "<span> {}</span>".format(new_standard_price)
+                       )
+                )
