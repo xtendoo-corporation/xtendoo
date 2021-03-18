@@ -2,23 +2,23 @@
 <odoo>
     <data>
 
-        <!-- Herencia del tenplate del informe Factura-->
-         <template id="document_format.format_report_invoice_document"
-              inherit_id="account.report_invoice">
-            <xpath expr='//t[@t-call="account.report_invoice_document"]' position="replace">
-                <t t-call="document_format.report_invoice_document_xtendoo" t-lang="lang"/>
-            </xpath>
+       <report
+            id="report_invoice_without_grouped"
+            string="Factura sin Agrupar"
+            model="account.move"
+            report_type="qweb-pdf"
+            name="document_format.report_invoice_not_grouped"
+            print_report_name="(object._get_report_base_filename())"
+        />
+        <template id="report_invoice_not_grouped">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t
+                        t-call="document_format.report_invoice_document_xtendoo"
+                    />
+                </t>
+            </t>
         </template>
-    <!-- Fin Herencia del tenplate del informe Factura-->
-
-    <!-- Herencia del tenplate del informe Factura sin pagos-->
-         <template id="document_format.format_report_invoice_document_with_payments"
-              inherit_id="account.report_invoice_with_payments">
-            <xpath expr='//t[@t-call="account.report_invoice_document_with_payments"]' position="replace">
-                <t t-call="document_format.report_invoice_document_xtendoo" t-lang="lang"/>
-            </xpath>
-        </template>
-    <!-- Fin Herencia del tenplate del informe Factura sin pagos-->
 
         <template id="document_format.report_invoice_document_xtendoo">
             <t t-name="document_format.report_invoice_document_xtendoo">

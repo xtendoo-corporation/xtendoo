@@ -19,6 +19,8 @@
         "account_invoice_report_due_list",
         "account_payment_partner",
         "account_invoice_report_grouped_by_picking",
+        "mail",
+        "contacts"
     ],
     "data": [
         "data/paper_format_label.xml",
@@ -34,6 +36,8 @@
         "views/label/product_label.xml",
         "report/report_label_barcode.xml",
         "report/report_label_barcode_template.xml",
+        #"data/group_invoice_email_template.xml",
+        "views/email_default_template/account_invoice_send_views.xml",
     ],
     "installable": True,
     "auto_install": False,
