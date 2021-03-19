@@ -40,10 +40,10 @@
                                             Factura Cancelada:
                                         </span>
                                         <span t-if="o.type == 'out_refund'">
-                                            Nota de Credito:
+                                            Factura Rectificativa:
                                         </span>
                                         <span t-if="o.type == 'in_refund'">
-                                            Nota Credito Proveedor:
+                                            Factura Rectificativa Proveedor:
                                         </span>
                                         <span t-if="o.type == 'in_invoice'">
                                             Factura Proveedor:
