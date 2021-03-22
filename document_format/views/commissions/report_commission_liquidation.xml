@@ -1,0 +1,106 @@
+<odoo>
+    <data>
+        <template id="document_format.report_settlement_inherit"
+                  inherit_id="sale_commission.report_settlement">
+            <xpath expr="//div[@class='page']" position="replace">
+                <div class="page">
+                    <!--Cabecera -->
+                    <h4 style="text-align:center;">LISTADO DE COMISIONES A VENDEDORES</h4>
+                    <div>
+                        <div style="width:45%;margin-left:2.5%;margin-right:2.5%;float:left;">
+                            <p><b>Periodo:</b> <span t-field="o.date_from"></span> - <span t-field="o.date_to"></span></p>
+                        </div>
+                        <div style="width:45%;margin-left:2.5%;margin-right:2.5%;float:left;">
+                            <p><b>Repercusión de descuentos en comisiones.</b></p>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="width:45%;margin-left:2.5%;margin-right:2.5%;float:left;">
+                            <p><b>Comercial:</b> <span t-field="o.agent_id"></span></p>
+                        </div>
+                        <div style="width:45%;margin-left:2.5%;margin-right:2.5%;float:left;">
+                            <t t-set="commission_name" t-value=""/>
+                            <t t-foreach="o.line_ids" t-as="l">
+                                <t t-set="commission_name" t-value="l.commission_id.name"/>
+                            </t>
+                            <p><b><span t-esc="commission_name"></span></b></p>
+                        </div>
+                    </div>
+                    <!--Fin Cabecera -->
+                    <!-- Body-->
+                    <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Fecha</th>
+                                    <th>Factura</th>
+                                    <th>Importe</th>
+                                    <th>Comisión</th>
+                                </tr>
+                            </thead>
+                                <!--<span t-field="l.invoice_line_id.partner_id."/>-->
+                            <tbody class="invoice_tbody">
+                                <!-- Variables -->
+                                <t t-set="total_comision" t-value="0.0"/>
+                                <t t-set="lines_grouped" t-value="o.line_ids"/>
+                                <!-- Fin Variables -->
+                                <tr t-foreach="lines_grouped" t-as="lines_group">
+                                    <!-- Variables FOREACH -->
+                                    <t t-set="l" t-value="lines_group"/>
+                                    <t t-set="lines_grouped" t-value="o.line_ids" />
+                                    <t t-set="this_invoice" t-value="l.invoice_line_id.move_id"/>
+                                    <t t-set="next_invoice" t-value="[lines_grouped[i + 1]['invoice_id'] for i, x in enumerate(lines_grouped) if x == lines_group and i &lt; len(lines_grouped) - 1] or [False]"/>
+                                     <t t-if="next_invoice != [False]">
+                                        <t t-set="next_invoice" t-value="next_invoice[0]"/>
+                                    </t>
+                                    <!-- Fin Variables FOREACH -->
+                                    <t t-set="total_comision" t-value="total_comision + l.settled_amount"/>
+                                    <t t-if="this_invoice != next_invoice">
+                                        <td>
+                                            <span t-field="l.invoice_line_id.partner_id.vat"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="l.invoice_line_id.partner_id.name"/>
+                                            
+                                        </td>
+                                        <td>
+                                            <span t-field="l.invoice_line_id.date"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="l.invoice_line_id.move_id.name"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="l.invoice_line_id.move_id.amount_total"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="total_comision" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </td>
+                                         <t t-set="total_comision" t-value="0.00"/>
+                                    </t>
+                                    <t t-set="next_invoice" t-value="this_invoice"/>
+                                </tr>
+                            </tbody>
+                            <!-- Fin Body-->
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" class="text-right">
+                                        <strong>Total</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong><span t-field="o.total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                    </table>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>
+
+
+
+
+
+
