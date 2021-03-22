@@ -1,0 +1,17 @@
+<odoo>
+    <data>
+        <!--  Tipo en vista de pedidos  -->
+        <record id="zoopet_administration.sale_order_type_view_list" model="ir.ui.view">
+            <field name="name">sale.order.type.view.list</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="picking_state"/>
+            </field>
+            </field>
+        </record>
+        <!--  Fin tipo en vista de pedidos -->
+    </data>
+</odoo>
