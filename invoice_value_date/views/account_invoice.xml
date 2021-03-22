@@ -12,4 +12,15 @@
         </field>
     </record>
 
+    <record id="invoice_tree" model="ir.ui.view">
+        <field name="name">invoice_value_date.customer_invoice_tree</field>
+        <field name="model">account.invoice</field>
+        <field name="inherit_id" ref="account.invoice_tree"/>
+        <field name="arch" type="xml">
+            <field name="date_invoice" position="after">
+                <field name="date_value"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

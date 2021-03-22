@@ -31,7 +31,7 @@ class AccountInvoice(models.Model):
         sale_order_date = None
         for origin in vals['origin'].split(', '):
             sale_order = self.env['sale.order'].search([('name', '=', origin)], limit=1)
-            if sale_order and (sale_order_date is None or sale_order < sale_order_date):
+            if sale_order and (sale_order_date is None or sale_order > sale_order_date):
                 sale_order_date = sale_order.date_order
         return sale_order_date
 
