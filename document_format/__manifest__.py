@@ -20,7 +20,8 @@
         "account_payment_partner",
         "account_invoice_report_grouped_by_picking",
         "mail",
-        "contacts"
+        "contacts",
+        "sale_commission"
     ],
     "data": [
         "data/paper_format_label.xml",
@@ -38,6 +39,7 @@
         "report/report_label_barcode_template.xml",
         #"data/group_invoice_email_template.xml",
         "views/email_default_template/account_invoice_send_views.xml",
+        "views/commissions/report_commission_liquidation.xml"
     ],
     "installable": True,
     "auto_install": False,
