@@ -39,7 +39,8 @@
         "report/report_label_barcode_template.xml",
         #"data/group_invoice_email_template.xml",
         "views/email_default_template/account_invoice_send_views.xml",
-        "views/commissions/report_commission_liquidation.xml"
+        "views/commissions/report_commission_liquidation.xml",
+        "views/purchase/purchase.xml",
     ],
     "installable": True,
     "auto_install": False,
