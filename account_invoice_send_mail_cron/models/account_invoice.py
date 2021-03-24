@@ -11,9 +11,16 @@ class AccountInvoiceSendMailCron(models.Model):
     @api.model
     def _cron_send_account_invoice_email(self):
         invoices = self.env['account.move'].search([
-            ('invoice_sent', '=', False),
+            # ('invoice_sent', '=', False),
             ('type', '=', 'out_invoice'),
+            ('partner_id.email', '!=', False),
+            ('id', '=', 12905),
         ])
-        print("invoices ::::", invoices)
+        for invoice in invoices:
+            print("invoice num. ::::", invoice.name)
+            print("invoice sent ::::", invoice.invoice_sent)
+            print("invoice mail ::::", invoice.partner_id.email)
+            invoice._send_email()
+
 
 
