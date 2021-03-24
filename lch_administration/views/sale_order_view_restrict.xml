@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="lch_administration.saleorder_form_ihnerit" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+            <!-- No ver Margen -->
+                <xpath expr="//field[@name='margin']" position="attributes">
+                    <attribute name="groups">lch_administration.show_margins</attribute>
+                </xpath>
+            <!-- Fin no ver margen -->
+            <!-- No editar precio unitario -->
+                <xpath expr="//field[@name='order_line']/tree//field[@name='price_unit']" position="replace">
+                    <field name="can_edit_price" invisible="1"/>
+                    <field name="is_admin" invisible="1"/>
+                    <field name="price_unit" attrs="{'readonly': [('can_edit_price', '=', False)]}"/>
+                </xpath>
+            <!-- Fin no editar precio unitario -->
+            <!-- Ocultar coste en linea y no dejar editarlo a comerciales-->
+                 <xpath expr="//field[@name='order_line']/tree//field[@name='purchase_price']" position="replace">
+                    <field name="purchase_price" groups="lch_administration.show_cost_price" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+                </xpath>
+            <!--  Abrir:Lineas del pedido  -->
+                <xpath expr="//page[@name='order_lines']//field[@name='purchase_price']" position="attributes">
+                    <attribute name="groups">lch_administration.show_cost_price</attribute>
+                </xpath>
+            <!--  Fin Abrir.Lineas del pedido  -->
+            <!-- Fin ocultar coste en linea y no dejar editarlo a comerciales-->
+            <!-- No editar IVA -->
+                <xpath expr="//field[@name='order_line']/tree//field[@name='tax_id']" position="replace">
+                    <field name="can_edit_tax" invisible="1"/>
+                    <field name="tax_id" widget="many2many_tags" options="{'no_create': True}" domain="[('type_tax_use','=','sale'),('company_id','=',parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
+                </xpath>
+            <!-- Fin no editar IVA -->
+            <!-- No editar descuento 1 -->
+                <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="replace">
+                    <field name="can_edit_discounts" invisible="1"/>
+                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                </xpath>
+            <!-- Fin no editar descuento 1-->
+            <!-- No editar descuento 2 -->
+                 <xpath expr="//field[@name='order_line']/tree//field[@name='discount2']" position="replace">
+                    <field name="discount2" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                </xpath>
+            <!-- Fin no editar descuento 2-->
+            <!-- No editar descuento 3 -->
+                 <xpath expr="//field[@name='order_line']/tree//field[@name='discount3']" position="replace">
+                    <field name="discount3" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                </xpath>
+            <!-- Fin no editar descuento 3-->
+            <!-- Ocultar tipo de descuento -->
+                 <xpath expr="//field[@name='order_line']/tree//field[@name='discounting_type']" position="replace">
+                    <field name="discounting_type" groups="lch_administration.edit_discounts"/>
+                </xpath>
+            <!-- Fin Ocultar tipo de descuento-->
+            </field>
+        </record>
+       <!--  buscar mas... (ventas)  -->
+        <record model="ir.ui.view" id="product_template_tree_view_inherit">
+        <field name="name"> product.template.tree.view.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='standard_price']" position="attributes">
+                <attribute name="groups">lch_administration.show_cost_price</attribute>
+            </xpath>
+        </field>
+        </record>
+        <!--   Fin buscar mas... (ventas)   -->
+        
+    
+   
+    </data>
+</odoo>
