@@ -41,7 +41,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             lot = (
                 self.env["stock.production.lot"]
                 .sudo()
-                .search([("product_id", "=", product.id), ("name", "=", lot)])
+                .search([("product_id", "=", product.id), ("name", "=", lot), ("product_qty", ">", 0.0)], limit=1)
             )
 
             print("despues de buscar :::::")
@@ -93,6 +93,7 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def on_barcode_scanned(self, barcode):
         self._reset_qty()
+        print("on_barcode_scanned read:::::", barcode)
         self.process_barcode(barcode)
 
     def check_done_conditions(self):
