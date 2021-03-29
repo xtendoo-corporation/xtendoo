@@ -41,10 +41,13 @@ class WizStockBarcodesRead(models.AbstractModel):
             lot = (
                 self.env["stock.production.lot"]
                 .sudo()
-                .search([("product_id", "=", product.id), ("name", "=", lot),])
+                .search([("product_id", "=", product.id), ("name", "=", lot)])
             )
 
             print("despues de buscar :::::")
+
+            for l in lot:
+                print("l :::::", l.name)
 
             if not lot:
                 self._set_message_error("Lote no encontrado")
