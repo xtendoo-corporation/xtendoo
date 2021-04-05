@@ -4,7 +4,7 @@
 
     <data>
 
-        <report id="report_invoice_without_promotions"
+        <report id="document_format_hr.report_invoice_without_promotions"
                 string="Factura Sin Promociones"
                 model="account.invoice"
                 report_type="qweb-pdf"
@@ -18,7 +18,7 @@
                 <t t-call="web.html_container">
                     <t t-foreach="docs" t-as="o">
                         <t t-set="lang" t-value="o.user_id.lang if o.type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
-                        <t t-call="document_format_hr.report_invoice_document_without_promotions" t-lang="lang"/>
+                        <t t-call="document_format_hr.invoice_document_without_pomotions" t-lang="lang"/>
                     </t>
                 </t>
             </t>

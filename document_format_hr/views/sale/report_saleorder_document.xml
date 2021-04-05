@@ -2,7 +2,7 @@
 <odoo>
     <data>
 
-        <record id="A4_presupuesto" model="report.paperformat">
+        <record id="document_format_hr.A4_presupuesto" model="report.paperformat">
             <field name="name">A4 Presupuesto</field>
             <field name="default" eval="True"/>
             <field name="format">A4</field>
@@ -20,7 +20,7 @@
             <field name="paperformat_id" ref="document_format_hr.A4_presupuesto" />
         </record>
 
-        <template id="report_saleorder_document_hr" inherit_id="sale.report_saleorder_document">
+        <template id="document_format_hr.report_saleorder_document_hr" inherit_id="sale.report_saleorder_document">
 
             <xpath expr="//div[@t-field='doc.partner_id']" position="replace">
 

@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <odoo>
+
     <data>
 
-        <template id="document_format_hr.report_invoice_document_hr" inherit_id="account.report_invoice_document">
+        <template id="document_format_hr.invoice_document_without_pomotions">
 
-            <xpath expr="/t/t/t[@t-set='address']" position="replace">
+             <t t-name="document_format_hr.invoice_document_without_pomotions">
 
-                <div></div>
+                   <t t-call="web.external_layout">
 
-
-            </xpath>
-
-            <xpath expr="//div[@class='page']" position="replace">
-
-                <t t-set="esRect" t-value="o.type"></t>
+                        <div class="page">
+                            <t t-set="esRect" t-value="o.type"></t>
 
                 <div style="width:50%; float:left;margin-top:35px;">
                     <ul class="list-unstyled">
@@ -42,7 +40,7 @@
                             <span t-field="o.number"/>
                         </li>
 
-                         <li t-if="o.delivery_zone_id">
+                        <li t-if="o.delivery_zone_id">
                                 <b>Zona:</b>
                                 <spam t-field="o.delivery_zone_id"/>
                          </li>
@@ -114,9 +112,14 @@
                                 <span>Código</span>
                             </div>
 
-                            <div class="text-left" style="font-weight:bolder; color:#4f4b4b;float:left;width:41%;">
+                            <div class="text-left" style="font-weight:bolder; color:#4f4b4b;width:15%;float:left;">
+                                <span>Lote</span>
+                            </div>
+
+                            <div class="text-left" style="font-weight:bolder; color:#4f4b4b;float:left;width:26%;">
                                 <span>Descripción</span>
                             </div>
+
 
                             <div class="text-right" style="font-weight:bolder; color:#4f4b4b;float:left;width:7%;">
                                 <span>Uds.</span>
@@ -242,7 +245,6 @@
                     </t>
 
                     <!-- Fin lineas -->
-
                     <!-- Separador -->
 
                     <div style="height:2px;background-color:black;clear:both;"></div>
@@ -250,63 +252,71 @@
                     <!-- Fin separador -->
 
                     <!-- Totales -->
-                    <div style="width:50%;float:right;clear:both">
+                    <div style="width:60%;float:right;clear:both">
 
 
                         <!-- Subtotal -->
+                        <div style="clear:both;">
 
-                        <div style="width:40%;float:left">
-                            <span>Subtotal</span>
-                        </div>
+                            <div style="width:60%;float:left;">
+                                <span>Base Imponible</span>
+                            </div>
 
-                        <div style="width:60%;float:left;text-align:right">
-                            <span t-if="o.type == 'out_refund'">-</span>
-                            <span t-field="o.amount_untaxed"/>
+                            <div style="width:40%;float:left;text-align:right">
+                                <span t-if="o.type == 'out_refund'">-</span>
+                                <span t-field="o.amount_untaxed"/>
+                            </div>
                         </div>
 
                         <!-- Fin Subtotal -->
 
                         <!-- Impuestos -->
+                        <div style="clear:both;">
 
-                        <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                            <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">
-                                <div style="width:40%;float:left;clear:both;">
-                                    <span t-esc="amount_by_group[0]"/>
-                                </div>
+                            <t t-foreach="o.amount_by_group" t-as="amount_by_group">
+                                <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">
+                                    <div style="width:60%;float:left;">
+                                        <span t-esc="amount_by_group[0]"/>
+                                    </div>
 
-                                <div class="text-right o_price_total" style="width:60%;float:left;text-align:right">
-                                    <span t-if="o.type == 'out_refund'">-</span>
-                                    <span t-esc="amount_by_group[3]"/>
-                                </div>
+                                    <div class="text-right o_price_total" style="width:40%;float:left;text-align:right">
+                                        <span t-if="o.type == 'out_refund'">-</span>
+                                        <span t-esc="amount_by_group[3]"/>
+                                    </div>
+
+                                </t>
+                                <t t-else="">
+                                    <div style="width:60%;float:left;">
+                                        <div style="width:70%;float:left;">
+                                            <span t-esc="amount_by_group[0]"/>
+                                            <span>sobre</span>
+                                        </div>
+                                        <div style="width:30%;float:left;text-align:right;">
+                                            <t t-esc="amount_by_group[4]"/>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="text-right o_price_total" style="width:40%;float:left;text-align:right">
+                                        <span t-if="o.type == 'out_refund'">-</span>
+                                        <span t-esc="amount_by_group[3]"/>
+                                    </div>
+                                </t>
 
                             </t>
-                            <t t-else="">
-                                <div style="width:40%;float:left;clear:both;">
-                                    <span t-esc="amount_by_group[0]"/>
-                                    <span>&amp;nbsp;
-                                        <span>en</span>
-                                        <t t-esc="amount_by_group[4]"/>
-                                    </span>
-                                </div>
-
-                                <div class="text-right o_price_total" style="width:60%;float:left;text-align:right">
-                                    <span t-if="o.type == 'out_refund'">-</span>
-                                    <span t-esc="amount_by_group[3]"/>
-                                </div>
-                            </t>
-
-                        </t>
+                        </div>
 
                         <!-- Fin impuestos -->
 
                         <!-- Total -->
-
-                        <div style="font-weight:bolder;width:40%;float:left;" id="total">
-                            <span>Total</span>
-                        </div>
-                        <div class="text-right">
-                            <span t-if="o.type == 'out_refund'">-</span>
-                            <span t-field="o.amount_total" style="font-weight:bolder;"/>
+                        <div style="clear:both;">
+                            <div style="font-weight:bolder;width:60%;float:left;" id="total">
+                                <span>Total</span>
+                            </div>
+                            <div class="text-right" style="width:40%;float:left;">
+                                <span t-if="o.type == 'out_refund'">-</span>
+                                <span t-field="o.amount_total" style="font-weight:bolder;"/>
+                            </div>
                         </div>
 
                         <!-- FIn total -->
@@ -318,6 +328,16 @@
                         <!-- FIn Separador -->
 
                     </div>
+
+                     <!-- Firma del cliente -->
+
+                        <div t-if="o.digital_signature" style="height:100px;width:30%;border:2px solid black;margin-top:5px;">
+                              <span style="text-align:center;display:block;width:100%;">Firma del cliente:</span>
+                              <img style="width:100%;" t-attf-src="data:image/*;base64,{{o.digital_signature}}"/>
+                        </div>
+
+
+                        <!-- fin Firmar del cliente -->
                     <div class="clearfix" style="display:none;">
                         <div id="total" class="row">
                             <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
@@ -376,19 +396,12 @@
 
                 </div>
 
-            </xpath>
+                        </div>
+                   </t>
+             </t>
 
         </template>
 
-        <!-- <template id="report_invoice_document_ch_address" inherit_id="account.report_invoice_document_with_payments">
-
-             <xpath expr="/data" position="replace">
-
-                 <div></div>
-
-             </xpath>
-
-         </template>-->
-
     </data>
+
 </odoo>

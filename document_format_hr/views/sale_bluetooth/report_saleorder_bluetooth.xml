@@ -4,7 +4,7 @@
 
     <data>
 
-        <record id="bluetooth_saleorder" model="report.paperformat">
+        <record id="document_format_hr.bluetooth_saleorder" model="report.paperformat">
             <field name="name">Bluetooth saleorder</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
@@ -20,7 +20,7 @@
             <field name="dpi">90</field>
         </record>
 
-        <report id="report_saleorder_bluetooh"
+        <report id="document_format_hr.report_saleorder_bluetooh"
                 string="Presupuesto / Pedido Bluetooth"
                 model="sale.order"
                 report_type="qweb-pdf"
