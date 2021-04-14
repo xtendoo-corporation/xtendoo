@@ -4,7 +4,7 @@
 
     <data>
 
-        <record id="bluetooth_payment" model="report.paperformat">
+        <record id="document_format_hr.bluetooth_payment" model="report.paperformat">
             <field name="name">Bluetooth payment</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>

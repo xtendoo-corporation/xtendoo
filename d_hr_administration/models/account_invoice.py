@@ -7,24 +7,8 @@ import logging
 
 
 class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+    _inherit = ['account.invoice','administrator.mixin.rule']
     _name = 'account.invoice'
-
-    is_admin = fields.Boolean(
-        comodel_name='account.invoice',
-        compute='_is_admin',
-        string="isAdmin",
-        default=lambda self: self._get_default_admin()
-    )
-
-    @api.one
-    def _is_admin(self):
-        self.is_admin = self.env.user.administration
-        return
-
-    @api.model
-    def _get_default_admin(self):
-        return self.env.user.administration
 
     @api.model
     def default_get(self, default_fields):
@@ -34,7 +18,9 @@ class AccountInvoice(models.Model):
         #logging.info('get')
         #logging.info(self.env.context.get('active_model', ''))
         #logging.info(self.env.context.get('is_sale', ''))
-        if self.env.context.get('active_model', '') == 'sale.order' or self.env.user.administration or self.env.context.get('is_sale', '') == True:
+        if self.env.context.get('active_model', '') == 'sale.order' or self.env["res.users"].has_group(
+                "d_hr_administration.administration"
+            ) or self.env.context.get('is_sale', '') == True:
             return super(AccountInvoice, self).default_get(default_fields)
 
         raise ValidationError(("You are not allowed to create invoices."))

@@ -5,7 +5,8 @@ from odoo import fields, models
 
 
 class Users(models.Model):
-    _inherit = "res.users"
+    _inherit = ['res.users','administrator.mixin.rule']
+    _name ='res.users'
 
     administration = fields.Boolean(
         string='Administración',

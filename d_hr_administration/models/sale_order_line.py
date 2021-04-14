@@ -7,7 +7,8 @@ import logging
 
 
 class SaleOrderLine(models.Model):
-    _inherit = 'sale.order.line'
+    _inherit = ['sale.order.line','administrator.mixin.rule']
+    _name = 'sale.order.line'
 
     is_admin = fields.Boolean(
         comodel_name='sale.order.line',

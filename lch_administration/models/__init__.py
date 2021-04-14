@@ -1,3 +1,4 @@
+from . import administrator_mixin_rule
 from . import user
 from . import account_invoice
 from . import account_invoice_line
