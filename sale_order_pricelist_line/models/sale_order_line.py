@@ -30,20 +30,6 @@ class SaleOrderLine(models.Model):
         logging.info(result.get('pricelist_id'))
         return result
 
-    # @api.model_create_multi
-    # def create(self, vals_list):
-    #     logging.info("*"*40)
-    #     logging.info(vals_list)
-    #     for vals in vals_list:
-    #         vals.update({'pricelist_id': self.order_id.pricelist_id})
-    #
-    #     logging.info("*"*40)
-    #     logging.info(self.order_id.pricelist_id)
-    #     logging.info(vals_list)
-    #     logging.info("*"*40)
-    #     lines=super().create(vals_list)
-    #     #Lines.append({'pricelist_id':self.pricelist_id})
-    #     return lines
 
 
 
