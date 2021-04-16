@@ -18,11 +18,15 @@ class AccountInvoice(models.Model):
         """
         if not self.env["res.users"].has_group("lch_administration.administration_group"):
             active_model=""
+            logging.info('********************************************')
+            logging.info(self._context)
             if self._context.get('params'):
                 if self._context.get('params').get('model'):
                     active_model=self._context.get('params').get('model')
             if self._context.get('search_default_my_quotation'):
                 active_model="sale.order"
+            if self._context.get('active_model'):
+                active_model=self._context.get('active_model')
             if active_model != "sale.order":
                 raise ValidationError(("No tiene permisos para crear facturas directas"))
         return super(AccountInvoice, self).default_get(default_fields)
