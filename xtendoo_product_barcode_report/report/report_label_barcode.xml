@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <report
+        id="action_label_barcode_report"
+        string="Label Impresion"
+        model="product.template"
+        report_type="qweb-pdf"
+        file="xtendoo_product_barcode_report.label_barcode_report"
+        name="xtendoo__product_barcode_report.label_barcode_report"
+        paperformat="xtendoo_product_barcode_report.paperformat_label"
+    />
+</odoo>
