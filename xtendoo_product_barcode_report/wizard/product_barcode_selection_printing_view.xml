@@ -11,7 +11,7 @@
                     <strong>Barcode Format</strong>
                     </span>
                     <field name="barcode_format"/>
-                    
+
                     <group>
                         <field name="product_print" nolabel="1">
                             <tree editable="top" create="0">
@@ -27,12 +27,13 @@
                 </form>
             </field>
         </record> -->
-       <!--  <act_window id="act_product_barcode_selection_printing" 
-                    name="Print barcode labels" 
-                    binding_model="product.template" 
-                    binding_type="report" 
-                    res_model="product.print" 
-                    view_mode="form" 
-                    target="new"/> -->
+
+       <act_window id="act_product_barcode_selection_printing"
+                    name="Print barcode labels"
+                    src_model="product.template"
+                    binding_type="report"
+                    res_model="product.print"
+                    view_mode="form"
+                    target="new"/>
 
 </odoo>

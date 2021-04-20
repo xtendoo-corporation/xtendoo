@@ -15,10 +15,10 @@ class ProductPrintingQty(models.TransientModel):
         required=True,
     )
     label_qty = fields.Integer("Quantity of Labels")
-    #wizard_id = fields.Many2one("product.print", string="Wizard")
+    wizard_id = fields.Many2one("product.print", string="Wizard")
 
 
-""" class WizProductSelectionPrinting(models.TransientModel):
+class WizProductSelectionPrinting(models.TransientModel):
     _name = "product.print"
     _description = "Wizard to select how many barcodes have to be printed"
 
@@ -67,9 +67,9 @@ class ProductPrintingQty(models.TransientModel):
             return {}
 
     def print_labels(self):
-        #print_product = self.product_print.filtered(
-         #   lambda p: p.label_qty > 0)
-        #if print_product:
-        return self.env.ref(
-                "xtendoo_product_barcode_report.action_label_barcode_report"
-            ).report_action(self.product_print_moves) """
+        print_product = self.product_print.filtered(
+           lambda p: p.label_qty > 0)
+        if print_product:
+            return self.env.ref(
+                    "xtendoo_product_barcode_report.action_label_barcode_report"
+                ).report_action(self.product_print)
