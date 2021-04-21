@@ -1,6 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-  <odoo>
-       <!--  <record id="view_product_barcode_selection_printing" model="ir.ui.view">
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data>
+       <record id="view_product_barcode_selection_printing" model="ir.ui.view">
             <field name="name">product.barcode.selection.printing.form</field>
             <field name="model">product.print</field>
             <field name="arch" type="xml">
@@ -10,7 +13,7 @@
                     <span>
                     <strong>Barcode Format</strong>
                     </span>
-                    <field name="barcode_format"/>
+                    <!--<field name="barcode_format"/> -->
 
                     <group>
                         <field name="product_print" nolabel="1">
@@ -26,14 +29,26 @@
                     </footer>
                 </form>
             </field>
-        </record> -->
+        </record>
 
-       <act_window id="act_product_barcode_selection_printing"
+      <!-- <act_window id="act_product_barcode_selection_printing"
                     name="Print barcode labels"
-                    src_model="product.template"
-                    binding_type="report"
-                    res_model="product.print"
+                    res_model="product.template"
                     view_mode="form"
-                    target="new"/>
+                    view_type="form"
+                    target="new"
+                    binding_model_id="xtendoo_product_barcode_report.model_product_print"
+                    binding_type="report"/> -->
 
+        <record id="act_product_barcode_selection_printing" model="ir.actions.act_window">
+            <field name="name">Print barcode labels</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">product.print</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="product.model_product_template" />
+            <field name="binding_type">report</field>
+        </record>
+    </data>
 </odoo>

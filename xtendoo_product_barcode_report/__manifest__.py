@@ -17,9 +17,9 @@
     "data": [
         #"views/res_config_settings_view.xml",
         "data/paperformat_label.xml",
-        "wizard/product_barcode_selection_printing_view.xml",
         "report/report_label_barcode.xml",
         "report/report_label_barcode_template.xml",
+        "wizard/product_barcode_selection_printing_view.xml",
     ],
     "installable": True,
 }

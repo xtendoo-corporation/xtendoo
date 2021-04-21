@@ -26,10 +26,12 @@ class WizProductSelectionPrinting(models.TransientModel):
     def default_get(self, fields):
         ctx = self.env.context.copy()
         res = super().default_get(fields)
-        if ctx.get("active_ids") and ctx.get("active_model") == "product.template":
-            product_ids = self.env["product.template"].browse(
-                ctx.get("active_ids"))
-            res.update({"product_ids": product_ids.ids})
+        print("*"*40)
+        print(self.env.context['active_ids'])
+        if self.env.context['active_ids']:
+            #product_ids = self.env["product.product"].browse(
+                #self.env.context['active_ids'])
+            res.update({"product_ids": self.env.context['active_ids']})
         return res
 
     product_ids = fields.Many2many("product.template")
@@ -67,9 +69,9 @@ class WizProductSelectionPrinting(models.TransientModel):
             return {}
 
     def print_labels(self):
-        print_product = self.product_print.filtered(
-           lambda p: p.label_qty > 0)
-        if print_product:
-            return self.env.ref(
+        #print_product = self.product_print.filtered(
+         #  lambda p: p.label_qty > 0)
+        #if print_product:
+        return self.env.ref(
                     "xtendoo_product_barcode_report.action_label_barcode_report"
                 ).report_action(self.product_print)
