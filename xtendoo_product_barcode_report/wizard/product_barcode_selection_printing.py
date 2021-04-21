@@ -24,14 +24,11 @@ class WizProductSelectionPrinting(models.TransientModel):
 
     @api.model
     def default_get(self, fields):
-        ctx = self.env.context.copy()
         res = super().default_get(fields)
-        print("*"*40)
-        print(self.env.context['active_ids'])
         if self.env.context['active_ids']:
-            #product_ids = self.env["product.product"].browse(
-                #self.env.context['active_ids'])
-            res.update({"product_ids": self.env.context['active_ids']})
+            product_ids = self.env["product.template"].browse(
+                self.env.context['active_ids'])
+            res.update({"product_ids": product_ids.ids})
         return res
 
     product_ids = fields.Many2many("product.template")
@@ -42,36 +39,23 @@ class WizProductSelectionPrinting(models.TransientModel):
     @api.onchange("product_ids")
     def _onchange_product_ids(self):
         product_print_data = []
-        line_fields = [
-            f for f in self.env["product.line.print"]._fields.keys()]
-        product_print_data_tmpl = self.env[
-            "product.line.print"
-        ].default_get(line_fields)
         for product_id in self.product_ids:
-            product = self.env["product.template"].browse(product_id)
-            product_print_data = dict(product_print_data_tmpl)
-            product_print_data.update(
-                    self._prepare_data_from_product(product)
-                )
-            if product_print_data:
-                product_print_data.append((0, 0, product_print_data))
+            product_print_data.append((0, 0, self._prepare_data_from_product(product_id.id)))
         if self.product_ids:
             self.product_print = product_print_data
 
     @api.model
     def _prepare_data_from_product(self, product_id):
-        if product_id.barcode:
-            return {
-                "product_id": product_id.id,
+        print("_prepare_data_from_product", product_id)
+        return {
+                "product_id": product_id,
                 "label_qty": 1,
             }
-        else:
-            return {}
 
     def print_labels(self):
-        #print_product = self.product_print.filtered(
-         #  lambda p: p.label_qty > 0)
-        #if print_product:
-        return self.env.ref(
+        print_product = self.product_print.filtered(
+           lambda p: p.label_qty > 0)
+        if print_product:
+            return self.env.ref(
                     "xtendoo_product_barcode_report.action_label_barcode_report"
                 ).report_action(self.product_print)

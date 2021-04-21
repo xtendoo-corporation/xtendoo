@@ -10,11 +10,6 @@
                 <form>
                     <p>You can print just the products with assigned barcode</p>
                     <field name="product_ids" invisible="1" force_save="1"/>
-                    <span>
-                    <strong>Barcode Format</strong>
-                    </span>
-                    <!--<field name="barcode_format"/> -->
-
                     <group>
                         <field name="product_print" nolabel="1">
                             <tree editable="top" create="0">
@@ -30,15 +25,6 @@
                 </form>
             </field>
         </record>
-
-      <!-- <act_window id="act_product_barcode_selection_printing"
-                    name="Print barcode labels"
-                    res_model="product.template"
-                    view_mode="form"
-                    view_type="form"
-                    target="new"
-                    binding_model_id="xtendoo_product_barcode_report.model_product_print"
-                    binding_type="report"/> -->
 
         <record id="act_product_barcode_selection_printing" model="ir.actions.act_window">
             <field name="name">Print barcode labels</field>
