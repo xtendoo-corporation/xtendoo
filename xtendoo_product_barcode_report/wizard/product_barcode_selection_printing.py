@@ -46,7 +46,6 @@ class WizProductSelectionPrinting(models.TransientModel):
 
     @api.model
     def _prepare_data_from_product(self, product_id):
-        print("_prepare_data_from_product", product_id)
         return {
                 "product_id": product_id,
                 "label_qty": 1,
