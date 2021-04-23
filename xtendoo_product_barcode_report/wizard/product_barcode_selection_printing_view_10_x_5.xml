@@ -3,12 +3,12 @@
 <odoo>
 
     <data>
-       <record id="view_product_barcode_selection_printing" model="ir.ui.view">
-            <field name="name">product.barcode.selection.printing.form</field>
-            <field name="model">product.print</field>
+       <record id="view_product_barcode_selection_printing_10_x_5" model="ir.ui.view">
+            <field name="name">product.barcode.selection.printing.form.10.x.5</field>
+            <field name="model">product.print.duplicate</field>
             <field name="arch" type="xml">
                 <form>
-                    <p>Generador de etiquetas 3 x 2.5</p>
+                    <p>Generador de etiquetas 10 x 5</p>
                     <field name="product_ids" invisible="1" force_save="1"/>
                     <group>
                         <field name="product_print" nolabel="1">
@@ -26,10 +26,10 @@
             </field>
         </record>
 
-        <record id="act_product_barcode_selection_printing" model="ir.actions.act_window">
-            <field name="name">Impresión de etiquetas 3 x 2.5</field>
+        <record id="act_product_barcode_selection_printing_10_x_5" model="ir.actions.act_window">
+            <field name="name">Impresión de etiquetas 10 x 5</field>
             <field name="type">ir.actions.act_window</field>
-            <field name="res_model">product.print</field>
+            <field name="res_model">product.print.duplicate</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>

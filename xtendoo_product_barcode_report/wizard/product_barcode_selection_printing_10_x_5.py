@@ -4,8 +4,8 @@
 from odoo import api, fields, models
 
 
-class ProductPrintingQty(models.TransientModel):
-    _name = "product.line.print"
+class ProductPrintingQtyDuplicate(models.TransientModel):
+    _name = "product.line.print.duplicate"
     _rec_name = "product_id"
     _description = "Print Product Line"
 
@@ -15,11 +15,11 @@ class ProductPrintingQty(models.TransientModel):
         required=True,
     )
     label_qty = fields.Integer("Quantity of Labels")
-    wizard_id = fields.Many2one("product.print", string="Wizard")
+    wizard_id = fields.Many2one("product.print.duplicate", string="Wizard")
 
 
-class WizProductSelectionPrinting(models.TransientModel):
-    _name = "product.print"
+class WizProductSelectionPrintingDuplicate(models.TransientModel):
+    _name = "product.print.duplicate"
     _description = "Wizard to select how many barcodes have to be printed"
 
     @api.model
@@ -33,7 +33,7 @@ class WizProductSelectionPrinting(models.TransientModel):
 
     product_ids = fields.Many2many("product.template")
     product_print = fields.One2many(
-        "product.line.print", "wizard_id", "Products"
+        "product.line.print.duplicate", "wizard_id", "Products"
     )
 
     @api.onchange("product_ids")
@@ -56,6 +56,6 @@ class WizProductSelectionPrinting(models.TransientModel):
            lambda p: p.label_qty > 0)
         if print_product:
             return self.env.ref(
-                    "xtendoo_product_barcode_report.action_label_barcode_report"
+                    "xtendoo_product_barcode_report.action_label_barcode_report_10_x_5"
                 ).report_action(self.product_print)
 

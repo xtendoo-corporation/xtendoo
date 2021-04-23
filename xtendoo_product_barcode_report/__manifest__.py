@@ -13,10 +13,12 @@
         "stock",
     ],
     "data": [
-        "data/paperformat_label.xml",
         "report/report_label_barcode.xml",
+        "report/report_label_barcode_10_x_5.xml",
         "report/report_label_barcode_template.xml",
+        "report/report_label_barcode_template_10_x_5.xml",
         "wizard/product_barcode_selection_printing_view.xml",
+        "wizard/product_barcode_selection_printing_view_10_x_5.xml",
     ],
     "installable": True,
 }
