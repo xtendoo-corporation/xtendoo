@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
             <!-- No ver Margen -->
                 <xpath expr="//field[@name='margin']" position="attributes">
+                     <field name="is_admin" invisible="1"/>
                     <attribute name="groups">d_hr_administration.show_margins</attribute>
                 </xpath>
             <!-- Fin no ver margen -->
@@ -17,9 +18,15 @@
                     <field name="is_admin" invisible="1"/>
                     <field name="price_unit" attrs="{'readonly': [('can_edit_price', '=', False)]}"/>
                 </xpath>
+                <xpath expr="//page[@name='order_lines']//field[@name='price_unit']" position="replace">
+                    <field name="can_edit_price" invisible="1"/>
+                    <field name="is_admin" invisible="1"/>
+                    <field name="price_unit" attrs="{'readonly': [('can_edit_price', '=', False)]}"/>
+                </xpath>
             <!-- Fin no editar precio unitario -->
             <!-- Ocultar coste en linea y no dejar editarlo a comerciales-->
                  <xpath expr="//field[@name='order_line']/tree//field[@name='purchase_price']" position="replace">
+                      <field name="is_admin" invisible="1"/>
                     <field name="purchase_price" groups="d_hr_administration.show_cost_price" attrs="{'readonly': [('is_admin', '=', False)]}"/>
                 </xpath>
             <!--  Abrir:Lineas del pedido  -->
@@ -33,9 +40,17 @@
                     <field name="can_edit_tax" invisible="1"/>
                     <field name="tax_id" widget="many2many_tags" options="{'no_create': True}" domain="[('type_tax_use','=','sale'),('company_id','=',parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
                 </xpath>
+                <xpath expr="//page[@name='order_lines']//field[@name='tax_id']" position="replace">
+                    <field name="can_edit_tax" invisible="1"/>
+                    <field name="tax_id" widget="many2many_tags" options="{'no_create': True}" domain="[('type_tax_use','=','sale'),('company_id','=',parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
+                </xpath>
             <!-- Fin no editar IVA -->
             <!-- No editar descuento 1 -->
                 <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="replace">
+                    <field name="can_edit_discounts" invisible="1"/>
+                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                </xpath>
+                <xpath expr="//page[@name='order_lines']//field[@name='discount']" position="replace">
                     <field name="can_edit_discounts" invisible="1"/>
                     <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
                 </xpath>

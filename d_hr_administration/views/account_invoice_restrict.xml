@@ -7,8 +7,6 @@
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_form"/>
             <field name="arch" type="xml">
-                 <xpath expr="//field[@name='number']" position="after">
-                </xpath>
                 <xpath expr="//field[@name='margin']" position="replace">
                     <field name="margin" groups="d_hr_administration.show_margins"/>
                 </xpath>
