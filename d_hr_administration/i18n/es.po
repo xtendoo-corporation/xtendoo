@@ -1,0 +1,232 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* d_hr_administration
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 12.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-07 08:28+0000\n"
+"PO-Revision-Date: 2020-10-07 08:28+0000\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: d_hr_administration
+#: model_terms:ir.ui.view,arch_db:d_hr_administration.view_users_form_create_invoice
+msgid "Administration Roles"
+msgstr "Permisos de Administradción"
+
+#. module: d_hr_administration
+#: model:ir.model.fields,field_description:d_hr_administration.field_res_users__administrator
+#: model_terms:ir.ui.view,arch_db:d_hr_administration.view_users_form_create_invoice
+msgid "Administrator"
+msgstr "Administrador"
+
+#. module: d_hr_administration
+#: model:ir.model.fields,field_description:d_hr_administration.field_sale_order__is_administrator
+#: model:ir.model.fields,field_description:d_hr_administration.field_sale_order_line__is_administrator
+msgid "Is Administrator"
+msgstr "Es Administrador"
+
+#. module: d_hr_administration
+#: model:ir.model,name:d_hr_administration.model_sale_order
+msgid "Sale Order"
+msgstr "Pedido de venta"
+
+#. module: d_hr_administration
+#: model:ir.model,name:d_hr_administration.model_sale_order_line
+msgid "Sales Order Line"
+msgstr "Línea de pedido de venta"
+
+#. module: d_hr_administration
+#: model:ir.model,name:d_hr_administration.model_res_users
+msgid "Users"
+msgstr "Usuarios"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.show_margins
+msgid "Show Margins"
+msgstr "Mostrar Márgenes"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.show_margins
+msgid "Permission to view margins"
+msgstr "Permiso para ver márgenes"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.administration
+msgid "Administrators"
+msgstr "Administradores"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.administration
+msgid "Administrators Group:\n"
+"                                   * Permission to edit in products:\n"
+"                                      - Name\n"
+"                                      - Category\n"
+"                                      - Type\n"
+"                                      - Company\n"
+"                                      - Internal Notes\n"
+"                                      - Sale ok\n"
+"                                      - Purchase ok\n"
+"                                      - Barcode\n"
+"                                      - Default code\n"
+"            "
+msgstr "Grupo de administradores:\n"
+"                                   * Permiso para editar en productos:\n"
+"                                      - Nombre\n"
+"                                      - Categoria\n"
+"                                      - Tipo\n"
+"                                      - Empresa\n"
+"                                      - Notas Internas\n"
+"                                      - Puede ser vendido\n"
+"                                      - Puede ser comprado\n"
+"                                      - Código de barras\n"
+"                                      - Código interno\n""
+"            "
+
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.edit_sale_price
+msgid "Edit sale price"
+msgstr "Editar precio de ventas"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.edit_sale_price
+msgid "Permission to edit sale price"
+msgstr "Permiso para editar el precio de venta"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.edit_tax
+msgid "Edit tax"
+msgstr "Editar Impuestos"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.edit_tax
+msgid "Permission to edit taxes"
+msgstr "Permiso para editar impuestos"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.edit_discounts
+msgid "Edit discounts"
+msgstr "Editar Descuentos"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.edit_discounts
+msgid "Permission to edit discounts"
+msgstr "Permiso para editar descuentos"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.edit_account
+msgid "Edit accounts invoice"
+msgstr "Editar cuenta en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.edit_account
+msgid "Permission to edit account in invoice"
+msgstr "Permiso para editar cuenta en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.edit_quantity
+msgid "Edit quantity invoice"
+msgstr "Editar cantidad en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.edit_quantity
+msgid "Permission to edit quantity in invoice"
+msgstr "Permiso para editar cantidad en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.edit_product_desc
+msgid "Edit product description in invoice"
+msgstr "Editar descripción de producto en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.edit_product_desc
+msgid "Permission to edit product description in invoice"
+msgstr "Permiso para editar drescripción en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.edit_product_id
+msgid "Edit product in invoice"
+msgstr "Editar producto en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.edit_product_id
+msgid "Permission to edit product in invoice"
+msgstr "Permiso para editar producto en factura"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.cancel_invoice
+msgid "Cancel invoice"
+msgstr "Cancelar facturas"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.cancel_invoice
+msgid "Permission to cancel invoices"
+msgstr "Permiso para cancelar facturas"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.validate_move
+msgid "Validate Moves"
+msgstr "Validar movimientos entre almacenes"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.validate_move
+msgid "Permission to validate moves"
+msgstr "Permiso para validar movimientos entre almacenes"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.create_refund_invoice
+msgid "Create refund invoice"
+msgstr "Crear facturas resctificativas"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.create_refund_invoice
+msgid "Permission to cancel  refund invoices"
+msgstr "Permiso para cancelar facturas rectificativas"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.show_purchase_page
+msgid "Show Purcahse Page"
+msgstr "Mostrar pagina de compras"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.show_purchase_page
+msgid "Permission to view purchase page"
+msgstr "Permiso para ver pestaña de compras en producto"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.show_accounting_page
+msgid "Show Accounting Page"
+msgstr "Mostrar pagina de Facturación"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.show_accounting_page
+msgid "Permission to view accounting page"
+msgstr "Permiso para ver pestaña de facturación en producto"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.show_sale_page
+msgid "Show Sale Page"
+msgstr "Mostrar pagina de Ventas"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.show_sale_page
+msgid "Permission to view sale page"
+msgstr "Permiso para ver pestaña de ventas en producto"
+
+#. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.show_inventory_page
+msgid "Show Inventory Page"
+msgstr "Mostrar pagina de Inventario"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.show_inventory_page
+msgid "Permission to view inventory page"
+msgstr "Permiso para ver pestaña de inventario en producto"
+

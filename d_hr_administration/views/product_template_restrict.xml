@@ -29,8 +29,8 @@
                 <xpath expr="//field[@name='company_id']" position="attributes">
                     <attribute name="attrs">{'readonly': [('is_admin', '=', False)]}</attribute>
                 </xpath>
-                <!-- Fin no editar internal_notes-->
                 <!-- no editar company_id -->
+                <!-- Fin no editar internal_notes-->
                 <xpath expr="//group/field[@name='description']" position="attributes">
                     <attribute name="attrs">{'readonly': [('is_admin', '=', False)]}</attribute>
                 </xpath>
