@@ -33,7 +33,7 @@
                  
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='discount']" position="replace">
                     <field name="can_edit_discounts" invisible="1"/>
-                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"  force_save="1"/>
                 </xpath>
                 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='invoice_line_tax_ids']" position="replace">

@@ -171,6 +171,16 @@ msgid "Permission to cancel invoices"
 msgstr "Permiso para cancelar facturas"
 
 #. module: d_hr_administration
+#: model:res.groups,name:d_hr_administration.validate_move
+msgid "Validate Moves"
+msgstr "Validar movimientos entre almacenes"
+
+#. module: d_hr_administration
+#: model:res.groups,comment:d_hr_administration.validate_move
+msgid "Permission to validate moves"
+msgstr "Permiso para validar movimientos entre almacenes"
+
+#. module: d_hr_administration
 #: model:res.groups,name:d_hr_administration.create_refund_invoice
 msgid "Create refund invoice"
 msgstr "Crear facturas resctificativas"

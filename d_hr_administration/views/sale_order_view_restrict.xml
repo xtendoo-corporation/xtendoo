@@ -48,11 +48,11 @@
             <!-- No editar descuento 1 -->
                 <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="replace">
                     <field name="can_edit_discounts" invisible="1"/>
-                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"  force_save="1"/>
                 </xpath>
                 <xpath expr="//page[@name='order_lines']//field[@name='discount']" position="replace">
                     <field name="can_edit_discounts" invisible="1"/>
-                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"  force_save="1"/>
                 </xpath>
             </field>
         </record>
