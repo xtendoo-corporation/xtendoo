@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <data noupdate="0">
-        <record id="xtendoo_product_barcode_report.paperformat_label" model="report.paperformat">
+        <record id="xtendoo_product_barcode_report.paperformat_label"
+                model="report.paperformat">
             <field name="name">Label paperformat</field>
             <field name="format">custom</field>
             <field name="page_height">29</field>
