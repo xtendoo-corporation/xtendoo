@@ -3,7 +3,7 @@
 <odoo>
 
     <data>
-        <record id="view_product_barcode_selection_printing" model="ir.ui.view">
+       <record id="view_product_barcode_selection_printing" model="ir.ui.view">
             <field name="name">product.barcode.selection.printing.form</field>
             <field name="model">product.print</field>
             <field name="arch" type="xml">
@@ -13,8 +13,7 @@
                     <group>
                         <field name="product_print" nolabel="1">
                             <tree editable="top" create="0">
-                                <field name="product_id" options="{'no_create': True, 'no_open': True}" force_save="1"
-                                       readonly="1"/>
+                                <field name="product_id" options="{'no_create': True, 'no_open': True}" force_save="1" readonly="1"/>
                                 <field name="label_qty"/>
                             </tree>
                         </field>
@@ -27,15 +26,14 @@
             </field>
         </record>
 
-        <record id="act_product_barcode_selection_printing"
-                model="ir.actions.act_window">
+        <record id="act_product_barcode_selection_printing" model="ir.actions.act_window">
             <field name="name">Impresión de etiquetas 3 x 2.5</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">product.print</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
-            <field name="binding_model_id" ref="product.model_product_template"/>
+            <field name="binding_model_id" ref="product.model_product_template" />
             <field name="binding_type">report</field>
         </record>
 

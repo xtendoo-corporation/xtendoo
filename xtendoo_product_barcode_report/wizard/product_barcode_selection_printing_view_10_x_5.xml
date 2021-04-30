@@ -26,8 +26,7 @@
             </field>
         </record>
 
-        <record id="act_product_barcode_selection_printing_10_x_5"
-                model="ir.actions.act_window">
+        <record id="act_product_barcode_selection_printing_10_x_5" model="ir.actions.act_window">
             <field name="name">Impresión de etiquetas 10 x 5</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">product.print.duplicate</field>
