@@ -4,7 +4,7 @@
 
     <data>
 
-        <record id="A4_picking_report" model="report.paperformat">
+        <record id="document_format_hr.A4_picking_report" model="report.paperformat">
             <field name="name">A4 Picking Report</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
@@ -20,7 +20,7 @@
             <field name="dpi">90</field>
         </record>
 
-         <report id="stock_picking_report"
+         <report id="document_format_hr.stock_picking_report"
                 string="Informe de carga"
                 model="stock.picking"
                 report_type="qweb-pdf"

@@ -26,7 +26,7 @@
                 model="sale.order"
                 report_type="qweb-pdf"
                 name="document_format_hr.report_saleorder_promotions_bluetooth"
-                file="sale.report_saleorder_promotions_bluetooth"
+                file="document_format_hr.report_saleorder_promotions_bluetooth"
                 print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
         />
 

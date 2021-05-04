@@ -32,7 +32,7 @@
             <field name="paperformat_id" ref="document_format_hr.bluetooth_invoice" />
         </record>
 
-        <template id="document_format_hr.report_invoice_bluetooth">
+        <template id="document_format_hrreport_invoice_bluetooth">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                    <t t-call="document_format_hr.report_invoice_document_bluetooth" t-lang="o.partner_id.lang"/>

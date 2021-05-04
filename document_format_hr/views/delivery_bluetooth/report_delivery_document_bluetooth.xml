@@ -20,7 +20,7 @@
             <field name="dpi">90</field>
         </record>
 
-        <report id="document_format_hr.report_delivery_bluetooh"
+        <report id="report_delivery_bluetooh"
                 string="Albarán Bluetooth"
                 model="stock.picking"
                 report_type="qweb-pdf"
@@ -32,7 +32,7 @@
             <field name="paperformat_id" ref="document_format_hr.bluetooth_delivery"/>
         </record>
 
-        <template id="document_format_hr.report_delivery_bluetooth">
+        <template id="report_delivery_bluetooth">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-call="document_format_hr.report_delivery_document_bluetooth" t-lang="o.partner_id.lang"/>
@@ -40,7 +40,7 @@
             </t>
         </template>
 
-        <template id="document_format_hr.report_delivery_document_bluetooth">
+        <template id="report_delivery_document_bluetooth">
 
             <t t-name="document_format_hr.report_delivery_document">
 
