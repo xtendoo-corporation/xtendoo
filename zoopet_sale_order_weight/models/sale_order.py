@@ -10,7 +10,6 @@ class SaleOrder(models.Model):
     total_conditional_weight = fields.Float(
         compute='_compute_total_conditional_weight',
         string='Total Weight',
-        store=True
     )
 
     @api.depends('state')
