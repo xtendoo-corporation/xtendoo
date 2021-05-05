@@ -30,7 +30,7 @@
                             <field name="state" readonly="1"/>
                             <field name="invoice_id" readonly="1"/>
                             <field name="payment_term"/>
-                            <field name="total_amount"/>
+                            <field name="amount_total"/>
                             <button name="action_assign" string="Confirm picking" type="object" icon="fa-check text-success" attrs="{'invisible': [('state', 'in', ('done', 'cancel', 'confirmed', 'assigned'))]}"/>
                             <button name="action_cancel" string="Cancel picking" type="object" icon="fa-times-circle text-danger" attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}"/>
                         </tree>

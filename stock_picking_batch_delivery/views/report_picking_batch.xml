@@ -156,9 +156,9 @@
                                         </t>
                                     </div>
                                     <div style="width:10%;float:left;text-align:right;">
-                                        <t t-if="pick.total_amount">
-                                            <t t-set="total_value" t-value="total_value + pick.total_amount"/>
-                                            <span t-field="pick.total_amount" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: pick.sale_id.pricelist_id.currency_id}"/>
+                                        <t t-if="pick.amount_total">
+                                            <t t-set="total_value" t-value="total_value + pick.amount_total"/>
+                                            <span t-field="pick.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: pick.sale_id.pricelist_id.currency_id}"/>
                                         </t>
                                         <t t-else="">
                                             <span style="color:white;">total</span>
@@ -167,7 +167,7 @@
                                     <div style="width:13%;float:left;text-align:left;">
                                         <t t-if="pick.payment_term">
                                             <t t-if="pick.payment_term == 'Efectivo'">
-                                                <t t-set="cash_amount" t-value="cash_amount+pick.total_amount"></t>
+                                                <t t-set="cash_amount" t-value="cash_amount+pick.amount_total"></t>
                                             </t>
                                             <span style="margin-left:2px;" t-field="pick.payment_term"/>
                                         </t>
