@@ -3,26 +3,29 @@
     <template id="report_label_barcode_10_x_5">
         <t t-call="web.basic_layout">
             <t t-foreach="doc.label_qty" t-as="i">
-                <div class="page">
+                <div class="page" style="width:110%;height:170px;overflow:hiden!important;margin-left:-5%;">
                     <div style="width:100%;">
-                        <div style="text-align:center;font-size:1.1em;margin-top:5px!important;">
+                        <div style="text-align:center;font-size:1em;height:25px;">
                             <span t-field="product.default_code"></span>
                         </div>
-                        <div style="font-size:0.8em;text-align:center;">
-                            <span t-field="product.name"></span>
+                        <div style="font-size:1em;text-align:center;height:50px;">
+                            <p style="height:33px;overflow:hidden;white-space:no-wrap;text-overflow:ellipsis">
+                                <span t-field="product.name"></span>
+                            </p>
                         </div>
-                        <div class="text-center align-middle" >
+                        <div class="text-center align-middle" style="height:95px;overflow:hidden;">
                             <t t-if="product.barcode">
                                 <t t-set="product_barcode" t-value="product.barcode"/>
-                                <img alt="Barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN8', quote_plus(product.barcode or ''), 600, 150)" style="width:100%;height::4rem;"/>
+                                <img alt="Barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN8', quote_plus(product.barcode or ''), 600, 130)" style="width:100%;height::4rem;"/>
+                                <span t-esc="product.barcode"/>
                             </t>
                             <t t-else="">
                                 <span class="text-muted">No barcode available</span>
                             </t>
                         </div>
                     </div>
+                    <p style="page-break-after:always;" />
                 </div>
-                <p style="page-break-after:always;" />
             </t>
         </t>
     </template>

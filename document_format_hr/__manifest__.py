@@ -58,7 +58,6 @@
 
         #Factura sin promociones
         'views/invoice_without_promotions/invoice_without_promotions.xml',
-        'views/invoice_without_promotions/invoice_document_without_pomotions.xml',
 
         #Factura Bluetooth
         #'views/invoice_bluetooth/report_invoice_bluetooth.xml',

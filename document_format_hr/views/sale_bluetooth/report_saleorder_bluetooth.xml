@@ -43,7 +43,7 @@
 
         <template id="document_format_hr.report_saleorder_document_bluetooth">
 
-            <t t-name="sale.report_saleorder_document_bluetooth">
+            <t t-name="document_format_hr.report_saleorder_document_bluetooth">
 
                 <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
                 <div style="display:none;">
