@@ -209,9 +209,10 @@
 
                                             <!-- descripción -->
 
-                                            <div class="text-left" style="float:left;width:26%;">
-                                                <t t-set="descripcion" t-value="line.name.find(']') +1"></t>
-                                                <t t-set="linea" t-value="line.name[descripcion:]"></t>
+                                             <div class="text-left" style="float:left;width:26%;">
+                                                <t t-set="descripcion" t-value="line.name.find(']') +1"/>
+                                                <!--<t t-set="linea" t-value="line.name[descripcion:]"/> -->
+                                                <t t-set="linea" t-value="line.product_id.name"/>
                                                 <span t-esc="linea"/>
                                             </div>
 
