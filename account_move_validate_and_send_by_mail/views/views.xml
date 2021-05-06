@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="account_move_validate_and_send_by_mail.view_account_form_inherit" model="ir.ui.view">
+        <field name="name">view.account.form.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_post']" position="replace">
+                <button
+                    name="validate_and_send_by_mail"
+                    string="Publicar"
+                    class="oe_highlight"
+                    type="object"
+                    attrs="{'invisible': [('state', 'not in', ['draft'])]}"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>
