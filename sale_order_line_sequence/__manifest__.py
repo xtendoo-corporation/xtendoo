@@ -3,7 +3,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 {
-    "name": "Xtendoo Sale Order Line Sequence",
+    "name": "Sale Order Line Sequence",
     "summary": "Propagates SO line sequence to invoices and stock picking.",
     "version": "13.0.1.0.0",
     "author": "Eficent, Serpent CS, Odoo Community Association (OCA)",
