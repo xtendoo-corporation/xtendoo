@@ -8,9 +8,6 @@ class SaleOrder(models.Model):
 
     def action_view_picking(self):
         pick_ids = self.mapped('picking_ids')
-        # no picking in this sale order
-        if not pick_ids:
-            return
         action = self.env.ref('stock.action_picking_tree_all')
         result = action.read()[0]
         # override the context to get rid of the default filtering on operation type
