@@ -14,10 +14,7 @@ odoo.define("stock_barcodes.FormController", function(require) {
             "click .o_button_validate_scanner": "_onValidateScanner",
             "click .o_button_test_scanner": "_onValidateScanner",
         },
-
         _barcodeScanned: function(barcode, target) {
-            var self = this;
-
             /*
             Set control focus to package_qty or product_qty directly after
             scan a barcode for manual entry mode entries.
