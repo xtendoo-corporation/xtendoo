@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_report_stock_body_print_custom" model="ir.ui.view">
+        <field name="name">view.report.stock.body.print.custom</field>
+        <field name="model">stock</field>
+        <field name="inherit_id" ref="stock.report_stock_body_print" />
+        <field name="type">QWeb</field>
+        <field name="arch" type="xml">
+            <xpath expr="//table[@class='table']" position="replace">
+                <h1>test</h1>
+            </xpath>
+        </field>
+    </record>
+</odoo>
