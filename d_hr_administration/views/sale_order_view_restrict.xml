@@ -38,11 +38,11 @@
             <!-- No editar IVA -->
                 <xpath expr="//field[@name='order_line']/tree//field[@name='tax_id']" position="replace">
                     <field name="can_edit_tax" invisible="1"/>
-                    <field name="tax_id" widget="many2many_tags" options="{'no_create': True}" domain="[('type_tax_use','=','sale'),('company_id','=',parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
+                    <field name="tax_id" widget="many2many_tags" force_save="1" options="{'no_create': True}" domain="[('type_tax_use','=','sale'),('company_id','=',parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
                 </xpath>
                 <xpath expr="//page[@name='order_lines']//field[@name='tax_id']" position="replace">
                     <field name="can_edit_tax" invisible="1"/>
-                    <field name="tax_id" widget="many2many_tags" options="{'no_create': True}" domain="[('type_tax_use','=','sale'),('company_id','=',parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
+                    <field name="tax_id" widget="many2many_tags" force_save="1" options="{'no_create': True}" domain="[('type_tax_use','=','sale'),('company_id','=',parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
                 </xpath>
             <!-- Fin no editar IVA -->
             <!-- No editar descuento 1 -->
