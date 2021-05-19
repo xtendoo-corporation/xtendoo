@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Page template for displaying Brands -->
+    <template id="product_recommendations" name="Recommendations">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Product Recommendations</t>
+            <div id="wrap" t-attf-class="wrapper">
+                <div class="container">
+                    <div class="row">
+                        <form
+                            action="/page/product_recommendations"
+                            class="form-horizontal mt32 col-lg-8"
+                            method="post"
+                        >
+                            <div class="input-group" style="margin-left:60%;">
+                                <div class="col-lg-6">
+                                    <input
+                                        type="text"
+                                        name="search"
+                                        class="form-control"
+                                        placeholder="Search..."
+                                        t-att-value="search"
+                                    />
+                                </div>
+                                <div class="col-lg-2">
+                                    <button class="btn btn-primary">Search</button>
+                                </div>
+                            </div>
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                t-att-value="request.csrf_token()"
+                            />
+                        </form>
+                    </div>
+                    <br />
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
