@@ -147,7 +147,7 @@
                                     <th
                                         name="th_description"
                                         class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:0.8em; !important;"
                                     >
                                         Descripción
                                     </th>
@@ -184,7 +184,7 @@
                                     <th
                                         name="th_subtotal"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:15%; font-size:0.8em; !important;"
                                     >
                                         <t groups="account.group_show_line_subtotals_tax_excluded">
                                             Total
@@ -266,7 +266,7 @@
                                             </td>
                                             <td
                                                 name="account_invoice_line_name"
-                                                style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:0.8em; !important;"
                                             >
                                                 <t
                                                     t-set="productName"
@@ -328,7 +328,7 @@
                                             </td>
                                             <td
                                                 class="text-right o_price_total"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 0px; margin: 0px; width:15%; font-size:0.8em; !important;"
                                             >
                                                 <t
                                                     t-if="lines_group['quantity'] != l.quantity"
