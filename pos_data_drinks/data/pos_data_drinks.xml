@@ -4,7 +4,6 @@
     <!-- Drink Categories -->
     <record id="beverage" model="pos.category">
       <field name="name">Beverages</field>
-      <field name="image" type="base64" file="point_of_sale/static/img/beverage-image.jpg"/>
     </record>
     <record id="soft" model="pos.category">
       <field name="parent_id" ref="beverage"/>
