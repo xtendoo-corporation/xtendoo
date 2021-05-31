@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <data>
-        <record id="pricelist_update_group" model="res.groups">
-            <field name="name">Actualizar tarifas precios desde ventas</field>
-            <field name="comment">Actualizar tarifas precios desde ventas</field>
-        </record>
-    </data>
-</odoo>
