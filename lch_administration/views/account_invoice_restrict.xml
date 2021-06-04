@@ -42,22 +42,22 @@
                  
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='discount']" position="replace">
                     <field name="can_edit_discounts" invisible="1"/>
-                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                    <field name="discount" force_save="1" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
                 </xpath>
 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='discount2']" position="replace">
                     <field name="can_edit_discounts" invisible="1"/>
-                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                    <field name="discount2" force_save="1" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
                 </xpath>
 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='discount3']" position="replace">
                     <field name="can_edit_discounts" invisible="1"/>
-                    <field name="discount" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
+                    <field name="discount3" force_save="1" attrs="{'readonly': [('can_edit_discounts', '=', False)]}"/>
                 </xpath>
                 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='invoice_line_tax_ids']" position="replace">
                     <field name="can_edit_tax" invisible="1"/>
-                    <field name="invoice_line_tax_ids" widget="many2many_tags" options="{'no_create': True}" context="{'type':parent.type, 'tree_view_ref': 'account.account_tax_view_tree', 'search_view_ref': 'account.account_tax_view_search'}" domain="[('type_tax_use','=','sale'),('company_id', '=', parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
+                    <field name="invoice_line_tax_ids" force_save="1" widget="many2many_tags" options="{'no_create': True}" context="{'type':parent.type, 'tree_view_ref': 'account.account_tax_view_tree', 'search_view_ref': 'account.account_tax_view_search'}" domain="[('type_tax_use','=','sale'),('company_id', '=', parent.company_id)]" attrs="{'readonly': [('can_edit_tax', '=', False)]}"/>
                </xpath>
 
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='product_id']" position="replace">
