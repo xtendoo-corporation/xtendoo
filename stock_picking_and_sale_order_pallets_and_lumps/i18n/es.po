@@ -1,0 +1,46 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* stock_picking_and_sale_order_pallets_and_lumps
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 12.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-07 08:28+0000\n"
+"PO-Revision-Date: 2020-10-07 08:28+0000\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_stock_picking__palets_number
+msgid "Palets"
+msgstr "Nº de Palets"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_stock_picking__lumps_number
+msgid "Lumps"
+msgstr "Nº de Bultos"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_sale_order__palets_number
+msgid "Palets"
+msgstr "Nº de Palets"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_sale_order__lumps_number
+msgid "Lumps"
+msgstr "Nº de Bultos"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_account_invoice__palets_number
+msgid "Palets"
+msgstr "Nº de Palets"
+
+#. module: stock_picking_and_sale_order_pallets_and_lumps
+#: model:ir.model.fields,field_description:stock_picking_and_sale_order_pallets_and_lumps.field_account_invoice__lumps_number
+msgid "Lumps"
+msgstr "Nº de Bultos"
