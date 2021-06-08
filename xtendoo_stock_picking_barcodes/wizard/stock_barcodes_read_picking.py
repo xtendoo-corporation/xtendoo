@@ -390,10 +390,20 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             return False
         return True
 
+    def process_barcode(self, barcode):
+        if "o-btn.validate" in barcode:
+            self.action_validate_picking()
+            return
+        super().process_barcode(barcode)
+
     def action_validate_picking(self):
         picking = self.env["stock.picking"].browse(
             self.env.context.get("picking_id", False)
         )
+
+        if not picking:
+            picking = self.picking_id
+
         if picking:
             picking.button_validate()
         return {
@@ -407,6 +417,10 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         picking = self.env["stock.picking"].browse(
             self.env.context.get("picking_id", False)
         )
+
+        if not picking:
+            picking = self.picking_id
+
         if picking:
             # picking.do_print_picking()
             self.env.ref('document_format.report_delivery_format').report_action(picking)
