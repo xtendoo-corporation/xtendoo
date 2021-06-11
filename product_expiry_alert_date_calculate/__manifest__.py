@@ -1,4 +1,4 @@
-# Copyright 2020 Xtendoo
+# Copyright 2020 Manuel Calero - Xtendoo
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl)
 {
     "name": "Product Expiry Alert Date Calculate",
@@ -7,8 +7,12 @@
     "category": "Inventory",
     "author": "Xtendoo, Odoo Community Association (OCA)",
     "license": "AGPL-3",
-    "website": "https://github.com/OCA/stock-logistics-workflow",
-    "depends": ["product_expiry",],
-    "data": ["views/stock_quant.xml",],
+    "website": "https://xtendoo.es",
+    "depends": [
+        "product_expiry"
+    ],
+    "data": [
+        "views/stock_production_lot.xml"
+    ],
     "installable": True,
 }
