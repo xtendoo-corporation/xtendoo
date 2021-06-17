@@ -33,22 +33,11 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def _is_product_lot_valid(self, product, lot=False):
         if product.tracking != "none":
-
-            print("product :::::", product)
-            print("product.id :::::", product.id)
-            print("lot :::::", lot)
-
             lot = (
                 self.env["stock.production.lot"]
                 .sudo()
                 .search([("product_id", "=", product.id), ("name", "=", lot)], limit=1)
             )
-
-            print("despues de buscar :::::")
-
-            for l in lot:
-                print("l :::::", l.name)
-
             if not lot:
                 self._set_message_error("Lote no encontrado")
                 return False
@@ -93,7 +82,6 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def on_barcode_scanned(self, barcode):
         self._reset_qty()
-        print("on_barcode_scanned read:::::", barcode)
         self.process_barcode(barcode)
 
     def check_done_conditions(self):

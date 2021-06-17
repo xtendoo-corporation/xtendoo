@@ -288,14 +288,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         If only there is one picking the scan data is assigned to it.
         """
 
-        print(
-            "self._prepare_stock_moves_domain():::::",
-            self._prepare_stock_moves_domain(),
-        )
-
         moves_todo = self.env["stock.move"].search(self._prepare_stock_moves_domain())
-
-        print("_process_stock_move_line :::: moves_todo:::::", moves_todo)
 
         # if not self._search_candidate_pickings(moves_todo):
         #     return False
@@ -309,8 +302,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         )
         available_qty = self.product_qty
         move_lines_dic = {}
-
-        print("lines :::::", lines)
 
         for line in lines:
             if line.product_uom_qty:
@@ -333,8 +324,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             ):
                 break
 
-        print("available_qty :::::", available_qty)
-
         if (
             float_compare(
                 available_qty, 0, precision_rounding=self.product_id.uom_id.rounding
@@ -344,9 +333,6 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             # Create an extra stock move line if this product has an
             # initial demand.
 
-            print("pasada la comparativa :::::", available_qty)
-            print("self.picking_id.move_lines :::::", self.picking_id.move_lines)
-
             moves = self.picking_id.move_lines.filtered(
                 lambda m: (
                     m.product_id == self.product_id
@@ -354,24 +340,13 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 )
             )
 
-            print("movimientos asignados :::::", moves)
-
             if not moves:
                 self._set_message_error("No hay líneas para asignar este producto.")
                 return False
             else:
-
-                print(
-                    "voy a crear el registro ::::",
-                    self._prepare_move_line_values(moves[0], available_qty),
-                )
-
                 line = self.env["stock.move.line"].create(
                     self._prepare_move_line_values(moves[0], available_qty)
                 )
-
-                print("ha creado una nueva linea ::::::", line)
-
                 move_lines_dic[line.id] = available_qty
         self.picking_product_qty = sum(moves_todo.mapped("quantity_done"))
         return move_lines_dic
@@ -391,10 +366,26 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         return True
 
     def process_barcode(self, barcode):
-        if "o-btn.validate" in barcode:
+        if "o.btn-validate" in barcode:
             self.action_validate_picking()
             return
+        if "o.btn-manual" in barcode:
+            self.action_set_manual_entry()
+            return
+        if "o.btn-auto" in barcode:
+            self.action_quit_manual_entry()
+            return
         super().process_barcode(barcode)
+
+    def action_cancel_picking(self):
+        picking = self.picking_id
+        if not picking:
+            return {
+                'view_mode': 'form',
+                'res_model': 'stock.picking',
+                'res_id': picking.id,
+                'type': 'ir.actions.act_window',
+            }
 
     def action_validate_picking(self):
         picking = self.env["stock.picking"].browse(
@@ -422,9 +413,20 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             picking = self.picking_id
 
         if picking:
-            # picking.do_print_picking()
-            self.env.ref('document_format.report_delivery_format').report_action(picking)
-
+            context = {
+                'active_ids': [picking.id],
+                'res_ids': [picking.id],
+                'res_model': 'stock.picking',
+            }
+            return {
+                'type': 'ir.actions.report',
+                'res_model': 'stock.picking',
+                'binding_model_id': picking,
+                'report_name': 'stock.action_report_picking',
+                'report_type': 'qweb-pdf',
+                'print_report_name': 'Picking report',
+                'context': context,
+            }
     def action_set_manual_entry(self):
         self.manual_entry = True
         self._reset_message()

@@ -11,7 +11,7 @@
     "depends": [
         "barcodes",
         "stock",
-        "xtendoo_web_notify",
+        "web_ir_actions_act_multi",
         "sale_order_product_default_uom",
     ],
     "data": [

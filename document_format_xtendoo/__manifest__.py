@@ -10,7 +10,7 @@
     "depends": ["base", "account", "sale", "web", "stock"],
     "license": "AGPL-3",
     "data": [
-        "views/layout/external_layout_clean.xml",
+        "views/layout/external_layout_invoice.xml",
         "views/sale/sale_order_document.xml",
         "views/invoice/invoice_document.xml",
         "views/delivery/delivery_document.xml",

@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Sergio Teruel <sergio.teruel@tecnativa.com>.
+/* Copyright 2021 Xtendoo - Manuel Calero.
  * License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). */
 
 odoo.define("stock_barcodes.FieldFloatNumericMode", function(require) {

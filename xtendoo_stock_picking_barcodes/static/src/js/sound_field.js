@@ -1,4 +1,4 @@
-/* Copyright 2020 Xtendoo - Manuel Calero.
+/* Copyright 2021 Xtendoo - Manuel Calero.
  * License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). */
 
 odoo.define("stock_barcodes.field_sound_widget", function(require) {
