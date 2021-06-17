@@ -1,4 +1,4 @@
-# Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
+# Copyright 2021 Manuel Calero - https://xtendoo.es
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
 
@@ -108,11 +108,6 @@ class WizStockBarcodesRead(models.AbstractModel):
 
     def _set_product_quantity(self):
         self.product_qty = 0.0 if self.manual_entry else 1.0
-
-        # if self.product_id.uom_qty:
-        #     self.product_qty = self.product_id.uom_qty
-        # else:
-        #     self.product_qty = 0.0 if self.manual_entry else 1.0
 
     def action_product_scanned_post(self, product):
         if self.product_id != product:
