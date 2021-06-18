@@ -18,12 +18,11 @@
                     type="object"
                     attrs="{'invisible': [('state', 'not in', ['draft'])]}"
                 />
-                <!-- Pedido confirmado(Pedido de ventas)
+                <!-- Pedido confirmado(Pedido de ventas) -->
                 <button name="action_sale_order_delivery" string="Delivery all"
                         type="object" attrs="{'invisible': [('state', 'not in', ['sale'])]}"/>
                 <button name="action_sale_order_delivery_and_invoiced" string="Delivery and invoiced"
                         type="object" attrs="{'invisible': [('state', 'not in', ['sale'])]}"/>
-            -->
             </xpath>
         </field>
     </record>
