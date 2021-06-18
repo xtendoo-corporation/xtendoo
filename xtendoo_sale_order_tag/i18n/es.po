@@ -104,7 +104,7 @@ msgstr "Secuencia"
 #. module: sale_order_tag
 #: sql_constraint:sale.order.tag:0
 msgid "Tag name already exists!"
-msgid "Nombre de etiqueta ya existe"
+msgstr "Nombre de etiqueta ya existe"
 
 #. module: sale_order_tag
 #: model:ir.ui.menu,name:sale_order_tag.sale_order_tag_menu
