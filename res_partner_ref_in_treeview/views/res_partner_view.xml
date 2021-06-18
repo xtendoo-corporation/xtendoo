@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+         <record model="ir.ui.view" id="res_partner_show_ref_in_lv">
+            <field name="name">res.partner.show.ref.in.lv</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field name="arch" type="xml">
+
+                 <xpath expr="//field[@name='display_name']" position="after">
+                    <field name="ref" string="Referencia"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
