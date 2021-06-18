@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="batch_A4" model="report.paperformat">
+            <field name="name">A4 batch</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">18</field>
+            <field name="margin_right">10</field>
+            <field name="margin_left">10</field>
+            <field name="orientation">Landscape</field>
+            <field name="header_line">False</field>
+            <field name="header_spacing">0</field>
+            <field name="dpi">95</field>
+        </record>
+
+        <report id="stock_picking_batch_delivery.report_picking_batch_delivery"
+                string="Listado de envíos"
+                model="stock.picking.batch"
+                report_type="qweb-pdf"
+                name="stock_picking_batch_delivery.report_picking_batch_delivery"/>
+
+
+        <!--<record id="stock_picking_batch_delivery.report_picking_batch_delivery" model="ir.actions.report">
+            <field name="paperformat_id" ref="stock_picking_batch_delivery.batch_A4"/>
+        </record>
+ -->
+        <template id="stock_picking_batch_delivery.report_picking_batch_delivery">
+            <t t-name="stock_picking_batch_delivery.report_picking_batch_delivery">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-set="lang" t-value="o.user_id.lang"/>
+                        <t t-call="stock_picking_batch_delivery.report_picking_batch_document" t-lang="lang"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <template id="stock_picking_batch_delivery.report_picking_batch_document">
+
+            <t t-name="stock_picking_batch_delivery.report_picking_batch_document">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="move_line_ids" t-value="o.picking_ids.mapped('move_line_ids')"/>
+                    <t t-set="has_package" t-value="move_line_ids.filtered('result_package_id')" groups="stock.group_tracking_lot"/>
+                    <t t-set="has_serial_number" t-value="move_line_ids.filtered('lot_id')" groups="stock.group_production_lot"/>
+                    <t t-set="has_barcode" t-value="move_line_ids.mapped('product_id').filtered('barcode')"/>
+                    <t t-set="locations" t-value="move_line_ids.mapped('location_id')"/>
+                    <t t-set="total_weight" t-value="0"/>
+                    <t t-set="total_lumps" t-value="0"/>
+                    <t t-set="total_palets" t-value="0"/>
+                    <t t-set="total_value" t-value="0"/>
+
+                        <div class="page">
+                            <div style="width:50%;float:left;">
+                                <div>
+                                    <span><b>LISTADO DE ENVIOS</b></span>
+                                </div>
+                                <div>
+                                     <span t-field="o.name"></span>
+                                </div>
+
+                            </div>
+                            <div style="width:50%;float:left;">
+                                <div style="margin-bottom:20px;margin-left:60%;width:40%;border: 2px solid black;">
+                                    <div style="padding:5px;">
+                                         <span><b>FECHA: </b></span><span t-field="o.date_planned" t-options="{&quot;format&quot;: &quot;dd/MM/yyyy&quot;}"></span>
+                                    </div>
+                                    <div style="padding:5px;">
+                                         <span><b>MEDIO: </b></span><span t-field="o.delivery_id"></span>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Cabecera -->
+
+                            <div style="clear:both;">
+                                <div style="width:10.5%;float:left;">
+                                    <b><span>Albarán</span></b>
+                                </div>
+                                <div style="width:30.5%;float:left;">
+                                    <b><span>Cliente</span></b>
+                                </div>
+                                <div style="width:10%;float:left;">
+                                    <b><span>TLF. Entrega</span></b>
+                                </div>
+                                <div style="width:6%;float:left;text-align:right;">
+                                    <b><span>Peso(KG)</span></b>
+                                </div>
+                                <div style="width:6%;float:left;text-align:right;">
+                                    <b><span>NºBultos</span></b>
+                                </div>
+                                <div style="width:6%;float:left;text-align:right;">
+                                    <b><span>NºPalets</span></b>
+                                </div>
+                                <div style="width:10%;float:left;text-align:right;">
+                                    <b><span>Importe Total</span></b>
+                                </div>
+                                <div style="width:13%;float:left;text-align:left;">
+                                    <b><span style="margin-left:2px;">Forma de Pago</span></b>
+                                </div>
+                                 <div style="width:8%;float:left;text-align:left;">
+                                    <b><span>Factura</span></b>
+                                </div>
+
+                            </div>
+
+                            <!--Fin cabecera -->
+
+                            <!-- Lineas -->
+                            <t t-set="cash_amount" t-value="0"></t>
+                            <t t-foreach="o.picking_ids" t-as="pick">
+
+                                <div style="clear:both;font-size:0.9em;">
+                                    <div style="width:10.5%;float:left;">
+                                        <span t-field="pick.name"/>
+                                    </div>
+                                    <div style="width:30.5%;float:left;">
+                                        <span t-field="pick.partner_id"/>
+                                    </div>
+                                    <div style="width:10%;float:left;">
+                                        <t t-if="pick.partner_phone">
+                                            <span t-field="pick.partner_phone"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color:white;">tlf</span>
+                                        </t>
+                                    </div>
+                                    <div style="width:6%;float:left;text-align:right;">
+                                        <t t-if="pick.weight">
+                                            <t t-set="total_weight" t-value="total_weight + pick.weight"/>
+                                            <span t-field="pick.weight"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color:white;">weight</span>
+                                        </t>
+                                    </div>
+                                    <div style="width:6%;float:left;text-align:right;">
+                                        <t t-if="pick.lumps_number">
+                                            <t t-set="total_lumps" t-value="total_lumps + pick.lumps_number"/>
+                                            <span t-field="pick.lumps_number"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color:white;">weight</span>
+                                        </t>
+                                    </div>
+                                    <div style="width:6%;float:left;text-align:right;">
+                                        <t t-if="pick.palets_number">
+                                            <t t-set="total_palets" t-value="total_palets + pick.palets_number"/>
+                                            <span t-field="pick.palets_number"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color:white;">weight</span>
+                                        </t>
+                                    </div>
+                                    <div style="width:10%;float:left;text-align:right;">
+                                        <t t-if="pick.amount_total">
+                                            <t t-set="total_value" t-value="total_value + pick.amount_total"/>
+                                            <span t-field="pick.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: pick.sale_id.pricelist_id.currency_id}"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color:white;">total</span>
+                                        </t>
+                                    </div>
+                                    <div style="width:13%;float:left;text-align:left;">
+                                        <t t-if="pick.payment_term">
+                                            <t t-if="pick.payment_term == 'Efectivo'">
+                                                <t t-set="cash_amount" t-value="cash_amount+pick.amount_total"></t>
+                                            </t>
+                                            <span style="margin-left:2px;" t-field="pick.payment_term"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color:white;">term</span>
+                                        </t>
+                                    </div>
+                                    <div style="width:8%;float:left;text-align:left;">
+                                        <t t-set="invoice_name" t-value=""/>
+                                        <t t-if="pick.invoice_id.number != 'account.invoice()'">
+                                            <t t-set="invoice_name" t-value="pick.invoice_id.number"/>
+                                        </t>
+                                        <span t-esc="invoice_name"></span>
+
+                                    </div>
+                                </div>
+
+                            </t>
+
+                            <!--Fin Lineas -->
+
+                            <!--Totales -->
+                            <div style="clear:both;">
+
+                                <div style="margin-left:41%;float:left;width:10%;">
+                                    <span><b>Totales:</b></span>
+                                </div>
+
+                                <div style="float:left;width:6%;">
+                                    <b><span style="display:block;witdth:100%;text-align:right;" t-esc="total_weight"/></b>
+                                </div>
+
+                                <div style="float:left;width:6%;">
+                                    <span style="display:block;width:100%;text-align:right;"><b><span t-esc="total_lumps"/></b></span>
+                                </div>
+                                <div style="float:left;width:6%;">
+                                    <span style="display:block;width:100%;text-align:right;"><b><span t-esc="total_palets"/></b></span>
+                                </div>
+                                <div style="float:left;width:10%;text-align:right;">
+                                    <span style="display:block;width:100%;text-align:right;"><b><span t-esc="round(total_value,2)"/>€</b></span>
+                                </div>
+
+                            </div>
+                    </div>
+
+                            <!--Fin Totales -->
+                            <!--Totales -->
+                            <div style="clear:both;">
+
+                                <div style="margin-left:41%;float:left;width:27.85%;">
+                                    <span><b>Total efectivo:</b></span>
+                                </div>
+
+                                <div style="float:left;width:10%;text-align:right;">
+                                    <span style="display:block;width:100%;text-align:right;"><b><span t-esc="round(cash_amount,2)"/>€</b></span>
+                                </div>
+
+                            </div>
+
+                            <!--Fin Totales -->
+
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
