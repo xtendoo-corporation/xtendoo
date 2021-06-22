@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='order_line']/tree//field[@name='price_unit']" position="after">
-               <field name="pricelist_id" widget="many2one_tags" readonly="1"/>
+               <field name="pricelist_id" widget="many2one_tags" readonly="1" force_save="1"/>
             </xpath>
 
         </field>
