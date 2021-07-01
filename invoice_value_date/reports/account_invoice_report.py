@@ -2,7 +2,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from odoo import fields, models
-import logging
 
 
 class AccountInvoiceReport(models.Model):
@@ -14,7 +13,6 @@ class AccountInvoiceReport(models.Model):
     )
 
     def _select(self):
-        logging.info("aaaaaaaaaaaaa",super()._select())
         return super()._select() + ", date_value as date_value"
 
     def _sub_select(self):
