@@ -13,6 +13,7 @@
 				<t t-call="web.external_layout">
 					<t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
 					<div class="page">
+                        <t t-set="is_purchase" t-value="1"/>
 						<!-- Datos del documento -->
 						<!-- Datos del movimiento -->
 						<div style="width:50%; float:left;">

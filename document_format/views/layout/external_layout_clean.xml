@@ -38,6 +38,17 @@
                                     <t t-esc="company.country_id.vat_label or 'Tax ID'"/>
                                     <span t-field="company.vat" />
                                 </li>
+                                <t t-if="not is_purchase">
+                                </t>
+                                <t t-else="">
+                                    <li>
+                                        <b>Descarga: C/ Olivo,7</b>
+                                    </li>
+                                    <li>
+                                        <b>21700-La Palma del Condado
+                                            ( HUELVA )</b>
+                                    </li>
+                                </t>
                             </ul>
                         </div>
                     </div>
@@ -50,7 +61,11 @@
             <xpath expr="//div[@class='row mt8']" position="replace">
                 <div class="row mt8">
                     <div class="col-6">
-                        <span t-field="company.report_footer" />
+                         <t t-if="not is_purchase">
+                             <span t-field="company.report_footer" />
+                         </t>
+                        <t t-else="">
+                        </t>
                     </div>
                     <div class="col-4 text-right">
                         <span
