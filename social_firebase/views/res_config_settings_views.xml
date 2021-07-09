@@ -6,7 +6,7 @@
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
         <field name="target">inline</field>
-        <field name="context">{'module' : 'social'}</field>
+        <field name="context">{'module' : 'social_firebase'}</field>
     </record>
 
     <record id="menu_social_firebase_global_settings" model="ir.ui.menu">
