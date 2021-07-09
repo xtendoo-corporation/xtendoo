@@ -1,4 +1,4 @@
-odoo.define('social.social_stream_post_kanban_renderer', function (require) {
+odoo.define('social_firebase.social_stream_post_kanban_renderer', function (require) {
 "use strict";
 
 var core = require('web.core');

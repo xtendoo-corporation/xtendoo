@@ -1,10 +1,10 @@
-odoo.define('social.social_stream_post_kanban_view', function (require) {
+odoo.define('social_firebase.social_stream_post_kanban_view', function (require) {
 "use strict";
 
 var KanbanView = require('web.KanbanView');
-var StreamPostKanbanController = require('social.social_stream_post_kanban_controller');
-var StreamPostKanbanModel = require('social.social_stream_post_kanban_model');
-var StreamPostKanbanRenderer = require('social.social_stream_post_kanban_renderer');
+var StreamPostKanbanController = require('social_firebase.social_stream_post_kanban_controller');
+var StreamPostKanbanModel = require('social_firebase.social_stream_post_kanban_model');
+var StreamPostKanbanRenderer = require('social_firebase.social_stream_post_kanban_renderer');
 var viewRegistry = require('web.view_registry');
 
 var StreamPostKanbanView = KanbanView.extend({

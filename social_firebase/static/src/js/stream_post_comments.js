@@ -1,13 +1,13 @@
-odoo.define('social.social_post_kanban_comments', function (require) {
+odoo.define('social_firebase.social_post_kanban_comments', function (require) {
 
 var BasicFields = require('web.basic_fields');
 var core = require('web.core');
 var Dialog = require('web.Dialog');
 var dom = require('web.dom');
 var emojis = require('mail.emojis');
-var PostKanbanImagesCarousel = require('social.social_post_kanban_images_carousel');
-var SocialEmojisMixin = require('social.emoji_mixin');
-var SocialStreamPostFormatterMixin = require('social.stream_post_formatter_mixin');
+var PostKanbanImagesCarousel = require('social_firebase.social_post_kanban_images_carousel');
+var SocialEmojisMixin = require('social_firebase.emoji_mixin');
+var SocialStreamPostFormatterMixin = require('social_firebase.stream_post_formatter_mixin');
 var time = require('web.time');
 
 

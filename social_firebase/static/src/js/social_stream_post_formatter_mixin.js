@@ -1,4 +1,4 @@
-odoo.define('social.stream_post_formatter_mixin', function (require) {
+odoo.define('social_firebase.stream_post_formatter_mixin', function (require) {
 "use strict";
 
 return {

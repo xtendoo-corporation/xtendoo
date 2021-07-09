@@ -3,8 +3,8 @@
 <data>
     <menuitem
         id="menu_social_global"
-        name="Social Marketing"
-        web_icon="social,static/description/icon.png"
+        name="Social"
+        web_icon="social_firebase,static/description/icon.png"
         sequence="9"
         groups="base.group_user" />
 

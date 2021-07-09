@@ -1,4 +1,4 @@
-odoo.define('social.emoji_mixin', function (require) {
+odoo.define('social_firebase.emoji_mixin', function (require) {
 "use strict";
 
 var dom = require('web.dom');

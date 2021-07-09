@@ -1,9 +1,9 @@
-odoo.define('social.form_field_post_preview', function (require) {
+odoo.define('social_firebase.form_field_post_preview', function (require) {
 "use strict";
 
 var FieldHtml = require('web_editor.field.html');
 var fieldRegistry = require('web.field_registry');
-var SocialEmojisMixin = require('social.emoji_mixin');
+var SocialEmojisMixin = require('social_firebase.emoji_mixin');
 
 /**
  * Simple FieldHtml extension that will just wrap the emojis correctly.

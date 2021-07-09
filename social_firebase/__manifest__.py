@@ -2,10 +2,10 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
-    'name': 'Social Firebase Marketing',
-    'category': 'Marketing/Social',
+    'name': 'Social Firebase',
+    'category': 'Administration',
     'summary': 'Easily manage your social media and website visitors',
-    'version': '13.0.1.0.0',
+    'version': '13.0.0.1',
     'description': """Easily manage your social media and website visitors""",
     'depends': ['web', 'mail', 'iap', 'link_tracker'],
     'qweb': [

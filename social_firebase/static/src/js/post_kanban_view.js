@@ -1,11 +1,11 @@
-odoo.define('social.PostKanbanView', function (require) {
+odoo.define('social_firebase.PostKanbanView', function (require) {
 "use strict";
 
 var KanbanView = require('web.KanbanView');
 var viewRegistry = require('web.view_registry');
 
 // Add images carousel support
-var PostKanbanController = require('social.social_post_kanban_controller');
+var PostKanbanController = require('social_firebase.social_post_kanban_controller');
 
 var PostKanbanView = KanbanView.extend({
     config: _.extend({}, KanbanView.prototype.config, {

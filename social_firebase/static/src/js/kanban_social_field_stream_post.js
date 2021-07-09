@@ -1,10 +1,10 @@
-odoo.define('social.kanban_field_stream_post', function (require) {
+odoo.define('social_firebase.kanban_field_stream_post', function (require) {
 "use strict";
 
 var FieldRegistry = require('web.field_registry');
 var FieldText = require('web.basic_fields').FieldText;
-var SocialEmojisMixin = require('social.emoji_mixin');
-var SocialStreamPostFormatterMixin = require('social.stream_post_formatter_mixin');
+var SocialEmojisMixin = require('social_firebase.emoji_mixin');
+var SocialStreamPostFormatterMixin = require('social_firebase.stream_post_formatter_mixin');
 
 var SocialKanbanMessageWrapper = FieldText.extend(SocialEmojisMixin, SocialStreamPostFormatterMixin, {
     /**

@@ -1,4 +1,4 @@
-odoo.define('social.social_post_kanban_comments_delete', function (require) {
+odoo.define('social_firebase.social_post_kanban_comments_delete', function (require) {
 "use strict";
 
 var core = require('web.core');

@@ -1,4 +1,4 @@
-odoo.define('social.social_stream_post_kanban_model', function (require) {
+odoo.define('social_firebase.social_stream_post_kanban_model', function (require) {
 "use strict";
 
 var KanbanModel = require('web.KanbanModel');

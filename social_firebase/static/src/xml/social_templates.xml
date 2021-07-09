@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <div t-name="social.StreamPostCommentDeleteModal">
+    <div t-name="social_firebase.StreamPostCommentDeleteModal">
         Do you really want to delete that <t t-esc="widget.commentName" /> ?
     </div>
 
-    <t t-name="social.StreamPostComments">
+    <t t-name="social_firebase.StreamPostComments">
         <t t-set="bubble_design" t-value="false"/>
 
         <div t-attf-class="o_social_comments_modal o_social_comments_modal_#{widget.originalPost.mediaType} pt-0 px-0 #{bubble_design? '' : 'bg-100'}">
-            <t t-call="social.StreamPostCommentsOriginalPost">
+            <t t-call="social_firebase.StreamPostCommentsOriginalPost">
                 <t t-set="originalPost" t-value="widget.originalPost" />
             </t>
-            <t t-call="social.StreamPostReply">
+            <t t-call="social_firebase.StreamPostReply">
                 <t t-set="classes" t-value="'bg-white p-3 pl-5 border-bottom'"/>
             </t>
             <div t-attf-class="o_social_comments_messages px-3 pt-4 #{bubble_design? '' : 'bg-100'}">
-                <t t-call="social.StreamPostCommentsWrapper">
+                <t t-call="social_firebase.StreamPostCommentsWrapper">
                     <t t-set="comments" t-value="widget.comments"></t>
                 </t>
             </div>
@@ -26,10 +26,10 @@
         </div>
     </t>
 
-    <div t-name="social.StreamPostCommentsWrapper">
+    <div t-name="social_firebase.StreamPostCommentsWrapper">
         <t t-if="comments.length">
             <t t-foreach="comments" t-as="comment">
-                <t t-call="social.StreamPostComment"/>
+                <t t-call="social_firebase.StreamPostComment"/>
             </t>
         </t>
         <t t-else="">
@@ -44,7 +44,7 @@
         t-att-data-existing-attachment-id="comment.attachment &amp;&amp; comment.attachment.type === 'photo' &amp;&amp; comment.attachment.target ? comment.attachment.target.id : null"
         t-att-data-existing-attachment-src="comment.attachment &amp;&amp; comment.attachment.type === 'photo' ? comment.attachment.media.image.src : null"
         t-attf-class="o_social_comment mb-3 #{isSubComment ? '' : 'o_social_root_comment'}"
-        t-name="social.StreamPostComment">
+        t-name="social_firebase.StreamPostComment">
         <t t-set="bubble_design" t-value="false"/>
 
         <div class="o_social_comment_wrapper d-flex align-items-start">
@@ -133,7 +133,7 @@
             <div class="o_social_comment_replies mt-4 d-none">
             </div>
             <div class="o_social_write_comment_reply d-none">
-                <t t-call="social.StreamPostReply">
+                <t t-call="social_firebase.StreamPostReply">
                     <t t-set="isCommentReply" t-value="true"></t>
                     <t t-set="classes" t-value="'pr-5 mb-5'"/>
                 </t>
@@ -141,7 +141,7 @@
         </div>
     </div>
 
-    <div class="o_social_write_reply" t-name="social.StreamPostReply">
+    <div class="o_social_write_reply" t-name="social_firebase.StreamPostReply">
         <form t-attf-class="d-flex flex-nowrap align-items-start #{classes ? classes : ''}">
             <div class="o_social_author_image position-relative rounded-circle flex-shrink-0 overflow-hidden mr-2">
                 <img t-att-src="widget.getAuthorPictureSrc()" t-att-title="isCommentReply ? ('Write a reply as ' + widget.accountName) : ('Write comment as ' + widget.accountName)" />
@@ -162,7 +162,7 @@
                         <div class="o_social_comment_add_image o_social_subtle_btn px-3 py-1">
                             <i class="fa fa-image" title="Add an image"/>
                         </div>
-                        <t t-call="social.EmojisDropdown">
+                        <t t-call="social_firebase.EmojisDropdown">
                             <t t-set="emojisDropdownId"
                                 t-attf-value="emoji_comment_#{isCommentEdit ? 'edit_' : ''}#{isCommentReply || isCommentEdit ? comment.id : 0}"></t>
                         </t>
@@ -191,7 +191,7 @@
         </form>
     </div>
 
-    <t t-name="social.StreamPostCommentsOriginalPost">
+    <t t-name="social_firebase.StreamPostCommentsOriginalPost">
     <div class="o_social_comments_modal_original_post d-flex bg-white pt-3 px-3">
         <div class="mr-3">
             <span class="o_social_original_post_author_image o_social_author_image d-block position-relative rounded-circle overflow-hidden"/>
@@ -253,7 +253,7 @@
     </div>
     </t>
 
-    <div t-name="social.EmojisDropdown" t-attf-class="o_social_icon_dropdown o_social_add_emoji dropdown">
+    <div t-name="social_firebase.EmojisDropdown" t-attf-class="o_social_icon_dropdown o_social_add_emoji dropdown">
         <button class="btn btn-block o_social_subtle_btn dropdown-toggle px-3 py-1"
             type="button" t-att-id="emojisDropdownId"
             data-toggle="dropdown"
@@ -269,13 +269,13 @@
         </div>
     </div>
 
-    <t t-name="social.KanbanView.Group" t-extend="KanbanView.Group">
+    <t t-name="social_firebase.KanbanView.Group" t-extend="KanbanView.Group">
         <t t-jquery="span.o_column_title" t-operation="before">
            <img t-if="widget.groupedBy === 'stream_id'" width="16" t-attf-src="/web/image/social.stream/#{widget.id}/media_image/16x16" class="mr8" />
         </t>
     </t>
 
-    <div t-name="social.AddStreamMedia" class="o_social_media_cards d-flex">
+    <div t-name="social_firebase.AddStreamMedia" class="o_social_media_cards d-flex">
         <t t-foreach="widget.socialMedia" t-as="media">
             <div class="o_social_media card text-center justify-content-center align-items-center mr-3 p-3" t-att-data-media-id="media.id" style="min-width: 90px;">
                 <img width="48" t-attf-src="/web/image/social.media/#{media.id}/image/48x48" />
@@ -284,7 +284,7 @@
         </t>
     </div>
 
-    <div t-name="social.AddStreamModal">
+    <div t-name="social_firebase.AddStreamModal">
         <div class="o_social_add_stream_form bg-200 p-4">
             <t t-if="widget.socialAccounts.length !== 0">
                 <h4>Add a Stream from an existing account</h4>
@@ -299,17 +299,17 @@
                 </div>
                 <t t-if="widget.isSocialManager">
                     <h4 class="mt-5">Or link a new account</h4>
-                    <t t-call="social.AddStreamMedia" />
+                    <t t-call="social_firebase.AddStreamMedia" />
                 </t>
             </t>
             <t t-else="">
                 <h5 class="mb-4">To add a stream, you must first link a social media.</h5>
-                <t t-call="social.AddStreamMedia" />
+                <t t-call="social_firebase.AddStreamMedia" />
             </t>
         </div>
     </div>
 
-    <div t-name="social.PostKanbanImagesCarousel">
+    <div t-name="social_firebase.PostKanbanImagesCarousel">
         <t t-set="multi_images" t-value="widget.images.length > 1"/>
         <div id="o_stream_post_images_carousel"
             t-attf-class="o_stream_post_images_carousel carousel slide #{multi_images? 'o_stream_post_images_carousel_multi' : ''} "
@@ -351,12 +351,12 @@
         </button>
     </div>
 
-    <t t-name="social.AccountsStats">
+    <t t-name="social_firebase.AccountsStats">
         <div t-foreach="socialAccounts" t-as="socialAccount"
             class="o_social_stream_stat_box flex-shrink-0 w-auto d-flex flex-column bg-white border-bottom border-right">
             <div class="pt-3 pb-2 px-4 d-flex justify-content-between">
                 <div class="d-flex align-items-center">
-                    <img class="mr-2" width="16" t-attf-src="/web/image/social.media/#{socialAccount.media_id[0]}/image/16x16" alt="Social Media"/>
+                    <img class="mr-2" width="16" t-attf-src="/web/image/social_firebase/static/src/description/icon.png" alt="Social Media"/>
                     <h5 class="d-inline m-0" t-esc="socialAccount.name"/>
                 </div>
                 <div class="d-flex align-items-center ml-4">
@@ -380,7 +380,7 @@
                 <div class="d-flex align-items-center flex-grow-1 pr-3"
                     data-toggle="popover" title="Audience"
                     t-att-data-content="audience_content">
-                    <t t-call="social.AccountsStatsValue">
+                    <t t-call="social_firebase.AccountsStatsValue">
                         <t t-set="icon" t-value="'fa-bullseye'"/>
                         <t t-set="value" t-value="socialAccount.audience"/>
                         <t t-set="trend" t-value="socialAccount.audience_trend"/>
@@ -390,7 +390,7 @@
                 <div class="d-flex align-items-center justify-content-center flex-grow-1 px-3"
                     data-toggle="popover" title="Engagement"
                     t-att-data-content="engagement_content">
-                    <t t-call="social.AccountsStatsValue">
+                    <t t-call="social_firebase.AccountsStatsValue">
                         <t t-set="icon" t-value="'fa-hand-o-up'"/>
                         <t t-set="value" t-value="socialAccount.engagement"/>
                         <t t-set="trend" t-value="socialAccount.engagement_trend"/>
@@ -400,7 +400,7 @@
                 <div class="d-flex align-items-center justify-content-end flex-grow-1 pl-3"
                     data-toggle="popover" title="Stories"
                     t-att-data-content="stories_content">
-                    <t t-call="social.AccountsStatsValue">
+                    <t t-call="social_firebase.AccountsStatsValue">
                         <t t-set="icon" t-value="'fa-book'"/>
                         <t t-set="value" t-value="socialAccount.stories"/>
                         <t t-set="trend" t-value="socialAccount.stories_trend"/>
@@ -410,7 +410,7 @@
         </div>
     </t>
 
-    <t t-name="social.AccountsStatsValue">
+    <t t-name="social_firebase.AccountsStatsValue">
         <div class="d-flex align-items-center">
             <i t-attf-class="text-600 mr-1 fa {{icon}}" style="line-height: 1"/>
             <b t-esc="value" style="line-height: 1"/>

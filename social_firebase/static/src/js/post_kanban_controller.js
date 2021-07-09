@@ -1,8 +1,8 @@
-odoo.define('social.social_post_kanban_controller', function (require) {
+odoo.define('social_firebase.social_post_kanban_controller', function (require) {
 "use strict";
 
 var KanbanController = require('web.KanbanController');
-var PostKanbanImagesCarousel = require('social.social_post_kanban_images_carousel');
+var PostKanbanImagesCarousel = require('social_firebase.social_post_kanban_images_carousel');
 
 var PostKanbanController = KanbanController.extend({
     events: {

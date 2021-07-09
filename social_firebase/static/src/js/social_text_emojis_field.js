@@ -1,11 +1,11 @@
-odoo.define('social.form_field_emoji', function (require) {
+odoo.define('social_firebase.form_field_emoji', function (require) {
 "use strict";
 
 var basicFields = require('web.basic_fields');
 var core = require('web.core');
 var emojis = require('mail.emojis');
 var registry = require('web.field_registry');
-var SocialEmojisMixin = require('social.emoji_mixin');
+var SocialEmojisMixin = require('social_firebase.emoji_mixin');
 var _onEmojiClickMixin = SocialEmojisMixin._onEmojiClick;
 var QWeb = core.qweb;
 
@@ -39,7 +39,7 @@ var FieldTextEmojis = basicFields.FieldText.extend(SocialEmojisMixin, {
 
         if (!this.$emojisIcon) {
             this.$emojisIcon = $(QWeb.render(
-                'social.EmojisDropdown', {
+                'social_firebase.EmojisDropdown', {
                     widget: this,
                     emojisDropdownId: 'emojis_dropdown'
                 }

@@ -1,11 +1,11 @@
-odoo.define('social.social_stream_post_kanban_controller', function (require) {
+odoo.define('social_firebase.social_stream_post_kanban_controller', function (require) {
 "use strict";
 
-var AddStreamModal = require('social.social_post_kanban_add_stream_modal');
+var AddStreamModal = require('social_firebase.social_post_kanban_add_stream_modal');
 var core = require('web.core');
 var dialogs = require('web.view_dialogs');
 var KanbanController = require('web.KanbanController');
-var PostKanbanImagesCarousel = require('social.social_post_kanban_images_carousel');
+var PostKanbanImagesCarousel = require('social_firebase.social_post_kanban_images_carousel');
 
 var _t = core._t;
 var QWeb = core.qweb;
