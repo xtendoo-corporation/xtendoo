@@ -10,7 +10,7 @@ var _t = core._t;
  * the specified options.images
  */
 var PostKanbanImagesCarousel = Dialog.extend({
-    template: 'social.PostKanbanImagesCarousel',
+    template: 'social_firebase.PostKanbanImagesCarousel',
 
     init: function (parent, options) {
         options = _.defaults(options || {}, {

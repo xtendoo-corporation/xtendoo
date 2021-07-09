@@ -164,13 +164,13 @@
                 <header>
                     <button name="action_post" string="Post" type="object" class="oe_highlight"
                         attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('post_method', '=', 'scheduled')]}"
-                        groups="social.group_social_manager" />
+                        groups="social_firebase.group_social_manager" />
                     <button name="action_post" string="Post Now" type="object"
                         attrs="{'invisible': [('state', '!=', 'scheduled')]}"
-                        groups="social.group_social_manager" />
+                        groups="social_firebase.group_social_manager" />
                     <button name="action_schedule" string="Schedule" type="object" class="oe_highlight"
                         attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('post_method', '=', 'now')]}"
-                        groups="social.group_social_manager" />
+                        groups="social_firebase.group_social_manager" />
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
