@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="action_social_firebase_global_settings" model="ir.actions.act_window">
-        <field name="name">action.social.firebase.global.settings</field>
+        <field name="name">Settings</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
         <field name="target">inline</field>
-        <field name="context">{'module' : 'social'}</field>
+       <!-- <field name="context">{'module' : 'social_firebase'}</field>-->
     </record>
 
     <record id="menu_social_firebase_global_settings" model="ir.ui.menu">
