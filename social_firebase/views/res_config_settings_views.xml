@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="action_social_firebase_global_settings" model="ir.actions.act_window">
+    <record id="social_firebase.action_social_firebase_global_settings" model="ir.actions.act_window">
         <field name="name">Settings</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
         <field name="target">inline</field>
-       <!-- <field name="context">{'module' : 'social_firebase'}</field>-->
+        <field name="context">{'module' : 'social_firebase'}</field>
     </record>
 
-    <record id="menu_social_firebase_global_settings" model="ir.ui.menu">
+    <record id="social_firebase.menu_social_firebase_global_settings" model="ir.ui.menu">
         <field name="action" ref="action_social_firebase_global_settings" />
     </record>
 
-    <record id="res_config_firebase_settings_view_form" model="ir.ui.view">
+    <record id="social_firebase.res_config_firebase_settings_view_form" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.social.firebase</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
