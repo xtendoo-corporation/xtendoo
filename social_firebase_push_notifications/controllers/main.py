@@ -9,7 +9,7 @@ from odoo.http import request
 
 
 class SocialPushNotificationsController(http.Controller):
-    @http.route('/social_push_notifications/fetch_push_configuration', type='json', auth='public')
+    @http.route('/social_firebase_push_notifications/fetch_push_configuration', type='json', auth='public')
     def fetch_push_configuration(self):
         """ Fetches the firebase push configuration for the current website (if any). """
         current_website = request.env['website'].get_current_website()
@@ -48,7 +48,7 @@ class SocialPushNotificationsController(http.Controller):
             'social.social_iap_endpoint',
             request.env['social.media']._DEFAULT_SOCIAL_IAP_ENDPOINT
         )
-        result = requests.get(url_join(social_iap_endpoint, 'iap/social_push_notifications/get_firebase_info'), {
+        result = requests.get(url_join(social_iap_endpoint, 'iap/social_firebase_push_notifications/get_firebase_info'), {
             'db_uuid': request.env['ir.config_parameter'].sudo().get_param('database.uuid')
         })
 
@@ -61,7 +61,7 @@ class SocialPushNotificationsController(http.Controller):
                 'firebase_sender_id': result_json['firebase_sender_id'],
             })
 
-    @http.route('/social_push_notifications/register', type='json', auth='public', website=True)
+    @http.route('/social_firebase_push_notifications/register', type='json', auth='public', website=True)
     def register(self, token):
         """ Store the firebase token on the website visitor.
         If the visitor does not exists yet, create one and return the signed website.visitor id
@@ -86,7 +86,7 @@ class SocialPushNotificationsController(http.Controller):
 
         return res
 
-    @http.route('/social_push_notifications/unregister', type='json', auth='public')
+    @http.route('/social_firebase_push_notifications/unregister', type='json', auth='public')
     def unregister(self, token):
         if token:
             request.env['website.visitor'].sudo().search([('push_token', '=', token)]).write({'push_token': False})

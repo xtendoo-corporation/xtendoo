@@ -7,12 +7,11 @@
         <field name="inherit_id" ref="website.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@id='webmaster_settings']" position="after">
-                <h2>Web Push Notifications (Social app)</h2>
+                <h2>Web Push Notifications (Social)</h2>
                 <div class="row mt16 o_settings_container" attrs="{'invisible': [('website_id', '!=', False)]}">
                     <div class="col-12 o_setting_box">
-                        <div class="text-muted">
-                            Select a website to load push notifications settings.
-                        </div>
+                        <label for="website_id" class="oe_inline o_form_label"></label>
+                        <field name="website_id"/>
                     </div>
                 </div>
                 <div class="row mt16 o_settings_container" attrs="{'invisible': [('website_id', '=', False)]}">

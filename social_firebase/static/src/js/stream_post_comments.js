@@ -18,7 +18,7 @@ var QWeb = core.qweb;
 var DATE_TIME_FORMAT = time.getLangDatetimeFormat();
 
 
-var StreamPostCommentDelete = require('social.social_post_kanban_comments_delete');
+var StreamPostCommentDelete = require('social_firebase.social_post_kanban_comments_delete');
 
 /**
  * Base implementation of a comments window for social media implementations.

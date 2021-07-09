@@ -3,9 +3,9 @@
 
 {
     'name': 'Social Firebase Push Notifications',
-    'category': 'Social',
+    'category': 'Administration',
     'summary': 'Send live notifications to your web visitors',
-    'version': '1.0',
+    'version': '13.0.0.1',
     'description': """Send live notifications to your web visitors""",
     'depends': ['social_firebase', 'website'],
     'external_dependencies': {

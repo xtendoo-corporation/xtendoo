@@ -1,4 +1,4 @@
-odoo.define('social_push_notifications.NotificationRequestPopup', function (require) {
+odoo.define('social_firebase_push_notifications.NotificationRequestPopup', function (require) {
 "use strict";
 
 var Widget = require('web.Widget');
@@ -9,7 +9,7 @@ var Widget = require('web.Widget');
  */
 var NotificationRequestPopup = Widget.extend({
     template: 'social_push_notifications.NotificationRequestPopup',
-    xmlDependencies: ['/social_push_notifications/static/src/xml/social_push_notifications_templates.xml'],
+    xmlDependencies: ['/social_firebase_push_notifications/static/src/xml/social_push_notifications_templates.xml'],
     events: {
         'click .o_social_push_notifications_permission_allow': '_onClickAllow',
         'click .o_social_push_notifications_permission_deny': '_onClickDeny'

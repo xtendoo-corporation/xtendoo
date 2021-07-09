@@ -1,4 +1,4 @@
-odoo.define('social_push_notifications.social_push_preview', function (require) {
+odoo.define('social_firebase_push_notifications.social_push_preview', function (require) {
 'use strict';
 
 var widgetRegistry = require('web.widget_registry');

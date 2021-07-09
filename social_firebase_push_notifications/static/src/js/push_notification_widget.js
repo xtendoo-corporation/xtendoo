@@ -1,10 +1,10 @@
-odoo.define('social_push_notifications.NotificationManager', function (require) {
+odoo.define('social_firebase_push_notifications.NotificationManager', function (require) {
 "use strict";
 
 var publicWidget = require('web.public.widget');
 var utils = require('web.utils');
 var localStorage = require('web.local_storage');
-var NotificationRequestPopup = require('social_push_notifications.NotificationRequestPopup');
+var NotificationRequestPopup = require('social_firebase_push_notifications.NotificationRequestPopup');
 
 publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
     selector: '#wrapwrap',
@@ -92,7 +92,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
         });
 
         var messaging = firebase.messaging();
-        var baseWorkerUrl = '/social_push_notifications/static/src/js/push_service_worker.js';
+        var baseWorkerUrl = '/social_firebase_push_notifications/static/src/js/push_service_worker.js';
         navigator.serviceWorker.register(baseWorkerUrl + '?senderId=' + config.firebase_sender_id)
             .then(function (registration) {
                 messaging.useServiceWorker(registration);
@@ -130,7 +130,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
      */
     _fetchPushConfiguration: function () {
         var fetchPromise = this._rpc({
-            route: '/social_push_notifications/fetch_push_configuration'
+            route: '/social_firebase_push_notifications/fetch_push_configuration'
         });
 
         fetchPromise.then(function (config) {
@@ -166,7 +166,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
         var pushConfiguration = this._getPushConfiguration();
         if (pushConfiguration && pushConfiguration.token !== token) {
             this._rpc({
-                route: '/social_push_notifications/unregister',
+                route: '/social_firebase_push_notifications/unregister',
                 params: {
                     token: pushConfiguration.token
                 }
@@ -174,7 +174,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
         }
 
         this._rpc({
-            route: '/social_push_notifications/register',
+            route: '/social_firebase_push_notifications/register',
             params: {
                 token: token
             }

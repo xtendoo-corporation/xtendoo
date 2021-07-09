@@ -22,7 +22,7 @@ class WebsiteVisitor(models.Model):
         # validate if push notification are allowed for all selected visitors
         if all(visitor.push_token for visitor in self):
             push_media = self.env['social.media'].search([('media_type', '=', 'push_notifications')])
-            action = self.env.ref('social.action_social_post').read()[0]
+            action = self.env.ref('social_firebase.action_social_post').read()[0]
             action['views'] = [[False, 'form']]
             action['context'] = {
                 'default_visitor_domain': "[('push_token', '!=', False), ('id', 'in', %s)]" % self.ids,

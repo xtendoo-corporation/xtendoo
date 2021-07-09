@@ -79,7 +79,7 @@
     <menuitem
         id="social_visitor"
         name="Visitors"
-        parent="social.menu_social_global"
+        parent="social_firebase.menu_social_global"
         action="website.website_visitors_action"
         sequence="25"/>
 </data></odoo>

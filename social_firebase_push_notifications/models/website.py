@@ -29,7 +29,7 @@ class Website(models.Model):
         return res
 
     def _create_push_accounts(self):
-        social_media_push_notifications = self.env.ref('social_push_notifications.social_media_push_notifications').sudo()
+        social_media_push_notifications = self.env.ref('social_firebase_push_notifications.social_media_push_notifications').sudo()
 
         SocialAccount = self.env['social.account'].sudo()
 

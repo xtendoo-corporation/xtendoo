@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <t t-name="social_push_notifications.NotificationRequestPopup">
+    <t t-name="social_firebase_push_notifications.NotificationRequestPopup">
         <div class="o_social_push_notifications_permission_request position-fixed w-100">
             <div class="container-fluid">
                 <div class="dropdown">

@@ -7,7 +7,7 @@
             <field name="has_streams" eval="False" />
             <field name="can_link_accounts" eval="False"/>
             <field name="description" type="html"><p>Send live notifications to your web visitors</p></field>
-            <field name="image" type="base64" file="social_push_notifications/static/src/img/push_notifications.png"/>
+            <field name="image" type="base64" file="social_firebase_push_notifications/static/src/img/push_notifications.png"/>
         </record>
     </data>
 </odoo>

@@ -71,4 +71,4 @@ class SocialPushNotificationsCase(SocialCase):
 
     @classmethod
     def _get_social_media(cls):
-        return cls.env.ref('social_push_notifications.social_media_push_notifications')
+        return cls.env.ref('social_firebase_push_notifications.social_media_push_notifications')

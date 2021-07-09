@@ -4,7 +4,7 @@
         <record id="social_post_view_form" model="ir.ui.view">
             <field name="name">social.post.view.form.inherit.push_notifications</field>
             <field name="model">social.post</field>
-            <field name="inherit_id" ref="social.social_post_view_form"/>
+            <field name="inherit_id" ref="social_firebase.social_post_view_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//header" position="inside">
                     <widget name="social_push_preview"

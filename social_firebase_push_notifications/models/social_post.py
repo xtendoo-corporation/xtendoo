@@ -41,7 +41,7 @@ class SocialPostPushNotifications(models.Model):
                     if post.id or (post._origin and post._origin.id):
                         icon_url = '/web/image/social.post/%s/push_notification_image' % (post.id if post.id else post._origin.id)
 
-            post.push_notifications_preview = self.env.ref('social_push_notifications.push_notifications_preview').render({
+            post.push_notifications_preview = self.env.ref('social_firebase_push_notifications.push_notifications_preview').render({
                 'title': post.push_notification_title or _('New Message'),
                 'icon': icon,
                 'icon_url': icon_url,
