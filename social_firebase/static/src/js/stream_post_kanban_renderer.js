@@ -11,7 +11,7 @@ var QWeb = core.qweb;
  * social.media icon before the social.stream name (if grouped by stream_id).
  */
 var StreamPostKanbanColumn = KanbanColumn.extend({
-    template: 'social.KanbanView.Group'
+    template: 'social_firebase.KanbanView.Group'
 });
 
 var StreamPostKanbanRenderer = KanbanRenderer.extend({
@@ -139,7 +139,7 @@ var StreamPostKanbanRenderer = KanbanRenderer.extend({
         this.$before.empty();
         if (this.state.socialAccountsStats && this.state.socialAccountsStats.length !== 0) {
             var $socialAccountsStats = QWeb.render(
-                'social.AccountsStats',
+                'social_firebase.AccountsStats',
                 {socialAccounts: this.state.socialAccountsStats}
             );
 

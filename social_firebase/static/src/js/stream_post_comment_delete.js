@@ -10,7 +10,7 @@ var _t = core._t;
  * by the user or close otherwise.
  */
 var StreamPostCommentDelete = Dialog.extend({
-    template: 'social.StreamPostCommentDeleteModal',
+    template: 'social_firebase.StreamPostCommentDeleteModal',
 
     init: function (parent, options) {
         options = _.defaults(options || {}, {

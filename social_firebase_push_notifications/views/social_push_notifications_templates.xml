@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="social_push_notifications_layout" inherit_id="web.frontend_layout">
+    <template id="social_firebase_push_notifications.social_push_notifications_layout" inherit_id="web.frontend_layout">
         <xpath expr='//head' position="inside">
             <!-- ref: https://developers.google.com/web/updates/2015/03/push-notifications-on-the-open-web
             The gcm_sender_id is used by browsers when it subscribes a users device with FCM.
