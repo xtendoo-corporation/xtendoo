@@ -33,7 +33,7 @@ var StreamPostKanbanController = KanbanController.extend({
         var superPromise = this._super.apply(this, arguments);
 
         var isSocialManagerPromise = this.getSession()
-            .user_has_group('social.group_social_manager').then(function (hasGroup){
+            .user_has_group('social_firebase.group_social_manager').then(function (hasGroup){
                 self.isSocialManager = hasGroup;
         });
 

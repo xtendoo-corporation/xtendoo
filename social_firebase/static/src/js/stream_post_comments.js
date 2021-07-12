@@ -42,7 +42,7 @@ var StreamPostCommentDelete = require('social_firebase.social_post_kanban_commen
  * - ...
  */
 var StreamPostComments = Dialog.extend(SocialEmojisMixin, SocialStreamPostFormatterMixin, {
-    template: 'social.StreamPostComments',
+    template: 'social_firebase.StreamPostComments',
     events: {
         'keydown .o_social_add_comment': '_onAddComment',
         'click .o_social_comment_add_image': '_onAddImage',
@@ -233,7 +233,7 @@ var StreamPostComments = Dialog.extend(SocialEmojisMixin, SocialStreamPostFormat
 
         var $targetComment = $(ev.currentTarget).closest('.o_social_comment');
 
-        var $editComment = $(QWeb.render("social.StreamPostReply", {
+        var $editComment = $(QWeb.render("social_firebase.StreamPostReply", {
             widget: this,
             comment: {
                 id: $targetComment.data('commentId')
@@ -350,7 +350,7 @@ var StreamPostComments = Dialog.extend(SocialEmojisMixin, SocialStreamPostFormat
             .find('.o_social_comment_replies');
 
         innerComments.forEach(function (innerComment) {
-            var $innerComment = $(QWeb.render("social.StreamPostComment", {
+            var $innerComment = $(QWeb.render("social_firebase.StreamPostComment", {
                 widget: self,
                 isSubComment: true,
                 comment: innerComment
@@ -434,7 +434,7 @@ var StreamPostComments = Dialog.extend(SocialEmojisMixin, SocialStreamPostFormat
             type: 'POST'
         }).then(function (comment) {
             comment = JSON.parse(comment);
-            var $newMessage = $(QWeb.render("social.StreamPostComment", {
+            var $newMessage = $(QWeb.render("social_firebase.StreamPostComment", {
                 widget: self,
                 comment: comment,
                 isSubComment: isCommentReply

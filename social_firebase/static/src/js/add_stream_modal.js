@@ -9,7 +9,7 @@ var _t = core._t;
  * Simple Dialog extension to customize the addition of streams and allow to connect new accounts.
  */
 var AddStreamModal = Dialog.extend({
-    template: 'social.AddStreamModal',
+    template: 'social_firebase.AddStreamModal',
     events: _.extend({}, Dialog.prototype.events, {
         'click .o_social_account_card': '_onClickSocialAccount',
         'click .o_social_media': '_onClickSocialMedia',

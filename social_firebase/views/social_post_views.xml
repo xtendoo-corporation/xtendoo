@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 <data>
-    <record id="action_social_post" model="ir.actions.act_window">
+    <record id="social_firebase.action_social_post" model="ir.actions.act_window">
         <field name="name">Social Posts</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">social.post</field>
@@ -17,7 +17,7 @@
     </record>
 
     <record id="menu_social_post" model="ir.ui.menu">
-        <field name="action" ref="action_social_post" />
+        <field name="action" ref="social_firebase.action_social_post" />
     </record>
 
     <record id="social_post_view_kanban" model="ir.ui.view">

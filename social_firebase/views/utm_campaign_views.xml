@@ -6,13 +6,13 @@
         <field name="inherit_id" ref="utm.utm_campaign_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
-                <button name="action_create_new_post"
+                <button name="social_firebase.action_create_new_post"
                         type="object"
                         class="oe_highlight order-2"
                         string="Send Social Post"/>
             </xpath>
             <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-                <button name="action_redirect_to_social_media_posts"
+                <button name="social_firebase.action_redirect_to_social_media_posts"
                     type="object" class="oe_stat_button order-10" icon="fa-newspaper-o"
                     attrs="{'invisible': [('social_posts_count', '=', 0)]}">
                     <field name="social_posts_count" widget="statinfo" string="Posts"/>
@@ -38,7 +38,7 @@
                 <field name="social_posts_count"/>
             </xpath>
             <xpath expr="//ul[@id='o_utm_actions']">
-                <a name="action_redirect_to_social_media_posts" type="object"
+                <a name="social_firebase.action_redirect_to_social_media_posts" type="object"
                     t-attf-class="#{record.social_posts_count.raw_value === 0 ? 'text-muted' : ''}">
                     <t t-raw="record.social_posts_count.raw_value"/> Posts
                 </a>

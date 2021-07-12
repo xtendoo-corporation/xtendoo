@@ -8,7 +8,7 @@ var Widget = require('web.Widget');
  * We use a jQuery 'dropdown' menu so that it automatically closes when clicked outside.
  */
 var NotificationRequestPopup = Widget.extend({
-    template: 'social_push_notifications.NotificationRequestPopup',
+    template: 'social_firebase_push_notifications.NotificationRequestPopup',
     xmlDependencies: ['/social_firebase_push_notifications/static/src/xml/social_push_notifications_templates.xml'],
     events: {
         'click .o_social_push_notifications_permission_allow': '_onClickAllow',

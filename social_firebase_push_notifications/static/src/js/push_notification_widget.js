@@ -20,7 +20,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
         var superPromise = this._super.apply(this, arguments);
 
         if (!this._isBrowserCompatible()) {
-            return superPromise;
+            return superPromise;var curViewDef
         }
 
         if (Notification.permission === "granted") {
@@ -136,7 +136,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
         fetchPromise.then(function (config) {
             var expirationDate = new Date();
             expirationDate.setDate(expirationDate.getDate() + 7);
-            localStorage.setItem('social_push_notifications.notification_request_config',
+            localStorage.setItem('social_firebase_push_notifications.notification_request_config',
                 JSON.stringify({
                     'title': config.notification_request_title,
                     'body': config.notification_request_body,
@@ -184,7 +184,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
                 utils.set_cookie('visitor_uuid', res.visitor_uuid);
             }
 
-            localStorage.setItem('social_push_notifications.configuration', JSON.stringify({
+            localStorage.setItem('social_firebase_push_notifications.configuration', JSON.stringify({
                 'token': token,
             }));
         });
@@ -217,7 +217,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
     _askPermission: function () {
         var self = this;
 
-        var nextAskPermission = localStorage.getItem('social_push_notifications.next_ask_permission');
+        var nextAskPermission = localStorage.getItem('social_firebase_push_notifications.next_ask_permission');
         if (nextAskPermission && new Date() < new Date(nextAskPermission)) {
             return;
         }
@@ -276,20 +276,20 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
         notificationRequestPopup.on('deny', null, function () {
             var nextAskPermissionDate = new Date();
             nextAskPermissionDate.setDate(nextAskPermissionDate.getDate() + 7);
-            localStorage.setItem('social_push_notifications.next_ask_permission',
+            localStorage.setItem('social_firebase_push_notifications.next_ask_permission',
                 nextAskPermissionDate);
         });
     },
 
     _getPushConfiguration: function () {
         return this._getJSONLocalStorageItem(
-            'social_push_notifications.configuration'
+            'social_firebase_push_notifications.configuration'
         );
     },
 
     _getNotificationRequestConfiguration: function () {
         return this._getJSONLocalStorageItem(
-            'social_push_notifications.notification_request_config'
+            'social_firebase_push_notifications.notification_request_config'
         );
     },
 
