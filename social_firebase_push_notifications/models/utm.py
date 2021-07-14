@@ -34,13 +34,14 @@ class UtmCampaign(models.Model):
             campaign.social_push_notifications_count = mapped_data.get(campaign.id, 0)
 
     def action_redirect_to_push_notifications(self):
-            action = self.env.ref('social_firebase_push_notifications.action_social_post').read()[0]
+            action = self.env.ref('social_firebase.action_social_post').read()[0]
             action['domain'] = [('utm_campaign_id', '=', self.id), ('media_ids.media_type', '=', 'push_notifications')]
             action['context'] = {
                 "with_searchpanel": True,
-                "searchpanel_default_state": "posted",
+                "searchpanel_default_state": "all",
                 "default_utm_campaign_id": self.id
             }
+
             return action
 
     def action_send_push_notification(self):

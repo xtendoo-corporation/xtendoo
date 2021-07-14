@@ -47,7 +47,7 @@
                     </div>
                     <div class="col-md-6 o_setting_box"
                         attrs="{'invisible': [('firebase_enable_push_notifications', '=', False)]}"
-                        groups="base.group_no_one">
+                        groups="social_firebase.group_social_manager">
                         <div class="o_setting_left_pane">
                             <field name="firebase_use_own_account"/>
                         </div>

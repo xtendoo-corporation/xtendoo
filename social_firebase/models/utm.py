@@ -50,7 +50,7 @@ class UtmCampaign(models.Model):
         action = self.env.ref('social_firebase.action_social_post').read()[0]
         action['domain'] = self._get_campaign_social_posts_domain()
         action['context'] = {
-            "searchpanel_default_state": "posted",
+            "searchpanel_default_state": "all",
             "default_utm_campaign_id": self.id
         }
         return action
