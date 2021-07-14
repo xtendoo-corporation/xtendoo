@@ -38,7 +38,7 @@ class UtmCampaign(models.Model):
             campaign.social_posts_count = mapped_data.get(campaign.id, 0)
 
     def action_create_new_post(self):
-        action = self.env.ref('social.action_social_post').read()[0]
+        action = self.env.ref('social_firebase.action_social_post').read()[0]
         action['views'] = [[False, 'form']]
         action['context'] = {
             'default_utm_campaign_id': self.id,
@@ -47,7 +47,7 @@ class UtmCampaign(models.Model):
         return action
 
     def action_redirect_to_social_media_posts(self):
-        action = self.env.ref('social.action_social_post').read()[0]
+        action = self.env.ref('social_firebase.action_social_post').read()[0]
         action['domain'] = self._get_campaign_social_posts_domain()
         action['context'] = {
             "searchpanel_default_state": "posted",
