@@ -19,13 +19,12 @@ class AccountMove(models.Model):
     @api.model
     def create(self, vals):
         res = super(AccountMove, self).create(vals)
-        if not vals['date']:
-            if vals['type'] == 'out_refund':
-                date = self._get_invoice_date(vals)
-            else:
-                date = self._get_sale_order_date(vals)
-            if date:
-                res.write({'date_value': date})
+        if vals['type'] == 'out_refund':
+            date = self._get_invoice_date(vals)
+        else:
+            date = self._get_sale_order_date(vals)
+        if date:
+            res.write({'date_value': date})
         return res
 
     def _get_sale_order_date(self, vals):
@@ -39,8 +38,6 @@ class AccountMove(models.Model):
         return sale_order_date
 
     def _get_invoice_date(self, vals):
-        if vals['refund_invoice_id']:
-            invoice = self.env['account.move'].search([('id', '=', vals['refund_invoice_id'])], limit=1)
-            if invoice:
-                return invoice.date_invoice
+        if vals['invoice_date']:
+            return vals['invoice_date']
         return None
