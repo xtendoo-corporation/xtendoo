@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 {
-    'name': 'Invoice Value Date',
+    'name': 'Invoice Send Mail',
     'version': '13.0.0.1',
     'category': 'Invoicing',
     'author': 'Manuel Calero',
