@@ -12,7 +12,7 @@
         'python': ['firebase_admin'],
     },
     'data': [
-        'security/ir.model.access.csv',
+        #'security/ir.model.access.csv',
         'views/assets.xml',
         'views/social_post_views.xml',
         'views/res_config_settings_views.xml',

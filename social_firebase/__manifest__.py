@@ -13,7 +13,7 @@
     ],
     'data': [
         'security/social_security.xml',
-        'security/ir.model.access.csv',
+        #'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'views/assets.xml',
         'views/social_menu_views.xml',
