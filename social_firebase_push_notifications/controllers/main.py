@@ -45,7 +45,7 @@ class SocialPushNotificationsController(http.Controller):
 
     def _register_iap_firebase_info(self, current_website):
         social_iap_endpoint = request.env['ir.config_parameter'].sudo().get_param(
-            'social.social_iap_endpoint',
+            'social_firebase.social_iap_endpoint',
             request.env['social.media']._DEFAULT_SOCIAL_IAP_ENDPOINT
         )
         result = requests.get(url_join(social_iap_endpoint, 'iap/social_firebase_push_notifications/get_firebase_info'), {
