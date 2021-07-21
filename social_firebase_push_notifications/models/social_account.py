@@ -59,8 +59,8 @@ class SocialAccountPushNotifications(models.Model):
             ('res_field', '=', 'firebase_admin_key_file'),
             ('res_id', '=', self.website_id.id)
         ])
-        if not firebase_admin_key_file_attachment:
-            raise UserError(_("Firebase Admin Key File is missing from the configuration."))
+        #if not firebase_admin_key_file_attachment:
+            #raise UserError(_("Firebase Admin Key File is missing from the configuration."))
 
         firebase_credentials = credentials.Certificate(
             firebase_admin_key_file_attachment._full_path(firebase_admin_key_file_attachment.store_fname)
