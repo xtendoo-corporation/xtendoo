@@ -1,6 +1,6 @@
 // Give the service worker access to Firebase Messaging.
-importScripts('https://www.gstatic.com/firebasejs/5.0.1/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/5.0.1/firebase-messaging.js');
+importScripts('https://www.gstatic.com/firebasejs/6.3.4/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/6.3.4/firebase-messaging.js');
 
 // firebase code expects a 'self' variable to be defined
 // didn't find any explanation for this on the web, everyone seems cool with it
