@@ -54,7 +54,12 @@ class SocialLivePostPushNotifications(models.Model):
                     return visitor_local_datetime > post_user_datetime
 
                 pending_visitors = self.env['website.visitor'].search(expression.AND([visitor_domain, [('id', 'not in', live_post.reached_visitor_ids.ids)]]))
+                print("/**********************************")
+                print(pending_visitors)
+                print("/*************************************")
+                print(pending_visitors.filtered(get_filtered_timezone_visitors))
                 target_visitors = pending_visitors.filtered(get_filtered_timezone_visitors)
+
 
             account._firebase_send_message({
                 'title': title,

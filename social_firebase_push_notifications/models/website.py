@@ -13,7 +13,7 @@ class Website(models.Model):
     firebase_web_api_key = fields.Char('Firebase Web API Key')
     firebase_push_certificate_key = fields.Char('Firebase Push Certificate Key')
     firebase_sender_id = fields.Char('Firebase Sender ID')
-    firebase_admin_key_file = fields.Binary('Firebase Admin Key File', groups="social.group_social_manager")
+    firebase_admin_key_file = fields.Binary('Firebase Admin Key File')
 
     notification_request_title = fields.Char('Notification Request Title')
     notification_request_body = fields.Text('Notification Request Text')
