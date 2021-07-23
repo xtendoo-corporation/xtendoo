@@ -78,6 +78,8 @@ class SocialAccountPushNotifications(models.Model):
             self._firebase_send_message_from_iap(data, visitors)
 
     def _firebase_send_message_from_configuration(self, data, visitors):
+        print(
+            "*************************/ _firebase_send_message_from_configuration /************************************")
         """ Sends messages by batch of 100 (max limit from firebase).
         Returns a tuple containing:
         - The matched website.visitors (search_read records).
@@ -90,14 +92,26 @@ class SocialAccountPushNotifications(models.Model):
         results = []
 
         tokens = visitors.mapped('push_token')
+        print("/************ TOKENS /*******************************")
+        print(tokens)
+        print("/************ DATA /*******************************")
+        print(data)
+        print("/************ Visitors /*******************************")
+        print(visitors)
         for i in range(int((len(tokens) / batch_size)) + 1):
             tokens_batch = tokens[(i * batch_size):((i + 1) * batch_size)]
             firebase_message = messaging.MulticastMessage(
                 data=data,
                 tokens=tokens_batch
             )
-            results.append(messaging.send_multicast(firebase_message))
+            print("*****************/FIREBASE MSG /*************************************")
+            print(firebase_message)
 
+            results.append(messaging.send_multicast(firebase_message))
+            print("*****************/ TOKENS BEFORE /*************************************")
+            print(tokens)
+            print("*****************/ result/*************************************")
+            print(results)
         return tokens, results
 
     def _firebase_send_message_from_iap(self, data, visitors):
