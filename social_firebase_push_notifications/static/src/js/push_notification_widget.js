@@ -54,16 +54,19 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
      * @private
      */
     _isBrowserCompatible: function () {
+        alert("inicializando serviceWorker");
         if (!('serviceWorker' in navigator)) {
             // Service Worker isn't supported on this browser
+            alert("Error serviceWorker");
             return false;
         }
 
         if (!('PushManager' in window)) {
             // Push isn't supported on this browser
+            alert("Error serviceWorker");
             return false;
         }
-
+        alert("Inicializado serviceWorker");
         return true;
     },
 
@@ -82,6 +85,7 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
             || !config.firebase_project_id
             || !config.firebase_web_api_key) {
             // missing configuration
+            alert("Fallo al registrar service worker");
             return;
         }
 
@@ -90,16 +94,24 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
             projectId: config.firebase_project_id,
             messagingSenderId: config.firebase_sender_id
         });
-
+        alert("Firesabe Config");
+        alert(config.firebase_web_api_key);
+        alert(config.firebase_project_id);
+        alert(config.firebase_sender_id);
         var messaging = firebase.messaging();
         var baseWorkerUrl = '/social_firebase_push_notifications/static/src/js/push_service_worker.js';
+        //print("Firebase Messaging");
+        //print(messaging)
         navigator.serviceWorker.register(baseWorkerUrl + '?senderId=' + config.firebase_sender_id)
             .then(function (registration) {
                 messaging.useServiceWorker(registration);
                 messaging.usePublicVapidKey(config.firebase_push_certificate_key);
                 messaging.getToken().then(function (token) {
                     self._registerToken(token);
+                    alert("Token generado");
+                    alert(token);
                 });
+
         });
     },
 
