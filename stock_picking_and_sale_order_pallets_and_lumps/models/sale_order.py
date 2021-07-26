@@ -14,7 +14,7 @@ class SaleOrder(models.Model):
     )
     has_picking = fields.Boolean(
         compute='_compute_has_picking',
-        string='Has Picking',
+        string='Has picking',
     )
 
     def _compute_pallets_number(self):
