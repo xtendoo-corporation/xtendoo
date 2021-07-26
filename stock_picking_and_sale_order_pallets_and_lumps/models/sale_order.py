@@ -1,36 +1,27 @@
 from odoo import api, fields, models
 
-import logging
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    palets_number = fields.Integer(compute='compute_palets_number', string='Pallets number')
+    pallets_number = fields.Integer(
+        compute='_compute_pallets_number',
+        string='Pallets number',
+    )
+    lumps_number = fields.Integer(
+        compute='_compute_lumps_number',
+        string='Lumps number',
+    )
+    has_picking = fields.Boolean(
+        compute='_compute_has_picking',
+        string='Has Picking',
+    )
 
-    lumps_number = fields.Integer(compute='compute_lumps_number', string='Lumps number')
+    def _compute_pallets_number(self):
+        self.pallets_number = sum(self.picking_ids.mapped("pallets_number")) or 0.0
 
-    has_picking = fields.Boolean(compute='compute_has_picking', string='Has Picking')
+    def _compute_lumps_number(self):
+        self.lumps_number = sum(self.picking_ids.mapped("lumps_number")) or 0.0
 
-    def compute_palets_number(self):
-        palets_number=0
-        delivery_ids = self.env['stock.picking'].search([('sale_id', '=', self.id)])
-        for delivery_id in delivery_ids:
-            palets_number+=delivery_id.palets_number
-        self.palets_number=palets_number
-
-    def compute_lumps_number(self):
-        lumps_number=0
-        delivery_ids = self.env['stock.picking'].search([('sale_id', '=', self.id)])
-        for delivery_id in delivery_ids:
-            lumps_number+=delivery_id.lumps_number
-        self.lumps_number=lumps_number
-
-    def compute_has_picking(self):
-        delivery_ids=self.env['stock.picking'].search([('sale_id', '=', self.id)])
-        has_picking=False
-        if delivery_ids:
-            has_picking=True
-        self.has_picking=has_picking
-
-
-
+    def _compute_has_picking(self):
+        self.has_picking = len(self.picking_ids) > 0
