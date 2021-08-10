@@ -26,7 +26,7 @@
                             <field name="scheduled_date" readonly="1"/>
                             <field name="weight" readonly="1"/>
                             <field name="lumps_number"/>
-                            <field name="palets_number"/>
+                            <!--<field name="palets_number"/> -->
                             <field name="state" readonly="1"/>
                             <field name="invoice_id" readonly="1"/>
                             <field name="payment_term"/>
