@@ -11,9 +11,9 @@
                     <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"
                            string="Etiquetas"/>
                 </xpath>
-                <xpath expr="//field[@name='list_price']" position="replace">
+               <!-- <xpath expr="//field[@name='list_price']" position="replace">
                     <field name="list_price" string="Sales Price" invisible="1"/>
-                </xpath>
+                </xpath> -->
             </field>
         </record>
         <!-- Fin vista tree -->
