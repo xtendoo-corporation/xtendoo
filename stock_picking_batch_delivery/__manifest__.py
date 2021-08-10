@@ -12,7 +12,6 @@
     'depends': [
         'stock',
         'delivery',
-        'stock_picking_invoice_link',
         'stock_picking_report_valued',
         'stock_picking_and_sale_order_pallets_and_lumps',
     ],
