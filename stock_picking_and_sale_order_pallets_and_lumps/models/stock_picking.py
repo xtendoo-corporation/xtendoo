@@ -9,11 +9,6 @@ import logging
 class StockPickingBatch(models.Model):
     _inherit = ["stock.picking"]
 
-    lumps_number = fields.Integer(
-        string="Lumps",
-        store=True,
-    )
-    pallets_number = fields.Integer(
-        string="Pallets",
-        store=True,
-    )
+    lumps_number = fields.Integer(string="Lumps", store=True)
+
+    palets_number = fields.Integer(string="Palets", store=True)

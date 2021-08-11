@@ -10,7 +10,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='picking_type_id']" position="after">
                    <field name="lumps_number"/>
-                   <field name="pallets_number"/>
+                   <field name="palets_number"/>
                 </xpath>
             </field>
         </record>
