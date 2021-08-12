@@ -19,11 +19,11 @@
         "web_widget_digitized_signature",
     ],
     "data": [
-        "views/web_digital_sign_view.xml",
+        "views/web_navigator_geolocation_view.xml",
         "views/res_users_view.xml",
         "views/stock_picking_view.xml",
     ],
-    "qweb": ["static/src/xml/digital_sign.xml",],
+    "qweb": ["static/src/xml/navigator_geolocation.xml",],
     "installable": True,
     "development_status": "Production/Stable",
 }
