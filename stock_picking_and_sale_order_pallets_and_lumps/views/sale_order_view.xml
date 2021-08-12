@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <record id="view_order_form_lumps_pallets" model="ir.ui.view">
+    <record id="view_order_form_lupms_pallets" model="ir.ui.view">
         <field name="name">view.order.form.inherit</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
@@ -9,7 +9,7 @@
             <xpath expr="//field[@name='pricelist_id']" position="after">
                  <field name="has_picking" readonly="1" invisible="1"/>
                  <field name="lumps_number" readonly="1" attrs="{'invisible': [('has_picking', '=', False)]}"/>
-                 <field name="pallets_number" readonly="1" attrs="{'invisible': [('has_picking', '=', False)]}"/>
+                 <field name="palets_number" readonly="1" attrs="{'invisible': [('has_picking', '=', False)]}"/>
             </xpath>
         </field>
     </record>

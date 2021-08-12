@@ -8,10 +8,11 @@ class StockPickingBatch(models.Model):
 
     def get_invoice_id(self):
         for picking in self:
+            picking.invoice_id = ""
             if picking.picking_type_id.id == 8:
                 if picking.origin != "":
-                    invoice_id = self.env["account.invoice"].search(
-                        [("origin", "=", picking.origin)], limit=1
+                    invoice_id = self.env["account.move"].search(
+                        [("invoice_origin", "=", picking.origin)], limit=1
                     )
                     picking.invoice_id = invoice_id
 
@@ -38,7 +39,7 @@ class StockPickingBatch(models.Model):
         string="Payment Term"
     )
     invoice_id = fields.Many2one(
-        "account.invoice",
+        "account.move",
         compute="get_invoice_id",
         string="Invoice"
     )
