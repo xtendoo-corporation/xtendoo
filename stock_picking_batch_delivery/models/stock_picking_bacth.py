@@ -21,7 +21,6 @@ class StockPickingBatch(models.Model):
         compute='compute_total_weight',
         string='Peso Total'
     )
-
     @api.depends('picking_ids')
     def compute_total_weight(self):
         if not self.picking_ids:
