@@ -86,7 +86,8 @@ class SocialAccountPushNotifications(models.Model):
         - A list of firebase_admin.messaging.BatchResponse to be handled by the caller. """
         if not visitors:
             return [], []
-
+        print("***********************************/ INICIALIZANDO FIREBASE APP /*****************************************")
+        print(self._init_firebase_app())
         self._init_firebase_app()
         batch_size = 100
         results = []
