@@ -65,6 +65,7 @@ class SocialAccountPushNotifications(models.Model):
         firebase_credentials = credentials.Certificate(
             firebase_admin_key_file_attachment._full_path(firebase_admin_key_file_attachment.store_fname)
         )
+        print("*************************** FIREBASE CREDENTIALS /*******************************")
         try:
             firebase_admin.initialize_app(firebase_credentials)
         except ValueError:
