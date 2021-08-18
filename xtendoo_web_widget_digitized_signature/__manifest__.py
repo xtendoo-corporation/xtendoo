@@ -22,12 +22,12 @@
         'stock',
     ],
     'data': [
-        'views/web_navigator_geolocation_view.xml',
+        'views/web_digital_sign_view.xml',
         'views/res_users_view.xml',
         'views/stock_picking_view.xml',
     ],
     'qweb': [
-        'static/src/xml/navigator_geolocation.xml',
+        'static/src/xml/digital_sign.xml',
     ],
     'installable': True,
     'development_status': 'Production/Stable',
