@@ -104,8 +104,6 @@ publicWidget.registry.NotificationWidget =  publicWidget.Widget.extend({
         //print(messaging)
         navigator.serviceWorker.register(baseWorkerUrl + '?senderId=' + config.firebase_sender_id)
             .then(function (registration) {
-                alert("Entra en registration")
-                alert(messaging.useServiceWorker(registration);)
                 messaging.useServiceWorker(registration);
                 messaging.usePublicVapidKey(config.firebase_push_certificate_key);
                 messaging.getToken().then(function (token) {
