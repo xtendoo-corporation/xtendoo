@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates id="point_of_sale_show_default_code.template" inherit_id="point_of_sale.template">
+    <t t-extend="Product">
+        <t t-jquery="div.product-name" t-operation="append">
+            <t t-if="product.default_code">
+                <br/>
+                <t t-esc="product.default_code"/>
+            </t>
+        </t>
+    </t>
+</templates>
