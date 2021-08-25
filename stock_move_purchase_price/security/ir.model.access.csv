@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_move_purchase_price,stock_move_purchase_price.stock_move_purchase_price,model_stock_move_purchase_price_stock_move_purchase_price,,1,0,0,0
