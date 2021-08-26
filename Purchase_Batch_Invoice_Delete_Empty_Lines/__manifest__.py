@@ -33,6 +33,7 @@
     'depends': [
         'base',
         'product',
+        'account',
     ],
     'license': 'AGPL-3',
     'data': [
