@@ -4,9 +4,9 @@
         <record id="xtendoo_stock_picking_product_barcode_report.paperformat_label_delivery" model="report.paperformat">
             <field name="name">Label paperformat Recepcion</field>
             <field name="format">custom</field>
-            <field name="page_height">50</field>
-            <field name="page_width">30</field>
-            <field name="orientation">Landscape</field>
+            <field name="page_height">30</field>
+            <field name="page_width">50</field>
+            <field name="orientation">Portait</field>
             <field name="margin_top">2</field>
             <field name="margin_bottom">0</field>
             <field name="margin_left">0</field>
