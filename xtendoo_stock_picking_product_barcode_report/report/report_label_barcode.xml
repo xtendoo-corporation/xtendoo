@@ -7,6 +7,6 @@
         report_type="qweb-pdf"
         file="xtendoo_stock_picking_product_barcode_report.label_barcode_report"
         name="xtendoo_stock_picking_product_barcode_report.label_barcode_report"
-        paperformat="xtendoo_stock_picking_product_barcode_report.paperformat_label"
+        paperformat="xtendoo_stock_picking_product_barcode_report.paperformat_label_delivery"
     />
 </odoo>

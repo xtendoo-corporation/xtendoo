@@ -14,23 +14,22 @@
                             style="width:50px;height:50px;"
                             alt="Barcode"
                         />
-                        <div class="text-center" style="font-size: 9px;">
+                        <div class="text-center" style="font-size: 15px;">
                             <span
                                 t-field="doc.product_id.display_name"
                                 style="font-weight: bold"
                             />
                             <br />
-                            <span t-field="doc.product_id.barcode" />
-                            <span t-if="doc.lot_id">/ Lot:
-                                <span t-field="doc.lot_id.name" />
-                            </span>
-                            <br />
-                            <span t-if="doc.lot_id">Cad:
-                                <span
+                            <t t-if="doc.lot_id">
+                                <span style="font-size: 12px;" t-field="doc.lot_id.name" />
+                            </t>
+                            <t t-if="doc.lot_id.life_date">
+                                <span> / </span>
+                                <span style="font-size: 12px;"
                                     t-field="doc.lot_id.life_date"
                                     t-options='{"format": "dd/MM/yyyy"}'
                                 />
-                            </span>
+                            </t>
                         </div>
                         <p style="page-break-after:always;" />
                     </div>
