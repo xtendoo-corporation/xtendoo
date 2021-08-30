@@ -23,7 +23,15 @@
                                     <li>
                                         <h2 class="mt16">
                                             <b>Albarán:</b>
-                                            <span t-field="o.sale_id.picking_ids.sorted(lambda x: x.name)[0].name" />
+                                            <t t-set="docNameALB" t-value="o.name"/>
+                                            <t t-set="alb_num" t-value="docNameALB.find('ENT')" />
+                                            <t t-if="alb_num &gt; -1">
+                                                <span t-field="o.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-field="o.sale_id.picking_ids.filtered(lambda l: l.name.find('ALB')&gt;-1).name" />
+
+                                            </t>
                                         </h2>
                                     </li>
                                     <li t-if="o.date_done">
