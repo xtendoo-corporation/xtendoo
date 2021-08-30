@@ -1,16 +1,25 @@
 <odoo>
     <data>
-    <!-- Herencia del tenplate del informe-->
-        <template id="document_format.format_report_delivery_document"
-              inherit_id="stock.report_deliveryslip">
-            <xpath expr="//t[@t-call='stock.report_delivery_document']" position="replace">
-                <t t-call="document_format.report_delivery_document_xtendoo" t-lang="o.partner_id.lang"/>
-            </xpath>
-        </template>
-    <!-- Fin Herencia del tenplate del informe-->
+        <report
+        string="Vale de entrega (número original)"
+        id="document_format.action_report_delivery_original_number"
+        model="stock.picking"
+        report_type="qweb-pdf"
+        name="document_format.report_delivery_original"
+        file="document_format.report_delivery_original"
+        print_report_name="'Delivery Commodity - %s - %s' % (object.partner_id.name or '', object.name)"
+    />
+    <template id="document_format.report_delivery_original">
+        <t t-foreach="docs" t-as="o">
+            <t
+                t-call="document_format.report_delivery_document_xtendoo_original"
+                t-lang="o.partner_id.lang"
+            />
+        </t>
+    </template>
 
-        <template id="document_format.report_delivery_document_xtendoo">
-            <t t-name="document_format.report_delivery_document_xtendoo">
+        <template id="document_format.report_delivery_document_xtendoo_original">
+            <t t-name="document_format.report_delivery_document_xtendoo_original">
                 <t t-call="web.html_container">
                     <t t-call="web.external_layout">
                         <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
@@ -23,7 +32,7 @@
                                     <li>
                                         <h2 class="mt16">
                                             <b>Albarán:</b>
-                                            <span t-field="o.sale_id.picking_ids.sorted(lambda x: x.name)[0].name" />
+                                            <span t-field="o.name" />
                                         </h2>
                                     </li>
                                     <li t-if="o.date_done">
