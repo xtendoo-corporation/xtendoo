@@ -8,6 +8,9 @@
         """
         Wizard to Import Infortisa Products.
         """,
+    'depends': [
+        'sale',
+    ],
     'data': [
         'wizard/infortisa_product_import.xml',
         'views/product.xml',
