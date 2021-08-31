@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data>
+
+        <record id="bluetooth_delivery_2" model="report.paperformat">
+            <field name="name">Bluetooth delivery_2</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">3</field>
+            <field name="margin_right">1.5</field>
+            <field name="margin_left">1.5</field>
+            <field name="page_height">500</field>
+            <field name="page_width">80</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_line">False</field>
+            <field name="header_spacing">35</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <report id="document_format_hr.report_delivery_promotions_bluetooh"
+                string="Albarán Bluetooth"
+                model="stock.picking"
+                report_type="qweb-pdf"
+                name="document_format_hr.report_delivery_promotions_bluetooh"
+                print_report_name="'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)"
+        />
+
+        <record id="document_format_hr.report_delivery_promotions_bluetooh" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_hr.bluetooth_delivery_2"/>
+        </record>
+
+        <template id="document_format_hr.report_delivery_promotions_bluetooh">
+             <t t-name="document_format_hr.report_delivery_promotions_bluetooh">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-call="document_format_hr.report_delivery_bluetooth_without_promotions" t-lang="o.partner_id.lang"/>
+                        <t t-call="document_format_hr.report_delivery_bluetooth_with_promotions" t-lang="o.partner_id.lang"/>
+                    </t>
+                </t>
+             </t>
+        </template>
+
+    </data>
+</odoo>

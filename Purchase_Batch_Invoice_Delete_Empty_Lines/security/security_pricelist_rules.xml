@@ -1,0 +1,9 @@
+<odoo>
+    <odoo>
+        <record model="ir.rule" id="pricelist_record_rule">
+            <field name="name">See only authorized pricelist</field>
+            <field name="model_id" ref="product.model_product_pricelist_item"/>
+            <field name="domain_force">[('pricelist_id','in',[p.id for p in user.pricelist_ids])]</field>
+        </record>
+    </odoo>
+</odoo>
