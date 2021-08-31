@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-        <template id="document_format_hr.report_purchase_document_dis" inherit_id="purchase.report_purchaseorder_document">
 
-            <xpath expr="//t[@t-set='information_block']" position="replace">
-            
-            </xpath>
+         <report id="document_format_hr.purchase_order_print"
+                string="Pedido de compra"
+                model="purchase.order"
+                report_type="qweb-pdf"
+                name="document_format_hr.purchase_order_rp"
+                print_report_name="'Pedido de compra - %s - %s' % (object.partner_id.name or '', object.name)"
+        />
 
-            <xpath expr="//div[@t-field='o.partner_id']" position="replace">
-            
-            </xpath>
+        <template id="document_format_hr.purchase_order_rp" >
+            <t t-name="document_format_hr.purchase_order_rp">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-call="document_format_hr.report_purchase_document_hr" t-lang="o.partner_id.lang"/>
+                    </t>
+                </t>
+            </t>
 
-            <xpath expr="//t[@t-if='o.dest_address_id']" position="replace">
-            
-            </xpath>
+        </template>
 
-            <xpath expr="//t[@t-else='']" position="replace">
-            
-            </xpath>
-
-            <xpath expr="//p[@t-if='o.partner_id.vat']" position="replace">
-            
-            </xpath>
-            
-            <xpath expr="//div[@class='page']" position="replace">
-
+        <template id="document_format_hr.report_purchase_document_hr">
+        <t t-name="document_format_hr.report_purchase_document_hr">
+            <t t-call="web.external_layout">
              <div style="width:50%; float:left;margin-top:10px;">
                 <ul class="list-unstyled">
                     <li t-if="o.state == 'draft'"><b>Presupuesto:  </b> <span t-field="o.name"/></li>
@@ -258,14 +257,8 @@
                 </div>
                 <!-- Fin totales -->
         
-            </xpath>
-        </template>
-
-
-        <template id="document_format_hr.report_purchase_document_dis_not_address" inherit_id="purchase_stock.report_purchaseorder_document">
-            <xpath expr="//t[@t-set='information_block']" position="replace">
-            
-            </xpath>
+            </t>
+        </t>
         </template>
     </data>
 </odoo>

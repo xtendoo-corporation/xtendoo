@@ -4,7 +4,7 @@
 
     <data>
 
-        <record id="bluetooth_payment" model="report.paperformat">
+        <record id="document_format_hr.bt_payment" model="report.paperformat">
             <field name="name">Bluetooth payment</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
@@ -20,29 +20,31 @@
             <field name="dpi">90</field>
         </record>
 
-        <report id="document_format_hr.report_payment_receipt_bluetooth"
+        <report id="document_format_hr.report_payment_receipt_bt"
                 string="Recibo de Pago Bluetooth"
                 model="account.payment"
                 report_type="qweb-pdf"
-                name="document_format_hr.report_payment_receipt_bluetooth"
+                name="document_format_hr.report_payment_receipt_bt_rp"
         />
 
-        <record id="document_format_hr.report_payment_receipt_bluetooth" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_hr.bluetooth_payment"/>
+        <record id="document_format_hr.report_payment_receipt_bt" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_hr.bt_payment"/>
         </record>
 
-        <template id="document_format_hr.report_payment_receipt_bluetooth">
+        <template id="document_format_hr.report_payment_receipt_bt_rp">
+            <t t-name="document_format_hr.report_payment_receipt_bt_rp">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-set="lang" t-value="o.partner_id.lang"/>
-                    <t t-call="document_format_hr.report_payment_receipt_document_bluetooth" t-lang="lang"/>
+                    <t t-call="document_format_hr.report_payment_receipt_document_bt" t-lang="lang"/>
                 </t>
+            </t>
             </t>
         </template>
 
-        <template id="document_format_hr.report_payment_receipt_document_bluetooth">
+        <template id="document_format_hr.report_payment_receipt_document_bt">
 
-            <t t-name="document_format_hr.report_payment_receipt_document_bluetooth">
+            <t t-name="document_format_hr.report_payment_receipt_document_bt">
 
              <t t-set="o" t-value="o.with_context({'lang': lang})"/>
 

@@ -4,9 +4,9 @@
 
     <data>
 
-        <template id="document_format_hr.report_invoice_document_bluetooth_without_promotions">
+        <template id="document_format_hr.report_invoice_document_bt_without_promotions">
 
-            <t t-name="document_format_hr.report_invoice_document_bluetooth_without_promotions">
+            <t t-name="document_format_hr.report_invoice_document_bt_without_promotions">
 
                  <t t-set="numLines" t-value="0"></t>
                 <t t-foreach="o.invoice_line_ids" t-as="line">

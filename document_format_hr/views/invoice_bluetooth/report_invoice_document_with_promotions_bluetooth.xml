@@ -4,9 +4,9 @@
 
     <data>
 
-        <template id="document_format_hr.report_invoice_document_bluetooth_with_promotions">
+        <template id="document_format_hr.report_invoice_document_bt_with_promotions">
 
-            <t t-name="document_format_hr.report_invoice_document_bluetooth_with_promotions">
+            <t t-name="document_format_hr.report_invoice_document_bt_with_promotions">
 
                 <t t-set="isPromo" t-value="0"></t>
                 <t t-set="numLines" t-value="0"></t>

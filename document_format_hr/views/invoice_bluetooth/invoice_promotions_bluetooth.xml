@@ -4,7 +4,7 @@
 
     <data>
 
-        <record id="bluetooth_invoice_2" model="report.paperformat">
+        <record id="document_format_hr.bt_invoice_2" model="report.paperformat">
             <field name="name">Bluetooth invoice_2</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
@@ -20,25 +20,27 @@
             <field name="dpi">90</field>
         </record>
 
-        <report id="document_format_hr.report_invoice_promotions_bluetooh"
+        <report id="document_format_hr.report_invoice_promotions_bt"
                 string="Factura Bluetooth"
                 model="account.invoice"
                 report_type="qweb-pdf"
-                name="document_format_hr.report_invoice_promotions_bluetooh"
+                name="document_format_hr.report_invoice_promotions_bt_rp"
                 print_report_name="'invoice Slip - %s - %s' % (object.partner_id.name or '', object.name)"
         />
 
-        <record id="document_format_hr.report_invoice_promotions_bluetooh" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_hr.bluetooth_invoice_2"/>
+        <record id="document_format_hr.report_invoice_promotions_bt" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_hr.bt_invoice_2"/>
         </record>
 
-        <template id="document_format_hr.report_invoice_promotions_bluetooh">
+        <template id="document_format_hr.report_invoice_promotions_bt_rp">
+            <t t-name="document_format_hr.report_invoice_promotions_bt_rp">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-set="lang" t-value="o.user_id.lang if o.type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
-                        <t t-call="document_format_hr.report_invoice_document_bluetooth_without_promotions" t-lang="lang"/>
-                        <t t-call="document_format_hr.report_invoice_document_bluetooth_with_promotions" t-lang="lang"/>
+                        <t t-call="document_format_hr.report_invoice_document_bt_without_promotions" t-lang="lang"/>
+                        <t t-call="document_format_hr.report_invoice_document_bt_with_promotions" t-lang="lang"/>
                 </t>
+            </t>
             </t>
         </template>
 

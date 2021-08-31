@@ -4,7 +4,7 @@
 
     <data>
 
-        <record id="A4_picking_report" model="report.paperformat">
+        <record id="document_format_hr.A4_picking_report" model="report.paperformat">
             <field name="name">A4 Picking Report</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
@@ -20,11 +20,11 @@
             <field name="dpi">90</field>
         </record>
 
-         <report id="stock_picking_report"
+         <report id="document_format_hr.stock_picking_report"
                 string="Informe de carga"
                 model="stock.picking"
                 report_type="qweb-pdf"
-                name="document_format_hr.stock_picking_report"
+                name="document_format_hr.stock_picking_report_rp"
                 print_report_name="'Informe de carga - %s - %s' % (object.partner_id.name or '', object.name)"
         />
 
@@ -32,11 +32,13 @@
             <field name="paperformat_id" ref="document_format_hr.A4_picking_report"/>
         </record>
 
-        <template id="document_format_hr.stock_picking_report">
+        <template id="document_format_hr.stock_picking_report_rp">
+            <t t-name="document_format_hr.stock_picking_report_rp">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-call="document_format_hr.stock_picking_report_charge" t-lang="o.partner_id.lang"/>
                 </t>
+            </t>
             </t>
         </template>
 

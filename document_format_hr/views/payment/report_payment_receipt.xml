@@ -4,7 +4,7 @@
 
     <data>
 
-        <record id="payment_A4" model="report.paperformat">
+        <record id="document_format_hr.payment_A4" model="report.paperformat">
             <field name="name">A4 payment</field>
             <field name="default" eval="False"/>
             <field name="format">custom</field>
@@ -20,23 +20,25 @@
             <field name="dpi">95</field>
         </record>
 
-        <report id="report_payment_receipt"
+        <report id="document_format_hr.report_payment_receipt"
                 string="Recibo de Pago"
                 model="account.payment"
                 report_type="qweb-pdf"
-                name="document_format_hr.report_payment_receipt"
+                name="document_format_hr.report_payment_receipt_rp"
         />
 
         <record id="document_format_hr.report_payment_receipt" model="ir.actions.report">
             <field name="paperformat_id" ref="document_format_hr.payment_A4"/>
         </record>
 
-        <template id="document_format_hr.report_payment_receipt">
+        <template id="document_format_hr.report_payment_receipt_rp">
+            <t t-name="document_format_hr.report_payment_receipt_rp">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-set="lang" t-value="o.partner_id.lang"/>
                     <t t-call="document_format_hr.report_payment_receipt_document" t-lang="lang"/>
                 </t>
+            </t>
             </t>
         </template>
 

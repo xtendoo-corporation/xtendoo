@@ -4,9 +4,9 @@
 
     <data>
 
-        <template id="document_format_hr.report_delivery_bluetooth_without_promotions">
+        <template id="document_format_hr.report_delivery_bt_without_promotions">
 
-            <t t-name="document_format_hr.report_delivery_bluetooth_without_promotions">
+            <t t-name="document_format_hr.report_delivery_bt_without_promotions">
 
                  <t t-set="numLines" t-value="0"></t>
 
