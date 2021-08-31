@@ -14,7 +14,8 @@
         'account',
         'sale',
         'web',
-        'stock'
+        'stock',
+        'mrp'
     ],
     'license': 'AGPL-3',
     'data': [
@@ -22,7 +23,8 @@
         'views/sale/report_saleorder_document.xml',
         'views/delivery/report_delivery_document.xml',
         'views/invoice/report_invoice_document_email.xml',
-        'views/invoice/report_invoice_document_preimpreso.xml'
+        'views/invoice/report_invoice_document_preimpreso.xml',
+        'views/mrp/mrp_report.xml'
     ],
     'demo': [],
     'installable': True,
