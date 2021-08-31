@@ -2,7 +2,7 @@
 <odoo>
     <data>
 
-         <record id="a4_preimpreso" model="report.paperformat">
+         <record id="document_format_bramah.a4_preimpreso" model="report.paperformat">
             <field name="name">A4 Preimpreso</field>
             <field name="default" eval="False"/>
             <field name="format">A4</field>
@@ -16,11 +16,11 @@
             <field name="dpi">95</field>
         </record>
 
-        <report id="report_invoice_preimpreso"
+        <report id="document_format_bramah.report_invoice_preimpreso"
                 string="Factura Papel"
                 model="account.invoice"
                 report_type="qweb-pdf"
-                name="document_format_bramah.report_invoice_preimpreso"
+                name="document_format_bramah.report_invoice_preimpreso_rp"
                 print_report_name="(object._get_report_base_filename())"
         />
 
@@ -28,7 +28,7 @@
             <field name="paperformat_id" ref="document_format_bramah.a4_preimpreso" />
         </record>
 
-         <template id="report_invoice_preimpreso">
+         <template id="document_format_bramah.report_invoice_preimpreso_rp">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                    <t t-call="document_format_bramah.report_invoice_document_preimpreso"/>
@@ -36,9 +36,9 @@
             </t>
         </template>
 
-        <template id="report_invoice_document_preimpreso">
+        <template id="document_format_bramah.report_invoice_document_preimpreso">
 
-        <t t-name="account.report_invoice_document_preimpreso">
+        <t t-name="document_format_bramah.report_invoice_document_preimpreso">
 
            <!-- variables cabecera -->
             <div t-if="o.type">
@@ -334,7 +334,7 @@
             <div style="margin-left:-15px;clear:both;padding-top:35px;">
              <t t-set="portes" t-value="0"></t>
 
-            <table class="table table-sm o_main_table" style="margin-top:-265px;border-bottom:4px solid black;">
+            <table class="table table-sm o_main_table" style="border-bottom:4px solid black;">
                 <tbody class="sale_tbody">
 
                     <t t-set="current_subtotal" t-value="0"/>
@@ -368,16 +368,16 @@
                             <t t-if="not line.display_type">
                               <!-- Referencia interna -->
 
-                                <td width="100px" height="16px" style="margin-right:4px;"><span t-field="line.product_id.default_code"/></td>
+                                <td width="118px" height="16px" style="margin-right:4px;"><span t-field="line.product_id.default_code"/></td>
 
                               <!-- Fin referencia interna -->
                               <!-- Nombre del producto -->
-                                <td width="330px" height="16px" style="margin-right:4px;"><span t-field="line.name"/></td>
+                                <td width="417px" height="16px" style="margin-right:4px;"><span t-field="line.name"/></td>
 
                               <!-- Fin nombre producto -->
                               <!-- Cantidad y UOM -->
 
-                                <td width="40px" height="16px" style="margin-right:4px;text-align:right">
+                                <td width="77px" height="16px" style="margin-right:4px;text-align:right">
                                  <span t-if="esRect == 'out_refund'">-</span>
                                     <span t-field="line.quantity"/>
                                     <span t-field="line.uom_id" groups="uom.group_uom"/>
@@ -386,7 +386,7 @@
                                 <!-- Fin cantidad y UOM -->
                                 <!-- Precio/u -->
 
-                                <td width="70px" height="16px" style="margin-right:4px; text-align:right">
+                                <td width="90px" height="16px" style="margin-right:4px; text-align:right">
                                     <span t-field="line.price_unit"/>€
                                 </td>
 
@@ -396,13 +396,13 @@
                                 <td t-if="display_discount" groups="sale.group_discount_per_so_line" width="40px" height="16px" style="margin-right:4px;text-align:right">
                                     <span t-field="line.discount"/>%
                                 </td>
-                                <td t-else="" width="40px" height="16px" style="margin-right:4px;text-align:right">
+                                <td t-else="" width="61px" height="16px" style="margin-right:4px;text-align:right">
                                     <span>0.00%</span>
                                 </td>
                                 <!-- Fin Descuento -->
                                 <!--Precio total linea -->
 
-                                <td width="70px" height="16px" style="margin-right:4px;text-align:right">
+                                <td width="96px" height="16px" style="margin-right:4px;text-align:right">
                                     <span t-if="esRect == 'out_refund'">-</span>
                                     <span t-field="line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
                                     <span t-field="line.price_total" groups="account.group_show_line_subtotals_tax_included"/>

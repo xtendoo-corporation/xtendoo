@@ -2,6 +2,16 @@
 <odoo>
     <data>
 
+          <!-- Herencia del tenplate del informe-->
+        <template id="document_format_bramah.format_report_delivery_document"
+              inherit_id="stock.report_deliveryslip">
+            <xpath expr="//t[@t-call='stock.report_delivery_document']" position="replace">
+                <t t-call="document_format_bramah.report_delivery_document_bramah" t-lang="o.partner_id.lang"/>
+            </xpath>
+        </template>
+    <!-- Fin Herencia del tenplate del informe-->
+
+
         <record id="A4_albaran" model="report.paperformat">
             <field name="name">A4 Albarán</field>
             <field name="default" eval="True"/>
@@ -20,16 +30,13 @@
             <field name="paperformat_id" ref="document_format_bramah.A4_albaran" />
         </record>
 
-        <template id="report_delivery_document_bramah" inherit_id="stock.report_delivery_document">
-
-            <xpath expr="/t/t/t/t/t[@t-set='address']" position="replace">
-
-                <div></div>
-
-
-            </xpath>
-
-            <xpath expr="//div[@class='page']" position="replace">
+        <template id="document_format_bramah.report_delivery_document_bramah">
+            <t t-name="document_format_bramah.report_delivery_document_bramah">
+                <t t-call="web.html_container">
+                    <t t-call="web.external_layout">
+                        <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+                        <t t-set="partner" t-value="o.partner_id or (o.move_lines and o.move_lines[0].partner_id) or False"/>
+                        <div class="page">
 
                 <!-- Cabecera -->
 
@@ -441,7 +448,10 @@
                             All items couldn't be shipped, the remaining ones will be shipped as soon as they become available.
                         </t>
                     </p>
-            </xpath>
+                        </div>
+                    </t>
+                </t>
+            </t>
 
         </template>
 

@@ -18,11 +18,11 @@
     ],
     'license': 'AGPL-3',
     'data': [
-        'views/report_saleorder_document.xml',
-        'views/external_layout_clean.xml',
-        'views/report_delivery_document.xml',
-        'views/report_invoice_document_email.xml',
-        'views/report_invoice_document_preimpreso.xml'
+        'views/layout/external_layout_clean.xml',
+        'views/sale/report_saleorder_document.xml',
+        'views/delivery/report_delivery_document.xml',
+        'views/invoice/report_invoice_document_email.xml',
+        'views/invoice/report_invoice_document_preimpreso.xml'
     ],
     'demo': [],
     'installable': True,

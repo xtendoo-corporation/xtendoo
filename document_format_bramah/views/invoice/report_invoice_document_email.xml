@@ -3,7 +3,7 @@
 
     <data>
 
-         <record id="email_invoice" model="report.paperformat">
+         <record id="document_format_bramah.email_invoice" model="report.paperformat">
             <field name="name">Factura Email</field>
              <field name="default" eval="True"/>
             <field name="format">A4</field>
@@ -14,38 +14,36 @@
             <field name="orientation">Portrait</field>
             <field name="header_spacing">80</field>
             <field name="dpi">95</field>
-            <!--<field name="report_ids">sale.order</field>-->
         </record>
 
-         <record id="account.account_invoices" model="ir.actions.report">
+         <report id="document_format_bramah.report_invoice_Email"
+                string="Factura Correo"
+                model="account.invoice"
+                report_type="qweb-pdf"
+                name="document_format_bramah.email_invoice_report"
+                file="document_format_bramah.report_invoice_Email"
+                print_report_name="(object._get_report_base_filename())"
+        />
+
+         <record id="document_format_bramah.report_invoice_Email" model="ir.actions.report">
             <field name="paperformat_id" ref="document_format_bramah.email_invoice" />
         </record>
 
-         <record id="account.account_invoices" model="ir.actions.report">
-            <field name="paperformat_id" ref="document_format_bramah.email_invoice" />
-        </record>
-
-      <!--  <template id="report_invoice_with_payments">
+          <template id="document_format_bramah.email_invoice_report">
+           <t t-name="document_format_bramah.email_invoice_report">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
-                   <t t-call="document_format_bramah.report_invoice_document_bluetooth" t-lang="o.partner_id.lang"/>
+                   <t t-call="document_format_bramah.report_invoice_document_bramah_email"/>
                 </t>
             </t>
-        </template> -->
+           </t>
+        </template>
 
-        <template id="report_invoice_document_bramah_email" inherit_id="account.report_invoice_document">
+        <template id="document_format_bramah.report_invoice_document_bramah_email">
 
-             <xpath expr="/t/t/t[@t-set='address']" position="replace">
-
-                <div></div>
-
-
-            </xpath>
-
-
-              <xpath expr="//div[@class='page']" position="replace">
-
-                <div>
+            <t t-name="document_format_bramah.report_invoice_document_bramah_email">
+                <t t-call="web.external_layout">
+                    <div class="page">
                     <t>
         <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" style="display:none;"/>
         <div>
@@ -178,12 +176,12 @@
               <div style="height:14px; width:110px;  display:block; float:left; font-size:1.2em;text-align:right">
                 <span>Importe</span>
               </div>
-              <div style="height:14px; width:50px;  display:block; float:left;font-size:1.2em;text-align:right">
+              <div style="height:14px; width:60px;  display:block; float:left;font-size:1.2em;text-align:right">
                 <span>IVA</span>
               </div>
             </div>
 
-            <hr style="height:2px;background-color:black;width:120%;margin-left:-50px;"></hr>
+            <hr style="height:2px;background-color:black;width:120%;margin-left:-50px;margin-top:17px;"></hr>
 
             <!-- Fin cabecera de las lineas-->
 
@@ -191,7 +189,7 @@
             <t t-set="display_discount" t-value=""/>
 
             <!-- Lineas -->
-                 <div style="font-size:1.1em;margin-top:-10px;">
+                 <div style="font-size:1.1em;margin-top:-5px;">
 
                  <t t-set="current_subtotal" t-value="0"/>
 
@@ -246,7 +244,7 @@
                         <!-- Fin Importe Línea -->
 
                         <!-- Impuesto -->
-                        <div style="height:14px; width:55px;  display:block; float:left;text-align:right">
+                        <div style="height:14px; width:80px;  display:block; float:left;text-align:right">
                              <span t-esc="round(line.invoice_line_tax_ids.amount * 1,1)" ></span>%
                         </div>
                         <!--Fin Impuestos -->
@@ -348,7 +346,8 @@
     </t>
                 </div>
 
-            </xpath>
+                </t>
+            </t>
 
          </template>
 

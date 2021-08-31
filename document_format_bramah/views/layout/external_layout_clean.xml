@@ -2,7 +2,7 @@
 <odoo>
     <data>
 
-        <template id="external_layout_clean_ch" inherit_id="web.external_layout_clean">
+        <template id="external_layout_clean_bramah" inherit_id="web.external_layout_clean">
 
             <!-- Header -->
 
