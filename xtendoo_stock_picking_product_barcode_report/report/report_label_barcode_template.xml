@@ -14,7 +14,7 @@
                             style="width:50px;height:50px;"
                             alt="Barcode"
                         />
-                        <div class="text-center" style="font-size: 15px;">
+                        <div class="text-center" style="font-size: 12px;">
                             <span
                                 t-field="doc.product_id.display_name"
                                 style="font-weight: bold"
