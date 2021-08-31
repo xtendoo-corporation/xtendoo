@@ -17,9 +17,9 @@ class AccountMove(models.Model):
     )
 
     def compute_palets_number(self):
-        for invoice in self.filtered(lambda x: x.origin):
+        for invoice in self.filtered(lambda x: x.invoice_origin):
             palets_number = 0
-            sales_name = invoice.origin
+            sales_name = invoice.invoice_origin
             i = 0
             while i < 1:
                 position = sales_name.find(',')
@@ -34,9 +34,9 @@ class AccountMove(models.Model):
             invoice.palets_number = palets_number
 
     def compute_lumps_number(self):
-        for invoice in self.filtered(lambda x: x.origin):
+        for invoice in self.filtered(lambda x: x.invoice_origin):
             lumps_number = 0
-            sales_name = invoice.origin
+            sales_name = invoice.invoice_origin
             i = 0
             while i < 1:
                 position=sales_name.find(',')
@@ -52,8 +52,8 @@ class AccountMove(models.Model):
 
     def compute_has_picking(self):
         self.has_picking = False
-        for invoice in self.filtered(lambda x: x.origin):
-            sales_name = self.origin
+        for invoice in self.filtered(lambda x: x.invoice_origin):
+            sales_name = self.invoice_origin
             i = 0
             while i < 1:
                 position = sales_name.find(',')
