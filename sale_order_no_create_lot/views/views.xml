@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="sale_order_no_create_lot.view_order_form_inherit" model="ir.ui.view">
+        <field name="name">view.order.form.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_order_lot_selection.view_order_tree_lot"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree/field[@name='lot_id']" position="replace">
+                <field name="lot_id" domain="[('product_id','=', product_id)]" options="{'no_create': True, 'no_create_edit':True}" context="{'default_product_id': product_id}" groups="stock.group_production_lot"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form/group/group/field[@name='lot_id']" position="replace">
+                <field name="lot_id" domain="[('product_id','=', product_id)]" options="{'no_create': True, 'no_create_edit':True}" context="{'default_product_id': product_id}" groups="stock.group_production_lot"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
