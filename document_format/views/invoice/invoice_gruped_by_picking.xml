@@ -55,8 +55,22 @@
                                     <span class="m-0" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
                                 </li>
                                 <li t-if="o.invoice_origin" name="origin">
-                                    <strong>Pedido:</strong>
-                                    <span class="m-0" t-field="o.invoice_origin" />
+                                    <strong>Albaranes:</strong>
+                                    <!--<span class="m-0" t-field="o.invoice_origin" /> -->
+                                    <t t-set="lines_picking" t-value="o.lines_grouped_by_picking()"/>
+                                    <t t-foreach="lines_picking" t-as="line">
+                                        <t
+                                        t-set="next_picking"
+                                        t-value="[lines_picking[i + 1]['picking'] for i, x in enumerate(lines_picking) if x == line and i &lt; len(lines_picking) - 1] or [False]"
+                                        />
+                                        <t t-if="picking != next_picking[0]">
+                                            <span t-esc="line['picking'].name"></span>
+                                            <t t-if="next_picking[0] != False">
+                                                <span> ,</span>
+                                            </t>
+                                        </t>
+                                         <t t-set="last_picking" t-value="picking" />
+                                    </t>
                                 </li>
                                 <li t-if="o.ref" name="reference">
                                     <strong>Referencia:</strong>
@@ -242,8 +256,7 @@
                                                     <span t-field="picking.name" />
                                                     <span> - </span>
                                                     <span
-                                                        t-field="picking.date_done"
-                                                        t-options="{'widget': 'date'}"
+                                                        t-esc="picking.date_done.strftime('%d/%m/%Y')"
                                                     />
                                                     <t t-if="picking.note">
                                                         <span> - </span>
