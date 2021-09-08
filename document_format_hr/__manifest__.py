@@ -51,6 +51,9 @@
         'views/invoice/report_invoice_document_without_promotions.xml',
         'views/invoice/invoice_promotions.xml',
 
+        #Factura imprime product_id
+        'views/invoice_products/invoice_products.xml',
+
         #Factura sin promociones
         'views/invoice_without_promotions/invoice_without_promotions.xml',
 
