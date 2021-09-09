@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Stock Picking and Sale Order Pallets and Lupms',
-    'summary': """Stock Picking and Sale Order Pallets and Lupms""",
+    'name': 'Stock Picking and Sale Order Pallets and Lumps',
+    'summary': """Stock Picking and Sale Order Pallets and Lumps""",
     'version': '12.0.1.0.0',
-    'description': """Stock Picking and Sale Order Pallets and Lupms""",
+    'description': """Stock Picking and Sale Order Pallets and Lumps""",
     'author': 'DDL',
     'company': 'Xtendoo',
     'website': 'http://www.xtendoo.com',

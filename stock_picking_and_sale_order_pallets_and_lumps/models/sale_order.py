@@ -26,7 +26,7 @@ class SaleOrder(models.Model):
     def compute_lumps_number(self):
         for sale in self:
             delivery_ids = self.env['stock.picking'].search([('sale_id', '=', sale.id)])
-            sale.palets_number = sum(delivery_ids.mapped('lumps_number'))
+            sale.lumps_number = sum(delivery_ids.mapped('lumps_number'))
 
     def compute_has_picking(self):
         for sale in self:
