@@ -23,13 +23,12 @@
                                     <li>
                                         <h2 class="mt16">
                                             <b>Albarán:</b>
-                                            <t t-set="docNameALB" t-value="o.sale_id.picking_ids.filtered(lambda l: l.name.find('ALB')&gt;-1).name"/>
-                                            <t t-if="docNameALB == False">
+                                            <t t-set="docNameDelivery" t-value="o.sale_id.picking_ids.filtered(lambda l: l.name.find('ALB')&gt;-1).name"/>
+                                            <t t-if="docNameDelivery == False">
                                                 <span t-field="o.name"/>
                                             </t>
                                             <t t-else="">
-                                                <span t-esc="docNameALB" />
-
+                                                <span t-esc="docNameDelivery" />
                                             </t>
                                         </h2>
                                     </li>
