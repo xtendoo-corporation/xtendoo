@@ -25,7 +25,12 @@
                                             <b>Albarán:</b>
                                             <t t-if="o.name.find('PIC') &gt; -1">
                                                 <t t-set="docNameDelivery" t-value="o.sale_id.picking_ids.filtered(lambda l: l.name.find('ALB')&gt;-1).name"/>
-                                                <span t-esc="docNameDelivery" />
+                                                <t t-if="docNameDelivery == False">
+                                                    <span t-field="o.name"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span t-esc="docNameDelivery" />
+                                                </t>
                                             </t>
                                             <t t-else="">
                                                 <span t-field="o.name"/>
