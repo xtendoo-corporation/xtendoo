@@ -23,17 +23,13 @@
                                     <li>
                                         <h2 class="mt16">
                                             <b>Albarán:</b>
-                                            <t t-if="o.name.find('PIC') &gt; -1">
-                                                <t t-set="docNameDelivery" t-value="o.sale_id.picking_ids.filtered(lambda l: l.name.find('ALB')&gt;-1).name"/>
-                                                <t t-if="docNameDelivery == False">
-                                                    <span t-field="o.name"/>
-                                                </t>
-                                                <t t-else="">
-                                                    <span t-esc="docNameDelivery" />
-                                                </t>
+                                            <t t-set="docNameALB" t-value="o.sale_id.picking_ids.filtered(lambda l: l.name.find('ALB')&gt;-1).name"/>
+                                            <t t-if="docNameALB == False">
+                                                <span t-field="o.name"/>
                                             </t>
                                             <t t-else="">
-                                                <span t-field="o.name"/>
+                                                <span t-esc="docNameALB" />
+
                                             </t>
                                         </h2>
                                     </li>
@@ -130,7 +126,7 @@
                                         <th
                                             t-if="has_serial_number"
                                             groups="stock.group_lot_on_delivery_slip"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:7%; font-size:0.8em; !important;"
                                         >
                                             Caducidad
                                         </th>
@@ -160,14 +156,14 @@
                                         <th
                                             name="th_taxes"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:5%; font-size:0.8em; !important;"
                                         >
                                             IVA%
                                         </th>
                                         <th
                                             name="th_subtotal"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:18%; font-size:0.8em; !important;"
                                         >
                                             Total
                                         </th>
@@ -230,7 +226,7 @@
                                         <td
                                             t-if="has_serial_number"
                                             groups="stock.group_lot_on_delivery_slip"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:7%; font-size:0.8em; !important;"
                                         >
                                             <t t-if="move_line.lot_id.life_date">
                                                 <span
@@ -260,7 +256,7 @@
                                         </td>
                                         <td
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:5%; font-size:0.8em; !important;"
                                         >
                                             <span t-esc="', '.join(map(lambda x: (str(x.amount)), move_line.sale_tax_id))"
                                                 id="move_line.sale_tax_id"/>
@@ -268,17 +264,17 @@
                                         <td
                                             t-if="move_line.currency_id"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:18%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.sale_price_subtotal" />
                                         </td>
-                                        <td
+                                       <!-- <td
                                             t-if="not move_line.currency_id"
                                             class="text-right"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             0
-                                        </td>
+                                        </td>-->
                                     </tr>
                                 </tbody>
                                 <!-- Fin Lineas -->
