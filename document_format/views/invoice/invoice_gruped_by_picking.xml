@@ -55,25 +55,8 @@
                                     <span class="m-0" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
                                 </li>
                                 <li t-if="o.invoice_origin" name="origin">
-                                    <strong>Albaranes:</strong>
-                                    <!--<span class="m-0" t-field="o.invoice_origin" /> -->
-                                    <t t-set="lines_picking" t-value="o.lines_grouped_by_picking()"/>
-                                    <t t-foreach="lines_picking" t-as="line">
-                                        <t t-set="picking" t-value="line['picking']"/>
-                                        <t
-                                        t-set="next_picking"
-                                        t-value="[lines_picking[i + 1]['picking'] for i, x in enumerate(lines_picking) if x == line and i &lt; len(lines_picking) - 1] or [False]"
-                                        />
-                                        <t t-if="picking != last_picking">
-                                            <t t-if="picking">
-                                                <span t-esc="picking.name"></span>
-                                                <t t-if="next_picking[0] != False">
-                                                    <span> ,</span>
-                                                </t>
-                                            </t>
-                                        </t>
-                                         <t t-set="last_picking" t-value="picking" />
-                                    </t>
+                                      <strong>Pedido:</strong>
+                                    <span class="m-0" t-field="o.invoice_origin" />
                                 </li>
                                 <li t-if="o.ref" name="reference">
                                     <strong>Referencia:</strong>
