@@ -11,7 +11,7 @@ class StockPickingBatch(models.Model):
             if picking.picking_type_id.id == 8:
                 if picking.origin != "":
                     invoice_id = self.env["account.invoice"].search(
-                        [("origin", "like", picking.origin)]
+                        [("origin", "like", picking.origin)], limit=1
                     )
                     picking.invoice_id = invoice_id
 
