@@ -28,9 +28,10 @@ class StockPickingBatch(models.Model):
             if picking.picking_type_id.id == 8:
                 if picking.origin != "":
                     invoice_id = self.env["account.move"].search(
-                        [("invoice_origin", "=", picking.origin)], limit=1
+                        [("invoice_origin", "like", picking.origin)]
                     )
                     picking.invoice_id = invoice_id
+
     is_backorder = fields.Boolean(
         compute="set_is_back_order",
         string="is BackOrder",
