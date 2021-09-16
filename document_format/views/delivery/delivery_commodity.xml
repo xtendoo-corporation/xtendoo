@@ -9,7 +9,7 @@
         file="document_format.report_delivery_commodity"
         print_report_name="'Delivery Commodity - %s - %s' % (object.partner_id.name or '', object.name)"
     />
-    <template id="report_delivery_commodity">
+    <template id="document_format.report_delivery_commodity">
         <t t-foreach="docs" t-as="o">
             <t
                 t-call="document_format.report_delivery_commodity_document"
@@ -17,7 +17,7 @@
             />
         </t>
     </template>
-    <template id="report_delivery_commodity_document">
+    <template id="document_format.report_delivery_commodity_document">
         <t t-call="web.html_container">
             <t t-call="web.external_layout">
                 <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
