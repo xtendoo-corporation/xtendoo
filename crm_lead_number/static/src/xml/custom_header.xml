@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-extend="KanbanView.Group">
+        <t t-jquery="span.o_column_title" t-operation="append">
+            <t t-if="widget.modelName == 'crm.lead'">
+                <span>widget.data_records.length + ' records'</span>
+            </t>
+        </t>
+    </t>
+</templates>

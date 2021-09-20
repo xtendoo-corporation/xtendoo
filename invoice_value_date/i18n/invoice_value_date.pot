@@ -18,12 +18,12 @@ msgstr ""
 #. module: invoice_value_date
 #: model:ir.model,name:invoice_value_date.model_account_invoice
 msgid "Invoice"
-msgstr "Factura"
+msgstr ""
 
 #. module: invoice_value_date
 #: model:ir.model.fields,help:invoice_value_date.field_account_invoice__date_value
 msgid "Keep empty to use the current date"
-msgstr "Dejarlo vacío para utilizar la fecha actual."
+msgstr ""
 
 #. module: invoice_value_date
 #: model:ir.model.fields,field_description:invoice_value_date.field_account_invoice__date_value
