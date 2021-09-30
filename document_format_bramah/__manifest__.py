@@ -15,7 +15,9 @@
         'sale',
         'web',
         'stock',
-        'mrp'
+        'mrp',
+        'purchase_discount',
+        'stock_picking_invoice_link',
     ],
     'license': 'AGPL-3',
     'data': [
@@ -24,6 +26,7 @@
         'views/delivery/report_delivery_document.xml',
         'views/invoice/report_invoice_document_email.xml',
         'views/invoice/report_invoice_document_preimpreso.xml',
+        'views/purchase/purchase_order_document.xml',
         'views/mrp/mrp_report.xml'
     ],
     'demo': [],
