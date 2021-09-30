@@ -188,7 +188,7 @@
                             <div style="height:14px; width:110px;  display:block; float:left; margin-right:4px;font-size:1.2em;text-align:right;">
                                 <span>Importe</span>
                             </div>
-                            <div style="height:14px; width:65px;  display:block; float:left; margin-right:4px;font-size:1.2em;text-align:right;">
+                            <div style="height:14px; width:50px;  display:block; float:left; margin-right:4px;font-size:1.2em;text-align:right;">
                                 <span>IVA</span>
                             </div>
                         </div>

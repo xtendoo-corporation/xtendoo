@@ -330,7 +330,7 @@
                         <div style="margin-left:-15px;clear:both;padding-top:35px;">
                          <t t-set="portes" t-value="0"></t>
 
-                        <table class="table table-sm o_main_table" style="border-bottom:4px solid black;clear:both;width:97%;margin-left:1.5%;">
+                        <table class="table table-sm o_main_table" style="margin-top:-260px;border-bottom:4px solid black;clear:both;width:97%;margin-left:1.5%;">
                             <tbody class="sale_tbody">
 
                                 <t t-set="current_subtotal" t-value="0"/>
