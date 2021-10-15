@@ -12,6 +12,12 @@
                     <attribute name="groups">d_hr_administration.show_margins</attribute>
                 </xpath>
             <!-- Fin no ver margen -->
+                <!-- comerciales no editen tarifa-->
+                 <xpath expr="//field[@name='pricelist_id']" position="replace">
+                    <field name="is_admin" invisible="1"/>
+                    <field name="pricelist_id" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+                </xpath>
+                <!-- Fin comerciales no editen tarifa-->
             <!-- No editar precio unitario -->
                 <xpath expr="//field[@name='order_line']/tree//field[@name='price_unit']" position="replace">
                     <field name="can_edit_price" invisible="1"/>
@@ -68,8 +74,18 @@
         </field>
         </record>
         <!--   Fin buscar mas... (ventas)   -->
-        
-    
-   
+        <!-- Zona de entrega -->
+         <record id="d_hr_administration.partner_delivery_zone_view" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="partner_delivery_zone.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='delivery_zone_id']" position="replace">
+                    <field name="is_admin" invisible="1"/>
+                    <field name="delivery_zone_id" attrs="{'readonly':['|',('state','in', ['done', 'cancel']),('is_admin','=',False)]}"/>
+            </xpath>
+            </field>
+         </record>
+        <!-- Zona de entrega -->
     </data>
 </odoo>
