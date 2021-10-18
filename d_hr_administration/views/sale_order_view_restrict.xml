@@ -15,7 +15,7 @@
                 <!-- comerciales no editen tarifa-->
                  <xpath expr="//field[@name='pricelist_id']" position="replace">
                     <field name="is_admin" invisible="1"/>
-                    <field name="pricelist_id" attrs="{'readonly': [('is_admin', '=', False)]}"/>
+                    <field name="pricelist_id" force_save="1" attrs="{'readonly': [('is_admin', '=', False)]}"/>
                 </xpath>
                 <!-- Fin comerciales no editen tarifa-->
             <!-- No editar precio unitario -->
@@ -82,7 +82,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='delivery_zone_id']" position="replace">
                     <field name="is_admin" invisible="1"/>
-                    <field name="delivery_zone_id" attrs="{'readonly':['|',('state','in', ['done', 'cancel']),('is_admin','=',False)]}"/>
+                    <field name="delivery_zone_id" force_save="1" attrs="{'readonly':['|',('state','in', ['done', 'cancel']),('is_admin','=',False)]}"/>
             </xpath>
             </field>
          </record>
