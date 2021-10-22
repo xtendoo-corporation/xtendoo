@@ -6,48 +6,41 @@ from odoo import _, models
 class WizStockBarcodesRead(models.AbstractModel):
     _inherit = "wiz.stock.barcodes.read"
 
-    def process_barcode(self, barcode):
-
-        print("barcode read ::::::", barcode)
-
-        index = barcode.find(";")
+    def process_barcode(self, barcode_lot):
+        index = barcode_lot.find(";")
         if index == -1:
+            return super().process_barcode(barcode_lot)
 
-            print("llamada al super :::::")
+        barcode = barcode_lot[:index]
+        lot = barcode_lot[index + 1:]
 
-            return super().process_barcode(barcode)
-        product_barcode = barcode[:index]
-        lot = barcode[index + 1 :]
-
-        print("product_barcode :::::", product_barcode)
-        print("lot :::::", lot)
-
-        if not product_barcode:
+        if not barcode:
             self._set_message_error("Código de barras no valido")
-            return False
+            return
 
         if not lot:
             self._set_message_error("Lote no valido")
-            return False
+            return
 
+        self.barcode = barcode
         product = self.env["product.product"].search(
-            [("barcode", "=", product_barcode)]
+            [("barcode", "=", barcode)]
         )
-        if product:
-            self.action_product_scanned_post(product)
-        else:
+        if not product:
             self._set_message_error("Código de barras no encontrado")
-            return False
+            return
 
-        lines = self.line_picking_ids.filtered(
-            lambda l: l.product_id == self.product_id
-            and l.product_uom_qty >= l.quantity_done + self.product_qty
-        )
-        if not lines:
-            self._set_message_error("No hay líneas para asignar este producto")
-            return False
+        if len(product) > 1:
+            self._set_message_error("Más de un producto encontrado")
+            return
 
-        if not self._is_product_lot_valid(product, lot):
-            return False
+        self.action_post_product_scanned(product)
+
+        line = self._get_line_to_assign(product)
+        if not line:
+            return
+
+        if not self._is_product_lot_valid(product, line, lot):
+            return
 
         self.action_done()

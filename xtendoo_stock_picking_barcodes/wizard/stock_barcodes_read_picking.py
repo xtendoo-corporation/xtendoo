@@ -586,7 +586,11 @@ class WizLinePicking(models.TransientModel):
         string="State",
         store=True,
     )
-    lots = fields.Char(compute="_compute_lots", string="Lots", readonly=True)
+    lots = fields.Char(
+        compute="_compute_lots",
+        string="Lots",
+        readonly=True,
+    )
     # For reload kanban view
     scan_count = fields.Integer()
 
@@ -614,3 +618,12 @@ class WizLinePicking(models.TransientModel):
         return self.env["wiz.stock.barcodes.read.picking"].browse(
             self.env.context["wiz_barcode_id"]
         )
+
+    def get_lot(self):
+        for line in self:
+            lines = line.picking_id.move_line_ids_without_package.filtered(
+                lambda l: l.product_id == line.product_id and l.lot_id
+            )
+            if lines:
+                return lines[0].lot_id[0]
+        return False

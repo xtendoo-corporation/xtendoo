@@ -8,6 +8,9 @@
     "website": "https://odoo-community.org/",
     "license": "AGPL-3",
     "category": "Extra Tools",
-    "depends": ["xtendoo_stock_picking_barcodes",],
+    "depends": [
+        "sale_order_product_default_uom",
+        "xtendoo_stock_picking_barcodes",
+    ],
     "installable": True,
 }

@@ -10,14 +10,33 @@ class WizStockBarcodesRead(models.AbstractModel):
     _transient_max_hours = 48
 
     barcode = fields.Char()
-    res_model_id = fields.Many2one(comodel_name="ir.model", index=True,)
-    res_id = fields.Integer(index=True)
-    product_id = fields.Many2one(comodel_name="product.product",)
-    product_tracking = fields.Selection(related="product_id.tracking", readonly=True,)
-    lot_id = fields.Many2one(comodel_name="stock.production.lot",)
-    location_id = fields.Many2one(comodel_name="stock.location",)
-    product_qty = fields.Float(digits="Product Unit of Measure", default=1,)
-    manual_entry = fields.Boolean(string="Manual entry data",)
+    res_model_id = fields.Many2one(
+        comodel_name="ir.model",
+        index=True,
+    )
+    res_id = fields.Integer(
+        index=True
+    )
+    product_id = fields.Many2one(
+        comodel_name="product.product",
+    )
+    product_tracking = fields.Selection(
+        related="product_id.tracking",
+        readonly=True,
+    )
+    lot_id = fields.Many2one(
+        comodel_name="stock.production.lot",
+    )
+    location_id = fields.Many2one(
+        comodel_name="stock.location",
+    )
+    product_qty = fields.Float(
+        digits="Product Unit of Measure",
+        default=1,
+    )
+    manual_entry = fields.Boolean(
+        string="Manual entry data",
+    )
     message_type = fields.Selection(
         [
             ("error", "Barcode not read correctly"),
@@ -25,58 +44,78 @@ class WizStockBarcodesRead(models.AbstractModel):
         ],
         readonly=True,
     )
-    message = fields.Char(readonly=True,)
+    message = fields.Char(
+        readonly=True,
+    )
 
     @api.onchange("location_id")
     def onchange_location_id(self):
         self.product_id = False
 
-    def _is_product_lot_valid(self, product, lot=False):
-        if product.tracking != "none":
+    def _is_product_lot_valid(self, product, line, lot_name=False):
+        if product.tracking == "none":
+            return True
+
+        if not lot_name:
+            lot = line.get_lot()
+        else:
             lot = (
                 self.env["stock.production.lot"]
                 .sudo()
-                .search([("product_id", "=", product.id), ("name", "=", lot)], limit=1)
+                .search([("product_id", "=", product.id), ("name", "=", lot_name)], limit=1)
             )
-            if not lot:
-                self._set_message_error("Lote no encontrado")
-                return False
-            if lot.locked:
-                self._set_message_error("El lote esta bloqueado")
-                return False
-            self.lot_id = lot
+
+        if not lot:
+            self._set_message_error("Lote %s no encontrado" % lot)
+            return False
+
+        if lot.locked:
+            self._set_message_error("El lote %s esta bloqueado" % lot)
+            return False
+        self.lot_id = lot
         return True
 
-    def _has_lines_to_assign(self, product):
+    def _get_line_to_assign(self, product):
+        if product.uom_qty > 0:
+            self.product_qty = product.uom_qty
+
+        lines = self.line_picking_ids.filtered(
+            lambda l: l.product_id == product
+        )
+        if not lines:
+            self._set_message_error("No hay líneas para asignar al producto %s" % product.name)
+            return False
+
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == product
             and l.product_uom_qty >= l.quantity_done + self.product_qty
         )
-        if lines:
-            return True
-
-        self._set_message_error("No hay líneas para asignar este producto")
-        return False
+        if not lines:
+            self._set_message_error(
+                "No hay suficientes unidades %s para asignar al producto" %
+                str(self.product_qty))
+            return False
+        return lines[0]
 
     def process_barcode(self, barcode):
         self.barcode = barcode
-        domain = [("barcode", "=", barcode)]
-        product = self.env["product.product"].search(domain)
+        product = self.env["product.product"].search([("barcode", "=", barcode)])
         if not product:
-            self._set_message_error("Código de barras % para producto no encontrado")
+            self._set_message_error("Código de barras %s no encontrado" % barcode)
             return
 
         if len(product) > 1:
             self._set_message_error("Más de un producto encontrado")
             return
 
-        if not self._has_lines_to_assign(product):
+        self.action_post_product_scanned(product)
+
+        line = self._get_line_to_assign(product)
+        if not line:
             return
 
-        if not self._is_product_lot_valid(product):
+        if not self._is_product_lot_valid(product, line):
             return
-
-        self.action_product_scanned_post(product)
 
         self.action_done()
 
@@ -109,7 +148,7 @@ class WizStockBarcodesRead(models.AbstractModel):
     def _set_product_quantity(self):
         self.product_qty = 0.0 if self.manual_entry else 1.0
 
-    def action_product_scanned_post(self, product):
+    def action_post_product_scanned(self, product):
         if self.product_id != product:
             self.product_id = product
             self.lot_id = False
