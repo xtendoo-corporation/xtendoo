@@ -27,11 +27,6 @@ class WebsiteSale(WebsiteSale):
             for line in found_lines:
                 products_ids.append(line["product_id"][0])
             domain.append(("id", "in", products_ids))
-
-            print("*" * 80)
-            print("domain", domain)
-            print("*" * 80)
-
         return domain
 
     @http.route(

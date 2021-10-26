@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import _, api, fields, models
-from odoo.tools.float_utils import float_compare
+from odoo.tools.float_utils import float_compare, float_repr
 
 
 class WizStockBarcodesReadPicking(models.TransientModel):
@@ -153,17 +153,17 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         if self.picking_id.sale_id:
             move_line = self.picking_id.sale_id.order_line.filtered(
                 lambda l: l.product_id == self.product_id
-                and self.product_qty > (l.product_uom_qty - l.qty_delivered)
+                and self._get_product_qty() > (l.product_uom_qty - l.qty_delivered)
             )
             if not move_line:
                 return False
-            move_line.product_uom_qty = self.product_qty
+            move_line.product_uom_qty = self._get_product_qty()
 
             picking_line = self.picking_id.move_ids_without_package.filtered(
                 lambda l: l.product_id == self.product_id
             )
             if picking_line:
-                picking_line.product_uom_qty = self.product_qty
+                picking_line.product_uom_qty = self._get_product_qty()
 
             # picking_line = self.picking_id.move_line_ids_without_package.filtered(
             #     lambda l: l.product_id == self.product_id
@@ -175,7 +175,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 lambda l: l.product_id == self.product_id
             )
             if picking_line:
-                picking_line.product_uom_qty = self.product_qty
+                picking_line.product_uom_qty = self._get_product_qty()
 
     def insert_manual_entry(self):
         if self._process_stock_move_line():
@@ -187,9 +187,9 @@ class WizStockBarcodesReadPicking(models.TransientModel):
     def _update_line_picking(self):
         for line in self.line_picking_ids.filtered(
             lambda l: l.product_id == self.product_id
-            and l.product_uom_qty >= l.quantity_done + self.product_qty
+            and l.product_uom_qty >= l.quantity_done + self._get_product_qty()
         ):
-            line.quantity_done = line.quantity_done + self.product_qty
+            line.quantity_done = line.quantity_done + self._get_product_qty()
             break
 
     def _clean_line_picking(self):

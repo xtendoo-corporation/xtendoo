@@ -1,6 +1,7 @@
 # Copyright 2021 Manuel Calero - https://xtendoo.es
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
+from odoo.tools import float_repr, float_round
 
 
 class WizStockBarcodesRead(models.AbstractModel):
@@ -31,7 +32,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         comodel_name="stock.location",
     )
     product_qty = fields.Float(
-        digits="Product Unit of Measure",
+        digits=(16, 2),
         default=1,
     )
     manual_entry = fields.Boolean(
@@ -47,6 +48,9 @@ class WizStockBarcodesRead(models.AbstractModel):
     message = fields.Char(
         readonly=True,
     )
+
+    def _get_product_qty(self):
+        return float(float_repr(self.product_qty, 3))
 
     @api.onchange("location_id")
     def onchange_location_id(self):
@@ -88,13 +92,22 @@ class WizStockBarcodesRead(models.AbstractModel):
 
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == product
-            and l.product_uom_qty >= l.quantity_done + self.product_qty
+            and l.product_uom_qty >= l.quantity_done + self._get_product_qty()
+        )
+        if lines:
+            return lines[0]
+        # not enough quantity
+        lines = self.line_picking_ids.filtered(
+            lambda l: l.product_id == product and l.product_uom_qty >= l.quantity_done
+        ).sorted(
+            key=lambda l: l.product_uom_qty - l.quantity_done, reverse=True,
         )
         if not lines:
             self._set_message_error(
-                "No hay suficientes unidades %s para asignar al producto" %
-                str(self.product_qty))
+                "No hay líneas para asignar al producto")
             return False
+
+        self.product_qty = lines[0].product_uom_qty - lines[0].quantity_done
         return lines[0]
 
     def process_barcode(self, barcode):
@@ -120,7 +133,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.action_done()
 
     def on_barcode_scanned(self, barcode):
-        self._reset_qty()
+        self._reset_wizard()
         self.process_barcode(barcode)
 
     def check_done_conditions(self):
@@ -157,8 +170,10 @@ class WizStockBarcodesRead(models.AbstractModel):
     def _reset_lot(self):
         self.lot_id = False
 
-    def _reset_qty(self):
+    def _reset_wizard(self):
         self.product_qty = 0.0 if self.manual_entry else 1.0
+        self.message_type = ""
+        self.message = ""
 
     def _reset_product(self):
         self.product_id = False
@@ -179,6 +194,3 @@ class WizStockBarcodesRead(models.AbstractModel):
         else:
             self.message = "¡Error! %s" % message
 
-    def _reset_message(self):
-        self.message_type = ""
-        self.message = ""

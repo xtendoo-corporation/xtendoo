@@ -60,10 +60,6 @@ class SocialLivePostPushNotifications(models.Model):
                 print(pending_visitors.filtered(get_filtered_timezone_visitors))
                 target_visitors = pending_visitors.filtered(get_filtered_timezone_visitors)
 
-            print("*"*80)
-            print("llamada a send_message")
-            print(post.message)
-
             account._firebase_send_message({
                 'title': title,
                 'body': self.env['link.tracker'].sudo()._convert_links_text(post.message, live_post._get_utm_values()),
