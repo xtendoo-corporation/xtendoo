@@ -11,7 +11,6 @@ class SaleOrder(models.Model):
         string="Picking status",
         readonly=True,
         compute="_compute_picking_state",
-        store=True,
         selection="get_picking_state",
         help="Overall status based on all pickings",
     )
@@ -28,19 +27,27 @@ class SaleOrder(models.Model):
     @api.depends("order_line.qty_delivered","order_line.product_uom_qty")
     def _compute_picking_state(self):
         for sale in self:
-            sale.picking_state="draft"
-            if sale.state not in ['draft','sent']:
-                qty=0
-                qty_delivery=0
+            sale.picking_state = "draft"
+            if sale.state not in ['draft', 'sent']:
+                qty = 0
+                qty_delivery = 0
                 for line in sale.order_line:
-                    qty+= line.product_uom_qty
-                    qty_delivery+=line.qty_delivered
+                    qty += line.product_uom_qty
+                    qty_delivery += line.qty_delivered
                 if qty_delivery == 0:
-                    sale.picking_state= "not_delivery"
-                elif qty_delivery < qty:
-                    sale.picking_state= "partially_delivered"
-                else:   
-                    sale.picking_state="delivered" 
-                
+                    sale.picking_state = "not_delivery"
+                elif qty_delivery == qty:
+                    sale.picking_state = "delivered"
+                else:
+                    has_back_order = False
+                    pickings = self.env['stock.picking'].search([('sale_id', '=', sale.id),('state', '!=', 'done')])
+                    if len(pickings) != 0:
+                        has_back_order = True
+                    if has_back_order:
+                        sale.picking_state = "partially_delivered"
+                    else:
+                        sale.picking_state = "delivered"
 
-   
+
+
+
