@@ -16,7 +16,7 @@
     ],
     "license": "AGPL-3",
     "data": [
-        "views/sale_order.xml",
+        #"views/sale_order.xml",
     ],
     "demo": [],
     "installable": True,
