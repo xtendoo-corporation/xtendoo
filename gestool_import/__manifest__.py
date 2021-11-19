@@ -1,16 +1,15 @@
 {
-    "name": "Infortisa Product Import",
+    "name": "Importation from gestool",
     "category": "Product",
     "version": "14.0.1.0",
     "depends": ["product"],
     "description": """
-        Wizard to Import Infortisa Products.
+        Wizard to Import from gestool.
         """,
-    "depends": ["sale_management"],
     "data": [
         "security/ir.model.access.csv",
-        "wizard/infortisa_product_import.xml",
-        "views/product.xml"
+        "wizard/gestool_import.xml",
+        "views/gestool_import.xml"
     ],
     "installable": True,
     "auto_install": True,

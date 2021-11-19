@@ -7,6 +7,8 @@
         name="Infortisa"
         action="infortisa_product_import_action"
         parent="sale.product_menu_catalog"
-        sequence="5"
     />
+
 </odoo>
+
+
