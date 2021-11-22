@@ -16,18 +16,19 @@
                  <xpath expr="//field[@name='picking_ids']" position="replace">
                       <field name="picking_ids" widget="many2many" domain="[('state', 'not in', ['cancel']),('sale_id','!=',False),('batch_id','=',False),('is_backorder','!=',True)]" options="{'not_delete': True}">
                         <tree editable="bottom">
-                            <field name="name" readonly="1"/>
-                            <field name="partner_id" readonly="1"/>
-                            <field name="partner_phone" readonly="1"/>
-                            <field name="date" readonly="1"/>
-                            <field name="scheduled_date" readonly="1"/>
-                            <field name="weight" readonly="1"/>
-                            <field name="lumps_number"/>
-                            <field name="palets_number"/>
-                            <field name="state" readonly="1"/>
-                            <field name="invoice_id" readonly="1"/>
-                            <field name="payment_term"/>
-                            <field name="amount_total"/>
+                            <field name="name" optional="show" readonly="1"/>
+                            <field name="partner_id" optional="show" readonly="1"/>
+                            <field name="partner_phone" optional="show" readonly="1"/>
+                            <field name="date" optional="show" readonly="1"/>
+                            <field name="scheduled_date" optional="show" readonly="1"/>
+                            <field name="comercial_id" optional="show" readonly="1"/>
+                            <field name="weight" optional="show" readonly="1"/>
+                            <field name="lumps_number" optional="show"/>
+                            <field name="palets_number" optional="show"/>
+                            <field name="state" optional="show" readonly="1"/>
+                            <field name="invoice_id" optional="show" readonly="1"/>
+                            <field name="payment_term" optional="show"/>
+                            <field name="amount_total" optional="show"/>
                             <button name="action_assign" string="Confirm picking" type="object" icon="fa-check text-success" attrs="{'invisible': [('state', 'in', ('done', 'cancel', 'confirmed', 'assigned'))]}"/>
                             <button name="action_cancel" string="Cancel picking" type="object" icon="fa-times-circle text-danger" attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}"/>
                         </tree>
@@ -43,10 +44,10 @@
             <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_tree"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='user_id']" position="after">
-                        <field name="delivery_id"/>
+                        <field name="delivery_id" optional="show"/>
                 </xpath>
                 <xpath expr="//field[@name='state']" position="after">
-                        <field name="date_planned"/>
+                        <field name="date_planned" optional="show"/>
                 </xpath>
             </field>
         </record>
@@ -58,7 +59,8 @@
             <field name="inherit_id" ref="stock_picking_batch.vpicktree_inherit_stock_picking_batch"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='batch_id']" position="after">
-                        <field name="weight"/>
+                        <field name="weight" optional="show"/>
+                        <field name="comercial_id" optional="show"></field>
                 </xpath>
             </field>
         </record>

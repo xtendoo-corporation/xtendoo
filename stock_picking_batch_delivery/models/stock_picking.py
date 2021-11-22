@@ -10,6 +10,11 @@ class StockPickingBatch(models.Model):
         related="partner_id.phone",
         readonly=True
     )
+    comercial_id = fields.Many2one(
+        string="Comercial",
+        related="sale_id.user_id",
+        store=True
+    )
     payment_term = fields.Char(
         compute="compute_payment_term",
         string="Payment Term"
