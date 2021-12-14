@@ -18,6 +18,7 @@
         'mrp',
         'purchase_discount',
         'stock_picking_invoice_link',
+        'stock_picking_line_sequence',
     ],
     'license': 'AGPL-3',
     'data': [
