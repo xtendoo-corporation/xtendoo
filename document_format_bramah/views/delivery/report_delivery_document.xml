@@ -181,7 +181,7 @@
 
                      <!-- fin variables totales -->
 
-                    <t t-foreach="o.move_line_ids" t-as="move_line">
+                    <t t-foreach="o.move_line_ids.sorted(key=lambda ml: ml.move_id.sequence2)" t-as="move_line">
 
 
 
