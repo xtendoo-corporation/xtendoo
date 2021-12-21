@@ -11,7 +11,13 @@
     "description": """
         Generate single invoice from multiple purchase order
     """,
-    "depends": ["sale", "sale_management", "purchase", "account"],
+    "depends": [
+        "sale",
+        "sale_management",
+        "purchase",
+        "account",
+        "purchase_discount"
+    ],
     "data": [
         "wizard/multiple_purchase_one_invoice_wizard.xml",
         "views/sale_purchase_invoice.xml",

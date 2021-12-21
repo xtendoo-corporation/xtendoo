@@ -125,8 +125,8 @@ class multiple_purchase_one_invoice_wizard(models.TransientModel):
             order = purchases[:-1]
         else:
             order = False
-        for line in invoice.invoice_line_ids:
-            line._get_computed_taxes()
+        # for line in invoice.invoice_line_ids:
+        #     line._get_computed_taxes()
         invoice.message_post_with_view(
             "mail.message_origin_link",
             values={"self": invoice, "origin": order},
