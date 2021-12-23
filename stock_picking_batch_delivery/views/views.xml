@@ -24,7 +24,7 @@
                             <field name="comercial_id" optional="show" readonly="1"/>
                             <field name="weight" optional="show" readonly="1"/>
                             <field name="lumps_number" optional="show"/>
-                            <field name="palets_number" optional="show"/>
+                            <field name="pallets_number" optional="show"/>
                             <field name="state" optional="show" readonly="1"/>
                             <field name="invoice_id" optional="show" readonly="1"/>
                             <field name="payment_term" optional="show"/>

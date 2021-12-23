@@ -136,9 +136,9 @@
                                     </t>
                                 </div>
                                 <div style="width:4%;float:left;text-align:right;height:18px;">
-                                    <t t-if="pick.palets_number">
-                                        <t t-set="total_palets" t-value="total_palets + pick.palets_number"/>
-                                        <span t-field="pick.palets_number"/>
+                                    <t t-if="pick.pallets_number">
+                                        <t t-set="total_palets" t-value="total_palets + pick.pallets_number"/>
+                                        <span t-field="pick.pallets_number"/>
                                     </t>
                                     <t t-else="">
                                         <span style="color:white;">weight</span>
