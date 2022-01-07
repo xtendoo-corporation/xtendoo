@@ -13,6 +13,7 @@ class SaleOrder(models.Model):
         compute="_compute_picking_state",
         selection="get_picking_state",
         help="Overall status based on all pickings",
+        store=True,
     )
 
     @api.model
