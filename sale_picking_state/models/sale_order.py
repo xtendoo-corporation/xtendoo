@@ -32,30 +32,18 @@ class SaleOrder(models.Model):
             if sale.state not in ['draft', 'sent']:
                 qty = 0
                 qty_delivery = 0
+                pickings_back_order = self.env['stock.picking'].search(
+                    [('sale_id', '=', sale.id), ('state', 'not in', ['done', 'cancel'])])
                 for line in sale.order_line:
                     qty += line.product_uom_qty
                     qty_delivery += line.qty_delivered
-                if qty_delivery == 0:
+                if qty_delivery <= 0:
                     sale.picking_state = "not_delivery"
-                elif qty_delivery == qty:
-                    sale.picking_state = "delivered"
-                elif qty_delivery < qty:
-                    has_back_order = False
-                    has_return = False
-                    pickings_back_order = self.env['stock.picking'].search([('sale_id', '=', sale.id),('state', '!=', 'done')])
-                    pickings = self.env['stock.picking'].search(
-                        [('sale_id', '=', sale.id)])
-                    if len(pickings) != 0:
-                        for picking in pickings:
-                            if picking.origin.find('Retorno') != -1:
-                                has_return = True
-                    if len(pickings_back_order) != 0:
-                        has_back_order = True
-                    if has_back_order or has_return:
+                else:
+                    if pickings_back_order:
                         sale.picking_state = "partially_delivered"
                     else:
                         sale.picking_state = "delivered"
-
 
 
 
