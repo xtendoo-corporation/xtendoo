@@ -13,6 +13,7 @@
 				<t t-call="web.external_layout">
 					<t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
 					<div class="page">
+                        <t t-set="is_purchase" t-value="1"/>
 						<!-- Datos del documento -->
 						<!-- Datos del movimiento -->
 						<div style="width:50%; float:left;">
@@ -103,7 +104,7 @@
                                         <th
                                             name="th_description"
                                             class="text-left"
-                                            style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                         >
                                             Descripción
                                         </th>
@@ -140,7 +141,7 @@
                                         <th
                                             name="th_subtotal"
                                             class="text-right"
-                                            style="solid; black; padding: 0px; margin: 0px; width:15%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
                                         >
                                             <t
                                                 groups="account.group_show_line_subtotals_tax_excluded"
@@ -185,7 +186,7 @@
                                                 </td>
                                                 <td
                                                     name="td_name"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:0.8em; !important;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                                 >
                                                     <t
                                                         t-set="productName"
@@ -243,7 +244,7 @@
                                                 <td
                                                     name="td_subtotal"
                                                     class="text-right o_price_total"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:15%; font-size:0.8em;!important;"
+                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em;!important;"
                                                 >
                                                     <span
                                                         t-field="line.price_subtotal"

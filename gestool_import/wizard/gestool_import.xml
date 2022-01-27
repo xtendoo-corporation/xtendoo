@@ -8,7 +8,26 @@
             <form string="Importador desde Gestool">
                 <h2>Selecciona ficheros a importar</h2>
                 <br></br>
-                <h5>Seleccione fichero de restparnet</h5>
+                <h5>Seleccione fichero de Agentes</h5>
+                <!--agentes-->
+                <field
+                    name="data_file_users"
+                    filename="filename"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename" invisible="1" />
+                <br></br>
+<!--                <h5>Seleccione fichero de Grupos de clientes</h5>-->
+<!--                &lt;!&ndash;rutas&ndash;&gt;-->
+<!--                <field-->
+<!--                    name="data_file_industry"-->
+<!--                    filename="filename"-->
+<!--                    placeholder="Choose a file to import..."-->
+<!--                />-->
+<!--                <field name="filename" invisible="1" />-->
+<!--                <br></br>-->
+                <h5>Seleccione fichero de Clientes/Proveedores</h5>
+                <!--clientes-->
                 <field
                     name="data_file_partner"
                     filename="filename"
@@ -16,7 +35,8 @@
                 />
                 <field name="filename" invisible="1" />
                 <br></br>
-                <h5>Seleccione fichero de category</h5>
+                <h5>Seleccione fichero de Categorias</h5>
+                <!--categorias-->
                 <field
                     name="data_file_category"
                     filename="filename"

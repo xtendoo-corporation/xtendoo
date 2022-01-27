@@ -1,0 +1,12 @@
+<odoo>
+
+    <template id="web_widget_navigator_geolocation_backend"
+              name="web_widget_navigator_geolocation assets"
+              inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <script type="text/javascript"
+                    src="/web_widget_navigator_geolocation/static/src/js/navigator_geolocation.js"/>
+        </xpath>
+    </template>
+
+</odoo>

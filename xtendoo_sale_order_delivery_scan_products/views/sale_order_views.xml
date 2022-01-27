@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2021 Daniel Dominguez, Manuel Calero - https://xtendoo.es
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.delivery_product</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_quotation_send']" position="after">
+                <button
+                    string="Deliver Products and Scan"
+                    type="object"
+                    name="action_view_scan_picking"
+                    class="btn-primary"
+                    attrs="{'invisible':['|', ('state','!=','sale'), ('picking_ids','=',[])]}"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_picking_form">
+        <field name="name">scan_picking_view</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='owner_id']" position="after">
+                <field name="barcode" invisible="1" force_save="1"/>
+                <field
+                    name="_barcode_scanned"
+                    widget="barcode_handler"
+                    invisible="1"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_filter" model="ir.ui.view">
+        <field name="name">account.move.line.tax</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter" />
+        <field name="arch" type="xml">
+            <filter name="duedate" position="after">
+                <separator />
+                <filter
+                    name="tax_not_set"
+                    string="Lines tax not set"
+                    domain="[('len(invoice_line_ids.tax_ids)','=',0)]"
+                    help="My Accounts to review"
+                />
+            </filter>
+        </field>
+    </record>
+
+</odoo>

@@ -9,7 +9,7 @@
         file="document_format.report_delivery_commodity"
         print_report_name="'Delivery Commodity - %s - %s' % (object.partner_id.name or '', object.name)"
     />
-    <template id="report_delivery_commodity">
+    <template id="document_format.report_delivery_commodity">
         <t t-foreach="docs" t-as="o">
             <t
                 t-call="document_format.report_delivery_commodity_document"
@@ -17,7 +17,7 @@
             />
         </t>
     </template>
-    <template id="report_delivery_commodity_document">
+    <template id="document_format.report_delivery_commodity_document">
         <t t-call="web.html_container">
             <t t-call="web.external_layout">
                 <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
@@ -27,7 +27,7 @@
                 />
                 <div class="page">
                     <!-- Datos del documento -->
-                    <h1>
+                    <h1 style="font-size:4em;">
                         <ul class="list-unstyled">
                             <li t-if="o.partner_id.name">
                                 <span t-field="o.partner_id.name" />
@@ -84,177 +84,6 @@
                         </div>
                     </div>
                     <!-- Fin datos del documento -->
-                    <!-- Estado distinto de hecho -->
-                    <table
-                        class="table table-sm"
-                        t-if="o.state!='done'"
-                        name="stock_move_table"
-                    >
-                        <!-- Cabecera -->
-                        <thead>
-                            <tr>
-                                <th
-                                    name="th_sm_code"
-                                    style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
-                                >
-                                    <strong>CÓDIGO</strong>
-                                </th>
-                                <th
-                                    name="th_sm_product"
-                                    style="solid; black; padding: 0px; margin: 0px; width:77%; !important; font-size:0.9em;"
-                                >
-                                    <strong>DESCRIPCIÓN</strong>
-                                </th>
-                                <th
-                                    name="th_sm_quantity"
-                                    class="text-right"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                >
-                                    <strong>UNDS</strong>
-                                </th>
-                            </tr>
-                        </thead>
-                        <!-- Fin cabecera -->
-                        <!-- Lineas -->
-                        <tbody>
-                            <t
-                                t-set="lines"
-                                t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"
-                            />
-                            <tr t-foreach="lines" t-as="move">
-                                <td
-                                    style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
-                                >
-                                    <span t-field="move.product_id.default_code" />
-                                </td>
-                                <td
-                                    style="solid; black; padding: 0px; margin: 0px; width:77%; !important; font-size:0.9em;"
-                                >
-                                    <p
-                                        t-if="move.description_picking != move.product_id.name"
-                                    >
-                                        <span t-field="move.description_picking" />
-                                    </p>
-                                    <p t-else="">
-                                        <t
-                                            t-set="productName"
-                                            t-value="move.product_id.name"
-                                        />
-                                        <t
-                                            t-set="name_num"
-                                            t-value="productName.find(']') + 1 "
-                                        />
-                                        <t
-                                            t-set="name"
-                                            t-value="productName[name_num:]"
-                                        />
-                                        <span
-                                            t-esc="name"
-                                            t-options="{'widget': 'text'}"
-                                        />
-                                    </p>
-                                </td>
-                                <td
-                                    class="text-right"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                >
-                                    <span t-field="move.product_uom_qty" />
-                                </td>
-                            </tr>
-                        </tbody>
-                        <!-- Fin lineas -->
-                    </table>
-                    <!-- Fin estado distinto de hecho -->
-                    <!-- Estado hecho -->
-                    <table
-                        class="table table-sm mt48"
-                        t-if="o.move_line_ids and o.state=='done'"
-                        name="stock_move_line_table"
-                    >
-                        <t
-                            t-set="has_serial_number"
-                            t-value="o.move_line_ids.mapped('lot_id')"
-                        />
-                        <!-- Cebecera -->
-                        <thead>
-                            <tr>
-                                <th
-                                    name="th_sm_code"
-                                    style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
-                                >
-                                    <strong>CÓDIGO</strong>
-                                </th>
-                                <th
-                                    name="th_sm_product"
-                                    style="solid; black; padding: 0px; margin: 0px; width:67%; !important; font-size:0.9em;"
-                                >
-                                    <strong>DESCRIPCIÓN</strong>
-                                </th>
-                                <th
-                                    name="lot_serial"
-                                    t-if="has_serial_number"
-                                    groups="stock.group_lot_on_delivery_slip"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                >
-                                    Lot/Serial Number
-                                </th>
-                                <th
-                                    name="th_sm_quantity"
-                                    class="text-right"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                >
-                                    <strong>UNDS</strong>
-                                </th>
-                            </tr>
-                        </thead>
-                        <!-- Fin cabecera -->
-                        <!-- Lineas -->
-                        <tbody>
-                            <tr t-foreach="o.move_line_ids" t-as="move_line">
-                                <td
-                                    style="solid; black; padding: 0px; margin: 0px; width:13%; !important; font-size:0.9em;"
-                                >
-                                    <span t-field="move_line.product_id.default_code" />
-                                </td>
-                                <td
-                                    style="solid; black; padding: 0px; margin: 0px; width:67%; !important; font-size:0.9em;"
-                                >
-                                    <p
-                                        t-if="move_line.move_id.description_picking != move_line.product_id.name"
-                                    >
-                                        <span
-                                            t-field="move_line.move_id.description_picking"
-                                        />
-                                    </p>
-                                    <p t-else="">
-                                        <span t-field="move_line.product_id.name" />
-                                    </p>
-                                </td>
-                                <td
-                                    t-if="has_serial_number and move_line.lot_id.name"
-                                    groups="stock.group_lot_on_delivery_slip"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                >
-                                    <span t-field="move_line.lot_id.name" />
-                                </td>
-                                <td
-                                    t-elif="has_serial_number"
-                                    groups="stock.group_lot_on_delivery_slip"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                >
-                                    <span t-field="move_line.lot_name" />
-                                </td>
-                                <td
-                                    class="text-right"
-                                    style="solid; black; padding: 0px; margin: 0px; width:10%; !important; font-size:0.9em;"
-                                >
-                                    <span t-field="move_line.qty_done" />
-                                </td>
-                            </tr>
-                        </tbody>
-                        <!-- Fin lineas -->
-                    </table>
-                    <!-- Fin estado hecho -->
                     <p>
                         <t
                             t-if="o.backorder_ids and o.backorder_ids.filtered(lambda x: x.state not in ('done', 'cancel'))"

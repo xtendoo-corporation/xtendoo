@@ -146,7 +146,7 @@
                                     <th
                                         name="th_description"
                                         class="text-left"
-                                        style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:0.8em; !important;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                     >
                                         Descripción
                                     </th>
@@ -183,7 +183,7 @@
                                     <th
                                         name="th_subtotal"
                                         class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:15%; font-size:0.8em; !important;"
+                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
                                     >
                                         <t groups="account.group_show_line_subtotals_tax_excluded">
                                             Total
