@@ -38,36 +38,36 @@
 
         <template id="document_format_bramah.report_invoice_document_preimpreso">
             <t t-name="document_format_bramah.report_invoice_document_preimpreso">
-               <!-- variables cabecera -->
+                <!-- variables cabecera -->
               <div t-if="o.type">
                   <t t-set="docState" t-value="o.type"/>
               </div>
               <div t-if="o.number">
-                <t t-set= "docName" t-value="o.number"> </t>
+                <t t-set="docName" t-value="o.number"> </t>
               </div>
               <div t-if="o.date_invoice">
-                <t t-set= "docDate" t-value="o.date_invoice"> </t>
+                <t t-set="docDate" t-value="o.date_invoice"> </t>
               </div>
               <div t-if="o.partner_id.name">
-                <t t-set= "clientName" t-value="o.partner_id.name"> </t>
+                <t t-set="clientName" t-value="o.partner_id.name"> </t>
               </div>
               <div if="o.partner_id.street">
-                <t t-set= "clientStreet" t-value="o.partner_id.street"> </t>
+                <t t-set="clientStreet" t-value="o.partner_id.street"> </t>
               </div>
               <div t-if="o.partner_id.zip">
-                <t t-set= "clientZip" t-value="o.partner_id.zip"> </t>
+                <t t-set="clientZip" t-value="o.partner_id.zip"> </t>
               </div>
               <div t-if="o.partner_id.city">
-                <t t-set= "clientCity" t-value="o.partner_id.city"> </t>
+                <t t-set="clientCity" t-value="o.partner_id.city"> </t>
               </div>
               <div t-if="o.partner_id.state_id.name">
-                <t t-set= "clientState" t-value="o.partner_id.state_id.name"> </t>
+                <t t-set="clientState" t-value="o.partner_id.state_id.name"> </t>
               </div>
               <div t-if="o.partner_id.country_id.name">
-                <t t-set= "clientCountry" t-value="o.partner_id.country_id.name"> </t>
+                <t t-set="clientCountry" t-value="o.partner_id.country_id.name"> </t>
               </div>
               <div t-if="o.partner_id.vat">
-                <t t-set= "clientVat" t-value="o.partner_id.vat"> </t>
+                <t t-set="clientVat" t-value="o.partner_id.vat"> </t>
               </div>
 
               <!-- Fin variables cabecera -->
@@ -78,7 +78,7 @@
                                 <div style="display:none;" t-if="o.partner_id.vat" class="mt16"><t t-esc="o.company_id.country_id.vat_label or 'Tax ID'"/>: <span t-field="o.partner_id.vat"/></div>
                             </t>
 
-                            <t t-set="esRect" t-value="o.type"></t>
+                            <t t-set="esRect" t-value="o.type"/>
                             <!--<span t-esc="esRect"></span>-->
 
                             <div class="page" style="display:none;">
@@ -294,7 +294,7 @@
                             <span t-field="o.partner_id.street"/>
                           </div>
                           <div t-if="o.partner_id.city">
-                            <span t-field="o.partner_id.zip" /> <span t-field="o.partner_id.city"/>  (<span t-field="o.partner_id.state_id.name"/>) <span t-field="o.partner_id.country_id.name"/>
+                            <span t-field="o.partner_id.zip"/> <span t-field="o.partner_id.city"/>  (<span t-field="o.partner_id.state_id.name"/>) <span t-field="o.partner_id.country_id.name"/>
                           </div>
                           <div t-if="o.partner_id.vat">
                             <span>N.I.F.: </span><span t-field="o.partner_id.vat"/>
@@ -313,13 +313,13 @@
                          <t t-set="current_bruto" t-value="0"/>
                          <t t-set="lineas" t-value="0"/>
                         <div style="clear:both;display:none;">
-                          <div style="height:14px; width:118px; display:block; background-color:red; float:left; margin-right:4px; margin-left:-15px;"></div>
-                          <div style="height:14px; width:417px; display:block; background-color:red; float:left; margin-right:4px"></div>
-                          <div style="height:14px; width:77px;  display:block; background-color:red; float:left; margin-right:4px"></div>
-                          <div style="height:14px; width:90px;  display:block; background-color:red; float:left; margin-right:4px"></div>
-                          <div style="height:14px; width:61px;  display:block; background-color:red; float:left; margin-right:4px"></div>
-                          <div style="height:14px; width:96px;  display:block; background-color:red; float:left; margin-right:4px"></div>
-                          <div style="height:14px; width:50px;  display:block; background-color:red; float:left; margin-right:4px"></div>
+                          <div style="height:14px; width:118px; display:block; background-color:red; float:left; margin-right:4px; margin-left:-15px;"/>
+                          <div style="height:14px; width:417px; display:block; background-color:red; float:left; margin-right:4px"/>
+                          <div style="height:14px; width:77px;  display:block; background-color:red; float:left; margin-right:4px"/>
+                          <div style="height:14px; width:90px;  display:block; background-color:red; float:left; margin-right:4px"/>
+                          <div style="height:14px; width:61px;  display:block; background-color:red; float:left; margin-right:4px"/>
+                          <div style="height:14px; width:96px;  display:block; background-color:red; float:left; margin-right:4px"/>
+                          <div style="height:14px; width:50px;  display:block; background-color:red; float:left; margin-right:4px"/>
                         </div>
                         <!-- Fin cabecera de las lineas-->
 
@@ -328,7 +328,7 @@
 
                         <!-- Lineas -->
                         <div style="margin-left:-15px;clear:both;padding-top:35px;">
-                         <t t-set="portes" t-value="0"></t>
+                         <t t-set="portes" t-value="0"/>
 
                         <table class="table table-sm o_main_table" style="margin-top:-260px;border-bottom:4px solid black;clear:both;width:97%;margin-left:1.5%;">
                             <tbody class="sale_tbody">
@@ -345,9 +345,18 @@
                                   <t t-if="picking">
                                       <t t-if="picking != last_picking">
                                          <td colspan="99">
-                                            <b><span>Albarán: </span><span t-esc="picking.name" />
+                                            <b><span>Albarán: </span><span t-esc="picking.name"/>
                                             <span>  </span>
                                             <span>Fecha: </span> <span t-field="picking.date_done" t-options="{'widget': 'date'}"/> </b>
+                                             <br />
+                                             <t t-if="picking.sale_id">
+                                                 <t t-if="picking.sale_id.note">
+                                                     <b>
+                                                        <span>NOTA: </span>
+                                                        <span t-field="picking.sale_id.note"/>
+                                                     </b>
+                                                 </t>
+                                             </t>
                                             <t t-set="last_picking" t-value="picking"/>
 
                                           <!--  <span>PIKINGS: </span> <span t-esc="picking.name"></span>
@@ -376,13 +385,13 @@
                                     <t t-set="current_bruto" t-value="current_bruto + (line.quantity*line.price_unit)" groups="account.group_show_line_subtotals_tax_excluded"/>
                                     <!-- Fin calculos del bruto -->
 
-                                    <tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''" >
+                                    <tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
                                         <t t-if="not line.display_type">
 
                                           <!-- entrega -->
                                           <!-- buscamos en la familia que si pertenede a 'Entregas' -->
                                           <t t-if="line.product_id.categ_id.name == 'Entregas'">
-                                              <t t-set="portes" t-value="portes + (line.price_total)"></t>
+                                              <t t-set="portes" t-value="portes + (line.price_total)"/>
                                           </t>
                                           <t t-else="">
                                           <!-- fin entrega -->
@@ -431,7 +440,7 @@
                                               <!-- Fin Precio total linea -->
                                               <!-- Impuesto -->
                                               <td width="50px" height="16px" style="text-align:right;">
-                                                  <span t-esc="', '.join(map(lambda x: str(x.amount), line.invoice_line_tax_ids))"/><span t-if="line.price_tax > 0"></span>
+                                                  <span t-esc="', '.join(map(lambda x: str(x.amount), line.invoice_line_tax_ids))"/><span t-if="line.price_tax &gt; 0"/>
                                               </td>
                                               <!-- Fin impuesto -->
                                             </t>
@@ -452,30 +461,30 @@
                     <!-- Totales -->
                      <!-- Totales -->
                             <div t-if="o.amount_untaxed">
-                              <t t-set= "bruto" t-value="current_bruto" > </t>
+                              <t t-set="bruto" t-value="current_bruto"> </t>
                             </div>
                             <div t-if="o.amount_total">
-                              <t t-set= "descuento" t-value="current_discount" > </t>
+                              <t t-set="descuento" t-value="current_discount"> </t>
                             </div>
                             <div t-if="o.payment_term_id">
-                              <t t-set= "formaPago" t-value="o.payment_term_id.name" > </t>
+                              <t t-set="formaPago" t-value="o.payment_term_id.name"> </t>
                             </div>
                             <div t-if="o.amount_untaxed">
-                              <t t-set= "base" t-value="o.amount_untaxed" > </t>
+                              <t t-set="base" t-value="o.amount_untaxed"> </t>
                             </div>
                             <div t-if="o.amount_tax">
-                              <t t-set= "iva" t-value="o.amount_tax"> </t>
+                              <t t-set="iva" t-value="o.amount_tax"> </t>
                             </div>
                             <!--<t t-foreach="doc.amount_by_group" t-as="amount_by_group">
                                 <t t-set="iva" t-value="amount_by_group[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"></t>
                             </t>-->
-                            <t t-set= "total" t-value="o.amount_total"> </t>
-                            <t t-set="importePortes" t-value="portes"></t>
+                            <t t-set="total" t-value="o.amount_total"> </t>
+                            <t t-set="importePortes" t-value="portes"/>
 
 
                         <div style="display:none;">
                             <div id="total" name="total" style="margin-top:5px;">
-                            <t t-set= "bruto" t-value="o.amount_untaxed" > </t>
+                            <t t-set="bruto" t-value="o.amount_untaxed"> </t>
                             <span t-esc="bruto"/>
 
                                       <!-- Primera fila -->
@@ -502,7 +511,7 @@
                                         </div>
                                         <div style="margin-left:100px; width:122px; float:left;width:500px;">
                                           <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                                              <span t-esc="amount_by_group[1]" />€
+                                              <span t-esc="amount_by_group[1]"/>€
                                           </t>
                                         </div>
                                       </div>
@@ -530,6 +539,5 @@
                 </t>
             </t>
         </template>
-
     </data>
 </odoo>

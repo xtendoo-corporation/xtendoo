@@ -180,7 +180,6 @@
                             <tbody class="sale_tbody">
 
                                 <t t-set="current_subtotal" t-value="0"/>
-
                                 <t t-foreach="o.lines_grouped_by_picking()" t-as="lines_group">
                                   <t t-set="l" t-value="lines_group['line']"/>
                                   <t t-set="line" t-value="lines_group['line']"/>
@@ -203,22 +202,34 @@
 
                                   <t t-if="picking">
 
-                                  <t t-if="picking != last_picking">
-                                     <td colspan="99">
-                                        <b><span>Albarán: </span><span t-esc="picking.name" />
-                                        <span>  </span>
-                                        <span>Fecha: </span> <span t-field="picking.date_done" t-options="{'widget': 'date'}"/> </b>
-                                        <t t-set="last_picking" t-value="picking"/>
+                                      <t t-if="picking != last_picking">
+                                         <td colspan="99">
+                                            <b>
+                                                <span>Albarán: </span><span t-esc="picking.name" />
+                                                <span>  </span>
+                                                <span>Fecha: </span> <span t-field="picking.date_done" t-options="{'widget': 'date'}"/>
+                                            </b>
+                                             <br />
+                                             <t t-if="picking.sale_id">
+                                                 <t t-if="picking.sale_id.note">
+                                                     <b>
+                                                        <span>NOTA: </span>
+                                                        <span t-field="picking.sale_id.note"/>
+                                                     </b>
+                                                 </t>
+                                             </t>
+                                             <t t-set="last_picking" t-value="picking"/>
 
-                                      <!--  <span>PIKINGS: </span> <span t-esc="picking.name"></span>
-                                        <t t-if="last_picking">
-                                        <span>PIKINGS: </span> <span t-esc="last_picking.name"></span>
-                                        </t>
-                                        <t t-set="last_picking" t-value="picking"/>
-                                        <span>PIKINGS: </span> <span t-esc="last_picking.name"></span> -->
-                                      </td>
+                                          <!--  <span>PIKINGS: </span> <span t-esc="picking.name"></span>
+                                            <t t-if="last_picking">
+                                            <span>PIKINGS: </span> <span t-esc="last_picking.name"></span>
+                                            </t>
+                                            <t t-set="last_picking" t-value="picking"/>
+                                            <span>PIKINGS: </span> <span t-esc="last_picking.name"></span> -->
+                                          </td>
 
-                                  </t>
+                                      </t>
+
                                   </t>
                                     <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
 
@@ -281,6 +292,11 @@
 
                                         </t>
                                     </tr>
+                                    <t t-if="picking != next_picking">
+
+
+
+                                    </t>
                                 </t>
                             </tbody>
                         </table>
