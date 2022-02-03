@@ -1,25 +1,25 @@
 <odoo>
     <data>
-        <!-- Herencia del tenplate del informe Factura-->
-         <template id="document_format.format_report_invoice_document"
-              inherit_id="account.report_invoice">
-            <xpath expr='//t[@t-call="account.report_invoice_document"]' position="replace">
-                <t t-call="document_format.report_invoice_gouped_by_picking_document" t-lang="lang"/>
-            </xpath>
-        </template>
-        <!-- Fin Herencia del tenplate del informe Factura-->
+        <!-- Herencia del template del informe Factura-->
+<!--         <template id="document_format.format_report_invoice_document"-->
+<!--              inherit_id="account.report_invoice">-->
+<!--            <xpath expr='//t[@t-call="account.report_invoice_document"]' position="replace">-->
+<!--                <t t-call="document_format.report_invoice_grouped_by_picking_document" t-lang="lang"/>-->
+<!--            </xpath>-->
+<!--        </template>-->
+        <!-- Fin Herencia del template del informe Factura-->
 
-        <!-- Herencia del tenplate del informe Factura sin pagos-->
-         <template id="document_format.format_report_invoice_document_with_payments"
-              inherit_id="account.report_invoice_with_payments">
-            <xpath expr='//t[@t-call="account.report_invoice_document_with_payments"]' position="replace">
-                <t t-call="document_format.report_invoice_gouped_by_picking_document" t-lang="lang"/>
-            </xpath>
-        </template>
-        <!-- Fin Herencia del tenplate del informe Factura sin pagos-->
+        <!-- Herencia del template del informe Factura sin pagos-->
+<!--         <template id="document_format.format_report_invoice_document_with_payments"-->
+<!--              inherit_id="account.format_report_invoice_with_payments">-->
+<!--            <xpath expr='//t[@t-call="account.format_report_invoice_document_with_payments"]' position="replace">-->
+<!--                <t t-call="document_format.report_invoice_grouped_by_picking_document" t-lang="lang"/>-->
+<!--            </xpath>-->
+<!--        </template>-->
+        <!-- Fin Herencia del template del informe Factura sin pagos-->
 
-        <template id="document_format.report_invoice_gouped_by_picking_document">
-            <t t-name="document_format.report_invoice_gouped_by_picking_document">
+        <template id="document_format.report_invoice_grouped_by_picking_document">
+            <t t-name="document_format.report_invoice_grouped_by_picking_document">
                 <t t-call="web.external_layout">
                     <t t-set="o" t-value="o.with_context(lang=lang)" />
                     <div class="page">
@@ -92,9 +92,6 @@
                                 <li t-if="o.partner_id.name">
                                     <span t-field="o.partner_id.name" />
                                 </li>
-                                <li t-if="o.partner_id.comercial">
-                                    (<span t-field="o.partner_id.comercial" />)
-                                </li>
                                 <li t-if="o.partner_id.street">
                                     <span t-field="o.partner_id.street" />
                                 </li>
@@ -107,7 +104,7 @@
                                         t-if="o.partner_id.city"
                                         t-field="o.partner_id.city"
                                     />
-,
+                                    ,
                                     <span
                                         t-if="o.partner_id.state_id"
                                         t-field="o.partner_id.state_id.name"

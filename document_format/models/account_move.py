@@ -14,8 +14,8 @@ class AccountMove(models.Model):
         self.ensure_one()
         picking_dict = OrderedDict()
         lines_dict = OrderedDict()
-        sign = -1.0 if self.type == "out_refund" else 1.0
-        # Let's get first a correspondance between pickings and sales order
+        sign = -1.0 if self.move_type == "out_refund" else 1.0
+        # Let's get first a correspondence between pickings and sales order
         so_dict = {x.sale_id: x for x in self.picking_ids if x.sale_id}
         # Now group by picking by direct link or via same SO as picking's one
         for line in self.invoice_line_ids.filtered(lambda l: l.product_id):
@@ -42,7 +42,7 @@ class AccountMove(models.Model):
                         remaining_qty -= qty
             # To avoid to print duplicate lines because the invoice is a refund
             # without returned goods to refund.
-            if self.type == "out_refund" and not has_returned_qty:
+            if self.move_type == "out_refund" and not has_returned_qty:
                 remaining_qty = 0.0
                 for key in picking_dict:
                     picking_dict[key] = abs(picking_dict[key])

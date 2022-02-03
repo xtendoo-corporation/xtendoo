@@ -30,22 +30,22 @@
                             <ul class="list-unstyled">
                                 <li>
                                     <h2 class="mt16">
-                                        <span t-if="o.type == 'out_invoice' and o.state == 'posted'">
+                                        <span t-if=" o.move_type == 'out_invoice' and o.state == 'posted'">
                                             Factura:
                                         </span>
-                                        <span t-if="o.type == 'out_invoice' and o.state == 'draft'">
+                                        <span t-if=" o.move_type == 'out_invoice' and o.state == 'draft'">
                                             Factura Borrador:
                                         </span>
-                                        <span t-if="o.type == 'out_invoice' and o.state == 'cancel'">
+                                        <span t-if=" o.move_type == 'out_invoice' and o.state == 'cancel'">
                                             Factura Cancelada:
                                         </span>
-                                        <span t-if="o.type == 'out_refund'">
+                                        <span t-if=" o.move_type == 'out_refund'">
                                             Factura Rectificativa:
                                         </span>
-                                        <span t-if="o.type == 'in_refund'">
+                                        <span t-if=" o.move_type == 'in_refund'">
                                             Factura Rectificativa Proveedor:
                                         </span>
-                                        <span t-if="o.type == 'in_invoice'">
+                                        <span t-if=" o.move_type == 'in_invoice'">
                                             Factura Proveedor:
                                         </span>
                                         <span t-if="o.name != '/'" t-field="o.name"/>
@@ -72,7 +72,7 @@
                                     <span class="m-0" t-field="o.invoice_user_id"/>
                                 </li>
                                 <div class="col-auto mw-100 mb-2"
-                                     t-if="o.invoice_date_due and o.type == 'out_invoice' and o.state == 'posted'"
+                                     t-if="o.invoice_date_due and  o.move_type == 'out_invoice' and o.state == 'posted'"
                                      name="due_date"
                                      style="display:none;">
                                     <strong>Due Date:</strong>
@@ -90,9 +90,6 @@
                                 </li>
                                 <li t-if="o.partner_id.name">
                                     <span t-field="o.partner_id.name"/>
-                                </li>
-                                <li t-if="o.partner_id.comercial">
-                                    (<span t-field="o.partner_id.comercial" />)
                                 </li>
                                 <li t-if="o.partner_id.street">
                                     <span t-field="o.partner_id.street"/>
@@ -258,7 +255,7 @@
                                                 class="text-right"
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                <t t-if="o.type in ('out_refund','in_refund')">
+                                                <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span t-field="line.quantity"/>
@@ -271,7 +268,7 @@
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                <t t-if="o.type in ('out_refund','in_refund')">
+                                                <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span
@@ -302,7 +299,7 @@
                                                 class="text-right o_price_total"
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                <t t-if="o.type in ('out_refund','in_refund')">
+                                                <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span
@@ -353,7 +350,7 @@
                                                 style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                             >
                                                 <strong class="mr16">Subtotal</strong>
-                                                 <t t-if="o.type in ('out_refund','in_refund')">
+                                                 <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span
@@ -388,7 +385,7 @@
                                                 class="text-right"
                                                 style="solid; black; padding: 0px; margin: 0px; !important;"
                                             >
-                                                <t t-if="o.type in ('out_refund','in_refund')">
+                                                <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span t-field="o.amount_untaxed"/>
@@ -416,7 +413,7 @@
                                                         class="text-right o_price_total"
                                                         style="solid; black; padding: 0px; margin: 0px; !important;"
                                                     >
-                                                        <t t-if="o.type in ('out_refund','in_refund')">
+                                                        <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                             <span>- </span>
                                                         </t>
                                                         <span
@@ -429,7 +426,7 @@
                                                     <td
                                                         style="solid; black; padding: 0px; margin: 0px; !important;"
                                                     >
-                                                        <t t-if="o.type in ('out_refund','in_refund')">
+                                                        <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                             <span>- </span>
                                                         </t>
                                                         <span
@@ -445,7 +442,7 @@
                                                         class="text-right o_price_total"
                                                         style="solid; black; padding: 0px; margin: 0px; !important;"
                                                     >
-                                                        <t t-if="o.type in ('out_refund','in_refund')">
+                                                        <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                             <span>- </span>
                                                         </t>
                                                         <span
@@ -467,7 +464,7 @@
                                                 style="solid; black; padding: 0px; margin: 0px; !important;"
                                             >
                                                 <strong>
-                                                    <t t-if="o.type in ('out_refund','in_refund')">
+                                                    <t t-if=" o.move_type in ('out_refund','in_refund')">
                                                         <span>- </span>
                                                     </t>
                                                     <span
