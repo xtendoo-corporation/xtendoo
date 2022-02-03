@@ -1,21 +1,21 @@
 <odoo>
     <data>
         <!-- Herencia del tenplate del informe Factura-->
-         <template id="document_format.format_report_invoice_document"
+         <!--<template id="document_format.format_report_invoice_document"
               inherit_id="account.report_invoice">
             <xpath expr='//t[@t-call="account.report_invoice_document"]' position="replace">
                 <t t-call="document_format.report_invoice_gouped_by_picking_document" t-lang="lang"/>
-            </xpath>
+            </xpath>--
         </template>
         <!-- Fin Herencia del tenplate del informe Factura-->
 
         <!-- Herencia del tenplate del informe Factura sin pagos-->
-         <template id="document_format.format_report_invoice_document_with_payments"
+         <!--<template id="document_format.format_report_invoice_document_with_payments"
               inherit_id="account.report_invoice_with_payments">
             <xpath expr='//t[@t-call="account.report_invoice_document_with_payments"]' position="replace">
                 <t t-call="document_format.report_invoice_gouped_by_picking_document" t-lang="lang"/>
             </xpath>
-        </template>
+        </template>-->
         <!-- Fin Herencia del tenplate del informe Factura sin pagos-->
 
         <template id="document_format.report_invoice_gouped_by_picking_document">
