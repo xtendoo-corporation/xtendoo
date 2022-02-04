@@ -26,7 +26,6 @@
         "views/stock_picking/stock_picking_view.xml",
         "views/delivery/delivery_document.xml",
         "views/delivery/delivery_commodity.xml",
-<<<<<<< HEAD
         "views/invoice/invoice_document.xml",
         "views/invoice/invoice_dossier.xml",
         "views/invoice/invoice_gruped_by_picking.xml",
@@ -39,22 +38,7 @@
         "views/email_default_template/account_invoice_send_views.xml",
         "views/commissions/report_commission_liquidation.xml",
         "views/purchase/purchase.xml",
-=======
-        #"views/delivery/delivery_document_original_number.xml",
-        #"views/invoice/invoice_document.xml",
-        #"views/invoice/invoice_dossier.xml",
-        #"views/invoice/invoice_gruped_by_picking.xml",
-        "views/layout/external_layout_clean.xml",
-        "views/sale/sale_order_document.xml",
-        "views/sale/sale_order_blank_document.xml",
-        #"views/label/product_label.xml",
-        #"report/report_label_barcode.xml",
-        #"report/report_label_barcode_template.xml",
-        #"data/group_invoice_email_template.xml",
-        #views/email_default_template/account_invoice_send_views.xml",
-        #"views/commissions/report_commission_liquidation.xml",
-        #"views/purchase/purchase.xml",
->>>>>>> 9ef22b3804eab60fb5cef97f065cd0a737125c29
+
     ],
     "installable": True,
     "auto_install": False,
