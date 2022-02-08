@@ -29,7 +29,7 @@
                         <div style="width:50%;float:left;clear:both;margin-top:5px;">
                             <ul class="list-unstyled">
                                 <li>
-                                    <h2 class="mt16">
+                                    <h4 class="mt16">
                                         <span t-if=" o.move_type == 'out_invoice' and o.state == 'posted'">
                                             Factura:
                                         </span>
@@ -49,7 +49,7 @@
                                             Factura Proveedor:
                                         </span>
                                         <span t-if="o.name != '/'" t-field="o.name"/>
-                                    </h2>
+                                    </h4>
                                 </li>
                                 <li t-if="o.invoice_date" name="invoice_date">
                                     <strong>Fecha:</strong>
@@ -66,10 +66,6 @@
                                 <li t-if="o.invoice_payment_term_id" name="reference">
                                     <strong>Forma de Pago:</strong>
                                     <span class="m-0" t-field="o.invoice_payment_term_id"/>
-                                </li>
-                                <li t-if="o.invoice_user_id" name="user">
-                                    <strong>Comercial:</strong>
-                                    <span class="m-0" t-field="o.invoice_user_id"/>
                                 </li>
                                 <div class="col-auto mw-100 mb-2"
                                      t-if="o.invoice_date_due and  o.move_type == 'out_invoice' and o.state == 'posted'"

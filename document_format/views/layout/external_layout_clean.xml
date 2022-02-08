@@ -38,6 +38,12 @@
                                     <t t-esc="company.country_id.vat_label or 'Tax ID'"/>
                                     <span t-field="company.vat" />
                                 </li>
+                                <li t-if="company.phone">
+                                    <span t-field="company.phone" />
+                                </li>
+                                <li t-if="company.email">
+                                    <span t-field="company.email" />
+                                </li>
                                 <t t-if="not is_purchase">
                                 </t>
                                 <t t-else="">
@@ -60,19 +66,15 @@
             </xpath>
             <xpath expr="//div[@class='row mt8']" position="replace">
                 <div class="row mt8">
-                    <div class="col-6">
-                         <t t-if="not is_purchase">
-                             <span t-field="company.report_footer" />
-                         </t>
-                        <t t-else="">
-                        </t>
-                    </div>
-                    <div class="col-4 text-right">
-                        <span
-                            class="company_address"
-                            t-field="company.partner_id"
-                            t-options='{"widget": "contact", "fields": ["email", "phone"], "no_marker": true}'
-                        />
+                    <div class="col-10" style="font-size: 0.7em">
+                        <div t-if="company.report_header">
+                            <span
+                                t-field="company.report_header"
+                            />
+                        </div>
+                        <div t-if="company.report_footer">
+                            <span t-field="company.report_footer" />
+                        </div>
                     </div>
                     <div class="col-2">
                         <ul
@@ -90,17 +92,9 @@
                     </div>
                 </div>
                 <div class="row mt8">
-                    <div class="col-12">
+                    <div class="col-16">
                         <span
-                            style="font-size: 10px; line-height: 0px;"
-                            t-field="company.report_header"
-                        />
-                    </div>
-                </div>
-                <div class="row mt8">
-                    <div class="col-12">
-                        <span
-                            style="font-size: 10px; line-height: 0px;"
+                            style="font-size: 6px; line-height: 0px;"
                             t-field="company.company_registry"
                         />
                     </div>

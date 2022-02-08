@@ -1,6 +1,6 @@
 <odoo>
     <data>
-    <!-- Herencia del tenplate del informe-->
+    <!-- Herencia del template del informe-->
         <template id="document_format.format_report_delivery_document"
               inherit_id="stock.report_deliveryslip">
             <xpath expr="//t[@t-call='stock.report_delivery_document']" position="replace">
@@ -21,10 +21,10 @@
                             <div style="width:50%; float:left;">
                                 <ul class="list-unstyled">
                                     <li>
-                                        <h2 class="mt16">
+                                        <h4 class="mt16">
                                             <b>Albarán:</b>
                                             <span t-field="o.pic_name"></span>
-                                        </h2>
+                                        </h4>
                                     </li>
                                     <li t-if="o.date_done">
                                         <b>Fecha:</b>
@@ -42,6 +42,9 @@
                                 <ul class="list-unstyled">
                                     <li t-if="o.partner_id.name">
                                         <span t-field="o.partner_id.name" />
+                                    </li>
+                                    <li t-if="o.partner_id.street">
+                                        <span t-field="o.partner_id.street" />
                                     </li>
                                     <li>
                                         <span
@@ -105,7 +108,7 @@
                                         </th>
                                         <th
                                             t-if="has_serial_number"
-                                            groups="stock.group_lot_on_delivery_slip"
+
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             Lote
@@ -198,14 +201,14 @@
                                         </td>
                                         <td
                                             t-if="has_serial_number and move_line.lot_id.name"
-                                            groups="stock.group_lot_on_delivery_slip"
+
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.lot_id.name" />
                                         </td>
                                         <td
                                             t-elif="has_serial_number"
-                                            groups="stock.group_lot_on_delivery_slip"
+
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.lot_name" />
