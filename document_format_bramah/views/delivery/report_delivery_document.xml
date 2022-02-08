@@ -255,12 +255,11 @@
                                     <!-- fin si es venta -->
                                     <!-- si es compra -->
                                     <t t-if="move_line.move_id.purchase_line_id">
-
+                                        <t t-set="ivaLinea" t-value="0.00"/>
                                     <!-- % de IVA -->
                                          <div t-if="move_line.move_id.purchase_line_id.price_tax != 0.00" style="width:55px;  display:block; float:left;text-align:right;">
                                            <t t-set="ivaLinea" t-value="round(move_line.move_id.purchase_line_id.price_tax*100/move_line.move_id.purchase_line_id.price_subtotal,0)"/>
                                             <span t-esc="ivaLinea" />%
-
                                         </div>
                                         <div t-else="" style="width:55px;;display:block; float:left;">
                                              <span style="color:white">aaa</span>
