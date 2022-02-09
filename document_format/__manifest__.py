@@ -38,7 +38,7 @@
         "views/email_default_template/account_invoice_send_views.xml",
         "views/commissions/report_commission_liquidation.xml",
         "views/purchase/purchase.xml",
-
+        "views/manufacture/manufacture_document.xml",
     ],
     "installable": True,
     "auto_install": False,
