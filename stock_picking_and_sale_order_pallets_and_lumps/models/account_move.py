@@ -23,7 +23,7 @@ class AccountMove(models.Model):
         for invoice in self.filtered(lambda x: x.invoice_origin):
             lumps_number = 0
             pallets_number = 0
-            sales_name = self.invoice_origin
+            sales_name = invoice.invoice_origin
             i = 0
             while i < 1:
                 position = sales_name.find(',')
@@ -34,6 +34,8 @@ class AccountMove(models.Model):
                     sale_name = sales_name[0:position]
                     sales_name = sales_name[position+2:]
 
+                print("*"*80)
+                print(sale_name)
                 sale_id = self.env['sale.order'].search([('name', '=', sale_name)])
                 if sale_id:
                     lumps_number += sale_id.lumps_number
