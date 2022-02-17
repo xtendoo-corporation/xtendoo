@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <data>
+
+        <record id="document_format_bramah.mrp_bom_line_report_paper" model="report.paperformat">
+            <field name="name">MRP BOM REPORT</field>
+             <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="margin_top">5</field>
+            <field name="margin_bottom">0</field>
+            <field name="margin_right">7</field>
+            <field name="margin_left">7</field>
+            <field name="orientation">Portrait</field>
+            <field name="header_spacing">80</field>
+            <field name="dpi">95</field>
+        </record>
+
+
+          <report id="document_format_bramah.mrp_bom_line_report"
+                string="Lista de materiales"
+                model="mrp.bom"
+                report_type="qweb-pdf"
+                name="document_format_bramah.mrp_bom_line_report_rp"
+                file="document_format_bramah.mrp_bom_line_report_rp"
+        />
+
+         <record id="document_format_bramah.mrp_bom_line_report" model="ir.actions.report">
+            <field name="paperformat_id" ref="document_format_bramah.mrp_bom_line_report_paper" />
+        </record>
+
+
+
+          <template id="document_format_bramah.mrp_bom_line_report_rp">
+           <t t-name="document_format_bramah.mrp_bom_line_report_rp">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                   <t t-call="document_format_bramah.mrp_bom_line_report_document"/>
+                </t>
+            </t>
+           </t>
+        </template>
+
+        <template id="document_format_bramah.mrp_bom_line_report_document">
+
+            <t t-name="document_format_bramah.mrp_bom_line_report_document">
+                <t t-call="web.internal_layout">
+                    <!-- Cabecera -->
+                    <div class="page">
+                        <div class="oe_structure"/>
+                         <div class="row" style="margin-top:15px">
+                            <div class="col-4" >
+                                <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo" style="width:100%"/>
+                            </div>
+                            <div class="col-7">
+                              <div t-if="o.company_id.name" style="float:left;width:60%;"><span style="color:black; margin-bottom:0px" t-field="o.company_id.name"/></div>
+                                <div t-if="o.company_id.vat" style="float:left;width:40%;color:black;">CIF: <span t-field="o.company_id.vat"/></div>
+                              <hr style="heigth:5px; color:grey; margin: 3px;clear:both;" ></hr>
+                              <div class="col-6 offset-1" name="company_address" style= "color:gray; display:inline; width:50%">
+                                  <div style="width:60%; display:block; float:left;">
+                                    <span> <strong style="color:black;" > Dirección </strong> </span>
+                                  <ul style="list-style-type:none;margin-left:-35px!important;margin-top:-3px!important;font-weight:0.9em;">
+
+                                      <li>
+                                        <div t-if="o.company_id.street" style="display:inline-block" ><i class="fa fa-map" role="img" aria-label="map" title="map" style="color:black; font-weigth:bolder;"/> C/ <span t-field="o.company_id.street"/>, </div>
+                                        <div t-if="o.company_id.street2" style="display:inline-block"> <span t-field="o.company_id.street2" /> </div>
+                                      </li>
+                                      <li>
+                                        <div t-if="o.company_id.zip" style="display:inline"><span t-field="o.company_id.zip"/> </div>
+                                        <div t-if="o.company_id.city" style="display:inline"> <span t-field="o.company_id.city" />. </div>
+                                        <div t-if="o.company_id.state_id" style="display:inline" > <span t-field= "o.company_id.state_id" />. </div>
+                                        <div t-if="o.company_id.country_id" style= "display:inline" > <span t-field="o.company_id.country_id" /> </div>
+                                      </li>
+                                  </ul>
+                              </div>
+                               <div style="width:35%; display:block; float:left">
+                                    <span > <strong style="color:black;" > Atención al cliente </strong> </span>
+                                  <ul style="list-style-type:none;margin-left:-35px!important;margin-top:-3px!important;font-weight:0.9em;">
+
+                                      <li>
+                                        <div t-if="o.company_id.phone" style="display:inline" ><i class="fa fa-phone" role="img" aria-label="Phone" title="Phone" style="color:black; font-weigth:bolder;"/> <span t-field="o.company_id.phone"/> </div>
+                                      </li>
+                                      <li>
+                                        <div t-if="o.company_id.email" style="display:inline" ><i class="fa fa-at" role="img" aria-label="Email" title="Email" style="color:black; font-weigth:bolder;"/> <span t-field="o.company_id.email" /> </div>
+                                      </li>
+                                  </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row mt32 mb32">
+                            <div class="col-8">
+                                <strong>Producto finalizado:</strong><br/>
+                                <span t-field="o.product_tmpl_id"/>
+                            </div>
+                            <div class="col-4">
+                                <strong>Cantidad a producir:</strong><br/>
+                                <span t-field="o.product_qty"/>
+                                <span t-field="o.product_uom_id.name" groups="uom.group_uom"/>
+                            </div>
+                        </div>
+                        <!-- FIn cabecera -->
+                        <!-- Lineas -->
+                         <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th name="th_sm_product">
+                                        <strong>Componente</strong>
+                                    </th>
+                                    <th name="th_sm_quantity">
+                                        <strong>Cantidad</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.bom_line_ids" t-as="component">
+                                    <td>
+                                        <span t-field="component.product_id"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="component.product_qty"/>
+                                        <span t-field="component.product_uom_id"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Fin Lineas -->
+                    </div>
+                </t>
+            </t>
+
+
+         </template>
+
+    </data>
+</odoo>

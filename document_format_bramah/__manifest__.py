@@ -28,7 +28,8 @@
         'views/invoice/report_invoice_document_email.xml',
         'views/invoice/report_invoice_document_preimpreso.xml',
         'views/purchase/purchase_order_document.xml',
-        'views/mrp/mrp_report.xml'
+        'views/mrp/mrp_report.xml',
+        'views/mrp/mrp_bom_list.xml',
     ],
     'demo': [],
     'installable': True,
