@@ -21,7 +21,10 @@ class AccountMove(models.Model):
     @api.model
     def create(self, vals):
         date = False
-        if vals['type']:
+        print("*"*80)
+        print(vals)
+        # if vals['type']:
+        if vals.get('type'):
             if vals['type'] == 'out_refund':
                 date = self._get_invoice_date(vals)
             else:
@@ -33,7 +36,7 @@ class AccountMove(models.Model):
 
     def _get_sale_order_date(self, vals):
         sale_order_date = None
-        if not vals['invoice_origin']:
+        if not vals.get('invoice_origin'):
             return sale_order_date
         for origin in vals['invoice_origin'].split(', '):
             sale_order = self.env['sale.order'].search([('name', '=', origin)], limit=1)
