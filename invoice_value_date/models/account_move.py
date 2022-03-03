@@ -21,9 +21,6 @@ class AccountMove(models.Model):
     @api.model
     def create(self, vals):
         date = False
-        print("*"*80)
-        print(vals)
-        # if vals['type']:
         if vals.get('type'):
             if vals['type'] == 'out_refund':
                 date = self._get_invoice_date(vals)
