@@ -54,11 +54,6 @@ class AccountMove(models.Model):
                     if "POS" not in invoice.name:
                         for origin in invoice.invoice_origin.split(', '):
                             sale_order = self.env['sale.order'].search([('name', '=', origin)], limit=1)
-                            print("*"*80)
-                            print(invoice.name)
-                            print(sale_order.create_date.date())
-                            print( "tiene que ser menor que ")
-                            print(result_date)
                             if sale_order and (result_date is False or sale_order.create_date.date() < result_date):
                                 result_date = sale_order.create_date.date()
                         if result_date is False:
