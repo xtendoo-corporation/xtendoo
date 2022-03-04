@@ -1,7 +1,7 @@
 {
     "name": "Importation from gestool",
     "category": "Product",
-    "version": "14.0.1.0",
+    "version": "15.0.1.0",
     "depends": ["product"],
     "description": """
         Wizard to Import from gestool.

@@ -7,25 +7,16 @@
         <field name="arch" type="xml">
             <form string="Importador desde Gestool">
                 <h2>Selecciona ficheros a importar</h2>
-                <br></br>
+                <br/>
                 <h5>Seleccione fichero de Agentes</h5>
                 <!--agentes-->
                 <field
-                    name="data_file_users"
+                    name="data_file_agentes"
                     filename="filename"
                     placeholder="Choose a file to import..."
                 />
                 <field name="filename" invisible="1" />
-                <br></br>
-<!--                <h5>Seleccione fichero de Grupos de clientes</h5>-->
-<!--                &lt;!&ndash;rutas&ndash;&gt;-->
-<!--                <field-->
-<!--                    name="data_file_industry"-->
-<!--                    filename="filename"-->
-<!--                    placeholder="Choose a file to import..."-->
-<!--                />-->
-<!--                <field name="filename" invisible="1" />-->
-<!--                <br></br>-->
+                <br/>
                 <h5>Seleccione fichero de Clientes/Proveedores</h5>
                 <!--clientes-->
                 <field
@@ -34,7 +25,7 @@
                     placeholder="Choose a file to import..."
                 />
                 <field name="filename" invisible="1" />
-                <br></br>
+                <br/>
                 <h5>Seleccione fichero de Categorias</h5>
                 <!--categorias-->
                 <field
