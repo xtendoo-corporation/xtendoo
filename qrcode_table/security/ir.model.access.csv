@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_table_order,access_table_order,model_table_order,,1,1,1,1
+access_table_order_line,access_table_order_line,model_table_order_line,,1,1,1,1
+access_restaurant_table,restaurant.table.user,model_restaurant_table,,1,0,0,0
+access_product_template_public,product.template.public,product.model_product_template,,1,0,0,0
+access_product_product_public,product.product.public,product.model_product_product,,1,0,0,0
+access_product_attribute_line_public,product.attribute.line.public,product.model_product_template_attribute_line,base.group_public,1,0,0,0
+access_product_attribute_value_public,product.attribute.value.public,product.model_product_attribute_value,,1,0,0,0
+access_product_attribute_price_public,product.attribute.price.public,product.model_product_template_attribute_value,,1,0,0,0
+access_product_attribute_public,product.attribute.public,product.model_product_attribute,,1,0,0,0

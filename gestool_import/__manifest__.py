@@ -8,8 +8,8 @@
         """,
     "data": [
         "security/ir.model.access.csv",
-        "wizard/gestool_import.xml",
-        "views/gestool_import.xml"
+        "wizard/webservice_import.xml",
+        "views/webservice_import.xml"
     ],
     "installable": True,
     "auto_install": True,

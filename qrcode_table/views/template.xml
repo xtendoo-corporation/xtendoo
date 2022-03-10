@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="variants_tmp">
+        <t t-set="attribute_value_ids" t-value="get_attribute_value_ids(False,product)" />
+        <ul t-attf-class="list-unstyled js_add_cart_variants #{ul_class}" t-att-data-attribute_value_ids="json.dumps(attribute_value_ids)">
+            <t t-foreach="product.attribute_line_ids.sorted(key=lambda x: x.attribute_id.sequence)" t-as="variant_id">
+                <li t-if="len(variant_id.value_ids) > 1">
+                    <strong t-field="variant_id.attribute_id.name" />
+                    <ul class="list-unstyled">
+                        <t t-set="inc" t-value="0" />
+                        <t t-foreach="variant_id.product_template_value_ids" t-as="value_id">
+                            <li class="form-group js_attribute_value" style="margin: 0;">
+                                <label class="control-label" style="margin: 0 20px;">
+                                    <input type="radio" t-att-class="'js_variant_change' if variant_id.attribute_id.create_variant else None" t-att-checked="'checked' if not inc else None" t-att-name="'attribute-%s-%s' % (product.id, variant_id.attribute_id.id)" t-att-value="value_id.id" style="vertical-align: top; margin-right: 10px;" />
+                                    <span t-field="value_id.name" />
+                                    <span class="badge" t-if="value_id.price_extra">
+                                        <t t-esc="value_id.price_extra > 0 and '+' or ''" /><span t-field="value_id.price_extra" style="white-space: nowrap;" t-options='{
+                                              "widget": "monetary",
+                                              "from_currency": product.currency_id,
+                                              "display_currency": res_company.currency_id
+                                           }' />
+                                    </span>
+                                </label>
+                            </li>
+                            <t t-set="inc" t-value="inc+1" />
+                        </t>
+                    </ul>
+                </li>
+            </t>
+        </ul>
+    </template>
+    <template id="product_price_temp">
+        <div itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer" class="product_price mt16">
+            <h4 class="oe_price_h4 css_editable_mode_hidden">
+                <b class="oe_price" style="white-space: nowrap;" t-esc="product.list_price" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}" />
+                <span itemprop="price" style="display:none;" t-esc="product.list_price" />
+                <span itemprop="priceCurrency" style="display:none;" t-esc="res_company.currency_id.name" />
+            </h4>
+            <h4 class="css_non_editable_mode_hidden decimal_precision" t-att-data-precision="str(product.currency_id.decimal_places)">
+                <span t-field="product.list_price" t-options='{
+                       "widget": "monetary",
+                       "display_currency": product.currency_id,
+                   }' />
+            </h4>
+            <h4 class="d-none oe_not_available bg-warning">Product not available</h4>
+        </div>
+    </template>
+    <template id="edit_pos_table_notes">
+        <div class="modal fade" id="EditPosTableNote" tabindex="-1" role="dialog" aria-labelledby="EditPosTableNote" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="pos_table_note_title">Edit Note</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span>&amp;times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea name="pos_note" class="pos_table_note_text form-control" id="pos_table_note_text"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary btn_pos_table_note_update" order_line_id="">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="quick_view_tempate" name="quick view template">
+        <div class="quick">
+            <div class="quick-view-bgr">
+                <button class="quick-view btn btn-primary" t-attf-data-target="#product-#{ product.id }" role="button" data-toggle="modal" title="Quick view">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
+        </div>
+        <div t-att-id="'product-'+str(product.id)" class="modal fade in quick-modal" role="dialog" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span>&amp;times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body col-md-12">
+                        <div class="row">
+                            <div class="col-md-5 col-md-offset-1">
+                                <a itemprop="url" href="">
+                                    <img itemprop="image" class="img img-responsive quick-view-product" t-att-src="website.image_url(product, 'image_512')" t-att-alt="product.name" />
+                                </a>
+                            </div>
+                            <div class="col-md-5 col-md-offset-1">
+                                <div class="col-md-12 text-left">
+                                    <h2 class="mt16 mb16">
+                                        <strong t-field="product.display_name" />
+                                    </h2>
+                                    <div class="text-muted">
+                                        <div t-field="product.description_sale" class="mt16 mb16" />
+                                        <div class="js_attributes" />
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mt16 mb16">
+                                    <div class="css_quantity input-group">
+                                        <div class="input-group-prepend">
+                                            <button t-attf-href="#" class="btn btn-primary js_add_cart_json d-none d-md-inline-block" aria-label="Remove one" title="Remove one">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="text" class="js_quantity form-control quantity" data-min="1" name="add_qty" t-att-value="add_qty or 1" />
+                                        <div class="input-group-append">
+                                            <button t-attf-href="#" class="btn btn-primary float_left js_add_cart_json d-none d-md-inline-block" aria-label="Add one" title="Add one">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 text-left">
+                                    <t t-set="attribute_value_ids" t-value="get_attribute_value_ids(False,product)" />
+                                    <form action="/table/cart/update_json" class="js_add_cart_variants" t-att-data-attribute_value_ids="product.product_variant_ids.ids" method="POST">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
+                                        <div class="js_product" t-if="product.product_variant_ids">
+                                            <t t-placeholder="select">
+                                                <input type="hidden" class="product_id" name="product_id" t-att-value="product.product_variant_id.id if len(product.product_variant_ids) == 1 else '0'" />
+                                                <t t-call="qrcode_table.variants_tmp">
+                                                    <t t-set="ul_class" t-value="'nav-stacked'" />
+                                                </t>
+                                            </t>
+                                            <h1>
+                                                <t t-call="qrcode_table.product_price_temp" />
+                                            </h1>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <textarea name="note" placeholder="Notes" class="form-control" id="notes"></textarea>
+                                                </div>
+                                            </div>
+                                            <buttom id="add_to_cart" class="btn btn-primary btn-md mt8 js_check_product a-submit" t-att-table_id="table_obj.id">Add to Cart</buttom>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="table_cart_shop" name="Cart Table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th width="20" class="pl-0 pr-0">Note</th>
+                    <th width="20">#</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-if="order">
+                    <t t-if="order.lines">
+                        <t t-foreach="order.lines" t-as="line">
+                            <tr>
+                                <td>
+                                    <t t-esc="line.product_id.sudo().with_context(display_default_code=False).display_name" />
+                                </td>
+                                <td>
+                                    <t t-esc="line.qty" />
+                                </td>
+                                <td><span t-esc="line.price_unit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}" /></td>
+                                <td>
+                                    <t t-if="line.state == 'draft'">
+                                        <i class="fa fa-edit edit_pos_table_notes" t-att-order_line_id="line.id"></i>
+                                    </t>
+                                </td>
+                                <td>
+                                    <t t-if="line.state == 'draft'">
+                                        <i class="fa fa-trash remove_order_line" t-att-order_line_id="line.id"></i>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </t>
+            </tbody>
+            <t t-if="order">
+                <tfoot>
+                    <tr>
+                        <td colspan="5">
+                            <span class="cart_total_table_pos">Taxes: <small t-esc="order.amount_tax" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}" /></span>
+                            <span class="cart_total_table_pos">Total: <small t-esc="order.amount_total" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}" /></span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </t>
+        </table>
+        <t t-if="order">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <a href="/confirm/table/order" class="btn btn-success table_confirm_order">Confirm Order</a>
+                </div>
+            </div>
+        </t>
+    </template>
+    <template id="tablebook_temp" name="Booking Table">
+        <t t-call="website.layout">
+            <div id="wrap" class="pos_table_order">
+                <div class="oe_structure" />
+                <div class="container" style="max-width:95%;">
+                    <div class="oe_structure" />
+                    <div class="row mt-3 mb-3">
+                        <div class="col-lg-9 product_main_block">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h3 class="text-center">
+                                        <t t-esc="table_obj.name" />
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <!-- Nav tabs -->
+                                            <ul class="nav nav-pills flex-column">
+                                                <t t-foreach="cate_ids" t-as="cat_id">
+                                                    <li class="nav-item">
+                                                        <a t-attf-href="#pos_table_category_#{cat_id.id}" t-attf-class="nav-link text-left pt-2 pb-2 #{'active' if cat_id.id == active_cat_id.id else ''}" data-toggle="tab">
+                                                            <t t-esc="cat_id.name" />
+                                                        </a>
+                                                    </li>
+                                                </t>
+                                            </ul>
+                                        </div>
+                                        <div class="col-lg-9">
+                                            <div class="tab-content">
+                                                <t t-foreach="cate_ids" t-as="pcat_id">
+                                                    <div t-att-class="'tab-pane active' if pcat_id.id == active_cat_id.id else 'tab-pane'" t-attf-id="pos_table_category_#{pcat_id.id}">
+                                                        <div class="row">
+                                                            <t t-foreach="products" t-as="product">
+                                                                <t t-if="product.pos_categ_id">
+                                                                    <t t-if="product.pos_categ_id.id == pcat_id.id">
+                                                                        <div class="col-md-4 productbox">
+                                                                            <div class="card h-100">
+                                                                                <img t-attf-src="/web/image/product.template/#{product['id']}/image_1024" class="card-img-top" t-att-alt="product.name" />
+                                                                                <div class="card-body pr-2 pl-2">
+                                                                                    <h5 class="card-title">
+                                                                                        <t t-esc="product.name" />
+                                                                                    </h5>
+                                                                                </div>
+                                                                                <div class="card-footer pr-2 pl-2">
+                                                                                    <div class="productprice">
+                                                                                        <div class="pull-right">
+                                                                                            <t t-call="qrcode_table.quick_view_tempate" />
+                                                                                        </div>
+                                                                                        <div class="pricetext">
+                                                                                            <span t-esc="product.list_price" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}" />
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </t>
+                                                                </t>
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 shopping_cart_table">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h3 class="text-center">Cart</h3>
+                                </div>
+                                <div class="card-body table-responsive pl-0 pr-0 pt-0">
+                                    <div class="shopping_cart">
+                                        <t t-call="qrcode_table.table_cart_shop" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <t t-call="qrcode_table.edit_pos_table_notes" />
+            </div>
+            <t t-if="not ol_resume">
+                <t t-if="old_order_resume">
+                    <div class="modal model_resume_tb_order" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Orders</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Do you want to resume order or not?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a t-attf-href="/table/resume/#{slug(old_order_resume)}" class="btn btn-primary">Yes</a>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">New Order</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
