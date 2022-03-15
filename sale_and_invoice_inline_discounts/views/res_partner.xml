@@ -1,0 +1,15 @@
+<odoo>
+     <record id="res_partner_inline_discount_form" model="ir.ui.view">
+         <field name="name">res.partner.inline.discount.form</field>
+         <field name="model">res.partner</field>
+         <field name="inherit_id" ref="base.view_partner_form" />
+         <field name="arch" type="xml">
+              <xpath expr="//group[@name='container_row_2']/group[@name='sale']" position="before">
+                  <group name="Inline Discount" string="Descuento en linea">
+                        <field name="sale_line_discount_ids" widget="many2many_tags" options="{'no_create_edit': True}"
+                        />
+                  </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
