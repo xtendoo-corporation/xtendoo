@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="account.view_move_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='invoice_line_ids']/tree//field[@name='discount']" position="after">
-                <field name="account_line_discount_ids" widget="many2many_tags" options="{'no_create_edit': True}"
+                <field name="account_inline_discount_ids" widget="many2many_tags" options="{'no_create_edit': True}"
                        optional="show"
                 />
             </xpath>
