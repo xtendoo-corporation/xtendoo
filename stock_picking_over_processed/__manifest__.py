@@ -12,8 +12,9 @@
     "depends": [
         "stock",
     ],
-    'data': [
-        'views/views.xml',
-    ],
     "installable": True,
 }
+
+# 'data': [
+#     'views/views.xml',
+# ],

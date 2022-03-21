@@ -11,31 +11,38 @@ class StockOverProcessedTransfer(models.TransientModel):
     _inherit = "stock.overprocessed.transfer"
 
     def action_confirm(self):
-        picking = self.env["stock.picking"].search(
-            [
-                ("id", "=", self.picking_id.id),
-            ]
-        )
-        move_lines = picking.move_line_ids_without_package
-        move_lines = move_lines.filtered(
-            lambda move: float_compare(move_lines.qty_done, move_lines.product_uom_qty,
-                                                                     precision_rounding=move_lines.move_id.product_uom.rounding) == 1
-        )
-        #move_lines = picking.move_line_ids_without_package
-        for line in move_lines:
-            print("/"*50)
-            print("qty_done", line.product_qty)
-            print("product_uom_qty", line.product_uom_qty)
-            print("/" * 50)
+        self.ensure_one()
+        print("*"*80)
+        print("StockOverProcessedTransfer:",self.picking_id.name)
+        print("*"*80)
 
-        print("*"*100)
-        print("entra en action confirm", self.picking_id.id)
-        print("entra en action confirm", move_lines)
-        print("*" * 100)
+        self.picking_id.action_update_sale_order()
+
+        # picking = self.env["stock.picking"].browse(self.picking_id.id)
+        # move_lines = picking.move_line_ids_without_package
+        #
+        # for line in move_lines:
+        #     print("/"*50)
+        #     print("qty_done", line.product_qty)
+        #     print("product_uom_qty", line.product_uom_qty)
+        #     print("/"*50)
+        #
+        # move_lines = move_lines.filtered(
+        #     lambda move: float_compare(move_lines.qty_done, move_lines.product_uom_qty,
+        #                                                              precision_rounding=move_lines.move_id.product_uom.rounding) == 1
+        # )
+        #move_lines = picking.move_line_ids_without_package
+        # for line in move_lines:
+        #     print("/"*50)
+        #     print("qty_done", line.product_qty)
+        #     print("product_uom_qty", line.product_uom_qty)
+        #     print("/" * 50)
+        #
+        # print("*"*100)
+        # print("entra en action confirm", self.picking_id.id)
+        # print("entra en action confirm", move_lines)
+        # print("*" * 100)
+
         return super().action_confirm()
 
 
-# .filtered(
-#             lambda move: move.product_uom_qty != 0 and float_compare(move.quantity_done, move.product_uom_qty,
-#                                                                      precision_rounding=move.product_uom.rounding) == 1
-#         )

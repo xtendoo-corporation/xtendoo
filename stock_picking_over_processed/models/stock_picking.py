@@ -9,7 +9,7 @@ class Picking(models.Model):
 
     def action_update_sale_order(self):
         moves = self._get_overprocessed_stock_moves()
-        for move in moves:
+        for move in moves: # .filtered(lambda m: m.sale_id)
             if self.sale_id:
                 move_line = self.sale_id.order_line.filtered(
                     lambda l: l.product_id == move.product_id
