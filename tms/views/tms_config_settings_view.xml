@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_tms_config_settings" model="ir.ui.view">
+        <field name="name">tms settings</field>
+        <field name="model">tms.config.settings</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration" string="tms config settings">
+                <header>
+                    <button class="oe_highlight" name="execute" string="Apply" type="object"/>or
+                    
+                    <button class="oe_link" name="cancel" string="Cancel" type="object"/>
+                </header>
+                <group id="tms" string="TMS">
+                    <label for="id" string="Expense Currency Rate"/>
+                    <div>
+                        <field class="oe_inline" name="_default_expense_currency_rate"/>
+                    </div>
+                </group>
+            </form>
+        </field>
+    </record>
+    <record id="action_tms_config" model="ir.actions.act_window">
+        <field name="name">Tms Config Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">tms.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+    <menuitem id="menu_custom_config" name="Settings" parent="tms.menu_tms_settings"
+    sequence="1" action="action_tms_config"/>
+</odoo>

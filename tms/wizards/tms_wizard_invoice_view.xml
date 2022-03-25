@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="tms_wizard_invoice" model="ir.ui.view">
+        <field name="name">Create Invoices</field>
+        <field name="model">tms.wizard.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Create Invoice">
+                <separator colspan="4" string="Create Customer Invoice from selected Records ?"/>
+                <footer>
+                    <button name="make_invoices" string="Confirm" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <act_window
+        id="action_waybill_wizard_invoice"
+        name="Create Customer Invoice"
+        res_model="tms.wizard.invoice"
+        binding_model="tms.waybill"
+        target="new"
+        view_mode="form"/>
+    <act_window
+        id="action_fuel_log_wizard_invoice"
+        name="Create Customer Invoice"
+        res_model="tms.wizard.invoice"
+        binding_model="fleet.vehicle.log.fuel"
+        target="new"
+        view_mode="form"/>
+</odoo>

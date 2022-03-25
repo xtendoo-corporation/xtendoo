@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="tms_view_wizard_payment" model="ir.ui.view">
+        <field name="name">Make Payment</field>
+        <field name="model">tms.wizard.payment</field>
+        <field name="arch" type="xml">
+            <form string="Make Payment">
+                <group>
+                    <group>
+                        <field name="journal_id"/>
+                        <field name="amount_total"/>
+                    </group>
+                    <group>
+                        <field name="date"/>
+                        <field name="notes"/>
+                    </group>
+                </group>
+                <footer>
+                    <button class="oe_highlight" name="make_payment" string="Confirm" type="object"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <act_window 
+        id="action_view_advance_payment"
+        name="Make Advance Payment."
+        res_model="tms.wizard.payment"
+        binding_model="tms.advance"
+        target="new"
+        view_mode="form"/>
+    <act_window 
+        id="action_view_expense_payment"
+        name="Make Driver Expense Payment."
+        res_model="tms.wizard.payment"
+        binding_model="tms.expense"
+        target="new" 
+        view_mode="form"/>
+    <act_window 
+        id="action_view_expense_loan_payment"
+        name="Make Loan Expense Payment."
+        res_model="tms.wizard.payment"
+        binding_model="tms.expense.loan"
+        target="new"
+        view_mode="form"/>
+</odoo>
