@@ -23,11 +23,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename = fields.Char()
+
     data_file_partner = fields.Binary(
         string="File to Import",
         required=False,
         help="Get you data from Gestool.",
     )
+    filename = fields.Char()
+
     data_file_category = fields.Binary(
         string="File to Import",
         required=False,
@@ -68,28 +71,47 @@ class GestoolImport(models.TransientModel):
     def parse_partner(self, row):
         partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
 
-        country_id = self.env["res.country"].search([("name", "=", row[16]), ])
-        if country_id:
-            country_id = country_id.id
+        # country_id = self.env["res.country"].search([("name", "=", row[16]), ])
+        # if country_id:
+        #     country_id = country_id.id
 
         state_id = self.env["res.country.state"].search([("name", "=", row[6].capitalize()), ])
         if state_id:
             state_id = state_id.id
 
-        agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
-        if agent_id:
-            agent_id = [(6, 0, [agent_id.id])]
-        else:
-            agent_id = [(6, 0, [])]
+        # agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
+        # if agent_id:
+        #     agent_id = [(6, 0, [agent_id.id])]
+        # else:
+        #     agent_id = [(6, 0, [])]
+
+        # print("/////////CLIENTE//////////")
+        # print("Nombre:", row[1])
+        # print("ref",row[0])
+        # print("name",row[1])
+        # print('street',row[3])
+        # print('city',row[4])
+        # print('zip',row[5])
+        # print('phone',row[7])
+        # print('mobile',row[8])
+        # print('website',row[9])
+        # print('email',row[10])
+        # print('display_name',row[14])
+        # print('company_name',row[15])
+        # print('comment',row[17])
+        # print('customer_rank',row[19])
+        # print('supplier_rank',row[20])
+        # print('company', row[25])company_id
+        # print('State', row[6].capitalize())
+        # print('State_id', state_id)
+        # print('DNI', row[2])
 
         if partner:
-            partner.write({
+            partner.sudo().write({
                 "name": row[1],
-                'vat': row[2],
                 'street': row[3],
                 'city': row[4],
                 'zip': row[5],
-                'state_id': state_id,
                 'phone': row[7],
                 'mobile': row[8],
                 'website': row[9],
@@ -97,18 +119,20 @@ class GestoolImport(models.TransientModel):
                 'display_name': row[14],
                 'company_name': row[15],
                 'comment': row[17],
-                'country_id': country_id,
-                'agent_ids': agent_id,
+                'company_id': row[25],
+                'lang': "es_ES",
+                'state_id': state_id,
+                'vat': row[2],
+                # 'country_id': country_id,
+                # 'agent_ids': agent_id,
             })
         else:
-            self.env["res.partner"].create({
+            self.env["res.partner"].sudo().create({
                 "ref": row[0],
                 "name": row[1],
-                'vat': row[2],
                 'street': row[3],
                 'city': row[4],
                 'zip': row[5],
-                'state_id': state_id,
                 'phone': row[7],
                 'mobile': row[8],
                 'website': row[9],
@@ -120,8 +144,12 @@ class GestoolImport(models.TransientModel):
                 'comment': row[17],
                 'customer_rank': row[19],
                 'supplier_rank': row[20],
-                'country_id': country_id,
-                'agent_ids': agent_id,
+                'company_id': row[25],
+                'lang': "es_ES",
+                'state_id': state_id,
+                'vat': row[2],
+                # 'country_id': country_id,
+                # 'agent_ids': agent_id,
             })
 
     def _import_category(self, data_file_category):
@@ -131,16 +159,17 @@ class GestoolImport(models.TransientModel):
             raise UserError(_("Can not read the file"))
 
         for row in csv_data:
-            self.parse_categories(row)
+            # self.parse_categories(row)
+            print("--------------------CATEGORY--------------------------")
         return
 
-    def parse_categories(self, row):
-        category = self.env["product.category"].search([("name", "=", row[0]),])
-        if not category:
-            self.env["product.category"].create({
-                "name": row[0],
-                "parent_id" : 1,
-            })
+    # def parse_categories(self, row):
+    #     category = self.env["product.category"].search([("name", "=", row[0]),])
+    #     if not category:
+    #         self.env["product.category"].create({
+    #             "name": row[0],
+    #             "parent_id" : 1,
+    #         })
 
     def _import_agentes(self, data_file_agentes):
         try:
@@ -149,31 +178,32 @@ class GestoolImport(models.TransientModel):
             raise UserError(_("Can not read the file"))
 
         for row in csv_data:
-            self.parse_agentes(row)
+            # self.parse_agentes(row)
+            print("--------------------AGENTES--------------------------")
         return
 
-    def parse_agentes(self, row):
-        agente = self.env["res.partner"].search([("ref", "=", row[0]), ])
-        if agente:
-            agente.write({
-                "name": row[1],
-                'email': row[10],
-                'display_name': row[1],
-                'is_company': 0,
-                'active': 1,
-                'customer_rank': 0,
-                'supplier_rank': 0,
-                'agent':1,
-            })
-        else:
-            self.env["res.partner"].create({
-                "ref": row[0],
-                "name": row[1],
-                'email': row[10],
-                'display_name': row[1],
-                'is_company': 0,
-                'active': 1,
-                'customer_rank': 0,
-                'supplier_rank': 0,
-                'agent':1,
-            })
+    # def parse_agentes(self, row):
+    #     agente = self.env["res.partner"].search([("ref", "=", row[0]), ])
+    #     if agente:
+    #         agente.write({
+    #             "name": row[1],
+    #             'email': row[10],
+    #             'display_name': row[1],
+    #             'is_company': 0,
+    #             'active': 1,
+    #             'customer_rank': 0,
+    #             'supplier_rank': 0,
+    #             'agent':1,
+    #         })
+    #     else:
+    #         self.env["res.partner"].create({
+    #             "ref": row[0],
+    #             "name": row[1],
+    #             'email': row[10],
+    #             'display_name': row[1],
+    #             'is_company': 0,
+    #             'active': 1,
+    #             'customer_rank': 0,
+    #             'supplier_rank': 0,
+    #             'agent':1,
+    #         })
