@@ -8,6 +8,8 @@ from odoo.exceptions import UserError
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
+    purchase_price = fields.Float(string='Cost', digits='Product Price', store=True)
+
     state = fields.Selection(
         related="order_id.state"
     )
@@ -16,17 +18,19 @@ class SaleOrderLine(models.Model):
         compute="_compute_is_pricelist_change",
     )
 
+
     @api.onchange("price_unit")
     def _onchange_price_unit(self):
-        if not self.product_id:
-            return
-        if self.price_unit == 0.0:
-            return
-        if self.price_unit < self.product_id.standard_price:
-            raise UserError(
-                _("The unit price of %s, can't be lower than cost price %.2f")
-                % (self.product_id.name, self.product_id.standard_price)
-            )
+        for line in self:
+            if not line.product_id:
+                return
+            if line.price_unit == 0.0:
+                return
+            if line.price_unit < line.product_id.standard_price:
+                raise UserError(
+                    _("The unit price of %s, can't be lower than cost price %.2f")
+                    % (line.product_id.name, line.product_id.standard_price)
+                )
 
     @api.depends("price_unit")
     def _compute_is_pricelist_change(self):
