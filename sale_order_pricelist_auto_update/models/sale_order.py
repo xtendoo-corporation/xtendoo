@@ -10,5 +10,8 @@ class SaleOrder(models.Model):
 
 
     def _action_confirm(self):
-        self.mapped('order_line')._onchange_price_unit()
+        for line in self.order_line:
+            line._onchange_price_unit()
         return super(SaleOrder, self)._action_confirm()
+
+
