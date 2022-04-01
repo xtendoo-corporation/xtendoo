@@ -9,11 +9,15 @@ class AccountPayment(models.Model):
 
     lock_date = fields.Boolean(
         string="Lock date",
-        default=lambda self: self._get_lock_date()
+        compute='_set_lock_date',
     )
 
     def _get_lock_date(self):
         return not self.env["res.users"].has_group(
+            "d_hr_administration.administration"
+        )
+    def _set_lock_date(self):
+        self.lock_date = not self.env["res.users"].has_group(
             "d_hr_administration.administration"
         )
 
