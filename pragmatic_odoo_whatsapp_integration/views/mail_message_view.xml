@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="hubspot_mail_message_form" model="ir.ui.view">
+            <field name="name">mail.activity.form.inherit</field>
+            <field name="model">mail.message</field>
+            <field name="inherit_id" ref="mail.mail_message_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='is_internal']" position="after">
+                    <field name="whatsapp_message_id"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

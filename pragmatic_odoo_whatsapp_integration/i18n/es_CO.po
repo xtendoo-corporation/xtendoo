@@ -1,0 +1,1551 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* pragmatic_odoo_whatsapp_integration
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-12-22 10:50+0000\n"
+"PO-Revision-Date: 2021-12-22 10:50+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid " is placed"
+msgstr " es colocado"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "(with reference"
+msgstr "(con referencia"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/res_users.py:0
+#, python-format
+msgid "*Your Email:* "
+msgstr "*Tu correo electrónico:*"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_retry_msg_view_form
+msgid ""
+"<i class=\"fa fa-exclamation-triangle\" title=\"Warning\" role=\"img\" aria-"
+"label=\"Warning\"/> Oops, Something went wrong! please click on Retry to "
+"send the message"
+msgstr ""
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.account_whatsapp_feature
+msgid "Account Invoice Whatsapp Feature"
+msgstr "Firma de la factura de la cuenta"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.account_payment_feature
+msgid "Account Payment Whatsapp Feature"
+msgstr "Función de Whatsapp de pago de cuenta"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_invoice_enable_signature
+msgid "Account invoice Signature"
+msgstr "Firma de la factura de la cuenta"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_invoice_product_details_msg
+msgid "Account invoice product details in message?"
+msgstr "Detalles del producto de la factura de la cuenta en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_invoice_info_msg
+msgid "Account invoice product information in message?"
+msgstr "Información del producto de la factura de la cuenta en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_invoice_display_chatter_message
+msgid "Account invoice send in chatter message?"
+msgstr "Envío de factura de cuenta en mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_needaction
+msgid "Action Needed"
+msgstr "Accion necesaria"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_ids
+msgid "Activities"
+msgstr "Ocupaciones"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Decoración de excepción de actividad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_state
+msgid "Activity State"
+msgstr "Estado de actividad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icono de tipo de actividad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+msgid "Add Order information in message?"
+msgstr "Agregar información de pedido en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+msgid "Add Order product details in message?"
+msgstr "Agregar detalles del producto del pedido en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_purchase_order_info_msg
+msgid "Add PO Order information in message?"
+msgstr "Agregar información de pedido de orden de compra en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_purchase_order_product_details_msg
+msgid "Add PO Order product details in message?"
+msgstr ""
+"Agregar detalles del producto de pedido de orden de compra en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_purchase_enable_signature
+msgid "Add PO Signature?"
+msgstr "Agregar firma de orden de compra?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_purchase_display_chatter_message
+msgid "Add PO in chatter message?"
+msgstr "Agregar PO en el mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_order_info_msg
+msgid "Add SO Order information in message?"
+msgstr "Agregar información de pedido SO en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_order_product_details_msg
+msgid "Add SO Order product details in message?"
+msgstr "Agregar detalles del producto de pedido SO en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_display_chatter_message
+msgid "Add SO in chatter message?"
+msgstr "Agregar SO en el mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_enable_signature
+msgid "Add Sale Order Signature?"
+msgstr "Añadir firma de pedido de venta?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_crm_enable_signature
+msgid "Add Signature in crm?"
+msgstr "Agregar firma en crm?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_stock_enable_signature
+msgid "Add Signature in delivery order?"
+msgstr "Agregar firma en orden de entrega?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_invoice_enable_signature
+msgid "Add Signature in invoice?"
+msgstr "Agregar firma en la factura?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_project_enable_signature
+msgid "Add Signature in project task?"
+msgstr "Agregar firma en la tarea del proyecto?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_send_res_partner_view_form
+msgid "Add contacts"
+msgstr "Añadir contactos"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_crm_display_chatter_message
+msgid "Add in chatter message in crm?"
+msgstr "Agregar mensaje de charla en crm?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_stock_display_chatter_message
+msgid "Add in chatter message in delivery order?"
+msgstr "Añadir un mensaje de charla en la orden de entrega?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_invoice_display_chatter_message
+msgid "Add in chatter message in invoice?"
+msgstr "Agregar mensaje de charla en la factura?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_project_display_chatter_message
+msgid "Add in chatter message in project task?"
+msgstr "Agregar un mensaje de charla en la tarea del proyecto?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_crm_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_task_configuration_inherit
+msgid "Add in chatter message?"
+msgstr "Añadir un mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_stock_info_msg
+msgid "Add order information in message delivery order?"
+msgstr "Agregar información de pedido en el pedido de envío de mensajes?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_invoice_info_msg
+msgid "Add order information in message for invoice?"
+msgstr "Agregar información del pedido en el mensaje de la factura?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_stock_product_details_msg
+msgid "Add order product details in message for delivery order?"
+msgstr ""
+"Agregar detalles del producto del pedido en el mensaje para el pedido de "
+"entrega?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__group_invoice_product_details_msg
+msgid "Add order product details in message for invoice?"
+msgstr "Agregar detalles del producto del pedido en el mensaje de la factura?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_crm_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_task_configuration_inherit
+msgid "Add signature?"
+msgstr "Agregar firma?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_send_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_view_form
+msgid "Attach a file"
+msgstr "Adjuntar un archivo"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__attachment_data
+msgid "Attachment"
+msgstr "Adjunto archivo"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__attachment_id
+msgid "Attachment "
+msgstr "Adjunto archivo"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_attachment_count
+msgid "Attachment Count"
+msgstr "Recuento de archivos adjuntos"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__attachment_ids
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__attachment_ids
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__attachment_ids
+msgid "Attachments"
+msgstr "Recuento de archivos adjuntos"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__whatsapp_authenticate
+msgid "Authenticate"
+msgstr "Autenticar"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__author
+msgid "Author"
+msgstr "Autor"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:project.task.type,legend_blocked:pragmatic_odoo_whatsapp_integration.whatsapp_done_project_task_type
+msgid "Blocked"
+msgstr "Obstruida"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_crm_enable_signature
+msgid "CRM Signature"
+msgstr "Firma de CRM"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_crm_display_chatter_message
+msgid "CRM send in chatter message?"
+msgstr "CRM enviar mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_send_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_partner__chatId
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_users__chatId
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__chatId
+msgid "Chat ID"
+msgstr "ID de chat"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_messages_search
+msgid "Chat Id"
+msgstr "ID de chat"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__chatName
+msgid "Chat Name"
+msgstr "Nombre de chat"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_qr_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_retry_msg_view_form
+msgid "Close"
+msgstr "Cerca"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_qr_view_form
+msgid ""
+"Close the window after few seconds, Once you get logged in signal from your "
+"mobile device."
+msgstr ""
+"Cierre la ventana después de unos segundos, una vez que haya iniciado "
+"sesión, la señal de su dispositivo móvil."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_res_config_settings
+msgid "Config Settings"
+msgstr "Opciones de configuración"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_users__country_id
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.fields
+msgid "Country"
+msgstr "País"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.fields
+msgid "Country..."
+msgstr "País..."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__create_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__create_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__create_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__create_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg__create_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__create_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__create_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__create_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__create_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg__create_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#, python-format
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.whatsapp_custom_res_partner
+msgid "Customers"
+msgstr "Clientes"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_messages_search
+msgid "Date"
+msgstr "Fecha"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__time
+msgid "Date and time"
+msgstr "Fecha y hora"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/project_task.py:0
+#, python-format
+msgid "Deadline"
+msgstr "Plazo"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#. openerp-web
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/xml/mobile_widget.xml:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/xml/mobile_widget.xml:0
+#, python-format
+msgid "Delete"
+msgstr "Borrar"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.stock_whatsapp_feature
+msgid "Delivery Order Whatsapp Feature"
+msgstr "Función de Whatsapp de pedido de entrega"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Delivery order"
+msgstr "Orden de entrega"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/project_task.py:0
+#, python-format
+msgid "Description"
+msgstr ""
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_mail_channel
+msgid "Discussion Channel"
+msgstr "Canal de conversaciones"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_crm_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_task_configuration_inherit
+msgid "Display Message in chatter"
+msgstr "Mostrar mensaje en charla"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_account_move__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_crm_lead__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_channel__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_message__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_project_task__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_partner__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_users__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg__display_name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_display_chatter_message
+msgid "Display in chatter message?"
+msgstr "Mostrar en mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+msgid "Display order information in message"
+msgstr "Mostrar la información del pedido en el mensaje"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+msgid "Display order product details in message"
+msgstr "Mostrar detalles del producto del pedido en el mensaje"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:project.task.type,name:pragmatic_odoo_whatsapp_integration.whatsapp_done_project_task_type
+msgid "Done"
+msgstr "Hecho"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Draft Payment"
+msgstr "Pago de giro"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/account_invoice.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Due Amount"
+msgstr "Cantidad debida"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#, python-format
+msgid "Email"
+msgstr ""
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#, python-format
+msgid "Expected closing date"
+msgstr "Fecha de cierre prevista"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_channel_ids
+msgid "Followers (Channels)"
+msgstr "Seguidores (Canales)"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Socios)"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Following is your delivery order details."
+msgstr "A continuación se muestran los detalles de su pedido de entrega."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Following is your order details."
+msgstr "A continuación se muestran los detalles de su pedido."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Following is your payment details."
+msgstr "A continuación se muestran los detalles de su pago"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de fuente impresionante, p. Ej. fa-tareas"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__fromMe
+msgid "Form Me"
+msgstr "Formame"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_general_configuration_inherit
+msgid "Get QR Code"
+msgstr "Obtener código QR"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_messages_search
+msgid "Group By"
+msgstr "Agrupar por"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__has_message
+msgid "Has Message"
+msgstr "Tiene mensaje"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/account_invoice.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/project_task.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Hello"
+msgstr "Hola"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/res_users.py:0
+#, python-format
+msgid "Hello "
+msgstr "Hola "
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Here is your"
+msgstr "Hola"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Here is your "
+msgstr "Aquí está tu "
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_account_move__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_crm_lead__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_channel__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_message__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_project_task__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_partner__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_users__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg__id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr__id
+msgid "ID"
+msgstr "IDENTIFICACIÓN"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono para indicar una actividad de excepción"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_needaction
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_unread
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, los mensajes nuevos requieren su atención"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_has_error
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está marcado, algunos mensajes tienen un error de entrega."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__msg_image
+msgid "Image"
+msgstr "Imagen"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:project.task.type,legend_normal:pragmatic_odoo_whatsapp_integration.whatsapp_done_project_task_type
+msgid "In Progress"
+msgstr "En curso"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_is_follower
+msgid "Is Follower"
+msgstr "Es seguidora"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_account_move____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_crm_lead____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_channel____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_message____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_project_task____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_partner____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_users____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg____last_update
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr____last_update
+msgid "Last Modified on"
+msgstr "Última modificación el"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__write_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__write_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__write_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__write_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg__write_uid
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr__write_uid
+msgid "Last Updated by"
+msgstr "Actualizado por última vez por"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__write_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__write_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__write_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__write_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg__write_date
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr__write_date
+msgid "Last Updated on"
+msgstr "Ultima actualización en"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#, python-format
+msgid "Lead name"
+msgstr "Nombre del cliente potencial"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_crm_lead
+msgid "Lead/Opportunity"
+msgstr "Iniciativa/Oportunidad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_general_configuration_inherit
+msgid "Logout"
+msgstr "Cerrar sesión"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_main_attachment_id
+msgid "Main Attachment"
+msgstr "Accesorio principal"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Memo"
+msgstr "Memorándum"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#. openerp-web
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/js/pos_test.js:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/js/pos_test.js:0
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_mail_message
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__message_body
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__message
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__message
+#, python-format
+msgid "Message"
+msgstr "Mensaje"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de entrega de mensaje"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__message_id
+msgid "Message Id"
+msgstr "Mensaje Id"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Missing mobile number for %s."
+msgstr "Falta el número de móvil de %s."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_users__mobile
+msgid "Mobile"
+msgstr "Móvil"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Fecha límite de mi actividad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__name
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_retry_msg__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#, python-format
+msgid "New lead assigned to you"
+msgstr "Nuevo cliente potencial asignado a usted"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/project_task.py:0
+#, python-format
+msgid "New task assigned to you"
+msgstr "Nueva tarea asignada a usted"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Siguiente evento del calendario de actividades"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Fecha límite de la próxima actividad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de la siguiente actividad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_type_id
+msgid "Next Activity Type"
+msgstr "Resumen de la siguiente actividad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Numero de acciones"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_has_error_counter
+msgid "Number of errors"
+msgstr "Numero de errores"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr "Número de mensajes que requieren una acción"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de entrega"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_unread_counter
+msgid "Number of unread messages"
+msgstr "Número de mensajes no leídos"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_order_product_details_msg
+msgid "Order product details in message?"
+msgstr "Solicitar detalles del producto en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_order_info_msg
+msgid "Order product information in message?"
+msgstr "Solicite la información del producto en el mensaje"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#, python-format
+msgid "POS"
+msgstr "POS"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__partner_id
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_messages_search
+msgid "Partner"
+msgstr "Pareja"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#, python-format
+msgid "Passwords do not match; please retype them."
+msgstr "Las contraseñas no coinciden; por favor escríbalos de nuevo."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Payment Journal"
+msgstr "Diario de pagos"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Payment Type"
+msgstr "Tipo de pago"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Payment date"
+msgstr "Fecha de pago"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#, python-format
+msgid "Phone"
+msgstr "Teléfono"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#. openerp-web
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/js/pos_test.js:0
+#, python-format
+msgid "Phone not exists on whatsapp"
+msgstr "El teléfono no existe en whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/project_task.py:0
+#, python-format
+msgid "Please add valid whatsapp number for %s "
+msgstr "Agregue un número de whatsapp válido para %"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/mail_channel.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/mail_channel.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Please add valid whatsapp number for %s customer"
+msgstr "Agregue un número de whatsapp válido para el cliente% s"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/mail_channel.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/mail_channel.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Please authorize your mobile number with chat api"
+msgstr "Autorice su número de teléfono móvil con la API de chat"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Please enter %s mobile number or select country"
+msgstr "Ingresa el número de celular% s o selecciona el país"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Please enter mobile number or select country"
+msgstr "Ingrese el número de teléfono móvil o seleccione el país"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/crm_lead.py:0
+#, python-format
+msgid "Please enter partner mobile number or select country for partner"
+msgstr ""
+"Ingrese el número de teléfono móvil del socio o seleccione el país del socio"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid ""
+"Please find attached account payment which will help you to get detailed "
+"information."
+msgstr ""
+"Encuentre el pago de la cuenta adjunta que lo ayudará a obtener detalles "
+"información."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid ""
+"Please find attached delivery order which will help you to get detailed "
+"information."
+msgstr ""
+"Encuentre el pedido de entrega adjunto que lo ayudará a obtener detalles "
+"información."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid ""
+"Please find attached invoice which will help you to get detailed "
+"information."
+msgstr ""
+"Encuentre la factura adjunta que lo ayudará a obtener detalles información."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid ""
+"Please find attached purchase order which will help you to get detailed "
+"information."
+msgstr ""
+"Encuentre la orden de compra adjunta que lo ayudará a obtener detalles "
+"información."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid ""
+"Please find attached sale order which will help you to get detailed "
+"information."
+msgstr ""
+"Encuentre la orden de venta adjunta que lo ayudará a obtener detalles "
+"información."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Product"
+msgstr "Producto"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/project_task.py:0
+#, python-format
+msgid "Project"
+msgstr "Proyecto"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_project_enable_signature
+msgid "Project Signature"
+msgstr "Firma del proyecto"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_project_task_stage_personal
+msgid "Project Task User Rel"
+msgstr "Proyecto Tarea Usuario Rel"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_project_display_chatter_message
+msgid "Project send in chatter message?"
+msgstr "Proyecto enviar en mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.purchase_whatsapp_feature
+msgid "Purchase Order Whatsapp Feature"
+msgstr "Función de orden de compra de Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Purchase order"
+msgstr "Orden de compra"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_purchase_enable_signature
+msgid "Purchase order Signature"
+msgstr "Firma de la orden de compra"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_purchase_order_product_details_msg
+msgid "Purchase order product details in message?"
+msgstr "Detalles del producto de la orden de compra en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_purchase_order_info_msg
+msgid "Purchase order product information in message?"
+msgstr "Información del producto de la orden de compra en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_purchase_display_chatter_message
+msgid "Purchase order send in chatter message?"
+msgstr "Orden de compra enviar mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__qr_code_image
+msgid "QR code"
+msgstr "Código QR"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "QR code is already scanned from chat api"
+msgstr "El código QR ya se escaneó desde la API de chat"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_scan_qr__qr_code_img_data
+msgid "Qr Code Img Data"
+msgstr "Datos de imagen de código QR"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Qty"
+msgstr "cantidad"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:project.task.type,legend_done:pragmatic_odoo_whatsapp_integration.whatsapp_done_project_task_type
+msgid "Ready"
+msgstr "Lista"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields.selection,name:pragmatic_odoo_whatsapp_integration.selection__whatsapp_messages__state__received
+msgid "Received"
+msgstr "Recibida"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__partner_ids
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__partner_ids
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__partner_ids
+msgid "Recipients"
+msgstr "Destinatarias"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario responsable"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_retry_msg_view_form
+msgid "Retry"
+msgstr "Rever"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_whatsapp_retry_msg
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_retry_msg_view_form
+msgid "Retry WhatsApp Message"
+msgstr "Reintentar mensaje de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de entrega de SMS"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.sales_whatsapp_feature
+msgid "Sale Order Whatsapp Feature"
+msgstr "Función de Whatsapp de pedido de venta"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/res_config_settings.py:0
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_whatsapp_scan_qr
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_qr_view_form
+#, python-format
+msgid "Scan WhatsApp QR Code"
+msgstr "Escanear el código QR de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_send_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_view_form
+msgid "Send"
+msgstr "Enviar"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#. openerp-web
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/js/pos_test.js:0
+#, python-format
+msgid "Send Message successfully"
+msgstr "Enviar mensaje con éxito"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_res_partner_template_action
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_send_res_partner_template_action
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_template_action
+msgid "Send Message via WhatsApp"
+msgstr "Enviar mensaje a través de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_form_action
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_res_partner_form_action
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_send_res_partner_form_action
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_whatsapp_msg
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_whatsapp_msg_res_partner
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_whatsapp_msg_send_partner
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.account_invoice_form_inherite
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.account_payment_form_inherite
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.partner_form_whatsapp_form_view
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.purchase_order_form_inherite
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_picking_form_inherite
+msgid "Send WhatsApp Message"
+msgstr "Enviar mensaje de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#. openerp-web
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/xml/pos_view.xml:0
+#: model:ir.ui.menu,name:pragmatic_odoo_whatsapp_integration.menu_send_whatsapp_msg
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.sale_orders_form_inherite
+#, python-format
+msgid "Send Whatsapp message"
+msgstr "Enviar mensaje de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_send_res_partner_view_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.send_whatsapp_msg_view_form
+msgid "Send a WhatsApp Message"
+msgstr "Envía un mensaje de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.action_send_msg
+msgid "Send whatsapp message"
+msgstr "Enviar mensaje de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__senderName
+msgid "Sender Name"
+msgstr "Nombre del remitente"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields.selection,name:pragmatic_odoo_whatsapp_integration.selection__whatsapp_messages__state__sent
+msgid "Sent"
+msgstr "Enviado"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_crm_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_task_configuration_inherit
+msgid "Show Signature"
+msgstr "Mostrar firma"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_enable_signature
+msgid "Signature"
+msgstr "Firma"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__state
+msgid "State"
+msgstr "Expresar"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha de vencimiento ya ha pasado\n"
+"Hoy: la fecha de actividad es hoy\n"
+"Planificado: actividades futuras."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_stock_enable_signature
+msgid "Stock Signature"
+msgstr "Firma de stock"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_stock_product_details_msg
+msgid "Stock product details in message?"
+msgstr "Detalles del producto en stock en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_stock_info_msg
+msgid "Stock product information in message?"
+msgstr "Información del producto en stock en el mensaje?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_stock_display_chatter_message
+msgid "Stock send in chatter message?"
+msgstr "Stock enviar mensaje de charla?"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Subtotal"
+msgstr "Total parcial"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_project_task
+msgid "Task"
+msgstr "Tarea"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/project_task.py:0
+#, python-format
+msgid "Task name"
+msgstr "Nombre de la tarea"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#, python-format
+msgid "The form was not properly filled in."
+msgstr "El formulario no se completó correctamente."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "There is issue in chat api"
+msgstr "Hay un problema en la API de chat"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_general_configuration_inherit
+msgid "This will take 1 or 2 minutes to logout from whatsapp"
+msgstr "Esto tomará 1 o 2 minutos para cerrar la sesión de whatsapp."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__to
+msgid "To"
+msgstr "A"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/account_invoice.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Total Amount"
+msgstr "Cantidad total"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_messages__type
+msgid "Type"
+msgstr "Tipo"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de actividad de excepción registrada."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__unique_user
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_res_partner__unique_user
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg_send_partner__unique_user
+msgid "Unique User"
+msgstr "Usuario única"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Unit Price"
+msgstr "Precio unitario"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_unread
+msgid "Unread Messages"
+msgstr "Mensajes no leídos"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__message_unread_counter
+msgid "Unread Messages Counter"
+msgstr "Contador de mensajes no leídos"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Unsupported report type %s found."
+msgstr "Se encontró el tipo de informe% s no admitido."
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_res_users
+msgid "Users"
+msgstr "Usuarios"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del sitio web"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_whatsapp_msg__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_partner__whatsapp_msg_ids
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_users__whatsapp_msg_ids
+msgid "WhatsApp Messages"
+msgstr "Mensajes de WhatsApp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.actions.server,name:pragmatic_odoo_whatsapp_integration.assigned_task_done_ir_actions_server
+#: model:ir.cron,cron_name:pragmatic_odoo_whatsapp_integration.assigned_task_done
+#: model:ir.cron,name:pragmatic_odoo_whatsapp_integration.assigned_task_done
+msgid "Whatsapp - Assigned task done"
+msgstr "Whatsapp - Tarea asignada realizada"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.actions.server,name:pragmatic_odoo_whatsapp_integration.account_payment_remainder_ir_actions_server
+#: model:ir.cron,cron_name:pragmatic_odoo_whatsapp_integration.account_payment_remainder
+#: model:ir.cron,name:pragmatic_odoo_whatsapp_integration.account_payment_remainder
+msgid "Whatsapp - Payment remainder send message"
+msgstr "Whatsapp - Remanente de pago enviar mensaje"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:res.groups,name:pragmatic_odoo_whatsapp_integration.group_whatsapp_chat
+msgid "Whatsapp Chat"
+msgstr "Chat de whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.stock_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_crm_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_invoice_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_purchase_order_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_sale_configuration_inherit
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_task_configuration_inherit
+msgid "Whatsapp Configuration"
+msgstr "Configuración de Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__whatsapp_endpoint
+msgid "Whatsapp Endpoint"
+msgstr "Punto final de Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.view_general_configuration_inherit
+msgid "Whatsapp Integration"
+msgstr "Integración Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_messages_search
+msgid "Whatsapp Message"
+msgstr "Mensaje de whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_mail__whatsapp_message_id
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_mail_message__whatsapp_message_id
+msgid "Whatsapp Message Id"
+msgstr "ID de mensaje de Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_project_task_stage_personal__whatsapp_msg_id
+msgid "Whatsapp Message id"
+msgstr "ID de mensaje de Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.actions.act_window,name:pragmatic_odoo_whatsapp_integration.whatsapp_messages_action
+#: model:ir.model,name:pragmatic_odoo_whatsapp_integration.model_whatsapp_messages
+#: model:ir.ui.menu,name:pragmatic_odoo_whatsapp_integration.menu_whatsapp_messages
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.partner_form_whatsapp_form_view
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_message_form
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.whatsapp_messages_tree
+msgid "Whatsapp Messages"
+msgstr "Mensajes de Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_res_config_settings__whatsapp_token
+msgid "Whatsapp Token"
+msgstr "Token de Whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,help:pragmatic_odoo_whatsapp_integration.field_res_config_settings__whatsapp_endpoint
+msgid "Whatsapp api endpoint url with instance id"
+msgstr "URL de punto final de la API de Whatsapp con ID de instancia"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model:ir.model.fields,field_description:pragmatic_odoo_whatsapp_integration.field_project_task__whatsapp_msg_id
+msgid "Whatsapp id"
+msgstr "ID de whatsapp"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#. openerp-web
+#: code:addons/pragmatic_odoo_whatsapp_integration/static/src/js/pos_test.js:0
+#, python-format
+msgid "You have not selected customer for this transaction"
+msgstr "No ha seleccionado un cliente para esta transacción"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/res_users.py:0
+#, python-format
+msgid "You have successfully registered and logged in"
+msgstr "Te has registrado e iniciado sesión correctamente"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "Your"
+msgstr "Tu"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.fields
+msgid "Your Mobile number"
+msgstr "Tú número de teléfono"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/account_invoice.py:0
+#, python-format
+msgid "Your invoice"
+msgstr "Su factura"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "account payment"
+msgstr "pago de cuenta"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/account_invoice.py:0
+#, python-format
+msgid "draft"
+msgstr "sequía"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "draft invoice"
+msgstr "proyecto de factura"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: model_terms:ir.ui.view,arch_db:pragmatic_odoo_whatsapp_integration.fields
+msgid "e.g. 72*******"
+msgstr "p.ej. 72 *******"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "in attachment your pro-forma invoice"
+msgstr "adjunto su factura proforma"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "invoice"
+msgstr "factura"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/models/account_invoice.py:0
+#, python-format
+msgid "is pending"
+msgstr "pendiente"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "order"
+msgstr "pedido"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/controller/main.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "with Total Amount"
+msgstr "con la cantidad total"
+
+#. module: pragmatic_odoo_whatsapp_integration
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#: code:addons/pragmatic_odoo_whatsapp_integration/wizard/send_msg.py:0
+#, python-format
+msgid "with reference"
+msgstr "con referencia"

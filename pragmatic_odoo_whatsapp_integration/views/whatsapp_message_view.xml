@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="whatsapp_message_form" model="ir.ui.view">
+        <field name="name">whatsapp.messages.form</field>
+        <field name="model">whatsapp.messages</field>
+        <field name="arch" type="xml">
+            <form string="Whatsapp Messages" create="0" edit="0">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="sent,received"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="message_body"/>
+                            <field name="msg_image" widget="image"/>
+                            <field name="attachment_id" invisible="1"/>
+                            <field name="attachment_data" filename="message_body"/>
+                            <field name="fromMe" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="senderName" readonly="1"/>
+                            <field name="chatName" readonly="1"/>
+                            <field name="time" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="whatsapp_messages_tree" model="ir.ui.view">
+        <field name="name">whatsapp.messages.tree</field>
+        <field name="model">whatsapp.messages</field>
+        <field name="arch" type="xml">
+            <tree string="Whatsapp Messages" create="0" edit="0">
+                <field name="senderName"/>
+                <field name="to"/>
+                <field name="message_body"/>
+                <field name="time" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="whatsapp_messages_search" model="ir.ui.view">
+        <field name="name">whatsapp.messages.view.search</field>
+        <field name="model">whatsapp.messages</field>
+        <field name="arch" type="xml">
+            <search string="Whatsapp Message">
+                <group expand="1" string="Group By">
+                    <filter string="Partner" name="partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Date" name="date" context="{'group_by':'time'}"/>
+                    <filter string="Chat Id" name="chat_id" context="{'group_by':'chatId'}"/>
+
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="whatsapp_messages_action">
+        <field name="name">Whatsapp Messages</field>
+        <field name="view_mode">tree,form</field>
+        <field name="res_model">whatsapp.messages</field>
+         <field name="context">{}</field>
+    </record>
+
+    <menuitem id="menu_whatsapp_messages"
+              action="whatsapp_messages_action"
+              name="Whatsapp Messages" sequence="2"
+              parent="contacts.menu_contacts"/>
+
+
+</odoo>
+
