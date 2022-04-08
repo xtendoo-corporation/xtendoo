@@ -4,6 +4,40 @@ from odoo import http
 from odoo.http import request
 
 class TableBooking(http.Controller):
+
+    #xtd
+    @http.route(['/table/<model("restaurant.table"):table>/test'], auth="public", website=True)
+    def table_booking_test(self, table=None, **post):
+        values = {}
+        order = None
+        old_order_resume = None
+        order_resume = request.env['table.order'].sudo().search(
+            [('state', '=', 'draft'), ('active', '=', False), ('is_table_order', '=', True),
+             ('table_id', '=', table.id)], limit=1)
+        old_order_resume = request.env['table.order'].sudo().search(
+            [('state', '=', 'draft'), ('active', '=', True), ('is_table_order', '=', True),
+             ('table_id', '=', table.id)], limit=1)
+        if order_resume:
+            request.session['sale_table_last_order_id'] = order_resume.id
+            order = order_resume
+        else:
+            request.session['sale_table_last_order_id'] = None
+        products = request.env['product.template'].sudo().search([('is_table_order', '=', True)])
+        cate_ids = None
+        if products:
+            cate_ids = products.mapped('pos_categ_id')
+        values.update({
+            'products': products or False,
+            'table_obj': table,
+            'order': order or None,
+            'old_order_resume': old_order_resume or None,
+            'ol_resume': None,
+            'get_attribute_value_ids': self.get_attribute_value_ids,
+            'cate_ids': cate_ids or None,
+            'active_cat_id': cate_ids[0] if cate_ids else None
+        })
+        return request.render("qrcode_table.test_table", values)
+    #xtd
     @http.route(['/table/<model("restaurant.table"):table>'], auth="public", website=True)
     def table_booking(self, table=None, **post):
         values = {}
@@ -89,7 +123,7 @@ class TableBooking(http.Controller):
                         'price_unit': product_id.lst_price,
                         'state': 'draft',
                         'price_subtotal':0,
-                        'price_subtotal_incl':0, 
+                        'price_subtotal_incl':0,
                         'note': kw.get('note'),
                     })
                     session_order.lines = [(4, line_id.id)]
@@ -105,20 +139,20 @@ class TableBooking(http.Controller):
             pricelist_id = pos_session_id.config_id.pricelist_id
             if table:
                 lines = [(0, 0, {
-                    'product_id': product_id.id, 
-                    'qty': add_qty, 
-                    'price_unit': product_id.lst_price, 
+                    'product_id': product_id.id,
+                    'qty': add_qty,
+                    'price_unit': product_id.lst_price,
                     'state': 'draft',
                     'price_subtotal':0,
-                    'price_subtotal_incl':0, 
+                    'price_subtotal_incl':0,
                     'note': kw.get('note')})]
                 new_order = request.env['table.order'].sudo().create({
-                    'table_id': table.id, 
-                    'is_table_order': True, 
-                    'active': False, 
+                    'table_id': table.id,
+                    'is_table_order': True,
+                    'active': False,
                     'amount_tax':0,
                     'amount_total':0,
-                    'pricelist_id': pricelist_id.id, 
+                    'pricelist_id': pricelist_id.id,
                     'lines': lines })
                 if new_order and new_order.lines:
                     for line in new_order.lines:
