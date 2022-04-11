@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2021 Darío Cruz - Xtendoo.es
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+    <record id="project_task_kind_form" model="ir.ui.view">
+        <field name="name">project.task.kind.form</field>
+        <field name="model">project.task.kind</field>
+        <field name="arch" type="xml">
+            <form>
+                <label for="name"/>
+                <field name="name"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="project:task_type_tree" model="ir.ui.view">
+        <field name="name">project.task.kind.tree</field>
+        <field name="model">project.task.kind</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="project_task_kind_action" model="ir.actions.act_window">
+        <field name="name">Tipos de tarea</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">project.task.kind</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+        <field name="context">{'module' : 'project_task_kind'}</field>
+    </record>
+
+    <menuitem
+        id="project_task_kind"
+        name="Tipos de tarea"
+        parent="project.menu_project_config"
+        action="project_task_kind_action"
+    />
+</odoo>
