@@ -86,4 +86,4 @@ msgstr "Tipo de tarea"
 #. module: project_task_kind
 #: model:ir.model,name:project_task_kind.model_project_task_kind
 msgid "project.task.kind"
-msgstr ""
+msgstr "Tipo de tarea"

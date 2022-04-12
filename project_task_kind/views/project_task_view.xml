@@ -14,4 +14,27 @@ License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
             </field>
         </field>
     </record>
+    <record id="project_task_tree" model="ir.ui.view">
+        <field name="name">project.task.tree</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2" />
+        <field name="arch" type="xml">
+            <field name="project_id" position="after">
+                <field name="project_task_kind_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+    <record id="view_task_search_form" model="ir.ui.view">
+        <field name="name">project.task.search.form</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Tipo de tarea" name="project_task_kind_id" domain="[('project_task_kind_id', '!=', False)]" />
+            </xpath>
+            <xpath expr="//search/group" position="inside">
+                <filter string="Tipo de tarea" name="project_task_kind_id" context="{'group_by': 'project_task_kind_id'}" />
+            </xpath>
+        </field>
+    </record>
 </odoo>
