@@ -4,9 +4,9 @@
 
     <data>
 
-        <template id="document_format_hr.report_invoice_document_with_description">
+        <template id="document_format_dis.report_invoice_document_with_description">
 
-             <t t-name="document_format_hr.report_invoice_document_with_description">
+             <t t-name="document_format_dis.report_invoice_document_with_description">
 
                    <t t-call="web.external_layout">
 
