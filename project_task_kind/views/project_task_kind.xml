@@ -26,7 +26,7 @@
     </record>
 
     <record id="project_task_kind_action" model="ir.actions.act_window">
-        <field name="name">Tipos de tarea</field>
+        <field name="name">project task kind</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">project.task.kind</field>
         <field name="view_mode">tree,form</field>
@@ -36,7 +36,7 @@
 
     <menuitem
         id="project_task_kind"
-        name="Tipos de tarea"
+        name="Project task kind"
         parent="project.menu_project_config"
         action="project_task_kind_action"
     />
