@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--xtd-->
+
+    <template id="portal_layout_clean.layout_web" name="Web layout test" t-name="portal_layout_clean.layout_test">&lt;!DOCTYPE html&gt;
+        <html t-att="html_data or {}">
+            <head>
+                <meta charset="utf-8"/>
+                <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+
+                <title t-esc="title or 'Odoo'"/>
+                <link type="image/x-icon" rel="shortcut icon" t-att-href="x_icon or '/web/static/img/favicon.ico'"/>
+
+                <script id="web.layout.odooscript" type="text/javascript">
+                    var odoo = {
+                        csrf_token: "<t t-esc="request.csrf_token(None)"/>",
+                        debug: "<t t-esc="debug"/>",
+                    };
+                </script>
+
+                <t t-out="head or ''"/>
+            </head>
+            <body t-att-class="body_classname">
+                <t t-out="0"/>
+            </body>
+        </html>
+    </template>
+
+    <template id="portal_layout_clean.frontend_layout" name="Frontend Layout" inherit_id="web.layout" primary="True">
+        <xpath expr="//head/meta[last()]" position="after">
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        </xpath>
+        <xpath expr="//head/link[last()]" position="after">
+            <link rel="preload" href="/web/static/lib/fontawesome/fonts/fontawesome-webfont.woff2?v=4.7.0" as="font" crossorigin=""/>
+            <t t-call-assets="web.assets_common" t-js="false"/>
+            <t t-call-assets="web.assets_frontend" t-js="false"/>
+        </xpath>
+        <xpath expr="//head/script[@id='web.layout.odooscript']" position="after">
+            <script type="text/javascript">
+                odoo.__session_info__ = <t t-out="json.dumps(request.env['ir.http'].get_frontend_session_info())"/>;
+                if (!/(^|;\s)tz=/.test(document.cookie)) {
+                    const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    document.cookie = `tz=${userTZ}; path=/`;
+                }
+            </script>
+            <t t-call-assets="web.assets_common_minimal" t-css="false" defer_load="True"/>
+            <t t-call-assets="web.assets_frontend_minimal" t-css="false" defer_load="True"/>
+            <t t-call="web.conditional_assets_tests"/>
+            <t t-call-assets="web.assets_common_lazy" t-css="false" lazy_load="True"/>
+            <t t-call-assets="web.assets_frontend_lazy" t-css="false" lazy_load="True"/>
+        </xpath>
+        <xpath expr="//t[@t-out='0']" position="replace">
+            <div id="wrapwrap" t-attf-class="#{pageName or ''}">
+             <!--   <header t-if="not no_header" id="top" data-anchor="true">
+                    <img class="img-responsive d-block mx-auto"
+                        t-attf-src="/web/binary/company_logo"
+                        alt="Logo"/>
+                </header> -->
+                <main>
+                    <t t-out="0"/>
+                </main>
+                <!--<footer t-if="not no_footer" id="bottom" data-anchor="true" t-attf-class="bg-light o_footer">
+                    <div id="footer"/>
+                    <div t-if="not no_copyright" class="o_footer_copyright">
+                        <div class="container py-3">
+                            <div class="row">
+                                <div class="col-sm text-center text-sm-left text-muted">
+                                    <t t-call="web.debug_icon"/>
+                                    <span class="o_footer_copyright_name mr-2">Copyright &amp;copy; <span t-field="res_company.name" itemprop="name">Company name</span></span>
+                                </div>
+                                <div class="col-sm text-center text-sm-right">
+                                    <t t-call="web.brand_promotion"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer> -->
+            </div>
+        </xpath>
+    </template>
+
+<!--    <template id="portal_layout_clean.frontend_layout_portal" name="Main Frontend Layout" inherit_id="portal_layout_clean.frontend_layout">-->
+<!--        <xpath expr="//div[@id='wrapwrap']" position="attributes">-->
+<!--            <attribute name="t-attf-class" add="#{request.env['res.lang']._lang_get(request.env.lang).direction == 'rtl' and 'o_rtl' or ''}" separator=" "/>-->
+<!--            <attribute name="t-attf-class" add="#{'o_portal' if is_portal else ''}" separator=" "/>-->
+<!--        </xpath>-->
+<!--        <xpath expr="//div[@id='wrapwrap']/header/img" position="replace">-->
+<!--            <nav class="navbar navbar-expand navbar-light bg-light">-->
+<!--                <div class="container">-->
+<!--                    <figure style="width:40%;margin:1px auto;">-->
+<!--                         <a href="/" style="display:block;width:100%;">-->
+<!--                        <img t-att-src="'/logo.png?company=%s' % res_company.id" t-att-alt="'Logo of %s' % res_company.name" t-att-title="res_company.name" style="width:100%;"/>-->
+<!--                    </a>-->
+<!--                    </figure>-->
+<!--                </div>-->
+<!--            </nav>-->
+<!--        </xpath>-->
+<!--        <xpath expr="//div[@id='wrapwrap']/main/t[@t-out='0']" position="before">-->
+<!--            <div t-if="o_portal_fullwidth_alert" class="alert alert-info alert-dismissible rounded-0 fade show d-print-none css_editable_mode_hidden">-->
+<!--                <div class="container">-->
+<!--                    <t t-out="o_portal_fullwidth_alert"/>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </xpath>-->
+<!--    </template>-->
+
+
+    <!-- fin XTD -->
+</odoo>
