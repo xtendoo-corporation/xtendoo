@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+
+    <record id="mail_message_view_search" model="ir.ui.view">
+        <field name="model">mail.message</field>
+        <field name="inherit_id" ref="mail.view_message_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Lost messages"
+                        name="message_unattached"
+                        help="Show messages not routed messages"
+                        domain="[('is_unattached', '=', True)]"
+                        groups="base.group_erp_manager,mail_manual_routing.group_lost_messages"
+                />
+            </xpath>
+        </field>
+    </record>
+    <record id="mail_message_view_form" model="ir.ui.view">
+        <field name="model">mail.message</field>
+        <field name="inherit_id" ref="mail.mail_message_view_form"/>
+        <field name="arch" type="xml">
+            <field name="email_from" position="before">
+                <field name="is_unattached" groups="base.group_system"/>
+            </field>
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button class="oe_highlight"
+                            string="Route manual"
+                            name="action_attach"
+                            type="object"
+                            groups="base.group_erp_manager,mail_manual_routing.group_lost_messages"
+                    />
+                </header>
+            </xpath>
+        </field>
+    </record>
+    <record id="mail_message_action_unattached" model="ir.actions.act_window">
+        <field name="name">Lost Messages</field>
+        <field name="res_model">mail.message</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="domain">[('is_unattached', '=', True)]</field>
+        <field name="context">{"unattached_interface": True}</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+    </record>
+    <record id="mail_message_action_unattached_open_only_form" model="ir.actions.act_window">
+        <field name="name">Lost Messages Form Only</field>
+        <field name="res_model">mail.message</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="context">{"unattached_interface": True}</field>
+        <field name="view_mode">form</field>
+    </record>
+    <menuitem id="action_unattached_mail_open_menuitem"
+              name="Lost Messages"
+              action="mail_message_action_unattached"
+              parent="base.menu_email"
+              sequence="20"
+              groups="base.group_erp_manager,mail_manual_routing.group_lost_messages"
+    />
+    <!-- The main menu is shown only for a separate group -->
+    <menuitem name="Lost Messages"
+              id="mail_manual_routing_main"
+              sequence="1000"
+              groups="mail_manual_routing.group_lost_messages"
+              web_icon="mail_manual_routing,static/description/icon.png"
+    />
+    <menuitem name="Lost Messages"
+              id="mail_manual_routing_sub"
+              parent="mail_manual_routing_main"
+              sequence="10"
+              action="mail_message_action_unattached"
+              groups="mail_manual_routing.group_lost_messages"
+    />
+
+
+
+</odoo>

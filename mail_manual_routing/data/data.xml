@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <delete model="ir.ui.view"
+                search="[('name','=','mail_bounce_catchall')]"
+        />
+
+        <record id="lost_message_notification_template" model="mail.template">
+            <field name="name">Lost Message Notification</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="model_id" ref="mail.model_mail_message"/>
+            <field name="subject">The message is not attached</field>
+            <field name="body_html" type="html">
+<p>Hello,</p>
+<p>Please take into account that the message <t t-out="object.subject"/> is not attached to any document.</p>
+<p><a t-attf-href="#{ctx['url']}">Click</a> to route this message to a proper document.</p>
+            </field>
+        </record>
+
+    </data>
+
+    <record
+        id="lost_message_alert"
+        model="mail.message.subtype"
+        forcecreate="1"
+    >
+        <field name="name">Message Alert</field>
+        <field name="internal" eval="True" />
+        <field name="sequence" eval="0"/>
+    </record>
+</odoo>

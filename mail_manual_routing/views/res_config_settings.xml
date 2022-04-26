@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_manual_routing" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.manual.routing</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block"
+                     data-string="Lost Messages"
+                     string="Lost Messages"
+                     data-key="mail_manual_routing"
+                     name="mail_manual_routing"
+                >
+                    <div class="row mt16 o_settings_container" id="lost_messages">
+                        <div class="col-xs-12 col-md-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="notify_about_lost_messages"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="notify_about_lost_messages"/>
+                                <div class="text-muted" id="notify_about_lost_messages">
+                                    If checked, a notification by each lost message would be sent to chosen users
+                                </div>
+                                <div class="content-group"  attrs="{'invisible': [('notify_about_lost_messages', '=', False)]}">
+                                    <div class="row mt16">
+                                        <label for="notify_lost_user_ids" class="col-md-3 o_light_label"/>
+                                        <field name="notify_lost_user_ids"
+                                               widget="many2many_tags"
+                                               options="{'no_create_edit':'1', 'no_quick_create': '1'}"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-md-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="lost_allowed_model_ids"/>
+                                <div class="text-muted" id="lost_models_to_attach">
+                                   Choose Odoo models to which lost messages might be assigned. If empty, it would be 
+                                   possible to assign to any Odoo thread object
+                                </div>
+                                <field name="lost_allowed_model_ids"
+                                       widget="many2many_tags"
+                                       options="{'no_create_edit':'1', 'no_quick_create': '1'}"
+                                       domain="[('transient', '=', 0), ('is_mail_thread', '=', 1),]"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="res_config_settings_lost_messages_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'mail_manual_routing'}</field>
+    </record>
+    <menuitem name="Configuration"
+              id="lost_messages_menu_res_config_settings"
+              parent="mail_manual_routing.mail_manual_routing_main"
+              sequence="500"
+              action="mail_manual_routing.res_config_settings_lost_messages_action"
+              groups="base.group_erp_manager"
+    />
+
+</odoo>
