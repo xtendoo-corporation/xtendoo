@@ -11,12 +11,6 @@ class StockMove(models.Model):
     def product_price_update_before_done(self, forced_qty=None):
         super(StockMove, self).product_price_update_before_done(forced_qty)
 
-        for move in self:
-            print(":"*80)
-            print("move.location_id.usage:", move.location_id.usage )
-            print("move.product_id.cost_method:", move.product_id.cost_method)
-            print(":"*80)
-
         for move in self.filtered(
             lambda move: move.location_id.usage == "supplier"
             and move.product_id.cost_method == "last"
@@ -24,3 +18,10 @@ class StockMove(models.Model):
             move.product_id.with_context(force_company=move.company_id.id).write(
                 {"standard_price": move._get_price_unit()}
             )
+            print(":"*80)
+            print("move.location_id.usage:", move.location_id.usage )
+            print("move.product_id.cost_method:", move.product_id.cost_method)
+            print("standard_price:", move._get_price_unit())
+            print(":"*80)
+
+
