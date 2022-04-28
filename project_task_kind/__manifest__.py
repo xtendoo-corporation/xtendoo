@@ -11,8 +11,8 @@
     "license": "AGPL-3",
     "data": [
         "security/ir.model.access.csv",
-        "views/project_task_view.xml",
-        "views/project_task_kind.xml"
+        "views/project_task_kind_view.xml",
+        "views/project_task_kind_menu.xml"
             ],
     "installable": True,
     "auto_install": True,

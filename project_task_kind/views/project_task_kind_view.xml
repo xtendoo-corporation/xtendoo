@@ -30,12 +30,19 @@ License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
         <field name="inherit_id" ref="project.view_task_search_form"/>
         <field name="arch" type="xml">
             <xpath expr="//search" position="inside">
+<<<<<<< HEAD:project_task_kind/views/project_task_view.xml
                 <filter string="Tipo de tarea" name="project_task_kind_id"
                         domain="[('project_task_kind_id', '!=', False)]"/>
             </xpath>
             <xpath expr="//search/group" position="inside">
                 <filter string="Tipo de tarea" name="project_task_kind_id"
                         context="{'group_by': 'project_task_kind_id'}"/>
+=======
+                <filter string="Project task kind" name="project_task_kind_id" domain="[('project_task_kind_id', '!=', False)]" />
+            </xpath>
+            <xpath expr="//search/group" position="inside">
+                <filter string="Project task kind" name="project_task_kind_id" context="{'group_by': 'project_task_kind_id'}" />
+>>>>>>> 524a8b6e7444f3df1a2834d8d09253a9ab14c113:project_task_kind/views/project_task_kind_view.xml
             </xpath>
         </field>
     </record>
