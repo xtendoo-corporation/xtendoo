@@ -8,7 +8,10 @@
     "website": "https://github.com/OCA/stock-logistics-reporting",
     "category": "Warehouse Management",
     "license": "AGPL-3",
-    "depends": ["stock_picking_report_valued"],
+    "depends": [
+        "stock_picking_report_valued",
+        "purchase_stock",
+    ],
     "data": ["views/view_move_line_tree.xml"],
     "installable": True,
 }
