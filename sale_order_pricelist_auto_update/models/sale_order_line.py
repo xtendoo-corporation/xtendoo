@@ -21,9 +21,6 @@ class SaleOrderLine(models.Model):
     def _write(self,vals):
         for line in self:
             line._onchange_price_unit()
-            print("*"*80)
-            print("values",vals)
-            print("*" * 80)
         return super(SaleOrderLine, self)._write(vals)
 
 
@@ -33,10 +30,10 @@ class SaleOrderLine(models.Model):
                 return
             if self.price_unit == 0.0:
                 return
-            if self.price_unit < self.product_id.standard_price:
+            if self.price_unit < self.purchase_price:
                 raise UserError(
                     _("The unit price of %s, can't be lower than cost price %.2f")
-                    % (self.product_id.name, self.product_id.standard_price)
+                    % (self.product_id.name, self.purchase_price)
                 )
 
     @api.depends("price_unit")
