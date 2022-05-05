@@ -26,18 +26,17 @@ class SaleOrderLine(models.Model):
             print("*" * 80)
         return super(SaleOrderLine, self)._write(vals)
 
-
     @api.onchange("price_unit")
     def _onchange_price_unit(self):
-            if not self.product_id:
-                return
-            if self.price_unit == 0.0:
-                return
-            if self.price_unit < self.product_id.standard_price:
-                raise UserError(
-                    _("The unit price of %s, can't be lower than cost price %.2f")
-                    % (self.product_id.name, self.product_id.standard_price)
-                )
+        if not self.product_id:
+            return
+        if self.price_unit == 0.0:
+            return
+        if self.price_unit < self.product_id.standard_price:
+            raise UserError(
+                _("The unit price of %s, can't be lower than cost price %.2f")
+                % (self.product_id.name, self.product_id.standard_price)
+            )
 
     @api.depends("price_unit")
     def _compute_is_pricelist_change(self):
