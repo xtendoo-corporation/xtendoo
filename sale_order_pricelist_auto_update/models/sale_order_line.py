@@ -8,8 +8,6 @@ from odoo.exceptions import UserError
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    purchase_price = fields.Float(string='Cost', digits='Product Price', store=True)
-
     state = fields.Selection(
         related="order_id.state"
     )
@@ -21,9 +19,6 @@ class SaleOrderLine(models.Model):
     def _write(self,vals):
         for line in self:
             line._onchange_price_unit()
-            print("*"*80)
-            print("values",vals)
-            print("*" * 80)
         return super(SaleOrderLine, self)._write(vals)
 
     @api.onchange("price_unit")
