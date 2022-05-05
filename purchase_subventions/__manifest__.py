@@ -1,11 +1,11 @@
 # Copyright 2022 Xtendoo
 
 {
-    "name": "Purchase employees",
+    "name": "Purchase subventions",
     "summary": """
-        Purchase-employees""",
+        Purchase-subventions""",
     "version": "13.0",
-    "depends": ["purchase","hr"],
+    "depends": ["purchase","fha_subvention"],
     "maintainers": ["dariocruzmauro"],
     "author": "Xtendoo",
     "license": "AGPL-3",
