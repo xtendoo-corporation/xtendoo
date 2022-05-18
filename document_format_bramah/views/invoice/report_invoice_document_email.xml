@@ -231,14 +231,15 @@
                                       </t>
 
                                   </t>
+                                    <t t-set="line_qty" t-value="lines_group['quantity']"/>
                                     <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
 
                                     <!-- calculos del descuento -->
-                                    <t t-set="current_discount" t-value="current_discount + (line.quantity*line.price_unit-line.price_subtotal)" groups="sale.group_discount_per_so_line"/>
+                                    <t t-set="current_discount" t-value="current_discount + (line_qty*line.price_unit-line.price_subtotal)" groups="sale.group_discount_per_so_line"/>
                                     <!-- Fin calculos del descuento -->
 
                                     <!-- Calculos del bruto -->
-                                    <t t-set="current_bruto" t-value="current_bruto + (line.quantity*line.price_unit)" groups="account.group_show_line_subtotals_tax_excluded"/>
+                                    <t t-set="current_bruto" t-value="current_bruto + (line_qty*line.price_unit)" groups="account.group_show_line_subtotals_tax_excluded"/>
                                     <!-- Fin calculos del bruto -->
 
                                     <t t-set="current_subtotal" t-value="current_subtotal + line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
@@ -259,7 +260,7 @@
                                           <!-- Cantidad y UOM -->
 
                                             <td width="94px" height="16px" style="text-align:right; font-size:1.1em;">
-                                                <span t-field="line.quantity"/>
+                                                <span t-esc="line_qty"/>
 
                                             </td>
 
@@ -276,8 +277,8 @@
                                             <!--Precio total linea -->
 
                                             <td width="146px" height="16px" style="text-align:right;font-size:1.1em;padding-right:15px;">
-                                                <span t-field="line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
-                                                <span t-field="line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+                                                <t t-set="line_picking_subtotal" t-value="l.quantity and lines_group['quantity'] * (l.price_subtotal / l.quantity) or 0.0"/>
+                                                <span t-esc="line_picking_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                                             </td>
 
                                             <!-- Fin Precio total linea -->
