@@ -7,7 +7,6 @@
     "license": "AGPL-3",
     "depends": [
         "sale_stock",
-        "sale_margin",
     ],
     "data": [
         "security/security_group.xml",
