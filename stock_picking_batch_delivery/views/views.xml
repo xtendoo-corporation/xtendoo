@@ -22,7 +22,7 @@
                             <field name="date" optional="show" readonly="1"/>
                             <field name="scheduled_date" optional="show" readonly="1"/>
                             <field name="comercial_id" optional="show" readonly="1"/>
-                            <field name="weight" optional="show" readonly="1"/>
+                            <field name="shipping_weight" optional="show" readonly="1"/>
                             <field name="lumps_number" optional="show"/>
                             <field name="pallets_number" optional="show"/>
                             <field name="state" optional="show" readonly="1"/>

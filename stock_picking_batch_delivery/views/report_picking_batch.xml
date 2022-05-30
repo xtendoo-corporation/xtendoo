@@ -119,8 +119,8 @@
                                 </div>
                                 <div style="width:6%;float:left;text-align:right;height:18px;">
                                     <t t-if="pick.weight">
-                                        <t t-set="total_weight" t-value="total_weight + pick.weight"/>
-                                        <span t-field="pick.weight"/>
+                                        <t t-set="total_weight" t-value="total_weight + pick.shipping_weight"/>
+                                        <span t-field="pick.shipping_weight"/>
                                     </t>
                                     <t t-else="">
                                         <span style="color:white;">weight</span>
