@@ -119,7 +119,7 @@ class GestoolImport(models.TransientModel):
                 'comment': row[17],
                 'state_id': state_id,
                 'vat': row[2],
-                # 'country_id': country_id,
+                'country_id': 68,
                 # 'agent_ids': agent_id,
             })
         else:
@@ -144,7 +144,7 @@ class GestoolImport(models.TransientModel):
                 'lang': "es_ES",
                 'state_id': state_id,
                 'vat': row[2],
-                # 'country_id': country_id,
+                'country_id': 68,
                 # 'agent_ids': agent_id,
             })
 
