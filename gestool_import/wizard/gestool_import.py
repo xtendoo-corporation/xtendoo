@@ -31,12 +31,12 @@ class GestoolImport(models.TransientModel):
     )
     filename = fields.Char()
 
-    data_file_category = fields.Binary(
-        string="File to Import",
-        required=False,
-        help="Get you data from Gestool.",
-    )
-    filename = fields.Char()
+    # data_file_category = fields.Binary(
+    #     string="File to Import",
+    #     required=False,
+    #     help="Get you data from Gestool.",
+    # )
+    # filename = fields.Char()
 
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
@@ -46,17 +46,13 @@ class GestoolImport(models.TransientModel):
         if data_file_agentes:
             self._import_agentes(data_file_agentes)
 
-        # data_file_industry = b64decode(self.data_file_industry)
-        # if data_file_industry:
-        #     self._import_users(data_file_industry)
-
         data_file_partner = b64decode(self.data_file_partner)
         if data_file_partner:
             self._import_partner(data_file_partner)
 
-        data_file_category = b64decode(self.data_file_category)
-        if data_file_category:
-            self._import_category(data_file_category)
+        # data_file_category = b64decode(self.data_file_category)
+        # if data_file_category:
+        #     self._import_category(data_file_category)
 
     def _import_partner(self, data_file_partner):
         try:
@@ -71,7 +67,7 @@ class GestoolImport(models.TransientModel):
     def parse_partner(self, row):
         partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
 
-        # country_id = self.env["res.country"].search([("name", "=", row[16]), ])
+        # country_id = self.env["res.country"].search([("name", "=", "España", ])
         # if country_id:
         #     country_id = country_id.id
 
@@ -85,26 +81,28 @@ class GestoolImport(models.TransientModel):
         # else:
         #     agent_id = [(6, 0, [])]
 
-        # print("/////////CLIENTE//////////")
-        # print("Nombre:", row[1])
-        # print("ref",row[0])
-        # print("name",row[1])
-        # print('street',row[3])
-        # print('city',row[4])
-        # print('zip',row[5])
-        # print('phone',row[7])
-        # print('mobile',row[8])
-        # print('website',row[9])
-        # print('email',row[10])
-        # print('display_name',row[14])
-        # print('company_name',row[15])
-        # print('comment',row[17])
-        # print('customer_rank',row[19])
-        # print('supplier_rank',row[20])
-        # print('company', row[25])company_id
-        # print('State', row[6].capitalize())
-        # print('State_id', state_id)
-        # print('DNI', row[2])
+        print("/////////CLIENTE//////////")
+        print("partner", partner)
+        print("nombre:", row[1])
+        print("ref",row[0])
+        print("name",row[1])
+        print('street',row[3])
+        print('city',row[4])
+        print('zip',row[5])
+        print('phone',row[7])
+        print('mobile',row[8])
+        print('website',row[9])
+        print('email',row[10])
+        print('display_name',row[14])
+        print('company_name',row[15])
+        print('comment',row[17])
+        print('customer_rank',row[19])
+        print('supplier_rank',row[20])
+        print('company', row[25])
+        print('State', row[6].capitalize())
+        print('state_id', state_id)
+        print('DNI', row[2])
+        # print('country_id', country_id)
 
         if partner:
             partner.sudo().write({
@@ -119,8 +117,6 @@ class GestoolImport(models.TransientModel):
                 'display_name': row[14],
                 'company_name': row[15],
                 'comment': row[17],
-                'company_id': row[25],
-                'lang': "es_ES",
                 'state_id': state_id,
                 'vat': row[2],
                 # 'country_id': country_id,
@@ -144,7 +140,7 @@ class GestoolImport(models.TransientModel):
                 'comment': row[17],
                 'customer_rank': row[19],
                 'supplier_rank': row[20],
-                'company_id': row[25],
+                'company_id': 1,
                 'lang': "es_ES",
                 'state_id': state_id,
                 'vat': row[2],
@@ -152,16 +148,16 @@ class GestoolImport(models.TransientModel):
                 # 'agent_ids': agent_id,
             })
 
-    def _import_category(self, data_file_category):
-        try:
-            csv_data = reader(StringIO(data_file_category.decode("utf-8")))
-        except Exception:
-            raise UserError(_("Can not read the file"))
-
-        for row in csv_data:
-            # self.parse_categories(row)
-            print("--------------------CATEGORY--------------------------")
-        return
+    # def _import_category(self, data_file_category):
+    #     try:
+    #         csv_data = reader(StringIO(data_file_category.decode("utf-8")))
+    #     except Exception:
+    #         raise UserError(_("Can not read the file"))
+    #
+    #     for row in csv_data:
+    #         # self.parse_categories(row)
+    #         print("--------------------CATEGORY--------------------------")
+    #     return
 
     # def parse_categories(self, row):
     #     category = self.env["product.category"].search([("name", "=", row[0]),])
