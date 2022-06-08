@@ -29,6 +29,7 @@
         "views/delivery/delivery_document.xml",
         "views/delivery/delivery_commodity.xml",
         "views/delivery/delivery_document_without_price.xml",
+        "views/delivery/delivery_pallet_label.xml",
         #"views/delivery/delivery_document_original_number.xml",
         "views/invoice/invoice_document.xml",
         "views/invoice/invoice_dossier.xml",
