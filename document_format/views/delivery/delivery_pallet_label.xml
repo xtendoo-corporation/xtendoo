@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
+    <record id="paperformat_label_pallets" model="report.paperformat">
+        <field name="name">Label pallet paperformat</field>
+        <field name="format">custom</field>
+        <field name="page_height">60</field>
+        <field name="page_width">60</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">2</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
     <report
         string="Etiqueta de pedido"
         id="action_report_delivery_pallets_label"
@@ -7,22 +21,9 @@
         report_type="qweb-pdf"
         name="document_format.report_delivery_pallets_label"
         file="document_format.report_delivery_pallets_label"
+        paperformat="document_format.paperformat_label_pallets"
         print_report_name="'Delivery Label - %s - %s' % (object.partner_id.name or '', object.name)"
     />
-     <record id="paperformat_label" model="report.paperformat">
-            <field name="name">Label pallet paperformat</field>
-            <field name="format">custom</field>
-            <field name="page_height">148</field>
-            <field name="page_width">210</field>
-            <field name="orientation">Portrait</field>
-            <field name="margin_top">2</field>
-            <field name="margin_bottom">0</field>
-            <field name="margin_left">0</field>
-            <field name="margin_right">0</field>
-            <field name="header_line" eval="False" />
-            <field name="header_spacing">0</field>
-            <field name="dpi">90</field>
-        </record>
     <template id="document_format.report_delivery_pallets_label">
         <t t-foreach="docs" t-as="o">
             <t
@@ -34,7 +35,7 @@
     <template id="document_format.report_delivery_pallets_label_document">
         <t t-name="document_format_zoopet.report_delivery_pallets_label_document">
             <t t-call="web.html_container">
-                <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
+                <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
                 <t
                     t-set="partner"
                     t-value="o.partner_id or (o.move_lines and o.move_lines[0].partner_id) or False"
@@ -51,10 +52,20 @@
                         </div>
                     </header>
                     <section style="font-size:0.8em;text-align:center">
-                        <p style="text-align:center;font-size:1.2em;"><span t-field="o.partner_id.name"/></p>
-                        <p style="text-align:center;">Albarán: <span t-field="o.name"/></p>
-                        <p><span t-field="o.partner_id.street"/></p>
-                        <p><span t-field="o.partner_id.city"/> (<span t-field="o.partner_id.state_id.name"/>) <span t-field="o.partner_id.zip"/></p>
+                        <p style="text-align:center;font-size:1.2em;">
+                            <span t-field="o.partner_id.name"/>
+                        </p>
+                        <p style="text-align:center;">Albarán:
+                            <span t-field="o.name"/>
+                        </p>
+                        <p>
+                            <span t-field="o.partner_id.street"/>
+                        </p>
+                        <p>
+                            <span t-field="o.partner_id.city"/>
+                            (<span t-field="o.partner_id.state_id.name"/>)
+                            <span t-field="o.partner_id.zip"/>
+                        </p>
 
                     </section>
                 </div>
