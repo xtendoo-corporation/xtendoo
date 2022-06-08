@@ -442,6 +442,13 @@ class WizStockBarcodesReadPicking(models.TransientModel):
         self._reset_lot()
         self._reset_qty()
 
+    def _reset_qty(self):
+        self.product_qty = 0
+
+    def _reset_message(self):
+        self.message = False
+        self.message_type = False
+
 
 class WizCandidatePicking(models.TransientModel):
     """
