@@ -1,8 +1,8 @@
 <odoo>
     <data>
         <!-- Herencia del tenplate del informe Factura-->
-         <template id="document_format.format_report_invoice_document"
-              inherit_id="account.report_invoice">
+        <template id="document_format.format_report_invoice_document"
+                  inherit_id="account.report_invoice">
             <xpath expr='//t[@t-call="account.report_invoice_document"]' position="replace">
                 <t t-call="document_format.report_invoice_gouped_by_picking_document" t-lang="lang"/>
             </xpath>
@@ -10,8 +10,8 @@
         <!-- Fin Herencia del tenplate del informe Factura-->
 
         <!-- Herencia del tenplate del informe Factura sin pagos-->
-         <template id="document_format.format_report_invoice_document_with_payments"
-              inherit_id="account.report_invoice_with_payments">
+        <template id="document_format.format_report_invoice_document_with_payments"
+                  inherit_id="account.report_invoice_with_payments">
             <xpath expr='//t[@t-call="account.report_invoice_document_with_payments"]' position="replace">
                 <t t-call="document_format.report_invoice_gouped_by_picking_document" t-lang="lang"/>
             </xpath>
@@ -21,7 +21,7 @@
         <template id="document_format.report_invoice_gouped_by_picking_document">
             <t t-name="document_format.report_invoice_gouped_by_picking_document">
                 <t t-call="web.external_layout">
-                    <t t-set="o" t-value="o.with_context(lang=lang)" />
+                    <t t-set="o" t-value="o.with_context(lang=lang)"/>
                     <div class="page">
                         <!-- Datos del Documento-->
                         <!-- Datos del movimiento -->
@@ -31,36 +31,42 @@
                                     <h2 class="mt16">
                                         <span
                                             t-if="o.type == 'out_invoice' and o.state == 'posted'"
-                                        >Factura:</span>
+                                        >Factura:
+                                        </span>
                                         <span
                                             t-if="o.type == 'out_invoice' and o.state == 'draft'"
-                                        >Factura Borrador:</span>
+                                        >Factura Borrador:
+                                        </span>
                                         <span
                                             t-if="o.type == 'out_invoice' and o.state == 'cancel'"
-                                        >Factura Cancelada:</span>
+                                        >Factura Cancelada:
+                                        </span>
                                         <span
                                             t-if="o.type == 'out_refund'"
-                                        >Factura Rectificativa:</span>
+                                        >Factura Rectificativa:
+                                        </span>
                                         <span
                                             t-if="o.type == 'in_refund'"
-                                        >Factura Rectificativa Proveedor:</span>
+                                        >Factura Rectificativa Proveedor:
+                                        </span>
                                         <span
                                             t-if="o.type == 'in_invoice'"
-                                        >Factura Proveedor:</span>
-                                        <span t-if="o.name != '/'" t-field="o.name" />
+                                        >Factura Proveedor:
+                                        </span>
+                                        <span t-if="o.name != '/'" t-field="o.name"/>
                                     </h2>
                                 </li>
                                 <li t-if="o.invoice_date" name="invoice_date">
                                     <strong>Fecha:</strong>
-                                    <span class="m-0" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
+                                    <span class="m-0" t-esc="o.invoice_date.strftime('%d/%m/%Y')"/>
                                 </li>
                                 <li t-if="o.invoice_origin" name="origin">
-                                      <strong>Pedido:</strong>
-                                    <span class="m-0" t-field="o.invoice_origin" />
+                                    <strong>Pedido:</strong>
+                                    <span class="m-0" t-field="o.invoice_origin"/>
                                 </li>
                                 <li t-if="o.ref" name="reference">
                                     <strong>Referencia:</strong>
-                                    <span class="m-0" t-field="o.ref" />
+                                    <span class="m-0" t-field="o.ref"/>
                                 </li>
                                 <li t-if="o.invoice_payment_term_id" name="reference">
                                     <strong>Forma de Pago:</strong>
@@ -77,7 +83,7 @@
                                     style="display:none;"
                                 >
                                     <strong>Due Date:</strong>
-                                    <p class="m-0" t-esc="o.invoice_date_due.strftime('%d/%m/%Y')" />
+                                    <p class="m-0" t-esc="o.invoice_date_due.strftime('%d/%m/%Y')"/>
                                 </div>
                             </ul>
                         </div>
@@ -87,16 +93,16 @@
                             <ul class="list-unstyled">
                                 <li t-if="o.partner_id.ref">
                                     <strong>Código Cliente:</strong>
-                                    <span class="m-0" t-field="o.partner_id.ref" />
+                                    <span class="m-0" t-field="o.partner_id.ref"/>
                                 </li>
                                 <li t-if="o.partner_id.name">
-                                    <span t-field="o.partner_id.name" />
+                                    <span t-field="o.partner_id.name"/>
                                 </li>
                                 <li t-if="o.partner_id.comercial">
-                                    (<span t-field="o.partner_id.comercial" />)
+                                    (<span t-field="o.partner_id.comercial"/>)
                                 </li>
                                 <li t-if="o.partner_id.street">
-                                    <span t-field="o.partner_id.street" />
+                                    <span t-field="o.partner_id.street"/>
                                 </li>
                                 <li>
                                     <span
@@ -107,7 +113,7 @@
                                         t-if="o.partner_id.city"
                                         t-field="o.partner_id.city"
                                     />
-,
+                                    ,
                                     <span
                                         t-if="o.partner_id.state_id"
                                         t-field="o.partner_id.state_id.name"
@@ -116,11 +122,11 @@
                                 <li
                                     t-if="o.partner_id.country_id and o.partner_id.country_id.name not in ['España','Spain']"
                                 >
-                                    <span t-field="o.partner_id.country_id.name" />
+                                    <span t-field="o.partner_id.country_id.name"/>
                                 </li>
                                 <li t-if="o.partner_id.vat">
                                     <strong>NIF:</strong>
-                                    <span t-field="o.partner_id.vat" />
+                                    <span t-field="o.partner_id.vat"/>
                                 </li>
                             </ul>
                         </div>
@@ -199,15 +205,16 @@
                             <!-- Lineas -->
                             <tbody class="invoice_tbody">
                                 <!-- Variables -->
-                                <t t-set="subtotal" t-value="0.0" />
+                                <t t-set="subtotal" t-value="0.0"/>
                                 <t
                                     t-set="lines_grouped"
                                     t-value="o.lines_grouped_by_picking()"
                                 />
                                 <t t-if="not lines_grouped">
-                                     <t t-set="lines_grouped" t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
+                                    <t t-set="lines_grouped"
+                                       t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
                                 </t>
-                                <t t-set="current_subtotal" t-value="0" />
+                                <t t-set="current_subtotal" t-value="0"/>
                                 <t
                                     t-set="lines"
                                     t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"
@@ -215,8 +222,8 @@
                                 <!-- Fin Variables -->
                                 <t t-foreach="lines_grouped" t-as="lines_group">
                                     <!-- Variables FOREACH -->
-                                    <t t-set="l" t-value="lines_group['line']" />
-                                    <t t-set="line" t-value="lines_group['line']" />
+                                    <t t-set="l" t-value="lines_group['line']"/>
+                                    <t t-set="line" t-value="lines_group['line']"/>
                                     <t
                                         t-set="picking"
                                         t-value="lines_group['picking']"
@@ -239,14 +246,14 @@
                                             >
                                                 <strong>
                                                     <span>Albarán:</span>
-                                                    <span t-field="picking.name" />
-                                                    <span> - </span>
+                                                    <span t-field="picking.name"/>
+                                                    <span>-</span>
                                                     <span
                                                         t-esc="picking.date_done.strftime('%d/%m/%Y')"
                                                     />
                                                     <t t-if="picking.note">
-                                                        <span> - </span>
-                                                        <span t-field="picking.note" />
+                                                        <span>-</span>
+                                                        <span t-field="picking.note"/>
                                                     </t>
                                                 </strong>
                                             </td>
@@ -270,10 +277,12 @@
                                                 name="account_invoice_line_name"
                                                 style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                             >
-                                                <t
-                                                    t-set="productName"
-                                                    t-value="line.name"
-                                                />
+                                                <t t-if="line.name != False">
+                                                    <t t-set="productName" t-value="line.name"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-set="productName" t-value="line.product_id.name"/>
+                                                </t>
                                                 <t
                                                     t-set="name_num"
                                                     t-value="productName.find(']') + 1 "
@@ -291,8 +300,8 @@
                                                 class="text-right"
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                 <t t-if="o.type in ('out_refund','in_refund')">
-                                                    <span>- </span>
+                                                <t t-if="o.type in ('out_refund','in_refund')">
+                                                    <span>-</span>
                                                 </t>
                                                 <span
                                                     t-esc="lines_group['quantity']"
@@ -308,7 +317,7 @@
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
                                                 <t t-if="o.type in ('out_refund','in_refund')">
-                                                    <span>- </span>
+                                                    <span>-</span>
                                                 </t>
                                                 <span
                                                     class="text-nowrap"
@@ -353,8 +362,8 @@
                                                         t-value="(subtotal or 0.0) + line_picking_subtotal"
                                                     />
                                                     <t t-if="o.type in ('out_refund','in_refund')">
-                                                    <span>- </span>
-                                                </t>
+                                                        <span>-</span>
+                                                    </t>
                                                     <span
                                                         t-esc="line_picking_subtotal"
                                                         t-options='{"widget": "monetary", "display_currency": o.currency_id}'
@@ -366,7 +375,7 @@
                                                         t-value="(subtotal or 0.0) + l.price_subtotal"
                                                     />
                                                     <t t-if="o.type in ('out_refund','in_refund')">
-                                                        <span>- </span>
+                                                        <span>-</span>
                                                     </t>
 
                                                     <span
@@ -390,10 +399,10 @@
                                                     class="text-right"
                                                     style="solid; black; padding: 0px; margin: 0px; width:30%; font-size:0.8em; !important;"
                                                 >
-                                                    <strong>Subtotal: </strong>
+                                                    <strong>Subtotal:</strong>
                                                     <strong>
                                                         <t t-if="o.type in ('out_refund','in_refund')">
-                                                            <span>- </span>
+                                                            <span>-</span>
                                                         </t>
                                                     </strong>
                                                     <strong
@@ -401,10 +410,10 @@
                                                         t-options='{"widget": "monetary", "display_currency": o.currency_id}'
                                                     />
                                                 </td>
-                                                <t t-set="subtotal" t-value="0.0" />
+                                                <t t-set="subtotal" t-value="0.0"/>
                                             </tr>
                                             <!--Fin subtotal -->
-                                            <t t-set="last_picking" t-value="picking" />
+                                            <t t-set="last_picking" t-value="picking"/>
                                         </t>
                                     </tr>
                                 </t>
@@ -431,9 +440,9 @@
                                                 style="solid; black; padding: 0px; margin: 0px; !important;"
                                             >
                                                 <t t-if="o.type in ('out_refund','in_refund')">
-                                                    <span>- </span>
+                                                    <span>-</span>
                                                 </t>
-                                                <span t-field="o.amount_untaxed" />
+                                                <span t-field="o.amount_untaxed"/>
                                             </td>
                                         </tr>
                                         <t
@@ -459,7 +468,7 @@
                                                         style="solid; black; padding: 0px; margin: 0px; !important;"
                                                     >
                                                         <t t-if="o.type in ('out_refund','in_refund')">
-                                                            <span>- </span>
+                                                            <span>-</span>
                                                         </t>
                                                         <span
                                                             class="text-nowrap"
@@ -485,7 +494,7 @@
                                                         style="solid; black; padding: 0px; margin: 0px; !important;"
                                                     >
                                                         <t t-if="o.type in ('out_refund','in_refund')">
-                                                            <span>- </span>
+                                                            <span>-</span>
                                                         </t>
                                                         <span
                                                             class="text-nowrap"
@@ -507,7 +516,7 @@
                                             >
                                                 <strong>
                                                     <t t-if="o.type in ('out_refund','in_refund')">
-                                                        <span>- </span>
+                                                        <span>-</span>
                                                     </t>
                                                 </strong>
                                                 <strong>
@@ -523,7 +532,7 @@
                             </div>
                             <!-- Fin totales documento -->
                             <!-- Desglose de vencimientos -->
-                            <t t-set="due_list" t-value="o.get_multi_due_list()" />
+                            <t t-set="due_list" t-value="o.get_multi_due_list()"/>
                             <div id="duelist" class="row">
                                 <div
                                     t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ml-auto"
@@ -569,19 +578,19 @@
                             </div>
                         </div>
                         <!-- Fin desglose de vencimientos -->
-                        <div style="clear:both;" />
+                        <div style="clear:both;"/>
                         <p t-if="o.narration" name="comment">
-                            <span t-field="o.narration" />
+                            <span t-field="o.narration"/>
                         </p>
                         <p t-if="o.invoice_payment_term_id" name="payment_term">
-                            <span t-field="o.invoice_payment_term_id.note" />
+                            <span t-field="o.invoice_payment_term_id.note"/>
                         </p>
                         <p
                             t-if="o.fiscal_position_id.note"
                             name="note"
                             style="display:none;"
                         >
-                            <span t-field="o.fiscal_position_id.note" />
+                            <span t-field="o.fiscal_position_id.note"/>
                         </p>
                         <div
                             id="qrcode"
@@ -591,9 +600,10 @@
                             <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
                                 <strong
                                     class="text-center"
-                                >Scan me with your banking app.</strong>
-                                <br />
-                                <br />
+                                >Scan me with your banking app.
+                                </strong>
+                                <br/>
+                                <br/>
                                 <img
                                     class="border border-dark rounded"
                                     t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual, o.invoice_payment_ref or o.ref or o.name)"
@@ -605,8 +615,9 @@
                             >
                                 <strong
                                     class="text-center"
-                                >The SEPA QR Code informations are not set correctly.</strong>
-                                <br />
+                                >The SEPA QR Code informations are not set correctly.
+                                </strong>
+                                <br/>
                             </p>
                         </div>
                     </div>
