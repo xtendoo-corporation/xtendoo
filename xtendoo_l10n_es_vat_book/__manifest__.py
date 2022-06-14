@@ -1,9 +1,9 @@
 # See README.rst file on addon root folder for license details
 
 {
-    "name": "Xtendoo Libro de IVA",
-    "version": "13.0.1.4.3",
-    "author": "PRAXYA, ForgeFlow, Tecnativa, Odoo Community Association (OCA)",
+    "name": "XtendooLibro de IVA",
+    "version": "13.0.1.4.7",
+    "author": "PRAXYA, ForgeFlow, Tecnativa, Odoo Community Association (OCA), Xtendoo",
     "website": "https://github.com/OCA/l10n-spain",
     "license": "AGPL-3",
     "category": "Accounting",
@@ -13,7 +13,7 @@
         "security/ir.model.access.csv",
         "data/aeat_vat_book_map_data.xml",
         "views/aeat_vat_book_map_view.xml",
-        "views/xtendoo_l10n_es_vat_book.xml",
+        "views/l10n_es_vat_book.xml",
         "views/l10n_es_vat_book_line.xml",
         "views/l10n_es_vat_book_tax_summary.xml",
         "views/l10n_es_vat_book_summary.xml",

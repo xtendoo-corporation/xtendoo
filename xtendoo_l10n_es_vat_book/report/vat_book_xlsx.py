@@ -14,7 +14,7 @@ def excel_col_number(col_name):
 
 
 class VatNumberXlsx(models.AbstractModel):
-    _name = "report.xtendoo_l10n_es_vat_book.l10n_es_vat_book_xlsx"
+    _name = "report.l10n_es_vat_book.l10n_es_vat_book_xlsx"
     _description = "Vat Number Xlsx"
     _inherit = "report.report_xlsx.abstract"
 
@@ -23,7 +23,7 @@ class VatNumberXlsx(models.AbstractModel):
 
     @ormcache("self.id")
     def _get_undeductible_taxes(self, book):
-        line = self.env.ref("xtendoo_l10n_es_vat_book.aeat_vat_book_map_line_p_iva_nd")
+        line = self.env.ref("l10n_es_vat_book.aeat_vat_book_map_line_p_iva_nd")
         return book.get_taxes_from_templates(line.tax_tmpl_ids)
 
     def _get_vat_book_map_lines(self, book_type):

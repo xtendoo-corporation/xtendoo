@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-    <template id="report_vat_book_invoices_issued_document">
+    <template id="xtendoo_l10n_es_vat_bookreport_vat_book_invoices_issued_document">
         <div class="page">
             <style type="text/css">
                .detail_table {
@@ -21,8 +21,8 @@
                 </div>
             </div>
             <div class="row">
-                <t t-call="l10n_es_vat_book.vat_book_dates" />
-                <t t-call="l10n_es_vat_book.vat_book_contact" />
+                <t t-call="xtendoo_l10n_es_vat_book.vat_book_dates" />
+                <t t-call="xtendoo_l10n_es_vat_book.vat_book_contact" />
             </div>
             <div class="row">
                 <div class="col-12 mt32" id="title_invoices_issued">
@@ -32,10 +32,10 @@
             <div class="row">
                 <div class="col-12" id="invoices_issued_detail_div">
                     <table class="table table-sm" id="invoices_issued_detail_table">
-                        <t t-call="l10n_es_vat_book.vat_book_invoices_head" />
+                        <t t-call="xtendoo_l10n_es_vat_book.vat_book_invoices_head" />
                         <tbody>
                             <tr t-foreach="o.issued_line_ids" t-as="l">
-                                <t t-call="l10n_es_vat_book.vat_book_line" />
+                                <t t-call="xtendoo_l10n_es_vat_book.vat_book_line" />
                             </tr>
                         </tbody>
                     </table>
@@ -52,10 +52,10 @@
                         class="table table-sm"
                         id="rectification_invoices_issued_detail_table"
                     >
-                        <t t-call="l10n_es_vat_book.vat_book_invoices_head" />
+                        <t t-call="xtendoo_l10n_es_vat_book.vat_book_invoices_head" />
                         <tbody>
                             <tr t-foreach="o.rectification_issued_line_ids" t-as="l">
-                                <t t-call="l10n_es_vat_book.vat_book_line" />
+                                <t t-call="xtendoo_l10n_es_vat_book.vat_book_line" />
                             </tr>
                         </tbody>
                     </table>
@@ -69,13 +69,13 @@
             <div class="row">
                 <div class="col-12" id="div_summary_invoices">
                     <table class="table table-sm" id="table_sumary_invoices">
-                        <t t-call="l10n_es_vat_book.vat_book_taxes_head" />
+                        <t t-call="xtendoo_l10n_es_vat_book.vat_book_taxes_head" />
                         <tbody>
                             <tr t-foreach="o.issued_tax_summary_ids" t-as="s">
-                                <t t-call="l10n_es_vat_book.vat_book_tax_summary" />
+                                <t t-call="xtendoo_l10n_es_vat_book.vat_book_tax_summary" />
                             </tr>
                             <tr t-foreach="o.issued_summary_ids" t-as="s">
-                                <t t-call="l10n_es_vat_book.vat_book_summary" />
+                                <t t-call="xtendoo_l10n_es_vat_book.vat_book_summary" />
                             </tr>
                         </tbody>
                     </table>
@@ -88,7 +88,7 @@
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
                     <t
-                        t-call="l10n_es_vat_book.report_vat_book_invoices_issued_document"
+                        t-call="xtendoo_l10n_es_vat_book.report_vat_book_invoices_issued_document"
                     />
                 </t>
             </t>
@@ -99,7 +99,7 @@
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
                     <t
-                        t-call="l10n_es_vat_book.report_vat_book_invoices_issued_document"
+                        t-call="xtendoo_l10n_es_vat_book.report_vat_book_invoices_issued_document"
                     />
                 </t>
             </t>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-    <template id="l10n_es_vat_book.vat_book_dates">
+    <template id="xtendoo_l10n_es_vat_book.vat_book_dates">
         <div class="col-12 text-center" id="dates_div">
             <table class="detail_table" id="fiscal_periods_table">
                 <tbody class="invoice_tbody">
@@ -34,7 +34,7 @@
             </table>
         </div>
     </template>
-    <template id="l10n_es_vat_book.vat_book_contact">
+    <template id="xtendoo_l10n_es_vat_book.vat_book_contact">
         <div class="col-12 text-center" id="vat_book_contact_div">
             <table class="detail_table" id="vat_book_contact_table">
                 <tbody class="invoice_tbody">
@@ -66,7 +66,7 @@
             </table>
         </div>
     </template>
-    <template id="l10n_es_vat_book.vat_book_invoices_head">
+    <template id="xtendoo_l10n_es_vat_book.vat_book_invoices_head">
         <thead>
             <tr>
                 <td id="detail_invoice_number">Number</td>
@@ -80,7 +80,7 @@
             </tr>
         </thead>
     </template>
-    <template id="l10n_es_vat_book.vat_book_line">
+    <template id="xtendoo_l10n_es_vat_book.vat_book_line">
         <td id="data_odoo_invoice">
             <t t-set="res_model" t-value="'account.move'" />
             <span t-if="l.move_id">
@@ -170,7 +170,7 @@
             <t t-set="number_taxes" t-value="number_taxes + 1" />
         </t>
     </template>
-    <template id="l10n_es_vat_book.vat_book_taxes_head">
+    <template id="xtendoo_l10n_es_vat_book.vat_book_taxes_head">
         <thead>
             <tr>
                 <td id="summary_invoice_number" />
@@ -184,7 +184,7 @@
             </tr>
         </thead>
     </template>
-    <template id="l10n_es_vat_book.vat_book_tax_summary">
+    <template id="xtendoo_l10n_es_vat_book.vat_book_tax_summary">
         <td id="data_summary_invoice_number" />
         <td id="data_summary_invoice_date" />
         <td id="data_summary_invoice_company" />
@@ -211,7 +211,7 @@
             />
         </td>
     </template>
-    <template id="l10n_es_vat_book.vat_book_summary">
+    <template id="xtendoo_l10n_es_vat_book.vat_book_summary">
         <td id="total_summary_invoice_number" />
         <td id="total_summary_invoice_date" />
         <td id="total_summary_invoice_company" />
