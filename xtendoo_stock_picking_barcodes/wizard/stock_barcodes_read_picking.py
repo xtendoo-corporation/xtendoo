@@ -301,6 +301,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
             )
         )
         available_qty = self.product_qty
+
         move_lines_dic = {}
 
         for line in lines:
@@ -316,9 +317,7 @@ class WizStockBarcodesReadPicking(models.TransientModel):
                 move_lines_dic[line.id] = assigned_qty
             if (
                 float_compare(
-                    available_qty,
-                    0.0,
-                    precision_rounding=line.product_id.uom_id.rounding,
+                    available_qty, 0.0, precision_rounding=line.product_id.uom_id.rounding,
                 )
                 < 1
             ):

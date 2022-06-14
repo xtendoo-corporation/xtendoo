@@ -37,6 +37,11 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.action_post_product_scanned(product)
 
         line = self._get_line_to_assign(product)
+
+        print("-"*80)
+        print("line", line)
+        print("-"*80)
+
         if not line:
             return
 

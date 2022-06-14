@@ -76,6 +76,7 @@ class WizStockBarcodesRead(models.AbstractModel):
         if lot.locked:
             self._set_message_error("El lote %s esta bloqueado" % lot)
             return False
+
         self.lot_id = lot
         return True
 
@@ -96,7 +97,10 @@ class WizStockBarcodesRead(models.AbstractModel):
         )
         if lines:
             return lines[0]
-        # not enough quantity
+
+        # No caben todas las cantidades del paquete pasamos a meter las cantidades
+        # de una en una
+
         lines = self.line_picking_ids.filtered(
             lambda l: l.product_id == product and l.product_uom_qty >= l.quantity_done
         ).sorted(
@@ -107,7 +111,9 @@ class WizStockBarcodesRead(models.AbstractModel):
                 "No hay líneas para asignar al producto")
             return False
 
-        self.product_qty = lines[0].product_uom_qty - lines[0].quantity_done
+        # self.product_qty = lines[0].product_uom_qty - lines[0].quantity_done
+        self.product_qty = 1
+
         return lines[0]
 
     def process_barcode(self, barcode):
@@ -193,4 +199,3 @@ class WizStockBarcodesRead(models.AbstractModel):
             )
         else:
             self.message = "¡Error! %s" % message
-
