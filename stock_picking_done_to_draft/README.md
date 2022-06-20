@@ -1,1 +1,0 @@
-# stock_picking_done_to_draft
