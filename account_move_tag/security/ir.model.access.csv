@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_move_tag_user,Account Move Tag User,model_account_move_tag,sales_team.group_sale_salesman,1,0,0,0
+access_account_move_tag_manager,Account Move Tag Manager,model_account_move_tag,sales_team.group_sale_manager,1,1,1,1

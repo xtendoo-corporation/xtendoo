@@ -1,0 +1,20 @@
+<!-- Copyright 2022 Darío Cruz
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).-->
+<odoo>
+    <record id="account_move_tag_view_form" model="ir.ui.view">
+        <field name="name">account.move.tag.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form" />
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <field name="ref" position="after">
+                <field
+                    name="so_tag_ids"
+                    placeholder="tag..."
+                    widget="many2many_tags"
+                    options="{'color_field': 'color', 'no_create': True, 'no_create_edit': True}"
+                />
+            </field>
+        </field>
+    </record>
+</odoo>
