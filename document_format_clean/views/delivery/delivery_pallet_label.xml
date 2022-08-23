@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <report
+        string="Etiqueta de pedido"
+        id="action_report_delivery_pallets_label"
+        model="stock.picking"
+        report_type="qweb-pdf"
+        name="document_format_clean.report_delivery_pallets_label"
+        file="document_format_clean.report_delivery_pallets_label"
+        print_report_name="'Delivery Label - %s - %s' % (object.partner_id.name or '', object.name)"
+    />
+    <template id="document_format_clean.report_delivery_pallets_label">
+        <t t-foreach="docs" t-as="o">
+            <t
+                t-call="document_format_clean.report_delivery_commodity_document"
+                t-lang="o.partner_id.lang"
+            />
+        </t>
+    </template>
+    <template id="document_format_clean.report_delivery_commodity_document">
