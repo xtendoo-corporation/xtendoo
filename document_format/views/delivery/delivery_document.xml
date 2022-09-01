@@ -20,12 +20,12 @@
                             <!-- Datos del movimiento -->
                             <div style="width:50%; float:left;">
                                 <ul class="list-unstyled">
-                                    <li>
-                                        <h4 class="mt16">
-                                            <b>Albarán:</b>
-                                            <span t-field="o.pic_name"></span>
-                                        </h4>
-                                    </li>
+<!--                                    <li>-->
+<!--                                        <h4 class="mt16">-->
+<!--                                            <b>Albarán:</b>-->
+<!--                                            <span t-field="o.pic_name"></span>-->
+<!--                                        </h4>-->
+<!--                                    </li>-->
                                     <li t-if="o.date_done">
                                         <b>Fecha:</b>
                                         <span t-esc="o.date_done.strftime('%d/%m/%Y')" />
