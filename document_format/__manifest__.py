@@ -24,7 +24,7 @@
         "data/paper_format_label.xml",
         "views/stock_picking/stock_picking_view.xml",
         "views/delivery/delivery_commodity.xml",
-        "views/invoice/invoice_document.xml",
+        "views/invoice/delivery_commodity.xml",
         "views/invoice/invoice_dossier.xml",
         "views/invoice/invoice_gruped_by_picking.xml",
         "views/layout/external_layout_clean.xml",
