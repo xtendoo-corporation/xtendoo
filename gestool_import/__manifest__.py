@@ -3,6 +3,7 @@
     "category": "Product",
     "version": "15.0.1.0",
     "depends": ["product"],
+    "license": "AGPL-3",
     "description": """
         Wizard to Import from gestool.
         """,
