@@ -43,6 +43,16 @@
         <field name="view_mode">tree,form</field>
         <field name="target">current</field>
     </record>
+
+    <record id="mail_message_action_unattached" model="ir.actions.act_window">
+        <field name="name">Lost Messages</field>
+        <field name="res_model">mail.message</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="context">{"unattached_interface": True}</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+    </record>
+
     <record id="mail_message_action_unattached_open_only_form" model="ir.actions.act_window">
         <field name="name">Lost Messages Form Only</field>
         <field name="res_model">mail.message</field>

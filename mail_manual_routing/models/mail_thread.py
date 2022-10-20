@@ -27,11 +27,6 @@ class mail_thread(models.AbstractModel):
                 thread_id=thread_id, custom_values=custom_values
             )
         except ValueError:
-
-            print("*"*80)
-            print("*message_dict*", message_dict)
-            print("*"*80)
-
             parent_object_id = None
             user_id = self._get_email_to_user(message_dict)
 
@@ -50,13 +45,27 @@ class mail_thread(models.AbstractModel):
                     "res_id": parent_object_id.id,
                 })
 
+            if user_id and parent_object_id:
+                self._create_lost_notification(user_id, parent_object_id)
+
             message_id = self._create_lost_message(**message_dict)
             _logger.warning(u"Message {} can't be routed. Assign it to 'lost messages'".format(message_id))
 
-            if user_id:
-                self._create_lost_notification(user_id, parent_object_id)
-
         return res
+
+    def _create_lost_notification(self, user_id, parent_object_id):
+        self.env['mail.message'].create({
+            'message_type': 'notification',
+            'subject': 'Email recibido',
+            'model': 'res.partner',
+            'res_id': parent_object_id.id,
+            'partner_ids': [user_id.id],
+            'author_id': self.env.user.partner_id.id,
+            'notification_ids': [(0, 0, {
+                'res_partner_id': user_id.partner_id.id,
+                'notification_type': 'inbox',
+            })],
+        })
 
     @api.returns("mail.message", lambda value: value.id)
     def _create_lost_message(self, *,
@@ -99,20 +108,6 @@ class mail_thread(models.AbstractModel):
         message_id = self._message_create(values)
         return message_id
 
-    def _create_lost_notification(self, user_id, parent_object_id):
-        self.env['mail.message'].create({
-            'message_type': 'notification',
-            'subject': 'Email recibido',
-            'model': 'res.partner',
-            'res_id': parent_object_id.id,
-            'partner_ids': [user_id.id],
-            'author_id': self.env.user.partner_id.id,
-            'notification_ids': [(0, 0, {
-                'res_partner_id': self.env.user.partner_id.id,
-                'notification_type': 'inbox',
-            })],
-        })
-
     @api.model
     def _get_lost_parent(self):
         """
@@ -132,7 +127,6 @@ class mail_thread(models.AbstractModel):
         email_to = message_dict.get("to")
         if not email_to:
             return None
-
         email_to = email_to.split('<')[-1].split('>')[0]
         user_id = self.env['res.users'].sudo().search([
             ('email', '=', email_to)], limit=1)
@@ -143,12 +137,10 @@ class mail_thread(models.AbstractModel):
         email_from = message_dict.get("email_from")
         if not email_from:
             return None
-
         partner_id = self.env['res.partner'].sudo().search([
             ('email', '=', tools.email_normalize(email_from)), ('company_id', '=', user_id.company_id.id)], limit=1)
-
         if not partner_id:
             partner_id = self.env['res.partner'].sudo().search([
                 ('email', '=', tools.email_normalize(email_from))], limit=1)
-
         return partner_id
+
