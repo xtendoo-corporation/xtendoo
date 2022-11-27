@@ -27,39 +27,63 @@ class mail_thread(models.AbstractModel):
                 thread_id=thread_id, custom_values=custom_values
             )
         except ValueError:
-            parent_object_id = None
+            parent_id = None
             user_id = self._get_email_to_user(message_dict)
 
-            if user_id and user_id.company_id:
-                parent_object_id = self._get_email_from_partner(user_id, message_dict)
+            print("*"*80)
+            print("user_id", user_id)
+            print("user_id.partner_id", user_id.partner_id)
+            print("*"*80)
 
-            if parent_object_id:
+            if not user_id:
+                return
+
+            print("*"*80)
+            print("user_id.company_id", user_id.company_id)
+            print("*"*80)
+
+            if user_id.company_id:
+                parent_id = self._get_email_from_partner(user_id, message_dict)
+
+            print("*"*80)
+            print("parent_id", parent_id)
+            print("*"*80)
+
+            if not parent_id:
+                return
+
+            if parent_id:
                 message_dict.update({
                     "model": "res.partner",
-                    "res_id": parent_object_id.id,
-                })
-            else:
-                parent_object_id = self._get_lost_parent()
-                message_dict.update({
-                    "model": "lost.message.parent",
-                    "res_id": parent_object_id.id,
+                    "res_id": parent_id.id,
                 })
 
-            if user_id and parent_object_id:
-                self._create_lost_notification(user_id, parent_object_id)
+            self._create_notification(user_id, parent_id)
 
-            message_id = self._create_lost_message(**message_dict)
-            _logger.warning(u"Message {} can't be routed. Assign it to 'lost messages'".format(message_id))
+            self._create_message(**message_dict)
+
+            # else:
+            #     parent_id = self._get_lost_parent()
+            #     message_dict.update({
+            #         "model": "lost.message.parent",
+            #         "res_id": parent_id.id,
+            #     })
+            #
+            # if user_id and parent_id:
+            #     self._create_notification(user_id, parent_id)
+            #
+            # message_id = self._create_message(**message_dict)
+            # _logger.warning(u"Message {} can't be routed. Assign it to 'lost messages'".format(message_id))
 
         return res
 
-    def _create_lost_notification(self, user_id, parent_object_id):
+    def _create_notification(self, user_id, parent_id):
         self.env['mail.message'].create({
             'message_type': 'notification',
             'subject': 'Email recibido',
             'model': 'res.partner',
-            'res_id': parent_object_id.id,
-            'partner_ids': [user_id.id],
+            'res_id': parent_id.id,
+            'partner_ids': [user_id.partner_id.id],
             'author_id': self.env.user.partner_id.id,
             'notification_ids': [(0, 0, {
                 'res_partner_id': user_id.partner_id.id,
@@ -68,7 +92,7 @@ class mail_thread(models.AbstractModel):
         })
 
     @api.returns("mail.message", lambda value: value.id)
-    def _create_lost_message(self, *,
+    def _create_message(self, *,
                              body="", subject=None, message_type="notification",
                              email_from=None, author_id=None, parent_id=False,
                              subtype_xmlid=None, subtype_id=False, partner_ids=None,
@@ -103,8 +127,8 @@ class mail_thread(models.AbstractModel):
 
         attachments = attachments or []
         attachment_ids = attachment_ids or []
-        attachement_values = self._message_post_process_attachments(attachments, attachment_ids, values)
-        values.update(attachement_values)
+        attachment_values = self._message_post_process_attachments(attachments, attachment_ids, values)
+        values.update(attachment_values)
         message_id = self._message_create(values)
         return message_id
 
@@ -135,6 +159,11 @@ class mail_thread(models.AbstractModel):
     @api.model
     def _get_email_from_partner(self, user_id, message_dict):
         email_from = message_dict.get("email_from")
+
+        print("*"*80)
+        print("email_from", email_from)
+        print("*"*80)
+
         if not email_from:
             return None
         partner_id = self.env['res.partner'].sudo().search([
