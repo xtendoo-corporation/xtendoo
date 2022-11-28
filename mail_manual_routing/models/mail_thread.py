@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-
-import logging
-
 from odoo import api, models, tools
-
-_logger = logging.getLogger(__name__)
 
 
 class mail_thread(models.AbstractModel):
@@ -62,19 +57,6 @@ class mail_thread(models.AbstractModel):
 
             self._create_message(**message_dict)
 
-            # else:
-            #     parent_id = self._get_lost_parent()
-            #     message_dict.update({
-            #         "model": "lost.message.parent",
-            #         "res_id": parent_id.id,
-            #     })
-            #
-            # if user_id and parent_id:
-            #     self._create_notification(user_id, parent_id)
-            #
-            # message_id = self._create_message(**message_dict)
-            # _logger.warning(u"Message {} can't be routed. Assign it to 'lost messages'".format(message_id))
-
         return res
 
     def _create_notification(self, user_id, parent_id):
@@ -131,20 +113,6 @@ class mail_thread(models.AbstractModel):
         values.update(attachment_values)
         message_id = self._message_create(values)
         return message_id
-
-    @api.model
-    def _get_lost_parent(self):
-        """
-        The method to find or create a parent object which would server to overcome super rights
-
-        Returns:
-         * lost.message.parent object
-        """
-        self = self.sudo()
-        lost_parent_id = self.env["lost.message.parent"].search([], limit=1)
-        if not lost_parent_id:
-            lost_parent_id = self.env["lost.message.parent"].create({})
-        return lost_parent_id
 
     @api.model
     def _get_email_to_user(self, message_dict):
