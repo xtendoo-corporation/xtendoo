@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template xml:space="preserve">
+    <t t-name="HrAttendanceWorkCenter">
+        <div class="o_hr_attendance_kiosk_mode_container o_home_menu_background">
+            <span class="o_hr_attendance_kiosk_backdrop"/>
+            <div class="o_hr_attendance_clock text-center"/>
+            <div class="o_hr_attendance_kiosk_mode">
+                <t t-set="checked_in" t-value="widget.employee.attendance_state=='checked_in'"/>
+                <t t-if="widget.employee">
+                    <div class="o_hr_attendance_user_badge o_home_menu_background">
+                        <img class="img rounded-circle" t-attf-src="/web/image?model=hr.employee.public&amp;field=avatar_128&amp;id=#{widget.employee.id}" t-att-title="widget.employee.name" t-att-alt="widget.employee.name"/>
+                    </div>
+                    <h1 class="mb8"><t t-esc="widget.employee.name"/></h1>
+                    <t t-if="checked_in">
+                        <span t-field="widget.employee.work_center_id"></span>
+                        <h3 class="mt8 mb24">¿Quiere registrar su salida?</h3>
+                        <div class="mt16">
+                            <h4 class="mt0 mb0 text-muted" t-if="checked_in">Today's work hours: <span t-esc="widget.hours_today"/></h4>
+                            <a class="fa fa-7x o_hr_attendance_sign_in_out_icon fa-sign-out btn-warning" t-if="checked_in" aria-label="Sign out" title="Sign out"/>
+                            <a class="fa fa-7x o_hr_attendance_sign_in_out_icon fa-sign-in btn-secondary" t-if="!checked_in" aria-label="Sign in" title="Sign in"/>
+                            <h3 class="mt0 mb0 text-muted">Click to <b t-if="checked_in">check out</b><b t-if="!checked_in">check in</b></h3>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <h3 class="mt8 mb24">Choose a Work Center</h3>
+                        <div class="mt16">
+                            <button class="o_hr_attendance_button_work_center btn-primary" style="width:50%;height:100px;">
+                                <span class="fa fa-4x fa-building-o"></span>
+                            </button>
+                        </div>
+                    </t>
+                </t>
+                <t t-else="">
+                    Warning : Your user should be linked to an employee to use attendance. Please contact your administrator.
+                </t>
+            </div>
+        </div>
+    </t>
+
+     <t t-name="HrAttendanceWorkCenterConfirm">
+        <div class="o_hr_attendance_kiosk_mode_container o_home_menu_background">
+            <t t-set="checked_in" t-value="widget.employee.attendance_state=='checked_in'"/>
+            <span class="o_hr_attendance_kiosk_backdrop"/>
+            <div class="o_hr_attendance_clock text-center"/>
+            <div class="o_hr_attendance_kiosk_mode">
+<!--                <t t-set="checked_in" t-value="widget.employee_state=='checked_in'"/>-->
+                <div class="o_hr_attendance_back_button">
+                    <span class="btn btn-secondary btn-lg d-block d-md-none"><i class="fa fa-chevron-left mr8"/> Go back</span>
+                    <span class="btn btn-secondary d-none d-md-inline-block"><i class="fa fa-chevron-left" role="img" aria-label="Go back" title="Go back"/></span>
+                </div>
+                <t t-if="widget.work_center_id">
+                    <div class="o_hr_attendance_user_badge o_home_menu_background">
+                        <img class="img rounded-circle" t-attf-src="/web/image?model=hr.employee.public&amp;field=avatar_128&amp;id=#{widget.employee_id}" t-att-title="widget.employee_name" t-att-alt="widget.employee_name"/>
+                    </div>
+                    <h1 t-esc="widget.employee_name"></h1>
+                    <h3 class="mt8 mb24"><t t-if="!checked_in">Welcome!</t><t t-else="">Want to check out?</t></h3>
+                    <h1>Work Center:</h1>
+                     <h1 class="mb8"><t t-esc="widget.work_center_name"/></h1>
+
+
+                    <h4 class="mt0 mb0 text-muted" t-if="checked_in">Today's work hours: <span t-esc="widget.employee_hours_today"/></h4>
+
+                        <a class="fa fa-7x o_hr_attendance_sign_in_out_icon fa-sign-out btn-warning" t-if="checked_in" aria-label="Sign out" title="Sign out"/>
+                        <a class="fa fa-7x o_hr_attendance_sign_in_out_icon fa-sign-in btn-secondary" t-if="!checked_in" aria-label="Sign in" title="Sign in"/>
+                        <h3 class="mt0 mb0 text-muted">Click to <b t-if="checked_in">check out</b><b t-else="">check in</b></h3>
+                </t>
+                <div t-else="" class="alert alert-danger" role="alert">
+                    <b>Error: could not find corresponding employee.</b><br/>Please return to the main menu.
+                </div>
+                <a role="button" class="oe_attendance_sign_in_out" aria-label="Sign out" title="Sign out"/>
+            </div>
+        </div>
+    </t>
+</template>
