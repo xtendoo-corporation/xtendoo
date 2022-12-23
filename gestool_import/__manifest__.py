@@ -1,7 +1,7 @@
 {
     "name": "Importation from gestool",
     "category": "Product",
-    "version": "15.0.1.0",
+    "version": "16.0",
     "depends": ["product"],
     "license": "AGPL-3",
     "description": """
