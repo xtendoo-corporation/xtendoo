@@ -25,19 +25,28 @@
                     placeholder="Choose a file to import..."
                 />
                 <field name="filename" invisible="1" />
-<!--                <br/>-->
-<!--                <h5>Seleccione fichero de Categorias</h5>-->
-<!--                &lt;!&ndash;categorias&ndash;&gt;-->
-<!--                <field-->
-<!--                    name="data_file_category"-->
-<!--                    filename="filename"-->
-<!--                    placeholder="Choose a file to import..."-->
-<!--                />-->
-<!--                <field name="filename" invisible="1" />-->
+                <br/>
+                <h5>Seleccione fichero de Categorias</h5>
+                <!--categorias-->
+                <field
+                    name="data_file_category"
+                    filename="filename"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename" invisible="1" />
+                <br/>
+                <h5>Seleccione fichero de Productos</h5>
+                <!--articulos-->
+                <field
+                    name="data_file_product"
+                    filename="filename"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename" invisible="1" />
                 <footer>
                     <button
                         name="import_file"
-                        string="_Importar"
+                        string="Importar"
                         type="object"
                         class="btn-primary"
                     />

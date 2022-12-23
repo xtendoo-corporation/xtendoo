@@ -31,12 +31,19 @@ class GestoolImport(models.TransientModel):
     )
     filename = fields.Char()
 
-    # data_file_category = fields.Binary(
-    #     string="File to Import",
-    #     required=False,
-    #     help="Get you data from Gestool.",
-    # )
-    # filename = fields.Char()
+    data_file_category = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename = fields.Char()
+
+    data_file_product = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename = fields.Char()
 
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
@@ -50,9 +57,13 @@ class GestoolImport(models.TransientModel):
         if data_file_partner:
             self._import_partner(data_file_partner)
 
-        # data_file_category = b64decode(self.data_file_category)
-        # if data_file_category:
-        #     self._import_category(data_file_category)
+        data_file_category = b64decode(self.data_file_category)
+        if data_file_category:
+            self._import_category(data_file_category)
+
+        data_file_product = b64decode(self.data_file_product)
+        if data_file_product:
+            self._import_product(data_file_product)
 
     def _import_partner(self, data_file_partner):
         try:
@@ -148,24 +159,42 @@ class GestoolImport(models.TransientModel):
                 # 'agent_ids': agent_id,
             })
 
-    # def _import_category(self, data_file_category):
-    #     try:
-    #         csv_data = reader(StringIO(data_file_category.decode("utf-8")))
-    #     except Exception:
-    #         raise UserError(_("Can not read the file"))
-    #
-    #     for row in csv_data:
-    #         # self.parse_categories(row)
-    #         print("--------------------CATEGORY--------------------------")
-    #     return
+    def _import_category(self, data_file_category):
+        try:
+            csv_data = reader(StringIO(data_file_category.decode("utf-8")))
+        except Exception:
+            raise UserError(_("Can not read the file"))
 
-    # def parse_categories(self, row):
-    #     category = self.env["product.category"].search([("name", "=", row[0]),])
-    #     if not category:
-    #         self.env["product.category"].create({
-    #             "name": row[0],
-    #             "parent_id" : 1,
-    #         })
+        for row in csv_data:
+            # self.parse_categories(row)
+            print("--------------------CATEGORY--------------------------")
+        return
+
+    def parse_categories(self, row):
+        category = self.env["product.category"].search([("name", "=", row[0]),])
+        if not category:
+            self.env["product.category"].create({
+                "name": row[0],
+                "parent_id" : 1,
+            })
+
+    def _import_product(self, data_file_product):
+        try:
+            csv_data = reader(StringIO(data_file_product.decode("utf-8")))
+        except Exception:
+            raise UserError(_("Can not read the file"))
+
+        for row in csv_data:
+            # self.parse_products(row)
+            print("--------------------PRODUCT--------------------------")
+        return
+
+    def parse_products(self, row):
+        product = self.env["product"].search([("name", "=", row[0]),])
+        if not product:
+            self.env["product"].create({
+                "name": row[0],
+            })
 
     def _import_agentes(self, data_file_agentes):
         try:
