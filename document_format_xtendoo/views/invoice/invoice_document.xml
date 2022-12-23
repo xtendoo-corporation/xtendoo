@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+         <template
+            id="document_format_xtendoo.report_invoice_document_xtendoo"
+            inherit_id="document_format_clean.report_invoice_document_xtendoo">
+             <xpath expr="//li[@name='origin']" position="replace">
+             </xpath>
+         </template>
+    </data>
+</odoo>
