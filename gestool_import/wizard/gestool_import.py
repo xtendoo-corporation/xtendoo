@@ -72,7 +72,8 @@ class GestoolImport(models.TransientModel):
             raise UserError(_("Can not read the file"))
 
         for row in csv_data:
-            self.parse_partner(row)
+            print("--------------------CLIENES--------------------------")
+            # self.parse_partner(row)
         return
 
     def parse_partner(self, row):
@@ -185,15 +186,41 @@ class GestoolImport(models.TransientModel):
             raise UserError(_("Can not read the file"))
 
         for row in csv_data:
-            # self.parse_products(row)
             print("--------------------PRODUCT--------------------------")
+            self.parse_products(row)
         return
 
     def parse_products(self, row):
-        product = self.env["product"].search([("name", "=", row[0]),])
+        print("--------------------PRODUCT--------------------------")
+        print(row)
+
+        # taxes_id = self.env["res.partner"].search([("name", "=", row[23]), ])
+        # if taxes_id:
+        #     taxes_id = [(6, 0, [taxes_id.id])]
+        # else:
+        #     taxes_id = [(6, 0, [])]
+
+        product = self.env["product.template"].search([("name", "=", row[2]),])
+
         if not product:
-            self.env["product"].create({
-                "name": row[0],
+            self.env["product.template"].create({
+                "name": row[2],
+                "list_price": row[5],
+                "standard_price": row[6],
+                "available_in_pos": 1,
+                # "taxes_id": row[7],
+                # "supplier_taxes_id": row[8],
+
+                # [(6, 0, id)]
+            })
+        else:
+            product.sudo().write({
+                "name": row[2],
+                "list_price": row[5],
+                "standard_price": row[6],
+                "available_in_pos": 1,
+                # "taxes_id": row[7],
+                # "supplier_taxes_id": row[8],
             })
 
     def _import_agentes(self, data_file_agentes):
