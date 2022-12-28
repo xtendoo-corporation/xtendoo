@@ -194,11 +194,17 @@ class GestoolImport(models.TransientModel):
         print("--------------------PRODUCT--------------------------")
         print(row)
 
-        # taxes_id = self.env["res.partner"].search([("name", "=", row[23]), ])
-        # if taxes_id:
-        #     taxes_id = [(6, 0, [taxes_id.id])]
-        # else:
-        #     taxes_id = [(6, 0, [])]
+        taxes_id = self.env["account.tax"].search([("name", "=", row[7]), ])
+        if taxes_id:
+            taxes_id = [(6, 0, [taxes_id.id])]
+        else:
+            taxes_id = [(6, 0, [])]
+
+        supplier_taxes_id = self.env["account.tax"].search([("name", "=", row[8]), ])
+        if supplier_taxes_id:
+            supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
+        else:
+            supplier_taxes_id = [(6, 0, [])]
 
         product = self.env["product.template"].search([("name", "=", row[2]),])
 
@@ -208,10 +214,8 @@ class GestoolImport(models.TransientModel):
                 "list_price": row[5],
                 "standard_price": row[6],
                 "available_in_pos": 1,
-                # "taxes_id": row[7],
-                # "supplier_taxes_id": row[8],
-
-                # [(6, 0, id)]
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
             })
         else:
             product.sudo().write({
@@ -219,8 +223,8 @@ class GestoolImport(models.TransientModel):
                 "list_price": row[5],
                 "standard_price": row[6],
                 "available_in_pos": 1,
-                # "taxes_id": row[7],
-                # "supplier_taxes_id": row[8],
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
             })
 
     def _import_agentes(self, data_file_agentes):
