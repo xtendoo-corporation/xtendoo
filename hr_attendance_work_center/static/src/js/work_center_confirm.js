@@ -16,19 +16,18 @@ var WorkCenterConfirm = AbstractAction.extend({
         "click .o_hr_attendance_back_button": function () { this.do_action(this.next_action, {clear_breadcrumbs: true}); },
         "click .o_hr_attendance_sign_in_out_icon": _.debounce(function () {
             var self = this;
-            this._rpc({
-                    model: 'hr.employee',
-                    method: 'attendance_manual_work_center',
-                    args: [[this.employee_id], this.next_action, this.work_center_id],
-                    context: session.user_context,
-                })
-                .then(function(result) {
-                    if (result.action) {
-                        self.do_action(result.action);
-                    } else if (result.warning) {
-                        self.displayNotification({ title: result.warning, type: 'danger' });
-                    }
-                });
+            var options = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 60000,
+            };
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    this._success.bind(self),
+                    self._getPositionError.bind(self),
+                    options
+                );
+            }
         }, 200, true),
         'click .o_hr_attendance_pin_pad_button_0': function() { this.$('.o_hr_attendance_PINbox').val(this.$('.o_hr_attendance_PINbox').val() + 0); },
         'click .o_hr_attendance_pin_pad_button_1': function() { this.$('.o_hr_attendance_PINbox').val(this.$('.o_hr_attendance_PINbox').val() + 1); },
@@ -61,10 +60,45 @@ var WorkCenterConfirm = AbstractAction.extend({
                 });
         }, 200, true),
     },
-
+    _success: function (pos) {
+        const crd = pos.coords;
+        var self = this;
+        self._rpc({
+                model: 'hr.employee',
+                method: 'attendance_manual_work_center',
+                args: [[this.employee.id], 'hr_attendance_work_center.hr_attendance_work_center_action', this.work_center_id, null, [crd.latitude, crd.longitude]],
+                context: session.user_context,
+            })
+            .then(function(result) {
+                if (result.action) {
+                    self.do_action(result.action);
+                } else if (result.warning) {
+                    self.displayNotification({ title: result.warning, type: 'danger' });
+                }
+            });
+    },
+   _getPositionError: function (error) {
+        console.warn("ERROR(" + error.code + "): " + error.message);
+        var self = this;
+         self._rpc({
+                model: 'hr.employee',
+                method: 'attendance_manual_work_center',
+                args: [[this.employee.id], 'hr_attendance_work_center.hr_attendance_work_center_action', this.work_center_id, null, [0.0, 0.0]],
+                context: session.user_context,
+            })
+            .then(function(result) {
+                if (result.action) {
+                    self.do_action(result.action);
+                } else if (result.warning) {
+                    self.displayNotification({ title: result.warning, type: 'danger' });
+                }
+            });
+    },
     init: function (parent, action) {
         this._super.apply(this, arguments);
         var self = this;
+        this.location = (null, null);
+        this.errorCode = null;
         this.next_action = 'hr_attendance_work_center.hr_attendance_work_center_action';
         this.work_center_id = action.work_center_id.value;
         this.work_center_name = action.work_center_name.value;

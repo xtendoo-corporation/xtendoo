@@ -22,7 +22,7 @@
                         </div>
                     </t>
                     <t t-else="">
-                        <h3 class="mt8 mb24">Choose a Work Center</h3>
+                        <h3 class="mt8 mb24">Seleccione un centro de trabajo</h3>
                         <div class="mt16">
                             <button class="o_hr_attendance_button_work_center btn-primary" style="width:50%;height:100px;">
                                 <span class="fa fa-4x fa-building-o"></span>
@@ -31,7 +31,7 @@
                     </t>
                 </t>
                 <t t-else="">
-                    Warning : Your user should be linked to an employee to use attendance. Please contact your administrator.
+                    Advertencia: su usuario debe estar vinculado a un empleado para usar la asistencia. Póngase en contacto con su administrador.
                 </t>
             </div>
         </div>
@@ -53,8 +53,8 @@
                         <img class="img rounded-circle" t-attf-src="/web/image?model=hr.employee.public&amp;field=avatar_128&amp;id=#{widget.employee_id}" t-att-title="widget.employee_name" t-att-alt="widget.employee_name"/>
                     </div>
                     <h1 t-esc="widget.employee_name"></h1>
-                    <h3 class="mt8 mb24"><t t-if="!checked_in">Welcome!</t><t t-else="">Want to check out?</t></h3>
-                    <h1>Work Center:</h1>
+                    <h3 class="mt8 mb24"><t t-if="!checked_in">Bienvenido!</t><t t-else="">¿Quiere registrar su salida?</t></h3>
+                    <h1>Centro de trabajo:</h1>
                      <h1 class="mb8"><t t-esc="widget.work_center_name"/></h1>
 
 
@@ -62,10 +62,10 @@
 
                         <a class="fa fa-7x o_hr_attendance_sign_in_out_icon fa-sign-out btn-warning" t-if="checked_in" aria-label="Sign out" title="Sign out"/>
                         <a class="fa fa-7x o_hr_attendance_sign_in_out_icon fa-sign-in btn-secondary" t-if="!checked_in" aria-label="Sign in" title="Sign in"/>
-                        <h3 class="mt0 mb0 text-muted">Click to <b t-if="checked_in">check out</b><b t-else="">check in</b></h3>
+                        <h3 class="mt0 mb0 text-muted">Click para registrar<b t-if="checked_in">salida</b><b t-else="">entrada</b></h3>
                 </t>
                 <div t-else="" class="alert alert-danger" role="alert">
-                    <b>Error: could not find corresponding employee.</b><br/>Please return to the main menu.
+                    <b>Error: no se pudo encontrar el empleado correspondiente.</b><br/>Por favor, vuelva al menú principal.
                 </div>
                 <a role="button" class="oe_attendance_sign_in_out" aria-label="Sign out" title="Sign out"/>
             </div>

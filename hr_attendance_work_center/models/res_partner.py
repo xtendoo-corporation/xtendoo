@@ -10,10 +10,3 @@ class ResPartner(models.Model):
         string="Work Center",
         default=False,
     )
-
-    # def work_center_manual(self, next_action, entered_pin=None):
-    #     self.ensure_one()
-    #     print("*"*80)
-    #     print("Entra")
-    #     print("*"*80)
-    #     return {'warning': _('Wrong PIN')}

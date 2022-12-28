@@ -42,10 +42,43 @@ var WorkCenter = AbstractAction.extend({
 
     update_attendance: function () {
         var self = this;
-        this._rpc({
+        var options = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 60000,
+        };
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                this._success.bind(self),
+                self._getPositionError.bind(self),
+                options
+            );
+        }
+    },
+   _success: function (pos) {
+        const crd = pos.coords;
+        var self = this;
+        self._rpc({
                 model: 'hr.employee',
                 method: 'attendance_manual_work_center',
-                args: [[self.employee.id], 'hr_attendance_work_center.hr_attendance_work_center_action'],
+                args: [[this.employee.id], 'hr_attendance_work_center.hr_attendance_work_center_action', null, null, [crd.latitude, crd.longitude]],
+                context: session.user_context,
+            })
+            .then(function(result) {
+                if (result.action) {
+                    self.do_action(result.action);
+                } else if (result.warning) {
+                    self.displayNotification({ title: result.warning, type: 'danger' });
+                }
+            });
+   },
+    _getPositionError: function (error) {
+        console.warn("ERROR(" + error.code + "): " + error.message);
+        var self = this;
+         self._rpc({
+                model: 'hr.employee',
+                method: 'attendance_manual_work_center',
+                args: [[this.employee.id], 'hr_attendance_work_center.hr_attendance_work_center_action', null, null, [0.0, 0.0]],
                 context: session.user_context,
             })
             .then(function(result) {
