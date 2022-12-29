@@ -73,7 +73,7 @@ class GestoolImport(models.TransientModel):
 
         for row in csv_data:
             print("--------------------CLIENES--------------------------")
-            # self.parse_partner(row)
+            self.parse_partner(row)
         return
 
     def parse_partner(self, row):
