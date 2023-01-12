@@ -6,7 +6,7 @@
             <field name="inherit_id" ref="sale.view_quotation_tree"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='name']" position="after">
-                    <field name="client_order_red" readonly="1" optional="hide" />
+                    <field name="client_order_ref" readonly="1" optional="hide" />
                 </xpath>
             </field>
         </record>
@@ -17,7 +17,7 @@
             <field name="inherit_id" ref="sale.view_order_tree"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='name']" position="after">
-                    <field name="client_order_red" readonly="1" optional="hide" />
+                    <field name="client_order_ref" readonly="1" optional="hide" />
                 </xpath>
             </field>
         </record>
