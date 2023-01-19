@@ -24,7 +24,7 @@
                     <t t-else="">
                         <h3 class="mt8 mb24">Seleccione un centro de trabajo</h3>
                         <div class="mt16">
-                            <button class="o_hr_attendance_button_work_center btn-primary" style="width:50%;height:100px;">
+                            <button class="o_hr_attendance_button_work_center btn-primary" style="width:50%;min-width:100px;height:100px;">
                                 <span class="fa fa-4x fa-building-o"></span>
                             </button>
                         </div>
