@@ -8,7 +8,7 @@ from odoo import models, fields, api, exceptions, _
 from odoo.tools import format_datetime
 from odoo.osv.expression import AND, OR
 from odoo.tools.float_utils import float_is_zero
-
+from odoo.exceptions import UserError
 
 class HrAttendance(models.Model):
     _inherit = "hr.attendance"
@@ -30,7 +30,28 @@ class HrAttendance(models.Model):
         "Check-out Longitude", compute="_compute_check_out_longitude_text"
     )
 
-    work_center_id = fields.Many2one('res.partner', string="Centro de trabajo", required=True, ondelete='cascade', index=True)
+    work_center_id = fields.Many2one('res.partner', string="Centro de trabajo", required=True, ondelete='cascade',
+                                     index=True)
+
+    def check_in_geolocation(self):
+        if self.check_in_latitude_text and self.check_in_longitude_text:
+            return {
+                'type': 'ir.actions.act_url',
+                'url': 'https://maps.google.com/?q=%s,%s' % (self.check_in_latitude, self.check_in_longitude),
+                'target': 'new',
+            }
+        else:
+            raise UserError(_("No existe Latitud y/o Longitud"))
+
+    def check_out_geolocation(self):
+        if self.check_out_latitude_text and self.check_out_latitude_text:
+            return {
+                'type': 'ir.actions.act_url',
+                'url': 'https://maps.google.com/?q=%s,%s' % (self.check_out_latitude, self.check_out_longitude),
+                'target': 'new',
+            }
+        else:
+            raise UserError(_("No existe Latitud y/o Longitud"))
 
     @api.model
     def get_default_employee(self):
@@ -94,7 +115,3 @@ class HrAttendance(models.Model):
                 if item.check_out_longitude
                 else False
             )
-
-
-
-
