@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+
+	<record model="ir.ui.view" id="inherit_view_product_cod">
+		<field name="name">inherit.view.product.cod</field>
+		<field name="model">product.template</field>
+		<field name="inherit_id" ref="product.product_template_only_form_view"/>
+		<field name="arch" type="xml">
+			<xpath expr="//field[@name='categ_id']" position="after">
+				<field name="cod_available"/>
+				<field name="delivery_fees"/>
+			</xpath>
+		</field>
+	</record>
+	
+	<record id="view_website_cod_tree" model="ir.ui.view">
+		<field name="name">view.website.cod.tree</field>
+		<field name="model">cod.config</field>
+		<field name="arch" type="xml">
+			<tree string="Cash on Delivery Configuration">
+				<field name="name"/>
+			</tree>
+		</field>
+	</record>
+	
+	<record id="view_website_cod_form" model="ir.ui.view">
+		<field name="name">view.website.cod.form</field>
+		<field name="model">cod.config</field>
+		<field name="arch" type="xml">
+			<form string="Cash on Delivery Configuration">
+				<sheet>
+					<div>
+					<group string="General Configuration">
+						<field name="name"/>
+						<field name="min_amt"/>
+						<field name="max_amt"/>
+					</group>
+					</div>
+					<div>
+						<group string="Product Configuration">
+							<field name="excl_product" widget="many2many_tags"/>
+						</group>
+					</div>
+					<div>
+						<group string="Cash on Delivery Applicability">
+							<notebook colspan="2">
+								<page string="Allow States">
+									<field name="cod_state">
+										<tree>
+											<field name="name"/>
+											<field name="code"/>
+											<field name="country_id"/>
+										</tree>
+									</field>
+								</page>
+								<page string="Allow ZIP">
+									<field name="cod_zip">
+										<tree editable='bottom'>
+											<field name="zip_code"/>
+											<field name="cod_id" invisible='1'/>
+										</tree>
+									</field>
+								</page>
+							</notebook>
+						</group>
+					</div>
+					
+					<div>
+						<group string="Website Product Page Configuration">
+							<group>
+								<field name="cod_msg"/>
+								<field name="delivery_date"/>
+								<field name="exp_delivery_interval"/>
+								
+							</group>
+							<group>
+								<field name="cod_poilicy"/>
+								<field name="cod_unavailable_msg"/>
+								<field name="cod_unavailable_msg_payment"/>
+							</group>
+						</group>
+					</div>
+				</sheet>
+			</form>
+		</field>
+	</record>
+	
+	<record id="view_cod_collection_tree" model="ir.ui.view">
+		<field name="name">view.cod.collection.tree</field>
+		<field name="model">cod.payment.collection</field>
+		<field name="arch" type="xml">
+			<tree string="Cash on Delivery Collection">
+				<field name="sale_order_id"/>
+				<field name="partner_id"/>
+				<field name="delivery_person_id"/>
+				<field name="order_amt"/>
+				<field name="collection_amt"/>
+				<field name="state"/>
+			</tree>
+		</field>
+	</record>
+	
+	<record id="view_cod_collection_form" model="ir.ui.view">
+		<field name="name">view.cod.collection.form</field>
+		<field name="model">cod.payment.collection</field>
+		<field name="arch" type="xml">
+			<form string="Cash on Delivery Collection">
+				<header>
+					<button name="confirm_collection" string="Confirm" type='object' attrs="{'invisible':[('state', '!=', 'draft')]}"/>
+					<button name="done_collection" string="Done" type='object' attrs="{'invisible':[('state', '!=', 'confirm')]}"/>
+					<button name="cancel_collection" string="Cancel" type='object' attrs="{'invisible':[('state', '!=', 'draft')]}"/>
+					<field name="state" widget='statusbar'/>
+				</header>
+				<sheet>
+					<group>
+						<group>
+							<field name="sale_order_id"/>
+							<field name="transaction_id"/>
+							<field name="partner_id"/>
+						</group>
+						<group>
+							<field name="delivery_person_id"/>
+							<field name="order_amt"/>
+							<field name="collection_amt"/>
+							<field name="company_id"/>
+						</group>
+					</group>
+					<div>
+						<group string='Notes'>
+							<field name="notes"/>
+						</group>
+					</div>
+				</sheet>
+			</form>
+		</field>
+	</record>
+	
+	<record model="ir.actions.act_window" id="action_cod_collection">
+		<field name="name">COD Payment Collections</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">cod.payment.collection</field>
+		<field name="view_mode">tree,form</field>
+	</record>
+	
+	<menuitem parent="sale.sale_menu_root" id="menu_cod_collection_main" name="COD Payment Collections" sequence="30"/>
+	<menuitem parent="menu_cod_collection_main" action="action_cod_collection" name="COD Payment Collections" id="menu_cod_collection"/>
+	
+	<record model="ir.ui.view" id="inherit_view_payment_acquirers_cod">
+		<field name="name">inherit.view.payment.provider.cod</field>
+		<field name="model">payment.provider</field>
+		<field name="inherit_id" ref="payment.payment_provider_form"/>
+		<field name="arch" type="xml">
+			<xpath expr="//notebook/page[1]" position="inside">
+				<group>
+					<group>
+						<field name="cod_config" />
+						<field name="delivery_fees" />
+					</group>
+				</group>
+			</xpath>
+		</field>
+	</record>
+	
+	<record model="ir.ui.view" id="inherit_view_sale_cod_collection">
+		<field name="name">inherit.view.sale.cod.collection</field>
+		<field name="model">sale.order</field>
+		<field name="inherit_id" ref="sale.view_order_form"/>
+		<field name="arch" type="xml">
+			<xpath expr="//form/sheet/div/button[@name='action_view_invoice']" position="after">
+				<!--div class="oe_button_box" name="button_box_cod"-->
+					<button name="action_view_collections"
+						type="object"
+						class="oe_stat_button" 
+						attrs="{'invisible': [('order_cod_available', '=', False)]}"
+						string="COD Payment Collections"
+						icon="fa-pencil-square-o">
+					</button>
+				<!--/div-->
+			</xpath>
+			<field name="payment_term_id" position="after">
+				<field name="order_cod_available" invisible="1"/>
+			</field>
+		</field>
+	</record>
+	
+	<record id="action_cod_collection_tree" model="ir.actions.act_window">
+		<field name="name">COD Collections</field>
+		<field name="res_model">cod.payment.collection</field>
+		<field name="view_mode">tree,form</field>
+		<field eval="False" name="view_id"/>
+	</record>
+		
+	</data>
+</odoo>        
