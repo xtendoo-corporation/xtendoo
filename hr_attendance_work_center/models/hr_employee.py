@@ -12,6 +12,7 @@ from odoo.tools.float_utils import float_is_zero
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
+
     def attendance_manual_work_center(self, next_action, work_center_id=None, entered_pin=None, location=None):
         if not location:
             location=self.env.context.get("attendance_location", False)
