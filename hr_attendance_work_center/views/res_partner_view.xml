@@ -11,9 +11,6 @@
                 <div class="o_row">
                     <field name="is_work_center" string="Es un centro de trabajo"/>
                 </div>
-                <div class="o_row">
-                    <field name="work_center_user_ids"/>
-                </div>
             </xpath>
         </field>
     </record>
@@ -116,6 +113,7 @@
         <field name="view_mode">kanban</field>
         <field name="view_id" ref="hr_partner_kanban"/>
         <field name="context">{'default_is_work_center': True}</field>
+        <field name="domain">[('is_work_center', '=', True)]</field>
         <field name="target">main</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
