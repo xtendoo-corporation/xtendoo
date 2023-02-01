@@ -1,7 +1,4 @@
-from collections import OrderedDict
-
 from odoo import api, models, _, fields
-import json
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -10,22 +7,22 @@ class ResPartner(models.Model):
         string="Work Center",
         default=False,
     )
-
-    workcenter_id_domain = fields.Char(
-        compute="_compute_workcenter_id_domain",
-        readonly=True,
-        store=False,
+    work_center_user_ids = fields.Many2many(
+        comodel_name="work.center.partner.user",
+        string="Work Center Partner User",
     )
 
-    def _compute_workcenter_id_domain(self):
-        for rec in self:
-            print("*"*120)
-            print("Entra")
-            print("*"*120)
-            rec.workcenter_id_domain = json.dumps(
-                [('is_work_center', '=', True)]
-            )
 
+class WorkcenterPartnerUser(models.Model):
+    _name = 'work.center.partner.user'
+    _description = 'Work Center Partner User'
 
-
+    partner_id = fields.Many2one(
+        comodel_name="res.partner",
+        string="Partner",
+        domain=[("is_work_center", "=", True)],
+    )
+    user_id = fields.Many2one(
+        comodel_name='res.users',
+    )
 

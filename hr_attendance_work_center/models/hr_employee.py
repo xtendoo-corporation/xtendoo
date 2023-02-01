@@ -1,13 +1,4 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
-from odoo import api, models, _, fields
-
-import pytz
 from odoo import models, fields, api, exceptions, _
-from odoo.tools import format_datetime
-from odoo.osv.expression import AND, OR
-from odoo.tools.float_utils import float_is_zero
 
 
 class HrEmployee(models.Model):
@@ -49,6 +40,7 @@ class HrEmployee(models.Model):
         action_message['attendance'] = modified_attendance.read()[0]
         action_message['total_overtime'] = employee.total_overtime
         return {'action': action_message}
+
     def _attendance_action_change_work_center(self, work_center_id=None, location=None):
         """ Check In/Check Out action
             Check In: create a new attendance record
