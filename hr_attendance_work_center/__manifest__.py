@@ -13,7 +13,6 @@
         "hr_attendance",
     ],
     "data": [
-        "security/ir.model.access.csv",
         "views/hr_attendance_work_center.xml",
         "views/res_partner_view.xml",
     ],

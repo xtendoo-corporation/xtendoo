@@ -1,107 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <record id="res_partner_form_view" model="ir.ui.view">
+        <record id="res_partner_form_view" model="ir.ui.view">
         <field name="name">res.partner.form.view</field>
         <field name="model">res.partner</field>
-        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="inherit_id" ref="base.view_partner_form" />
         <field name="arch" type="xml">
-            <xpath expr="//sheet/group" position="before">
-                <label for="is_work_center" string="Es un centro de trabajo"/>
-                <div class="o_row">
-                    <field name="is_work_center" string="Es un centro de trabajo"/>
-                </div>
-            </xpath>
+             <xpath expr="//sheet/group" position="before">
+                 <label for="is_work_center" string="Es un centro de trabajo"/>
+                 <div class="o_row">
+                     <field name="is_work_center" string="Es un centro de trabajo" />
+                 </div>
+             </xpath>
         </field>
     </record>
-
-    <!-- employee kanban view specifically for hr_attendance (to check in/out) -->
-
+<!-- employee kanban view specifically for hr_attendance (to check in/out) -->
     <record id="hr_partner_kanban" model="ir.ui.view">
         <field name="name">hr.partner.kanban</field>
         <field name="model">res.partner</field>
         <field name="priority">99</field>
         <field name="arch" type="xml">
             <kanban class="o_res_partner_attendance_kanban" create="false">
-                <field name="id"/>
-                <field name="color"/>
-                <field name="display_name"/>
-                <field name="title"/>
-                <field name="email"/>
-                <field name="parent_id"/>
-                <field name="is_company"/>
-                <field name="function"/>
-                <field name="phone"/>
-                <field name="street"/>
-                <field name="street2"/>
-                <field name="zip"/>
-                <field name="city"/>
-                <field name="country_id"/>
-                <field name="mobile"/>
-                <field name="state_id"/>
-                <field name="category_id"/>
-                <field name="avatar_128"/>
-                <field name="type"/>
+                 <field name="id"/>
+                    <field name="color"/>
+                    <field name="display_name"/>
+                    <field name="title"/>
+                    <field name="email"/>
+                    <field name="parent_id"/>
+                    <field name="is_company"/>
+                    <field name="function"/>
+                    <field name="phone"/>
+                    <field name="street"/>
+                    <field name="street2"/>
+                    <field name="zip"/>
+                    <field name="city"/>
+                    <field name="country_id"/>
+                    <field name="mobile"/>
+                    <field name="state_id"/>
+                    <field name="category_id"/>
+                    <field name="avatar_128"/>
+                    <field name="type"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_global_click o_kanban_record_has_image_fill o_res_partner_kanban">
-                            <t t-if="!record.is_company.raw_value">
-                                <t t-set="background_image"
-                                   t-value="kanban_image('res.partner', 'avatar_128', record.id.raw_value)"/>
-                                <div class="o_kanban_image_fill_left d-none d-md-block"
-                                     t-attf-style="background-image:url('#{background_image}')">
-                                    <img class="o_kanban_image_inner_pic" t-if="record.parent_id.raw_value"
-                                         t-att-alt="record.parent_id.value"
-                                         t-att-src="kanban_image('res.partner', 'avatar_128', record.parent_id.raw_value)"/>
-                                </div>
-                                <div class="o_kanban_image d-md-none"
-                                     t-attf-style="background-image: url(#{background_image})">
-                                    <img class="o_kanban_image_inner_pic" t-if="record.parent_id.raw_value"
-                                         t-att-alt="record.parent_id.value"
-                                         t-att-src="kanban_image('res.partner', 'avatar_128', record.parent_id.raw_value)"/>
-                                </div>
-                            </t>
-                            <t t-else="">
-                                <div class="o_kanban_image_fill_left o_kanban_image_full"
-                                     t-attf-style="background-image: url(#{kanban_image('res.partner', 'avatar_128', record.id.raw_value)})"
-                                     role="img"/>
-                            </t>
-                            <div class="oe_kanban_details d-flex flex-column">
-                                <strong class="o_kanban_record_title oe_partner_heading">
-                                    <field name="display_name"/>
-                                </strong>
-                                <div class="o_kanban_tags_section oe_kanban_partner_categories"/>
-                                <ul>
-                                    <li t-if="record.parent_id.raw_value and !record.function.raw_value">
-                                        <field name="parent_id"/>
-                                    </li>
-                                    <li t-if="!record.parent_id.raw_value and record.function.raw_value">
-                                        <field name="function"/>
-                                    </li>
-                                    <li t-if="record.parent_id.raw_value and record.function.raw_value">
-                                        <field name="function"/>
-                                        at
-                                        <field name="parent_id"/>
-                                    </li>
-                                    <li t-if="record.city.raw_value or record.country_id.raw_value">
-                                        <t t-if="record.city.raw_value">
-                                            <field name="city"/>
-                                            <t t-if="record.country_id.raw_value">,</t>
-                                        </t>
-                                        <t t-if="record.country_id.raw_value">
-                                            <field name="country_id"/>
-                                        </t>
-                                    </li>
-                                    <li t-if="record.email.raw_value" class="o_text_overflow">
-                                        <field name="email"/>
-                                    </li>
-                                </ul>
-                                <div class="o_row">
-                                    <span class="oe_kanban_partner_links"/>
+                     <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click o_kanban_record_has_image_fill o_res_partner_kanban">
+                                <t t-if="!record.is_company.raw_value">
+                                    <t t-set="background_image" t-value="kanban_image('res.partner', 'avatar_128', record.id.raw_value)"/>
+                                    <div class="o_kanban_image_fill_left d-none d-md-block" t-attf-style="background-image:url('#{background_image}')">
+                                        <img class="o_kanban_image_inner_pic" t-if="record.parent_id.raw_value" t-att-alt="record.parent_id.value" t-att-src="kanban_image('res.partner', 'avatar_128', record.parent_id.raw_value)"/>
+                                    </div>
+                                    <div class="o_kanban_image d-md-none" t-attf-style="background-image: url(#{background_image})">
+                                        <img class="o_kanban_image_inner_pic" t-if="record.parent_id.raw_value" t-att-alt="record.parent_id.value" t-att-src="kanban_image('res.partner', 'avatar_128', record.parent_id.raw_value)"/>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="o_kanban_image_fill_left o_kanban_image_full" t-attf-style="background-image: url(#{kanban_image('res.partner', 'avatar_128', record.id.raw_value)})" role="img"/>
+                                </t>
+                                <div class="oe_kanban_details d-flex flex-column">
+                                    <strong class="o_kanban_record_title oe_partner_heading"><field name="display_name"/></strong>
+                                    <div class="o_kanban_tags_section oe_kanban_partner_categories"/>
+                                    <ul>
+                                        <li t-if="record.parent_id.raw_value and !record.function.raw_value"><field name="parent_id"/></li>
+                                        <li t-if="!record.parent_id.raw_value and record.function.raw_value"><field name="function"/></li>
+                                        <li t-if="record.parent_id.raw_value and record.function.raw_value"><field name="function"/> at <field name="parent_id"/></li>
+                                        <li t-if="record.city.raw_value or record.country_id.raw_value">
+                                            <t t-if="record.city.raw_value"><field name="city"/><t t-if="record.country_id.raw_value">, </t></t>
+                                            <t t-if="record.country_id.raw_value"><field name="country_id"/></t>
+                                        </li>
+                                        <li t-if="record.email.raw_value" class="o_text_overflow"><field name="email"/></li>
+                                    </ul>
+                                    <div class="o_row">
+                                        <span class="oe_kanban_partner_links"/>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </t>
+                        </t>
                 </templates>
             </kanban>
         </field>
@@ -112,37 +84,36 @@
         <field name="res_model">res.partner</field>
         <field name="view_mode">kanban</field>
         <field name="view_id" ref="hr_partner_kanban"/>
-        <field name="context">{'default_is_work_center': True}</field>
         <field name="domain">[('is_work_center', '=', True)]</field>
+        <field name="context">{'default_is_work_center': True}</field>
         <field name="target">main</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Añade un nuevo centro de trabajo
-            </p>
-            <p>
+            </p><p>
                 Agregue algunos centros de trabajo.
             </p>
         </field>
     </record>
 
-    <record id="hr_partner_attendance_action_view" model="ir.actions.act_window">
+     <record id="hr_partner_attendance_action_view" model="ir.actions.act_window">
         <field name="name">Centros de trabajo</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">res.partner</field>
         <field name="view_mode">tree,form,activity</field>
-        <field name="search_view_id" ref="base.view_res_partner_filter"/>
+        <field name="search_view_id" ref="base.view_res_partner_filter" />
         <field name="context">{'search_default_is_work_center': 1}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Añade un nuevo centro de trabajo
-            </p>
+          <p class="o_view_nocontent_smiling_face">
+            Añade un nuevo centro de trabajo
+          </p>
         </field>
     </record>
 
-    <record id="res_partner_view_search_is_work_center" model="ir.ui.view">
+      <record id="res_partner_view_search_is_work_center" model="ir.ui.view">
         <field name="name">lims.partner.search.work.center</field>
         <field name="model">res.partner</field>
-        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="inherit_id" ref="base.view_res_partner_filter" />
         <field name="arch" type="xml">
             <xpath expr="//filter[@name='inactive']" position="before">
                 <filter

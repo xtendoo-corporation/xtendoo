@@ -15,40 +15,36 @@
 
     <record id="view_attendance_tree_inherit" model="ir.ui.view">
         <field name="model">hr.attendance</field>
-        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree" />
         <field name="arch" type="xml">
             <field name="employee_id" position="after">
                 <field
                     name="work_center_id"
                     string="Centro de trabajo"
                     optional="show"
-                    domain="[('is_work_center', '=', True)]"
+                     domain="[('is_work_center', '=', True)]"
                 />
             </field>
         </field>
     </record>
 
-    <record id="view_attendance_list_inherit" model="ir.ui.view">
+      <record id="view_attendance_list_inherit" model="ir.ui.view">
         <field name="model">hr.attendance</field>
-        <field name="inherit_id" ref="hr_attendance_geolocation.view_attendance_tree"/>
+        <field name="inherit_id" ref="hr_attendance_geolocation.view_attendance_tree" />
         <field name="arch" type="xml">
             <field name="check_in_latitude_text" position="replace">
-                <field name="check_in_latitude_text" string="Entrada latitud"
-                       groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
+                <field name="check_in_latitude_text" string="Entrada latitud" groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
             </field>
             <field name="check_in_longitude_text" position="replace">
-                <field name="check_in_longitude_text" string="Entrada longitud"
-                       groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
+                <field name="check_in_longitude_text" string="Entrada longitud" groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
                 <button icon="fa-map" name="check_in_geolocation" type="object" class="btn btn-link">
                 </button>
             </field>
             <field name="check_out_latitude_text" position="replace">
-                <field name="check_out_latitude_text" string="Salida longitud"
-                       groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
+                <field name="check_out_latitude_text" string="Salida longitud" groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
             </field>
             <field name="check_out_longitude_text" position="replace">
-                <field name="check_out_longitude_text" string="Salida longitud"
-                       groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
+                <field name="check_out_longitude_text" string="Salida longitud" groups="hr_attendance.group_hr_attendance_manager" optional="show"/>
                 <button icon="fa-map" name="check_out_geolocation" type="object" class="btn btn-link">
                 </button>
             </field>

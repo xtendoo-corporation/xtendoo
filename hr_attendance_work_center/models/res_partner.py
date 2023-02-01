@@ -1,4 +1,7 @@
+from collections import OrderedDict
+
 from odoo import api, models, _, fields
+
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'

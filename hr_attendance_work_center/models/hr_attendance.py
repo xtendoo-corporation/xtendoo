@@ -1,7 +1,14 @@
-from odoo import models, fields, api, exceptions, _
-from odoo.exceptions import UserError
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-import json
+from odoo import api, models, _, fields
+
+import pytz
+from odoo import models, fields, api, exceptions, _
+from odoo.tools import format_datetime
+from odoo.osv.expression import AND, OR
+from odoo.tools.float_utils import float_is_zero
+from odoo.exceptions import UserError
 
 class HrAttendance(models.Model):
     _inherit = "hr.attendance"
@@ -25,20 +32,6 @@ class HrAttendance(models.Model):
 
     work_center_id = fields.Many2one('res.partner', string="Centro de trabajo", required=True, ondelete='cascade',
                                      index=True)
-    workcenter_id_domain = fields.Char(
-        compute="_compute_workcenter_id_domain",
-        readonly=True,
-        store=False,
-    )
-
-    def _compute_workcenter_id_domain(self):
-        for rec in self:
-            print("*" * 120)
-            print("Entra")
-            print("*" * 120)
-            rec.workcenter_id_domain = json.dumps(
-                [('is_work_center', '=', True)]
-            )
 
     def check_in_geolocation(self):
         if self.check_in_latitude_text and self.check_in_longitude_text:
