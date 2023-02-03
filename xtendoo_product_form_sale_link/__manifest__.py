@@ -2,13 +2,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 {
-    "name": "Xtendoo Product Form Sale Link",
+    "name": "Product Form Sale Link",
     "summary": """
         Adds a button on product forms to access Sale Lines""",
     "version": "13.0.1.0.1",
     "license": "AGPL-3",
     "category": "Sales",
-    "author": "Xtendoo,Odoo Community Association (OCA)",
+    "author": "ACSONE SA/NV,Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/sale-workflow",
     "depends": ["sale"],
     "data": [
