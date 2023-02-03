@@ -14,7 +14,7 @@
             <button name="action_view_sales" position="after">
                 <button
                     class="oe_stat_button"
-                    name="%(product_form_sale_link.action_product_template_sale_list)d"
+                    name="%(xtendoo_product_form_sale_link.action_product_template_sale_list)d"
                     type="action"
                     icon="fa-list"
                 >
