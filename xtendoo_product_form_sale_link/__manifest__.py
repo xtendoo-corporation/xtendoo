@@ -10,7 +10,10 @@
     "category": "Sales",
     "author": "ACSONE SA/NV,Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/sale-workflow",
-    "depends": ["sale"],
+    "depends": [
+        "sale",
+        "stock_account"
+    ],
     "data": [
         "views/sale_order_line.xml",
         "views/product_product.xml",

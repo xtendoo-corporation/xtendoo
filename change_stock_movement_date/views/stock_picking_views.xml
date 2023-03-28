@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="stock_picking_form_view_inherit_change_stock_movement_date" model="ir.ui.view">
+        <field name="name">stock.picking.form.view.inherit.change_stock_movement_date</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group/group/field[@name='date_done']" position="replace">
+                <field name="date_done" string="Fecha Efectiva" attrs="{'readonly': [('state', '=', 'done')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pending_sale_order_qty_on_product_kanban_view" model="ir.ui.view">
+        <field name="name">Product.template.product.kanban</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_kanban_view"/>
+        <field name="arch" type="xml">
+            <data><field name="lst_price" position="after"><field name="type"/></field>
+                <ul position="inside">
+                    <strong>Pending Sales Order Quantity:</strong>
+                        <a class ="oe_kanban_stock_picking_type_list" name="display_pending_sale_order_qty" type="object">
+                            <field name="sale_order_qty"/>
+                        </a>
+                </ul>
+            </data>
+        </field>
+    </record>
+
+</odoo>
