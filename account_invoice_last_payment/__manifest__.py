@@ -9,7 +9,8 @@
     "website": "https://github.com/xtendoo-corporation/xtendoo",
     "license": "AGPL-3",
     "depends": [
-        "account"
+        "base",
+        "account",
     ],
     "demo": [],
     "data": [
