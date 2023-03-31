@@ -7,7 +7,7 @@
     "author": "Xtendoo, Odoo Community Association (OCA), Camilo",
     "website": "https://github.com/OCA/product-attribute",
     "category": "Product",
-    "version": "14.0.1.0.0",
+    "version": "14.0.1.0.1",
     "license": "AGPL-3",
     "depends": [
         "product",
