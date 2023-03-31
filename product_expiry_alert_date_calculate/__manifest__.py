@@ -5,7 +5,7 @@
     "summary": "Alert date is calculate from life_date",
     "version": "14.0.1.0.0",
     "category": "Inventory",
-    "author": "Xtendoo, Odoo Community Association (OCA)",
+    "author": "Xtendoo, Odoo Community Association (OCA), Camilo",
     "license": "AGPL-3",
     "website": "https://xtendoo.es",
     "depends": [

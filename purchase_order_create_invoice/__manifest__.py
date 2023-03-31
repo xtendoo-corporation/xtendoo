@@ -5,7 +5,7 @@
     "name": "Purchase Order Create Invoice",
     "version": "14.0.1.0",
     "summary": "Generate single invoice from purchase orders",
-    "author": "Manuel Calero - Xtendoo",
+    "author": "Manuel Calero - Xtendoo, Camilo",
     "website": "https://xtendoo.es",
     "category": "Sales",
     "description": """

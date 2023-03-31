@@ -5,7 +5,7 @@
     "summary": "Add tracking to partner standard price",
     "version": "14.0.1.0.0",
     "category": "Purchase",
-    "author": "Xtendoo, Odoo Community Association (OCA)",
+    "author": "Xtendoo, Odoo Community Association (OCA), Camilo",
     "license": "AGPL-3",
     "website": "https://xtendoo.es",
     "depends": [

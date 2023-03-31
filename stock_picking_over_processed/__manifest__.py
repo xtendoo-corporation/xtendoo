@@ -5,7 +5,7 @@
     "name": "Stock Picking Over Processed Transfer",
     "summary": "Stock Picking Over Processed Transfer",
     "version": "14.0.1.0.0",
-    "author": "Manuel Calero, Xtendoo",
+    "author": "Manuel Calero, Xtendoo, Camilo",
     "website": "https://xtendoo.es",
     "category": "Warehouse Management",
     "license": "AGPL-3",

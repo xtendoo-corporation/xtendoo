@@ -10,7 +10,7 @@
 This module adds the 'Margin Percent' on sales order.
     """,
     "website": "https://xtendoo.es",
-    "author": "Manuel Calero, Xtendoo",
+    "author": "Manuel Calero, Xtendoo, Camilo",
     "license": "AGPL-3",
     "installable": True,
     "depends": [
