@@ -5,7 +5,7 @@
     "summary": "If the relationship with the supplier does not exist or its price is 0.00, use the cost price",
     "version": "14.0.1.0.0",
     "category": "Purchases",
-    "website": "xtendoo.es",
+    "website": "https://xtendoo.es",
     "author": "ddl",
     "license": "AGPL-3",
     "depends": ["purchase",],
