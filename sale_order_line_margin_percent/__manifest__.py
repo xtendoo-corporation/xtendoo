@@ -3,7 +3,7 @@
 {
     "name": "Margins Percent in Sales Orders ",
     "summary": "This module adds the 'Margin Percent' on sales order",
-    "version": "13.0.1.0.1",
+    "version": "14.0.1.0.1",
     "development_status": "Beta",
     "category": "Sales",
     "description": """
