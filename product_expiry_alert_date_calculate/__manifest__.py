@@ -3,7 +3,7 @@
 {
     "name": "Product Expiry Alert Date Calculate",
     "summary": "Alert date is calculate from life_date",
-    "version": "13.0.1.0.0",
+    "version": "14.0.1.0.0",
     "category": "Inventory",
     "author": "Xtendoo, Odoo Community Association (OCA)",
     "license": "AGPL-3",
