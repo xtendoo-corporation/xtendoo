@@ -14,5 +14,5 @@ def post_init_hook(cr, pool):
     print("*"*80)
 
     env = Environment(cr, SUPERUSER_ID, {})
-    invoice = env["account.move"].search([])
-    invoice._compute_amount()
+    invoices = env["account.move"].search([])
+    invoices._compute_amount()
