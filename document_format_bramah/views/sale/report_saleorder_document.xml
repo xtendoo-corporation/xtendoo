@@ -134,6 +134,9 @@
                                     <span t-if="doc.state in ['draft','sent']"> Presupuesto</span>
                                     <span t-if="doc.state == 'sale'">Pedido </span>
                                 </t>
+                                <t t-else="">
+                                    <span> Factura Proforma</span>
+                                </t>
                             </h2>
                             <div>
                                 <span style="width:65px;display:inline-block;">Numero :</span><span style="margin-left:5px;height:21;" t-field="doc.name"/>
