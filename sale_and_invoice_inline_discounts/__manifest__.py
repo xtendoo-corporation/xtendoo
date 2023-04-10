@@ -12,7 +12,7 @@
     "depends": [
         "sale",
         "contacts",
-        "account"
+        "account",
     ],
     "license": "AGPL-3",
     "data": [
