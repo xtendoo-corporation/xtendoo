@@ -8,7 +8,7 @@
     'license': 'AGPL-3',
     'website': 'https://xtendoo.es',
     'description': """ Create contact address without client check""",
-    'version': '13.0',
+    'version': '14.0',
     'depends': ['base'],
     'data': [],
     'installable': True,
