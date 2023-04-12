@@ -61,6 +61,11 @@ class TrnLinePicking(models.TransientModel):
                 qty_reserved += move.reserved_availability
                 qty_demand += move.product_uom_qty
                 qty_done += move.quantity_done
+
+            print("*"*80)
+            print("move.quantity_done",move.quantity_done)
+            print("*"*80)
+
             candidate.update(
                 {
                     "product_qty_reserved": qty_reserved,
@@ -73,3 +78,5 @@ class TrnLinePicking(models.TransientModel):
         return self.env["wiz.stock.barcodes.read.picking"].browse(
             self.env.context["wiz_barcode_id"]
         )
+
+
