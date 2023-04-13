@@ -1,0 +1,25 @@
+<odoo>
+    <record id="contract_contract_form_view_recurring_sale_form" model="ir.ui.view">
+        <field name="name">contract.contract.form.recurring.sale.form</field>
+        <field name="model">contract.contract</field>
+        <field name="inherit_id" ref="contract.contract_contract_form_view" />
+        <field name="arch" type="xml">
+            <xpath
+                expr="//field[@name='recurring_rule_type']"
+                position="after"
+            >
+                <field name="recurring_rule_type" invisible="1" />
+                <group
+                    attrs="{'invisible': [('recurring_rule_type','!=','daily')]}">
+                    <field name="monday" string="Monday" />
+                    <field name="tuesday" string="Tuesday" />
+                    <field name="wednesday" string="Wednesday" />
+                    <field name="thursday" string="Thursday" />
+                    <field name="friday" string="Friday" />
+                    <field name="saturday" string="Saturday" />
+                    <field name="sunday" string="Sunday" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
