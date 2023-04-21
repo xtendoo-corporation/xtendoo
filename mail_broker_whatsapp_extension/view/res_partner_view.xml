@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">res.partner.whatsapp.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="priority">22</field>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page name="whatsapp_msg" string="Whatsapp Messages">
+                    <field name="mail_message_ids" widget="one2many">
+                        <tree create="false">
+                            <field name="body"/>
+                            <field name="date"/>
+                        </tree>
+                        <form string="Whatsapp Messages">
+                            <group>
+                                <field name="body"/>
+                                <field name="date"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
+
