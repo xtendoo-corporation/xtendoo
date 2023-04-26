@@ -11,13 +11,21 @@
                 <page name="whatsapp_msg" string="Whatsapp Messages">
                     <field name="mail_message_ids" widget="one2many">
                         <tree create="false">
+                            <field name="author_id"/>
                             <field name="body"/>
                             <field name="date"/>
+                            <field name="attachment_ids"/>
+                            <field name="subtype_id"/>
+                            <field name="notification_status"/>
                         </tree>
                         <form string="Whatsapp Messages">
                             <group>
+                                <field name="author_id"/>
                                 <field name="body"/>
                                 <field name="date"/>
+                                <field name="attachment_ids"/>
+                                <field name="subtype_id"/>
+                                <field name="notification_status"/>
                             </group>
                         </form>
                     </field>

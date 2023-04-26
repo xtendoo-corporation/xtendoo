@@ -1,2 +1,2 @@
 from . import res_partner
-from . import whatsapp_messages
+from . import mail_message
