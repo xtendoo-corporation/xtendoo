@@ -13,7 +13,6 @@
         "mail_broker_whatsapp",
     ],
     "data": [
-        "security/ir.model.access.csv",
         "view/res_partner_view.xml",
     ],
 }
