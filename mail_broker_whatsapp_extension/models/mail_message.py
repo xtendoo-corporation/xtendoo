@@ -13,7 +13,7 @@ class MailMessageState(models.Model):
         default='exception',
     )
 
-    @api.depends('notification_ids.notification_state')
+    @api.depends('notification_ids')
     def _compute_message_state(self):
         self.state = 'exception'
         for message in self:
@@ -41,8 +41,4 @@ class MailMessageState(models.Model):
                 message.state = 'received'
             else:
                 message.state = 'exception'
-
-            print("*"*80)
-            print("message.state", message.notification_state)
-            print("*"*80)
 
