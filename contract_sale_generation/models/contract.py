@@ -23,6 +23,9 @@ class ContractContract(models.Model):
         store=True,
         readonly=False,
     )
+    client_order_ref = fields.Char(
+        string="Customer Reference",
+    )
 
     def _prepare_sale(self, date_ref):
         self.ensure_one()
@@ -35,6 +38,8 @@ class ContractContract(models.Model):
                 "user_id": self.partner_id.user_id.id,
                 "analytic_account_id": self.group_id.id,
                 "warehouse_id": self.warehouse_id.id,
+                "client_order_ref": self.client_order_ref,
+                "contract_tag_ids": self.tag_ids.ids,
             }
         )
         if self.payment_term_id:

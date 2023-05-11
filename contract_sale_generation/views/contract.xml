@@ -41,6 +41,13 @@
                     attrs="{'invisible': [('generation_type','=','invoice')]}"
                 />
             </xpath>
+            <xpath expr="//page[@name='info']//field[@name='code']" position="after">
+                <field name="generation_type" invisible="1" />
+                <field
+                    name="client_order_ref"
+                    attrs="{'invisible': [('generation_type','=','invoice')]}"
+                />
+            </xpath>
         </field>
     </record>
 </odoo>
