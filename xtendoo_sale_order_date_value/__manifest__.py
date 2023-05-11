@@ -2,10 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 {
-    "name": "Xtendoo Date Valor Invoice",
-    "summary": "Date valor invoice",
+    "name": "Xtendoo Sale Order Date Value",
+    "summary": "Sale order date value",
     "version": "16.0.1.0.0",
-    "author": "Manuel Calero Solís, Camilo",
+    "author": "Manuel Calero Solís, Camilo Prado",
     "license": "AGPL-3",
     "website": "https://xtendoo.es",
     "category": "Tools",

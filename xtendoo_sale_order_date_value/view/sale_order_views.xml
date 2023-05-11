@@ -5,8 +5,8 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <field name="date_order" position="before">
-                    <field name="date_valor"/>
+                <field name="date_order" position="after">
+                    <field name="date_value"/>
                 </field>
             </field>
         </record>

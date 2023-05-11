@@ -1,0 +1,30 @@
+<odoo>
+    <data>
+        <record id="view_sale_order_tree_inherit" model="ir.ui.view">
+            <field name="name">sale.order.tree.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date_order']" position="before">
+                    <field name="date_value" string="Value Date" widget="date" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="sale_order_view_search_inherit_sale" model="ir.ui.view">
+            <field name="name">sale.order.search.inherit.sale</field>
+            <field name="model">sale.order</field>
+            <field name="mode">primary</field>
+            <field name="inherit_id" ref="sale.sale_order_view_search_inherit_sale"/>
+            <field name="arch" type="xml">
+                <search>
+                    <filter name="order_date" position="after">
+                        <filter string="Value Date" name="value_date" date="date_value"/>
+                    </filter>
+                </search>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>
