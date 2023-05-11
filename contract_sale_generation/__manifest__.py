@@ -10,7 +10,11 @@
     "license": "AGPL-3",
     "author": "ACSONE SA/NV, PESOL, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/contract",
-    "depends": ["contract_sale"],
+    "depends": [
+        "sale_management",
+        "stock",
+        "contract_sale",
+    ],
     "data": [
         "data/contract_cron.xml",
         "views/contract.xml",
