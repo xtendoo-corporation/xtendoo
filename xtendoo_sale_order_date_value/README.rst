@@ -7,7 +7,7 @@ Xtendoo Sale Order Date Value
    !! changes will be overwritten.                   !!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-In sale order date value new field.
+In sale order date value new fields.
 
 
 Credits
