@@ -7,6 +7,6 @@ class SaleOrder(models.Model):
     date_value = fields.Date(
         string='Value Date',
         default=fields.Date.context_today,
-        index=True
+        index=True,
     )
 

@@ -11,20 +11,16 @@
             </field>
         </record>
 
-        <record id="sale_order_view_search_inherit_sale" model="ir.ui.view">
+        <record id="xtendoo_sale_order_view_search_inherit_sale" model="ir.ui.view">
             <field name="name">sale.order.search.inherit.sale</field>
             <field name="model">sale.order</field>
             <field name="mode">primary</field>
             <field name="inherit_id" ref="sale.sale_order_view_search_inherit_sale"/>
             <field name="arch" type="xml">
-                <search>
-                    <filter name="order_date" position="after">
-                        <filter string="Value Date" name="value_date" date="date_value"/>
-                    </filter>
-                </search>
+                <filter name="order_date" position="before">
+                    <filter string="Value Date" name="date_value" date="date_value"/>
+                </filter>
             </field>
         </record>
-
-
     </data>
 </odoo>

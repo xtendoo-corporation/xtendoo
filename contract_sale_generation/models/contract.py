@@ -29,19 +29,20 @@ class ContractContract(models.Model):
 
     def _prepare_sale(self, date_ref):
         self.ensure_one()
-        sale = self.env["sale.order"].new(
-            {
+        sale_values = {
                 "partner_id": self.partner_id,
                 "date_order": fields.Date.to_string(date_ref),
                 "origin": self.name,
                 "company_id": self.company_id.id,
                 "user_id": self.partner_id.user_id.id,
                 "analytic_account_id": self.group_id.id,
-                "warehouse_id": self.warehouse_id.id,
                 "client_order_ref": self.client_order_ref,
                 "contract_tag_ids": self.tag_ids.ids,
             }
-        )
+        if self.warehouse_id:
+            sale_values["warehouse_id"] = self.warehouse_id.id
+
+        sale = self.env["sale.order"].new(sale_values)
         if self.payment_term_id:
             sale.payment_term_id = self.payment_term_id.id
         if self.fiscal_position_id:
