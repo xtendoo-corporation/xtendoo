@@ -26,6 +26,12 @@ class ContractContract(models.Model):
     client_order_ref = fields.Char(
         string="Customer Reference",
     )
+    sale_tag_ids = fields.Many2many(
+        comodel_name='crm.tag',
+        column1='contract_id',
+        column2='tag_id',
+        string="Sale Tags",
+    )
 
     def _prepare_sale(self, date_ref):
         self.ensure_one()
@@ -37,7 +43,7 @@ class ContractContract(models.Model):
                 "user_id": self.partner_id.user_id.id,
                 "analytic_account_id": self.group_id.id,
                 "client_order_ref": self.client_order_ref,
-                "contract_tag_ids": self.tag_ids.ids,
+                "tag_ids": self.sale_tag_ids.ids,
             }
         if self.warehouse_id:
             sale_values["warehouse_id"] = self.warehouse_id.id

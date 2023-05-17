@@ -47,6 +47,12 @@
                     name="client_order_ref"
                     attrs="{'invisible': [('generation_type','=','invoice')]}"
                 />
+                <field
+                    name="sale_tag_ids"
+                    widget="many2many_tags"
+                    options="{'color_field': 'color'}"
+                    attrs="{'invisible': [('generation_type','=','invoice')]}"
+                />
             </xpath>
         </field>
     </record>

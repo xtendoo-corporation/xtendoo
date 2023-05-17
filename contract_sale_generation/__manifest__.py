@@ -17,7 +17,6 @@
     ],
     "data": [
         "data/contract_cron.xml",
-        "views/sale_order.xml",
         "views/contract.xml",
     ],
     "installable": True,
