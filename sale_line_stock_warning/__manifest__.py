@@ -10,6 +10,7 @@
     "license": "AGPL-3",
     "depends": [
         "sale_stock",
+        "sale_stock_available_info_popup",
     ],
     "data": [
     ],
