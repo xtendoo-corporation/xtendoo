@@ -7,7 +7,6 @@
                 <t t-if="!widget.data.is_mto">
                     <t t-if="widget.data.qty_to_deliver &gt; 0">
                         <t t-if="widget.data.qty_to_deliver &gt; widget.data.free_qty_today">
-<!--                            <t t-if="widget.data.qty_to_deliver &gt; widget.data.virtual_available_at_date">-->
                                 <t t-if="widget.data.qty_to_deliver &gt; widget.data.immediately_usable_qty_today">
                                 <a tabindex="0" class="fa fa-info-circle text-danger"/>
                             </t>
