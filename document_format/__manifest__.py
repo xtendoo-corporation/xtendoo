@@ -26,6 +26,7 @@
     "data": [
         "data/paper_format_label.xml",
         "views/stock_picking/stock_picking_view.xml",
+        "views/delivery/report_delivery.xml",
         "views/delivery/delivery_document.xml",
         "views/delivery/delivery_commodity.xml",
         "views/delivery/delivery_document_without_price.xml",
