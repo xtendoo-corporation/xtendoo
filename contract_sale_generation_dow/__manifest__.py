@@ -12,7 +12,7 @@
     "website": "https://github.com/OCA/contract",
     "depends": ["contract_sale_generation"],
     "data": [
-        "views/sale_order.xml",
+        "views/contract.xml",
     ],
     "installable": True,
 }
