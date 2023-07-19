@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!-- eBay Log Book Tree View -->
+    <record id="ebay_process_job_log_line_tree_view_ept" model="ir.ui.view">
+        <field name="name">eBay Process Job</field>
+        <field name="model">common.log.lines.ept</field>
+        <field name="inherit_id" ref="common_connector_library.common_log_line_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="write_date" position="after">
+                <field name="ebay_order_data_queue_line_id"/>
+                <field name="import_product_queue_line_id"/>
+            </field>
+        </field>
+    </record>
+    <!-- eBay Log Book Form View -->
+    <record id="ebay_process_job_log_line_form_view_ept" model="ir.ui.view">
+        <field name="name">eBay Process Job</field>
+        <field name="model">common.log.lines.ept</field>
+        <field name="inherit_id" ref="common_connector_library.common_log_line_view_form"/>
+        <field name="arch" type="xml">
+            <field name="model_id" position="after">
+                <field name="ebay_order_data_queue_line_id" readonly="1"/>
+                <field name="import_product_queue_line_id" readonly="1"/>
+            </field>
+        </field>
+    </record>
+    <record id="action_ebay_process_job_log_lines_ept" model="ir.actions.act_window">
+        <field name="name">eBay Process Job Log lines</field>
+        <field name="res_model">common.log.lines.ept</field>
+        <field name="view_id" ref="ebay_process_job_log_line_tree_view_ept"/>
+        <field name="domain">[('module','=','ebay_ept')]</field>
+    </record>
+    <!-- Menu Section -->
+
+    <menuitem id="ebay_operations_child_logs_menu" name="Mismatches" parent="ebay_ept.menu_ebay_processes_ept"
+              sequence="13"/>
+
+    <menuitem id="ebay_process_job_log_lines_ept1" name="Log Lines" parent="ebay_operations_child_logs_menu"
+              sequence="2" action="action_ebay_process_job_log_lines_ept"/>
+</odoo>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--Form view of product data queue line-->
+    <record id="view_ebay_product_data_queue_line_ept_form"
+            model="ir.ui.view">
+        <field name="name">ebay.import.product.queue.line.form</field>
+        <field name="model">ebay.import.product.queue.line</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="ebay_item_id" string="Item ID"
+                                   readonly="1"/>
+                            <field name="is_create_auto_odoo_product" readonly="1"/>
+                            <field name="is_sync_stock" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="sync_import_product_queue_id" readonly="1"/>
+                            <field name="write_date" string="Last Updated On"
+                                   readonly="1"/>
+                            <field name="state" readonly="1"/>
+                            <field name="is_sync_price" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Product Data">
+                            <group>
+                                <field string="Product Data" name="product_data"
+                                       readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Log Lines">
+                            <field name="import_product_common_log_lines_ids">
+                                <tree create="false" editable="bottom">
+                                    <field name="message"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

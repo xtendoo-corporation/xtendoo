@@ -1,0 +1,119 @@
+@charset "UTF-8";
+.openerp .oe_view_nocontent .oe_empty_ebay_products {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_variants {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_sale_quotation {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_sale_order {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_sale_report {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_instance {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_custom_collection {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_smart_collection {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_delivery_order {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_mismatch_log {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+
+.openerp .oe_view_nocontent .oe_empty_ebay_invoice {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;	
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_view_nocontent .oe_empty_ebay_customers {
+  background: transparent url(/ebay_ept/static/src/img/ebay_logo.jpg) no-repeat 0 0;	
+  margin-top: -15px;
+  padding: 100px 0 0 137px;
+  min-height: 327px;
+  margin-left: -15px;
+}
+
+.openerp .oe_kanban_view .oe_kanban_ebay_operations_type {
+    width: 345px;
+    cursor: default;
+    min-height: 245px !important;
+}
+
+.openerp .oe_kanban_image_emipro {
+  display: block;
+  vertical-align: middle;
+  width: 120px;
+  height: 120px;
+  margin : 0px auto;
+
+}
+
+.openerp .oe_ept_center {
+	padding-top:15px;
+	display : block;
+	width : 100%;
+	margin : 0px auto;
+}

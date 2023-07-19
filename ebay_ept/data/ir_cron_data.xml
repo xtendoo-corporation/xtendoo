@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--This is used for process the Order queue data "Child Cron".-->
+    <record id="ir_cron_child_to_process_order_queue" model="ir.cron">
+        <field name="name">eBay Order Queue Data Process</field>
+        <field name="model_id" ref="model_ebay_order_data_queue_line_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_import_order_queue_data()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <!--This is used for process the Product queue data "Child Cron".-->
+    <record id="ir_cron_child_to_process_product_queue" model="ir.cron">
+        <field name="name">eBay Product Queue Data Process</field>
+        <field name="model_id" ref="model_ebay_import_product_queue_line"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_import_product_queue_data()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <!--Below cron job is use for sync/import products-->
+    <record id="ir_cron_auto_sync_active_products" model="ir.cron">
+        <field name="name">eBay Auto Import Product</field>
+        <field name="active" eval="False"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model_id" ref="model_ebay_seller_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_sync_active_products_listings(args={})</field>
+    </record>
+
+    <record id="ir_cron_auto_get_feedback" model="ir.cron">
+        <field name="name">Auto Get FeedBack</field>
+        <field name="active" eval="False"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="doall">False</field>
+        <field name="model_id" eval="ref('ebay_ept.model_ebay_seller_ept')"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_get_feedback(args={})</field>
+    </record>
+
+    <!--This cron job is use to import unshipped orders from eBay to Odoo-->
+    <record id="ir_cron_send_ebay_import_sales_orders" model="ir.cron">
+        <field name="name">Import eBay Sales Orders</field>
+        <field name="active" eval="False"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model_id" eval="ref('ebay_ept.model_ebay_seller_ept')"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_import_ebay_sales_orders(args={})</field>
+    </record>
+
+    <record id="ir_cron_update_order_status" model="ir.cron">
+        <field name="name">Update Order Status</field>
+        <field name="active" eval="False"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model_id" eval="ref('ebay_ept.model_ebay_seller_ept')"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_update_order_status(args={})</field>
+    </record>
+
+    <record id="ir_cron_auto_export_inventory" model="ir.cron">
+        <field name="name">Auto Export Inventory</field>
+        <field eval="False" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model_id" eval="ref('ebay_ept.model_ebay_seller_ept')"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_export_inventory_ept(args={})</field>
+    </record>
+</odoo>

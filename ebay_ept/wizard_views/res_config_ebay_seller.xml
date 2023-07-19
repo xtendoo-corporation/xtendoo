@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<odoo>
+    <record id="view_res_config_ebay_seller" model="ir.ui.view">
+        <field name="name">Configure Seller</field>
+        <field name="model">res.config.ebay.seller</field>
+        <field name="arch" type="xml">
+            <form string="Configure Seller" class="oe_form_configuration">
+                <group>
+                    <group>
+                        <field name="name" required="1"/>
+                    </group>
+                    <group>
+                        <field name="country_id" required="1"
+                               options="{'no_create_edit': True, 'no_quick_create': True}"/>
+                        <field name="company_id" required="1"
+                               options="{'no_create_edit': True, 'no_quick_create': True}"/>
+                    </group>
+                    <group>
+                        <field name='app_id' required="1"/>
+                        <field name='dev_id' required="1"/>
+                        <field name='cert_id' required="1"/>
+                    </group>
+                    <group>
+                        <field name="environment" required="1"/>
+                        <field name='server_url' required="1" readonly="1"/>
+                    </group>
+                </group>
+                <group string="Authentication Token">
+                    <field name="auth_token" nolabel="1" required="1" colspan="2"/>
+                </group>
+                <footer>
+                    <button string="Create" type="object" name="create_ebay_seller" class="oe_highlight"/>
+                    <button string="Cancel" special="cancel" name="cancel" class="oe_link"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- Action Section -->
+    <record id="res_config_action_ebay_seller" model="ir.actions.act_window">
+        <field name="name">eBay Seller</field>
+        <field name="res_model">res.config.ebay.seller</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_res_config_ebay_seller"/>
+    </record>
+</odoo>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <record id="view_ebay_site_policy_ept" model="ir.ui.view">
+        <field name="name">Site Policy</field>
+        <field name="model">ebay.site.policy.ept</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="name"/>
+                <field name="instance_id"/>
+                <field name="policy_id"/>
+                <field name="policy_type"/>
+                <field name="short_summary" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="view_site_policy_search_view">
+        <field name="name">Site Policy</field>
+        <field name="model">ebay.site.policy.ept</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Locations">
+                <field name="name"/>
+                <field name="policy_id"/>
+                <field name="policy_type"/>
+                <group expand="0" string="Group By...">
+                    <filter string="Instance" name="instance_id" icon="terp-personal"
+                            context="{'group_by':'instance_id'}"/>
+                    <filter string="Policy Type" name="policy_type" icon="terp-personal"
+                            context="{'group_by':'policy_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_ebay_form_site_policy_ept" model="ir.ui.view">
+        <field name="name">Site Policy</field>
+        <field name="model">ebay.site.policy.ept</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Site Policy" create="false">
+                <sheet>
+                    <div class="oe_title" style="width: 390px;">
+                        <h1>
+                            <field name="name" class="oe_inline" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="policy_id"/>
+                            <field name="instance_id"/>
+                        </group>
+                        <group>
+                            <field name="policy_type"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="short_summary" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ebay_site_policy_ept" model="ir.actions.act_window">
+        <field name="name">Site Policy</field>
+        <field name="res_model">ebay.site.policy.ept</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_site_policy" name="Site Policy" parent="ebay_ept.ebay_instance_menu_item_core_settings"
+              sequence="7" action="action_ebay_site_policy_ept"/>
+</odoo>
