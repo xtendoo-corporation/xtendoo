@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<odoo>
+    <record id="view_form_res_config_ebay_site" model="ir.ui.view">
+        <field name="name">view.form.res.config.ebay.instance</field>
+        <field name="model">res.config.ebay.instance</field>
+        <field name="arch" type="xml">
+            <form string="Configure eBay Sites" class="oe_form_configuration">
+                <group>
+                    <field name="seller_id" widget="selection" class="oe_inline" readonly="1" force_save="1"/>
+                    <field name="site_ids" widget='many2many_checkboxes'/>
+                </group>
+                <footer>
+                    <button string="Create Sites" type="object" name="create_ebay_sites" class="oe_highlight"/>or
+                    <button string="Cancel" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="res_config_action_ebay_site" model="ir.actions.act_window">
+        <field name="name">eBay Sites</field>
+        <field name="res_model">res.config.ebay.instance</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_form_res_config_ebay_site"/>
+    </record>
+</odoo>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="inherited_stock_picking_form_view" model="ir.ui.view">
+        <field name="name">inherited.stock.picking.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field eval="12" name="priority"/>
+        <field name="arch" type="xml">
+            <!-- eBay Information -->
+            <xpath expr="//page[@name='extra']/group[1]" position="after">
+                <group string="eBay Information">
+                    <group>
+                        <field name="ebay_instance_id" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <record id="vpicktree_ept" model="ir.ui.view">
+        <field name="name">stock.picking.tree</field>
+        <field name="model">stock.picking</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="name"/>
+                <field name="location_dest_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="scheduled_date" invisible="1"/>
+                <field name="origin"/>
+                <field name="group_id" invisible="1"/>
+                <field name="backorder_id"/>
+                <field name="state"/>
+                <field name="priority" invisible="1"/>
+                <field name="picking_type_id" invisible="1"/>
+                <field name="picking_type_code" invisible="1"/>
+                <field name="updated_in_ebay" attrs="{'invisible':[('picking_type_code','!=','outgoing')]}"/>
+            </tree>
+        </field>
+    </record>
+    <record id="action_picking_view_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_ebay_delivery_order','=','True')]</field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="vpicktree_ept"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_neutral_face">eBay Delivery Order</p>
+            <p>
+                There is no any Delivery Order created for any of eBay Sale Orders.
+                If your eBay Instance's Invoice Policy is set to "Before Delivery",
+                then after Invoice being totally paid, Delivery order for eBay
+                will be created automatically and it will be visible over here.
+                From here, you can't manually create delivery order for eBay. It
+                must be created via Sale Order.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_picking_view_confirm_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_ebay_delivery_order','=','True'),('state','=','confirmed'),('ebay_instance_id','=',active_id)]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="vpicktree_ept"/>
+    </record>
+
+    <record id="action_picking_view_partially_available_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_ebay_delivery_order','=','True'),('state','=','partially_available'),('ebay_instance_id','=',active_id)]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="vpicktree_ept"/>
+    </record>
+
+    <record id="action_picking_view_assigned_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_ebay_delivery_order','=','True'),('state','=','assigned'),('ebay_instance_id','=',active_id)]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="vpicktree_ept"/>
+    </record>
+
+    <record id="action_picking_view_done_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_ebay_delivery_order','=','True'),('state','=','done'),('ebay_instance_id','=',active_id)]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="vpicktree_ept"/>
+    </record>
+
+    <record id="action_picking_view_cancel_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_ebay_delivery_order','=','True'),('state','=','cancel'),('ebay_instance_id','=',active_id)]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="vpicktree_ept"/>
+    </record>
+
+    <record id="action_picking_tree_late_ept" model="ir.actions.act_window">
+        <field name="name">Late Transfers</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="domain">[('ebay_instance_id','!=',False)]</field>
+        <field name="context">{
+            'search_default_picking_type_id': [active_id],
+            'default_picking_type_id': active_id,
+            'contact_display': 'partner_address',
+            'search_default_late': 1,
+            'search_default_confirmed': 1,
+            }
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+    </record>
+
+    <record id="action_picking_tree_backorder_ept" model="ir.actions.act_window">
+        <field name="name">Backorders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="domain">[('ebay_instance_id','!=',False)]</field>
+        <field name="context">{
+            'search_default_picking_type_id': [active_id],
+            'default_picking_type_id': active_id,
+            'contact_display': 'partner_address',
+            'search_default_backorder': 1,
+            'search_default_confirmed': 1,
+            }
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+    </record>
+
+    <!-- Menu Section -->
+    <menuitem id="ebay_sale_orders_child_delivery_menu" name="Transfers"
+              parent="ebay_ept.menu_ebayerp_sales_orders" sequence="2"/>
+
+    <menuitem id="menu_item_ebay_delivery_order_ept" name="Delivery Orders"
+              parent="ebay_sale_orders_child_delivery_menu" action="action_picking_view_ept"
+              sequence="1"/>
+</odoo>

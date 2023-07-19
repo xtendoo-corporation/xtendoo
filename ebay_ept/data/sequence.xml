@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Sequences for ebay.product.image.ept -->
+    <record id="seq_ebay_product_img" model="ir.sequence">
+        <field name="name">Ebay Product Image</field>
+        <field name="code">ebay.product.image.ept</field>
+        <field name="prefix">Image_</field>
+        <field name="padding">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    <!-- Sequences for ebay.order.data.queue.ept -->
+    <record id="seq_order_queue_data" model="ir.sequence">
+        <field name="name">Sequence Order Queue Data</field>
+        <field name="code">ebay.order.data.queue.ept</field>
+        <field name="prefix">OQD</field>
+        <field name="padding">6</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    <!-- Sequences for 'ebay.import.product.queue -->
+    <record id="seq_import_product_queue_data" model="ir.sequence">
+        <field name="name">Sequence Sync/ Import product Queue Data</field>
+        <field name="code">ebay.import.product.queue</field>
+        <field name="prefix">SIPD</field>
+        <field name="padding">6</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

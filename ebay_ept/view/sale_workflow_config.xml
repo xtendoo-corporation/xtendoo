@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="act_sale_workflow_process_form" model="ir.actions.act_window">
+        <field name="name">Auto Workflow</field>
+        <field name="res_model">sale.workflow.process.ept</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="act_ebay_sale_workflow_process_form" model="ir.actions.act_window">
+        <field name="name">Auto Workflow</field>
+        <field name="res_model">sale.workflow.process.ept</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!-- Menu Section -->
+    <menuitem id="ebay_instance_menu_item_sale_autoworkflow" name="Sale Auto Workflow"
+              parent="ebay_ept.ebay_instance_menu_item_core_settings" action="act_ebay_sale_workflow_process_form"
+              sequence="5" groups="ebay_ept.group_ebay_manager_ept"/>
+</odoo>

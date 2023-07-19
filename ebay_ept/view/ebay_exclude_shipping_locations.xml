@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <record id="ebay_exclude_tree_shipping_locations" model="ir.ui.view">
+        <field name="name">view.loc.master.tree</field>
+        <field name="model">ebay.exclude.shipping.locations</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree delete="false" create='false'>
+                <field name="name"/>
+                <field name="loc_code"/>
+                <field name="region"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="ebay_exclude_form_shipping_locations" model="ir.ui.view">
+        <field name="name">view.loc.master.form</field>
+        <field name="model">ebay.exclude.shipping.locations</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Locations">
+                <group colspan="4" col="8">
+                    <field name="name"/>
+                    <field name="loc_code"/>
+                    <field name="region"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="ebay_exclude_shipping_locations_search_ept">
+        <field name="name">view.loc.master.search</field>
+        <field name="model">ebay.exclude.shipping.locations</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Locations">
+                <field name="name"/>
+                <field name="loc_code"/>
+                <field name="region"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_exclude_locations" model="ir.actions.act_window">
+        <field name="name">Exclude Locations</field>
+        <field name="res_model">ebay.exclude.shipping.locations</field>
+        <field name="view_mode">tree</field>
+    </record>
+</odoo>

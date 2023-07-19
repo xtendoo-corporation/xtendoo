@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ebay_update_payment_in_ebay" model="ir.ui.view">
+        <field name="name">Update Payment In eBay</field>
+        <field name="model">ebay.product.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Update Payment In eBay">
+                <group>
+                    <div style="color:#000000" colspan="2">
+                        <p class="alert alert-warning" role="alert">
+                            <u>
+                                <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                            </u>
+                            <b>
+                                <ul>
+                                    <li>
+                                        It will not update the invoice payment which Payment Options is Paypal from Odoo
+                                        to eBay store. Find the Payment Options in orders here: eBay > Sales > Orders >
+                                        eBay Information > Payment Option
+                                    </li>
+                                    <li>
+                                        It will only update the invoice payment which Payment Options(eBay >
+                                        Configuration > Payment Options) allow to update payment in eBay.
+                                    </li>
+                                </ul>
+                            </b>
+                        </p>
+                    </div>
+                </group>
+                <footer>
+                    <button name="update_payment_in_ebay" string="Update" type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="oe_highlight" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_update_payment_ept" model="ir.actions.act_window">
+        <field name="name">Update Payment In eBay</field>
+        <field name="res_model">ebay.product.wizard</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_ebay_update_payment_in_ebay"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_ebay_update_products_template_price_stock_ept" model="ir.ui.view">
+        <field name="name">Update Price</field>
+        <field name="model">ebay.product.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group invisible="context.get('is_update_price',False)">
+                    <div style="color:#000000" colspan="2">
+                        <p class="alert alert-warning" role="alert">
+                            <u>
+                                <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                            </u>
+                            <b>
+                                <ul>
+                                    <li>
+                                        Stock will be exported from warehouses as per the configuration under
+                                        eBay> Configuration > Settings > Select Export Stock Warehouse.
+                                    </li>
+                                    <li>
+                                        It will not export stock which has negative stock.
+                                    </li>
+                                    <li>
+                                        If the stock did not update in the eBay store after the operation, refer to the
+                                        mismatch logs.
+                                    </li>
+                                </ul>
+                            </b>
+                        </p>
+                    </div>
+                </group>
+                <group invisible="context.get('is_update_stock',False)">
+                    <div style="color:#000000" colspan="2">
+                        <p class="alert alert-warning" role="alert">
+                            <u>
+                                <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                            </u>
+                            <b>
+                                <ul>
+                                    <li>
+                                        It will Update product Price from Odoo to eBay.
+                                    </li>
+                                    <li>
+                                        It will update product price according to the pricelist(eBay> Configuration >
+                                        Settings > Pricelist.)
+                                    </li>
+                                </ul>
+                            </b>
+                        </p>
+                    </div>
+                </group>
+                <footer>
+                    <button name="update_product_template_price_in_ebay" string="Update Price In eBay" type="object"
+                            class="oe_highlight"
+                            invisible="context.get('is_update_stock',False)"/>
+                    <button name="product_template_update_stock_in_ebay" string="Update Stock In eBay" type="object"
+                            class="oe_highlight" invisible="context.get('is_update_price',False)"/>
+                    <button string="Cancel" class="oe_highlight" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ebay_export_products_ept" model="ir.ui.view">
+        <field name="name">Export Products In eBay</field>
+        <field name="model">ebay.product.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Products In eBay">
+                <group>
+                    <group>
+                        <field name="publish_in_ebay"/>
+                    </group>
+                    <group>
+                        <field name="schedule_time"
+                               attrs="{'invisible':[('publish_in_ebay','=',True)],'required':[('publish_in_ebay','=',False)]}"/>
+                    </group>
+                </group>
+                <group>
+                    <div style="color:#000000" colspan="2">
+                        <p class="alert alert-warning" role="alert">
+                            <u>
+                                <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                            </u>
+                            <b>
+                                <ul>
+                                    <li>
+                                        The listing type will always be Fixed Price Item.
+                                    </li>
+                                </ul>
+                            </b>
+                        </p>
+                    </div>
+                </group>
+                <footer>
+                    <button name="export_product_in_ebay" string="Export Products In eBay" type="object"
+                            class="oe_highlight" invisible="context.get('is_update_product',False)"/>
+                    <button name="update_product_in_ebay" string="Update Products In eBay" type="object"
+                            class="oe_highlight" invisible="context.get('is_export_product',False)"/>
+                    <button string="Cancel" class="oe_highlight" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ebay_relist_products_ept" model="ir.ui.view">
+        <field name="name">Relist Products In eBay</field>
+        <field name="model">ebay.product.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Update Products In eBay">
+                <footer>
+                    <button name="relist_product_in_ebay" string="Relist Products In eBay" type="object"
+                            class="oe_highlight"/>
+                    <button string="Cancel" class="oe_highlight" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ebay_cancel_listing_products_ept" model="ir.ui.view">
+        <field name="name">Cancel Products In eBay</field>
+        <field name="model">ebay.product.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cancel Products In eBay">
+                <group>
+                    <field name="ending_reason" required="1"/>
+                </group>
+                <footer>
+                    <button name="cancel_product_listing_in_ebay" string="Cancel Products Listing In eBay" type="object"
+                            class="oe_highlight"/>
+                    <button string="Cancel" class="oe_highlight" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_export_products_ept" model="ir.actions.act_window">
+        <field name="name">Export Products In eBay</field>
+        <field name="res_model">ebay.product.wizard</field>
+        <field name="binding_model_id" ref="ebay_ept.model_ebay_product_template_ept"/>
+        <field name="binding_view_types">form</field>
+        <field name="target">new</field>
+        <field name="context">{'is_export_product': True}</field>
+        <field name="view_id" ref="ebay_ept.view_ebay_export_products_ept"/>
+    </record>
+
+    <record id="action_update_products_ept" model="ir.actions.act_window">
+        <field name="name">Update Products In eBay</field>
+        <field name="res_model">ebay.product.wizard</field>
+        <field name="binding_model_id" ref="ebay_ept.model_ebay_product_template_ept"/>
+        <field name="binding_view_types">form</field>
+        <field name="context">{'is_update_product': True}</field>
+        <field name="view_id" ref="ebay_ept.view_ebay_export_products_ept"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_update_products_template_price_ept" model="ir.actions.act_window">
+        <field name="name">Update Price In eBay</field>
+        <field name="res_model">ebay.product.wizard</field>
+        <field name="binding_model_id" ref="ebay_ept.model_ebay_product_template_ept"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="context">{'is_update_price': True}</field>
+        <field name="view_id" ref="view_ebay_update_products_template_price_stock_ept"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_update_products_template_stock_ept" model="ir.actions.act_window">
+        <field name="name">Update Stock In eBay</field>
+        <field name="res_model">ebay.product.wizard</field>
+        <field name="binding_model_id" ref="ebay_ept.model_ebay_product_template_ept"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="context">{'is_update_stock': True}</field>
+        <field name="view_id" ref="view_ebay_update_products_template_price_stock_ept"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_relist_products_ept" model="ir.actions.act_window">
+        <field name="name">Relist Products In eBay</field>
+        <field name="res_model">ebay.product.wizard</field>
+        <field name="binding_model_id" ref="ebay_ept.model_ebay_product_template_ept"/>
+        <field name="binding_view_types">form</field>
+        <field name="view_id" ref="view_ebay_relist_products_ept"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_cancel_listing_products_ept" model="ir.actions.act_window">
+        <field name="name">Cancel Products In eBay</field>
+        <field name="res_model">ebay.product.wizard</field>
+        <field name="binding_model_id" ref="ebay_ept.model_ebay_product_template_ept"/>
+        <field name="binding_view_types">form</field>
+        <field name="view_id" ref="view_ebay_cancel_listing_products_ept"/>
+        <field name="target">new</field>
+    </record>
+</odoo>

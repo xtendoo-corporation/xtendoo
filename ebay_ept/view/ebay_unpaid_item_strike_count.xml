@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <record id="view_ebay_tree_item_strike_count" model="ir.ui.view">
+        <field name="name">Max Item Strike Count</field>
+        <field name="model">ebay.unpaid.item.strike.count</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_ebay_form_item_strike_count" model="ir.ui.view">
+        <field name="name">Max Item Strike Count</field>
+        <field name="model">ebay.unpaid.item.strike.count</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Max Item Strike Count" create="false">
+                <sheet>
+                    <div class="oe_title" style="width: 390px;">
+                        <h1>
+                            <field name="name" class="oe_inline" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="site_ids" readonly="1" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_item_strike_count" model="ir.actions.act_window">
+        <field name="name">Strike Count</field>
+        <field name="res_model">ebay.unpaid.item.strike.count</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
