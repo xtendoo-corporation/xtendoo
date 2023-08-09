@@ -1,0 +1,44 @@
+<odoo>
+    <data>
+        <template id="variants" inherit_id="sale.variants">
+            <xpath expr="//ul//t[contains(@t-if, 'color')]/ul/li/label" position="replace">
+                <t t-if="ptav.product_attribute_value_id.view_mode == 'image'">
+                    <label
+                        t-attf-style="background-image:url(#{website.image_url(ptav.product_attribute_value_id, 'image_small')});background-repeat: no-repeat;background-size: contain;"
+                        t-attf-class="css_attribute_color #{'active' if ptav in combination else ''} #{'custom_value' if ptav.is_custom else ''}">
+                        <input type="radio"
+                               t-attf-class="js_variant_change  #{ptal.attribute_id.create_variant}"
+                               t-att-checked="ptav in combination"
+                               t-att-name="'ptal-%s' % ptal.id"
+                               t-att-value="ptav.id"
+                               t-att-title="ptav.name"
+                               t-att-data-value_id="ptav.id"
+                               t-att-data-value_name="ptav.name"
+                               t-att-data-attribute_name="ptav.attribute_id.name"
+                               t-att-data-is_custom="ptav.is_custom"
+                               t-att-data-is_single="single"
+                               t-att-data-is_single_and_custom="single_and_custom"/>
+                    </label>
+                </t>
+                <t t-else="">
+                    <label
+                        t-attf-style="background-color:#{ptav.html_color or ptav.product_attribute_value_id.name if not ptav.is_custom else ''}"
+                        t-attf-class="css_attribute_color #{'active' if ptav in combination else ''} #{'custom_value' if ptav.is_custom else ''}">
+                        <input type="radio"
+                               t-attf-class="js_variant_change  #{ptal.attribute_id.create_variant}"
+                               t-att-checked="ptav in combination"
+                               t-att-name="'ptal-%s' % ptal.id"
+                               t-att-value="ptav.id"
+                               t-att-title="ptav.name"
+                               t-att-data-value_id="ptav.id"
+                               t-att-data-value_name="ptav.name"
+                               t-att-data-attribute_name="ptav.attribute_id.name"
+                               t-att-data-is_custom="ptav.is_custom"
+                               t-att-data-is_single="single"
+                               t-att-data-is_single_and_custom="single_and_custom"/>
+                    </label>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

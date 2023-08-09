@@ -1,0 +1,108 @@
+<odoo>
+    <data>
+        <!-- Product template in shop listings -->
+        <template id="products_item" inherit_id="website_sale.products_item">
+            <xpath
+                expr="//div[contains(@class, 'o_wsale_product_information')]/div[contains(@class, 'o_wsale_product_information_text')]"
+                position="before">
+                <div class="pl-2">
+                    <ul class="list-inline" style="margin-bottom: 0px;">
+                        <li>
+                            <t t-set="color_attributes"
+                               t-value="product.attribute_line_ids.filtered(lambda attr: attr.attribute_id.display_type == 'color').value_ids"/>
+                            <t t-if="color_attributes and len(color_attributes) &gt; 1">
+                                <t t-foreach="color_attributes" t-as="attr">
+                                    <t t-set="color_variant"
+                                       t-value="product.product_variant_ids.filtered(lambda variant: attr.id in variant.product_template_attribute_value_ids.mapped('id'))"/>
+                                    <t t-if="color_variant">
+                                        <t t-set="product_product_id" t-value="color_variant[0].id"/>
+                                    </t>
+                                    <t t-if="attr.view_mode == 'hex_code'">
+                                        <label t-attf-style="background-color:#{attr.html_color}"
+                                               class="css_attribute_color">
+                                            <input type="radio"
+                                                   t-att-data-attribute_value_id="attr.id"
+                                                   t-att-data-product_id="product_product_id"
+                                                   class="color_sample_input"
+                                                   t-att-name="'product-%s' % attr.id"
+                                                   t-att-title="attr.name"/>
+                                        </label>
+                                    </t>
+                                    <t t-if="attr.view_mode == 'image'">
+                                        <label
+                                            t-attf-style="background-image:url('/web/image/product.attribute.value/#{attr.id}/image_small')"
+                                            class="css_attribute_color">
+                                            <input type="radio"
+                                                   t-att-data-attribute_value_id="attr.id"
+                                                   t-att-data-product_id="product_product_id"
+                                                   class="color_sample_input"
+                                                   t-att-name="'product-%s' % attr.id"
+                                                   t-att-title="attr.name"/>
+                                        </label>
+                                    </t>
+                                </t>
+                            </t>
+                        </li>
+                    </ul>
+                </div>
+            </xpath>
+        </template>
+
+        <!-- Shop lateral filter -->
+
+        <template id="variants" inherit_id="sale.variants">
+            <xpath expr="//ul//t[contains(@t-if, 'color')]" position="replace">
+                <t t-if="ptal.attribute_id.display_type == 'color'">
+                    <t t-foreach="a.value_ids" t-as="v">
+                        <t t-if="v.view_mode == 'image'">
+                            <label
+                                t-attf-style="background-image:url(/web/image/product.attribute.value/#{v.id}/image_small)"
+                                t-attf-class="css_attribute_color #{'active' if v.id in attrib_set else ''}">
+                                <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id,v.id)"
+                                       t-att-checked="'checked' if v.id in attrib_set else None"
+                                       t-att-title="v.name"
+                                />
+                            </label>
+                        </t>
+                        <t t-if="v.view_mode == 'hex_code'">
+                            <label t-attf-style="background-color:#{v.html_color or v.name}"
+                                   t-attf-class="css_attribute_color #{'active' if v.id in attrib_set else ''}">
+                                <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id,v.id)"
+                                       t-att-checked="'checked' if v.id in attrib_set else None"
+                                       t-att-title="v.name"/>
+                            </label>
+                        </t>
+                    </t>
+                </t>
+            </xpath>
+        </template>
+
+
+<!--        <template id="products_attributes" inherit_id="website_sale.products_attributes">-->
+<!--            <xpath expr="//div[@t-if='&quot;a.display_type == 'color'&quot;]" position="replace">-->
+<!--                <t t-if="a.display_type == 'color'">-->
+<!--                    <t t-foreach="a.value_ids" t-as="v">-->
+<!--                        <t t-if="v.view_mode == 'image'">-->
+<!--                            <label-->
+<!--                                t-attf-style="background-image:url(/web/image/product.attribute.value/#{v.id}/image_small)"-->
+<!--                                t-attf-class="css_attribute_color #{'active' if v.id in attrib_set else ''}">-->
+<!--                                <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id,v.id)"-->
+<!--                                       t-att-checked="'checked' if v.id in attrib_set else None"-->
+<!--                                       t-att-title="v.name"-->
+<!--                                />-->
+<!--                            </label>-->
+<!--                        </t>-->
+<!--                        <t t-if="v.view_mode == 'hex_code'">-->
+<!--                            <label t-attf-style="background-color:#{v.html_color or v.name}"-->
+<!--                                   t-attf-class="css_attribute_color #{'active' if v.id in attrib_set else ''}">-->
+<!--                                <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id,v.id)"-->
+<!--                                       t-att-checked="'checked' if v.id in attrib_set else None"-->
+<!--                                       t-att-title="v.name"/>-->
+<!--                            </label>-->
+<!--                        </t>-->
+<!--                    </t>-->
+<!--                </t>-->
+<!--            </xpath>-->
+<!--        </template>-->
+    </data>
+</odoo>
