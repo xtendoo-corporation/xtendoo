@@ -11,14 +11,11 @@
         'website_sale',
     ],
     'data': [
-        'views/templates.xml',
-        'views/variant_templates.xml',
-        'views/views.xml',
+        'views/variants.xml',
     ],
     'assets': {
         'web.assets_frontend': [
-            'static/src/js/color_samples.js',
-            'static/src/scss/color_samples.scss',
+            'website_product_color_samples/static/src/css/product_configurator.scss',
         ],
     },
     'installable': True,
