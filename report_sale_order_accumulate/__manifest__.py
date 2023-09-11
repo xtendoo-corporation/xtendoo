@@ -3,7 +3,7 @@
     "summary": """Informe de ventas acumulados por tipo de producto""",
     "version": "14.0.1.0.0",
     "description": """Informe de ventas acumulados por tipo de producto""",
-    "author": "DDL,Camilo",
+    "author": "DDL",
     "company": "Xtendoo",
     "website": "https://xtendoo.es",
     "category": "Extra Tools",
