@@ -6,7 +6,7 @@
     "version": "14.0.1.0.0",
     "category": "Purchases",
     "website": "https://xtendoo.es",
-    "author": "ddl, Camilo",
+    "author": "Dani Domínguez",
     "license": "AGPL-3",
     "depends": ["purchase",],
     "data": [],
