@@ -4,7 +4,7 @@
     "name": "Product Classification",
     "summary": """
         Module introducing a classification field on product template""",
-    "author": "Xtendoo, Odoo Community Association (OCA), Camilo",
+    "author": "Xtendoo, Dani Domínguez",
     "website": "https://github.com/OCA/product-attribute",
     "category": "Product",
     "version": "14.0.1.0.1",
