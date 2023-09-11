@@ -3,7 +3,7 @@
     "summary": """Añade un smart button al producto, para acceder a un listado de pedidos que están a la espera de ese producto""",
     "version": "14.0.1.0.0",
     "description": """Añade un smart button al producto, para acceder a un listado de pedidos que están a la espera de ese producto""",
-    "author": "DDL, Camilo",
+    "author": "DDL",
     "company": "Xtendoo",
     "website": "https://xtendoo.es",
     "category": "Extra Tools",
