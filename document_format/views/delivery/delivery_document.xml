@@ -218,9 +218,9 @@
                                             groups="stock.group_lot_on_delivery_slip"
                                             style="solid; black; padding: 0px; margin: 0px; width:7%; font-size:0.8em; !important;"
                                         >
-                                            <t t-if="move_line.lot_id.life_date">
+                                            <t t-if="move_line.lot_id.expiration_date">
                                                 <span
-                                                    t-esc="move_line.lot_id.life_date.strftime('%d/%m/%Y')"
+                                                    t-esc="move_line.lot_id.expiration_date.strftime('%d/%m/%Y')"
                                                 />
                                             </t>
                                         </td>

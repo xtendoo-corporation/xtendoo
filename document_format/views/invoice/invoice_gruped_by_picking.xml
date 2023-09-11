@@ -1,22 +1,33 @@
 <odoo>
     <data>
-        <!-- Herencia del template del informe Factura-->
-<!--         <template id="document_format.format_report_invoice_document"-->
-<!--              inherit_id="account.report_invoice">-->
-<!--            <xpath expr='//t[@t-call="account.report_invoice_document"]' position="replace">-->
-<!--                <t t-call="document_format.report_invoice_grouped_by_picking_document" t-lang="lang"/>-->
-<!--            </xpath>-->
-<!--        </template>-->
-        <!-- Fin Herencia del template del informe Factura-->
+<!--         Herencia del template del informe Factura-->
+         <template id="document_format.format_report_invoice_document"
+              inherit_id="account.report_invoice">
+            <xpath expr='//t[@t-call="web.html_container"]' position="replace">
+              <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="lang" t-value="o.partner_id.lang"/>
+                    <t t-if="o._get_name_invoice_report() == 'account.report_invoice_document'" t-call="document_format.report_invoice_grouped_by_picking_document" t-lang="lang"/>
+                </t>
+            </t>
+            </xpath>
+        </template>
+<!--         Fin Herencia del template del informe Factura-->
 
-        <!-- Herencia del template del informe Factura sin pagos-->
-<!--         <template id="document_format.format_report_invoice_document_with_payments"-->
-<!--              inherit_id="account.format_report_invoice_with_payments">-->
-<!--            <xpath expr='//t[@t-call="account.format_report_invoice_document_with_payments"]' position="replace">-->
-<!--                <t t-call="document_format.report_invoice_grouped_by_picking_document" t-lang="lang"/>-->
-<!--            </xpath>-->
-<!--        </template>-->
-        <!-- Fin Herencia del template del informe Factura sin pagos-->
+<!--         Herencia del template del informe Factura sin pagos-->
+         <template id="document_format.format_report_invoice_document_with_payments"
+              inherit_id="account.report_invoice_with_payments">
+            <xpath expr='//t[@t-call="web.html_container"]' position="replace">
+                  <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="lang" t-value="o.partner_id.lang"/>
+                    <t t-set="print_with_payments" t-value="True"/>
+                    <t t-if="o._get_name_invoice_report() == 'account.report_invoice_document'" t-call="document_format.report_invoice_grouped_by_picking_document" t-lang="lang"/>
+                </t>
+            </t>
+            </xpath>
+        </template>
+<!--         Fin Herencia del template del informe Factura sin pagos-->
 
         <template id="document_format.report_invoice_grouped_by_picking_document">
             <t t-name="document_format.report_invoice_grouped_by_picking_document">
@@ -30,22 +41,22 @@
                                 <li>
                                     <h2 class="mt16">
                                         <span
-                                            t-if="o.type == 'out_invoice' and o.state == 'posted'"
-                                        >Factura:</span>
+                                            t-if="o.state == 'out_invoice' and o.state == 'posted'"
+                                        >Factura test:</span>
                                         <span
-                                            t-if="o.type == 'out_invoice' and o.state == 'draft'"
+                                            t-if="o.state == 'out_invoice' and o.state == 'draft'"
                                         >Factura Borrador:</span>
                                         <span
-                                            t-if="o.type == 'out_invoice' and o.state == 'cancel'"
+                                            t-if="o.state == 'out_invoice' and o.state == 'cancel'"
                                         >Factura Cancelada:</span>
                                         <span
-                                            t-if="o.type == 'out_refund'"
+                                            t-if="o.state == 'out_refund'"
                                         >Factura Rectificativa:</span>
                                         <span
-                                            t-if="o.type == 'in_refund'"
+                                            t-if="o.state == 'in_refund'"
                                         >Factura Rectificativa Proveedor:</span>
                                         <span
-                                            t-if="o.type == 'in_invoice'"
+                                            t-if="o.state == 'in_invoice'"
                                         >Factura Proveedor:</span>
                                         <span t-if="o.name != '/'" t-field="o.name" />
                                     </h2>
@@ -72,7 +83,7 @@
                                 </li>
                                 <div
                                     class="col-auto mw-100 mb-2"
-                                    t-if="o.invoice_date_due and o.type == 'out_invoice' and o.state == 'posted'"
+                                    t-if="o.invoice_date_due and o.state == 'out_invoice' and o.state == 'posted'"
                                     name="due_date"
                                     style="display:none;"
                                 >
@@ -288,7 +299,7 @@
                                                 class="text-right"
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                 <t t-if="o.type in ('out_refund','in_refund')">
+                                                 <t t-if="o.state in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span
@@ -304,7 +315,7 @@
                                                 t-attf-class="text-right {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
                                                 style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             >
-                                                <t t-if="o.type in ('out_refund','in_refund')">
+                                                <t t-if="o.state in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span
@@ -349,7 +360,7 @@
                                                         t-set="subtotal"
                                                         t-value="(subtotal or 0.0) + line_picking_subtotal"
                                                     />
-                                                    <t t-if="o.type in ('out_refund','in_refund')">
+                                                    <t t-if="o.state in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                     <span
@@ -362,7 +373,7 @@
                                                         t-set="subtotal"
                                                         t-value="(subtotal or 0.0) + l.price_subtotal"
                                                     />
-                                                    <t t-if="o.type in ('out_refund','in_refund')">
+                                                    <t t-if="o.state in ('out_refund','in_refund')">
                                                         <span>- </span>
                                                     </t>
 
@@ -389,7 +400,7 @@
                                                 >
                                                     <strong>Subtotal: </strong>
                                                     <strong>
-                                                        <t t-if="o.type in ('out_refund','in_refund')">
+                                                        <t t-if="o.state in ('out_refund','in_refund')">
                                                             <span>- </span>
                                                         </t>
                                                     </strong>
@@ -427,7 +438,7 @@
                                                 class="text-right"
                                                 style="solid; black; padding: 0px; margin: 0px; !important;"
                                             >
-                                                <t t-if="o.type in ('out_refund','in_refund')">
+                                                <t t-if="o.state in ('out_refund','in_refund')">
                                                     <span>- </span>
                                                 </t>
                                                 <span t-field="o.amount_untaxed" />
@@ -455,7 +466,7 @@
                                                         class="text-right o_price_total"
                                                         style="solid; black; padding: 0px; margin: 0px; !important;"
                                                     >
-                                                        <t t-if="o.type in ('out_refund','in_refund')">
+                                                        <t t-if="o.state in ('out_refund','in_refund')">
                                                             <span>- </span>
                                                         </t>
                                                         <span
@@ -481,7 +492,7 @@
                                                         class="text-right o_price_total"
                                                         style="solid; black; padding: 0px; margin: 0px; !important;"
                                                     >
-                                                        <t t-if="o.type in ('out_refund','in_refund')">
+                                                        <t t-if="o.state in ('out_refund','in_refund')">
                                                             <span>- </span>
                                                         </t>
                                                         <span
@@ -503,7 +514,7 @@
                                                 style="solid; black; padding: 0px; margin: 0px; !important;"
                                             >
                                                 <strong>
-                                                    <t t-if="o.type in ('out_refund','in_refund')">
+                                                    <t t-if="o.state in ('out_refund','in_refund')">
                                                         <span>- </span>
                                                     </t>
                                                 </strong>
