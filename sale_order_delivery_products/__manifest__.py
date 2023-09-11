@@ -7,7 +7,7 @@
     "version": "14.0.1.0.0",
     "category": "Sale",
     "website": "https://xtendoo.es",
-    "author": "Daniel Domínguez, Manuel Calero, Odoo Community Association (OCA), Camilo",
+    "author": "Daniel Domínguez, Manuel Calero, Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "depends": [
         "sale_management",
