@@ -4,7 +4,7 @@
 {
     "name": "Xtendoo Sale Order Tags",
     "summary": """Adds Tags to Sales Orders.""",
-    "author": "Patrick Wilson, Odoo Community Association (OCA), Camilo",
+    "author": "Patrick Wilson, Odoo Community Association (OCA), Dani Domínguez",
     "website": "https://github.com/OCA/sale-workflow",
     "category": "Sale",
     "version": "14.0.1.0.0",
