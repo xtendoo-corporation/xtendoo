@@ -3,7 +3,7 @@
     "summary": """sale line stock warning""",
     "version": "14.0.1.0.0",
     "description": """sale line stock warning""",
-    "author": "Daniel Dominguez, Camilo",
+    "author": "Daniel Dominguez",
     "company": "Xtendoo",
     "website": "http://xtendoo.es",
     "category": "Extra Tools",
