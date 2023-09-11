@@ -5,7 +5,7 @@
     "summary": """Sale And Invoice Inline discounts""",
     "version": "14.0.1.0.0",
     "description": """Sale And Invoice Inline discounts""",
-    "author": "Dani Domínguez, Camilo",
+    "author": "Dani Domínguez",
     "company": "Xtendoo",
     "website": "https://www.xtendoo.es",
     "category": "Extra Tools",
