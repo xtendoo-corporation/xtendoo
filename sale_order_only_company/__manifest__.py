@@ -8,8 +8,8 @@
     """,
     "version": "14.0.1.3.6",
     "category": "Sale",
-    "author": "Xtendoo," "Odoo Community Association (OCA), Camilo",
-    "website": "https://github.com/OCA/sale-workflow",
+    "author": "Xtendoo, Dani Domínguez",
+    "website": "https://xtendoo.esw",
     "license": "AGPL-3",
     "depends": [
         "base",
