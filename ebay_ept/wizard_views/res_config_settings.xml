@@ -375,7 +375,7 @@
                         <h2>Product</h2>
                         <div class="row mt16 o_settings_container">
                             <div class="col-12 col-lg-6 o_setting_box">
-                                <div class="o_setting_right_pane" style="margin-left:30px !important;">
+                                <div class="o_setting_right_pane d-none" style="margin-left:30px !important;">
                                     <label for="ebay_item_location_country" string="Item Location Country"/>
                                     <div class="text-muted">
                                         Select the item location country based on eBay seller account
@@ -384,6 +384,19 @@
                                         <div class="mt16">
                                             <field name="ebay_item_location_country"
                                                    options="{'no_create':True,'no_create_edit': True,'no_open':True}"
+                                                   attrs="{'required':[('ebay_instance_id','!=',False)]}"
+                                                   class="oe_inline"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="o_setting_right_pane" style="margin-left:30px !important;">
+                                    <label for="ebay_country_id" string="Item Location Country"/>
+                                    <div class="text-muted">
+                                        Select the item location country based on eBay seller account
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="mt16">
+                                            <field name="ebay_country_id"
                                                    attrs="{'required':[('ebay_instance_id','!=',False)]}"
                                                    class="oe_inline"/>
                                         </div>

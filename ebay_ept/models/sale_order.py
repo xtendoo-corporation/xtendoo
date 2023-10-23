@@ -641,9 +641,9 @@ class SaleOrder(models.Model):
                 _logger.info("Already updated status on ebay for Sale order '%s' and Picking '%s' for update order status",sale_order.name,picking.name)
                 picking.write({'updated_in_ebay': True})
                 continue
-            order_lines = sale_order.order_line
-            if order_lines and order_lines.filtered(
-                lambda s: s.product_id.detailed_type != 'service' and not s.ebay_order_line_item_id):
+            order_lines = sale_order.order_line.filtered(lambda ol: ol.product_id.detailed_type != 'service' and
+                                                                    not ol.display_type)
+            if order_lines and order_lines.filtered(lambda s: not s.ebay_order_line_item_id):
                 message = (_(
                     "- Order status could not be updated for order %s.\n- Possible reason can be, ebay order line "
                     "reference is missing, which is used to update ebay order status at eBay store. "
@@ -655,7 +655,7 @@ class SaleOrder(models.Model):
                                                          log_line_type='fail', mismatch=True,
                                                          ebay_instance_id=instance.id)
                 continue
-            for order_line in order_lines:
+            for order_line in order_lines.filtered(lambda s: s.product_id.detailed_type != 'service' and s.ebay_order_line_item_id):
                 tracking_dict = self.ebay_prepare_tracking_info(picking, carrier_name, order_line)
                 update_order_parameter = self.prepare_ebay_update_order_parameter_dict(order_line, sale_order,
                                                                                        tracking_dict)

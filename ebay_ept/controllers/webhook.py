@@ -51,7 +51,7 @@ class Webhook(http.Controller):
         @author: Harsh Parekh @Emipro Technologies Pvt. Ltd on date 21/07/2021.
         Task Id : 175703
         """
-        response_data = request.jsonrequest if request else {}
+        response_data = json.loads(request.httprequest.data.decode('utf-8')) if request else {}
         if response_data:
             self.update_partner_informations(response_data)
         return True

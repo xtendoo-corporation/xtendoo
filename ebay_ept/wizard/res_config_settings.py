@@ -60,7 +60,7 @@ class ResConfigSettings(models.TransientModel):
         help='This account will be used instead of the default one as the payable account for the current partner')
     ebay_property_account_receivable_id = fields.Many2one(
         'account.account', string="eBay Accounts Receivable",
-            domain="[('account_type', '=', 'asset_receivable'), ('deprecated', '=', False)]",
+        domain="[('account_type', '=', 'asset_receivable'), ('deprecated', '=', False)]",
         help='This account will be used instead of the default one as the receivable account for the current partner')
     ebay_is_use_default_sequence = fields.Boolean(
         "Use Odoo Default Sequence in eBay Orders?",
@@ -82,20 +82,6 @@ class ResConfigSettings(models.TransientModel):
     ebay_deletion_token_ept = fields.Char(config_parameter="ebay_ept.ebay_deletion_token_ept", readonly=True)
     ebay_deletion_endpoint_ept = fields.Char(compute="_compute_ebay_deletion_endpoint_ept")
 
-    def get_ebay_country(self, item_location_country=False):
-        """
-        Get eBay Item location country dictionary.
-        :param item_location_country: True if item location country
-        """
-        if item_location_country:
-            ebay_site_countries = {
-                '0': 'US', '2': 'CA', '3': 'GB', '77': 'DE', '15': 'AU', '71': 'FR', '100': 'US',
-                '101': 'IT', '146': 'NL', '186': 'ES', '203': 'IN', '201': 'HK', '216': 'SG', '207': 'MY',
-                '211': 'PH', '210': 'CA', '212': 'PL', '123': 'BE', '23': 'BE', '16': 'AT', '193': 'CH', '205': 'IE'}
-            site_country = self.env['res.country'].search([
-                ('code', '=', ebay_site_countries.get(item_location_country.site_id))])
-            if site_country:
-                self.ebay_country_id = site_country.id
 
     def generate_ebay_token(self):
         """
@@ -196,8 +182,11 @@ class ResConfigSettings(models.TransientModel):
             if instance.ebay_property_account_receivable_id:
                 vals['ebay_property_account_receivable_id'] = instance.ebay_property_account_receivable_id.id
             vals['ebay_item_location_country'] = self.ebay_instance_id.site_id.id
-            if instance.item_location_country:
-                vals['ebay_item_location_country'] = instance.item_location_country.id
+            if instance.site_id:
+                vals['ebay_item_location_country'] = instance.site_id.id
+            vals['ebay_country_id'] = instance.country_id.id
+            if self.ebay_country_id.id:
+                vals['ebay_country_id'] = instance.country_id.id
             vals['ebay_item_location_name'] = instance.item_location_name or ''
         return {'value': vals}
 
@@ -224,7 +213,6 @@ class ResConfigSettings(models.TransientModel):
             if self.ebay_item_location_country:
                 ebay_item_loc_country = self.ebay_item_location_country.id
             country_id = False
-            self.get_ebay_country(self.ebay_item_location_country)
             if self.ebay_country_id:
                 country_id = self.ebay_country_id.id
             # Account Field
@@ -238,7 +226,7 @@ class ResConfigSettings(models.TransientModel):
                 'warehouse_id': ebay_warehouse_id, 'lang_id': ebay_lang_id,
                 'pricelist_id': ebay_pricelist_id, 'post_code': self.ebay_post_code or False,
                 'fiscal_position_id': self.fiscal_position_id,  # Added by Tushal Nimavat on 23/06/2022
-                'ebay_stock_field': self.ebay_stock_field, 'item_location_country': ebay_item_loc_country,
+                'ebay_stock_field': self.ebay_stock_field,
                 'country_id': country_id, 'item_location_name': self.ebay_item_location_name or '',
                 'ebay_property_account_receivable_id': ebay_property_account_receivable_id,
                 'ebay_property_account_payable_id': ebay_property_account_payable_id,

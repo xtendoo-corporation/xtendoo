@@ -13,6 +13,7 @@ from datetime import datetime
 import logging
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from markupsafe import Markup
 
 _logger = logging.getLogger(__name__)
 importlib.reload(sys)
@@ -293,17 +294,20 @@ class EbayProductTemplateEpt(models.Model):
                                                            ebay_product_template.category_id1)
         if ebay_product_template.count_total_variants > 1:
             template_description = ebay_product_template.description or ebay_product_template.name or ''
-            if template_description == '<p><br></p>':
-                template_description = ''
-            prod_desc = (html.escape(str(template_description)).encode("utf-8")).decode('iso-8859-1')
+            # if template_description == '<p><br></p>':
+            #     template_description = ''
+            # prod_desc = (html.escape(str(template_description)).encode("utf-8")).decode('iso-8859-1')
+            prod_desc = Markup('<![CDATA[{0}]]>').format(template_description)
             sub_dict.update({'Description': prod_desc})
         if ebay_product_template.digital_good_delivery_enabled:
             sub_dict.get('DigitalGoodInfo', {}).update({'DigitalDelivery': ebay_product_template.digital_delivery})
         # Use to identify listed location of the product in eBay
         sub_dict = self.prepare_ebay_item_locations_parameters_dict(instance, sub_dict)
+        title = Markup('<![CDATA[{0}]]>').format(ebay_product_template.name)
+        # (html.escape(ebay_product_template.name).encode("utf-8")).decode('iso-8859-1')
         sub_dict.update({
             'CategoryMappingAllowed': True,
-            'Title': (html.escape(ebay_product_template.name).encode("utf-8")).decode('iso-8859-1'),
+            'Title': title,
             'ListingDuration': ebay_product_template.ebay_listing_duration,
             'ListingType': ebay_product_template.listing_type,
             'Currency': instance.pricelist_id.currency_id.name,
@@ -339,9 +343,11 @@ class EbayProductTemplateEpt(models.Model):
             product.condition_id = category_id1.ebay_condition_ids[0].id
             condition = product.condition_id.condition_id
         if condition:
-            condition_description = html.escape(condition_description)
+            # condition_description = html.escape(condition_description)
+            # (condition_description.encode("utf-8")).decode("iso-8859-1")
+            condition_description = Markup('<![CDATA[{0}]]>').format(condition_description)
             sub_dict.update({
-                'ConditionDescription': (condition_description.encode("utf-8")).decode("iso-8859-1"),
+                'ConditionDescription': condition_description,
                 'ConditionID': condition})
         return sub_dict
 
@@ -386,15 +392,17 @@ class EbayProductTemplateEpt(models.Model):
         if store_categ1 or store_categ2:
             sub_dict.update({'Storefront': {}})
             if store_categ1:
-                store_categ1_name = html.escape(store_categ1.name).encode("utf-8")
+                store_categ1_name = Markup('<![CDATA[{0}]]>').format(store_categ1.name)
+                # store_categ1_name = html.escape(store_categ1.name).encode("utf-8")
                 sub_dict.get('Storefront').update({
                     "StoreCategoryID": store_categ1.ebay_category_id,
-                    'StoreCategoryName': store_categ1_name.decode("iso-8859-1")})
+                    'StoreCategoryName': store_categ1_name})
             if store_categ2:
-                store_categ2_name = html.escape(store_categ2.name).encode("utf-8")
+                # store_categ2_name = html.escape(store_categ2.name).encode("utf-8")
+                store_categ2_name = Markup('<![CDATA[{0}]]>').format(store_categ2.name)
                 sub_dict.get('Storefront').update({
                     "StoreCategory2ID": store_categ2.ebay_category_id,
-                    'StoreCategory2Name': store_categ2_name.decode("iso-8859-1")})
+                    'StoreCategory2Name': store_categ2_name})
         return sub_dict
 
     @staticmethod
@@ -504,7 +512,8 @@ class EbayProductTemplateEpt(models.Model):
             stock = self.get_ebay_product_stock_ept(instance, [variant.product_id.id], warehouse_ids)
             variation = {}
             start_price = instance.pricelist_id._get_product_price(variant.product_id, 1.0)
-            default_code = (html.escape(variant.ebay_sku).encode("utf-8")).decode("iso-8859-1")
+            # default_code = (html.escape(variant.ebay_sku).encode("utf-8")).decode("iso-8859-1")
+            default_code = Markup('<![CDATA[{0}]]>').format(variant.ebay_sku)
             variation_product_listing_details = self.get_ean_isbn_upc_dict(variant)
             variation_values = {
                 'SKU': default_code, 'StartPrice': start_price, 'Quantity': int(stock[variant.product_id.id]),
@@ -520,9 +529,10 @@ class EbayProductTemplateEpt(models.Model):
         sub_dict.get('PictureDetails').update({'GalleryURL': image_urls})
         sub_dict.get('Variations').update({'variation': list_of_variation})
         ebay_attr = ebay_product_template.attribute_id.name or ''
+        # (html.escape(ebay_attr).encode("utf-8")).decode("iso-8859-1")
         list_of_variation_pictures.append({
             'VariationSpecificPictureSet': {'PictureURL': list(set(image_urls))},
-            'VariationSpecificName': (html.escape(ebay_attr).encode("utf-8")).decode("iso-8859-1")})
+            'VariationSpecificName': Markup('<![CDATA[{0}]]>').format(ebay_attr)})
         sub_dict.get('Variations').update({'Pictures': list_of_variation_pictures})
         if instance.site_id:
             sub_dict.update({'Site': instance.site_id.name})
@@ -565,7 +575,9 @@ class EbayProductTemplateEpt(models.Model):
         sub_dict = self.prepare_product_dict(ebay_product_template, instance, publish_in_ebay, schedule_time)
         default_code = variant.ebay_sku or variant.product_id.default_code
         if default_code:
-            sub_dict.update({'SKU': (html.escape(default_code).encode("utf-8")).decode("iso-8859-1")})
+            # (html.escape(default_code).encode("utf-8")).decode("iso-8859-1")
+            sku = Markup('<![CDATA[{0}]]>').format(default_code)
+            sub_dict.update({'SKU': sku})
         list_image_url = ebay_product_template.prepare_ebay_product_images_dict(variant, instance, [])
         sub_dict.update({'PictureDetails': {'PictureURL': list_image_url}})
         sub_dict.get('PictureDetails').update({'GalleryURL': list_image_url})
@@ -621,9 +633,10 @@ class EbayProductTemplateEpt(models.Model):
         :return: Dictionary of eBay product description.
         """
         template_description = ebay_product_template.description or ebay_product_template.name or ''
-        if template_description == '<p><br></p>':
-            template_description = ''
-        prod_desc = (html.escape(str(template_description)).encode("utf-8")).decode('iso-8859-1')
+        # if template_description == '<p><br></p>':
+        #     template_description = ''
+        # prod_desc = (html.escape(str(template_description)).encode("utf-8")).decode('iso-8859-1')
+        prod_desc = Markup('<![CDATA[{0}]]>').format(template_description)
         return prod_desc
 
     @staticmethod
