@@ -11,7 +11,9 @@
     "depends": [
         "contract",
     ],
-    "data": [],
+    "data": [
+        "views/contract_view.xml",
+    ],
     "license": "AGPL-3",
     "installable": True,
 }
