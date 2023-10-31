@@ -10,8 +10,12 @@ class SaleOrder(models.Model):
 
 
     def _action_confirm(self):
+        result = ""
         for line in self.order_line:
-            line._onchange_price_unit()
+            if line.compute_price_unit_is_valid():
+                result += line.compute_price_unit_is_valid()
+        if result:
+            raise UserError(result)
         return super(SaleOrder, self)._action_confirm()
 
 

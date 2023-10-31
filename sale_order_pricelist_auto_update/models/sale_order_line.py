@@ -16,22 +16,13 @@ class SaleOrderLine(models.Model):
         compute="_compute_is_pricelist_change",
     )
 
-    def _write(self,vals):
-        for line in self:
-            line._onchange_price_unit()
-        return super(SaleOrderLine, self)._write(vals)
-
-    @api.onchange("price_unit")
-    def _onchange_price_unit(self):
+    def compute_price_unit_is_valid(self):
         if not self.product_id:
             return
         if self.price_unit == 0.0:
             return
         if self.price_unit < self.product_id.standard_price:
-            raise UserError(
-                _("The unit price of %s, can't be lower than cost price %.2f")
-                % (self.product_id.name, self.product_id.standard_price)
-            )
+            return '*El precio unitario de %s no puede ser menor que el coste: %.2f € \n' % (self.product_id.name, self.product_id.standard_price)
 
     @api.depends("price_unit")
     def _compute_is_pricelist_change(self):
