@@ -11,10 +11,11 @@
             >
                 <field name="margin" optional="hide" groups="base.group_user" />
                 <field
-                    name="margin_percent"
+                    name="margin_percent_show"
                     string="Margin (%)"
                     optional="hide"
                     groups="base.group_user"
+                    widget="percentage"
                 />
             </xpath>
         </field>
