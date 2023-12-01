@@ -9,9 +9,4 @@
             </xpath>
         </field>
     </record>
-<!--    <template id="product_price" inherit_id="website_sale.product_price">-->
-<!--        <xpath expr="//span[@itemprop='priceCurrency']" position="after">-->
-<!--            <field name="website_price_additional_info" />-->
-<!--        </xpath>-->
-<!--    </template>-->
 </odoo>
