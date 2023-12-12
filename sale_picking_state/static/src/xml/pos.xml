@@ -1,0 +1,115 @@
+
+<templates id="template" xml:space="preserve">
+    <t t-extend="PosTicket">
+        <t t-jquery="div[class='pos-sale-ticket']" t-operation="replace">
+            <div class="pos-sale-ticket">
+                <div class="pos-center-align">
+                    <t t-esc="order.formatted_validation_date"/> 
+                    <t t-esc="order.name"/>
+                </div>
+                <br />
+                <div class="pos-center-align">
+                    <t t-esc="widget.pos.company.name"/><br />
+                </div>
+                <div class="receipt-phone pos-center-align">
+                    Phone: <t t-esc="widget.pos.company.phone || ''"/><br />
+                </div>
+                <!--Cabecera-->
+                <div>
+                    <div style="width:15%;float:left;text-align:center;margin-left:">
+                        <b><span>Uds.</span></b>
+                    </div>
+                    <div style="text-align:left;width:55%;float:left;">
+                        <b><span>Producto</span></b>
+                    </div>
+                    <div style="width:17%;float:left;text-align:right;">
+                        <b><span>Subt.</span></b>
+                    </div>
+                    <div style="width:100%;clear:both;height:1px;background-color:grey;"></div>
+                </div>
+                <!--Fin Cabecera-->
+                <!-- Lineas--> 
+                <t t-foreach="orderlines" t-as="orderline" >
+                    <div>
+                        <div class="pos-right-align" style="width:15%;float:left;font-size:0.8em;text-align:center;">
+                            <t t-esc="orderline.get_quant_2_decimals()"/>
+                            <t t-esc="orderline.get_unit_name()"/>
+                        </div>
+                        <div style="width:55%;float:left;font-size:0.8em;text-align:left;">
+                            <span style="margin-left:2px;">
+                                <t t-esc="orderline.get_product().display_name"/> 
+                                <t t-if="orderline.get_discount() > 0">
+                                <span>con descuento del </span>
+                                    <t t-esc="orderline.get_discount()"/>%
+                                </t>
+                            </span>
+                        </div>
+                        <div class="pos-right-align" style="width:17%;float:left;font-size:0.8em;">
+                            <t t-esc="widget.format_currency(orderline.get_price_with_tax())"/>
+                        </div>
+                        <div style="width:100%;clear:both;height:1px;background-color:grey;"></div>
+                    </div>
+                </t>
+                <!-- Fin Lineas-->
+                <!--Subtotal, Descuentos, Iva, Total, Pagado y cambio -->
+                <div style="font-size:0.8em;">
+                    <div style="width:42%;float:left;margin-left:15%;">
+                        <b><span>SUBTOTAL</span></b>
+                    </div>
+                    <div style="width:30%;float:left;text-align:right;">
+                         <t t-esc="widget.format_currency(order.get_total_without_tax())"/>
+                    </div>
+                    <div style="width:42%;float:left;margin-left:15%;">
+                        <b><span>DESCUENTO TOTAL</span></b>
+                    </div>
+                    <div style="width:30%;float:left;text-align:right;">
+                         <t t-esc="widget.format_currency(order.get_total_discount())"/>
+                    </div>
+                    <t t-foreach="order.get_tax_name()" t-as="taxdetail">
+                        <div style="width:42%;float:left;margin-left:15%;">
+                            <t t-set="taxName" t-value="taxdetail.name"/>
+                            <b><t t-esc="taxName" /></b>
+                        </div>
+                        <div style="width:30%;float:left;text-align:right;">
+                            <t t-esc="widget.format_currency(taxdetail.amount)" />
+                        </div>
+                    </t>
+                    <div style="width:42%;float:left;margin-left:15%;">
+                        <b><span>TOTAL</span></b>
+                    </div>
+                    <div style="width:30%;float:left;text-align:right;">
+                        <b><t t-esc="widget.format_currency(order.get_total_with_tax())"/></b>
+                    </div>
+                    <t t-foreach="paymentlines" t-as="line">
+                        <div style="width:42%;float:left;margin-left:15%;">
+                            <b><span><t t-esc="line.name"/></span></b>
+                        </div>
+                        <div style="width:30%;float:left;text-align:right;">
+                            <b><t t-esc="widget.format_currency(line.get_amount())"/></b>
+                        </div>
+                    </t>
+                    <div style="width:42%;float:left;margin-left:15%;">
+                        <b><span>CAMBIO</span></b>
+                    </div>
+                    <div style="width:30%;float:left;text-align:right;">
+                        <b><t t-esc="widget.format_currency(order.get_change())"/></b>
+                    </div>
+                </div>
+                <!--Fin Subtotal, Descuentos, Iva, Total, Pagado y cambio -->
+                <!-- Le atendio-->
+                <div class="receipt-user pos-center-align" style="clear:both;">
+                    Le atendió: <t t-esc="widget.pos.get_cashier().name"/>
+                </div>
+                <!-- Fin Le atendio-->
+                <!-- Footer -->
+                <t t-if="receipt.footer">
+                    <div style='text-align:center'>
+                        <t t-esc="receipt.footer" />
+                    </div>
+                </t>
+                <!-- Fin Footer-->
+                <br />
+            </div>
+        </t>
+    </t>
+</templates>
