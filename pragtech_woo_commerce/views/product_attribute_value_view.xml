@@ -10,7 +10,7 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="slug" readonly="1"/>
+                            <field name="slug"/>
                         </group>
                         <group>
                             <field name="woo_id" string="WooCommerce ID" readonly="1"/>

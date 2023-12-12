@@ -4,6 +4,7 @@ from woocommerce import API
 from odoo import fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools import config
+from odoo.addons.http_routing.models.ir_http import slug, unslug
 config['limit_time_real'] = 1000000
 
 class ProductTemplateAttributeLine(models.Model):
@@ -50,14 +51,14 @@ class ProductAttribute(models.Model):
                 attr_val.append({
                     'id': val.woo_id,
                     'name': val.name,
-                    'slug': str(val.slug) if val.slug else '',
+                    'slug': str(val.slug) if val.slug else slug(val.name),
                     'description': str(val.description) if val.description else '',
                 })
 
             list.append({
                 'id': rec.woo_id,
                 'name': rec.name,
-                'slug': rec.slug if rec.slug else '',
+                'slug': rec.slug if rec.slug else slug(rec.name),
             })
 
         if list:
@@ -261,7 +262,7 @@ class ProductAttributeValue(models.Model):
             list.append({
                 'id': rec.woo_id,
                 'name': rec.name,
-                'slug': rec.slug if rec.slug else '',
+                'slug': rec.slug if rec.slug else slug(rec.name),
                 'description': str(rec.woo_attr_val_description) if rec.woo_attr_val_description else ''
             })
 
