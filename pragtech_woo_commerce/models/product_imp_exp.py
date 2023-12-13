@@ -27,11 +27,13 @@ class ProductImage(models.Model):
     def create(self, vals_list):
         product_image = super().create(vals_list)
 
-        mimetype = guess_mimetype(base64.b64decode(vals_list["image_1920"]))
+        for vals in vals_list:
+            if vals.get('image_1920'):
+                mimetype = guess_mimetype(base64.b64decode(vals['image_1920']))
 
-        print("*"*80)
-        print("mimetype", mimetype)
-        print("*"*80)
+                print("*"*80)
+                print("mimetype", mimetype)
+                print("*"*80)
 
         #     file_path = ""
         #     if mimetype == 'image/png':
