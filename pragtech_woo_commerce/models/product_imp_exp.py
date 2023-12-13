@@ -11,10 +11,36 @@ from odoo.exceptions import UserError
 from odoo import models, api, fields, _
 from odoo.tools import config
 from bs4 import BeautifulSoup
+from odoo.tools.mimetypes import guess_mimetype
 config['limit_time_real'] = 1000000
 
 
 _logger = logging.getLogger(__name__)
+
+
+class ProductImage(models.Model):
+    _inherit = 'product.image'
+
+    url = fields.Char(string="Image URL", help="External URL of image")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        product_image = super().create(vals_list)
+
+        mimetype = guess_mimetype(base64.b64decode(vals_list["image_1920"]))
+
+        print("*"*80)
+        print("mimetype", mimetype)
+        print("*"*80)
+
+        #     file_path = ""
+        #     if mimetype == 'image/png':
+        #         file_path = "/home/Downloads/" + str(p_id) + ".png"
+        #     elif mimetype == 'image/jpeg':
+        #         file_path = "/home/Downloads/" + str(p_id) + ".jpeg"
+
+        return product_image
+
 
 class WooProductImage(models.Model):
     _name = 'woo.product.image'
