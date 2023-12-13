@@ -262,7 +262,7 @@ class ProductAttributeValue(models.Model):
             list.append({
                 'id': rec.woo_id,
                 'name': rec.name,
-                'slug': rec.slug if rec.slug else slug(rec.name),
+                'slug': rec.slug if rec.slug else slugify(rec.name),
                 'description': str(rec.woo_attr_val_description) if rec.woo_attr_val_description else ''
             })
 
