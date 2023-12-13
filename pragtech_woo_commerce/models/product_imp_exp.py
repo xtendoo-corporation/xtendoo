@@ -80,7 +80,7 @@ class WooProductImage(models.Model):
         ir_config_parameter_obj = self.env['ir.config_parameter']
         base_url = ir_config_parameter_obj.sudo().get_param('web.base.url')
         for record in records:
-            url = base_url + '/lf/i/%s' % (base64.urlsafe_b64encode(str(record.id).encode("utf-8")).decode("utf-8"))
+            url = base_url + '/lf/i/%s' % (base64.urlsafe_b64encode(str(record.id).encode("utf-8")).decode("utf-8")) + '.jpg'
             record.write({'url': url})
         return records
 
