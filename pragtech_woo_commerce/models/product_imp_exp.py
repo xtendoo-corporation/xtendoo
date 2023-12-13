@@ -61,29 +61,46 @@ class WooProductImage(models.Model):
                 return image
         raise UserError(_("Can't find image.\nPlease provide valid Image URL."))
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        """
-        Inherited for adding image from URL.
-        """
-        for vals in vals_list:
-            verify = False
-
-            if not vals.get("image", False) and vals.get("url", ""):
-                if 'ssl_verify' in list(self.env.context.keys()):
-                    verify = True
-                image = self.get_image_ept(vals.get("url"), verify=verify)
-                vals.update({"image": image})
-
-        records = super(WooProductImage, self).create(vals_list)
-
-        ir_config_parameter_obj = self.env['ir.config_parameter']
-        base_url = ir_config_parameter_obj.sudo().get_param('web.base.url')
-        for record in records:
-            url = base_url + '/lf/i/%s.jpg' % (base64.urlsafe_b64encode(str(record.id).encode("utf-8")).decode("utf-8"))
-            record.write({'url': url})
-        return records
-
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     """
+    #     Inherited for adding image from URL.
+    #     """
+    #
+    #     binary_data = vals_list[0].get('image')
+    #     p_id = vals_list[0].get('product_id')
+    #     product_images = self.env['woo.product.image'].sudo().search([('product_id', '=', p_id)])
+    #     verify = False
+    #     if not vals_list[0].get("image", False) and vals_list[0].get("url", ""):
+    #
+    #     for vals in vals_list:
+    #         verify = False
+    #
+    #     records = super(WooProductImage, self).create(vals_list)
+    #
+    #     ir_config_parameter_obj = self.env['ir.config_parameter']
+    #     base_url = ir_config_parameter_obj.sudo().get_param('web.base.url')
+    #     for record in records:
+    #         url = base_url + '/lf/i/%s' % (base64.urlsafe_b64encode(str(record.id).encode("utf-8")).decode("utf-8"))
+    #         record.write({'url': url})
+    #
+    #         for rec in product_images:
+    #             with open("imageToSave.jpg", "wb") as imgFile:
+    #                 imgFile.write(base64.b64decode(rec.datas))
+    #
+    #     mimetype = guess_mimetype(base64.b64decode(binary_data))
+    #     file_path = ""
+    #     if mimetype == 'image/png':
+    #         file_path = "/home/Downloads/" + str(p_id) + ".png"
+    #     elif mimetype == 'image/jpeg':
+    #         file_path = "/home/Downloads/" + str(p_id) + ".jpeg"
+    #
+    #     if file_path:
+    #         with open(file_path, "wb") as imgFile:
+    #             imgFile.write(base64.b64decode(binary_data))
+    #
+    #     return records
+    #
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
