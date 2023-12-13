@@ -26,10 +26,10 @@ class WooProductImage(models.Model):
     image = fields.Image()
     url = fields.Char(string="Image URL", help="External URL of image")
 
-    @api.onchange('url')
-    def validate_img_url(self):
-        if self.url:
-            self.image = self.get_image_ept(self.url)
+    # @api.onchange('url')
+    # def validate_img_url(self):
+    #     if self.url:
+    #         self.image = self.get_image_ept(self.url)
 
             # try:
             #     image_types = ["image/jpeg", "image/png", "image/tiff", "image/vnd.microsoft.icon", "image/x-icon",
