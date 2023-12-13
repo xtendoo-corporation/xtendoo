@@ -4,6 +4,7 @@ from woocommerce import API
 from odoo import fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools import config
+from odoo.addons.http_routing.models.ir_http import slugify
 config['limit_time_real'] = 1000000
 
 class ProductCategory(models.Model):
@@ -46,7 +47,7 @@ class ProductCategory(models.Model):
                 'name': rec.name,
                 'parent': int(rec.parent_id.woo_id),
                 'description': str(rec.woo_category_description) if rec.woo_category_description else '',
-                'slug': rec.slug if rec.slug else '',
+                'slug': rec.slug if rec.slug else slugify(rec.name),
             })
 
         if list:

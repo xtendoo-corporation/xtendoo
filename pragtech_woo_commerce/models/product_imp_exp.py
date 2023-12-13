@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import imghdr
-import urllib
 import base64
 import requests
 import json
@@ -8,7 +7,6 @@ import itertools
 import logging
 import time
 from woocommerce import API
-from urllib.request import urlopen
 from odoo.exceptions import UserError
 from odoo import models, api, fields, _
 from odoo.tools import config
@@ -28,22 +26,61 @@ class WooProductImage(models.Model):
     image = fields.Image()
     url = fields.Char(string="Image URL", help="External URL of image")
 
-    @api.onchange('url')
-    def validate_img_url(self):
-        if self.url:
-            try:
-                image_types = ["image/jpeg", "image/png", "image/tiff", "image/vnd.microsoft.icon", "image/x-icon",
-                               "image/vnd.djvu", "image/svg+xml", "image/gif"]
-                response = urllib.request.urlretrieve(self.url)
+    # @api.onchange('url')
+    # def validate_img_url(self):
+    #     if self.url:
+    #         try:
+    #             image_types = ["image/jpeg", "image/png", "image/tiff", "image/vnd.microsoft.icon", "image/x-icon",
+    #                            "image/vnd.djvu", "image/svg+xml", "image/gif"]
+    #             response = urllib.request.urlretrieve(self.url)
+    #
+    #             if response[1].get_content_type() not in image_types:
+    #                 raise UserError(_("Please provide valid Image URL with any extension."))
+    #             else:
+    #                 photo = base64.encodebytes(urlopen(self.url).read())
+    #                 self.image = photo
+    #
+    #         except Exception as error:
+    #             raise UserError(_("Invalid Url"))
 
-                if response[1].get_content_type() not in image_types:
-                    raise UserError(_("Please provide valid Image URL with any extension."))
-                else:
-                    photo = base64.encodebytes(urlopen(self.url).read())
-                    self.image = photo
+    @api.model
+    def get_image_ept(self, url, verify=False):
+        """
+        Gets image from url.
+        @param url: URL added in field.
+        """
+        image_types = ["image/jpeg", "image/png", "image/tiff",
+                       "image/vnd.microsoft.icon", "image/x-icon",
+                       "image/vnd.djvu", "image/svg+xml", "image/gif"]
+        response = requests.get(url, stream=True, verify=verify, timeout=10)
+        if response.status_code == 200 and response.headers["Content-Type"] in image_types:
+            image = base64.b64encode(response.content)
+            if image:
+                return image
+        raise UserError(_("Can't find image.\nPlease provide valid Image URL."))
 
-            except Exception as error:
-                raise UserError(_("Invalid Url"))
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Inherited for adding image from URL.
+        """
+        for vals in vals_list:
+            verify = False
+
+            if not vals.get("image", False) and vals.get("url", ""):
+                if 'ssl_verify' in list(self.env.context.keys()):
+                    verify = True
+                image = self.get_image_ept(vals.get("url"), verify=verify)
+                vals.update({"image": image})
+
+        records = super(WooProductImage, self).create(vals_list)
+
+        ir_config_parameter_obj = self.env['ir.config_parameter']
+        base_url = ir_config_parameter_obj.sudo().get_param('web.base.url')
+        for record in records:
+            url = base_url + '/lf/i/%s' % (base64.urlsafe_b64encode(str(record.id).encode("utf-8")).decode("utf-8"))
+            record.write({'url': url})
+        return records
 
 
 class ProductProduct(models.Model):
