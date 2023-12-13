@@ -253,7 +253,7 @@
                         <div class="col-md-6 col-xl-5" invisible="context.get('default_woo_variant_id',False)">
                             <group>
                             <field name="name"/>
-                            <field name="url" required="1"/>
+                            <field name="url"/>
                             </group>
                         </div>
 
