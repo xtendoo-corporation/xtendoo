@@ -260,7 +260,7 @@
                         <div class="col-md-6 col-xl-7 text-center o_website_sale_image_modal_container">
                             <div class="row">
                                 <div class="col">
-                                    <field name="image" widget="image" readonly="1"/>
+                                    <field name="image" widget="image" attrs="{'required': [('url', '=', '')]}"/>
                                 </div>
                             </div>
                         </div>
