@@ -35,14 +35,14 @@ class ProductImage(models.Model):
             if record.image_1920:
                 url = ""
                 mimetype = guess_mimetype(base64.b64decode(record.image_1920))
-                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/lf/i/'
+                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/web/image/'
                 if mimetype == 'image/png':
                     url = str(record.id) + ".png"
                 elif mimetype == 'image/jpeg':
                     url = str(record.id) + ".jpeg"
 
                 if url:
-                    with open(os.path.join("/web/image", url), "wb+") as img:
+                    with open(base_url + url, "wb+") as img:
                         img.write(base64.b64decode(record.image_1920))
                         img.close()
 
