@@ -381,14 +381,31 @@ class Product(models.Model):
                         })
 
             images = []
-            for img in rec.woo_image_ids:
+            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+
+            # for img in rec.woo_image_ids:
+            #     images.append({
+            #         "src": img.url,
+            #     })
+
+            if rec.image_1920:
+                url = base_url + '/web/image/%s/%s/%s%s/%s?unique=%s' % ('product.template', rec.id, 'image_1920', '', 'image_1920', '')
+                print("@"*80)
+                print("url", url)
+
                 images.append({
-                    "src": img.url,
+                    "src": url,
                 })
 
             for img in rec.product_template_image_ids:
+                url = base_url + self.env['ir.qweb.field.image']._get_src_urls(img, 'image_1920', {})
+                images.append({
+                    "src": url,
+                })
+
+            for image in images:
                 print("@"*80)
-                print("record to html", self.env['ir.qweb.field.image']._get_src_urls(img, 'image_1920', {}))
+                print("image", image)
 
             list.append({
                 "id": rec.woo_id,
