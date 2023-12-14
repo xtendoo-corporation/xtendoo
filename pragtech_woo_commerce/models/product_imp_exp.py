@@ -35,7 +35,7 @@ class ProductImage(models.Model):
             if record.image_1920:
 
                 try:
-                    os.makedirs("images")
+                    os.makedirs("/images")
                 except OSError as exc:
                     _logger.exception("Creation error - OSError: %s" % exc)
 
@@ -48,7 +48,7 @@ class ProductImage(models.Model):
                     url = str(record.id) + ".jpeg"
 
                 if url:
-                    with open(os.path.join("images", url), "wb+") as img:
+                    with open(os.path.join("/images", url), "wb+") as img:
                         img.write(base64.b64decode(record.image_1920))
                         img.close()
 
