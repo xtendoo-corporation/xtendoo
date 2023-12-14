@@ -19,38 +19,38 @@ config['limit_time_real'] = 1000000
 _logger = logging.getLogger(__name__)
 
 
-class ProductImage(models.Model):
-    _inherit = 'product.image'
-
-    url = fields.Char(
-        string="Image URL",
-        help="External URL of image"
-    )
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-
-        for record in records:
-            if record.image_1920:
-                url = ""
-                mimetype = guess_mimetype(base64.b64decode(record.image_1920))
-                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + 'web/image/'
-                if mimetype == 'image/png':
-                    url = str(record.id) + ".png"
-                elif mimetype == 'image/jpeg':
-                    url = str(record.id) + ".jpeg"
-
-                if url:
-                    with open(base_url + url, "wb+") as img:
-                        img.write(base64.b64decode(record.image_1920))
-                        img.close()
-
-                        print("*"*80)
-                        print("url", url)
-                        print("*"*80)
-
-        return records
+# class ProductImage(models.Model):
+#     _inherit = 'product.image'
+#
+#     url = fields.Char(
+#         string="Image URL",
+#         help="External URL of image"
+#     )
+#
+#     @api.model_create_multi
+#     def create(self, vals_list):
+#         records = super().create(vals_list)
+#
+#         for record in records:
+#             if record.image_1920:
+#                 url = ""
+#                 mimetype = guess_mimetype(base64.b64decode(record.image_1920))
+#                 base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + 'web/image/'
+#                 if mimetype == 'image/png':
+#                     url = str(record.id) + ".png"
+#                 elif mimetype == 'image/jpeg':
+#                     url = str(record.id) + ".jpeg"
+#
+#                 if url:
+#                     with open(base_url + url, "wb+") as img:
+#                         img.write(base64.b64decode(record.image_1920))
+#                         img.close()
+#
+#                         print("*"*80)
+#                         print("url", url)
+#                         print("*"*80)
+#
+#         return records
 
 
 class WooProductImage(models.Model):
