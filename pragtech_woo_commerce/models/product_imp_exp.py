@@ -28,6 +28,11 @@ class ProductImage(models.Model):
         product_image = super().create(vals_list)
 
         for vals in vals_list:
+
+            print("*" * 80)
+            print("vals", vals)
+            print("*" * 80)
+
             if vals.get('image_1920'):
                 url = ""
                 mimetype = guess_mimetype(base64.b64decode(vals['image_1920']))
