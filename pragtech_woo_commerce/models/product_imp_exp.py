@@ -31,7 +31,7 @@ class ProductImage(models.Model):
             if record.image_1920:
                 url = ""
                 mimetype = guess_mimetype(base64.b64decode(record.image_1920))
-                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/web/image/pt/'
+                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/lf/i/'
                 if mimetype == 'image/png':
                     url = base_url + str(record.id) + ".png"
                 elif mimetype == 'image/jpeg':
@@ -45,14 +45,7 @@ class ProductImage(models.Model):
                         print("url", url)
                         print("*"*80)
 
-
-        #     file_path = ""
-        #     if mimetype == 'image/png':
-        #         file_path = "/home/Downloads/" + str(p_id) + ".png"
-        #     elif mimetype == 'image/jpeg':
-        #         file_path = "/home/Downloads/" + str(p_id) + ".jpeg"
-
-        return product_image
+        return records
 
 
 class WooProductImage(models.Model):
