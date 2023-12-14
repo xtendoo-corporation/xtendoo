@@ -39,8 +39,9 @@ class ProductImage(models.Model):
                     url = str(record.id) + ".jpeg"
 
                 if url:
-                    with open(os.path.join(os.path.dirname(__file__), url), "w+") as img:
+                    with open(base_url + url, "wb+") as img:
                         img.write(base64.b64decode(record.image_1920))
+                        img.close()
 
                         print("*"*80)
                         print("os.path.dirname(__file__)", os.path.dirname(__file__))
