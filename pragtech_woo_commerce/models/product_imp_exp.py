@@ -398,10 +398,13 @@ class Product(models.Model):
                 })
 
             for img in rec.product_template_image_ids:
-                url = base_url + self.env['ir.qweb.field.image']._get_src_urls(img, 'image_1920', {})
-                images.append({
-                    "src": url,
-                })
+                print("@"*80)
+                print("_get_src_urls", self.env['ir.qweb.field.image']._get_src_urls(img, 'image_1920', {}))
+
+                # url = base_url + self.env['ir.qweb.field.image']._get_src_urls(img, 'image_1920', {})
+                # images.append({
+                #     "src": url,
+                # })
 
             for image in images:
                 print("@"*80)
