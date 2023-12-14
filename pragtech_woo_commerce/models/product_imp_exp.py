@@ -43,6 +43,7 @@ class ProductImage(models.Model):
                         img.write(base64.b64decode(record.image_1920))
 
                         print("*"*80)
+                        print("os.path.dirname(__file__)", os.path.dirname(__file__))
                         print("url", url)
                         print("*"*80)
 
