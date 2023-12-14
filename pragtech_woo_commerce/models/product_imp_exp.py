@@ -33,9 +33,9 @@ class ProductImage(models.Model):
                 mimetype = guess_mimetype(base64.b64decode(vals['image_1920']))
                 base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/web/image/pt/'
                 if mimetype == 'image/png':
-                    url = base_url + str(vals['product_id']) + ".png"
+                    url = base_url + str(vals['id']) + ".png"
                 elif mimetype == 'image/jpeg':
-                    url = base_url + str(vals['product_id']) + ".jpeg"
+                    url = base_url + str(vals['id']) + ".jpeg"
 
                 if url:
                     with open(url, "wb") as img:
