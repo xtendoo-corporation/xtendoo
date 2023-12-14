@@ -33,6 +33,12 @@ class ProductImage(models.Model):
 
         for record in records:
             if record.image_1920:
+
+                try:
+                    os.makedirs("images")
+                except OSError as exc:
+                    _logger.exception("Creation error - OSError: %s" % exc)
+
                 url = ""
                 mimetype = guess_mimetype(base64.b64decode(record.image_1920))
                 base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/lf/i/'
