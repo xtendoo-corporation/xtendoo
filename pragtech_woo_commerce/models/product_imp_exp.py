@@ -6,6 +6,7 @@ import json
 import itertools
 import logging
 import time
+import os
 from woocommerce import API
 from odoo.exceptions import UserError
 from odoo import models, api, fields, _
@@ -33,12 +34,12 @@ class ProductImage(models.Model):
                 mimetype = guess_mimetype(base64.b64decode(record.image_1920))
                 base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/lf/i/'
                 if mimetype == 'image/png':
-                    url = base_url + str(record.id) + ".png"
+                    url = str(record.id) + ".png"
                 elif mimetype == 'image/jpeg':
-                    url = base_url + str(record.id) + ".jpeg"
+                    url = str(record.id) + ".jpeg"
 
                 if url:
-                    with open(url, "wb") as img:
+                    with open(os.path.join(os.path.dirname(__file__), url)) as img:
                         img.write(base64.b64decode(record.image_1920))
 
                         print("*"*80)
