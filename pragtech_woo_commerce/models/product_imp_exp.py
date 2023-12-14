@@ -386,7 +386,7 @@ class Product(models.Model):
                     "src": img.url,
                 })
 
-            for img in rec.image_ids:
+            for img in rec.product_template_image_ids:
                 print("@"*80)
                 print("record to html", self.env['ir.qweb.field.image'].record_to_html(img, 'image_1920', {'class': 'img-fluid'}))
 
