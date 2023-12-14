@@ -29,11 +29,22 @@ class ProductImage(models.Model):
 
         for vals in vals_list:
             if vals.get('image_1920'):
+                url = ""
                 mimetype = guess_mimetype(base64.b64decode(vals['image_1920']))
+                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/web/image/pt/'
+                if mimetype == 'image/png':
+                    url = base_url + str(vals['product_id']) + ".png"
+                elif mimetype == 'image/jpeg':
+                    url = base_url + str(vals['product_id']) + ".jpeg"
 
-                print("*"*80)
-                print("mimetype", mimetype)
-                print("*"*80)
+                if url:
+                    with open(url, "wb") as img:
+                        img.write(base64.b64decode(vals['image_1920']))
+
+                        print("*"*80)
+                        print("url", url)
+                        print("*"*80)
+
 
         #     file_path = ""
         #     if mimetype == 'image/png':
