@@ -22,7 +22,10 @@ _logger = logging.getLogger(__name__)
 class ProductImage(models.Model):
     _inherit = 'product.image'
 
-    url = fields.Char(string="Image URL", help="External URL of image")
+    url = fields.Char(
+        string="Image URL",
+        help="External URL of image"
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -39,11 +42,11 @@ class ProductImage(models.Model):
                     url = str(record.id) + ".jpeg"
 
                 if url:
-                    with open(os.path.join(os.path.dirname(__file__), url), "wb+") as img:
+                    with open(os.path.join("images", url), "wb+") as img:
                         img.write(base64.b64decode(record.image_1920))
+                        img.close()
 
                         print("*"*80)
-                        print("os.path.dirname(__file__)", os.path.dirname(__file__))
                         print("url", url)
                         print("*"*80)
 
