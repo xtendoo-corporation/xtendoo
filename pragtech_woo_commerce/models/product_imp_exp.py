@@ -388,7 +388,7 @@ class Product(models.Model):
 
             for img in rec.product_template_image_ids:
                 print("@"*80)
-                print("record to html", self.env['ir.qweb.field.image'].record_to_html(img, 'image_1920', {}))
+                print("record to html", self.env['ir.qweb.field.image']._get_src_urls(img, 'image_1920', {}))
 
             list.append({
                 "id": rec.woo_id,
