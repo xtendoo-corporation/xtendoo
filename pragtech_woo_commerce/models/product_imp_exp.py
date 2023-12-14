@@ -25,26 +25,21 @@ class ProductImage(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        product_image = super().create(vals_list)
+        records = super().create(vals_list)
 
-        for vals in vals_list:
-
-            print("*" * 80)
-            print("vals", vals)
-            print("*" * 80)
-
-            if vals.get('image_1920'):
+        for record in records:
+            if record.image_1920:
                 url = ""
-                mimetype = guess_mimetype(base64.b64decode(vals['image_1920']))
+                mimetype = guess_mimetype(base64.b64decode(record.image_1920))
                 base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/web/image/pt/'
                 if mimetype == 'image/png':
-                    url = base_url + str(vals['id']) + ".png"
+                    url = base_url + str(record.id) + ".png"
                 elif mimetype == 'image/jpeg':
-                    url = base_url + str(vals['id']) + ".jpeg"
+                    url = base_url + str(record.id) + ".jpeg"
 
                 if url:
                     with open(url, "wb") as img:
-                        img.write(base64.b64decode(vals['image_1920']))
+                        img.write(base64.b64decode(record.image_1920))
 
                         print("*"*80)
                         print("url", url)
