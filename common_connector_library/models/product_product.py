@@ -243,19 +243,19 @@ class ProductProduct(models.Model):
         location_ids, product_ids = self.prepare_location_and_product_ids(warehouse, product_list)
 
         bom_product_ids = self.check_for_bom_products(product_ids)
-        bom_product_list_ids = ','.join(str(e) for e in bom_product_ids)
-        if bom_product_list_ids:
-            qry = self.prepare_forecasted_qty_query_for_bom_product(location_ids, bom_product_list_ids)
-            self._cr.execute(qry)
-            actual_stock = self._cr.dictfetchall()
-            for i in actual_stock:
-                forcasted_qty.update({i.get('product_id'): i.get('stock')})
-        # if bom_product_ids:
-        #     bom_products = self.with_context(warehouse=warehouse.ids).browse(bom_product_ids)
-        #     for product in bom_products:
-        #         actual_stock = getattr(product, 'free_qty') + getattr(product, 'incoming_qty') - getattr(product,
-        #                                                                                                  'outgoing_qty')
-        #         forcasted_qty.update({product.id: actual_stock})
+        # bom_product_list_ids = ','.join(str(e) for e in bom_product_ids)
+        # if bom_product_list_ids:
+        #     qry = self.prepare_forecasted_qty_query_for_bom_product(location_ids, bom_product_list_ids)
+        #     self._cr.execute(qry)
+        #     actual_stock = self._cr.dictfetchall()
+        #     for i in actual_stock:
+        #         forcasted_qty.update({i.get('product_id'): i.get('stock')})
+        if bom_product_ids:
+            bom_products = self.with_context(warehouse=warehouse.ids).browse(bom_product_ids)
+            for product in bom_products:
+                actual_stock = getattr(product, 'free_qty') + getattr(product, 'incoming_qty') - getattr(product,
+                                                                                                         'outgoing_qty')
+                forcasted_qty.update({product.id: actual_stock})
 
         simple_product_list = list(set(product_list) - set(bom_product_ids))
         simple_product_list_ids = ','.join(str(e) for e in simple_product_list)

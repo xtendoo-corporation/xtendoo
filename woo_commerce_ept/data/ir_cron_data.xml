@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="process_woo_order_data_queue" model="ir.cron">
+        <field name="name">WooCommerce: Process Orders Queue</field>
+        <field name="model_id" ref="model_woo_order_data_queue_line_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_order_queue_lines_process()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <record id="process_woo_product_data" model="ir.cron">
+        <field name="name">Woocommerce: Process Products Queue</field>
+        <field name="model_id" ref="model_woo_product_data_queue_line_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.sync_woo_product_data()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <record id="process_woo_customer_data" model="ir.cron">
+        <field name="name">WooCommerce: Process Customer Queue</field>
+        <field name="model_id" ref="model_woo_customer_data_queue_line_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.woo_customer_data_queue_to_odoo()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <record id="process_woo_coupon_data" model="ir.cron">
+        <field name="name">WooCommerce: Process Coupons Queue</field>
+        <field name="model_id" ref="model_woo_coupon_data_queue_line_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_coupon_queue_lines_process()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <record id="process_woo_export_stock_queue" model="ir.cron">
+        <field name="name">WooCommerce: Process Export Stock Queue</field>
+        <field name="model_id" ref="model_woo_export_stock_queue_line_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.auto_export_stock_queue_lines_process()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <!-- Stock cron -->
+    <record id="ir_cron_update_woo_stock" model="ir.cron">
+        <field name="name">WooCommerce Auto Export Stock (Do Not Delete)</field>
+        <field eval="False" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="state">code</field>
+        <field name="doall">False</field>
+        <field name="model_id" ref="model_woo_product_template_ept"/>
+        <field name="code">model.auto_update_stock()</field>
+    </record>
+
+    <record id="ir_cron_woo_import_order" model="ir.cron">
+        <field name="name">Import Woo Order (Do Not Delete)</field>
+        <field eval="False" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="state">code</field>
+        <field name="doall">False</field>
+        <field name="model_id" ref="model_sale_order"/>
+        <field name="code">model.import_woo_orders(False)</field>
+    </record>
+
+    <record id="ir_cron_woo_import_complete_order" model="ir.cron">
+        <field name="name">Import Woo Complete Order (Do Not Delete)</field>
+        <field eval="False" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="state">code</field>
+        <field name="doall">False</field>
+        <field name="model_id" ref="model_sale_order"/>
+        <field name="code">model.import_woo_orders(False)</field>
+    </record>
+
+    <record id="ir_cron_woo_import_cancel_order" model="ir.cron">
+        <field name="name">Import Woo Cancel Order (Do Not Delete)</field>
+        <field eval="False" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="state">code</field>
+        <field name="doall">False</field>
+        <field name="model_id" ref="model_sale_order"/>
+        <field name="code">model.import_cancel_order_cron_action(False)</field>
+    </record>
+
+    <record id="ir_cron_woo_update_order_status" model="ir.cron">
+        <field name="name">Update Woo Order Status (Do Not Delete)</field>
+        <field eval="False" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="state">code</field>
+        <field name="doall">False</field>
+        <field name="model_id" ref="model_sale_order"/>
+        <field name="code">model.update_woo_order_status(False)</field>
+    </record>
+
+    <!--Below cron job is used to import product images explicitly-->
+    <record id="ir_cron_import_image_explicitly" model="ir.cron">
+        <field name="name">Woo Import Product Image Explicitly</field>
+        <field name="model_id" ref="model_woo_product_data_queue_line_ept"/>
+        <field name="state">code</field>
+        <field name="code">model.woo_image_import()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">50</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+</odoo>

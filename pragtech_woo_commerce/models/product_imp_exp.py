@@ -389,7 +389,7 @@ class Product(models.Model):
             #     })
 
             if rec.image_1920:
-                url = base_url + 'web/image/%s/%s/%s/%s' % ('product.template', rec.id, 'image_1920', 'image_1920')
+                url = base_url + 'web/image/%s/%s/%s' % ('product.template', rec.id, 'image_1920')
                 print("@"*80)
                 print("url", url)
 

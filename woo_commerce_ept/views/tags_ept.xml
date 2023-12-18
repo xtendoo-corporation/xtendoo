@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_woo_tags_form_view_ept" model="ir.ui.view">
+        <field name="name">WooCommerce Tags</field>
+        <field name="model">woo.tags.ept</field>
+        <field name="arch" type="xml">
+            <form string="WooCommerce Tags">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="woo_instance_id" domain="[('active','=',True)]"
+                                   options="{'no_open':True,'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="slug"/>
+                            <field name="exported_in_woo" readonly="1" string="Exported In WooCommerce"/>
+                            <field name="woo_tag_id" readonly="1" string="WooCommerce Tag"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="product_woo_tags_tree_view_ept" model="ir.ui.view">
+        <field name="name">woo Tags</field>
+        <field name="model">woo.tags.ept</field>
+        <field name="arch" type="xml">
+            <tree sample="1">
+                <field name="name"/>
+                <field name="slug"/>
+                <field name="woo_instance_id"/>
+                <field name="exported_in_woo" string="Exported In WooCommerce"/>
+                <field name="woo_tag_id" string="WooCommerce Tag"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="product_woo_tags_search_view_ept" model="ir.ui.view">
+        <field name="name">Woo Tags Search View</field>
+        <field name="model">woo.tags.ept</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Woo Tags">
+                <field name="name"/>
+                <field name="woo_tag_id"/>
+                <filter name="exported_in_wpp" string="Exported In Woo" icon="terp-accessories-archiver"
+                        domain="[('exported_in_woo','=','True')]"/>
+                <filter name="not_exported_in_woo" string="Not Exported In Woo" icon="terp-accessories-archiver"
+                        domain="[('exported_in_woo','=','False')]"/>
+                <group expand="0" string="Group By...">
+                    <filter name="instance" string="Instance" icon="terp-personal"
+                            context="{'group_by':'woo_instance_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="product_tags_action_ept" model="ir.actions.act_window">
+        <field name="name">Product Tags</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">woo.tags.ept</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem action="product_tags_action_ept" id="product_tags_menu_ept" name="Product Tags"
+              parent="woo_commerce_ept.menu_item_parent_woo_products_ept" sequence="6"/>
+
+</odoo>

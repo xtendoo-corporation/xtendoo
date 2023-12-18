@@ -1,0 +1,949 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- view of the create Instance wizard -->
+    <record id="view_res_config_woo_instance" model="ir.ui.view">
+        <field name="name">Configure Instance</field>
+        <field name="model">res.config.woo.instance</field>
+        <field name="arch" type="xml">
+            <form string="Configure Instance" class="oe_form_configuration">
+                <group>
+                    <group>
+                        <field name="name" required="1" readonly="context.get('is_already_instance_created', False)"
+                               string="Name"/>
+                        <field name='woo_company_id' required="1"
+                               options="{'no_open':True,'no_create':True,'no_create_edit':True}"
+                               readonly="context.get('is_already_instance_created', False)" string="Company"/>
+                    </group>
+                    <group>
+                        <field name='woo_host' required="1" placeholder="http://woo.dev.emiprotechnologies.com"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                        <field name="woo_version" invisible="1"/>
+                        <field name="store_timezone" required="1"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                    </group>
+                </group>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <group>
+                            <field name="woo_consumer_key" required="1"
+                                   readonly="context.get('is_already_instance_created', False)"/>
+                            <field name="woo_consumer_secret" required="1"
+                                   readonly="context.get('is_already_instance_created', False)"/>
+                            <field name="woo_verify_ssl" readonly="context.get('is_already_instance_created', False)"/>
+                        </group>
+                    </div>
+                    <style>
+                        .embed-responsive-item {
+                        width: 25rem !important;
+                        min-height: 15rem !important;
+                        }
+                    </style>
+                    <div class='col-md-6' style="display: contents;">
+                        <field name="woo_instance_video_url" invisible="1"/>
+                        <div class="p-2">
+                            <field name="woo_instance_video_embed_code" class="mt-2"/>
+                        </div>
+                    </div>
+                </div>
+                <group>
+                    <field name='is_export_update_images'
+                           readonly="context.get('is_already_instance_created', False)"/>
+                </group>
+                <group string="Administrator Info" attrs="{'invisible':[('is_export_update_images','=',False)]}">
+                    <group>
+                        <field name='woo_admin_username' attrs="{'required':[('is_export_update_images','=',True)]}"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                    </group>
+                    <group>
+                        <field name='woo_admin_password' password="1"
+                               attrs="{'required':[('is_export_update_images','=',True)]}"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                    </group>
+                </group>
+                <p colspan="4" class="alert alert-warning" role="alert"
+                   attrs="{'invisible':[('is_export_update_images','=',False)]}">
+                    <div style="color:#ff0000; font-size:15px;">
+                        <b>WooCommerce admin panel username and password:</b>
+                    </div>
+                    <div class="d-inline-block w-100">
+                        <div class="row">
+                            <div class="col-11 p-0">
+                                <ul>
+                                    <li>Enter the username and password only if you plan to sync images from Odoo to
+                                        WooCommerce store.
+                                    </li>
+                                    <li>You can always modify them here, WooCommerce => Configuration => Instance.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </p>
+                <div invisible="context.get('is_calling_from_onboarding_panel', False)">
+                    <p colspan="2" class="alert alert-warning" role="alert">
+                        <div style="color:#ff0000; font-size:15px;">
+                            <b>Important Note:</b>
+                        </div>
+                        <div class="d-inline-block w-100">
+                            <div class="row">
+                                <div class="col-11 p-0">
+                                    <ul>
+                                        <li>
+                                            After creating the instance, please make sure you complete all the other
+                                            necessary configurations such as Tax, Warehouse, Pricelist etc. from the
+                                            WooCommerce setting screen.
+                                        </li>
+                                        <li>
+                                            WooCommerce =&gt; Configuration =&gt; Settings
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </p>
+                </div>
+                <footer>
+                    <button string="Create" type="object" name="woo_test_connection" class="oe_highlight"
+                            invisible="context.get('is_already_instance_created', False)"/>
+                    <button class="oe_highlight" special="cancel" string="Cancel"
+                            invisible="context.get('is_already_instance_created', False)"/>
+                    <button class="oe_highlight" special="cancel" string="Close"
+                            invisible="not context.get('is_already_instance_created', False)"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Below form view used for the set/reset credentials-->
+    <record id="view_set_woo_credential" model="ir.ui.view">
+        <field name="name">Reset WooCommerce Credentials</field>
+        <field name="model">res.config.woo.instance</field>
+        <field name="arch" type="xml">
+            <form string="Reset WooCommerce Credentials" class="oe_form_configuration">
+                <group>
+                    <group>
+                        <field name="woo_consumer_key" required="1" password="True"/>
+                        <field name="store_timezone" required="1"/>
+                    </group>
+                    <group>
+                        <field name="woo_consumer_secret" required="1" password="True"/>
+                    </group>
+                    <group>
+                        <field name="is_export_update_images"/>
+                    </group>
+                </group>
+                <group string="Administrator Info" attrs="{'invisible':[('is_export_update_images','=',False)]}">
+                    <group>
+                        <field name="woo_admin_username" attrs="{'required':[('is_export_update_images','=',True)]}"/>
+                    </group>
+                    <group>
+                        <field name="woo_admin_password" attrs="{'required':[('is_export_update_images','=',True)]}"
+                               password="1"/>
+                    </group>
+                </group>
+                <div attrs="{'invisible':[('is_export_update_images','=',False)]}">
+                    <p colspan="2" class="alert alert-warning" role="alert">
+                        <b>
+                            <ol>
+                                <li>
+                                    It will use While export/update images from Odoo to Woocommerce.
+                                </li>
+                                <li>
+                                    If you don't use the image export / update, you don't have to set Username and
+                                    Password.
+                                </li>
+                            </ol>
+                        </b>
+                    </p>
+                </div>
+                <button name="test_and_reset_woo_credentials" type="object" string="Test Connection"
+                        icon="fa-television" context="{'is_test_connection':True}"/>
+                <footer>
+                    <button string="Reset Credentials" type="object" name="test_and_reset_woo_credentials"
+                            class="oe_highlight"/>
+                    <button class="oe_highlight" special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- action of create Instance menu -->
+    <record id="res_config_action_woo_instance" model="ir.actions.act_window">
+        <field name="name">WooCommerce Instances</field>
+        <field name="res_model">res.config.woo.instance</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_res_config_woo_instance"/>
+    </record>
+
+    <!-- view of res config settings -->
+    <record id="view_woo_config_settings" model="ir.ui.view">
+        <field name="name">WooCommerce Settings</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="80"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block " string="WooCommerce" data-string="WooCommerce"
+                     data-key="woo_commerce_ept" groups="woo_commerce_ept.group_woo_manager_ept">
+                    <div name="description_config">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">
+                            Odoo Configuration
+                        </h2>
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 o_setting_box o_setting_box o_setting_box_woo_config">
+                                <div class="o_setting_left_pane ml-2">
+                                    <field name="woo_set_sales_description_in_product"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="woo_set_sales_description_in_product"/>
+                                    <div class="text-muted">
+                                        If you enable this configuration, it will be attached with WooCommerce Store's
+                                        Product's description.
+                                        <br/>
+                                        - This configuration applies to all WooCommerce instances, not to particular
+                                        one.
+                                        <br/>
+                                        - The Description value is being received from WooCommerce is in HTML format,
+                                        while it gets stored in Odoo product's field as Text format. Enable this, only
+                                        if works for you.
+                                        <br/>
+                                        - The Odoo product's Sales Description will be used in Sale order line.
+                                        Generally, the description received from WooCommerce Store is lengthier. So
+                                        enable this, only if works for you.
+                                        <br/>
+                                        - When a new product from WooCommerce will be created in Odoo, it will set the
+                                        Description into Odoo product's Sales Description field.
+                                        <br/>
+                                        - When an Odoo product is exported to WooCommerce Layer, the Sales Description
+                                        will be
+                                        added into WooCommerce product's Description field.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 o_setting_box" id="show_woo_net_profit_report">
+                                <div class="o_setting_left_pane">
+                                    <field name="show_woo_net_profit_report" widget="upgrade_boolean"/>
+                                </div>
+                                <div class="o_setting_right_pane" name="show_woo_net_profit_report_right_pane">
+                                    <label for="show_woo_net_profit_report" string="Net Profit Report"/>
+                                    <div class="text-muted">
+                                        - If you enable this configuration, it will add net profit report for all
+                                        instances
+                                        <br/>
+                                        - If you disable this configuration, it will remove net profit report
+                                        automatically
+                                        <br/>
+                                        - You can find WooCommerce net profit report from WooCommerce > Reporting > Net
+                                        profit
+                                        <br/>
+                                        - The WooCommerce net profit report calculate based on instance level sets,
+                                        analytics accounts
+                                        <br/>
+                                    </div>
+                                    <button name="download_woo_net_profit_report_module"
+                                            type="object"
+                                            string="Download WooCommerce Net Profit Report Module"
+                                            class="oe_link"
+                                            attrs="{'invisible':[('show_woo_net_profit_report','=',False)]}"
+                                            help="Install this module if you are See Net profit report for all Instances."/>
+                                </div>
+                            </div>
+
+                            <div class="col-12 o_setting_box o_setting_box o_setting_box_woo_config">
+                                <div class="o_setting_left_pane ml-2">
+                                    <field name="use_default_terms_and_condition_of_odoo"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="use_default_terms_and_condition_of_odoo"/>
+                                    <div class="text-muted">
+                                        - If you enable this configuration, it will use Odoo's default T&amp;C under
+                                        Sales Order notes, in addition with WooCommerce order's notes.
+                                        <br/>
+                                        - If you disable this configuration, it will import Sales Order note from
+                                        WooCommerce order response.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div name="instance_config">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">WooCommerce Instance</h2>
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 o_setting_box o_setting_box o_setting_box_woo_config">
+                                <label for="woo_instance_id" string="Select Instance"/>
+                                <field name="woo_instance_id" widget="selection"
+                                       attrs="{'required':[('woo_instance_id','!=',False)]}" class="oe_inline"/>
+                                <button string="Create More Instance" icon="fa-arrow-right text-success"
+                                        name="%(res_config_action_woo_instance)d" type="action" class="oe_link"
+                                        title="Click to create new WooCommerce Instance."/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="general_information_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">General Configuration</h2>
+                    </div>
+
+                    <div attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <field name="woo_company_id" invisible="1"/>
+                                    <label for="woo_warehouse_id" string="Warehouse"/>
+                                    <div class="text-muted">
+                                        Select warehouse for your WooCommerce instance
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="mt16">
+                                            <field name="woo_warehouse_id" class="oe_inline"
+                                                   options="{'no_create':True,'no_create_edit': True}"
+                                                   attrs="{'required':[('woo_instance_id','!=',False)]}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="woo_lang_id" string="Language"/>
+                                    <div class="text-muted">
+                                        Select language based on your WooCommerce instance
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="mt16">
+                                            <field name="woo_lang_id" class="oe_inline"
+                                                   options="{'no_open':True,'no_create':True,'no_create_edit':True}"
+                                                   attrs="{'required':[('woo_instance_id','!=',False)]}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="woo_stock_export_warehouse_ids" string="Export Stock Warehouse"/>
+                                    <div class="text-muted">
+                                        Select warehouse for Stock Export
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="mt16">
+                                            <field name="woo_stock_export_warehouse_ids" class="oe_inline"
+                                                   widget="many2many_tags"
+                                                   options="{'no_create':True,'no_create_edit': True}"
+                                                   attrs="{'required':[('woo_instance_id','!=',False)]}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="woo_webhook_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Webhook Configuration</h2>
+                    </div>
+
+                    <div class="row mt16 o_settings_container" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="col-12 col-lg-12 o_setting_box">
+                            <div class="alert alert-warning" role="alert">
+                                <h3 style="font-weight:bold;color:#7d5a29;padding: 0 !important;">
+                                    <u>Note :</u>
+                                </h3>
+                                <b>
+                                    <ul>
+                                        <li>Webhooks can be managed using below options.</li>
+                                        <li>Enabling an option will either create a new webhook for its all actions
+                                            (such as 'create', 'update', 'delete' etc.) or activates it, if already
+                                            exists.
+                                        </li>
+                                        <li>Disabling an option will deactivate the webhooks.</li>
+                                        <li>For detailed options,</li>
+                                        <ol>
+                                            <li>Go to WooCommerce
+                                                <i class="fa fa-angle-double-right"/>Configuration
+                                                <i class="fa fa-angle-double-right"/>Instances.
+                                            </li>
+                                            <li>Open an instance.</li>
+                                            <li>Select Webhooks tab.</li>
+                                        </ol>
+                                    </ul>
+                                </b>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="create_woo_product_webhook"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="create_woo_product_webhook" string="Manage Products via Webhooks"/>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="create_woo_customer_webhook"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="create_woo_customer_webhook" string="Manage Customers via Webhooks"/>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="create_woo_order_webhook"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="create_woo_order_webhook" string="Manage Orders via Webhooks"/>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="create_woo_coupon_webhook"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="create_woo_coupon_webhook"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="product_information_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Product Configuration</h2>
+                    </div>
+
+                    <div name="product_information" class="row mt16 o_settings_container"
+                         attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_sync_images_with_product"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_sync_images_with_product"
+                                       string="Sync/Import Images?"/>
+                                <div class="text-muted">
+                                    If checked, it will automatically import product image, while product import
+                                    process else not.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_sync_price_with_product"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_sync_price_with_product"
+                                       string="Sync/Import Product Price?"/>
+                                <div class="text-muted">
+                                    If checked, it will set the product price in the pricelist configured under
+                                    the given instance, while product import process else not.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_auto_import_product"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_auto_import_product"/>
+                                <div class="text-muted">
+                                    - This option creates a new product in your Odoo catalog if system couldn't
+                                    find the product based on SKU / Internal Reference / Default Product Code.
+                                    <br/>
+                                    - If you are selling on multiple sales channels and having different SKU /
+                                    Internal Reference / Default Product Code on each sales channel, it may lead
+                                    to creation of duplicate products in your product catalogue in Odoo.
+                                    <br/>
+                                    - So we request you to enable this option, as per your product catalogue
+                                    configuration.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_attribute_type"/>
+                                <div class="text-muted">
+                                    Select Attribute type for exporting attributes while exporting/updating
+                                    products from Odoo to WooCommerce.
+                                    <br/>
+                                    1) Select : It will create attribute at Global level at WooCommerce Store,
+                                    which will be accessible across all products.
+                                    <br/>
+                                    2) Text : It will add attribute in particular product. So, the attribute and
+                                    its values will be exclusively available for that individual product and
+                                    will not be shared with any other product.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_attribute_type"
+                                               attrs="{'required':[('woo_instance_id','!=',False)]}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_weight_uom_id" string="Weight Unit"/>
+                                <div class="text-muted">
+                                    Select Weight unit same as WooCommerce Store for setting proper Weight in
+                                    Product.
+                                    <br/>
+                                    - If this value is different than what is configured in Odoo, system will do
+                                    the conversion between both units of measure and then perform the
+                                    Import/Export Operation of Products.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_weight_uom_id"
+                                               attrs="{'required':[('woo_instance_id','!=',False)]}"
+                                               options="{'no_open':True,'no_create':True,'no_create_edit':True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <field name="woo_instance_product_categ_id" invisible="1"/>
+                                <label for="woo_instance_product_categ_id" string="Product Category"/>
+                                <div class="text-muted">
+                                    Select Product Category for set product category on product template.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_instance_product_categ_id" class="oe_inline"
+                                               options="{'no_create':True,'no_create_edit': True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div name="pricelist_information_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Pricelist Configuration</h2>
+                    </div>
+
+                    <div name="pricelist_information" class="row mt16 o_settings_container"
+                         attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_pricelist_id" string="Instance Pricelist"/>
+                                <div class="text-muted">
+                                    1. When performing a product sync operation, prices will be imported/exported using
+                                    this Pricelist.
+                                    <br/>
+                                    2. When importing the orders from Woo-commerce, this pricelist will be assigned to
+                                    the order if the currency of the store matches the currency set in the pricelist
+                                    here.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_pricelist_id" class="oe_inline"
+                                               options="{'no_create':True,'no_create_edit':True}"
+                                               attrs="{'required':[('woo_instance_id','!=',False)]}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_extra_pricelist_id" string="Instance Extra Pricelist"/>
+                                <div class="text-muted">
+                                    The product Woo-commerce sales prices can be managed through this pricelist when
+                                    importing/exporting products between Odoo and Woo-commerce.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_extra_pricelist_id" options="{'no_create': True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="order_information_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Order Configuration</h2>
+                    </div>
+
+                    <div name="order_information" class="row mt16 o_settings_container"
+                         attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_import_order_status_ids" string="Import Order Status"/>
+                                <div class="text-muted">
+                                    Select order status which you want to import in odoo.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_import_order_status_ids" widget="many2many_tags"
+                                               options="{'no_create':True,'no_create_edit': True}"
+                                               class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_sales_team_id" string="Sales Team"/>
+                                <div class="text-muted">
+                                    Set the sales team for WooCommerce orders
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_sales_team_id" class="oe_inline"
+                                               options="{'no_create':True,'no_create_edit':True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12 col-md-6 o_setting_box" groups="analytic.group_analytic_accounting">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_analytic_account_id" string="Analytic Account"/>
+                                <div class="text-muted">
+                                    Set the Analytic account for WooCommerce orders.
+                                    <li>
+                                        Note : The configuration of the analytic account for this instance will be
+                                        applied to all sales orders created by the connector. With this
+                                        configuration, the Analytic Default Rule configured in Odoo will not apply
+                                        to WooCommerce orders invoices. If you wish to use Odoo Analytic Default
+                                        Rule,
+                                        you will not have to configure any analytic account here.
+                                    </li>
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_analytic_account_id" class="o_light_label"
+                                               options="{'no_create':True,'no_create_edit': True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--                        <div class="col-xs-12 col-md-6 o_setting_box" groups="analytic.group_analytic_tags">-->
+                        <!--                            <div class="o_setting_right_pane">-->
+                        <!--                                <label for="woo_analytic_tag_ids" string="Analytic Tags"/>-->
+                        <!--                                <div class="text-muted">-->
+                        <!--                                    Set the Analytic tags for WooCommerce orders.-->
+                        <!--                                    <li>-->
+                        <!--                                        Note : The configuration of the analytic tags for this instance will be-->
+                        <!--                                        applied to all sales orders created by the connector. With this-->
+                        <!--                                        configuration, the Analytic Default Rule configured in Odoo will not apply-->
+                        <!--                                        to WooCommerce orders invoices. If you wish to use Odoo Analytic Default-->
+                        <!--                                        Rule,-->
+                        <!--                                        you will not have to configure any analytic tags here.-->
+                        <!--                                    </li>-->
+                        <!--                                </div>-->
+                        <!--                                <div class="content-group">-->
+                        <!--                                    <div class="mt16">-->
+                        <!--                                        <field name="woo_analytic_tag_ids" class="o_light_label"-->
+                        <!--                                               widget="many2many_tags"-->
+                        <!--                                               options="{'no_create':True,'no_create_edit': True}"/>-->
+                        <!--                                    </div>-->
+                        <!--                                </div>-->
+                        <!--                            </div>-->
+                        <!--                        </div>-->
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_custom_order_prefix"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_custom_order_prefix" string="Use Odoo Default Sequence?"/>
+                                <div class="text-muted">
+                                    If checked, it will set default order sequence in sale order.
+                                    If unchecked, it will set WooCommerce order number with given prefix.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane"
+                                 attrs="{'invisible': [('woo_custom_order_prefix', '=', True)]}">
+                                <label for="woo_order_prefix" string="Order Prefix"/>
+                                <div class="text-muted">
+                                    Custom Order prefix for WooCommerce Orders.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_order_prefix" class="oe_inline"
+                                               attrs="{'invisible': [('woo_custom_order_prefix', '=', True)]}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_payment_term_id" string="Instance Payment Term"/>
+                                <div class="text-muted">
+                                    Select payment term for WooCommerce Orders.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_payment_term_id"
+                                               options="{'no_open':True,'no_create':True,'no_create_edit':True}"
+                                               attrs="{'required':[('woo_instance_id','!=',False)]}"
+                                               class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_import_order_after_date" string="Import Order After Date"/>
+                                <div class="text-muted">
+                                    System will import only those orders which are created
+                                    after this configured date.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_import_order_after_date" class="oe_inline"
+                                               attrs="{'required':[('woo_instance_id','!=',False)]}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_import_partner_as_company"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_import_partner_as_company" string="Import Customer as Company?"/>
+                                <div class="text-muted">
+                                    If checked, it will create an individual Company type partner from the Company
+                                    name and customer will be created as a child partner of Company.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="tax_information_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Tax Configuration</h2>
+                    </div>
+
+                    <div name="tax_configuration" class="row mt16 o_settings_container"
+                         attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_apply_tax" string="Apply Tax"/>
+                                <div class="text-muted">
+                                    1) Odoo Default Tax Behaviour - The Taxes will be set based on Odoo's default
+                                    functional behaviour i.e. based on Odoo's Tax and Fiscal Position configurations.
+                                    <br/>
+                                    2) Create New Tax If Not Found - System will search the tax data received from
+                                    Woocommerce in Odoo, will create a new one if it fails in finding it.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_apply_tax" required="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_tax_rounding_method" string="Tax Rounding Method"/>
+                                <div class="text-muted">
+                                    How total tax amount is computed in WooCommerce orders.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16 o_light_label">
+                                        <field name="woo_tax_rounding_method" widget="radio"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                             attrs="{'invisible':[('woo_apply_tax','=','odoo_tax')]}">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_invoice_tax_account_id" string="Invoice Tax Account"/>
+                                <div class="text-muted">
+                                    Tax Account to set in Invoice.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_invoice_tax_account_id"
+                                               attrs="{'required':[('woo_instance_id','!=',False),('woo_apply_tax','=','create_woo_tax')]}"
+                                               options="{'no_create':True,'no_create_edit':True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 o_setting_box"
+                             attrs="{'invisible':[('woo_apply_tax','=','odoo_tax')]}">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_credit_note_tax_account_id" string="Credit Note Tax Account"/>
+                                <div class="text-muted">
+                                    Tax Account to set in Credit Note.
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_credit_note_tax_account_id"
+                                               attrs="{'required':[('woo_instance_id','!=',False),('woo_apply_tax','=','create_woo_tax')]}"
+                                               options="{'no_create':True,'no_create_edit':True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="stock_information_header"
+                         attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Stock Configuration</h2>
+                    </div>
+
+                    <div id="stock_information" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="woo_stock_field" string="Export Stock Field"/>
+                                    <div class="text-muted">
+                                        Select inventory field for WooCommerce products:
+                                        <br/>
+                                        Forecast Quantity = Quantity On Hand - Outgoing + Incoming
+                                        <br/>
+                                        Free To Use Quantity = Quantity On Hand - Reserved quantity
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="mt16">
+                                            <field name="woo_stock_field" class="oe_inline"
+                                                   options="{'no_open':True,'no_create':True,'no_create_edit':True}"
+                                                   domain="[('model_id.model','=','product.product'),('name','in',['free_qty','virtual_available','qty_available'])]"
+                                                   attrs="{'required':[('woo_instance_id','!=',False)]}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="schedule_activity_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Schedule Activity Configuration</h2>
+                    </div>
+
+                    <div class="row mt16 o_settings_container" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_is_create_schedule_activity"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_is_create_schedule_activity"/>
+                                <div class="text-muted">
+                                    If marked, it will create a schedule activity of mismatch sales order in the order
+                                    queue.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-md-6 o_setting_box"
+                             attrs="{'invisible': [('woo_is_create_schedule_activity', '=', False)]}">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_activity_type_id" string="Activity Type"/>
+                                <div class="text-muted">
+                                    Select Schedule Activity Type
+                                    <div>
+                                        <field name="woo_activity_type_id" class="oe_inline"
+                                               options="{'no_open':True,'no_create':True,'no_create_edit':True}"
+                                               attrs="{'required':[('woo_is_create_schedule_activity','=',True)]}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-md-6 o_setting_box"
+                             attrs="{'invisible': [('woo_is_create_schedule_activity', '=', False)]}">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_user_ids"/>
+                                <div class="text-muted">
+                                    Select Users to whom the activity will be assigned.
+                                    <div>
+                                        <field name="woo_user_ids" widget="many2many_tags" class="oe_inline"
+                                               options="{'no_open':True,'no_create':True,'no_create_edit':True}"
+                                               attrs="{'required':[('woo_is_create_schedule_activity','=',True)]}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-md-6 o_setting_box"
+                             attrs="{'invisible': [('woo_is_create_schedule_activity', '=', False)]}">
+                            <div class="o_setting_right_pane">
+                                <label for="woo_date_deadline" string="Deadline Lead Days"/>
+                                <div class="text-muted">
+                                    Enter Lead Days For Deadline Date Of Schedule Activity
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="woo_date_deadline" class="o_light_label"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div name="woo_digest_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">
+                            WooCommerce Digest
+                        </h2>
+                    </div>
+
+                    <div class="row mt16 o_settings_container" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
+                        <div class="col-xs-12 col-md-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="is_woo_digest" style="margin-left: -0.5em;"/>
+                            </div>
+
+                            <div class="o_setting_right_pane">
+                                <label for="is_woo_digest" string="Send Periodic Digest?"/>
+                                <div class="text-muted">
+                                    If checked, then it will send periodic digest per KPI.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- action of kanban settings menu -->
+    <record id="action_woo_instance_config" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'default_woo_instance_id': active_id}</field>
+        <field name="target">inline</field>
+    </record>
+
+    <!-- Action of Settings menu -->
+    <record id="action_woo_config" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_woo_config_settings"/>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'woo_commerce_ept'}</field>
+    </record>
+
+    <!-- main settings menu -->
+    <menuitem id="menu_woo_config" name="Settings" parent="woo_commerce_ept.woo_configuration_menu_items" sequence="1"
+              action="action_woo_config" groups="woo_commerce_ept.group_woo_manager_ept"/>
+</odoo>

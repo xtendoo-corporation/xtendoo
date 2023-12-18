@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="product_woo_shipping_ept" model="product.product">
+        <field name="name">WooCommerce Shipping Product</field>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="standard_price">0</field>
+        <field name="list_price">0</field>
+        <field name="detailed_type">service</field>
+        <field name="description">Shipping Fees</field>
+        <field name="default_code">woo_shipping_fees</field>
+    </record>
+
+    <record id="product_woo_fees_ept" model="product.product">
+        <field name="name">WooCommerce Fees Product</field>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="standard_price">0</field>
+        <field name="list_price">0</field>
+        <field name="detailed_type">service</field>
+        <field name="description">Fees</field>
+        <field name="default_code">woo_fees</field>
+    </record>
+
+    <record id="product_woo_discount_ept" model="product.product">
+        <field name="name">WooCommerce Discount Product</field>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="standard_price">0</field>
+        <field name="list_price">0</field>
+        <field name="detailed_type">service</field>
+        <field name="description">Discount</field>
+        <field name="default_code">woo_discount</field>
+    </record>
+
+</odoo>

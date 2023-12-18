@@ -302,5 +302,10 @@ class SaleOrder(models.Model):
         :return: vals
         @author: Nilam Kubavat on Date 30-June-2023 for Task_id:233026
         """
-        vals.update({"note": vals.get('note') + ' ' + self.env.company.invoice_terms})
+        note_value = vals.get('note', '') if vals.get('note', False) else ''  # Get the current note value, default to an empty string if it's None
+        invoice_terms = self.env.company.invoice_terms or ''  # Get invoice terms, default to an empty string if it's None
+        if note_value and invoice_terms:  # Only add a space if both values are non-empty
+            vals['note'] = f'{note_value} {invoice_terms}'.strip()
+        else:
+            vals['note'] = (note_value + invoice_terms).strip()  # Handle either note_value or invoice_terms being empty
         return vals

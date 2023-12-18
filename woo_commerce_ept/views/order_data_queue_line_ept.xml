@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_woo_order_data_queue_line_ept_form"
+            model="ir.ui.view">
+        <field name="name">woo.order.data.queue.line.ept.form</field>
+        <field name="model">woo.order.data.queue.line.ept</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <field name="sale_order_id" invisible="1"/>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="open_sale_order" class="oe_stat_button" icon="fa-chain" type="object"
+                                attrs="{'invisible': [('sale_order_id', '=', False)]}" string="Sale Order">
+                        </button>
+                    </div>
+
+                    <widget name="web_ribbon" text="Imported" attrs="{'invisible': [('state','!=','done')]}"/>
+
+                    <group>
+                        <group>
+                            <field name="instance_id"/>
+                            <field name="woo_order"/>
+                        </group>
+                        <group>
+                            <field name="order_data_queue_id"/>
+                            <field name="write_date" string="Last Updated On"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="log" string="Log">
+                            <field name="common_log_lines_ids"/>
+                        </page>
+                        <page name="data" string="Order Data">
+                            <field name="order_data"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_woo_order_data_queue_line_ept_tree" model="ir.ui.view">
+        <field name="name">woo.order.data.queue.line.ept.tree</field>
+        <field name="model">woo.order.data.queue.line.ept</field>
+        <field name="arch" type="xml">
+            <tree create="0" delete="0">
+                <header>
+                    <button name="%(woo_commerce_ept.action_order_import_process_manual)d"
+                            string="Process Queue Line" type="action"/>
+                </header>
+                <field name="number"/>
+                <field name="write_date" string="Last Updated On"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-info="state not in ('done')"/>
+                <field name="woo_order"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>

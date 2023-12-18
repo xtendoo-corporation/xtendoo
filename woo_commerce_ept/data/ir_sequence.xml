@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--Sequence For Log -->
+    <record id="woo_customer_data_queue_ept_sequence" model="ir.sequence">
+        <field name="name">Sequence Customer Queue</field>
+        <field name="code">woo.customer.data.queue.ept</field>
+        <field name="prefix">CDQ</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="0"/>
+    </record>
+
+    <record id="ir_sequence_order_data_queue" model="ir.sequence">
+        <field name="name">Woo Order Data Queue</field>
+        <field name="prefix">ODQ</field>
+        <field name="padding">6</field>
+        <field name="number_increment">1</field>
+        <field name="number_next">1</field>
+        <field name="company_id" eval="0"/>
+    </record>
+
+    <record id="ir_sequence_product_data_queue" model="ir.sequence">
+        <field name="name">Woo Product Data Queue</field>
+        <field name="prefix">PDQ</field>
+        <field name="padding">6</field>
+        <field name="number_increment">1</field>
+        <field name="number_next">1</field>
+        <field name="company_id" eval="0"/>
+    </record>
+
+    <record id="ir_sequence_coupon_data_queue" model="ir.sequence">
+        <field name="name">Woo Coupon Data Queue</field>
+        <field name="prefix">CPQ</field>
+        <field name="padding">6</field>
+        <field name="number_increment">1</field>
+        <field name="number_next">1</field>
+        <field name="company_id" eval="0"/>
+    </record>
+
+    <record id="ir_sequence_export_stock_data_queue" model="ir.sequence">
+        <field name="name">Woo Export Stock Data Queue</field>
+        <field name="prefix">ESQ</field>
+        <field name="padding">6</field>
+        <field name="number_increment">1</field>
+        <field name="number_next">1</field>
+        <field name="company_id" eval="0"/>
+    </record>
+
+</odoo>

@@ -2,7 +2,7 @@
 # See LICENSE file for full copyright and licensing details.
 {
     'name': 'Common Connector Library',
-    'version': '16.0.3.0.2',
+    'version': '16.0.3.0.3',
     'category': 'Sales',
     'license': 'OPL-1',
     'author': 'Emipro Technologies Pvt. Ltd.',
