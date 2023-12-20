@@ -21,7 +21,7 @@
         'data/ir_cron_data.xml',
         'view/ebay_seller_ept_view.xml',
         'view/sale_workflow_config.xml',
-        'view/sale_order.xml',
+        'view/purchase_order_view.xml',
         'view/stock_picking.xml',
         'view/ebay_payment_options.xml',
         'wizard_views/res_config_ebay_seller.xml',

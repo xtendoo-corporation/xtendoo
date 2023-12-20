@@ -11,7 +11,7 @@
     "category": "Tools",
     "depends": ["purchase"],
     "data": [
-        "view/purchase_order_views.xml",
+        "view/purchase_order_view.xml",
     ],
     "installable": True,
 }

@@ -40,7 +40,7 @@
         'views/webhook_ept.xml',
         'views/common_log_lines_ept.xml',
         'views/woo_instances_onboarding_panel_view.xml',
-        'views/sale_order.xml',
+        'views/purchase_order_view.xml',
         'views/stock_picking_view.xml',
         'views/res_partner.xml',
         'views/payment_gateway.xml',

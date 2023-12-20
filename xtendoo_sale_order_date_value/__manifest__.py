@@ -11,7 +11,7 @@
     "category": "Tools",
     "depends": ["sale"],
     "data": [
-        "view/purchase_order_views.xml",
+        "view/purchase_order_view.xml",
         "view/sale_order_search.xml",
     ],
     "installable": True,
