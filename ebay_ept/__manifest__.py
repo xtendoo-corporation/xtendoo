@@ -14,7 +14,7 @@
     'depends': ['common_connector_library'],
     # Views
     'data': [
-        'view/product_template_view.xml',
+        'view/product_product_view.xml',
         'view/product_product_view.xml',
         'security/res_groups.xml',
         'view/ebay_instance_ept_view.xml',

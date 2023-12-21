@@ -9,11 +9,10 @@
     "license": "AGPL-3",
     "summary": "Website Sale Price Additional Info",
     "depends": [
-        "website_sale_hide_price",
+        "sale_management",
     ],
     "data": [
-        "views/product_template_views.xml",
-        "views/website_sale_template.xml",
+        "views/product_product_view.xml",
     ],
     "installable": True,
 }

@@ -23,7 +23,7 @@
         'views/instance_main_menu_view.xml',
         'wizard/process_import_export_view.xml',
         'views/product_image_ept.xml',
-        'views/product_template_view.xml',
+        'views/product_product_view.xml',
         'views/sale_workflow_config.xml',
         'wizard/res_config_view.xml',
         'views/product_data_queue_ept_view.xml',
