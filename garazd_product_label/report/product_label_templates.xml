@@ -51,6 +51,47 @@
             </t>
         </t>
     </template>
+    <template id="report_product_label_57x33_template">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="label">
+                    <t t-set="qty" t-value="1"/>
+                    <t t-if="label.qty" t-set="qty" t-value="label.qty" />
+                    <t t-foreach="list(range(qty))" t-as="index_qty">
+                        <div class="page" style="page-break-after: always;">
+                            <div style="height: 120px !important; width: 200px !important;">
+                                <table class="table" t-att-style="'height: 100%; border: {};'.format('%dpx solid #777;' % label.wizard_id.border_width if label.wizard_id.border_width else '0')">
+                                    <tr style="border: 0;">
+                                        <td class="text-center" style="padding: 0; margin: 0; border: 0;">
+                                            <div style="overflow: hidden; height: 44px !important; font-size: 13px; line-height: 1.2; margin-bottom: 2px;">
+                                                <span t-field="label.product_id.name" style="line-height: 1.2;"/>
+                                                <span t-if="label.product_id.product_template_attribute_value_ids"
+                                                      t-esc="u', '.join(map(lambda x: x.attribute_line_id.attribute_id.name + u': ' + x.name, label.product_id.product_template_attribute_value_ids))"
+                                                      class="badge"/>
+                                            </div>
+                                            <div style="width: 100%; overflow: hidden; height: 26px !important;">
+                                                <div style="float: right; width: 60%; font-size: 20px; font-weight: bold; line-height: 1.0; text-align: right; margin-bottom: 0px;">
+                                                    <span t-if="label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-field="label.product_id.lst_price"/>
+                                                    <span t-if="label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+                                                </div>
+                                                <div style="float: left; width: 40%; font-size: 10px; font-weight: 900; line-height: 1.0; text-align: left; margin-bottom: 0px; padding-top: 6px;">
+                                                    <span t-if="label.product_id.default_code"><span t-field="label.product_id.default_code"/> </span>
+                                                </div>
+                                            </div>
+                                            <t t-if="label.product_id.barcode">
+                                                <div t-out="label.product_id.barcode" style="margin-top: 5px;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'overflow: hidden; width: 100%; height: 2.0rem;', 'humanreadable': label.wizard_id.humanreadable}"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
 
     <template id="report_product_label_50x38_template">
         <t t-call="web.html_container">
