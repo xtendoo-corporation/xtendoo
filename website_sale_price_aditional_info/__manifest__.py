@@ -10,9 +10,11 @@
     "summary": "Website Sale Price Additional Info",
     "depends": [
         "sale_management",
+        "website_sale",
     ],
     "data": [
         "views/product_product_view.xml",
+        "views/website_sale_template.xml",
     ],
     "installable": True,
 }

@@ -6,10 +6,10 @@
             <div
                 class="alert alert-info"
                 style="font-size: 1rem;"
-                t-if="product.website_price_additional_info and user_authenticated"
+                t-if="product_variant.website_price_additional_info and user_authenticated"
             >
                 <i class="fa fa-info-circle" /> <span
-                    t-esc="product.website_price_additional_info"
+                    t-esc="product_variant.website_price_additional_info"
                 />
             </div>
         </xpath>
