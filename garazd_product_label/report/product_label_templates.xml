@@ -51,7 +51,7 @@
             </t>
         </t>
     </template>
-    <template id="report_product_label_57x33_template">
+    <template id="report_product_label_57x27_template">
         <t t-call="web.html_container">
             <t t-call="web.basic_layout">
                 <t t-foreach="docs" t-as="label">
@@ -59,11 +59,11 @@
                     <t t-if="label.qty" t-set="qty" t-value="label.qty" />
                     <t t-foreach="list(range(qty))" t-as="index_qty">
                         <div class="page" style="page-break-after: always;">
-                            <div style="height: 115px !important; width: 200px !important;">
-                                <table class="table" t-att-style="'height: 100%; border: {};'.format('%dpx solid #777;' % label.wizard_id.border_width if label.wizard_id.border_width else '0')">
+                            <div style="height: 95px !important; width: 200px !important;">
+                                <table class="table" t-att-style="'height: 100%; border: 0;)">
                                     <tr style="border: 0;">
                                         <td class="text-center" style="padding: 0; margin: 0; border: 0;">
-                                            <div style="overflow: hidden; height: 44px !important; font-size: 13px; line-height: 1.2; margin-bottom: 2px;">
+                                            <div style="overflow: hidden; height: 30px !important; font-size: 13px; line-height: 1.2; margin-bottom: 2px;">
                                                 <span t-field="label.product_id.name" style="line-height: 1.2;"/>
                                                 <span t-if="label.product_id.product_template_attribute_value_ids"
                                                       t-esc="u', '.join(map(lambda x: x.attribute_line_id.attribute_id.name + u': ' + x.name, label.product_id.product_template_attribute_value_ids))"
@@ -77,11 +77,11 @@
                                                 </div>
                                             </div>
                                             <t t-if="label.product_id.barcode">
-                                                <div t-out="label.product_id.barcode" style="margin-top: 5px;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'overflow: hidden; width: 100%; height: 2.0rem;', 'humanreadable': label.wizard_id.humanreadable}"/>
+                                                <div t-out="label.product_id.barcode" style="margin-top: 5px;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'overflow: hidden; width: 100%; height: 1.5rem;', 'humanreadable': label.wizard_id.humanreadable}"/>
                                             </t>
                                             <t t-else="">
                                                 <t t-set="barcode_false" t-value="str(1111111111111)"/>
-                                                <div t-out="barcode_false" style="margin-top: 5px;color:white ! important;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'overflow: hidden; width: 100%; height: 2.0rem; visibility: hidden;', 'humanreadable': label.wizard_id.humanreadable}"/>
+                                                <div t-out="barcode_false" style="margin-top: 5px;color:white ! important;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'overflow: hidden; width: 100%; height: 1.5rem; visibility: hidden;', 'humanreadable': label.wizard_id.humanreadable}"/>
                                             </t>
                                         </td>
                                     </tr>
