@@ -16,5 +16,10 @@
         "views/product_product_view.xml",
         "views/website_sale_template.xml",
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'website_sale_price_aditional_info/static/src/js/*',
+        ],
+    },
     "installable": True,
 }

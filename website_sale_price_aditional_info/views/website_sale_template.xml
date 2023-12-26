@@ -4,15 +4,12 @@
         <xpath expr="//span[@itemprop='priceCurrency']" position="after">
             <t t-set="user_authenticated" t-value="user_id != website.user_id" />
             <div
-                class="alert alert-info"
-                style="font-size: 1rem;"
-                t-if="product_variant.website_price_additional_info and user_authenticated"
-            >
-                <i class="fa fa-info-circle" /> <span
-                    t-esc="product_variant.website_price_additional_info"
-                />
+                class="alert alert-info aditional_price_container"
+                style="font-size: 1rem;">
+                <i class="fa fa-info-circle"/>
+                <span class="aditional_price"/>
             </div>
         </xpath>
     </template>
-
+<!--data-oe-type="monetary"-->
 </odoo>
