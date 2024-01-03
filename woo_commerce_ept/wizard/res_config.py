@@ -380,6 +380,21 @@ class ResConfigSettings(models.TransientModel):
                                                              config_parameter="woo_commerce_ept.use_default_terms_and_condition_of_odoo",
                                                              help="If checked, it will set the custom note and default terms and condition in order note")
 
+    woo_ship_order_webhook = fields.Boolean("Want to ship order", help="If checked, it will fulfill order in odoo")
+    woo_forcefully_reserve_stock_webhook = fields.Boolean("ForceFully Reserve Stock",
+                                                          help="If checked, It will forcefully reserve stock in the picking")
+    woo_refund_order_webhook = fields.Boolean("Want to refund order",
+                                              help="If checked, it will create a refund in odoo")
+
+    woo_customer_order_webhook = fields.Boolean("Want to update customer",
+                                                help="If checked, it will update the customer in order")
+    woo_update_qty_order_webhook = fields.Boolean("Want to update Quantity",
+                                                  help="If checked, it will update the customer in order")
+    woo_add_new_product_order_webhook = fields.Boolean("Want to Add New Product",
+                                                       help="If checked, it will add new product in the order if receive in the webhook")
+    woo_remove_product_order_webhook = fields.Boolean("Want to Remove Product",
+                                                      help="If checked, it will remove product in the order if receive in the webhook")
+
     @api.onchange('woo_instance_id')
     def onchange_woo_instance_id(self):
         """
@@ -427,6 +442,13 @@ class ResConfigSettings(models.TransientModel):
             self.woo_stock_export_warehouse_ids = instance.woo_stock_export_warehouse_ids.ids
             self.woo_import_partner_as_company = instance.import_partner_as_company
             self.woo_instance_product_categ_id = instance.woo_instance_product_categ_id.id if instance.woo_instance_product_categ_id else False
+            self.woo_ship_order_webhook = instance.woo_ship_order_webhook
+            self.woo_forcefully_reserve_stock_webhook = instance.woo_forcefully_reserve_stock_webhook
+            self.woo_refund_order_webhook = instance.woo_refund_order_webhook
+            self.woo_customer_order_webhook = instance.woo_customer_order_webhook
+            self.woo_update_qty_order_webhook = instance.woo_update_qty_order_webhook
+            self.woo_add_new_product_order_webhook = instance.woo_add_new_product_order_webhook
+            self.woo_remove_product_order_webhook = instance.woo_remove_product_order_webhook
 
     def execute(self):
         """
@@ -478,6 +500,13 @@ class ResConfigSettings(models.TransientModel):
             values["woo_stock_export_warehouse_ids"] = [(6, 0, self.woo_stock_export_warehouse_ids.ids)]
             values["import_partner_as_company"] = self.woo_import_partner_as_company
             values["woo_instance_product_categ_id"] = self.woo_instance_product_categ_id or False
+            values['woo_ship_order_webhook'] = self.woo_ship_order_webhook
+            values['woo_forcefully_reserve_stock_webhook'] = self.woo_forcefully_reserve_stock_webhook
+            values['woo_refund_order_webhook'] = self.woo_refund_order_webhook
+            values['woo_customer_order_webhook'] = self.woo_customer_order_webhook
+            values['woo_update_qty_order_webhook'] = self.woo_update_qty_order_webhook
+            values['woo_add_new_product_order_webhook'] = self.woo_add_new_product_order_webhook
+            values['woo_remove_product_order_webhook'] = self.woo_remove_product_order_webhook
 
             product_webhook_changed = customer_webhook_changed = order_webhook_changed = coupon_webhook_changed = False
             if instance.create_woo_product_webhook != self.create_woo_product_webhook:

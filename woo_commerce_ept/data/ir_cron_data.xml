@@ -134,4 +134,18 @@
         <field name="numbercall">-1</field>
     </record>
 
+
+    <record id="ir_cron_woo_import_product" model="ir.cron">
+        <field name="name">Import Woo Product (Do Not Delete)</field>
+        <field eval="False" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="state">code</field>
+        <field name="doall">False</field>
+        <field name="model_id" ref="model_woo_product_data_queue_ept"/>
+        <field name="code">model.import_woo_products(False)</field>
+    </record>
+
 </odoo>

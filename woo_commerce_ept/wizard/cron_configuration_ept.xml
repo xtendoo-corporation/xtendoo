@@ -259,6 +259,55 @@
                         </div>
                     </div>
                 </div>
+                <div class="o_horizontal_separator o_onboard_header font-weight-bold"
+                     invisible="context.get('is_calling_from_onboarding_panel', False) and not context.get('is_instance_exists', False)">
+                    Product
+                </div>
+                <div invisible="context.get('is_calling_from_onboarding_panel', False) and not context.get('is_instance_exists', False)">
+                    <div class="row mt16 o_settings_container o_onboard_padding">
+                        <div class="col-12 o_setting_box o_onboard_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_product_auto_import" widget="boolean_toggle"
+                                       class="o_onboard_boolean_toggle"/>
+                            </div>
+                            <div class="o_setting_right_pane"
+                                 style="margin-left:40px !important;">
+                                <span>
+                                    <h6>
+                                        <label for="woo_product_auto_import"
+                                               string="Import Product in Odoo"/>
+                                    </h6>
+                                </span>
+                                <div class="text-muted">
+                                    If checked, It will create a cron job to
+                                    automatically Import Product in Odoo at
+                                    configured
+                                    intervals.
+                                </div>
+                                <br/>
+                                <div class="o_onboard_cron_settings"
+                                     attrs="{'invisible': [('woo_product_auto_import', '=', False)]}">
+                                    <field name="woo_import_product_interval_number"
+                                           placeholder="Interval Number"
+                                           attrs="{'required': [('woo_product_auto_import', '=', True)]}"
+                                           class="o_onboard_cron_box"/>
+                                    <field name="woo_import_product_interval_type"
+                                           placeholder="Interval Type"
+                                           attrs="{'required': [('woo_product_auto_import', '=', True)]}"
+                                           class="o_onboard_cron_type"/>
+                                    <field name="woo_import_product_next_execution"
+                                           placeholder="Next Execution Date"
+                                           attrs="{'required': [('woo_product_auto_import', '=', True)]}"
+                                           class="o_onboard_cron_execution"/>
+                                    <field name="woo_import_product_user_id"
+                                           placeholder="Responsible User"
+                                           attrs="{'required': [('woo_product_auto_import', '=', True)],}"
+                                           class="o_onboard_cron_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <footer>
                     <button string="Save" class="oe_highlight o_onboard_button" type="object"
                             name="save"

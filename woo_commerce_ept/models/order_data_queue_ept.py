@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+import logging
 
+_logger = logging.getLogger("WooCommerce")
 
 class WooOrderDataQueueEpt(models.Model):
     """
@@ -108,7 +110,9 @@ class WooOrderDataQueueEpt(models.Model):
                 [('woo_order', '=', order["id"]), ('instance_id', '=', self.instance_id.id),
                  ('state', 'in', ['draft', 'failed'])])
             if existing_order_data_queue_line:
-                existing_order_data_queue_line.write({'order_data': order})
+                existing_order_data_queue_line.write({'order_data': order, 'state': 'draft'})
+                _logger.info("Lines updated in Order queue %s.",
+                             existing_order_data_queue_line.order_data_queue_id.name)
             else:
                 vals_list.append({"order_data_queue_id": self.id,
                                   "woo_order": order["id"],

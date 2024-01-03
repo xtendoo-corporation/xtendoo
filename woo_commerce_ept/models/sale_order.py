@@ -9,6 +9,7 @@ import pytz
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from odoo.tools.misc import split_every, format_date
+import requests
 
 _logger = logging.getLogger("WooCommerce")
 
@@ -637,13 +638,14 @@ class SaleOrder(models.Model):
         order_lines_list = []
         for order_line in order_data.get("line_items"):
             taxes = []
-            woo_product = self.find_or_create_woo_product(queue_line, order_line, instance)
-            if not woo_product:
+            woo_product, odoo_product = self.find_or_create_woo_product(queue_line, order_line, instance)
+            if not woo_product and not odoo_product:
                 message = "Product [%s][%s] not found for Order %s" % (
                     order_line.get("sku"), order_line.get("name"), order_data.get('number'))
                 self.create_woo_log_lines(message, instance, queue_line)
                 return False
-            product = woo_product.product_id
+            if woo_product and not odoo_product:
+                odoo_product = woo_product.product_id
             quantity = float(order_line.get("quantity"))
 
             actual_unit_price = self.get_woo_unit_price(tax_included, quantity, float(order_line.get("subtotal")),
@@ -655,7 +657,7 @@ class SaleOrder(models.Model):
                         continue
                     taxes.append(woo_taxes.get(tax['id']))
 
-            order_line_id = self.create_woo_order_line(order_line.get("id"), product, order_line.get("quantity"),
+            order_line_id = self.create_woo_order_line(order_line.get("id"), odoo_product, order_line.get("quantity"),
                                                        actual_unit_price, taxes, tax_included, instance)
             order_lines_list.append(order_line_id)
 
@@ -685,17 +687,18 @@ class SaleOrder(models.Model):
             woo_product_template_obj.search_odoo_product_variant(woo_instance, order_line.get("sku"),
                                                                  woo_product_id)
 
-        if not woo_product and woo_instance.auto_import_product or odoo_product:
+        if not woo_product and woo_instance.auto_import_product:
             # If product not found and configuration is set to import product, then creates it.
             if not order_line.get("product_id"):
                 _logger.info('Product id not found in sale order line response')
-                return woo_product
+                return woo_product, odoo_product
             product_data = woo_product_template_obj.get_products_from_woo_v1_v2_v3(woo_instance,
                                                                                    order_line.get("product_id"))
             woo_product_template_obj.sync_products(product_data, woo_instance, order_queue_line=queue_line)
-            woo_product = woo_product_template_obj.search_odoo_product_variant(woo_instance, order_line.get("sku"),
-                                                                               woo_product_id)[0]
-        return woo_product
+            woo_product, odoo_product = \
+                woo_product_template_obj.search_odoo_product_variant(woo_instance, order_line.get("sku"),
+                                                                     woo_product_id)
+        return woo_product, odoo_product
 
     @api.model
     def get_tax_ids(self, woo_instance, tax_id, woo_taxes):
@@ -1364,14 +1367,76 @@ class SaleOrder(models.Model):
         @author: Maulik Barad on Date 04-Nov-2020.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
-        shipping_partner = self.partner_shipping_id
-        updated_shipping_partner = self.woo_order_billing_shipping_partner(order_data, woo_instance, queue_line)[2]
-        if updated_shipping_partner and updated_shipping_partner.id != shipping_partner.id:
-            self.write({'partner_shipping_id': updated_shipping_partner.id})
-            picking = self.picking_ids.filtered(
-                lambda x: x.picking_type_code == 'outgoing' and x.state not in ['cancel', 'done'])
-            if picking:
-                picking.write({'partner_id': updated_shipping_partner.id})
+        # shipping_partner = self.partner_shipping_id
+        common_log_line_obj = self.env["common.log.lines.ept"]
+        need_update_shipping_partner = False
+        need_update_invoice_partner = False
+        need_update_partner = False
+        message = ""
+        if self.state != 'draft' and self.invoice_ids:
+            message = "The user manually updated customer details in WooCommerce, but the system did not update them because an invoice has already been posted in the system.\n" \
+                      "The system will update customer details only under the following conditions:\n" \
+                      "1.The invoice has not been posted.\n" \
+                      "2.The delivery order has not been validated.\n" \
+                      "You can take following actions Manually\n" \
+                      "1. Reset to Draft Invoice & Modify Invoice address\n"
+        elif self.state != 'draft' and not self.invoice_ids and self.picking_ids.filtered(
+                lambda x: x.location_dest_id.usage == "customer" and x.state == "done"):
+            message = "The user manually updated customer details in WooCommerce, but the system did not update them because an delivery order already done the system.\n" \
+                      "The system will update customer details only under the following conditions:\n" \
+                      "1.The invoice has not been posted.\n" \
+                      "2.The delivery order has not been validated.\n" \
+                      "You can take following actions Manually\n" \
+                      "1.Manually Reserve Transfer: If the order has not actually been shipped to the customer, you can reserve the transfer manually.\n" \
+                      "2.Reset Sales Order to Draft: You have the option to reset the sales order to draft status. After doing so, you can modify the shipping address and then confirm the order again."
+        updated_partner, updated_billing_partner, updated_shipping_partner = \
+            self.woo_order_billing_shipping_partner(order_data, woo_instance, queue_line)
+        if not updated_partner:
+            return False
+
+        if self.partner_id.id != updated_partner.id:
+            need_update_partner = True
+        if self.partner_invoice_id.id != updated_billing_partner.id:
+            need_update_invoice_partner = True
+        if self.partner_shipping_id.id != updated_shipping_partner.id:
+            need_update_shipping_partner = True
+        if message and need_update_partner:
+            common_log_line_obj.create_common_log_line_ept(wpp_instance_id=woo_instance.id, message=message,
+                                                           module="woocommerce_ept",
+                                                           model_name='sale.order',
+                                                           order_ref=order_data.get('name'),
+                                                           woo_order_data_queue_line_id=queue_line.id if queue_line else False)
+            queue_line.write({'state': 'failed', 'processed_at': datetime.now()})
+        elif message and need_update_invoice_partner:
+            common_log_line_obj.create_common_log_line_ept(wpp_instance_id=woo_instance.id, message=message,
+                                                           module="woocommerce_ept",
+                                                           model_name='sale.order',
+                                                           order_ref=order_data.get('name'),
+                                                           woo_order_data_queue_line_id=queue_line.id if queue_line else False)
+            queue_line.write({'state': 'failed', 'processed_at': datetime.now()})
+        elif message and need_update_shipping_partner:
+            common_log_line_obj.create_common_log_line_ept(wpp_instance_id=woo_instance.id, message=message,
+                                                           module="woocommerce_ept",
+                                                           model_name='sale.order',
+                                                           order_ref=order_data.get('name'),
+                                                           woo_order_data_queue_line_id=queue_line.id if queue_line else False)
+            queue_line.write({'state': 'failed', 'processed_at': datetime.now()})
+        else:
+            if need_update_partner:
+                self.write({'partner_id': updated_partner.id})
+                self.message_post(body=_("Customer has updated via webhook."))
+            if need_update_invoice_partner:
+                self.write({'partner_invoice_id': updated_billing_partner.id})
+                self.message_post(body=_("Invoice Address has updated via webhook"))
+            if need_update_shipping_partner:
+                self.write({'partner_shipping_id': updated_shipping_partner.id})
+                picking = self.picking_ids.filtered(
+                    lambda x: x.picking_type_code == 'outgoing' and x.state not in ['cancel', 'done'])
+                if picking:
+                    picking.write({'partner_id': updated_shipping_partner.id})
+                    self.message_post(body=_("Delivery Address has updated via webhook."))
+            queue_line.state = "done"
+
         return True
 
     @api.model
@@ -1388,67 +1453,258 @@ class SaleOrder(models.Model):
         for queue_line in queue_lines:
             message = ""
             order_data = ast.literal_eval(queue_line.order_data)
+            refund_data = order_data.get("refunds")
             queue_line.processed_at = fields.Datetime.now()
             woo_status = order_data.get("status")
             order = self.search([("woo_instance_id", "=", instance.id),
                                  ("woo_order_id", "=", order_data.get("id"))])
+            order_woo_status = order.woo_status
 
             if not order:
                 order = self.create_woo_orders(queue_line)
                 if not order:
                     return orders
+            try:
+                queue_line.state = "draft" if queue_line.state == "failed" else queue_line.state
+                if woo_status != "cancelled" and instance.woo_customer_order_webhook:
+                    order.woo_change_shipping_partner(order_data, instance, queue_line)
 
-            if woo_status != "cancelled":
-                order.woo_change_shipping_partner(order_data, instance, queue_line)
+                if woo_status == "cancelled" and order.state != "cancel":
+                    cancelled = order.cancel_woo_order()
+                    if not cancelled:
+                        message = "The order %s is canceled in WooCommerce, but the delivery order [Delivery Order Name] has already been processed.\n" \
+                                  "Due to this reason, the system will not automatically cancel the order.You can take the following actions manually:\n " \
+                                  "1. Reserve Order: If the order has not been shipped to the customer from your warehouse yet, you can reserve the order.\n" \
+                                  "2. Cancel Order: You can manually cancel the order in Odoo.\n" \
+                                  "3. Create Credit Note: If an invoice has already been created, you can generate a credit note accordingly." % (
+                                      order.name)
 
-            if woo_status == "cancelled" and order.state != "cancel":
-                cancelled = order.cancel_woo_order()
-                if not cancelled:
-                    message = "System can not cancel the order %s as one of the picking is in the done state." % \
-                              order.name
-            elif woo_status == "refunded":
-                refunded = order.create_woo_refund(order_data.get("refunds"))
-                if refunded[0] == 4:
-                    message = """- Refund can only be generated if it's related order invoice is found.\n- For order
-                    [%s], system could not find the related order invoice. """ % order_data.get('number')
-                elif refunded[0] == 3:
-                    message = """- Refund can only be generated if it's related order invoice is in 'Post' status.
-                    - For order [%s], system found related invoice but it is not in 'Post' status.""" % order_data.get(
-                        'number')
-                elif refunded[0] == 2:
-                    message = """- Partial refund is received from Woocommerce for order [%s].
-                    - System do not process partial refunds.
-                    - Either create partial refund manually in Odoo or do full refund in Woocommerce.""" % \
-                              order_data.get('number')
-            elif woo_status == "completed":
-                completed = order.complete_woo_order()
-                if not completed:
-                    message = """There is not enough stock to complete Delivery for order [%s]""" % order_data.get(
-                        'number')
-                else:
+                elif woo_status == "completed":
+                    if instance.woo_ship_order_webhook:
+                        completed = order.complete_woo_order()
+                        if not completed:
+                            message = "The order %s has been shipped in WooCommerce, but the system could not validate the delivery order due to inventory unavailability in Odoo.\n" \
+                                      "The automatic validation of delivery orders did not occur for the following reasons:\n" \
+                                      "1.Inventory Unavailability: The inventory is not available in the Odoo warehouse, and the option to perform a force transfer is not enabled in the webhook configuration.\n" \
+                                      "2.Product Traceability: The product traceability relies on lot numbers, and the inventory  is not in Odoo." % order_data.get(
+                                'number')
+                        else:
+                            queue_line.state = "done"
+                elif woo_status == "processing":
                     if order.woo_status == "on-hold" and order.auto_workflow_process_id.register_payment:
                         order.paid_invoice_ept(order.invoice_ids)
                     elif order.woo_status == "pending" and order.auto_workflow_process_id.create_invoice:
                         order.woo_status = woo_status
                         order.validate_and_paid_invoices_ept(order.auto_workflow_process_id)
-            elif woo_status == "processing":
-                if order.woo_status == "on-hold" and order.auto_workflow_process_id.register_payment:
-                    order.paid_invoice_ept(order.invoice_ids)
-                elif order.woo_status == "pending" and order.auto_workflow_process_id.create_invoice:
-                    order.woo_status = woo_status
-                    order.validate_and_paid_invoices_ept(order.auto_workflow_process_id)
-            orders.append(order)
-            if message:
-                log_line = order.create_woo_log_lines(message, instance, queue_line)
-            elif queue_line.state != 'failed':
-                queue_line.state = "done"
-                queue_line.order_data = False
-                order_vals = {"woo_status": woo_status}
-                if not order.woo_trans_id and order_data.get("transaction_id", False):
-                    order_vals.update({"woo_trans_id": order_data.get("transaction_id")})
-                order.write(order_vals)
 
+                financial_status = self.get_financial_status(order_data)
+                if financial_status == "paid" and not refund_data:
+                    order.write({"woo_status": woo_status})
+                    workflow = self.create_update_payment_gateway_and_workflow(order_data, instance,
+                                                                               queue_line)
+                    if workflow:
+                        order.auto_workflow_process_id = workflow.woo_auto_workflow_id.id
+                        order.message_post(body=_("Workflow Updated by Webhook as Order is Paid in woo commerce."))
+                        if workflow:
+                            order.auto_workflow_process_id = workflow.woo_auto_workflow_id.id
+                            if order.state not in ["sale", "done", "cancel"]:
+                                order.action_confirm()
+                            if order.invoice_status in ['no', 'to invoice']:
+                                order.validate_and_paid_invoices_ept(order.auto_workflow_process_id)
+                            elif order.invoice_status == 'invoiced' and workflow.woo_auto_workflow_id.register_payment:
+                                order.paid_invoice_ept(order.invoice_ids)
+                    else:
+                        if not workflow:
+                            continue
+
+                if refund_data and instance.woo_refund_order_webhook:
+                    refunded = order.create_woo_refund(refund_data, woo_status, order)
+                    if refunded[0] == 4:
+                        message = "A refund can only be generated if the related order invoice has already been created in the system.\n" \
+                                  " For order number %s, the system could not find the corresponding order invoice." % order_data.get(
+                            'number')
+                    elif refunded[0] == 3:
+                        message = "A refund can only be generated if the related order invoice has already been created & posted in the system.\n " \
+                                  "For order number %s , the system could not find the corresponding order invoice in posted state." % order_data.get(
+                            'number')
+
+                if order_woo_status and order_woo_status in ["pending", "on-hold"]:
+                    if instance.woo_update_qty_order_webhook:
+                        order.update_qty_in_order_from_webhook(instance, queue_line, order_data)
+
+                    if instance.woo_add_new_product_order_webhook:
+                        order.add_new_product_in_order_from_webhook(instance, queue_line, order_data)
+
+                    if instance.woo_remove_product_order_webhook:
+                        order.remove_product_in_order_from_webhook(instance, queue_line, order_data)
+
+                orders.append(order)
+                if message:
+                    log_line = order.create_woo_log_lines(message, instance, queue_line)
+                elif queue_line.state != 'failed':
+                    queue_line.state = "done"
+                    queue_line.order_data = False
+                    order_vals = {"woo_status": woo_status}
+                    if not order.woo_trans_id and order_data.get("transaction_id", False):
+                        order_vals.update({"woo_trans_id": order_data.get("transaction_id")})
+                    order.write(order_vals)
+            except Exception as error:
+                message = "Receive error while process webhook flow, Error is:  (%s)" % (error)
+                _logger.info(message)
+                order.create_woo_log_lines(message, instance, queue_line)
+                queue_line.write({'state': 'failed', 'processed_at': datetime.now()})
         return orders
+
+    def _prepare_confirmation_values(self):
+        """
+        Inherited this method here for the webhook process. sale order data write in the picking date deadline
+        and that deadline date write in the stock move as per default flow but the confirm sale order we
+        update the order date in the sale order but in picking it is default so there need to set proper date otherwise
+        getting issue while merge move process. def _merge_moves(self, merge_into=False) there merge move not found due to dead line date mismatch once
+        update the quantity from the order
+        @author: Haresh Mori @Emipro Technologies Pvt. Ltd on date 16 October 2023 .
+        """
+        res = super(SaleOrder, self)._prepare_confirmation_values()
+        if self.woo_instance_id:
+            res.update({'date_order': self.date_order})
+        return res
+
+    def remove_product_in_order_from_webhook(self, instance, queue_line, order_data):
+        need_to_update_line = []
+        message = ""
+        response_order_line_ids = [str(response_line.get('id')) for response_line in order_data.get('line_items')]
+        if response_order_line_ids:
+            need_to_remove_lines = self.order_line.filtered(
+                lambda
+                    line: line.woo_line_id not in response_order_line_ids and line.product_uom_qty > 0 and line.product_id.type not in [
+                    'service',
+                    'consu'])
+            for need_to_remove_line in need_to_remove_lines:
+                if need_to_remove_line.qty_delivered == 0:
+                    need_to_update_line.append([1, need_to_remove_line.id, {'product_uom_qty': 0}])
+                elif need_to_remove_line:
+                    message = "The user manually removed order line in WooCommerce.\n" \
+                              "However, it is not possible to automatically adjust the quantity in Odoo because the product %s has already been delivered in order %s.\n" \
+                              "You can take the following actions manually:\n" \
+                              "1. Reserve Order: If the order has not been shipped to the customer from your warehouse yet, you can reserve the order line with same quantity.\n" \
+                              "2. Create Credit Note: If an invoice has already been created, you can generate a credit note accordingly for that quantity." % (
+                                  need_to_remove_line.get('name'), self.name)
+                    self.env["common.log.lines.ept"].create_common_log_line_ept(woo_instance_id=instance.id,
+                                                                                module="woocommerce_ept",
+                                                                                message=message,
+                                                                                model_name=self._name,
+                                                                                order_ref=self.name,
+                                                                                woo_order_data_queue_line_id=queue_line and queue_line.id)
+                    queue_line.write({'state': 'failed', 'processed_at': datetime.now()})
+            if not message and need_to_update_line:
+                self.write({'order_line': need_to_update_line})
+                self.webhook_call_auto_invoice_workflow(self.auto_workflow_process_id)
+
+    def add_new_product_in_order_from_webhook(self, instance, queue_line, order_data):
+        need_to_create_line = self.check_need_to_create_new_order_line(order_data)
+        woo_taxes = {}
+        if need_to_create_line:
+            tax_included = order_data.get("prices_include_tax")
+            if instance.apply_tax == "create_woo_tax":
+                woo_taxes = self.woo_prepare_tax_data(order_data.get('tax_lines'), "", {}, queue_line,
+                                                      instance, order_data)
+            order_lines = self.create_woo_sale_order_lines_from_webhook(need_to_create_line, queue_line, order_data,
+                                                                        tax_included, instance,
+                                                                        woo_taxes)
+            self.webhook_call_auto_invoice_workflow(self.auto_workflow_process_id)
+
+    def check_need_to_create_new_order_line(self, order_data):
+        new_line_data = []
+        for response_line in order_data.get('line_items'):
+            if self.order_line.filtered(lambda ol: ol.woo_line_id == str(response_line.get('id'))):
+                continue
+            new_line_data.append(response_line)
+        return new_line_data
+
+    def create_woo_sale_order_lines_from_webhook(self, need_to_create_line, queue_line, order_data, tax_included,
+                                                 instance, woo_taxes):
+        """
+        """
+        order_lines_list = []
+        for order_line in need_to_create_line:
+            taxes = []
+            woo_product, odoo_product = self.find_or_create_woo_product(queue_line, order_line, instance)
+            if not woo_product and not odoo_product:
+                message = "Product [%s][%s] not found for Order %s" % (
+                    order_line.get("sku"), order_line.get("name"), order_data.get('number'))
+                self.create_woo_log_lines(message, instance, queue_line)
+                return False
+            if woo_product and not odoo_product:
+                odoo_product = woo_product.product_id
+            quantity = float(order_line.get("quantity"))
+
+            actual_unit_price = self.get_woo_unit_price(tax_included, quantity, float(order_line.get("subtotal")),
+                                                        float(order_line.get("subtotal_tax")))
+
+            if instance.apply_tax == "create_woo_tax":
+                for tax in order_line.get("taxes"):
+                    if not tax.get('total'):
+                        continue
+                    taxes.append(woo_taxes.get(tax['id']))
+
+            order_line_id = self.create_woo_order_line(order_line.get("id"), odoo_product, order_line.get("quantity"),
+                                                       actual_unit_price, taxes, tax_included, instance)
+            order_lines_list.append(order_line_id)
+            _logger.info("Sale order line is created for order %s.", self.name)
+
+        return order_lines_list
+
+    def update_qty_in_order_from_webhook(self, instance, queue_line, order_data):
+        common_log_line_obj = self.env["common.log.lines.ept"]
+        message = ""
+        updated_data = []
+        for line in order_data.get('line_items'):
+            existing_line = self.order_line.filtered(lambda l: l.woo_line_id == str(line.get("id")))
+            if existing_line:
+                if existing_line.product_uom_qty == line.get("quantity"):
+                    continue
+                elif existing_line.product_uom_qty < line.get("quantity"):
+                    updated_data.append([1, existing_line.id, {'product_uom_qty': line.get("quantity")}])
+                elif existing_line.product_uom_qty > line.get("quantity"):
+                    if existing_line.qty_delivered == existing_line.product_uom_qty:
+                        message = "The user manually adjusted the quantity in WooCommerce.\n" \
+                                  "However, it is not possible to automatically adjust the quantity in Odoo because the product %s has already been delivered in order %s.\n" \
+                                  "You can take the following actions manually:\n" \
+                                  "1. Reserve Order: If the order has not been shipped to the customer from your warehouse yet, you can reserve the order line with same quantity.\n" \
+                                  "2. Create Credit Note: If an invoice has already been created, you can generate a credit note accordingly for that quantity." % (
+                                      line.get('name'), self.name)
+                    elif existing_line.qty_delivered <= line.get("quantity"):
+                        updated_data.append([1, existing_line.id, {'product_uom_qty': line.get("quantity")}])
+        if message:
+            common_log_line_obj.create_common_log_line_ept(woo_instance_id=instance.id,
+                                                           module="woocommerce_ept",
+                                                           message=message,
+                                                           model_name=self._name,
+                                                           order_ref=self.name,
+                                                           woo_order_data_queue_line_id=queue_line and queue_line.id)
+            queue_line.write({'state': 'failed', 'processed_at': datetime.now()})
+        elif updated_data:
+            self.write({'order_line': updated_data})
+            self.webhook_call_auto_invoice_workflow(self.auto_workflow_process_id)
+
+    def webhook_call_auto_invoice_workflow(self, work_flow_process_record):
+        """
+        This method is use to call the auto invoice workflow process.
+        """
+        if work_flow_process_record.create_invoice:
+            if work_flow_process_record.invoice_date_is_order_date:
+                if self.check_fiscal_year_lock_date_ept():
+                    return True
+            if work_flow_process_record.sale_journal_id:
+                invoices = self.with_context(journal_ept=work_flow_process_record.sale_journal_id)._create_invoices(
+                    final=True)
+            else:
+                invoices = self._create_invoices(final=True)
+            self.validate_invoice_ept(invoices)
+            if self.woo_instance_id and self.woo_status == 'on-hold':
+                return True
+            if work_flow_process_record.register_payment:
+                self.paid_invoice_ept(invoices)
 
     def cancel_woo_order(self):
         """
@@ -1486,34 +1742,57 @@ class SaleOrder(models.Model):
         """
         skip_sms = {"skip_sms": True}
         for picking in pickings.filtered(lambda x: x.state != "done"):
-            if picking.state != "assigned":
-                if picking.move_ids.move_orig_ids:
-                    completed = self.complete_picking_for_woo(picking.move_ids.move_orig_ids.picking_id)
-                    if not completed:
-                        return False
-                picking.action_assign()
+            if not self.woo_instance_id.woo_forcefully_reserve_stock_webhook:
                 if picking.state != "assigned":
-                    return False
-
-            result = picking.with_context(**skip_sms).button_validate()
-
-            if isinstance(result, dict):
-                context = dict(result.get("context"))
-                context.update(skip_sms)
-                res_model = result.get("res_model", "")
-                # model can be stock.immediate.transfer or stock.backorder.confirmation
-
-                if res_model:
-                    immediate_transfer_record = self.env[res_model].with_context(context).create({})
-                    immediate_transfer_record.process()
-            if picking.state == 'done':
-                picking.write({"updated_in_woo": True})
-                picking.message_post(body=_("Picking is done by Webhook as Order is fulfilled in Woocommerce."))
+                    if picking.move_ids.move_orig_ids:
+                        completed = self.complete_picking_for_woo(picking.move_ids.move_orig_ids.picking_id)
+                        if not completed:
+                            return False
+                    picking.action_assign()
+                    if picking.state != "assigned":
+                        return False
+                self.transfer_validate_button_for_woo(picking)
+                if picking.state == 'done':
+                    picking.write({"updated_in_woo": True})
+                    picking.message_post(body=_("Picking is done by Webhook as Order is fulfilled in Woocommerce."))
+                else:
+                    return result
             else:
-                return result
+                if picking.state in ("done", "cancel"):
+                    continue
+                if picking.state == "assigned":
+                    result = picking.with_context(**skip_sms).button_validate()
+                    self.transfer_validate_button_for_woo(picking)
+                    message = "Picking is done by Webhook as Order completed in woo commerce"
+                if picking.state not in ("assigned", "done") and all(
+                        move.product_id.tracking == 'none' for move in picking.move_ids):
+                    need_validate_transfer = False
+                    for move in picking.move_ids_without_package:
+                        move._action_assign()
+                        move._set_quantity_done(move.product_uom_qty)
+                        need_validate_transfer = True
+                    if need_validate_transfer:
+                        message = "Picking is forcefully done by Webhook as Order is completed in woo commerce."
+                        picking.with_context(**skip_sms).button_validate()
+                if picking.state == "done":
+                    picking.message_post(body=_(message))
+                    pickings.updated_in_woo = True
+                else:
+                    return False
         return True
 
-    def create_woo_refund(self, refunds_data):
+    def transfer_validate_button_for_woo(self, picking):
+        skip_sms = {"skip_sms": True}
+        result = picking.with_context(**skip_sms).button_validate()
+        if isinstance(result, dict):
+            dict(result.get("context")).update(skip_sms)
+            context = result.get("context")  # Merging dictionaries.
+            model = result.get("res_model", "")
+            if model:
+                record = self.env[model].with_context(context).create({})
+                record.process()
+
+    def create_woo_refund(self, refunds_data, woo_status, order):
         """
         Creates refund of Woo order, when order is refunded in WooCommerce.
         It will need invoice created and posted for creating credit note in Odoo, otherwise it will
@@ -1528,30 +1807,68 @@ class SaleOrder(models.Model):
         """
         if not self.invoice_ids:
             return [4]
-        total_refund = 0.0
-        for refund in refunds_data:
-            total_refund += float(refund.get("total", 0)) * -1
+
         invoices = self.invoice_ids.filtered(lambda x: x.move_type == "out_invoice")
-        refunds = self.invoice_ids.filtered(lambda x: x.move_type == "out_refund")
-
-        if refunds:
-            return [True]
-
+        existing_refunds = self.invoice_ids.filtered(lambda x: x.move_type == "out_refund").mapped('woo_refund_id')
+        wc_api = order.woo_instance_id.woo_connect()
         for invoice in invoices:
             if not invoice.state == "posted":
                 return [3]
-        if self.amount_total == total_refund:
-            journal_id = invoices.mapped('journal_id')
-            context = {"active_model": "account.move", "active_ids": invoices.ids}
-            move_reversal = self.env["account.move.reversal"].with_context(context).create(
-                {"refund_method": "cancel",
-                 "reason": "Refunded from Woo" if len(refunds_data) > 1 else refunds_data[0].get("reason"),
-                 "journal_id": journal_id.id})
+
+        if not existing_refunds and woo_status == "refunded":
+            move_reversal = self.env["account.move.reversal"].with_context(
+                {"active_model": "account.move", "active_ids": invoices[0].ids}).create(
+                {"reason": "Refunded from Woo" if len(refunds_data) > 1 else refunds_data[0].get("reason"),
+                 "journal_id": invoices[0].journal_id.id})
             move_reversal.reverse_moves()
+            new_move = move_reversal.new_move_ids
+            new_move.write({'is_refund_in_woo': True,
+                            'woo_refund_id': refunds_data[0].get('id')})
             move_reversal.new_move_ids.message_post(
                 body=_("Credit note generated by Webhook as Order refunded in Woocommerce."))
-            return [True]
-        return [2]
+        else:
+            pending_refund = [item for item in refunds_data if str(item.get('id')) not in existing_refunds]
+            for refund in pending_refund:
+                try:
+                    response = wc_api.get('orders/%s/refunds/%s' % (order.woo_order_id, refund.get('id')))
+                except Exception as error:
+                    raise UserError(_("Something went wrong while getting refund data." + str(error)))
+
+                if not isinstance(response, requests.models.Response):
+                    raise UserError(_("Refund \n Response is not in proper format :: %s") % response)
+
+                if response.status_code not in [200, 201]:
+                    raise UserError(_("Refund \n%s") % response.content)
+
+                new_refund_data = response.json()
+
+                move_reversal = self.env["account.move.reversal"].with_context(
+                    {"active_model": "account.move", "active_ids": invoices[0].ids}).create(
+                    {"reason": "Refunded from Woo" if len(refunds_data) > 1 else new_refund_data.get("reason"),
+                     "journal_id": invoices[0].journal_id.id})
+                move_reversal.reverse_moves()
+                new_move = move_reversal.new_move_ids
+                new_move.write({'is_refund_in_woo': True,
+                                'woo_refund_id': refund.get('id')})
+                move_reversal.new_move_ids.message_post(
+                    body=_("Credit note generated by Webhook as Order refunded in Woocommerce."))
+                need_to_add_invoice_line_ids = []
+                for refund_line_items in new_refund_data.get('line_items'):
+                    refund_meta_data_values = refund_line_items.get("meta_data")
+                    for refund_meta_data_value in refund_meta_data_values:
+                        invoice_line_ids = new_move.invoice_line_ids.filtered(
+                            lambda x: x.sale_line_ids.woo_line_id == refund_meta_data_value.get('value'))
+                        need_to_add_invoice_line_ids.append(invoice_line_ids.id)
+                        if refund_line_items.get('quantity') == 0:
+                            invoice_line_ids.quantity = 1
+                            invoice_line_ids.price_unit = abs(float(refund_line_items.get("total", 0)))
+                        else:
+                            invoice_line_ids.quantity = abs(refund_line_items.get('quantity'))
+                need_to_unlink_invoice_lines = new_move.invoice_line_ids.filtered(
+                    lambda x: x.id not in need_to_add_invoice_line_ids)
+                if need_to_unlink_invoice_lines:
+                    need_to_unlink_invoice_lines.unlink()
+        return [True]
 
     def _prepare_invoice(self):
         """
@@ -1586,8 +1903,8 @@ class SaleOrder(models.Model):
         self.ensure_one()
         if not self.woo_instance_id:
             return super(SaleOrder, self).validate_and_paid_invoices_ept(work_flow_process_record)
-        if self.woo_instance_id and self.woo_status == 'pending':
-            return False
+        # if self.woo_instance_id and self.woo_status == 'pending':
+        #     return False
         if work_flow_process_record.create_invoice:
             fiscalyear_lock_date = self.company_id._get_user_fiscal_lock_date()
             if self.date_order.date() <= fiscalyear_lock_date:
@@ -1602,7 +1919,7 @@ class SaleOrder(models.Model):
             self.validate_invoice_ept(invoices)
             if self.woo_instance_id and self.woo_status == 'on-hold':
                 return True
-            if work_flow_process_record.register_payment:
+            if not self.woo_status == 'pending' and work_flow_process_record.register_payment:
                 self.paid_invoice_ept(invoices)
         return True
 

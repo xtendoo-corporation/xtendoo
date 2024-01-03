@@ -20,7 +20,8 @@ class WooWebhookEpt(models.Model):
     woo_id = fields.Char(help="Id of webhook in woocommerce", copy=False, string="ID in Woo")
     topic = fields.Selection([("order.updated", "When Order is Created/Updated"),
                               ("order.deleted", "When Order is Deleted"),
-                              ("product.updated", "When Product is Created/Updated"),
+                              ("product.created", "When Product is Created"),
+                              ("product.updated", "When Product is Updated"),
                               ("product.deleted", "When Product is Deleted"),
                               ("product.restored", "When Product is Restored"),
                               ("customer.updated", "When Customer is Created/Updated"),
@@ -117,6 +118,8 @@ class WooWebhookEpt(models.Model):
             delivery_url = self.get_base_url() + "/delete_order_webhook_odoo"
         elif topic == "product.updated":
             delivery_url = self.get_base_url() + "/update_product_webhook_odoo"
+        elif topic == "product.created":
+            delivery_url = self.get_base_url() + "/create_product_webhook_odoo"
         elif topic == "product.deleted":
             delivery_url = self.get_base_url() + "/delete_product_webhook_odoo"
         elif topic == "product.restored":

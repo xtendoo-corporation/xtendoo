@@ -105,9 +105,9 @@ class WooProductDataQueueLineEpt(models.Model):
         """
         woo_template_obj = self.env['woo.product.template.ept']
         product_dict = {}
-        template_images_updated = False
         product_queue_lines = self.query_find_queue_line_for_import_image()
         for queue_line in product_queue_lines:
+            template_images_updated = False
             browsable_queue_line = self.browse(queue_line)
             woo_template = woo_template_obj.search([('woo_tmpl_id', '=', browsable_queue_line.woo_synced_data_id),
                                                     ('woo_instance_id', '=', browsable_queue_line.woo_instance_id.id)],

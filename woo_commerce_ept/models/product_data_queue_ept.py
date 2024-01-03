@@ -2,8 +2,9 @@
 # See LICENSE file for full copyright and licensing details.
 import json
 import logging
-
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
+import pytz
 
 from odoo import models, fields, api
 
@@ -144,7 +145,9 @@ class WooProductDataQueueEpt(models.Model):
                 }
                 product_queue_line_obj.create(sync_queue_vals_line)
             else:
-                existing_product_queue_line_data.write({'woo_synced_data': json.dumps(product_data)})
+                existing_product_queue_line_data.write({'woo_synced_data': json.dumps(product_data),
+                                                        'state': 'draft'})
+                _logger.info("Product Data Updated in Queue %s ", existing_product_queue_line_data.queue_id.name)
             _logger.info("Added product id : %s in existing product queue %s", product_data.get('id'),
                          product_data_queue.display_name)
 
@@ -160,3 +163,39 @@ class WooProductDataQueueEpt(models.Model):
     def retrieve_dashboard(self, *args, **kwargs):
         dashboard = self.env['queue.line.dashboard']
         return dashboard.get_data(table='woo.product.data.queue.line.ept')
+
+    def import_woo_products(self, woo_instance):
+        """
+        Imports products from woo commerce and creates products data queue.
+        @author: Maulik Barad on Date 22-Nov-2013.
+        """
+        woo_instance_obj = self.env["woo.instance.ept"]
+        woo_products_template_obj = self.env['woo.product.template.ept']
+        if isinstance(woo_instance, int):
+            woo_instance = woo_instance_obj.browse(woo_instance)
+        if not woo_instance.active:
+            return False
+        start = time.time()
+        import_all = False
+        from_date = woo_instance.import_products_last_date
+        to_date = datetime.now()
+        if not from_date:
+            from_date = to_date - timedelta(30)
+
+        self.env['woo.product.categ.ept'].sync_woo_product_category(woo_instance,
+                                                                    sync_images_with_product=woo_instance.sync_images_with_product)
+
+        self.env['woo.tags.ept'].woo_sync_product_tags(woo_instance)
+        # self.sync_woo_attributes(woo_instance_id)
+        self.env['woo.product.template.ept'].sync_woo_attribute(woo_instance)
+
+        product_queues = woo_products_template_obj.with_context(
+            import_export_record=self.id).get_products_from_woo_v1_v2_v3(woo_instance, import_all=import_all,
+                                                                         from_date=from_date,
+                                                                         to_date=to_date)
+        to_date = fields.Datetime.now()
+        woo_instance.import_products_last_date = to_date.astimezone(pytz.timezone("UTC")).replace(tzinfo=None)
+        end = time.time()
+        _logger.info("Created product queues in %s seconds.", str(end - start))
+
+        return product_queues

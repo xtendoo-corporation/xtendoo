@@ -14,6 +14,7 @@ class AccountMove(models.Model):
 
     woo_instance_id = fields.Many2one("woo.instance.ept", "Woo Instance")
     is_refund_in_woo = fields.Boolean("Refund In Woo Commerce", default=False)
+    woo_refund_id = fields.Char("Woo Commerce Refund Id")
 
     def refund_in_woo(self):
         """

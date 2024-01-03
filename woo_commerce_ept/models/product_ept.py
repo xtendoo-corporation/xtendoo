@@ -789,7 +789,10 @@ class WooProductTemplateEpt(models.Model):
             return total_result
 
         if total_result and not template_id:
-            queues = woo_process_import_export.woo_import_products(total_result)
+            if woo_process_import_export:
+                queues = woo_process_import_export.woo_import_products(total_result)
+            else:
+                queues = woo_process_import_export.with_context(instance_id=instance).woo_import_products(total_result)
             if queues.queue_line_ids:
                 product_queue_ids = queues.mapped('id')
                 # message = "Product Queue created ", queues.mapped('name')

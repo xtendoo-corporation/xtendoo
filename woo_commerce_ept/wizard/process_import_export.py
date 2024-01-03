@@ -564,7 +564,7 @@ class WooProcessImportExport(models.TransientModel):
                     })
                 woo_product_synced_queue_line_obj.create(sync_queue_vals_line)
             else:
-                existing_product_queue_line_data.write({'woo_synced_data': json.dumps(woo_product)})
+                existing_product_queue_line_data.write({'woo_synced_data': json.dumps(woo_product), 'state': 'draft'})
             if len(queue_obj.queue_line_ids) == 101:
                 queue_obj = self.create_product_queue(created_by)
                 _logger.info("Product Data Queue %s created. Adding data in it.....", queue_obj.name)
@@ -587,7 +587,8 @@ class WooProcessImportExport(models.TransientModel):
         woo_product_synced_queue_obj = self.env['woo.product.data.queue.ept']
         queue_vals = {
             'name': self.woo_operation,
-            'woo_instance_id': self.woo_instance_id.id,
+            'woo_instance_id': self.woo_instance_id.id if self.woo_instance_id.id else self.env.context.get(
+                'instance_id').id,
             'woo_skip_existing_products': self.woo_skip_existing_product,
             "created_by": created_by
         }
@@ -604,7 +605,8 @@ class WooProcessImportExport(models.TransientModel):
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
         sync_queue_vals_line = {
-            'woo_instance_id': self.woo_instance_id.id,
+            'woo_instance_id': self.woo_instance_id.id if self.woo_instance_id.id else self.env.context.get(
+                'instance_id').id,
             'synced_date': datetime.now(),
             'last_process_date': datetime.now(),
             'queue_id': product_queue.id

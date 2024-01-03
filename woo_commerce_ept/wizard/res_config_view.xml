@@ -414,6 +414,123 @@
                         </div>
                     </div>
 
+                    <div name="woo_webhook_order_header" attrs="{'invisible':[('create_woo_order_webhook','=',False)]}">
+                        <h2 style="font-size:25px;background-color:#e9ecef;">Orders Webhook
+                            Configuration
+                        </h2>
+                    </div>
+
+                    <div class="row mt16 o_settings_container" attrs="{'invisible': [('create_woo_order_webhook', '=', False)]}">
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible':[('create_woo_order_webhook','=',False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_ship_order_webhook"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_ship_order_webhook"
+                                       string="Would you like to enable Auto-Ship for orders in WooCommerce to Odoo?"/>
+                                <div class="text-muted">
+                                    If this feature is enabled, the system will automatically validate delivery
+                                    orders
+                                    when orders are shipped in WooCommerce
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible':[('woo_ship_order_webhook','=',False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_forcefully_reserve_stock_webhook"
+                                       style="margin-left: -0.5em;"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_forcefully_reserve_stock_webhook"
+                                       string="Would you like to enable Forceful Transfer Validation from WooCommerce to Odoo?"/>
+                                <div class="text-muted">
+                                    If this feature is enabled, the system will automatically validate delivery
+                                    orders in case inventory is not available in Odoo.
+                                    This feature is not applicable to the product traceability of Lots &amp;
+                                    Serial
+                                    numbers
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible':[('create_woo_order_webhook','=',False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_refund_order_webhook"
+                                       style="margin-left: -0.5em"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_refund_order_webhook"
+                                       string="Would you like to enable Auto-Refund from WooCommerce to Odoo?"/>
+                                <div class="text-muted">
+                                    If this feature is enabled, the system will automatically generate a credit
+                                    note in Odoo when a user creates a refund directly in WooCommerce
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible':[('create_woo_order_webhook','=',False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_customer_order_webhook"
+                                       style="margin-left: -0.5em"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_customer_order_webhook"
+                                       string="Would you like to update customers from WooCommerce to Odoo?"/>
+                                <div class="text-muted">
+                                    If this feature is enabled, the system will automatically update the
+                                    customer information in existing orders.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible':[('create_woo_order_webhook','=',False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_update_qty_order_webhook"
+                                       style="margin-left: -0.5em"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_update_qty_order_webhook"
+                                       string="Would you like to update quantities from WooCommerce to Odoo?"/>
+                                <div class="text-muted">
+                                    If this feature is enabled, the system will automatically add/remove
+                                    quantities in imported orders when the user manually updates quantities from
+                                    the WooCommerce backend.
+                                    This feature is not applicable if the order has been shipped in Odoo
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible':[('create_woo_order_webhook','=',False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_add_new_product_order_webhook"
+                                       style="margin-left: -0.5em"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_add_new_product_order_webhook"
+                                       string="Would you like add new products from WooCommerce to Odoo?"/>
+                                <div class="text-muted">
+                                    If this feature is enabled, the system will automatically add new products
+                                    to imported sales orders when the user manually adds products from the
+                                    WooCommerce store.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible':[('create_woo_order_webhook','=',False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="woo_remove_product_order_webhook"
+                                       style="margin-left: -0.5em"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="woo_remove_product_order_webhook"
+                                       string="Would you like to remove products from WooCommerce to Odoo?"/>
+                                <div class="text-muted">
+                                    If this feature is enabled, the system will automatically set the quantity
+                                    to 0 on the order line for imported sales orders when the user manually
+                                    removes products from the WooCommerce store.
+                                    This feature is not applicable if the product has already been shipped in
+                                    Odoo
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div name="product_information_header" attrs="{'invisible': [('woo_instance_id', '=', False)]}">
                         <h2 style="font-size:25px;background-color:#e9ecef;">Product Configuration</h2>
                     </div>

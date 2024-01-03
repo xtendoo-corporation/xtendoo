@@ -17,7 +17,8 @@ class Webhook(http.Controller):
     Migrated by Maulik Barad on Date 07-Oct-2021.
     """
 
-    @http.route("/update_product_webhook_odoo", csrf=False, auth="public", type="json")
+    @http.route(["/create_product_webhook_odoo", "/update_product_webhook_odoo"], csrf=False, auth="public",
+                type="json")
     def update_product_webhook(self):
         """
         Route for handling the product update webhook of WooCommerce.

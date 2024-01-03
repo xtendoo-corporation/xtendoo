@@ -272,6 +272,22 @@ class WooInstanceEpt(models.Model):
     import_partner_as_company = fields.Boolean()
     woo_instance_product_categ_id = fields.Many2one("product.category", string="Product Category",
                                                     help="This category will set on new create products.")
+    product_auto_import = fields.Boolean("Auto Import Products from Woo?", help="Imports Products at certain interval.")
+    woo_ship_order_webhook = fields.Boolean("Want to ship order", help="If checked, it will fulfill order in odoo",
+                                            default=True, )
+    woo_forcefully_reserve_stock_webhook = fields.Boolean("ForceFully Reserve Stock",
+                                                          help="If checked, It will forcefully reserve stock in the picking")
+    woo_refund_order_webhook = fields.Boolean("Want to refund order", default=True,
+                                              help="If checked, it will create a refund in odoo")
+
+    woo_customer_order_webhook = fields.Boolean("Want to update customer",
+                                                help="If checked, it will update the customer in order")
+    woo_update_qty_order_webhook = fields.Boolean("Want to update Quantity",
+                                                  help="If checked, it will update the customer in order")
+    woo_add_new_product_order_webhook = fields.Boolean("Want to Add New Product",
+                                                       help="If checked, it will add new product in the order if receive in the webhook")
+    woo_remove_product_order_webhook = fields.Boolean("Want to Remove Product",
+                                                      help="If checked, it will remove product in the order if receive in the webhook")
 
     def _compute_kanban_woo_order_data(self):
         """
@@ -1181,7 +1197,7 @@ class WooInstanceEpt(models.Model):
         @author: Maulik Barad on Date 06-Jan-2019.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
-        topic_list = ["product.updated", "product.deleted", "product.restored"]
+        topic_list = ["product.created", "product.updated", "product.deleted", "product.restored"]
         self.configure_webhooks(topic_list)
         return True
 
