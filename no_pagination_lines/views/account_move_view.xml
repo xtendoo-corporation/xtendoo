@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+     <record id="view_account_move_form_inherit" model="ir.ui.view">
+        <field name="name">view.account.move.form.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@id='invoice_tab']/field[@name='invoice_line_ids']/tree" position="attributes">
+                <attribute name="limit">800</attribute>
+                </xpath>
+
+        </field>
+    </record>
+</odoo>
