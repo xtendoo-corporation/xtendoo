@@ -51,6 +51,7 @@
             </t>
         </t>
     </template>
+
     <template id="report_product_label_57x27_template">
         <t t-call="web.html_container">
             <t t-call="web.basic_layout">
@@ -71,9 +72,17 @@
                                             </div>
                                             <div style="width: 100%; overflow: hidden; height: 26px !important;">
                                                 <div style="width: 100%; font-size: 20px; font-weight: bold; line-height: 1.0; text-align: right; margin-bottom: 0px;">
-                                                    <span t-if="label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
-                                                    <span t-field="label.product_id.lst_price"/>
-                                                    <span t-if="label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-if="label.product_id.reduced_price == 0.0 and label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-if="label.product_id.reduced_price == 0.0" t-field="label.product_id.lst_price"/>
+                                                    <span t-if="label.product_id.reduced_price == 0.0 and label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+
+                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-if="label.product_id.reduced_price > 0.0" t-field="label.product_id.lst_price" style="text-decoration:line-through;"/>
+                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+
+                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-if="label.product_id.reduced_price > 0.0" t-field="label.product_id.reduced_price"/>
+                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
                                                 </div>
                                             </div>
                                             <t t-if="label.product_id.barcode">
@@ -86,7 +95,7 @@
                                         </td>
                                     </tr>
                                 </table>
-                                </div>
+                            </div>
                         </div>
                     </t>
                 </t>
