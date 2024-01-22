@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+
+        <record id="product_product_voucher_creation" model="product.product">
+            <field name="name">Refund Via Voucher</field>
+            <field name="type">service</field>
+            <field name="available_in_pos">True</field>
+            <field name="taxes_id" eval="[(6,0,[])]"></field>
+            <field name="supplier_taxes_id" eval="[(6,0,[])]"></field>
+        </record>
+
+        <function model="ir.default" name="set"
+        eval="('res.config.settings', 'voucher_creation_product', ref('pos_voucher_refund.product_product_voucher_creation'))"/>
+
+        <function model="ir.default" name="set"
+        eval="('res.config.settings', 'refund_coupon_partial_redeem', False)"/>
+
+        <function model="ir.default" name="set"
+        eval="('res.config.settings', 'refund_coupon_validity', 10)"/>
+
+    </data>
+</openerp>
