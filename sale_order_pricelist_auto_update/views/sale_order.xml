@@ -8,22 +8,25 @@
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
             <xpath
+                expr="//button[@name='action_cancel']"
+                position="after"
+            >
+                <field name="is_price_list_change" invisible="1" />
+                <button
+                    name="action_update_in_pricelist"
+                    string="Actualizar Tarifa"
+                    type="object"
+                    icon="fa-money"
+                    class="btn btn-outline-success"
+                    attrs="{'invisible': [('is_price_list_change','=',False)]}"
+                    groups="sale_order_pricelist_auto_update.pricelist_update_group"
+                />
+            </xpath>
+             <xpath
                 expr="//page/field[@name='order_line']/tree/field[@name='price_unit']"
                 position="after"
             >
-                <field name="is_pricelist_change" invisible="1" />
-                <field name="state" invisible="1" />
-                <button
-                    name="action_update_pricelist"
-                    string="Update Pricelist"
-                    type="object"
-                    icon="fa-money"
-                    class="text-success"
-                    attrs="{'invisible': ['|',
-                                              ('state','in',('done','cancel')),
-                                              ('is_pricelist_change','=',False)]}"
-                    groups="sale_order_pricelist_auto_update.pricelist_update_group"
-                />
+                <field name="is_pricelist_change" invisible="1"/>
             </xpath>
         </field>
     </record>

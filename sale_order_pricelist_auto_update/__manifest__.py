@@ -10,7 +10,7 @@
     ],
     "data": [
         "security/security_group.xml",
-        "views/sale_order_line.xml",
+        "views/sale_order.xml",
     ],
     "installable": True,
 }

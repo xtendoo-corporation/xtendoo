@@ -14,6 +14,7 @@ class SaleOrderLine(models.Model):
     is_pricelist_change = fields.Boolean(
         "The pricelist has changed",
         compute="_compute_is_pricelist_change",
+        store=True,
     )
 
     def compute_price_unit_is_valid(self):
@@ -39,14 +40,39 @@ class SaleOrderLine(models.Model):
                         line.company_id,
                     )
                     line.is_pricelist_change = (
-                        line.price_unit - pricelist_price_unit
+                        round(line.price_unit,5) - round(pricelist_price_unit,5)
                     ) != 0.0
                 except:
                     line.is_pricelist_change = False
             else:
                 line.is_pricelist_change = False
 
+    def _compute_is_pricelist_change_line(self, price_unit):
+        if self.product_id:
+            try:
+                display_price = self._get_display_price(self.product_id)
+                pricelist_price_unit = self.env[
+                    "account.tax"
+                ]._fix_tax_included_price_company(
+                    display_price,
+                    self.product_id.taxes_id,
+                    self.tax_id,
+                    self.company_id,
+                )
+                is_change =(
+                    round(price_unit, 5) - round(pricelist_price_unit, 5)) != 0.0
+                print("price_unit", round(price_unit, 5))
+                print("pricelist_price_unit", round(pricelist_price_unit, 5))
+                print("is_change", is_change)
+                return is_change
+            except:
+                return False
+        else:
+            return False
+
     def action_update_pricelist(self):
+        print("*"*100)
+        print("Entra en función en linea")
         for line in self:
             items = self.env["product.pricelist.item"].search(
                 [
@@ -71,3 +97,4 @@ class SaleOrderLine(models.Model):
                         }
                     ]
                 )
+            self.is_pricelist_change = False
