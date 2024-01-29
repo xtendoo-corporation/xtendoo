@@ -41,7 +41,6 @@ class SplitInvoiceWiz(models.TransientModel):
 							'price_subtotal':line.price_subtotal,
 							'invoice_text_ids':[(6,0,line.tax_ids.ids)],
 							'account_id':line.account_id.id,
-							'account_analytic_id':line.analytic_account_id.id,
 							'analytic_tag_ids':line.analytic_tag_ids.ids,
 							'uom_id':line.product_uom_id.id,
 							'discount':line.discount,
@@ -69,7 +68,7 @@ class SplitInvoiceWiz(models.TransientModel):
 					'invoice_origin': invoice.invoice_origin,
 					'journal_id':invoice.journal_id.id,
 					'move_type':invoice.move_type,
-					'partner_id': invoice.partner_id.id , 
+					'partner_id': invoice.partner_id.id ,
 					'invoice_date': invoice.invoice_date,
 					'invoice_date': invoice.invoice_date,
 					'invoice_payment_term_id': invoice.invoice_payment_term_id.id,
@@ -111,7 +110,7 @@ class SplitInvoiceWiz(models.TransientModel):
 						'invoice_origin': invoice.invoice_origin,
 						'journal_id':invoice.journal_id.id,
 						'move_type':invoice.move_type,
-						'partner_id': invoice.partner_id.id , 
+						'partner_id': invoice.partner_id.id ,
 						'invoice_date': invoice.invoice_date,
 						'invoice_date': invoice.invoice_date,
 						'invoice_payment_term_id': invoice.invoice_payment_term_id.id,
@@ -127,7 +126,6 @@ class SplitInvoiceWiz(models.TransientModel):
 								'product_id': line.product_id.id,
 								'name':line.product_description,
 								'account_id':line.account_id.id,
-								'analytic_account_id':line.account_analytic_id.id,
 								'analytic_tag_ids':line.analytic_tag_ids.ids,
 								'quantity':line.split_qty,
 								'product_uom_id':line.uom_id.id,
@@ -157,7 +155,7 @@ class SplitInvoiceWiz(models.TransientModel):
 						'invoice_origin': invoice.invoice_origin,
 						'journal_id':invoice.journal_id.id,
 						'move_type':invoice.move_type,
-						'partner_id': invoice.partner_id.id , 
+						'partner_id': invoice.partner_id.id ,
 						'invoice_date': invoice.invoice_date,
 						'invoice_date': invoice.invoice_date,
 						'invoice_payment_term_id': invoice.invoice_payment_term_id.id,
@@ -173,7 +171,6 @@ class SplitInvoiceWiz(models.TransientModel):
 								'product_id': line.product_id.id,
 								'name':line.product_description,
 								'account_id':line.account_id.id,
-								'analytic_account_id':line.account_analytic_id.id,
 								'analytic_tag_ids':line.analytic_tag_ids.ids,
 								'quantity':line.product_quantity/2,
 								'product_uom_id':line.uom_id.id,
@@ -194,7 +191,7 @@ class SplitInvoiceWiz(models.TransientModel):
 							invoice_line_lst.append(inv_line.id)
 						line.sale_line_id.update({'invoice_lines': [(6, 0, invoice_line_lst)]})
 
-						
+
 class SplitInvoiceWizLine(models.TransientModel):
 	_name = "split.invoice.wiz.line"
 	_description = 'Split Invoice Line'
@@ -209,7 +206,6 @@ class SplitInvoiceWizLine(models.TransientModel):
 	price_subtotal = fields.Float(string='Subtotal')
 	invoice_text_ids=fields.Many2many('account.tax',string="Invoice Text")
 	account_id=fields.Many2one('account.account',string="Account")
-	account_analytic_id=fields.Many2one('account.analytic.account',string="Analytic Account")
 	analytic_tag_ids=fields.Many2many('account.analytic.tag',string="Analytic Tags")
 	uom_id=fields.Many2one('uom.uom',string="Unit of Measure")
 	discount=fields.Float(string="Discount")
