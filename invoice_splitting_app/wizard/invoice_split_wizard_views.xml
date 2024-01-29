@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_split_invoice_wizard" model="ir.ui.view">
+            <field name="name">split.invoice.wizard</field>
+            <field name="model">split.invoice.wiz</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                    	<h5> ** Only Draft invoice Can be splitted.
+                    		<br/>
+                    	</h5>
+                    	<group>
+                    		<group>
+                        		<br/>
+                        		<br/>
+                        		<br/>
+                        		<field name="split_selection" required='1'/>
+                        		<field name="customer_or_supplier" readonly='1'/>
+                        		<field name="split_quantity" attrs="{'invisible':[('split_selection','=','invoice_line')]}"/>
+                        		<field name="split_by_line" attrs="{'invisible':[('split_selection','=','full_invoice')]}" required='1'/>
+                                <field name="payment_term_id" invisible='1'/>
+                                <field name="date_due" invisible='1'/>
+                                <field name="user_id" invisible='1'/>
+                                <field name="team_id" invisible='1'/>
+                        	</group>
+                        	<field name="split_invoice_ids" attrs="{'invisible':[('split_selection','=','full_invoice')]}">
+                        		<tree editable="bottom">
+                        			<field name="product_id"/>
+                        			<field name="product_description"/>
+                                    <field name="account_id" invisible='1'/>
+                                    <field name="account_analytic_id" invisible='1'/>
+                                    <field name="analytic_tag_ids" widget='many2many_tags' invisible='1'/>
+                                    <field name="product_quantity" attrs="{'column_invisible':[('parent.split_by_line','=','by_unit_price')]}"/>
+                                    <field name="uom_id" invisible='1'/>
+                                    <field name="product_unit_price" attrs="{'column_invisible':[('parent.split_by_line','=','by_quantity')]}"/>
+                                    <field name="discount" invisible='1'/>
+                                    <field name="invoice_text_ids" widget='many2many_tags' invisible='1'/>
+                                     <field name="price_subtotal" invisible='1'/>
+                        			<field name="split_qty" attrs="{'column_invisible':[('parent.split_by_line','=','by_unit_price')]}"/>
+                                   
+                                    <field name="split_price" attrs="{'column_invisible':[('parent.split_by_line','=','by_quantity')]}"/>
+                                    <field name="invoice_line_id" invisible='1'/>
+                                    <field name="sale_line_id" invisible='1'/>
+                        		</tree>
+                        	</field>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="button_split" string="Split" type="object"
+                        class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_split_invoice_wizard" model="ir.actions.act_window">
+            <field name="name">Split Invoice By Condition</field>
+            <field name="res_model">split.invoice.wiz</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_split_invoice_wizard"/>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="account.model_account_move" />
+            <field name="binding_view_types">list,form</field>
+        </record>
+
+    </data>
+</odoo>
