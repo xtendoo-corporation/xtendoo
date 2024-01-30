@@ -41,7 +41,6 @@ class SplitInvoiceWiz(models.TransientModel):
 							'price_subtotal':line.price_subtotal,
 							'invoice_text_ids':[(6,0,line.tax_ids.ids)],
 							'account_id':line.account_id.id,
-							'analytic_tag_ids':line.analytic_tag_ids.ids,
 							'uom_id':line.product_uom_id.id,
 							'discount':line.discount,
 							'sale_line_id': line.sale_line_id.id,
@@ -88,7 +87,6 @@ class SplitInvoiceWiz(models.TransientModel):
 						'name':line.name,
 						'account_id':line.account_id.id,
 						'analytic_account_id':line.analytic_account_id.id,
-						'analytic_tag_ids':line.analytic_tag_ids.ids,
 						'quantity':line.quantity,
 						'product_uom_id':line.product_uom_id.id,
 						'price_unit':line.price_unit,
@@ -126,7 +124,6 @@ class SplitInvoiceWiz(models.TransientModel):
 								'product_id': line.product_id.id,
 								'name':line.product_description,
 								'account_id':line.account_id.id,
-								'analytic_tag_ids':line.analytic_tag_ids.ids,
 								'quantity':line.split_qty,
 								'product_uom_id':line.uom_id.id,
 								'price_unit':line.product_unit_price,
@@ -171,7 +168,6 @@ class SplitInvoiceWiz(models.TransientModel):
 								'product_id': line.product_id.id,
 								'name':line.product_description,
 								'account_id':line.account_id.id,
-								'analytic_tag_ids':line.analytic_tag_ids.ids,
 								'quantity':line.product_quantity/2,
 								'product_uom_id':line.uom_id.id,
 								'price_unit':line.product_unit_price/2,
@@ -206,7 +202,6 @@ class SplitInvoiceWizLine(models.TransientModel):
 	price_subtotal = fields.Float(string='Subtotal')
 	invoice_text_ids=fields.Many2many('account.tax',string="Invoice Text")
 	account_id=fields.Many2one('account.account',string="Account")
-	analytic_tag_ids=fields.Many2many('account.analytic.tag',string="Analytic Tags")
 	uom_id=fields.Many2one('uom.uom',string="Unit of Measure")
 	discount=fields.Float(string="Discount")
 	invoice_line_id = fields.Many2one('account.move.line',string="Move Line")
