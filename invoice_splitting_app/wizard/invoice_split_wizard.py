@@ -86,7 +86,6 @@ class SplitInvoiceWiz(models.TransientModel):
 						'product_id': line.product_id.id,
 						'name':line.name,
 						'account_id':line.account_id.id,
-						'analytic_account_id':line.analytic_account_id.id,
 						'quantity':line.quantity,
 						'product_uom_id':line.product_uom_id.id,
 						'price_unit':line.price_unit,
@@ -94,6 +93,7 @@ class SplitInvoiceWiz(models.TransientModel):
 						'tax_ids':[(6,0,line.tax_ids.ids)],
 						'price_subtotal':line.price_subtotal,
 						'sale_line_id': line.sale_line_id.id,
+						'display_type': line.display_type,
 						'move_id': account_move.id
 					})
 					inv_line_id.sale_line_id.update({'invoice_lines': [(6, 0, inv_line_id.ids)]})
@@ -131,6 +131,7 @@ class SplitInvoiceWiz(models.TransientModel):
 								'tax_ids':[(6,0,line.invoice_text_ids.ids)],
 								'price_subtotal':line.price_subtotal,
 								'sale_line_id': line.sale_line_id.id,
+        						'display_type': line.display_type,
 								'move_id': account_move.id
 						})
 						invoice_line_lst.append(inv_line_id.id)
@@ -175,7 +176,8 @@ class SplitInvoiceWiz(models.TransientModel):
 								'tax_ids':[(6,0,line.invoice_text_ids.ids)],
 								'price_subtotal':line.price_subtotal,
 								'sale_line_id': line.sale_line_id.id,
-								'move_id': account_move.id,
+                                'display_type': line.display_type,
+                                'move_id': account_move.id,
 						})
 						invoice_line_lst.append(inv_line_id.id)
 						invoice_line_ids =self.env['account.move.line'].with_context(check_move_validity=False).search([('id','in',line.invoice_line_id.ids)])

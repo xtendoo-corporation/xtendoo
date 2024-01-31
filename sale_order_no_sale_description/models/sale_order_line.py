@@ -8,7 +8,6 @@ class SaleOrderLine(models.Model):
 
     @api.depends('product_id')
     def _compute_name(self):
-        print("xtendoo sale_order_no_sale_description")
         super()._compute_name()
         for line in self:
             if line.product_id:

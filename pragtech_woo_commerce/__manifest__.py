@@ -17,7 +17,7 @@
             5] Import/Export product tags into Odoo/WooCommerce
             6] Import/Export sale-order into Odoo/WooCommerce
             7] Import/Export taxes into Odoo/WooCommerce
-        
+
         <keywords>
         WooCommerce Connector
         Wordpress integration
@@ -34,7 +34,7 @@
     },
     'data': [
         'security/ir.model.access.csv',
-        'views/account_tax_views.xml',
+        'views/account_tax_view.xml',
         'views/product_view.xml',
         'views/product_tag_views.xml',
         'views/sale_order_views.xml',
