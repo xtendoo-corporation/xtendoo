@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<odoo>
 
-    <record id="pos_config_view_form_inherit" model="ir.ui.view">
-        <field name="name">pos.config.view.form.inherit</field>
+<odoo>
+    <record id="pos_loyalty_config_view_form" model="ir.ui.view">
+        <field name="name">pos.loyalty.config.form.view</field>
         <field name="model">pos.config</field>
-        <field name="inherit_id" ref="point_of_sale.pos_config_view_form" />
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
         <field name="arch" type="xml">
-            <xpath
-                expr="//div[hasclass('o_settings_container')][2]/div"
-                position="after"
-            >
-                <h2>Return vouchers</h2>
+            <xpath expr="//div[hasclass('o_settings_container')][2]/div" position="after">
                 <div class="row mt16 o_settings_container" id="return_voucher">
                     <div
                         id="rv_validity"
@@ -28,7 +24,7 @@
                                     string="Validity days"
                                     class="col-lg-3 o_light_label"
                                 />
-                                <field name="return_voucher_validity" />
+                                <field name="return_voucher_validity"/>
                             </div>
                         </div>
                     </div>
@@ -36,5 +32,5 @@
             </xpath>
         </field>
     </record>
-
 </odoo>
+
