@@ -6,5 +6,5 @@ class LoyaltyCard(models.Model):
 
     pos_order_id = fields.Many2one(
         comodel_name="pos.order",
-        string="Order",
+        string="POS Order",
     )

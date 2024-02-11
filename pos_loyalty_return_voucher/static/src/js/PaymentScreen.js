@@ -1,28 +1,42 @@
-odoo.define("pos_loyalty_return_voucher.ReturnVoucherScreen", function (require) {
-    "use strict";
+/** @odoo-module **/
 
-    const PaymentScreen = require("point_of_sale.PaymentScreen");
-    const Registries = require("point_of_sale.Registries");
+import PaymentScreen from 'point_of_sale.PaymentScreen';
+import Registries from 'point_of_sale.Registries';
+import session from 'web.session';
 
-    const ReturnVoucherScreen = (PaymentScreen) =>
-        class extends PaymentScreen {
-            async addNewPaymentLine({detail: paymentMethod}) {
-//                const prevPaymentLines = this.currentOrder.paymentlines;
-//                let res = false;
-//                if (paymentMethod.used_for_loyalty_program && this.currentOrder.get_due() > 0) {
-//                    this.showPopup("ErrorPopup", {
-//                        title: this.env._t("Error"),
-//                        body: this.env._t("This is a loyalty program, only for refund voucher"),
-//                    });
-//                    return false;
-//                }
-                let data = super.addNewPaymentLine(...arguments);
-                alert(data);
-                return data;
+export const PosLoyaltyPaymentScreen = (PaymentScreen) =>
+    class extends PaymentScreen {
+        /**
+         * @override
+         */
+        async validateOrder(isForceValidate) {
+            await super.validateOrder(...arguments);
+        }
+
+        /**
+         * @override
+         */
+        async _postPushOrderResolve(order, server_ids) {
+            try {
+                const loyalty_card_code = await this.rpc({
+                    model: "pos.order",
+                    method: "get_loyalty_card_code_from_order",
+                    args: [server_ids],
+                    kwargs: {context: session.user_context},
+                });
+
+                console.log("loyalty_card_code", loyalty_card_code);
+                console.log("loyalty_card_code.code", loyalty_card_code.code);
+
+                if (loyalty_card_code.code) {
+                    order.set_loyalty_card_code(loyalty_card_code.code || "");
+                }
+                console.log("get_loyalty_card_code", order.get_loyalty_card_code());
+            } finally {
+                return super._postPushOrderResolve(...arguments);
             }
-        };
+        }
+    };
 
-    Registries.Component.extend(PaymentScreen, ReturnVoucherScreen);
+Registries.Component.extend(PaymentScreen, PosLoyaltyPaymentScreen);
 
-    return PaymentScreen;
-});

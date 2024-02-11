@@ -1,8 +1,8 @@
 from odoo import _, models, fields
 
 
-class PosConfig(models.Model):
-    _inherit = "pos.config"
+class ResConfigSettings(models.TransientModel):
+    _inherit = 'res.config.settings'
 
     return_voucher_validity = fields.Integer(
         default=30,

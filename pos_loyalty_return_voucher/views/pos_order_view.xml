@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="view_pos_order_form_inherit_loyalty_card" model="ir.ui.view">
+        <field name="name">view.pos.order.form.inherit.loyalty.card</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='pricelist_id']" position="after">
+                <field name="loyalty_card_ids" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pos_coupon.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-receipt')]//div[hasclass('before-footer')]" position="inside">
+            <div class="pos-coupon-rewards">
+                <div>------------------------</div>
+                <br/>
+                <div>
+                    Coupon Codes : <t t-esc="receipt.bypass_risk" />
+                </div>
+                <t t-if="receipt.bypass_risk">
+                    <div>
+                        Vacio
+                    </div>
+                </t>
+                <t else="">
+                    <div>
+                        No Vacio
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

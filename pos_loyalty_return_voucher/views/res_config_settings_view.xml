@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<odoo>
+    <record id="res_config_view_form_inherit_pos_loyalty_return_voucher" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pos_loyalty.return.voucher</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <div id="pos_payment_section" position="after">
+                <h2>Loyalty Return Voucher</h2>
+                <div class="row mt16 o_settings_container">
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">Return voucher validity days</span>
+                            <div class="text-muted">
+                                Set return voucher life days
+                            </div>
+                            <div class="content-group mt16">
+                                <field name="return_voucher_validity"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

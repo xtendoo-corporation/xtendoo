@@ -11,11 +11,15 @@
         'pos_loyalty_redeem_payment',
     ],
     "data": [
-        "views/pos_config_view.xml",
+        "views/loyalty_card_view.xml",
+        "views/res_config_settings_view.xml",
+        "views/pos_order_view.xml",
     ],
     "assets": {
         "point_of_sale.assets": [
+            "pos_loyalty_return_voucher/static/src/js/models.js",
             "pos_loyalty_return_voucher/static/src/js/PaymentScreen.js",
+            "pos_loyalty_return_voucher/static/src/xml/OrderReceipt.xml",
         ],
     },
     "installable": True,
