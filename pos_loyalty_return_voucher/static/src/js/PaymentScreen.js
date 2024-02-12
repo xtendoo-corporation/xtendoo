@@ -17,6 +17,8 @@ export const PosLoyaltyPaymentScreen = (PaymentScreen) =>
          * @override
          */
         async _postPushOrderResolve(order, server_ids) {
+            order.loyalty_card_code = "";
+            order.loyalty_card_expiration_date = "";
             try {
                 const loyalty_card_code = await this.rpc({
                     model: "pos.order",
@@ -26,12 +28,13 @@ export const PosLoyaltyPaymentScreen = (PaymentScreen) =>
                 });
 
                 console.log("loyalty_card_code", loyalty_card_code);
-                console.log("loyalty_card_code.code", loyalty_card_code.code);
 
-                if (loyalty_card_code.code) {
-                    order.set_loyalty_card_code(loyalty_card_code.code || "");
+                if (loyalty_card_code) {
+                    order.loyalty_card_code = loyalty_card_code;
                 }
-                console.log("get_loyalty_card_code", order.get_loyalty_card_code());
+//                if (loyalty_card_code.loyalty_card_expiration_date) {
+//                    order.loyalty_card_expiration_date = loyalty_card_code.loyalty_card_expiration_date;
+//                }
             } finally {
                 return super._postPushOrderResolve(...arguments);
             }
