@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-12 17:46+0000\n"
-"PO-Revision-Date: 2024-02-12 17:46+0000\n"
+"POT-Creation-Date: 2024-02-12 17:45+0000\n"
+"PO-Revision-Date: 2024-02-12 17:45+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,19 +18,19 @@ msgstr ""
 #. module: pos_loyalty_return_voucher
 #: model_terms:ir.ui.view,arch_db:pos_loyalty_return_voucher.res_config_view_form_inherit_pos_loyalty_return_voucher
 msgid "<span class=\"o_form_label\">Return voucher validity days</span>"
-msgstr "<span class=\"o_form_label\">Días de validez del bono de devolución</span>"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #. odoo-javascript
 #: code:addons/pos_loyalty_return_voucher/static/src/xml/OrderReceipt.xml:0
 #, python-format
 msgid "Barcode"
-msgstr "Código de barras"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model,name:pos_loyalty_return_voucher.model_res_config_settings
 msgid "Config Settings"
-msgstr "Opciones de configuración"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model.fields,help:pos_loyalty_return_voucher.field_res_config_settings__return_voucher_validity
@@ -38,60 +38,58 @@ msgid ""
 "If you leave this option empty, the vouchers will have an indefinite date, "
 "i.e., they will never expire."
 msgstr ""
-"Si dejas esta opción vacía, los bonos tendrán fecha indefinida,"
-"Es decir, nunca expirarán."
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model.fields,field_description:pos_loyalty_return_voucher.field_pos_order__loyalty_card_code
 #: model:ir.model.fields,field_description:pos_loyalty_return_voucher.field_pos_order__loyalty_card_ids
 msgid "Loyalty Card"
-msgstr "Tarjeta de fidelidad"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model.fields,field_description:pos_loyalty_return_voucher.field_pos_order__loyalty_card_expiration_date
 msgid "Loyalty Card Expire"
-msgstr "Caducidad de la tarjeta de fidelidad"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model,name:pos_loyalty_return_voucher.model_loyalty_card
 msgid "Loyalty Coupon"
-msgstr "Cupón de fidelidad"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model_terms:ir.ui.view,arch_db:pos_loyalty_return_voucher.res_config_view_form_inherit_pos_loyalty_return_voucher
 msgid "Loyalty Return Voucher"
-msgstr "Vale de devolución de fidelidad"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model.fields,field_description:pos_loyalty_return_voucher.field_loyalty_card__pos_order_id
 msgid "POS Order"
-msgstr "Orden de punto de venta"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model,name:pos_loyalty_return_voucher.model_pos_order
 msgid "Point of Sale Orders"
-msgstr "Pedidos del TPV"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model:ir.model.fields,field_description:pos_loyalty_return_voucher.field_res_config_settings__return_voucher_validity
 msgid "Return Voucher Validity"
-msgstr "Validez del vale de devolución"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #: model_terms:ir.ui.view,arch_db:pos_loyalty_return_voucher.res_config_view_form_inherit_pos_loyalty_return_voucher
 msgid "Set return voucher life days"
-msgstr "Establecer días de vida del vale de devolución"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #. odoo-javascript
 #: code:addons/pos_loyalty_return_voucher/static/src/xml/OrderReceipt.xml:0
 #, python-format
 msgid "Valid until:"
-msgstr "Válido hasta:"
+msgstr ""
 
 #. module: pos_loyalty_return_voucher
 #. odoo-javascript
 #: code:addons/pos_loyalty_return_voucher/static/src/xml/OrderReceipt.xml:0
 #, python-format
 msgid "Voucher:"
-msgstr "Vale"
+msgstr ""

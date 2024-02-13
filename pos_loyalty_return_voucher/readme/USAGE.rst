@@ -1,14 +1,15 @@
-In the payment screen of PoS interface, after selecting configured payment
-method a popup requests loyalty card code:
+Please carefully review the documentation of the module "pos_loyalty_redeem_payment" to understand how this basic
+module works for the proper use of this module.
 
+This module allows Odoo users to create return purchase vouchers as gift cards for future POS sales.
 
-.. image:: ../static/img/usage_1_code_popup.png
+.. image:: ../static/img/reembolso_venta.png
    :width: 300
    :alt: config
 
-After entering card code, a new popup asks user to introduce amount to redeem:
+At the end of the return, select the payment method that you set as "Used for loyalty programs".
 
-.. image:: ../static/img/usage_2_amount_popup.png
+.. image:: ../static/img/pago_con_vale.png
    :width: 300
    :alt: config
 

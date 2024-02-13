@@ -10,27 +10,24 @@ const LoyaltyPaymentOrder = (Order) =>
             super(...arguments);
             console.log("this.pos", this.pos);
         }
-        set_loyalty_card_code(loyalty_card_code) {
-            console.log("set_loyalty_card_code", loyalty_card_code);
-            this.loyalty_card_code = loyalty_card_code;
+        set_loyalty_card(loyalty_card) {
+            this.loyalty_card = loyalty_card;
         }
-        get_loyalty_card_code() {
-            return this.loyalty_card_code;
+        get_loyalty_card() {
+            return this.loyalty_card;
         }
         export_as_JSON() {
             const result = super.export_as_JSON(...arguments);
-            result.loyalty_card_code = this.loyalty_card_code;
+            result.loyalty_card = this.loyalty_card;
             return result;
         }
         init_from_JSON(json) {
             super.init_from_JSON(...arguments);
-            console.log("init from json",json);
-            this.loyalty_card_code = json.loyalty_card_code;
+            this.loyalty_card = json.loyalty_card;
         }
         export_for_printing() {
             const result = super.export_for_printing(...arguments);
-            result.loyalty_card_code = this.get_loyalty_card_code();
-            console.log("result",result);
+            result.loyalty_card = this.get_loyalty_card();
             return result;
         }
     };
