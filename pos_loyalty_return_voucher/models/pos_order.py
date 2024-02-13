@@ -34,28 +34,10 @@ class PosOrder(models.Model):
     def get_loyalty_card_from_order(self, order_ids):
         order = self.env["pos.order"].browse(order_ids)
         if order:
-
-            print("*"*80)
-            print('code', order.loyalty_card_code)
-            print('expiration_date', order.loyalty_card_expiration_date)
-
             return {
                 'code': order.loyalty_card_code,
                 'expiration_date': order.loyalty_card_expiration_date,
                 }
-
-    # @api.model
-    # def _order_fields(self, ui_order):
-    #     order_fields = super(PosOrder, self)._order_fields(ui_order)
-    #     order_fields['loyalty_card'] = ui_order.get('loyalty_card')
-    #     return order_fields
-    #
-    # def _export_for_ui(self, order):
-    #     result = super(PosOrder, self)._export_for_ui(order)
-    #     result.update({
-    #         'loyalty_card': order.loyalty_card,
-    #     })
-    #     return result
 
     def add_payment(self, data):
         payment_method = self.env["pos.payment.method"].search(
