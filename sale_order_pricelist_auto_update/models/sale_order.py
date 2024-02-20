@@ -39,5 +39,15 @@ class SaleOrder(models.Model):
         "The pricelist has changed",
     )
 
+    @api.onchange('order_line')
+    def onchange_order_line(self):
+        self.is_price_list_change = False
+        for line in self.order_line:
+            if line.is_pricelist_change:
+                self.is_price_list_change = True
+                break
+        return
+
+
 
 
