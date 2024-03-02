@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="website_layout" name="Website TikTok Pixel" inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <!-- TikTok Pixel Code -->
+            <script t-if="website and website.ttp_get_keys() and not editable" name="tiktok-pixel-key">
+                const tiktok_pixel_key_list = new Set(<t t-out="json.dumps(website.ttp_get_keys())"/>);
+            </script>
+            <script t-if="website and website.ttp_get_keys() and not editable" defer="defer" type="text/javascript" src="/website_tiktok_pixel/static/src/js/tiktok_pixel_script.js" name="tiktok-pixel-script"/>
+        </xpath>
+    </template>
+
+</odoo>
