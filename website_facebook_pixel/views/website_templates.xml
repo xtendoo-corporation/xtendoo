@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="web_layout" name="Website Facebook Pixel" inherit_id="web.layout">
+        <xpath expr="//head" position="inside">
+            <t t-if="website and website.fbp_get_primary_key() and not editable" name="fbp_script">
+                <!-- Meta Pixel Code -->
+                <script name="fbp_script">
+                    !function(f,b,e,v,n,t,s)
+                    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                    n.queue=[];t=b.createElement(e);t.async=!0;
+                    t.src=v;s=b.getElementsByTagName(e)[0];
+                    s.parentNode.insertBefore(t,s)}(window, document,'script',
+                    'https://connect.facebook.net/en_US/fbevents.js');
+                    <t t-foreach="website._fbp_params()" t-as="fbp_param">
+                    fbq('<t t-out="fbp_param['action']"/>', '<t t-out="fbp_param['key']"/>', <t t-out="json.dumps(fbp_param['extra_vals'])"/>);
+                    </t>
+                    <t name="fb-events">fbq('track', 'PageView');</t>
+                </script>
+                <noscript name="fbp_script_img">
+                    <img height="1" width="1" style="display:none"
+                        t-attf-src="https://www.facebook.com/tr?id={{ website.fbp_get_primary_key() }}&amp;ev=PageView&amp;noscript=1"/>
+                </noscript>
+                <!-- End Meta Pixel Code -->
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
