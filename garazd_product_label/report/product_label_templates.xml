@@ -64,33 +64,33 @@
                                 <table class="table" style="height: 100%; border: 0;">
                                     <tr style="border: 0;">
                                         <td class="text-center" style="padding: 0; margin: 0; border: 0;">
-                                            <div style="overflow: hidden; height: 30px !important; font-size: 13px; line-height: 1.2; margin-bottom: 2px;">
+                                            <div style="overflow: hidden; height: 30px !important; font-size: 13px; line-height: 1.2; margin-bottom: 2px; border-width: 10px; border-color: red; ">
                                                 <span t-field="label.product_id.name" style="line-height: 1.2;"/>
                                                 <span t-if="label.product_id.product_template_attribute_value_ids"
                                                       t-esc="u', '.join(map(lambda x: x.attribute_line_id.attribute_id.name + u': ' + x.name, label.product_id.product_template_attribute_value_ids))"
-                                                      style="padding:1px 5px;background-color:#17A2B8; color:white;border-radius:30px;"/>
+                                                      style="padding:1px 5px; background-color:#17A2B8; color:white; border-radius:30px;"/>
                                             </div>
-                                            <div style="width: 100%; overflow: hidden; height: 26px !important;">
-                                                <div style="width: 100%; font-size: 20px; font-weight: bold; line-height: 1.0; text-align: right; margin-bottom: 0px;">
-                                                    <span t-if="label.product_id.reduced_price == 0.0 and label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
+                                            <div style="border-width: 10px; border-color: red; overflow: hidden; height: 26px !important;">
+                                                <div style="font-size: 20px; font-weight: bold; line-height: 1.0; text-align: center; margin-bottom: 0px; border-width: 10px; border-color: red;">
                                                     <span t-if="label.product_id.reduced_price == 0.0" t-field="label.product_id.lst_price"/>
-                                                    <span t-if="label.product_id.reduced_price == 0.0 and label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-if="label.product_id.reduced_price == 0.0" t-field="label.product_id.currency_id.symbol"/>
 
-                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
                                                     <span t-if="label.product_id.reduced_price > 0.0" t-field="label.product_id.lst_price" style="text-decoration:line-through;"/>
-                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-if="label.product_id.reduced_price > 0.0" t-field="label.product_id.currency_id.symbol"/>
 
-                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'before'" t-field="label.product_id.currency_id.symbol"/>
                                                     <span t-if="label.product_id.reduced_price > 0.0" t-field="label.product_id.reduced_price"/>
-                                                    <span t-if="label.product_id.reduced_price > 0.0 and label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+                                                    <span t-if="label.product_id.reduced_price > 0.0" t-field="label.product_id.currency_id.symbol"/>
                                                 </div>
                                             </div>
                                             <t t-if="label.product_id.barcode">
-                                                <div t-out="label.product_id.barcode" style="margin-top: 5px;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'overflow: hidden; width: 100%; height: 1.5rem;', 'humanreadable': label.wizard_id.humanreadable}"/>
+                                                <img t-att-src="'/report/barcode/QR/'+label.product_id.barcode"
+                                                     style="width:40px; height:40px"
+                                                     alt="Barcode"/>
                                             </t>
                                             <t t-else="">
-                                                <t t-set="barcode_false" t-value="str(1111111111111)"/>
-                                                <div t-out="barcode_false" style="margin-top: 5px;color:white ! important;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'overflow: hidden; width: 100%; height: 1.5rem; visibility: hidden;', 'humanreadable': label.wizard_id.humanreadable}"/>
+                                                <img t-att-src="'/report/barcode/QR/1111111111111'"
+                                                     style="width:40px; height:40px; color:white !important;"
+                                                     alt="Barcode"/>
                                             </t>
                                         </td>
                                     </tr>
