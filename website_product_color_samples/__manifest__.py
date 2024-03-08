@@ -5,7 +5,8 @@
     'description': """Display product color samples in product view on website""",
     'author': 'Odoo Masters',
     'category': 'eCommerce',
-    'version': '16.0',
+    'license': 'AGPL-3',
+    "version": "16.0.1.0.0",
     'depends': [
         'sale',
         'website_sale',
