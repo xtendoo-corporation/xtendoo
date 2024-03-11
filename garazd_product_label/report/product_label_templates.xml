@@ -60,18 +60,18 @@
                     <t t-if="label.qty" t-set="qty" t-value="label.qty" />
                     <t t-foreach="list(range(qty))" t-as="index_qty">
                         <div class="page" style="page-break-after: always;">
-                            <div style="height: 95px !important; width: 200px !important;">
+                            <div style="height: 95px !important; width: 190px !important;">
                                 <table class="table" style="height: 100%; border: 0;">
                                     <tr style="border: 0;">
                                         <td class="text-center" style="padding: 0; margin: 0; border: 0;">
-                                            <div style="overflow: hidden; height: 30px !important; font-size: 13px; line-height: 1.2; margin-bottom: 2px; border-width: 10px; border-color: red; ">
+                                            <div style="overflow: hidden; height: 30px !important; font-size: 13px; line-height: 1.2; margin-bottom: 2px;">
                                                 <span t-field="label.product_id.name" style="line-height: 1.2;"/>
                                                 <span t-if="label.product_id.product_template_attribute_value_ids"
                                                       t-esc="u', '.join(map(lambda x: x.attribute_line_id.attribute_id.name + u': ' + x.name, label.product_id.product_template_attribute_value_ids))"
                                                       style="padding:1px 5px; background-color:#17A2B8; color:white; border-radius:30px;"/>
                                             </div>
                                             <div style="border-width: 10px; border-color: red; overflow: hidden; height: 26px !important;">
-                                                <div style="font-size: 20px; font-weight: bold; line-height: 1.0; text-align: center; margin-bottom: 0px; border-width: 10px; border-color: red;">
+                                                <div style="font-size: 20px; font-weight: bold; line-height: 1.0; text-align: center; margin-bottom: 0px;">
                                                     <span t-if="label.product_id.reduced_price == 0.0" t-field="label.product_id.lst_price"/>
                                                     <span t-if="label.product_id.reduced_price == 0.0" t-field="label.product_id.currency_id.symbol"/>
 
