@@ -8,7 +8,6 @@ class ProductProduct(models.Model):
     _inherit = "product.product"
 
     def create_stock_orderpoint(self):
-        print("Create_stock_orderpoint*******************************")
         stock_warehouse_orderpoint_obj = self.env["stock.warehouse.orderpoint"]
         stock_locations = self.env["stock.location"].search(
             [
@@ -22,10 +21,6 @@ class ProductProduct(models.Model):
                 ("detailed_type", "=", "product"),
             ]
         )
-
-        print("stock_locations: ", stock_locations)
-        print("products: ", products)
-
         for product in products:
             for location in stock_locations:
 
@@ -50,5 +45,4 @@ class ProductProduct(models.Model):
 
     @api.model
     def _cron_stock_orderpoint_auto_create(self):
-        print("Cron: stock_orderpoint_auto_create*******************************")
         self.create_stock_orderpoint()
