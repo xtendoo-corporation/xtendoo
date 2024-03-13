@@ -23,9 +23,6 @@ class ProductProduct(models.Model):
         )
         for product in products:
             for location in stock_locations:
-
-                print("location ware house: ", location.warehouse_id)
-
                 if not stock_warehouse_orderpoint_obj.search(
                     [
                         ("product_id", "=", product.id),
