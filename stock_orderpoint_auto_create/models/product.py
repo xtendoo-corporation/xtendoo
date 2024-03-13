@@ -14,6 +14,7 @@ class ProductProduct(models.Model):
             [
                 ("usage", "=", "internal"),
                 ("replenish_location", "=", "True"),
+                ("company_id", "=", self.env.company.id),
             ]
         )
         products = self.search(
