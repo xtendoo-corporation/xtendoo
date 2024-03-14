@@ -7,9 +7,7 @@
         <field name="inherit_id" ref="account_commission.view_settlement_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='line_ids']" position="attributes">
-                <attribute name="attrs">
-                    attrs="{'readonly': False}"
-                </attribute>
+                <attribute name="attrs">{}</attribute>
             </xpath>
         </field>
     </record>
