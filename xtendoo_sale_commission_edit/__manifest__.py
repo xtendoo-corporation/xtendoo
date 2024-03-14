@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Tecnativa - Pedro M. Baeza
+# Copyright 2024 Manuel Calero <http://www.xtendoo.es>
 {
     "name": "Xtentoo Sale Commission Edit",
     "author": "Manuel Calero - Xtentoo",
