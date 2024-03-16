@@ -1,7 +1,7 @@
 # Copyright 2024 Manuel Calero <http://www.xtendoo.es>
 {
-    "name": "Xtentoo Sale Commission Edit",
-    "author": "Manuel Calero - Xtentoo",
+    "name": "Xtendoo Sale Commission Edit",
+    "author": "Manuel Calero - Xtendoo",
     "license": "AGPL-3",
     "website": "https://github.com/OCA/commission",
     "category": "Sales Management",
