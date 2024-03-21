@@ -135,7 +135,7 @@ class WooCronConfigurationEpt(models.TransientModel):
         self.woo_auto_import_complete_order = instance.auto_import_complete_order if instance else False
         self.woo_auto_import_cancel_order = instance.auto_import_cancel_order if instance else False
         self.woo_auto_update_order_status = instance.auto_update_order_status if instance else False
-        self.woo_product_auto_import = instance.product_auto_import if instance else False
+        self.woo_product_auto_import = instance.auto_import_product if instance else False
 
         inventory_cron = self.search_active_existing_cron('ir_cron_update_woo_stock_instance', instance)
 

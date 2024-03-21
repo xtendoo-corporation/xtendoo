@@ -291,7 +291,7 @@ class WooProcessImportExport(models.TransientModel):
             product_res_list.append(results[0])
         if product_res_list:
             product_queues = self.env['woo.product.template.ept'].with_context(
-                import_export_record=self.id).create_woo_product_queue(product_res_list, self.woo_instance_id,
+                import_export_record=self.id, queue_created_by="manual").create_woo_product_queue(product_res_list, self.woo_instance_id,
                                                                        import_all, template_id=False)
             end = time.time()
             _logger.info("Created product queues time -- %s -- seconds.", str(end - start))
@@ -304,7 +304,7 @@ class WooProcessImportExport(models.TransientModel):
         @author : Nilam Kubavat at 11-Aug-2022
         @task ID : 197960
         """
-        order_queues = self.env['sale.order'].import_woo_specific_orders(self.woo_instance_id,
+        order_queues = self.env['sale.order'].with_context(queue_created_by="manual").import_woo_specific_orders(self.woo_instance_id,
                                                                          order_ids=self.woo_order_ids)
         return order_queues
 
@@ -498,7 +498,7 @@ class WooProcessImportExport(models.TransientModel):
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
         instance = self.woo_instance_id
-        queues = self.env['woo.product.template.ept'].update_stock(instance, self.export_stock_from)
+        queues = self.env['woo.product.template.ept'].with_context(queue_created_by="manual").update_stock(instance, self.export_stock_from)
 
         return queues
 
@@ -523,7 +523,7 @@ class WooProcessImportExport(models.TransientModel):
         self.env['woo.product.template.ept'].sync_woo_attribute(woo_instance_id)
 
         product_queues = woo_products_template_obj.with_context(
-            import_export_record=self.id).get_products_from_woo_v1_v2_v3(woo_instance_id, import_all=import_all,
+            import_export_record=self.id, queue_created_by="manual").get_products_from_woo_v1_v2_v3(woo_instance_id, import_all=import_all,
                                                                          from_date=self.products_after_date,
                                                                          to_date=self.products_before_date)
         to_date = fields.Datetime.now()
@@ -696,7 +696,7 @@ class WooProcessImportExport(models.TransientModel):
         @author: Maulik Barad on Date 14-Nov-2019.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
-        order_queues = self.env['sale.order'].import_woo_orders(self.woo_instance_id, self.orders_after_date,
+        order_queues = self.env['sale.order'].with_context(queue_created_by="manual").import_woo_orders(self.woo_instance_id, self.orders_after_date,
                                                                 self.orders_before_date, order_type=order_type)
         return order_queues
 

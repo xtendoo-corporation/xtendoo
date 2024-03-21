@@ -65,3 +65,34 @@ class ProductTemplate(models.Model):
             template.woo_template_count = len(woo_templates) if woo_templates else 0
 
     woo_template_count = fields.Integer(string='# Sales', compute='_compute_woo_template_count')
+
+
+class Pricelist(models.Model):
+    _inherit = 'product.pricelist'
+
+    def _get_applicable_rules(self, products, date, **kwargs):
+        self and self.ensure_one()
+        woo_products = self.env['woo.product.product.ept'].search([('product_id', '=', products.id)])
+        if woo_products:
+            return self.env['product.pricelist.item'].with_context(active_test=False).search(
+                self._get_rules_domain_woo_ept(products=products, date=date, **kwargs)
+            )
+        return self.env['product.pricelist.item'].with_context(active_test=False).search(
+            self._get_applicable_rules_domain(products=products, date=date, **kwargs)
+        )
+
+    def _get_rules_domain_woo_ept(self, products, date, **kwargs):
+        self and self.ensure_one()
+        if products._name == 'product.template':
+            templates_domain = ('product_tmpl_id', 'in', products.ids)
+            products_domain = ('product_id.product_tmpl_id', 'in', products.ids)
+        else:
+            templates_domain = ('product_tmpl_id', 'in', products.product_tmpl_id.ids)
+            products_domain = ('product_id', 'in', products.ids)
+
+        return [
+            ('pricelist_id', '=', self.id),
+            '|', ('categ_id', '=', False), ('categ_id', 'parent_of', products.categ_id.ids),
+            '|', ('product_tmpl_id', '=', False), templates_domain,
+            '|', ('product_id', '=', False), products_domain
+        ]

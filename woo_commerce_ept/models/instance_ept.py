@@ -1095,16 +1095,21 @@ class WooInstanceEpt(models.Model):
         @author: Maulik Barad on Date 29-Oct-2020.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
-        if not host:
-            host = self.woo_host
-        client = base.Client("%s/xmlrpc.php" % host, username, password)
         try:
-            client.call(media.UploadFile(""))
-        except InvalidCredentialsError as error:
-            raise UserError(_("%s") % error)
-        except Exception as error:
-            _logger.info(_('%s'), error)
-        return True
+            if not host:
+                host = self.woo_host
+            client = base.Client("%s/xmlrpc.php" % host, username, password)
+            try:
+                client.call(media.UploadFile(""))
+            except InvalidCredentialsError as error:
+                raise UserError(_("%s") % error)
+            except Exception as error:
+                _logger.info(_('%s'), error)
+            return True
+        except Exception as e:
+            raise UserError(
+                "It seems there is a configuration problem in your WooCommerce store."
+                "Please check the user guide to enable XML-RPC in your WooCommerce store.\n\n "f"Error: {str(e)}")
 
     def reset_woo_credentials(self):
         """

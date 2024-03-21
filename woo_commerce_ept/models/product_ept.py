@@ -796,10 +796,11 @@ class WooProductTemplateEpt(models.Model):
             if queues.queue_line_ids:
                 product_queue_ids = queues.mapped('id')
                 # message = "Product Queue created ", queues.mapped('name')
-                message = "Product Queue created %s" % ', '.join(queues.mapped('name'))
-                bus_bus_obj._sendone(self.env.user.partner_id, 'simple_notification',
-                                     {'title': 'WooCommerce Connector', 'message': message, "sticky": False,
-                                      "warning": True})
+                if self.env.context.get('queue_created_by'):
+                    message = "Product Queue created %s" % ', '.join(queues.mapped('name'))
+                    bus_bus_obj._sendone(self.env.user.partner_id, 'simple_notification',
+                                         {'title': 'WooCommerce Connector', 'message': message, "sticky": False,
+                                          "warning": True})
             self._cr.commit()
         return product_queue_ids
 
@@ -1886,8 +1887,15 @@ class WooProductTemplateEpt(models.Model):
             if update_price:
                 woo_instance.woo_pricelist_id.set_product_price_ept(woo_product.product_id.id, variant_price)
                 if woo_instance.woo_extra_pricelist_id:
-                    woo_instance.woo_extra_pricelist_id.set_product_price_ept(woo_product.product_id.id,
-                                                                              variant_sale_price)
+                    pricelist_item = woo_instance.woo_extra_pricelist_id.set_product_price_ept(
+                        woo_product.product_id.id,
+                        variant_sale_price)
+                    pricelist_item.date_start = datetime.strptime(variant.get('date_on_sale_from'),
+                                                                  '%Y-%m-%dT%H:%M:%S') if variant.get(
+                        'date_on_sale_from') else False
+                    pricelist_item.date_end = datetime.strptime(variant.get('date_on_sale_to'),
+                                                                '%Y-%m-%dT%H:%M:%S') if variant.get(
+                        'date_on_sale_to') else False
             if update_images and isinstance(product_queue_id, str) and product_queue_id == 'from Order':
                 if not woo_template.product_tmpl_id.image_1920:
                     product_dict.update(
@@ -2013,7 +2021,15 @@ class WooProductTemplateEpt(models.Model):
         if update_price:
             woo_instance.woo_pricelist_id.set_product_price_ept(woo_product.product_id.id, variant_price)
             if woo_instance.woo_extra_pricelist_id:
-                woo_instance.woo_extra_pricelist_id.set_product_price_ept(woo_product.product_id.id, variant_sale_price)
+                pricelist_item = woo_instance.woo_extra_pricelist_id.set_product_price_ept(woo_product.product_id.id,
+                                                                                           variant_sale_price)
+
+                pricelist_item.date_start = datetime.strptime(product_response.get('date_on_sale_from'),
+                                                              '%Y-%m-%dT%H:%M:%S') if product_response.get(
+                    'date_on_sale_from') else False
+                pricelist_item.date_end = datetime.strptime(product_response.get('date_on_sale_to'),
+                                                            '%Y-%m-%dT%H:%M:%S') if product_response.get(
+                    'date_on_sale_to') else False
         if update_images and isinstance(product_queue_id, str) and product_queue_id == 'from Order':
             self.update_product_images(product_response["images"], {}, woo_template, woo_product, False)
         if woo_template:
@@ -2361,6 +2377,13 @@ class WooProductTemplateEpt(models.Model):
                         partner=False)
                     if sale_price_rule:
                         info.update({'sale_price': str(sale_price) if sale_price > 0 else ""})
+                        date_on_sale_from = self.env["product.pricelist.item"].browse(sale_price_rule).date_start
+                        date_on_sale_to = self.env["product.pricelist.item"].browse(sale_price_rule).date_end
+
+                        info.update({'date_on_sale_from': date_on_sale_from.strftime(
+                            '%Y-%m-%dT%H:%M:%S') if date_on_sale_from else "",
+                                     'date_on_sale_to': date_on_sale_to.strftime(
+                                         '%Y-%m-%dT%H:%M:%S') if date_on_sale_to else ""})
 
             if template.woo_tmpl_id != variant.variant_id:
                 if variant.variant_id:
@@ -2377,6 +2400,12 @@ class WooProductTemplateEpt(models.Model):
                     data.update({'regular_price': str(price)})
                     if instance.woo_extra_pricelist_id and sale_price_rule:
                         data.update({'sale_price': str(sale_price) if sale_price > 0 else ""})
+                        date_on_sale_from = self.env["product.pricelist.item"].browse(sale_price_rule).date_start
+                        date_on_sale_to = self.env["product.pricelist.item"].browse(sale_price_rule).date_end
+                        data.update({'date_on_sale_from': date_on_sale_from.strftime(
+                            '%Y-%m-%dT%H:%M:%S') if date_on_sale_from else "",
+                                     'date_on_sale_to': date_on_sale_to.strftime(
+                                         '%Y-%m-%dT%H:%M:%S') if date_on_sale_to else ""})
                 flag = True
 
         if data.get('variations'):

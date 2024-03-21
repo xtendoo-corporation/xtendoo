@@ -107,10 +107,12 @@ class SaleOrder(models.Model):
                 if order_data_queue.order_data_queue_line_ids:
                     order_queues_list += order_data_queue
                     _logger.info("Lines added in Order queue %s.", order_data_queue.name)
-                    message = "Order Queue created %s" % order_data_queue.name
-                    bus_bus_obj._sendone(self.env.user.partner_id, 'simple_notification',
-                                         {'title': _('WooCommerce Connector'), 'message': _(message), "sticky": False,
-                                          "warning": True})
+                    if self.env.context.get('queue_created_by'):
+                        message = "Order Queue created %s" % order_data_queue.name
+                        bus_bus_obj._sendone(self.env.user.partner_id, 'simple_notification',
+                                             {'title': _('WooCommerce Connector'), 'message': _(message),
+                                              "sticky": False,
+                                              "warning": True})
                 else:
                     order_data_queue.unlink()
                 del orders_data[:50]
@@ -221,8 +223,9 @@ class SaleOrder(models.Model):
 
         order_queues = []
         order_data_list = []
+        order_data_list_by_webhook = []
         wc_api = woo_instance.woo_connect()
-
+        existing_order_ids = self.search_existing_specific_orders(woo_instance, order_ids)
         for order_id in list(order_ids.split(",")):
             try:
                 response = wc_api.get('orders/%s' % order_id, params=params)
@@ -233,24 +236,29 @@ class SaleOrder(models.Model):
             except Exception as error:
                 raise UserError(_("Something went wrong while importing Orders.\n\nPlease Check your Connection and "
                                   "Instance Configuration.\n\n" + str(error)))
-
-            order_data_list.append(response.json())
-
-        if not order_data_list:
+            if order_id in existing_order_ids and woo_instance.create_woo_order_webhook:
+                order_data_list_by_webhook.append(response.json())
+            else:
+                order_data_list.append(response.json())
+        if not order_data_list and not order_data_list_by_webhook:
             message = "No orders Found between %s and %s for %s" % (
                 params.get('after'), params.get('before'), woo_instance.name)
-            # bus_bus_obj._sendone(self.env.user.partner_id, 'simple_notification',
-            #                      {'title': 'WooCommerce Connector', 'message': message, "sticky": False,
-            #                       "warning": True})
             bus_bus_obj._sendone(self.env.user.partner_id, 'simple_notification',
                                  {'title': _('WooCommerce Connector'), 'message': _(message), "sticky": False,
                                   "warning": True})
             _logger.info(message)
-
         order_queue_ids = self.create_woo_order_data_queue(woo_instance, order_data_list, order_type="").ids
         order_queues += order_queue_ids
-
+        if order_data_list_by_webhook:
+            order_queues += self.create_woo_order_data_queue(woo_instance, order_data_list_by_webhook,
+                                                             order_type="", created_by="webhook").ids
         return order_queues
+
+    def search_existing_specific_orders(self, woo_instance, order_ids):
+        order_list = [order_id for order_id in order_ids.split(',')]
+        order_existing_order = self.search([('woo_instance_id', '=', woo_instance.id),
+                                            ('woo_order_id', 'in', order_list)]).mapped('woo_order_id')
+        return order_existing_order
 
     def import_all_orders(self, total_pages, params, wc_api, woo_instance, order_type):
         """
@@ -883,6 +891,9 @@ class SaleOrder(models.Model):
 
             order_values = self.prepare_woo_order_vals(order_data, woo_instance, partner, billing_partner,
                                                        shipping_partner, workflow_config)
+            is_create_order = self.check_sale_order_validation(woo_instance, order_data, order_values, queue_line)
+            if not is_create_order:
+                return False
             sale_order = self.create(order_values)
             tax_included = order_data.get("prices_include_tax")
 
@@ -925,6 +936,40 @@ class SaleOrder(models.Model):
             _logger.info(message)
         queue_lines.order_data_queue_id.is_process_queue = False
         return new_orders
+
+    def check_sale_order_validation(self, woo_instance, order_data, order_values, queue_line):
+        """
+        This method use for Check customer, Order Date, price list, warehouse and picking policy available in Order
+        Response.
+        @author: Yagnik Joshi on Date 25-01-2024.
+        """
+        is_create_order = True
+        error_messages = []
+
+        if order_data.get('shipping_lines', []):
+            shipping_product_id = woo_instance.shipping_product_id
+            if not shipping_product_id:
+                is_create_order = False
+                error_messages.append(
+                    " When creating a new delivery method, the system encountered an issue as it could not find the shipping product in the instance configuration."
+                    " \n - This resulted in the failure of the system to create the new delivery method. \n - To resolve this issue, please follow these steps: %s."
+                    " \n 1 Go to WooCommerce >> Instance >> Default Products.  \n 2 Review whether the shipping product is set. \n 3 If already set, ensure that it is active in Odoo. ")
+
+        if not order_values.get('pricelist_id'):
+            is_create_order = False
+            error_messages.append(
+                " The order import operation failed because the price list configuration was not found in the instance configuration."
+                " \n To resolve this issue, navigate to WooCommerce >> Configuration >> Settings, select instance and configure Instance Price list")
+
+        if not order_values.get('warehouse_id'):
+            is_create_order = False
+            error_messages.append(
+                " The order import operation failed because the warehouse configuration was not found in the instance configuration."
+                " \n To resolve this issue, navigate to WooCommerce >> Configuration >> Settings, select instance and configure warehouse")
+
+        for message in error_messages:
+            self.create_woo_log_lines(message, woo_instance, queue_line)
+        return is_create_order
 
     def search_existing_woo_order(self, woo_instance, order_data):
         """
@@ -1462,8 +1507,7 @@ class SaleOrder(models.Model):
 
             if not order:
                 order = self.create_woo_orders(queue_line)
-                if not order:
-                    return orders
+                return orders
             try:
                 queue_line.state = "draft" if queue_line.state == "failed" else queue_line.state
                 if woo_status != "cancelled" and instance.woo_customer_order_webhook:
@@ -1505,17 +1549,15 @@ class SaleOrder(models.Model):
                     if workflow:
                         order.auto_workflow_process_id = workflow.woo_auto_workflow_id.id
                         order.message_post(body=_("Workflow Updated by Webhook as Order is Paid in woo commerce."))
-                        if workflow:
-                            order.auto_workflow_process_id = workflow.woo_auto_workflow_id.id
-                            if order.state not in ["sale", "done", "cancel"]:
-                                order.action_confirm()
-                            if order.invoice_status in ['no', 'to invoice']:
-                                order.validate_and_paid_invoices_ept(order.auto_workflow_process_id)
-                            elif order.invoice_status == 'invoiced' and workflow.woo_auto_workflow_id.register_payment:
-                                order.paid_invoice_ept(order.invoice_ids)
+                        if order.state not in ["sale", "done",
+                                               "cancel"] and workflow.woo_auto_workflow_id.validate_order:
+                            order.action_confirm()
+                        if order.invoice_status in ['no', 'to invoice']:
+                            order.validate_and_paid_invoices_ept(order.auto_workflow_process_id)
+                        elif order.invoice_status == 'invoiced' and workflow.woo_auto_workflow_id.register_payment:
+                            order.paid_invoice_ept(order.invoice_ids)
                     else:
-                        if not workflow:
-                            continue
+                        continue
 
                 if refund_data and instance.woo_refund_order_webhook:
                     refunded = order.create_woo_refund(refund_data, woo_status, order)

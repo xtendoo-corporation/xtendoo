@@ -113,10 +113,11 @@ class WooExportStockQueueEpt(models.Model):
                 _logger.info("Lines added in stock queue %s.", stock_queue.name)
 
                 del stock_data[:50]
-                message = "Export Stock Queue created %s" % stock_queue.name
-                bus_bus_obj._sendone(self.env.user.partner_id, "simple_notification",
-                                     {"title": _("WooCommerce Connector"), "message": _(message), "sticky": False,
-                                      "warning": True})
+                if self.env.context.get('queue_created_by'):
+                    message = "Export Stock Queue created %s" % stock_queue.name
+                    bus_bus_obj._sendone(self.env.user.partner_id, "simple_notification",
+                                         {"title": _("WooCommerce Connector"), "message": _(message), "sticky": False,
+                                          "warning": True})
                 self._cr.commit()
 
         return queues_list
