@@ -8,6 +8,7 @@ class ProductProduct(models.Model):
     _inherit = "product.product"
 
     def create_stock_orderpoint(self):
+        product_supplierinfo_obj = self.env["product.supplierinfo"]
         stock_warehouse_orderpoint_obj = self.env["stock.warehouse.orderpoint"]
         stock_locations = self.env["stock.location"].search(
             [
@@ -37,6 +38,23 @@ class ProductProduct(models.Model):
                             "product_uom": product.uom_id.id,
                             "warehouse_id": location.warehouse_id.id,
                             "location_id": location.id,
+                        }
+                    )
+
+            product_suppliers = product_supplierinfo_obj.search(
+                [
+                    ("product_id", "=", product.id)
+                ]
+            )
+            for product_supplier in product_suppliers:
+                print("precio en la relación de proveedores::::::::::::::::::::::::::::::::::::: ")
+                print(product_supplier.price)
+                print("precio en el producto:::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+                print(product.standard_price)
+                if product_supplier.price != product.standard_price:
+                    product_supplier.write(
+                        {
+                            "price": product.standard_price
                         }
                     )
 
