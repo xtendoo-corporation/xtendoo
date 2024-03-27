@@ -45,7 +45,7 @@ class ProductProduct(models.Model):
 
             product_suppliers = product_supplierinfo_obj.search(
                 [
-                    ("product_id", "=", product.id)
+                    ("product_tmpl_id", "=", product.product_tmpl_id.id)
                 ]
             )
             for product_supplier in product_suppliers:
