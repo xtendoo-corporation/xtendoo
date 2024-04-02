@@ -1,0 +1,237 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* visuena_document_format
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-02 12:34+0000\n"
+"PO-Revision-Date: 2024-04-02 12:34+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: visuena_document_format
+#: model:ir.actions.report,print_report_name:visuena_document_format.report_stock_picking_grouped_for_categories
+msgid ""
+"'Albaran Agrupado - %s - %s' % (object.partner_id.name or '', object.name)"
+msgstr ""
+
+#. module: visuena_document_format
+#: model:ir.actions.report,print_report_name:visuena_document_format.report_sale_order_grouped_for_categories
+msgid ""
+"(object._get_report_base_filename())\n"
+"            "
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid ""
+"<span groups=\"account.group_show_line_subtotals_tax_excluded\">Importe</span>\n"
+"                                        <span groups=\"account.group_show_line_subtotals_tax_included\">Total</span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid ""
+"<span>\n"
+"                                        <strong>Dirección del cliente:</strong>\n"
+"                                    </span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid ""
+"<span>\n"
+"                                        <strong>Dirección del vendedor:</strong>\n"
+"                                    </span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid ""
+"<span>\n"
+"                                    <strong>Dirección de entrega:</strong>\n"
+"                                </span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid ""
+"<span>\n"
+"                                    <strong>Dirección de facturación:</strong>\n"
+"                                </span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<span>Cantidad restante que no ha sido entregada:</span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<span>Desc.%</span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<span>FActura pro-forma #</span>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong class=\"mr16\">Subtotal</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Cantidad</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong>Comercial:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong>Dirección de envío:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Entregados</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong>Expiraciñon:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong>Fecha Evento:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Fecha de envío:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong>Fecha de pedido:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong>Fecha de presupuesto:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Firma</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Ordered</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Pedido:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Pedidos</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "<strong>Posición fiscal:</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "<strong>Producto</strong>"
+msgstr ""
+
+#. module: visuena_document_format
+#: model:ir.actions.report,name:visuena_document_format.report_stock_picking_grouped_for_categories
+msgid "Albarán Agrupado"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "Cantidad"
+msgstr ""
+
+#. module: visuena_document_format
+#: model:ir.model.fields,field_description:visuena_document_format.field_sale_order__used_categories
+#: model:ir.model.fields,field_description:visuena_document_format.field_stock_picking__stock_used_categories
+msgid "Categoria"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "Descripción"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid ""
+"Dirección de envío y\n"
+"                                facturación:"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "Dirección de facturación:"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "Impuestos"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.template_document_stock_picking_grouped_for_categories
+msgid "Lote/Número de serie"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "Pedido #"
+msgstr ""
+
+#. module: visuena_document_format
+#: model:ir.actions.report,name:visuena_document_format.report_sale_order_grouped_for_categories
+msgid "Pedido/Presupuesto Agrupado"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "Precio unitario"
+msgstr ""
+
+#. module: visuena_document_format
+#: model_terms:ir.ui.view,arch_db:visuena_document_format.report_saleorder_grouped_for_categories
+msgid "Presupuesto #"
+msgstr ""
+
+#. module: visuena_document_format
+#: model:ir.model,name:visuena_document_format.model_sale_order
+msgid "Sales Order"
+msgstr ""
+
+#. module: visuena_document_format
+#: model:ir.model,name:visuena_document_format.model_stock_picking
+msgid "Transfer"
+msgstr ""
