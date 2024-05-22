@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="firebase_notifications_settings_view" model="ir.ui.view">
+        <field name="name">Firebase Notifications Configuration</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Firebase notifications Data-String" string="App notifications" data-key="firebase_notifications">
+                    <h2>Notifications Settings</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-xs-12 col-md-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_json_file"/>
+                                <div class="text-muted">
+                                    Import the json file
+                                </div>
+                                    <field name="firebase_oca_json_file"/>
+                                    </div>
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_type" attrs="{'invisible': [('firebase_oca_type', '=', False)]}"/>
+                                <field name="firebase_oca_type" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_type', '=', False)]}"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_project_id" attrs="{'invisible': [('firebase_oca_project_id', '=', False)]}"/>
+                                <field name="firebase_oca_project_id" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_project_id', '=', False)]}"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_private_key_id" attrs="{'invisible': [('firebase_oca_private_key_id', '=', False)]}"/>
+                                <field name="firebase_oca_private_key_id" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_private_key_id', '=', False)]}"/>
+                            </div>
+                             </div>
+                        <div class="col-xs-12 col-md-6 o_setting_box" style="margin-right: 150px">
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_client_id" attrs="{'invisible': [('firebase_oca_client_id', '=', False)]}"/>
+                                <field name="firebase_oca_client_id" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_client_id', '=', False)]}"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_auth_uri" attrs="{'invisible': [('firebase_oca_auth_uri', '=', False)]}"/>
+                                <field name="firebase_oca_auth_uri" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_auth_uri', '=', False)]}"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_token_uri" attrs="{'invisible': [('firebase_oca_token_uri', '=', False)]}"/>
+                                <field name="firebase_oca_token_uri" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_token_uri', '=', False)]}"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_auth_provider_x509_cert_url" attrs="{'invisible': [('firebase_oca_auth_provider_x509_cert_url', '=', False)]}"/>
+                                <field name="firebase_oca_auth_provider_x509_cert_url" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_auth_provider_x509_cert_url', '=', False)]}"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="firebase_oca_universe_domain" attrs="{'invisible': [('firebase_oca_universe_domain', '=', False)]}"/>
+                                <field name="firebase_oca_universe_domain" style="margin-left: 10px" attrs="{'invisible': [('firebase_oca_universe_domain', '=', False)]}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="firebase_notifications_settings_action" model="ir.actions.act_window">
+        <field name="name">Firebase Notifications Configuration</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="firebase_notifications_settings_view"/>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'firebase_notifications'}</field>
+    </record>
+
+    <menuitem id="firebase_notifications_settings_menu" name="Configuration"
+               action="firebase_notifications_settings_action"/>
+</odoo>
