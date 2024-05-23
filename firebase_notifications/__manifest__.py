@@ -1,5 +1,5 @@
 {
-    'name': 'Firebase Notifications',
+    'name': 'APK Firebase Notifications',
     'version': '16.0',
     'summary': 'Integrate Firebase Notifications in Odoo',
     'description': 'A module to integrate Firebase Cloud Messaging for notifications in Odoo',

@@ -15,17 +15,45 @@ class FirebaseNotification(models.Model):
     _description = 'Firebase Notification'
     _inherit = ["mail.thread", "mail.activity.mixin"]
 
-    name = fields.Char('Name')
-    title = fields.Char('Title')
-    body = fields.Text('Body')
-    image = fields.Char('Image URL')
-    redirect_url = fields.Char('Redirect URL')
-    tags = fields.Many2many('firebase.notification.tag', string='Tags')
-    color = fields.Integer('Color Index')
-    last_launch = fields.Datetime('Last launch')
-    notification_sent = fields.Boolean('Notification Sent')
-    times_notification_sent = fields.Integer('Times launched', readonly=True)
-    firebase_initialized = fields.Boolean(string='Firebase Initialized', default=False)
+    name = fields.Char(
+        'Name'
+    )
+    title = fields.Char(
+        'Title'
+    )
+    body = fields.Text(
+        'Body'
+    )
+    image = fields.Char(
+        'Image URL'
+    )
+    image_preview = fields.Binary(
+        "Image",
+    )
+    redirect_url = fields.Char(
+        'Redirect URL'
+    )
+    tags = fields.Many2many(
+        'firebase.notification.tag',
+        string='Tags'
+    )
+    color = fields.Integer(
+        'Color Index'
+    )
+    last_launch = fields.Datetime(
+        'Last launch'
+    )
+    notification_sent = fields.Boolean(
+        'Notification Sent'
+    )
+    times_notification_sent = fields.Integer(
+        'Times launched',
+        readonly=True
+    )
+    firebase_initialized = fields.Boolean(
+        string='Firebase Initialized',
+        default=False
+    )
     state = fields.Selection([
         ('draft', 'Borrador'),
         ('sent', 'Enviado'),
@@ -40,12 +68,12 @@ class FirebaseNotification(models.Model):
                 firebase_admin.initialize_app(cred)
                 self.firebase_initialized = True
 
-    @api.onchange('image_upload')
+    @api.onchange('image_preview')
     def _onchange_image_upload(self):
-        if self.image_upload:
+        if self.image_preview:
             # Generar una URL pública para la imagen
             base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-            image_url = "{}/web/image/firebase.notification/{}/image_upload".format(base_url, self.id)
+            image_url = "{}/web/image/firebase.notification/{}/image_preview".format(base_url, self.id)
             # Actualizar el campo 'image' con la URL pública
             self.image = image_url
 

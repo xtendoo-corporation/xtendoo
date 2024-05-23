@@ -21,28 +21,6 @@ class FirebaseData(models.Model):
     client_x509_cert_url = fields.Char(string='Client X509 Cert URL', store=True)
     universe_domain = fields.Char(string='Universe Domain', store=True)
 
-    # @api.model
-    # def create(self, vals):
-    #     self.search([]).unlink()  # Elimina todos los registros existentes
-    #     return super().create(vals)  # Crea un nuevo registro
-
-    # def import_json_file(self):
-    #     json_content = base64.b64decode(self.json_file).decode('utf-8')
-    #     data = json.loads(json_content)
-    #     self.write({
-    #         'type': data['type'],
-    #         'project_id': data['project_id'],
-    #         'private_key_id': data['private_key_id'],
-    #         'private_key': data['private_key'],
-    #         'client_email': data['client_email'],
-    #         'client_id': data['client_id'],
-    #         'auth_uri': data['auth_uri'],
-    #         'token_uri': data['token_uri'],
-    #         'auth_provider_x509_cert_url': data['auth_provider_x509_cert_url'],
-    #         'client_x509_cert_url': data['client_x509_cert_url'],
-    #         'universe_domain': data['universe_domain'],
-    #     })
-
     @api.model
     def import_json_file(self, json_file):
         json_content = base64.b64decode(json_file).decode('utf-8')

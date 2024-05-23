@@ -43,18 +43,9 @@
                             <field name="redirect_url"/>
                             <field name="scheduled_datetime"/>
                             <field name="image" widget="url"/>
+                            <field name="image_preview" widget="image"/>
                             <field name="tags" widget="many2many_tags" options="{'color_field': 'color'}"/>
                             <field name="notification_sent" invisible="1"/>
-<!--                            <button string="Send Notification" type="object" name="send_to_topic" class="btn btn-primary"/>-->
-<!--                            <div class="oe_notification oe_success" groups="base.group_user"-->
-<!--                                 attrs="{'invisible': [('notification_sent', '=', False)]}">-->
-<!--                                <div class="oe_notification_title">Notification Sent</div>-->
-<!--                                <div class="oe_notification_content">The notification has been sent successfully.-->
-<!--                                    <br/>-->
-<!--                                    Times:-->
-<!--                                    <field name="times_notification_sent"/>-->
-<!--                                </div>-->
-<!--                            </div>-->
                         </group>
                     </sheet>
                     <div class="oe_chatter">
