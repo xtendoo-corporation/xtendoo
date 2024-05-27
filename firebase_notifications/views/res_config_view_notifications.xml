@@ -67,6 +67,4 @@
         <field name="context">{'module' : 'firebase_notifications'}</field>
     </record>
 
-    <menuitem id="firebase_notifications_settings_menu" name="Configuration"
-               action="firebase_notifications_settings_action"/>
 </odoo>
