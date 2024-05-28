@@ -132,14 +132,14 @@
             <div class="row">
                 <div class="col-lg-6 offset-lg-3 o_database_list">
                     <img src="/web/static/src/img/logo2.png" class="img-fluid d-block mx-auto"/>
-<!--                    {% if not list_db %}-->
-<!--                        <div class="alert alert-danger text-center">The database manager has been disabled by the administrator</div>-->
-<!--                    {% elif insecure and databases %}-->
-<!--                        <div class="alert alert-warning">-->
-<!--                            Warning, your Odoo database manager is not protected.<br/>-->
-<!--                            Please <a href="#" data-toggle="modal" data-target=".o_database_master">set a master password</a> to secure it.-->
-<!--                        </div>-->
-<!--                    {% endif %}-->
+                    {% if not list_db %}
+                        <div class="alert alert-danger text-center">The database manager has been disabled by the administrator</div>
+                    {% elif insecure and databases %}
+                        <div class="alert alert-warning">
+                            Warning, your Odoo database manager is not protected.<br/>
+                            Please <a href="#" data-toggle="modal" data-target=".o_database_master">set a master password</a> to secure it.
+                        </div>
+                    {% endif %}
                     {% if error %}
                         <div class="alert alert-danger">{{ error }}</div>
                     {% endif %}
@@ -258,34 +258,34 @@
 <!--        </div>-->
 
         <!-- Master password -->
-<!--        <div class="modal fade o_database_master" role="dialog">-->
-<!--            <div class="modal-dialog">-->
-<!--                <div class="modal-content">-->
-<!--                    <div class="modal-header">-->
-<!--                        <h4 class="modal-title">Set Master Password</h4>-->
-<!--                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
-<!--                    </div>-->
-<!--                    <form id="form_change_pwd" role="form" action="/web/database/change_password" method="post">-->
-<!--                        <div class="modal-body">-->
-<!--                            <p>The master password is required to create, delete, dump or restore databases.</p>-->
-<!--                            {{ master_input() }}-->
-<!--                            <div class="form-group">-->
-<!--                                <label for="master_pwd_new" class="col-form-label">New Master Password</label>-->
-<!--                                <div class="input-group">-->
-<!--                                    <input id="master_pwd_new" type="password" name="master_pwd_new" class="form-control" required="required" autocomplete="off"/>-->
-<!--                                    <div class="input-group-append">-->
-<!--                                        <span class="fa fa-eye o_little_eye input-group-text" aria-hidden="true" style="cursor: pointer;"></span>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                        <div class="modal-footer">-->
-<!--                            <input type="submit" value="Continue" class="btn btn-primary float-right"/>-->
-<!--                        </div>-->
-<!--                    </form>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
+        <div class="modal fade o_database_master" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Set Master Password</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <form id="form_change_pwd" role="form" action="/web/database/change_password" method="post">
+                        <div class="modal-body">
+                            <p>The master password is required to create, delete, dump or restore databases.</p>
+                            {{ master_input() }}
+                            <div class="form-group">
+                                <label for="master_pwd_new" class="col-form-label">New Master Password</label>
+                                <div class="input-group">
+                                    <input id="master_pwd_new" type="password" name="master_pwd_new" class="form-control" required="required" autocomplete="off"/>
+                                    <div class="input-group-append">
+                                        <span class="fa fa-eye o_little_eye input-group-text" aria-hidden="true" style="cursor: pointer;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <input type="submit" value="Continue" class="btn btn-primary float-right"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <!-- Duplicate DB -->
 <!--        <div class="modal fade o_database_duplicate" role="dialog">-->
