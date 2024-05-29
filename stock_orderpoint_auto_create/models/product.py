@@ -48,17 +48,12 @@ class ProductProduct(models.Model):
                     ("product_tmpl_id", "=", product.product_tmpl_id.id)
                 ]
             )
-            for product_supplier in product_suppliers:
+            for product_supplier in product_suppliers.filter(lambda x: x.price != product.standard_price):
                 print("precio en la relación de proveedores::::::::::::::::::::::::::::::::::::: ")
                 print(product_supplier.price)
                 print("precio en el producto:::::::::::::::::::::::::::::::::::::::::::::::::::: ")
                 print(product.standard_price)
-                if product_supplier.price != product.standard_price:
-                    product_supplier.write(
-                        {
-                            "price": product.standard_price
-                        }
-                    )
+                product_supplier.write({"price": product.standard_price})
 
     @api.model
     def _cron_stock_orderpoint_auto_create(self):
