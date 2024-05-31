@@ -138,19 +138,22 @@ class WooOrderDataQueueLineEpt(models.Model):
         @author: Haresh Mori on Date 24-Oct-2019.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
+
+        print("process_order_queue_line------------------------------------------------------")
+
         common_log_line_obj = log_line = self.env["common.log.lines.ept"]
         sale_order_obj = self.env["sale.order"]
         start = time.time()
         queue_id = self.order_data_queue_id
 
-        if queue_id.created_by == 'webhook':
-            update_order = True
+        print("queue_id", queue_id)
+        print("queue_id.created_by", queue_id.created_by)
 
-        if update_order:
-            log_line = sale_order_obj.update_woo_order(self, queue_id.instance_id)
-        else:
-            log_line = sale_order_obj.create_woo_orders(self)
+        # log_line = sale_order_obj.create_woo_orders(self)
+        # if log_line and queue_id.instance_id.is_create_schedule_activity:
+        #     common_log_line_obj.create_woo_schedule_activity()
 
+        log_line = sale_order_obj.update_woo_order(self, queue_id.instance_id)
         if log_line and queue_id.instance_id.is_create_schedule_activity:
             common_log_line_obj.create_woo_schedule_activity()
 

@@ -46,7 +46,7 @@ class SaleOrder(models.Model):
 
     def _search_woo_order_ids(self, operator, value):
         query = """select so.id from stock_picking sp
-                    inner join sale_order so on so.procurement_group_id=sp.group_id                   
+                    inner join sale_order so on so.procurement_group_id=sp.group_id
                     inner join stock_location on stock_location.id=sp.location_dest_id and stock_location.usage='customer'
                     where sp.updated_in_woo %s true and sp.state != 'cancel'
                     """ % operator
@@ -1055,10 +1055,10 @@ class SaleOrder(models.Model):
 
         if not workflow_config:
             message = """- Automatic order process workflow configuration not found for this order %s.
-            - System tries to find the workflow based on combination of Payment Gateway(such as Manual, Credit Card, 
+            - System tries to find the workflow based on combination of Payment Gateway(such as Manual, Credit Card,
             Paypal etc.) and Financial Status(such as Paid,Pending,Authorised etc.) and Order Status(such as Processing,Pending Payment,On hold,Completed etc.).
             - In this order Payment Gateway is %s and Financial Status is %s and Order Status is %s.
-            - You can configure the Automatic order process workflow under the menu Woocommerce > Configuration > 
+            - You can configure the Automatic order process workflow under the menu Woocommerce > Configuration >
             Financial Status.""" % (
                 order_data.get("number"), order_data.get("payment_method_title", ""), financial_status, status_code)
             self.create_woo_log_lines(message, woo_instance, queue_line)
@@ -1255,6 +1255,9 @@ class SaleOrder(models.Model):
         @param woo_instance: Woo Instance.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
+
+        print("update_woo_order_status***********************************************")
+
         instance_obj = self.env["woo.instance.ept"]
         log_lines = []
         woo_order_ids = []
@@ -1274,6 +1277,9 @@ class SaleOrder(models.Model):
             pickings = sale_order.picking_ids.filtered(lambda x:
                                                        x.location_dest_id.usage == "customer" and x.state
                                                        != "cancel" and not x.updated_in_woo)
+
+            print("pickings", pickings)
+
             _logger.info("Start Order update status for Order : %s", sale_order.name)
             if all(state == 'done' for state in pickings.mapped("state")):
                 woo_order_ids.append({"id": int(sale_order.woo_order_id), "status": "completed", })
@@ -1384,6 +1390,9 @@ class SaleOrder(models.Model):
         @param instance: Instance of Woo.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
+
+        print("process_order_via_webhook------------------------------------------------------------")
+
         order_queue = woo_order_data_queue_obj = self.env["woo.order.data.queue.ept"]
         order_number = order_data.get('number')
         order_status = order_data.get("status")
@@ -1494,13 +1503,22 @@ class SaleOrder(models.Model):
         @return: Updated Sale order.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
+
+        print("update_woo_order--------------------------------------------")
+
         orders = []
         for queue_line in queue_lines:
             message = ""
             order_data = ast.literal_eval(queue_line.order_data)
             refund_data = order_data.get("refunds")
             queue_line.processed_at = fields.Datetime.now()
+
             woo_status = order_data.get("status")
+
+            print("*"*80)
+            print("update_woo_order")
+            print("woo_status", woo_status)
+
             order = self.search([("woo_instance_id", "=", instance.id),
                                  ("woo_order_id", "=", order_data.get("id"))])
             order_woo_status = order.woo_status
@@ -1540,7 +1558,10 @@ class SaleOrder(models.Model):
                     elif order.woo_status == "pending" and order.auto_workflow_process_id.create_invoice:
                         order.woo_status = woo_status
                         order.validate_and_paid_invoices_ept(order.auto_workflow_process_id)
-
+                elif woo_status == "refunded":
+                    print("*" * 80)
+                    print("refunded")
+                    self.import_woo_specific_orders(order.woo_instance_id, order.woo_order_id)
                 financial_status = self.get_financial_status(order_data)
                 if financial_status == "paid" and not refund_data:
                     order.write({"woo_status": woo_status})
@@ -1770,6 +1791,9 @@ class SaleOrder(models.Model):
         @author: Maulik Barad on Date 31-Dec-2019.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
+
+        print("complete_woo_order--------------------------------------------")
+
         if not self.state == "sale":
             self.action_confirm()
         return self.complete_picking_for_woo(
@@ -1782,6 +1806,9 @@ class SaleOrder(models.Model):
         @author: Maulik Barad on Date 01-Jan-2020.
         Migrated by Maulik Barad on Date 07-Oct-2021.
         """
+
+        print("complete_picking_for_woo--------------------------------------------")
+
         skip_sms = {"skip_sms": True}
         for picking in pickings.filtered(lambda x: x.state != "done"):
             if not self.woo_instance_id.woo_forcefully_reserve_stock_webhook:
@@ -1801,20 +1828,34 @@ class SaleOrder(models.Model):
                     return result
             else:
                 if picking.state in ("done", "cancel"):
+                    print("complete_picking_for_woo--------------------------------------------,"
+                          " picking.state done or cancel")
                     continue
                 if picking.state == "assigned":
+                    print("complete_picking_for_woo--------------------------------------------,"
+                          " picking.state assigned")
                     result = picking.with_context(**skip_sms).button_validate()
                     self.transfer_validate_button_for_woo(picking)
                     message = "Picking is done by Webhook as Order completed in woo commerce"
                 if picking.state not in ("assigned", "done") and all(
                         move.product_id.tracking == 'none' for move in picking.move_ids):
+                    print("complete_picking_for_woo--------------------------------------------,"
+                          " need_validate_transfer = false")
                     need_validate_transfer = False
                     for move in picking.move_ids_without_package:
                         move._action_assign()
+                        print("complete_picking_for_woo--------------------------------------------,"
+                              " move._action_assign()")
                         move._set_quantity_done(move.product_uom_qty)
+                        print("complete_picking_for_woo--------------------------------------------,"
+                              " move._set_quantity_done")
                         need_validate_transfer = True
+                        print("complete_picking_for_woo--------------------------------------------,"
+                              " need_validate_transfer = true")
                     if need_validate_transfer:
                         message = "Picking is forcefully done by Webhook as Order is completed in woo commerce."
+                        print("complete_picking_for_woo--------------------------------------------,"
+                              ,message)
                         picking.with_context(**skip_sms).button_validate()
                 if picking.state == "done":
                     picking.message_post(body=_(message))
