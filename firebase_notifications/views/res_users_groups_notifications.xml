@@ -1,0 +1,15 @@
+<odoo>
+    <record id="view_users_form_inherit" model="ir.ui.view">
+        <field name="name">res.users.form.inherit</field>
+        <field name="model">res.users</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="after">
+                <group name="APK Firebase Notifications" string="APK Firebase Notifications">
+               <field name="access_notification" />
+                </group>
+             </field>
+        </field>
+    </record>
+</odoo>

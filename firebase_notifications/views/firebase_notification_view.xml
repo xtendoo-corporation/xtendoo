@@ -64,18 +64,21 @@
             <field name="view_mode">tree,form</field>
             <field name="res_model">firebase.notification</field>
             <field name="view_id" ref="view_firebase_notification_tree"/>
+            <field name="groups_id" eval="[(6, 0, [ref('firebase_notifications.group_apk_notifications')])]"/>
         </record>
 
         <menuitem name="Notifications"
                   id="menu_firebase_notifications"
                   web_icon="firebase_notifications,static/description/icon.png"
-                  sequence="6"/>
+                  sequence="6"
+                  groups="firebase_notifications.group_apk_notifications"/>
 
         <menuitem name="Notifications"
                   action="firebase_notification_action"
                   id="menu_send_notification"
                   parent="menu_firebase_notifications"
-                  sequence="20"/>
+                  sequence="20"
+                  groups="firebase_notifications.group_apk_notifications"/>
 
     </data>
 </odoo>
