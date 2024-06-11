@@ -57,6 +57,11 @@ class ResConfigSettings(models.TransientModel):
     @api.onchange('firebase_oca_json_file')
     def import_json_file(self):
         if self.firebase_oca_json_file:
+            # Borrar los datos existentes
+            if self.firebase_data_id:
+                self.firebase_data_id.unlink()
+
+            # Importar el nuevo archivo JSON
             firebase_data = self.env['firebase.data'].import_json_file(self.firebase_oca_json_file)
             self.firebase_data_id = firebase_data.id
 
