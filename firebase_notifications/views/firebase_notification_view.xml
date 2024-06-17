@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_firebase_notification_tree" model="ir.ui.view">
+            <field name="name">firebase.notification.tree</field>
+            <field name="model">firebase.notification</field>
+            <field name="arch" type="xml">
+                <tree string="Send notifications">
+                    <field name="name"/>
+                    <field name="title"/>
+                    <field name="body"/>
+                    <field name="last_launch"/>
+                    <field name="times_notification_sent"/>
+                    <field name="tags" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Formulario de edicion-->
+        <record id="view_firebase_notification_form" model="ir.ui.view">
+            <field name="name">firebase.notification.form</field>
+            <field name="model">firebase.notification</field>
+            <field name="arch" type="xml">
+                <form string="Firebase Notification">
+                    <header style="min-height:31px;">
+                         <button string="Send" type="object" name="send_to_topic" class="oe_highlight"/>
+                         <field name="state" widget="statusbar" modifiers="{'readonly': true, 'required': true}"/>
+                    </header>
+                    <br/>
+                    <br/>
+                     <div class="oe_button_box" name="button_box">
+                         <b><field name="times_notification_sent" string="Times sent" style="margin-right: 5px;
+                          border: 1pt solid black; border-radius: 50%; width: 30px; height: 30px;
+                          text-align: center; padding: 3px; display: inline-block; line-height: 24px;" />
+                         <span style="margin-right: 50px;">Times sent</span></b>
+                     </div>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="title"/>
+                            <field name="body"/>
+                            <field name="redirect_url"/>
+                            <field name="scheduled_datetime"/>
+                            <field name="image" widget="url"/>
+                            <field name="image_preview" widget="image"/>
+                            <field name="tags" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="notification_sent" invisible="1"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" />
+                        <field name="activity_ids" widget="mail_activity" />
+                        <field name="message_ids" widget="mail_thread" />
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Definicion de la accion -->
+        <record id="firebase_notification_action" model="ir.actions.act_window">
+            <field name="name">Notification</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">tree,form</field>
+            <field name="res_model">firebase.notification</field>
+            <field name="view_id" ref="view_firebase_notification_tree"/>
+            <field name="groups_id" eval="[(6, 0, [ref('firebase_notifications.group_apk_notifications')])]"/>
+        </record>
+
+        <menuitem name="Notifications"
+                  id="menu_firebase_notifications"
+                  web_icon="firebase_notifications,static/description/icon.png"
+                  sequence="6"
+                  groups="firebase_notifications.group_apk_notifications"/>
+
+        <menuitem name="Notifications"
+                  action="firebase_notification_action"
+                  id="menu_send_notification"
+                  parent="menu_firebase_notifications"
+                  sequence="20"
+                  groups="firebase_notifications.group_apk_notifications"/>
+
+    </data>
+</odoo>
+
+
+
