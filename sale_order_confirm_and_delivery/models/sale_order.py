@@ -8,19 +8,9 @@ class SaleOrder(models.Model):
     # y para confirmar y facturar un pedido en un solo clic.
     # Pero la entrega y la factura hay que confirmarlas manualmente.
     def action_confirm_and_deliver(self):
-        print("*"*80)
-        print("action_confirm_and_deliver")
-        print("*"*80)
-
         self.action_confirm()
-        print("*" * 80 , "despues action_confirm")
-        for order in self.filtered(lambda o: o.state in ['sale', 'draft']):
-
-            print("*"*80)
-            print("order.state", order.state)
-            print("*"*80)
-
-            for picking in order.picking_ids.filtered(lambda p: p.state not in ['assigned', 'confirmed']):
+        for order in self.filtered(lambda o: o.state == 'sale'):
+            for picking in order.picking_ids.filtered(lambda p: p.state not in ['done', 'cancel']):
                 picking.action_assign()
                 for move in picking.move_ids_without_package:
                     move._action_assign()
@@ -31,3 +21,5 @@ class SaleOrder(models.Model):
         self.action_confirm_and_deliver()
         for order in self:
             order._create_invoices()
+            for invoice in order.invoice_ids:
+                invoice.action_post()
