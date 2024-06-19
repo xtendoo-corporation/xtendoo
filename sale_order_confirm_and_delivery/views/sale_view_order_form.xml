@@ -1,0 +1,13 @@
+<odoo>
+    <record id="view_order_form_agility" model="ir.ui.view">
+        <field name="name">sale.order.form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <header>
+                <button name="action_confirm_and_deliver" string="Confirmar y entregar" type="object" class="oe_highlight" attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'sent']), ('invoice_status', '=', 'invoiced')]}"/>
+                <button name="action_confirm_and_invoice" string="Confirmar y facturar" type="object" class="oe_highlight" attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'sent']), ('invoice_status', '=', 'invoiced')]}"/>
+            </header>
+        </field>
+    </record>
+</odoo>
