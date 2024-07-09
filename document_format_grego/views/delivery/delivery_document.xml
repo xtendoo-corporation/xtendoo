@@ -349,25 +349,17 @@
                             </p>
                             <!-- Firma-->
                             <p />
-                            <div
-                                t-if="'digital_signature' in o.fields_get() and o.digital_signature"
-                                style="clear:both; float:center;"
-                                name="digital_signature"
-                            >
-                                <div style="height:20px;" />
-                                <div class="text-center">
-                                    <span t-field="o.name_receiver" />
-                                </div>
-                                <div class="text-center">
-                                    <span t-field="o.vat_receiver" />
-                                </div>
-                                <div class="text-center">
-                                    <img
-                                        t-att-src="image_data_uri(o.digital_signature)"
-                                        style="max-height: 4cm; max-width: 8cm;"
-                                    />
-                                </div>
-                            </div>
+                            <div t-if="o.signature" class="mt32 ml64 mr4" name="signature">
+                        <div class="offset-8">
+                            <strong>Firma</strong>
+                        </div>
+                        <div class="offset-8">
+                            <img t-att-src="image_data_uri(o.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                        </div>
+                        <div class="offset-8 text-center">
+                            <p t-field="o.partner_id.name"/>
+                        </div>
+                    </div>
                             <!-- Fin firma-->
                         </div>
                     </t>
