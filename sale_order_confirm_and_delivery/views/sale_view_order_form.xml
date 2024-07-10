@@ -5,12 +5,21 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <header>
+
                 <button name="action_confirm_and_deliver" string="Confirmar y entregar" type="object"
                         class="oe_highlight"
                         attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'sent']), ('invoice_status', '=', 'invoiced')]}"/>
                 <button name="action_confirm_and_invoice" string="Confirmar y facturar" type="object"
                         class="oe_highlight"
                         attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'sent']), ('invoice_status', '=', 'invoiced')]}"/>
+
+                <button name="action_deliver" string="Entregar" type="object"
+                        class="oe_highlight"
+                        attrs="{'invisible': ['|', ('state', 'not in', ['sale']), ('invoice_status', '=', 'invoiced')]}"/>
+                <button name="action_deliver_and_invoice" string="Entregar y facturar" type="object"
+                        class="oe_highlight"
+                        attrs="{'invisible': ['|', ('state', 'not in', ['sale']), ('invoice_status', '=', 'invoiced')]}"/>
+
             </header>
         </field>
     </record>
