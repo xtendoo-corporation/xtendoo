@@ -1,0 +1,107 @@
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Odoo</title>
+    <link rel="shortcut icon" href="/web/static/img/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/web/static/lib/fontawesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="/web/static/lib/bootstrap/css/bootstrap.css" />
+    <script src="/web/static/lib/jquery/jquery.js" ></script>
+    <script src="/web/static/lib/popper/popper.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/index.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/util.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/alert.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/button.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/carousel.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/collapse.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/dropdown.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/modal.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/tooltip.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/popover.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/scrollspy.js" ></script>
+    <script src="/web/static/lib/bootstrap/js/tab.js" ></script>
+    <script src="/web/static/src/public/database_manager.js" ></script>
+</head>
+<body>
+<div class="container">
+    <!-- Database List -->
+    <div class="row">
+        <div class="col-lg-6 offset-lg-3 o_database_list">
+            <img src="/web/static/img/logo2.png" class="img-fluid d-block mx-auto"/>
+            <t t-if="not list_db">
+                <div class="alert alert-danger text-center">The database manager has been disabled by the
+                    administrator
+                </div>
+            </t>
+            <t t-if="error">
+                <div class="alert alert-danger" t-out="error"></div>
+            </t>
+            <t t-if="list_db and databases">
+                <div class="list-group">
+
+                    <t t-foreach="databases" t-as="db">
+                        <div class="list-group-item d-flex align-items-center">
+                            <a t-attf-href="/web?db={{ db }}" class="d-block flex-grow-1">
+                                <t t-if="db in incompatible_databases">
+                                    <i class="icon fa fa-warning float-right text-warning"
+                                       title="This database may not be compatible"></i>
+                                </t>
+                                <t t-out="db"/>
+                            </a>
+                            <t t-if="manage">
+                                <div class="btn-group btn-group-sm float-right">
+                                    <button type="button" t-att-data-db="db" data-target=".o_database_backup"
+                                            class="o_database_action btn btn-primary">
+                                        <i class="fa fa-floppy-o fa-fw"></i> Backup
+                                    </button>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            <t t-elif="list_db">
+                <form role="form" action="/web/database/create" method="post">
+                    <t t-call="create_form"/>
+                    <input type="submit" value="Create database" class="btn btn-primary float-left"/>
+                </form>
+                <a role="button" data-toggle="modal" data-target=".o_database_restore" class="btn btn-link">or restore a
+                    database</a>
+            </t>
+        </div>
+    </div>
+
+    <!-- Backup DB -->
+    <div class="modal fade o_database_backup" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Backup Database</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                </div>
+                <form id="form_backup_db" role="form" action="/web/database/backup" method="post">
+                    <div class="modal-body">
+                        <t t-call="master_input"/>
+                        <div class="form-group">
+                            <label for="name" class="col-form-label">Database Name</label>
+                            <input id="dbname_backup" type="text" name="name" class="form-control" required="required"
+                                   readonly="readonly"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="backup_format" class="col-form-label">Backup Format</label>
+                            <select id="backup_format" name="backup_format" class="form-control" required="required">
+                                <option value="zip">zip (includes filestore)</option>
+                                <option value="dump">pg_dump custom format (without filestore)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" value="Backup" class="btn btn-primary float-right"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
