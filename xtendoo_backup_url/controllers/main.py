@@ -11,7 +11,7 @@ from odoo.http import content_disposition, dispatch_rpc, request, Response
 
 _logger = logging.getLogger(__name__)
 path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'views'))
-loader = jinja2.PackageLoader('odoo.addons.web', "views")
+loader = jinja2.FileSystemLoader(path)
 env = jinja2.Environment(loader=loader, autoescape=True)
 env.filters["json"] = json.dumps
 DBNAME_PATTERN = '^[a-zA-Z0-9][a-zA-Z0-9_.-]+$'
