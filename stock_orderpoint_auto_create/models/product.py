@@ -48,7 +48,7 @@ class ProductProduct(models.Model):
                     ("product_tmpl_id", "=", product.product_tmpl_id.id)
                 ]
             )
-            for product_supplier in product_suppliers.filter(lambda x: x.price != product.standard_price):
+            for product_supplier in product_suppliers.filtered(lambda x: x.price != product.standard_price):
                 print("precio en la relación de proveedores::::::::::::::::::::::::::::::::::::: ")
                 print(product_supplier.price)
                 print("precio en el producto:::::::::::::::::::::::::::::::::::::::::::::::::::: ")

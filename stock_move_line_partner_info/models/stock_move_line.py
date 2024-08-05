@@ -10,5 +10,5 @@ class StockMoveLine(models.Model):
     partner_id = fields.Many2one(
         string='Partner',
         related='move_id.partner_id',
-        store=True,
     )
+
