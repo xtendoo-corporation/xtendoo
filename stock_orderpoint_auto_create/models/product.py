@@ -11,7 +11,6 @@ class ProductProduct(models.Model):
         product_supplierinfo_obj = self.env["product.supplierinfo"]
         stock_warehouse_orderpoint_obj = self.env["stock.warehouse.orderpoint"]
         companies = self.env["res.company"].search([])
-
         for company in companies:
             stock_locations = self.env["stock.location"].search(
                 [
