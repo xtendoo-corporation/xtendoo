@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_woo_categs_form_view_ept" model="ir.ui.view">
+        <field name="name">WooCommerce categs</field>
+        <field name="model">woo.product.categ.ept</field>
+        <field name="arch" type="xml">
+            <form string="WooCommerce Categories">
+                <sheet>
+                    <field name="image" widget="image" class="oe_avatar oe_left" nolabel="1"/>
+                    <div class="oe_title" style="width: 390px;">
+                        <h1>
+                            <field name="name" class="oe_inline"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="woo_instance_id" domain="[('active','=',True)]"/>
+                            <field name="parent_id" domain="[('woo_instance_id','=',woo_instance_id)]"/>
+                        </group>
+                        <group>
+                            <field name="display"/>
+                            <field name="slug"/>
+                            <field name="woo_categ_id" string="WooCommerce Category Id"/>
+                            <field name="exported_in_woo" string="Exported In WooCommerce"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="product_woo_categs_tree_view_ept" model="ir.ui.view">
+        <field name="name">woo categs</field>
+        <field name="model">woo.product.categ.ept</field>
+        <field name="arch" type="xml">
+            <tree sample="1">
+                <field name="name"/>
+                <field name="slug"/>
+                <field name="parent_id"/>
+                <field name="woo_instance_id"/>
+                <field name="exported_in_woo" string="Exported In WooCommerce"/>
+                <field name="woo_categ_id" string="WooCommerce Category Id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="product_woo_categs_search_view_ept" model="ir.ui.view">
+        <field name="name">Woo Categ Search View</field>
+        <field name="model">woo.product.categ.ept</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Woo Category">
+                <field name="name"/>
+                <field name="woo_categ_id"/>
+                <filter name="exported_in_woo" string="Exported In Woo" icon="terp-accessories-archiver"
+                        domain="[('exported_in_woo','=',True)]"/>
+                <filter name="not_exported_in_woo" string="Not Exported In Woo" icon="terp-accessories-archiver"
+                        domain="[('exported_in_woo','=',False)]"/>
+                <group expand="0" string="Group By...">
+                    <filter name="instance" string="Instance" icon="terp-personal"
+                            context="{'group_by':'woo_instance_id'}"/>
+                    <filter name="display" string="Display" icon="terp-personal" context="{'group_by':'display'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="product_categ_action_ept" model="ir.actions.act_window">
+        <field name="name">Product Categories</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">woo.product.categ.ept</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="product_categ_instance_action_ept" model="ir.actions.act_window">
+        <field name="name">Product Categories</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">woo.product.categ.ept</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('woo_instance_id','=',active_id)]</field>
+    </record>
+
+    <menuitem action="product_categ_action_ept" id="menu_product_categ" name="Product Categories"
+              parent="woo_commerce_ept.menu_item_parent_woo_products_ept" sequence="3"/>
+
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_woo_cancel_order_wizard" model="ir.ui.view">
+        <field name="name">Cancel Woo Order</field>
+        <field name="model">woo.cancel.order.wizard</field>
+        <field name="arch" type="xml">
+            <form string="WooCommerce Order">
+                <group>
+                    <group>
+                        <field name="auto_create_credit_note"/>
+                    </group>
+                </group>
+                <group string="Refund Info"
+                       attrs="{'invisible':[('auto_create_credit_note','=',False)]}">
+                    <group>
+                        <field name="message"/>
+                        <field name="journal_id"
+                               attrs="{'required':[('auto_create_credit_note','!=',False)]}"/>
+                    </group>
+                    <group>
+                        <field name="refund_date"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="cancel_in_woo" string="Cancel Order" type="object" class="oe_highlight"/>
+                    <button string="Close" class="oe_highlight" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

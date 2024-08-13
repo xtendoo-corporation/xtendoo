@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="woo_product_data_queue_line_form_view_ept" model="ir.ui.view">
+        <field name="name">Product Data Queue Line</field>
+        <field name="model">woo.product.data.queue.line.ept</field>
+        <field name="arch" type="xml">
+            <form string="WooCommerce Synced Data" create="0" edit="0" duplicate="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_left" style="width: 500px;">
+                        <div class="oe_title" style="width: 390px;">
+                            <label class="oe_edit_only" for="name" string="Name"/>
+                            <field name="name" invisible="1"/>
+                        </div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="woo_instance_id" readonly="1"/>
+                            <field name="woo_synced_data_id" string="Data ID"/>
+                        </group>
+                        <group>
+                            <field name="queue_id" readonly="1" string="Product Data Queue"/>
+                            <field name="write_date" string="Last Updated On" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Log">
+                            <field name="common_log_lines_ids">
+                                <tree create="0" edit="0">
+                                    <field name="message"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Product Data">
+                            <field name="woo_synced_data"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="woo_product_data_queue_line_tree_view_ept" model="ir.ui.view">
+        <field name="name">Product Data Queue Lines</field>
+        <field name="model">woo.product.data.queue.line.ept</field>
+        <field name="arch" type="xml">
+            <tree create="0">
+                <header>
+                    <button name="%(woo_commerce_ept.action_product_import_process_manual)d"
+                            string="Process Queue Line" type="action"/>
+                </header>
+                <field name="woo_synced_data_id" string="Data ID"/>
+                <field name="name"/>
+                <field name="image_import_state" widget="badge" decoration-success="state == 'done'"
+                       decoration-warning="state == 'pending'"/>
+                <field name="write_date" string="Last Updated On"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-danger="state == 'failed'" decoration-info="state not in ('done')"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_woo_product_data_queue_line_ept" model="ir.actions.act_window">
+        <field name="name">Product Data Queue</field>
+        <field name="res_model">woo.product.data.queue.line.ept</field>
+        <field name="view_id" ref="woo_product_data_queue_line_tree_view_ept"/>
+        <field name="help" type="html">
+            <div>
+                <br/>
+                <br/>
+                <br/>
+                <p>
+                    <b>There is Synced Data yet.</b>
+                </p>
+            </div>
+        </field>
+    </record>
+
+</odoo>

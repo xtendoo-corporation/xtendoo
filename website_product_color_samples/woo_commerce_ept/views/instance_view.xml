@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_woo_instance_kanban" model="ir.ui.view">
+        <field name="name">woo.instance.ept.kanban</field>
+        <field name="model">woo.instance.ept</field>
+        <field name="arch" type="xml">
+            <kanban class="oe_background_grey o_kanban_dashboard o_woo_kanban" create="false" sample="1"
+                    js_class="wooOnBoardingToggle"
+                    banner_route="/woo_instances/woo_instances_onboarding_panel">
+                <field name="name"/>
+                <field name="color"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{kanban_color(record.color.raw_value)} record_dashboard_ept">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <t t-esc="record.name.value"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_manage_button_section">
+                                    <a class="o_kanban_manage_toggle_button" href="#">
+                                        <!--More -->
+                                        <i class="fa fa-ellipsis-v" aria-label="Selection"
+                                           role="img" title="Selection"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <div>
+                                <field name="woo_order_data"
+                                       graph_type="line" widget="dashboard_graph_ept"/>
+                            </div>
+                            <div class="container o_kanban_card_manage_pane dropdown-menu mw-100 dropdown-menu-woo-kanban"
+                                 role="menu">
+                                <div class="row">
+                                    <div
+                                            class="col-xs-3 o_kanban_card_manage_section o_kanban_manage_new">
+                                        <div
+                                                class="col-4 o_kanban_card_manage_section o_kanban_manage_view">
+                                            <div role="menuitem"
+                                                 class="o_kanban_card_manage_title">
+                                                <span>Products</span>
+                                            </div>
+                                        </div>
+                                        <div role="menuitem">
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_woo_product_template_exported_ept)d"
+                                               type="action" title="Exported">
+                                                Exported
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_woo_product_template_not_exported_ept)d"
+                                               type="action" title="Ready to Export">
+                                                Ready to Export
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_woo_product_template_published_ept)d"
+                                               type="action" title="Published">
+                                                Published
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_woo_product_template_not_published_ept)d"
+                                               type="action" title="UnPublished">
+                                                UnPublished
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                            class="col-xs-3 o_kanban_card_manage_section o_kanban_manage_view"
+                                            role="menu">
+                                        <div
+                                                class="col-4 o_kanban_card_manage_section o_kanban_manage_view">
+                                            <div role="menuitem"
+                                                 class="o_kanban_card_manage_title">
+                                                <span>Sales</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_woo_instance_sale_order_quotation)d"
+                                               type="action" title="Quotations">
+                                                Quotations
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_woo_instance_sales_order_only)d"
+                                               type="action" title="Sale Orders">
+                                                Sale Orders
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_woo_instance_payment_gateway_ept)d"
+                                               type="action" title="Payment Method(s)">
+                                                Payment Method(s)
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                            class="col-xs-3 o_kanban_card_manage_section o_kanban_manage_new"
+                                            role="menu">
+                                        <div
+                                                class="col-4 o_kanban_card_manage_section o_kanban_manage_view">
+                                            <div role="menuitem"
+                                                 class="o_kanban_card_manage_title">
+                                                <span>Delivery</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_picking_view_confirm_ept)d"
+                                               type="action" title="Waiting Availability">
+                                                Waiting Availability
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_picking_view_partially_available_ept)d"
+                                               type="action" title="Partially Available">
+                                                Partially Available
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_picking_view_assigned_ept)d"
+                                               type="action" title="Ready to Transfer">
+                                                Ready to Transfer
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_picking_view_done_ept)d"
+                                               type="action" title="Transfered">
+                                                Transferred
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-3 o_kanban_card_manage_section o_kanban_manage_view"
+                                         role="menu">
+                                        <div
+                                                class="col-4 o_kanban_card_manage_section o_kanban_manage_view">
+                                            <div role="menuitem"
+                                                 class="o_kanban_card_manage_title">
+                                                <span>Invoices</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_invoice_woo_invoices_open)d"
+                                               type="action" title="Open">
+                                                Open
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_invoice_woo_invoices_paid)d"
+                                               type="action" title="Paid">
+                                                Paid
+                                            </a>
+                                            <a class="dropdown-item"
+                                               name="%(woo_commerce_ept.action_invoice_woo_invoices_refund)d"
+                                               type="action" title="Refunds">
+                                                Refunds
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div t-if="widget.editable"
+                                     class="o_kanban_card_manage_settings row">
+                                    <div class="col-xs-8">
+                                        <ul class="oe_kanban_colorpicker"
+                                            data-field="color"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- instance form view -->
+    <record id="woo_instance_form_view_ept" model="ir.ui.view">
+        <field name="name">Woo Instance</field>
+        <field name="model">woo.instance.ept</field>
+        <field name="arch" type="xml">
+            <form string="Woo Instance" create="false" duplicate="0">
+                <header>
+                    <button name="sync_shipping_method_payment_gateway" class="oe_highlight"
+                            groups="woo_commerce_ept.group_woo_manager_ept" type="object"
+                            string="Sync Shipping Methods &amp; Payment Gateways"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="active" invisible="True"/>
+                        <button name="reset_woo_credentials" string="Reset Credentials" type="object" icon="fa-undo"
+                                class="oe_stat_button" groups="woo_commerce_ept.group_woo_manager_ept"/>
+                        <button type="action" name="%(action_wizard_woo_cron_configuration_ept)d" class="oe_stat_button"
+                                icon="fa-wrench" groups="base.group_system"
+                                attrs="{'invisible':[('active','=',False)]}">
+                            <span class="o_stat_text">Configure Schedulers</span>
+                        </button>
+                        <button type="object" name="action_redirect_to_ir_cron" class="oe_stat_button"
+                                icon="fa-play-circle" groups="base.group_system"
+                                attrs="{'invisible':[('active','=',False)]}">
+                            <span class="o_stat_text">Active Schedulers</span>
+                        </button>
+                        <button class="oe_stat_button" name="action_open_deactive_wizard" icon="fa-lock" type="object"
+                                groups="woo_commerce_ept.group_woo_manager_ept"
+                                attrs="{'invisible': [('active','=',False)]}">
+                            <span class="o_stat_text" style="color:#2dab2d">Active</span>
+                        </button>
+                        <button class="oe_stat_button" name="action_open_deactive_wizard" icon="fa-unlock" type="object"
+                                groups="woo_commerce_ept.group_woo_manager_ept"
+                                attrs="{'invisible': [('active','=',True)]}">
+                            <span class="o_stat_text" style="color:#da3434">Archive</span>
+                        </button>
+                    </div>
+                    <div class="oe_title" style="width: 390px;">
+                        <label class="oe_edit_only" for="name" string="Name"/>
+                        <h1>
+                            <field name="name" class="oe_inline"
+                                   attrs="{'readonly':[('active','=',True)]}"/>
+                        </h1>
+                    </div>
+
+                    <group string="ERP Configuration">
+                        <group>
+                            <field name="company_id" widget="selection" readonly="1" groups="base.group_multi_company"/>
+                            <field name="woo_warehouse_id" required="1" readonly="1"/>
+                            <field name="woo_visible" invisible="1" attrs="{'readonly':[('active','=',True)]}"/>
+                            <field name="woo_attribute_type" required="1" attrs="{'readonly':[('active','=',True)]}"/>
+                            <field name="store_timezone" required="1" attrs="{'readonly':[('active','=',True)]}"/>
+                        </group>
+                        <group>
+                            <field name="woo_currency_id" readonly="1" invisible="1"/>
+                            <field name="company_id" widget="selection" readonly="1" groups="base.group_multi_company"/>
+                            <field name="woo_lang_id" required="1" attrs="{'readonly':[('active','=',True)]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="webhook" string="Webhooks">
+                            <div class="alert alert-warning" role="alert">
+                                <div style="padding:5px;">
+                                    <h5 style="color:#7d5a29;">
+                                        <b>
+                                            <u>Note:</u>
+                                        </b>
+                                    </h5>
+                                    <b>
+                                        <ol>
+                                            <li>
+                                                If by any chance, Webhook deliveries from WooCommerce Store to Odoo
+                                                fails for 5 consecutive times, the configured webhook will be disabled
+                                                by WooCommerce store without any notification.
+                                            </li>
+                                            <li>
+                                                If you observe any such discrepancy, please use refresh button shown
+                                                below, to get the updated status of the webhooks.
+                                            </li>
+                                            <li>
+                                                If an instance is deactivated, the related webhooks will be 'Paused'
+                                                automatically.
+                                            </li>
+                                            <li>
+                                                If an instance is reactivated, the related webhooks will not be
+                                                activated automatically and needs to be activated manually.
+                                            </li>
+                                        </ol>
+                                    </b>
+                                </div>
+                            </div>
+                            <button string="Refresh" name="refresh_webhooks" type="object"
+                                    class="oe_right btn-outline-primary"/>
+                            <div>
+                                <field name="webhook_ids" nolabel="1" mode="tree">
+                                    <tree editable="bottom">
+                                        <field name="woo_id" invisible="1"/>
+                                        <field name="name" required="1" attrs="{'readonly':[('woo_id','!=',False)]}"/>
+                                        <field name="topic" required="1" attrs="{'readonly':[('woo_id','!=',False)]}"/>
+                                        <field name="status" readonly="1"/>
+                                        <button string="Toggle Status" class="btn-outline-primary" name="toggle_status"
+                                                type="object"
+                                                attrs="{'column_invisible':[('parent.active','=',False)]}"/>
+                                    </tree>
+                                </field>
+                            </div>
+                        </page>
+                        <page string="Woo Site Info" groups="woo_commerce_ept.group_woo_manager_ept" name="site_info">
+                            <group>
+                                <group>
+                                    <field name="woo_consumer_key" attrs="{'readonly':[('active','=',True)]}"
+                                           password="True"/>
+                                    <field name="woo_consumer_secret" attrs="{'readonly':[('active','=',True)]}"
+                                           password="True"/>
+                                    <field name="woo_version" required="1" invisible="1"
+                                           attrs="{'readonly':[('active','=',True)]}" id='woo_version'/>
+                                </group>
+                                <group>
+                                    <field name="woo_host" attrs="{'readonly':[('active','=',True)]}"/>
+                                    <field name="woo_verify_ssl" attrs="{'readonly':[('active','=',True)]}"/>
+                                    <field name="is_export_update_images" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Administrator Info" groups="woo_commerce_ept.group_woo_manager_ept"
+                              name="admin_info" attrs="{'invisible':[('is_export_update_images','=',False)]}">
+                            <group>
+                                <group>
+                                    <field name="woo_admin_username"
+                                           attrs="{'required':[('is_export_update_images','=',True)],'readonly':[('active','=',True)]}"/>
+                                </group>
+                                <group>
+                                    <field name="woo_admin_password" password="1"
+                                           attrs="{'required':[('is_export_update_images','=',True)],'readonly':[('active','=',True)]}"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Default Products" groups="woo_commerce_ept.group_woo_manager_ept"
+                              name="default_products">
+                            <group>
+                                <group>
+                                    <field name="shipping_product_id" domain="[('detailed_type','=','service')]"
+                                           required="1" string="Shipping Product"/>
+                                    <field name="fee_product_id" domain="[('detailed_type','=','service')]"
+                                           required="1" string="Fee Product"/>
+                                </group>
+                                <group>
+                                    <field name="discount_product_id" domain="[('detailed_type','=','service')]"
+                                           required="1" string="Discount Product"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Analytic Account" name="analytic_account"
+                              groups="analytic.group_analytic_accounting">
+                            <group name="group_analytic_account_tags">
+                                <group groups="analytic.group_analytic_accounting">
+                                    <field name="woo_analytic_account_id" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="meta_mapping" string="Meta Mapping">
+                            <div class="alert alert-warning" role="alert">
+                                <div style="padding:5px;">
+                                    <h5 style="color:#7d5a29;">
+                                        <b>
+                                            <u>Note:</u>
+                                        </b>
+                                    </h5>
+                                    <b>
+                                        <ol>
+                                            <li>
+                                                If you configured meta mapping and set field based on meta key,it
+                                                will
+                                                override the field value if field in value already exist.
+                                            </li>
+                                            <li>
+                                                If you configured meta mapping, it will sync metadata only newly
+                                                created
+                                                record.
+                                            </li>
+                                            <li>
+                                                If you want to sync the Date/DateTime by meta mapping then you must need to
+                                                Set here the Date/DateTime format as per WooCommerce meta value
+                                                Date/DateTime format.
+                                            </li>
+                                        </ol>
+                                    </b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8 row">
+                                    <div class="col-12">
+                                        <div class="o_horizontal_separator mb-3 mt-4 text-uppercase fw-bolder small">
+                                            Legends for supported Date and Time Formats
+                                        </div>
+                                    </div>
+                                    <div class="col-sm">
+                                        <div>%a - Abbreviated day of the week.</div>
+                                        <div>%A - Full day of the week.</div>
+                                        <div>%b - Abbreviated month name.</div>
+                                        <div>%B - Full month name."</div>
+                                        <div>%d - Day of the month [01,31]."</div>
+                                        <div>%j - Day of the year [001,366]."</div>
+                                        <div>%H - Hour (24-hour clock) [00,23]."</div>
+                                        <div>%I - Hour (12-hour clock) [01,12]."</div>
+                                    </div>
+                                    <div class="col-sm">
+                                        <div>%M - Minute [00,59]."</div>
+                                        <div>%p - Equivalent of either AM or PM."</div>
+                                        <div>%S - Seconds [00,61]."</div>
+                                        <div>%w - Day of the week number [0(Sunday),6]."</div>
+                                        <div>%y - Year without century [00,99]."</div>
+                                        <div>%Y - Year with century."</div>
+                                        <div>%m - Month number [01,12]."</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-info">
+                                    <div class="o_horizontal_separator mb-3 mt-4 text-uppercase fw-bolder small">
+                                        Examples
+                                    </div>
+                                    <div>1. %b, %B ==> Dec, December</div>
+                                    <div>2. %a ,%A ==> Fri, Friday</div>
+                                    <div>3. %y, %Y ==> 08, 2008</div>
+                                    <div>4. %d, %m ==> 05, 12</div>
+                                    <div>5. %H:%M:%S ==> 18:25:20</div>
+                                    <div>6. %I:%M:%S %p ==> 06:25:20 PM</div>
+                                    <div>7. %j ==> 340</div>
+                                    <div>8. %S ==> 20</div>
+                                    <div>9. %w ==> 5 ( Friday is the 6th day)</div>
+                                </div>
+                            </div>
+                            <br/>
+                            <div>
+                                <field name="meta_mapping_ids" nolabel="1" mode="tree">
+                                    <tree editable="bottom">
+                                        <field name="woo_meta_key" required="1"/>
+                                        <field name="woo_operation" required="1"/>
+                                        <field name="model_id"
+                                               options="{'no_open':True,'no_create':True,'no_create_edit': True}"
+                                               required="1"/>
+                                        <field name="field_id"
+                                               domain="[('model_id','=',model_id),('ttype', 'not in',['many2one','many2many','one2many','binary'])]"
+                                               options="{'no_open':True,'no_create':True,'no_create_edit': True}"
+                                               required="1"/>
+                                        <field name="field_type" invisible="1"/>
+                                        <field name="date_format"
+                                               placeholder="%m/%d/%Y"
+                                               attrs="{'readonly':[('field_type','not in',['datetime','date'])]}"/>
+                                        <field name="time_format"
+                                               placeholder="%H:%M:%S"
+                                               attrs="{'readonly':[('field_type','not in',['datetime','date'])]}"/>
+                                    </tree>
+                                </field>
+                            </div>
+                        </page>
+                        <page name="last_operation_dates" string="Last Operation Dates">
+                            <group>
+                                <group string="Orders">
+                                    <field name="last_order_import_date"/>
+                                    <field name="last_completed_order_import_date"/>
+                                    <field name="last_cancel_order_import_date"/>
+                                </group>
+                                <group string="Products">
+                                    <field name="import_products_last_date"/>
+                                    <field name="last_inventory_update_time"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- instance tree view -->
+    <record id="woo_instance_tree_view_ept" model="ir.ui.view">
+        <field name="name">Woo Instance</field>
+        <field name="model">woo.instance.ept</field>
+        <field name="arch" type="xml">
+            <tree create="false" duplicate="0" sample="1">
+                <field name="name"/>
+                <field name="woo_warehouse_id"/>
+                <field name="woo_host"/>
+                <field name="woo_version" invisible="1"/>
+                <field name="woo_verify_ssl"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- instance search view -->
+    <record id="woo_instance_search_view_ept" model="ir.ui.view">
+        <field name="name">Woo Instance Search View</field>
+        <field name="model">woo.instance.ept</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Woo Instance">
+                <field name="name"/>
+                <filter name="archive" string="Archived" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By...">
+                    <filter name="warehouse" string="Warehouse" icon="terp-personal"
+                            context="{'group_by':'woo_warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- action for the instance menu -->
+    <record id="action_woo_instance_ept" model="ir.actions.act_window">
+        <field name="name">WooCommerce Instance</field>
+        <field name="res_model">woo.instance.ept</field>
+        <field name="view_id" ref="woo_instance_tree_view_ept"/>
+        <field name="help" type="html">
+            <div>
+                <br/>
+                <br/>
+                <br/>
+                <p class="o_view_nocontent_smiling_face">
+                    <b>There is no any WooCommerce Instance configured yet.</b>
+                </p>
+                <p>
+                    To add your first WooCommerce Instance, go to menu
+                    <i>WooCommerce
+                        <i class="fa fa-angle-double-right"/>
+                        Configuration
+                        <i class="fa fa-angle-double-right"/>
+                        Settings
+                    </i>
+                    and create new Instance from there. At there you can define one or more WooCommerce Instances and
+                    configure extended options per Instance.
+                </p>
+            </div>
+        </field>
+    </record>
+
+    <!-- kanban view action -->
+    <record id="woo_kanban_action_ept" model="ir.actions.act_window">
+        <field name="name">WooCommerce Dashboard</field>
+        <field name="res_model">woo.instance.ept</field>
+        <field name="view_mode">kanban</field>
+        <field name="domain">[('active','=',True)]</field>
+        <field name="help" type="html">
+            <div>
+                <br/>
+                <br/>
+                <br/>
+                <p class="o_view_nocontent_smiling_face">
+                    <b>There is no any WooCommerce Instance configured yet.</b>
+                </p>
+                <p>
+                    To add your first WooCommerce Instance, go to menu
+                    <i>WooCommerce
+                        <i class="fa fa-angle-double-right"/>
+                        Configuration
+                        <i class="fa fa-angle-double-right"/>
+                        Settings
+                    </i>
+                    and create new Instance from there. At there you can define one or more WooCommerce Instances and
+                    configure extended options per Instance.
+                </p>
+            </div>
+        </field>
+    </record>
+
+    <menuitem name="WooCommerce" id="woo_commerce_main_menu" action="woo_kanban_action_ept"
+              groups="woo_commerce_ept.group_woo_ept,base.group_user"
+              web_icon="woo_commerce_ept,static/description/icon.png" sequence="20"/>
+
+    <menuitem id="woo_commerce_main_menu_dashboard" parent="woo_commerce_ept.woo_commerce_main_menu" name="Dashboard"
+              sequence="1" action="woo_kanban_action_ept" groups="woo_commerce_ept.group_woo_ept,base.group_user"/>
+    <!--instance menu in configuration-->
+    <menuitem id="woo_instance_menu_item_instance" name="Instances"
+              parent="woo_commerce_ept.woo_configuration_menu_items" sequence="2"
+              action="woo_commerce_ept.action_woo_instance_ept"/>
+</odoo>

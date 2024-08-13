@@ -1,0 +1,161 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="act_woo_product" model="ir.actions.act_window">
+        <field name="name">WooCommerce Product</field>
+        <field name="res_model">woo.product.product.ept</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('product_id','=',active_id)]</field>
+        <field name="context">{'search_default_product_id': active_id}</field>
+    </record>
+
+    <record id="product_product_woo_button" model="ir.ui.view">
+        <field name="name">product.product.woo.button</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" name="%(woo_commerce_ept.act_woo_product)d" type="action"
+                        icon="fa-external-link" help="WooCommerce Products">
+                    <field string="Woo Products" name="woo_product_count" widget="statinfo"/>
+                </button>
+            </div>
+            <field name="default_code" position="after">
+                <field name="image_url"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="woo_product_product_tree_view_ept" model="ir.ui.view">
+        <field name="name">Woo Product Tree View</field>
+        <field name="model">woo.product.product.ept</field>
+        <field name="arch" type="xml">
+            <tree create="false" sample="1">
+                <field name="name"/>
+                <field name="woo_instance_id"/>
+                <field name="default_code"/>
+                <field name="product_id"/>
+                <field name="variant_id"/>
+                <field name="woo_is_manage_stock"/>
+                <field name="exported_in_woo"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="woo_product_product_search_view_ept">
+        <field name="name">Woo Product Search View</field>
+        <field name="model">woo.product.product.ept</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Woo Products">
+                <field name="name" string="Product"
+                       filter_domain="['|',('default_code','ilike',self),('name','ilike',self)]"/>
+                <field name="variant_id"/>
+                <field name="product_id"/>
+                <field name="default_code"/>
+
+                <filter name="exported_in_woo" string="Exported In Woo" icon="terp-accessories-archiver"
+                        domain="[('exported_in_woo','=','True')]"/>
+                <filter name="woo_is_manage_stock" string="Managed Stock In Woo" icon="terp-accessories-archiver"
+                        domain="[('woo_is_manage_stock','=',True)]"/>
+                <filter name="woo_is_manage_stock" string="Not Managed Stock In Woo" icon="terp-accessories-archiver"
+                        domain="[('woo_is_manage_stock','=',False)]"/>
+                <filter name="archive_products" string="Archived" icon="terp-accessories-archiver"
+                        domain="[('active','=',False)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="instance" string="Instance" context="{'group_by':'woo_instance_id'}"/>
+                    <filter name="woo_template" string="Woo Template" context="{'group_by':'woo_template_id'}"/>
+                    <filter name="exported_in_woo" string="Exported In Woo" context="{'group_by':'exported_in_woo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="woo_product_product_form_view_ept" model="ir.ui.view">
+        <field name="name">Woo Product Form View</field>
+        <field name="model">woo.product.product.ept</field>
+        <field name="arch" type="xml">
+            <form string="Woo Product Form View" create="false">
+                <sheet>
+                    <field name="active" class="oe_inline" invisible='1'/>
+                    <div class="ribbon ribbon-top-right" attrs="{'invisible': [('active','=',True)]}">
+                        <span class="bg-danger" style="left: -4px !important;top: 20px !important">Archived</span>
+                    </div>
+                    <div class="oe_left" style="width: 500px;">
+                        <div class="oe_title" style="width: 390px;">
+                            <label class="oe_edit_only" for="name" string="Name"/>
+                            <h1>
+                                <field name="name" class="oe_inline"/>
+                            </h1>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="WooCommerce Info">
+                            <group>
+                                <group>
+                                    <field name="woo_instance_id" domain="[('active','=',True)]"
+                                           attrs="{'readonly': [('exported_in_woo','=',True)]}"/>
+                                    <field name="woo_template_id" readonly="1" string="WooCommerce Template"/>
+                                    <field name="variant_id" readonly="1"/>
+                                    <field name="woo_is_manage_stock"/>
+                                </group>
+                                <group>
+                                    <field name="product_id" readonly="1"/>
+                                    <field name="exported_in_woo" readonly="1"/>
+                                    <field name="default_code"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group>
+                                    <field name="created_at" readonly="1"/>
+                                    <field name="updated_at" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="fix_stock_type"/>
+                                    <field name="fix_stock_value"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="product_url" widget="url"/>
+                            </group>
+                        </page>
+                        <page string="Images">
+                            <div string="Images Info" colspan="4">
+                                <field name="woo_image_ids"
+                                       context="{'default_woo_variant_id':id,'default_woo_template_id':woo_template_id}"
+                                       mode="kanban" options="{'create_text':'Add a Media'}" nolabel="1">
+                                </field>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_woo_product_product_ept" model="ir.actions.act_window">
+        <field name="name">WooCommerce Product</field>
+        <field name="res_model">woo.product.product.ept</field>
+        <field name="view_id" ref="woo_product_product_tree_view_ept"/>
+        <field name="help" type="html">
+            <div>
+                <br/>
+                <br/>
+                <br/>
+                <p class="o_view_nocontent_smiling_face">
+                    <b>There are no WooCommerce Variants Created yet.</b>
+                </p>
+                <p>
+                    You can't create WooCommerce variants directly from here.
+                </p>
+            </div>
+        </field>
+    </record>
+
+    <menuitem id="menu_item_woo_variants_ept" name="Product Variants"
+              parent="woo_commerce_ept.menu_item_parent_woo_products_ept" sequence="2"
+              action="action_woo_product_product_ept"/>
+
+</odoo>

@@ -1,0 +1,992 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_woo_process_import_export_ept" model="ir.ui.view">
+        <field name="name">Process Import/Export</field>
+        <field name="model">woo.process.import.export</field>
+        <field name="priority">11</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <style>
+                        .embed-responsive-item {
+                        width: 25rem !important;
+                        min-height: 15rem !important;
+                        }
+                    </style>
+                    <group name="woo_instance">
+                        <group>
+                            <field name="woo_instance_id" options="{'no_open':True,'no_create': True}" required="1"/>
+                        </group>
+                        <group>
+                            <field name="woo_operation" required="1"/>
+                        </group>
+                    </group>
+                    <div name="msg_opr_main">
+                        <div attrs="{'invisible':[('woo_operation','!=','import_product')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Import product starts fetching product data from WooCommerce store and
+                                            will just add that data in Product Queue for processing. (WooCommerce
+                                            &gt; Processes > Queue Logs > Products)
+                                        </li>
+                                        <li>
+                                            A Scheduled/Cron Job, running in background will start processing Queues
+                                            one by one.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/import-products.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_customer')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Import customers starts fetching customers data from WooCommerce store
+                                            and will just add that data in Customer Queue for processing.
+                                            (WooCommerce &gt; Processes > Queue Logs > Customers)
+                                        </li>
+                                        <li>
+                                            A Scheduled/Cron Job, running in background will start processing Queues
+                                            one by one.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/import-customer.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_unshipped_orders')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            It will start fetching Order data from Woocommerce store and will start
+                                            processing it.
+                                        </li>
+                                        <li>
+                                            It will fetch the orders for the dates specified in 'Date From' and
+                                            'Date To' fields below.
+                                        </li>
+                                        <li>
+                                            The default value for 'Date From' will be the last execution date of
+                                            this operation. It will be blank if the last execution date is not
+                                            found.
+                                        </li>
+                                        <li>
+                                            The default value for 'Date To' will be current date and time.
+                                        </li>
+                                        <li>
+                                            Connector only imports those orders which have created after a given
+                                            date(WooCommerce > Configuration > Settings > Import Order After Date)
+                                            in
+                                            the configuration.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/import-orders/import-unshipped-order-manually.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_completed_orders')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            It will start fetching Order data from WooCommerce store and will just
+                                            add that data in Order Queue for processing. (WooCommerce > Processes >
+                                            Queue Logs > Orders)
+                                        </li>
+                                        <li>
+                                            A Scheduled/Cron Job, running in background will start processing Queues
+                                            one by one.
+                                        </li>
+                                        <li>
+                                            Completed Orders are fetched for selected instance.
+                                        </li>
+                                        <li>
+                                            It will try to fetch the Orders based on dates specified in 'Date From'
+                                            and 'Date To' fields below.
+                                        </li>
+                                        <li>
+                                            Connector only imports those orders which have created after a given
+                                            date(WooCommerce > Configuration > Settings > Import Order After Date)
+                                            in
+                                            the configuration.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/import-orders/import-completed-order.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_cancel_orders')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            It will start fetching Cancel Order data from WooCommerce store
+                                            and will cancel imported orders if imported orders are canceled on
+                                            WooCommerce store.
+                                        </li>
+                                        <li>
+                                            It will fetch the cancel orders for the dates specified in
+                                            'From Date' and 'To Date' fields below.
+                                        </li>
+                                        <li>
+                                            The default value for 'From Date' will be the last
+                                            execution date of this operation. It will be blank if the last
+                                            execution date is not found.
+                                        </li>
+                                        <li>
+                                            The default value for 'To Date' will be current date
+                                            and time.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/import-orders/import-cancel-order.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','is_update_order_status')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            The Update Order Shipping Status allows you to change the order status
+                                            as 'Completed' at Woocommerce store.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/import-orders/update-order-shipping-status.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div class="text-muted" attrs="{'invisible':[('woo_operation','!=','is_export_products')]}">
+                            It creates new products in Woocommerce store from Odoo as per the options selected
+                            below.
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_product_tags')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Import Product Tags allows you synchronize Woocommerce store's product
+                                            tags to Odoo.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/product-tags-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_attribute')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Import attributes allows you synchronize Woocommerce store's attributes
+                                            to Odoo.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/import-product-attributes.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_category')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Import Categories allows you synchronize Woocommerce store's categories
+                                            to Odoo.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/product-categories-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_coupon')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Import Coupon starts fetching Coupon data from WooCommerce store and
+                                            will just add that data in Coupon Queue for processing. (WooCommerce >
+                                            Processes > Queue Logs > Coupons)
+                                        </li>
+                                        <li>
+                                            A Scheduled/Cron Job, running in background will start processing Queues
+                                            one by one.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/coupons-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_stock')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Import stock allows to import product stock from Woocommerce store to
+                                            Odoo.
+                                        </li>
+                                        <li>
+                                            Stock will be imported to warehouse as per the configuration in
+                                            instance.
+                                        </li>
+                                        <li>
+                                            This operation will generate Inventory Adjustment record for each
+                                            product under Inventory > Operations > Inventory Adjustments.
+                                        </li>
+                                        <li>
+                                            Stock will be applied automatically by enable Auto
+                                            apply inventory adjustment
+                                            configuration, Otherwise you need to process
+                                            inventory adjustment
+                                            transaction record manually to bring stock changes
+                                            effect.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/export-and-import-stock.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','export_stock')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            It will export product stock from Odoo to Woocommerce from the warehouse
+                                            configured under selected instance.
+                                        </li>
+                                        <li>
+                                            It will export stock of only those products which are already
+                                            synchronized with Woocommerce store.
+                                        </li>
+                                        <li>
+                                            It will try to export stock of those products whose stock is updated
+                                            since last execution of this operation.
+                                        </li>
+                                        <li>
+                                            If last execution details are not available, it will consider those
+                                            products whose stock is updated since last 30 days.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/export-and-import-stock.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','update_tags')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Update Tags allows you to update the synchronized tags from Odoo to
+                                            Woocommerce store.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/product-tags-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','export_tags')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Export Tags allows you to export the new tags from Odoo to Woocommerce
+                                            store.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/product-tags-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','update_category')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Update Categories allows you to update the synchronized categories
+                                            from Odoo to Woocommerce store.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/product-categories-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','export_category')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Export Categories allows you to export the new categories from Odoo to
+                                            Woocommerce store.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/product-categories-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','update_coupon')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Update Coupons allows you to update the synchronized coupons from Odoo
+                                            to Woocommerce store.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/coupons-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','export_coupon')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            Export Coupons allows you to export the new Coupons from Odoo to
+                                            Woocommerce store.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/coupons-import-export-and-update.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_product_from_csv')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <u>
+                                    <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                                </u>
+                                <b>
+                                    <ol>
+                                        <li>
+                                            This operation allows to import Odoo Products to WooCommerce layer.
+                                        </li>
+                                        <li>
+                                            You can export the products into csv/xlsx from Sales > Products >
+                                            Products.
+                                            Select Multiple Products or Open a product and click on the 'WooCommerce
+                                            - Prepare Product for Export ' action from Action menu. Select Export
+                                            Method > Export
+                                            in CSV/XLSX file.
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/export-products.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_specific_orders')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <b>
+                                    <u>
+                                        <h3 style="font-weight:bold;color:#7d5a29">Note :
+                                        </h3>
+                                    </u>
+                                    <ol>
+                                        <li>
+                                            It will start fetching order data from Woo store
+                                            based on
+                                            Woo Commerce order ids provided below and and will just
+                                            add that data in
+                                            Order Queue and also process it..
+                                        </li>
+                                        <li>
+                                            Please provide comma seperated list of Woo Commerce order
+                                            ids as
+                                            mentioned below.
+                                        </li>
+                                        <li>
+                                            Sample list of Woo Commerce order ids:
+                                            4129,1367,23466
+                                        </li>
+                                        <li>
+                                            Please do not use any special symbols like:
+                                            ~,!,@,#,$,%,^,*,?,/,\,;,.,=,+,-,
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div attrs="{'invisible':[('woo_operation','!=','import_specific_products')]}">
+                            <p colspan="2" class="alert alert-warning" role="alert">
+                                <b>
+                                    <u>
+                                        <h3 style="font-weight:bold;color:#7d5a29">Note :
+                                        </h3>
+                                    </u>
+                                    <ol>
+                                        <li>
+                                            Sync product starts fetching product data from
+                                            Woo Commerce store based on
+                                            defined woo commerce product template ids and will just
+                                            add that data in
+                                            Product Queue and also process it.
+                                        </li>
+                                        <li>
+                                            Please define woo commerce product template ids with
+                                            comma separated values
+                                            without any write quotes.
+                                        </li>
+                                        <li>
+                                            Please not use any special symbols Like:
+                                            ~,!,@,#,$,%,^,*,?,/,\,;,.,=,+,-,
+                                        </li>
+                                        <li>
+                                            Example of define woo commerce product template ids:
+                                            4079,4063,4091
+                                        </li>
+                                        <li>
+                                            For more details please check
+                                            <a href='https://docs.emiprotechnologies.com/odoo-woocommerce-connector/v15/catalog-management/import-products.html'
+                                               target="_blank">
+                                                User Guide
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </b>
+                            </p>
+                        </div>
+                        <div class='row' style="display: contents;"
+                             attrs="{'invisible':[('woo_operation','not in',['import_customer','is_update_order_status'])]}">
+                            <field name="woo_video_embed_code" class="mt-2"/>
+                        </div>
+                        <div attrs="{'invisible':[('cron_process_notification','=',False)]}">
+                            <p colspan="2" class="alert alert-info" role="alert">
+                                <b>
+                                    <field name="cron_process_notification" readonly="1"/>
+                                </b>
+                            </p>
+                        </div>
+                    </div>
+
+                    <notebook
+                            attrs="{'invisible': [('woo_operation', 'not in', ['import_product','import_unshipped_orders','export_stock','import_completed_orders','import_cancel_orders','import_product_from_csv','import_stock','import_specific_products','import_specific_orders'])]}">
+                        <page string='Sync Option'>
+                            <div class="row">
+                                <div class='col-md-6'>
+                                    <group name='woo_sync_products'
+                                           attrs="{'invisible':[('woo_operation','!=','import_product')]}">
+                                        <field name="products_after_date" widget="daterange"
+                                               options="{'related_end_date': 'products_before_date'}"
+                                               attrs="{'required':[('woo_operation','=','import_product')]}"/>
+                                        <field name="products_before_date" widget="daterange"
+                                               options="{'related_start_date': 'products_after_date'}"
+                                               attrs="{'required':[('woo_operation','=','import_product')]}"/>
+                                        <field name="import_products_method"
+                                               attrs="{'required':[('woo_operation','=','import_product')]}"/>
+                                        <field name="woo_skip_existing_product"/>
+                                    </group>
+                                    <group name="woo_import_orders"
+                                           attrs="{'invisible':[('woo_operation','not in',['import_unshipped_orders','import_completed_orders','import_cancel_orders'])]}">
+                                        <field name="orders_after_date" widget="daterange"
+                                               options="{'related_end_date': 'orders_before_date'}"
+                                               attrs="{'required':[('woo_operation','in',['import_unshipped_orders','import_completed_orders','import_cancel_orders'])]}"
+                                               string="Date From"/>
+                                        <field name="orders_before_date" widget="daterange"
+                                               options="{'related_start_date': 'orders_after_date'}"
+                                               attrs="{'required':[('woo_operation','in',['import_unshipped_orders','import_completed_orders','import_cancel_orders'])]}"
+                                               string="Date To"/>
+                                    </group>
+                                    <group name="import_stock"
+                                           attrs="{'invisible':[('woo_operation','!=','import_stock')]}">
+                                        <field name="auto_apply_adjustments" widget="boolean_toggle"
+                                               string="Auto apply inventory adjustment"/>
+                                    </group>
+                                    <group name="export_stock"
+                                           attrs="{'invisible':[('woo_operation','!=','export_stock')]}">
+                                        <field name="export_stock_from"
+                                               attrs="{'required':[('woo_operation','=','export_stock')]}"/>
+                                    </group>
+                                    <group name="import_product_from_csv"
+                                           attrs="{'invisible':[('woo_operation','!=','import_product_from_csv')]}">
+                                        <field name="file_name" invisible="1"/>
+                                        <field name="choose_file" filename="file_name"
+                                               attrs="{'required':[('woo_operation','=','import_product_from_csv')]}"/>
+                                    </group>
+                                </div>
+                                <div class='col-md-6'
+                                     attrs="{'invisible':[('woo_operation','in',['import_cancel_orders','import_specific_products','import_specific_orders'])]}">
+                                    <field name="woo_video_embed_code" class="mt-2"/>
+                                </div>
+                                <group name='sync_order_based_on_specific_ids'
+                                       attrs="{'invisible':[('woo_operation','!=','import_specific_orders')]}">
+                                    <field name='woo_order_ids' string="Order IDs"
+                                           attrs="{'required':[('woo_operation','=','import_specific_orders')]}"/>
+                                </group>
+                                <group name='sync_product_based_on_specific_ids'
+                                       attrs="{'invisible':[('woo_operation','!=','import_specific_products')]}">
+                                    <field name='woo_template_ids'
+                                           attrs="{'required':[('woo_operation','=','import_specific_products')]}"/>
+                                </group>
+                            </div>
+                        </page>
+                    </notebook>
+
+                    <footer>
+                        <field name="is_hide_execute_button" invisible="1"/>
+                        <button string="Execute" class="oe_highlight" type="object" name="execute"
+                                attrs="{'invisible':[('is_hide_execute_button','=', True)]}"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View of Update Products Action of woo product template ept model @Dipak Gogiya -->
+    <record id="view_woo_update_selected_products_from_action" model="ir.ui.view">
+        <field name="name">WooCommerce Update Products</field>
+        <field name="model">woo.process.import.export</field>
+        <field name="priority">11</field>
+        <field name="arch" type="xml">
+            <form string="Update Products">
+                <sheet>
+                    <p colspan="2" class="alert alert-danger" role="alert">
+                        <h3 style="font-weight:bold;color:#7d5a29">Important Note:</h3>
+                        <ol>
+                            <li>
+                                If multiple products are selected, a maximum of 80 products can be processed at a time.
+                            </li>
+                            <li>
+                                Username and password are required to export images with the products.
+                            </li>
+                            <li>
+                                You can set the username and password here => Woocommerce => Configuration => Instances
+                                => Set Credentials.
+                            </li>
+                            <li>
+                                The sale price will be exported if it is lower than the regular price. Otherwise, the
+                                sale price will not be exported, but rather overwritten by the Woocommerce store
+                                connector
+                                and set to 0.
+                                For example, in WooCommerce the sale price is 30, the regular price is 20 and the sale
+                                price is 40 in Odoo. The sale price will be zero if we export the product with an
+                                updated price.
+                            </li>
+                        </ol>
+                    </p>
+                    <group name='Update Product'>
+                        <group>
+                            <field name="woo_basic_detail"
+                                   string="Update Basic Details"/>
+                            <field name='woo_is_set_price' string="Update Price"/>
+                        </group>
+                        <group>
+                            <field name='woo_is_set_image' string="Update Image"/>
+                            <field name='woo_publish'/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Update Products" class="oe_highlight" type="object" name="update_products"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View of Export Products Action of woo product template ept model @Dipak Gogiya -->
+    <record id="view_woo_export_selected_products_from_action" model="ir.ui.view">
+        <field name="name">Sync Woo Product Form Action</field>
+        <field name="model">woo.process.import.export</field>
+        <field name="priority">11</field>
+        <field name="arch" type="xml">
+            <form string="Export Products">
+                <sheet>
+                    <p colspan="2" class="alert alert-danger" role="alert">
+                        <h3 style="font-weight:bold;color:#7d5a29">Important Note:</h3>
+                        <ol>
+                            <li>
+                                If multiple products are selected, a maximum of 80 products can be processed at a time.
+                            </li>
+                            <li>
+                                Already exported products will be skipped.
+                            </li>
+                            <li>
+                                Username and password are required to export images with the products.
+                            </li>
+                            <li>
+                                You can set the username and password here => Woocommerce => Configuration => Instances
+                                => Set Credentials.
+                            </li>
+                        </ol>
+                    </p>
+                    <group name='Export Product'>
+                        <group>
+                            <field name="woo_basic_detail" readonly="1"/>
+                            <field name='woo_is_set_price' string="WooCommerce Set Price ?"/>
+                        </group>
+                        <group>
+                            <field name='woo_is_set_image' string="WooCommerce Set Image ?"/>
+                            <field name="woo_publish" required="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Export Products" class="oe_highlight" type="object" name="woo_export_products"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View for export category @Haresh Mori on date 13/12/2019 -->
+    <record id="view_woo_update_export_category_tags_coupons" model="ir.ui.view">
+        <field name="name">Update/Export WooCommerce Category and Tags</field>
+        <field name="model">woo.process.import.export</field>
+        <field name="priority">11</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="alert alert-warning" role="alert">
+                        <div style="padding:5px">
+                            <h5 invisible="context.get('process','') != 'update_tags'">
+                                It will only update those Tags in Woocommerce store, which are already exported.
+                            </h5>
+                            <h5 invisible="context.get('process','') != 'export_tags'">
+                                It will only export those Tags in Woocommerce store, which are yet not exported.
+                            </h5>
+                            <h5 invisible="context.get('process','') != 'update_category'">
+                                It will only update those Categories in Woocommerce store, which are already exported.
+                            </h5>
+                            <h5 invisible="context.get('process','') != 'export_category'">
+                                It will only export those Categories in Woocommerce store, which are yet not exported.
+                            </h5>
+                            <h5 invisible="context.get('process','') != 'update_coupon'">
+                                It will only update those Coupons in Woocommerce store, which are already exported.
+                            </h5>
+                            <h5 invisible="context.get('process','') != 'export_coupon'">
+                                It will only export those Coupons in Woocommerce store, which are yet not exported.
+                            </h5>
+                        </div>
+                    </div>
+                    <footer>
+                        <button string="Execute" class="oe_highlight" type="object"
+                                name="update_export_category_tags_coupons_in_woo"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--view for export stock of selected products-->
+    <record id="view_selected_products_stock_export_from_action" model="ir.ui.view">
+        <field name="name">Woo Export Stock Products</field>
+        <field name="model">woo.process.import.export</field>
+        <field name="priority">11</field>
+        <field name="arch" type="xml">
+            <form string="Export Stock Products">
+                <sheet>
+                    <p colspan="2" class="alert alert-danger" role="alert">
+                        <h3 style="font-weight:bold;color:#7d5a29">Important Note:</h3>
+                        <ol>
+                            <li>
+                                If multiple products are selected, a maximum of 80 products can be processed at a time.
+                            </li>
+                        </ol>
+                    </p>
+                    <footer>
+                        <button string="Export Stock" class="oe_highlight" type="object" name="export_stock_in_woo"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_wizard_woo_processes_ept" model="ir.actions.act_window">
+        <field name="name">WooCommerce Operations</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_woo_process_import_export_ept"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_wizard_woo_instance_import_export_operations" model="ir.actions.act_window">
+        <field name="name">WooCommerce Operations</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'default_woo_instance_id': active_id}</field>
+        <field name="view_id" ref="view_woo_process_import_export_ept"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_wizard_woo_export_selected_products" model="ir.actions.act_window">
+        <field name="name">Export New Product in WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_product_template_ept"/>
+        <field name="view_id" ref="view_woo_export_selected_products_from_action"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'export_products'}</field>
+    </record>
+
+    <!-- Action of Update Products of woo product template ept model @Dipak Gogiya -->
+    <record id="action_wizard_woo_update_selected_products" model="ir.actions.act_window">
+        <field name="name">Update Existing Product in WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_product_template_ept"/>
+        <field name="view_id" ref="view_woo_update_selected_products_from_action"/>
+        <field name="binding_view_types">form</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'update_products','default_woo_basic_detail': False}</field>
+    </record>
+
+    <!-- This action use for update product category in Woo @Haresh Mori on date 13/12/2019 -->
+    <record id="action_update_product_category" model="ir.actions.act_window">
+        <field name="name">Update Product Category In WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_product_categ_ept"/>
+        <field name="view_id" ref="view_woo_update_export_category_tags_coupons"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'update_category'}</field>
+    </record>
+
+    <!-- This action use for export product category in Woo @Haresh Mori on date 14/12/2019 -->
+    <record id="action_export_product_category" model="ir.actions.act_window">
+        <field name="name">Export Product Category In WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_product_categ_ept"/>
+        <field name="view_id" ref="view_woo_update_export_category_tags_coupons"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'export_category'}</field>
+    </record>
+
+    <!-- Update Product Tags Action By Maulik Barad on Date 13-Dec-2019. -->
+    <record id="action_woo_update_tags" model="ir.actions.act_window">
+        <field name="name">Update Tags in WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_tags_ept"/>
+        <field name="view_id" ref="view_woo_update_export_category_tags_coupons"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'update_tags'}</field>
+    </record>
+
+    <!-- Export Product Tags Action By Maulik Barad on Date 14-Dec-2019. -->
+    <record id="action_woo_export_tags" model="ir.actions.act_window">
+        <field name="name">Export Tags in WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_tags_ept"/>
+        <field name="view_id" ref="view_woo_update_export_category_tags_coupons"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'export_tags'}</field>
+    </record>
+
+    <!-- Export coupons by Nilesh Parmar on Date 16 Dec 2019. -->
+    <record id="action_woo_export_coupons" model="ir.actions.act_window">
+        <field name="name">Export Coupons in WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_coupons_ept"/>
+        <field name="view_id" ref="view_woo_update_export_category_tags_coupons"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'export_coupon'}</field>
+    </record>
+
+    <!-- Export coupons by Nilesh Parmar on Date 16 Dec 2019. -->
+    <record id="action_woo_update_coupons" model="ir.actions.act_window">
+        <field name="name">Update Coupons in WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_coupons_ept"/>
+        <field name="view_id" ref="view_woo_update_export_category_tags_coupons"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="context">{'process':'update_coupon'}</field>
+    </record>
+
+    <!-- Action of Update Products of woo product template ept model @Dipak Gogiya -->
+    <record id="action_wizard_woo_update_product_stock" model="ir.actions.act_window">
+        <field name="name">Update Product stock in WooCommerce</field>
+        <field name="res_model">woo.process.import.export</field>
+        <field name="binding_model_id" ref="model_woo_product_template_ept"/>
+        <field name="view_id" ref="view_selected_products_stock_export_from_action"/>
+        <field name="binding_view_types">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+    <menuitem id="menu_woo_processes_ept" parent="woo_commerce_ept.woo_commerce_main_menu" name="Operations"
+              groups="woo_commerce_ept.group_woo_ept" action="action_wizard_woo_processes_ept" sequence="4"/>
+
+    <menuitem id="menu_woo_logs" parent="woo_commerce_ept.woo_commerce_main_menu" name="Logs" sequence="5"/>
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="woo_common_log_line_view_tree" model="ir.ui.view">
+        <field name="name">common.log.line.ept.view.tree.woocommerce_ept</field>
+        <field name="model">common.log.lines.ept</field>
+        <field name="inherit_id" ref="common_connector_library.common_log_line_view_tree"/>
+        <field name="mode">primary</field>
+        <field name="priority">1000</field>
+        <field name="arch" type="xml">
+            <field name="write_date" position="after">
+                <field name="woo_instance_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="action_woocommerce_common_log_line_ept" model="ir.actions.act_window">
+        <field name="name">Log Lines</field>
+        <field name="res_model">common.log.lines.ept</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="woo_common_log_line_view_tree"/>
+        <field name="domain">[('module', '=', 'woocommerce_ept')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No mismatch log lines are there!
+            </p>
+            <p>If any import/export/update process has got issue, log lines will be shown here.</p>
+        </field>
+    </record>
+
+    <menuitem id="woo_log_line_ept" name="Log Lines" parent="woo_commerce_ept.menu_woo_logs"
+              action="woo_commerce_ept.action_woocommerce_common_log_line_ept" sequence="7"/>
+
+</odoo>

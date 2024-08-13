@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_woo_partner_tree" model="ir.ui.view">
+        <field name="name">res.partner.tree</field>
+        <field name="model">res.partner</field>
+        <field eval="100" name="priority"/>
+        <field name="arch" type="xml">
+            <tree create="false" sample="1">
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="email"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_woo_partner" model="ir.actions.act_window">
+        <field name="name">WooCommerce Customers</field>
+        <field name="res_model">res.partner</field>
+        <field name="domain">[('is_woo_customer','=',True)]</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_woo_partner_tree"/>
+        <field name="search_view_id" ref="base.view_res_partner_filter"/>
+        <field name="help" type="html">
+            <div>
+                <p class="o_view_nocontent_smiling_face">
+                    <b>There are no Woo Customers created yet.</b>
+                </p>
+                <p>
+                    You can't create WooCommerce Customer directly from here. Import Customers can be performed by 2
+                    ways.
+                </p>
+                <p>
+                    <b>1.</b>
+                    Manually Import Customers.
+                    <br/>
+                    You can import customers by going to menu WooCommerce
+                    <i class="fa fa-angle-double-right"/>
+                    Processes
+                    <i class="fa fa-angle-double-right"/>
+                    Woo Operations and select your instances and option "Import Customers". Clicking on "OK" button will
+                    import all your WooCommerce customers.
+                </p>
+                <p>
+                    <b>2.</b>
+                    Via Order import.
+                    <br/>
+                    When order is imported, system will automatically create customer in ERP.
+                </p>
+            </div>
+        </field>
+    </record>
+
+    <menuitem id="woo_menu_item_customers" name="Customers" sequence="6" parent="woo_sales_menu"
+              action="action_woo_partner"/>
+
+</odoo>
