@@ -61,21 +61,21 @@
             <xpath expr="//div[contains(@t-attf-class, 'footer o_clean_footer o_company_#{company.id}_layout')]" position="replace">
                 <div t-attf-class="footer o_clean_footer o_company_#{company.id}_layout">
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-8">
                          <t t-if="not is_purchase">
                              <span t-field="company.report_footer" />
                          </t>
                         <t t-else="">
                         </t>
                     </div>
-                    <div class="col-4 text-right">
+                    <div class="col-3 text-right">
                         <span
                             class="company_address"
                             t-field="company.partner_id"
                             t-options='{"widget": "contact", "fields": ["email", "phone"], "no_marker": true}'
                         />
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         <ul
                             t-if="report_type == 'pdf'"
                             class="list-inline pagenumber float-right text-center"
