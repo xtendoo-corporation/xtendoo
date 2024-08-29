@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <report
+    <record
         string="Etiqueta de pedido"
         id="action_report_delivery_pallets_label"
         model="stock.picking"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <report
+    <record
         string="Vale de entrega Sin Valorar"
         id="action_report_delivery_without_price"
         model="stock.picking"
