@@ -85,10 +85,11 @@
                     <div class="page">
                         <div class="oe_structure"/>
                         <!-- Is there a discount on at least one line? -->
-                        <t
-                            t-set="display_discount"
-                            t-value="any([l.discount for l in o.order_line])"
-                        />
+<!--                        <t-->
+<!--                            t-set="display_
+"-->
+<!--                            t-value="any([l.discount for l in o.order_line])"-->
+<!--                        />-->
                         <table class="table">
                             <!--Cabecera -->
                             <thead>
@@ -121,15 +122,15 @@
                                     >
                                         Importe
                                     </th>
-                                    <th
-                                        name="th_discount"
-                                        t-if="display_discount"
-                                        class="text-right"
-                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
-                                        groups="product.group_discount_per_so_line"
-                                    >
-                                        Dto.%
-                                    </th>
+<!--                                    <th-->
+<!--                                        name="th_discount"-->
+<!--                                        t-if="display_discount"-->
+<!--                                        class="text-right"-->
+<!--                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"-->
+<!--                                        groups="product.group_discount_per_so_line"-->
+<!--                                    >-->
+<!--                                        Dto.%-->
+<!--                                    </th>-->
                                     <th
                                         name="th_taxes"
                                         class="text-right"
@@ -226,14 +227,14 @@
                                             >
                                                 <span t-field="line.price_unit"/>
                                             </td>
-                                            <td
-                                                t-if="display_discount"
-                                                class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
-                                                groups="product.group_discount_per_so_line"
-                                            >
-                                                <span t-field="line.discount"/>
-                                            </td>
+<!--                                            <td-->
+<!--                                                t-if="display_discount"-->
+<!--                                                class="text-right"-->
+<!--                                                style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"-->
+<!--                                                groups="product.group_discount_per_so_line"-->
+<!--                                            >-->
+<!--                                                <span t-field="line.discount"/>-->
+<!--                                            </td>-->
                                             <td
                                                 name="td_taxes"
                                                 class="text-right"

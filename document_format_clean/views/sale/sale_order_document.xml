@@ -1,14 +1,14 @@
 <?xml version="1.0" ?>
 <odoo>
     <data>
-    <!-- Herencia del tenplate del informe-->
-         <template id="document_format_clean.format_report_sale_order_document"
-              inherit_id="sale.report_saleorder">
+        <!-- Herencia del tenplate del informe-->
+        <template id="document_format_clean.format_report_sale_order_document"
+                  inherit_id="sale.report_saleorder">
             <xpath expr='//t[@t-call="sale.report_saleorder_document"]' position="replace">
                 <t t-call="document_format_clean.report_saleorder_document_xtendoo" t-lang="doc.partner_id.lang"/>
             </xpath>
         </template>
-    <!-- Fin Herencia del tenplate del informe-->
+        <!-- Fin Herencia del tenplate del informe-->
         <template id="document_format_clean.report_saleorder_document_xtendoo">
             <t t-name="document_format_clean.report_saleorder_document_xtendoo">
                 <t t-call="web.external_layout">
@@ -27,13 +27,13 @@
                                     <li t-if="doc.state in ['draft','sent']">
                                         <h2 class="mt16">
                                             <b>Presupuesto:</b>
-                                            <span t-field="doc.name" />
+                                            <span t-field="doc.name"/>
                                         </h2>
                                     </li>
                                     <li t-if="doc.state not in ['draft','sent']">
                                         <h2 class="mt16">
                                             <b>Pedido:</b>
-                                            <span t-field="doc.name" />
+                                            <span t-field="doc.name"/>
                                         </h2>
                                     </li>
                                 </t>
@@ -41,31 +41,31 @@
                                     t-if="env.context.get('proforma', False) or is_pro_forma"
                                 >
                                     <b>Factura Pro-Forma:</b>
-                                    <span t-field="doc.name" />
+                                    <span t-field="doc.name"/>
                                 </li>
                                 <li t-if="doc.date_order">
                                     <b>Fecha:</b>
-                                    <span t-esc="doc.date_order.strftime('%d/%m/%Y')" />
+                                    <span t-esc="doc.date_order.strftime('%d/%m/%Y')"/>
                                 </li>
                                 <li t-if="doc.client_order_ref">
                                     <b>Ref. cliente:</b>
-                                    <span t-field="doc.client_order_ref" />
+                                    <span t-field="doc.client_order_ref"/>
                                 </li>
                                 <li t-if="doc.user_id.name">
                                     <b>Comercial:</b>
-                                    <span t-field="doc.user_id" />
+                                    <span t-field="doc.user_id"/>
                                 </li>
                                 <div name="payment_term">
                                     <li t-if="doc.payment_term_id">
                                         <b>Terminos de pago:</b>
-                                        <span t-field="doc.payment_term_id" />
+                                        <span t-field="doc.payment_term_id"/>
                                     </li>
                                 </div>
                                 <li
                                     t-if="doc.validity_date and doc.state in ['draft', 'sent']"
                                 >
                                     <b>Fecha de validez:</b>
-                                    <span t-field="doc.validity_date.strftime('%d/%m/%Y')" />
+                                    <span t-field="doc.validity_date.strftime('%d/%m/%Y')"/>
                                 </li>
                             </ul>
                         </div>
@@ -74,10 +74,10 @@
                         <div style="width:50%; float:left;">
                             <ul class="list-unstyled">
                                 <li t-if="doc.partner_id.name">
-                                    <span t-field="doc.partner_id.name" />
+                                    <span t-field="doc.partner_id.name"/>
                                 </li>
                                 <li t-if="doc.partner_id.street">
-                                    <span t-field="doc.partner_id.street" />
+                                    <span t-field="doc.partner_id.street"/>
                                 </li>
                                 <li>
                                     <span
@@ -99,20 +99,21 @@
                                 </li>
                                 <li t-if="doc.partner_id.vat">
                                     NIF:
-                                    <span t-field="doc.partner_id.vat" />
+                                    <span t-field="doc.partner_id.vat"/>
                                 </li>
                             </ul>
                         </div>
                         <t t-if="doc.partner_shipping_id != doc.partner_id">
                             <span style="width:50%;margin-left:50%;">
                                 <strong>Dirección de envio:</strong>
-                                <div style="width:50%;margin-left:50%;" t-field="doc.partner_shipping_id" t-options="{'widget': 'contact', 'fields': ['address', 'name', 'phone'], 'no_marker': True, 'phone_icons': True}"/>
+                                <div style="width:50%;margin-left:50%;" t-field="doc.partner_shipping_id"
+                                     t-options="{'widget': 'contact', 'fields': ['address', 'name', 'phone'], 'no_marker': True, 'phone_icons': True}"/>
                             </span>
                         </t>
                         <!-- Fin datos del cliente -->
                         <!-- Fin datos del documento -->
                         <div class="page">
-                            <div class="oe_structure" />
+                            <div class="oe_structure"/>
                             <!-- Is there a discount on at least one line? -->
                             <t
                                 t-set="display_discount"
@@ -173,10 +174,12 @@
                                         >
                                             <t
                                                 groups="account.group_show_line_subtotals_tax_excluded"
-                                            >Total</t>
+                                            >Total
+                                            </t>
                                             <t
                                                 groups="account.group_show_line_subtotals_tax_included"
-                                            >Total I.I.</t>
+                                            >Total I.I.
+                                            </t>
                                         </th>
                                     </tr>
                                 </thead>
@@ -184,7 +187,7 @@
                                 <!-- Lineas -->
                                 <tbody class="sale_tbody">
                                     <!-- Variables -->
-                                    <t t-set="current_subtotal" t-value="0" />
+                                    <t t-set="current_subtotal" t-value="0"/>
                                     <!-- Fin variables -->
                                     <t t-foreach="doc.order_line" t-as="line">
                                         <!-- Variables FOREACH -->
@@ -251,7 +254,7 @@
                                                     class="text-right"
                                                     style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                 >
-                                                    <span t-field="line.price_unit" />
+                                                    <span t-field="line.price_unit"/>
                                                 </td>
                                                 <td
                                                     t-if="display_discount"
@@ -259,7 +262,7 @@
                                                     style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                                     groups="product.group_discount_per_so_line"
                                                 >
-                                                    <span t-field="line.discount" />
+                                                    <span t-field="line.discount"/>
                                                 </td>
                                                 <td
                                                     name="td_taxes"
@@ -292,7 +295,7 @@
                                                     colspan="99"
                                                     style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                                 >
-                                                    <span t-field="line.name" />
+                                                    <span t-field="line.name"/>
                                                 </td>
                                                 <t
                                                     t-set="current_section"
@@ -309,7 +312,7 @@
                                                     colspan="99"
                                                     style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
                                                 >
-                                                    <span t-field="line.name" />
+                                                    <span t-field="line.name"/>
                                                 </td>
                                             </t>
                                         </tr>
@@ -326,78 +329,21 @@
                                     t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto"
                                 >
                                     <table class="table table-sm">
-                                        <tr class="border-black o_subtotal" style="">
-                                            <td
-                                                name="td_amount_untaxed_label"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;"
-                                            >
-                                                <strong>Subtotal</strong>
-                                            </td>
-                                            <td
-                                                name="td_amount_untaxed"
-                                                class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;"
-                                            >
-                                                <span t-field="doc.amount_untaxed" />
-                                            </td>
-                                        </tr>
-                                        <t
-                                            t-foreach="doc.amount_by_group"
-                                            t-as="amount_by_group"
-                                        >
-                                            <tr style="">
-                                                <td
-                                                    name="td_amount_by_group_label_3"
-                                                    style="solid; black; padding: 0px; margin: 0px; !important;"
-                                                >
-                                                    <span t-esc="amount_by_group[0]" />
-                                                    <span>en</span>
-                                                    <span>
-                                                        <t
-                                                            t-esc="amount_by_group[2]"
-                                                            t-options="{'widget': 'monetary', 'display_currency': doc.pricelist_id.currency_id}"
-                                                        />
-                                                    </span>
-                                                </td>
-                                                <td
-                                                    name="td_amount_by_group_3"
-                                                    class="text-right o_price_total"
-                                                    style="solid; black; padding: 0px; margin: 0px; !important;"
-                                                >
-                                                    <span
-                                                        t-esc="amount_by_group[1]"
-                                                        t-options="{'widget': 'monetary', 'display_currency': doc.pricelist_id.currency_id}"
-                                                    />
-                                                </td>
-                                            </tr>
-                                        </t>
-                                        <tr class="border-black o_total">
-                                            <td
-                                                name="td_amount_total_label"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;"
-                                            >
-                                                <strong>Total</strong>
-                                            </td>
-                                            <td
-                                                name="td_amount_total"
-                                                class="text-right"
-                                                style="solid; black; padding: 0px; margin: 0px; !important;"
-                                            >
-                                                <span t-field="doc.amount_total" />
-                                            </td>
-                                        </tr>
+                                        <!-- Tax totals -->
+                                        <t t-set="tax_totals" t-value="json.loads(doc.tax_totals_json)"/>
+                                        <t t-call="document_format_clean.document_tax_totals"/>
                                     </table>
                                 </div>
                             </div>
                             <!-- Fin totales -->
                         </div>
-                        <p t-field="doc.note" />
+                        <p t-field="doc.note"/>
                         <p
                             id="fiscal_position_remark"
                             t-if="doc.fiscal_position_id and doc.fiscal_position_id.note"
                         >
                             <strong>Observación de la posición fiscal</strong>
-                            <span t-field="doc.fiscal_position_id.note" />
+                            <span t-field="doc.fiscal_position_id.note"/>
                         </p>
                         <div
                             t-if="doc.signature"
@@ -411,10 +357,10 @@
                                 />
                             </div>
                             <div class="offset-8 text-center">
-                                <p t-field="doc.signed_by" />
+                                <p t-field="doc.signed_by"/>
                             </div>
                         </div>
-                        <div class="oe_structure" />
+                        <div class="oe_structure"/>
                     </div>
                 </t>
             </t>
