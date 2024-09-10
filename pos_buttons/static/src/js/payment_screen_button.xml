@@ -5,8 +5,8 @@
        t-inherit-mode="extension">
         <xpath expr="//div[hasclass('payment-buttons')]" position="inside">
             <button class="button button-partial-payment btn btn-light py-3 text-start rounded-0 border-bottom"
-                t-on-click="onClick">
-                <i class="fa fa-money me-2"/>Custom Button
+                  t-on-click="onClickPartialPayment">
+                <i class="fa fa-money me-2"/>Albarán
             </button>
         </xpath>
     </t>

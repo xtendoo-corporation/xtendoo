@@ -9,7 +9,7 @@
                 <t t-esc="props.body"/>
             </div>
             <div class="popup-footer">
-                <button t-on-click="trigger('confirm')">
+                <button t-on-click="confirm">
                     <t t-esc="props.confirmText"/>
                 </button>
             </div>

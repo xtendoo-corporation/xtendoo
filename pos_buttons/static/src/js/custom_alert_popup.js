@@ -19,10 +19,25 @@ export class CustomAlertPopup extends AbstractAwaitablePopup {
         zIndex: { type: Number, optional: true, default: 1000 },
         cancelKey: { type: String, optional: true },
         confirmKey: { type: String, optional: true },
-        id: { type: String, optional: true },
+        id: { type: Number, optional: true, },
         resolve: { type: Function, optional: true },
         close: { type: Function, optional: true },
     };
+
+    closePopup() {
+        if (this.props.close) {
+            this.props.close();
+        } else {
+            console.error("Close method is not defined");
+        }
+    }
+
+     confirm() {
+       if (this.props.resolve) {
+           this.props.resolve();
+       }
+       this.closePopup();
+    }
 
     static defaultProps = {
         confirmText: _t("Ok"),
@@ -34,6 +49,7 @@ export class CustomAlertPopup extends AbstractAwaitablePopup {
     setup() {
         super.setup();
         console.log("Custom Alert Setup");
+        console.log("Props recibidos:", this.props);
     }
     onMounted() {
         console.log("Custom Alert Mounted");
