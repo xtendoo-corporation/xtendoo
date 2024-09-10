@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.CreateButton">
+        <button class="control-button btn btn-light rounded-0 fw-bolder"
+             t-on-click="() => this.onClick()">
+            <i class="fa fa-pencil-square" role="img" aria-label="Custom Alert" title="Custom Alert"/>
+            <span> </span>
+            <span>Botón Personaliazado</span>
+        </button>
+    </t>
+</templates>
