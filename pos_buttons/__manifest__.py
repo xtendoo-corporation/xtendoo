@@ -8,12 +8,12 @@
         'stock_account',
         'barcodes',
         'web_editor',
-        'digest'
+        'digest',
+        'stock',
     ],
     'assets': {
         'point_of_sale._assets_pos': [
             'pos_buttons/static/src/js/*',
-            # 'pos_buttons/static/src/xml/payment_screen_button.xml',
         ]
     },
     'installable': True,
