@@ -50,9 +50,9 @@
                                     <li t-if="o.partner_id.name">
                                         <span t-field="o.partner_id.name" />
                                     </li>
-                                    <li t-if="o.partner_id.comercial">
-                                        <span t-field="o.partner_id.comercial" />
-                                    </li>
+<!--                                    <li t-if="o.partner_id.comercial">-->
+<!--                                        <span t-field="o.partner_id.comercial" />-->
+<!--                                    </li>-->
                                     <li t-if="o.partner_id.street">
                                         <span t-field="o.partner_id.street" />
                                     </li>
@@ -94,7 +94,7 @@
                                 t-set="display_discount"
                                 t-value="any([l.discount for l in o.sale_id.order_line])"
                             />
-                            <table class="table" style="border:none;">
+                            <table class="table table-sm table-borderless">
                                 <t
                                     t-set="has_serial_number"
                                     t-value="o.move_line_ids.mapped('lot_id')"
@@ -104,14 +104,14 @@
                                     <tr>
                                         <th
                                             name="th_code"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                         >
                                             Código
                                         </th>
                                         <th
                                             name="th_description"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                         >
                                             Descripción
@@ -132,14 +132,14 @@
                                         </th>
                                         <th
                                             name="th_quantity"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             Unds
                                         </th>
                                         <th
                                             name="th_priceunit"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             Importe
@@ -147,7 +147,7 @@
                                         <th
                                             name="th_discount"
                                             t-if="display_discount"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             groups="product.group_discount_per_so_line"
                                         >
@@ -155,14 +155,14 @@
                                         </th>
                                         <th
                                             name="th_taxes"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:5%; font-size:0.8em; !important;"
                                         >
                                             IVA%
                                         </th>
                                         <th
                                             name="th_subtotal"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:18%; font-size:0.8em; !important;"
                                         >
                                             Total
@@ -175,7 +175,7 @@
                                     <tr t-foreach="o.move_line_ids" t-as="move_line">
                                         <td
                                             name="td_code"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                         >
                                             <span
@@ -184,7 +184,7 @@
                                         </td>
                                         <td
                                             name="td_name"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.product_id.name" />
@@ -235,19 +235,19 @@
                                             </t>
                                         </td>
                                         <td
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.qty_done" />
                                         </td>
                                         <td
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.sale_price_unit" />
                                         </td>
                                         <td
-                                            class="text-right"
+                                            class="text-end"
                                             t-if="display_discount"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                             groups="product.group_discount_per_so_line"
@@ -255,7 +255,7 @@
                                             <span t-field="move_line.sale_discount" />
                                         </td>
                                         <td
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:5%; font-size:0.8em; !important;"
                                         >
                                             <span t-esc="', '.join(map(lambda x: (str(x.amount)), move_line.sale_tax_id))"
@@ -263,14 +263,14 @@
                                         </td>
                                         <td
                                             t-if="move_line.currency_id"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:18%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.sale_price_subtotal" />
                                         </td>
                                        <!-- <td
                                             t-if="not move_line.currency_id"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             0
@@ -283,9 +283,9 @@
                                 <!-- Totales -->
                                 <div id="total" class="row" name="total">
                                     <div
-                                        t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto"
+                                        t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-5'} ms-auto"
                                     >
-                                        <table class="table table-sm">
+                                        <table class="table table-sm table-borderless">
                                             <tr class="border-black o_subtotal">
                                                 <td
                                                     name="td_amount_untaxed_label"
@@ -295,7 +295,7 @@
                                                 </td>
                                                 <td
                                                     name="td_amount_untaxed"
-                                                    class="text-right"
+                                                    class="text-end"
                                                     style="solid; black; padding: 0px; margin: 0px; !important;"
                                                 >
                                                     <span
@@ -313,7 +313,7 @@
                                                 </td>
                                                 <td
                                                     name="td_amount_tax"
-                                                    class="text-right"
+                                                    class="text-end"
                                                     style="solid; black; padding: 0px; margin: 0px; !important;"
                                                 >
                                                     <span
@@ -331,7 +331,7 @@
                                                 </td>
                                                 <td
                                                     name="td_amount_tax"
-                                                    class="text-right"
+                                                    class="text-end"
                                                     style="solid; black; padding: 0px; margin: 0px; !important;"
                                                 >
                                                     <span

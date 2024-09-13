@@ -56,9 +56,9 @@
                                     <li t-if="o.partner_id.name">
                                         <span t-field="o.partner_id.name" />
                                     </li>
-                                    <li t-if="o.partner_id.comercial">
-                                        <span t-field="o.partner_id.comercial" />
-                                    </li>
+<!--                                    <li t-if="o.partner_id.comercial">-->
+<!--                                        <span t-field="o.partner_id.comercial" />-->
+<!--                                    </li>-->
                                     <li t-if="o.partner_id.street">
                                         <span t-field="o.partner_id.street" />
                                     </li>
@@ -100,7 +100,7 @@
                                 t-set="display_discount"
                                 t-value="any([l.discount for l in o.sale_id.order_line])"
                             />
-                            <table class="table" style="border:none;">
+                            <table class="table table-sm table-borderless">
                                 <t
                                     t-set="has_serial_number"
                                     t-value="o.move_line_ids.mapped('lot_id')"
@@ -110,14 +110,14 @@
                                     <tr>
                                         <th
                                             name="th_code"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                         >
                                             Código
                                         </th>
                                         <th
                                             name="th_description"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:70%; font-size:0.8em; !important;"
                                         >
                                             Descripción
@@ -138,7 +138,7 @@
                                         </th>
                                         <th
                                             name="th_quantity"
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             Unds
@@ -151,7 +151,7 @@
                                     <tr t-foreach="o.move_line_ids" t-as="move_line">
                                         <td
                                             name="td_code"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
                                         >
                                             <span
@@ -160,7 +160,7 @@
                                         </td>
                                         <td
                                             name="td_name"
-                                            class="text-left"
+                                            class="text-start"
                                             style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.product_id.name" />
@@ -211,7 +211,7 @@
                                             </t>
                                         </td>
                                         <td
-                                            class="text-right"
+                                            class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
                                         >
                                             <span t-field="move_line.qty_done" />

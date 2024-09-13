@@ -150,7 +150,7 @@
                             t-set="display_discount"
                             t-value="any([l.discount for l in doc.order_line])"
                         />
-                        <table class="table table-sm o_main_table table-borderless">
+                        <table class="table table-sm table-borderless">
                             <!--Cabecera -->
                             <thead>
                                 <tr>
