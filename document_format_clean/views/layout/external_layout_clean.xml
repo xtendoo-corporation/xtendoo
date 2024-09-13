@@ -22,18 +22,18 @@
                                     <span t-field="company.name"/>
                                 </li>
                             </strong>
-                            <li t-if="company.street">
-                                <span t-field="company.street"/>
-                            </li>
-                            <li t-if="company.street2">
-                                <span t-field="company.street2"/>
-                            </li>
-                            <li>
-                                <span t-if="company.city" t-field="company.city"/>
-                                ,
-                                <span t-if="company.zip" t-field="company.zip"/>
-                                <span t-if="company.state_id" t-field="company.state_id"/>
-                            </li>
+<!--                            <li t-if="company.street">-->
+<!--                                <span t-field="company.street"/>-->
+<!--                            </li>-->
+<!--                            <li t-if="company.street2">-->
+<!--                                <span t-field="company.street2"/>-->
+<!--                            </li>-->
+<!--                            <li>-->
+<!--                                <span t-if="company.city" t-field="company.city"/>-->
+<!--                                ,-->
+<!--                                <span t-if="company.zip" t-field="company.zip"/>-->
+<!--                                <span t-if="company.state_id" t-field="company.state_id"/>-->
+<!--                            </li>-->
                             <li t-if="company.vat">
                                 <t t-esc="company.country_id.vat_label or 'Tax ID'"/>
                                 <span t-field="company.vat"/>
@@ -99,14 +99,14 @@
                         />
                     </div>
                 </div>
-                <div class="row mt8">
-                    <div class="col-12">
-                        <span
-                            style="font-size: 10px; line-height: 0px;"
-                            t-field="company.company_registry"
-                        />
-                    </div>
-                </div>
+<!--                <div class="row mt8">-->
+<!--                    <div class="col-12">-->
+<!--                        <span-->
+<!--                            style="font-size: 10px; line-height: 0px;"-->
+<!--                            t-field="company.company_registry"-->
+<!--                        />-->
+<!--                    </div>-->
+<!--                </div>-->
             </div>
         </xpath>
     </template>

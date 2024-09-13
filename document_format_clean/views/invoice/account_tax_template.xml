@@ -13,7 +13,7 @@
                 <tr class="border-black o_subtotal" >
                     <td style="padding:0;"><strong t-esc="subtotal['name']"/></td>
 
-                    <td style="padding:0;" class="text-right">
+                    <td style="padding:0;" class="text-end">
                         <span
                             t-att-class="oe_subtotal_footer_separator"
                             t-esc="subtotal['formatted_amount']"
@@ -28,7 +28,7 @@
             <!--Total amount with all taxes-->
             <tr class="border-black o_total">
                 <td style="padding:0;"><strong>Total</strong></td>
-                <td style="padding:0;" class="text-right">
+                <td style="padding:0;" class="text-end">
                     <span t-esc="tax_totals['formatted_amount_total']"/>
                 </td>
             </tr>
@@ -51,13 +51,13 @@
                                 <t t-esc="amount_by_group['formatted_tax_group_base_amount']"/>
                             </span>
                         </td>
-                        <td style="padding:0;" class="text-right o_price_total">
+                        <td style="padding:0;" class="text-end o_price_total">
                             <span class="text-nowrap" t-esc="amount_by_group['formatted_tax_group_amount']"/>
                         </td>
                     </t>
                     <t t-else="">
                         <td style="padding:0;"><span class="text-nowrap" t-esc="amount_by_group['tax_group_name']"/></td>
-                        <td style="padding:0;" class="text-right o_price_total">
+                        <td style="padding:0;" class="text-end o_price_total">
                             <span class="text-nowrap" t-esc="amount_by_group['formatted_tax_group_amount']" />
                         </td>
                     </t>
