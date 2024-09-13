@@ -21,6 +21,8 @@
         "account_payment_partner",
         "mail",
         "contacts",
+        "l10n_es",
+        "l10n_es_partner",
     ],
     "data": [
         "views/stock_picking/stock_picking_view.xml",
