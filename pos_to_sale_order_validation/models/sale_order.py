@@ -10,16 +10,14 @@ class SaleOrder(models.Model):
 
     @api.model
     def _prepare_from_pos(self, order_data):
-        PosSession = self.env["pos.session"]
-        session = PosSession.browse(order_data["pos_session_id"])
-        SaleOrderLine = self.env["sale.order.line"]
+        session = self.env["pos.session"].browse(order_data["pos_session_id"])
         order_lines = [
-            Command.create(SaleOrderLine._prepare_from_pos(sequence, line_data[2]))
-            for sequence, line_data in enumerate(order_data["lines"], start=1)
+            Command.create(self.env["sale.order.line"]._prepare_from_pos(seq, line[2]))
+            for seq, line in enumerate(order_data["lines"], start=1)
         ]
         return {
             "partner_id": order_data["partner_id"],
-            "origin": _("Point of Sale %s") % (session.name),
+            "origin": _("Point of Sale %s") % session.name,
             "client_order_ref": order_data["name"],
             "user_id": order_data["user_id"],
             "pricelist_id": order_data["pricelist_id"],
