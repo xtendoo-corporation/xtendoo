@@ -4,10 +4,6 @@
     <t t-name="pos_order_to_sale_order.CreateOrderPopup" owl="1">
         <div class="popup popup-create-sale-order">
 
-            <div class="modal-header">
-                <h3 class="modal-title w-100">Create Sale Order</h3>
-            </div>
-
             <div class="modal-body">
 
                 <table>
@@ -22,7 +18,7 @@
                                         <i class="fa fa-file-text-o" role="img" /> +
                                         <i class="fa fa-shopping-cart" role="img" />
                                     </span>
-                                    <span>Crear pedido y albarán</span>
+                                    <span>Crear albarán</span>
                                 </div>
                             </td>
                         </tr>

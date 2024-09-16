@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
 
             <xpath expr="//block[@id='pos_inventory_section']" position="after">
-                <block title="Sale Order Creation" id="pos_create_sale_order">
+                <block title="Sale Order Creation" id="pos_create_sale_order" invisible="1">
                     <setting string="Create Delivered Sale Orders">
                         <field name="pos_iface_create_delivered_sale_order" />
                     </setting>

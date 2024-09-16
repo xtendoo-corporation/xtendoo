@@ -42,6 +42,13 @@ class SaleOrder(models.Model):
             move.quantity = move.product_uom_qty
         sale_order.mapped("picking_ids").button_validate()
 
+        # Print the picking report using the default template
+        picking_action = self.env.ref('stock.action_report_delivery')
+        if picking_action:
+            # Create a report action for each picking
+            picking_ids = sale_order.picking_ids.ids
+            return picking_action.report_action(self.env['stock.picking'].browse(picking_ids))
+
         return {
             "sale_order_id": sale_order.id,
         }
