@@ -56,9 +56,9 @@
                                     <li t-if="o.partner_id.name">
                                         <span t-field="o.partner_id.name" />
                                     </li>
-<!--                                    <li t-if="o.partner_id.comercial">-->
-<!--                                        <span t-field="o.partner_id.comercial" />-->
-<!--                                    </li>-->
+                                    <li t-if="o.partner_id.comercial">
+                                        <span t-field="o.partner_id.comercial" />
+                                    </li>
                                     <li t-if="o.partner_id.street">
                                         <span t-field="o.partner_id.street" />
                                     </li>

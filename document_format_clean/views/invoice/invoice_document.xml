@@ -208,6 +208,7 @@
                                t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
                             <!-- Fin variables -->
                             <t t-foreach="lines" t-as="line">
+                                <!-- Variables FOREACH-->
                                 <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
                                    groups="account.group_show_line_subtotals_tax_excluded"/>
                                 <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
