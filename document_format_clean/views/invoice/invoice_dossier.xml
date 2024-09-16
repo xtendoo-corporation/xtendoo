@@ -45,19 +45,19 @@
                                 <th style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     Vencimiento
                                 </th>
-                                <th class="text-right"
+                                <th class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     Impuestos excluidos
                                 </th>
-                                <th class="text-right"
+                                <th class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     Impuestos
                                 </th>
-                                <th class="text-right"
+                                <th class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     Total
                                 </th>
-                                <th class="text-right"
+                                <th class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     Importe adeudado
                                 </th>
@@ -83,19 +83,19 @@
                                 <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     <span t-field="o.invoice_date_due"/>
                                 </td>
-                                <td class="text-right"
+                                <td class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     <span t-field="o.amount_untaxed_signed"/>
                                 </td>
-                                <td class="text-right"
+                                <td class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     <span t-field="o.amount_tax_signed"/>
                                 </td>
-                                <td class="text-right"
+                                <td class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     <span t-field="o.amount_total_signed"/>
                                 </td>
-                                <td class="text-right"
+                                <td class="text-end"
                                     style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                     <span t-field="o.amount_residual_signed"/>
                                 </td>
@@ -112,16 +112,16 @@
                             </td>
                             <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                             </td>
-                            <td class="text-right"
+                            <td class="text-end"
                                 style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                             </td>
-                            <td class="text-right"
+                            <td class="text-end"
                                 style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                             </td>
-                            <td class="text-right"
+                            <td class="text-end"
                                 style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                             </td>
-                            <td class="text-right"
+                            <td class="text-end"
                                 style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
                                 <strong
                                     t-esc="subtotal"
