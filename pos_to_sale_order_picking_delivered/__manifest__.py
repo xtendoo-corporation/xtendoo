@@ -13,9 +13,7 @@
         "point_of_sale._assets_pos": [
             "pos_to_sale_order_picking_delivered/static/src/css/pos.scss",
             "pos_to_sale_order_picking_delivered/static/src/js/CreateOrderButton.esm.js",
-            "pos_to_sale_order_picking_delivered/static/src/js/CreateOrderPopup.esm.js",
             "pos_to_sale_order_picking_delivered/static/src/xml/CreateOrderButton.xml",
-            "pos_to_sale_order_picking_delivered/static/src/xml/CreateOrderPopup.xml",
         ],
     },
     "installable": True,

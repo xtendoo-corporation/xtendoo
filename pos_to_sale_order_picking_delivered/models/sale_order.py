@@ -1,6 +1,7 @@
 # Copyright (C) 2017 - Today: GRAP (http://www.grap.coop)
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+import base64
 
 from odoo import Command, _, api, models
 
@@ -27,28 +28,28 @@ class SaleOrder(models.Model):
 
     @api.model
     def create_order_from_pos(self, order_data, action):
-        # Create Draft Sale order
+        # Crear la orden de venta en borrador
         order_vals = self._prepare_from_pos(order_data)
         sale_order = self.with_context(
             pos_order_lines_data=[x[2] for x in order_data.get("lines", [])]
         ).create(order_vals)
 
-        # Confirm Sale Order
-        sale_order.action_confirm()
+        print(f"Sale order {sale_order.id} created.")
 
-        # mark picking as delivered
-        # Mark all moves are delivered
+        # Confirmar la orden de venta
+        sale_order.action_confirm()
+        print(f"Sale order {sale_order.id} confirmed.")
+
+        # Marcar todos los movimientos como entregados
         for move in sale_order.mapped("picking_ids.move_ids_without_package"):
             move.quantity = move.product_uom_qty
-        sale_order.mapped("picking_ids").button_validate()
 
-        # Print the picking report using the default template
-        picking_action = self.env.ref('stock.action_report_delivery')
-        if picking_action:
-            # Create a report action for each picking
-            picking_ids = sale_order.picking_ids.ids
-            return picking_action.report_action(self.env['stock.picking'].browse(picking_ids))
+        # Validar el picking
+        pickings = sale_order.mapped("picking_ids")
+        pickings.button_validate()
+        print(f"Pickings validated: {[picking.id for picking in pickings]}")
 
+        # Devolver el ID del picking
         return {
-            "sale_order_id": sale_order.id,
+            'picking_id': pickings.ids[0] if pickings else None,
         }
