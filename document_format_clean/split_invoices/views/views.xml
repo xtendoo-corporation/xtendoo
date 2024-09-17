@@ -1,0 +1,108 @@
+<odoo>
+    <data>
+        <!-- explicit list view definition -->
+        <record id="custom_label_view_server_action_template" model="ir.actions.server">
+            <field name="name">Split Invoice</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <!--            <field name="groups_id" eval="[(4, ref('product_custom_label.product_custom_label_security_group'))]"/>-->
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="binding_view_types">form</field>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                action = records.split_invoice_wizard()
+            </field>
+        </record>
+        <record id="view_form_inherit" model="ir.ui.view">
+            <field name="name">account.move.form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@id='other_tab_group']" position="after">
+                    <group><field name="invoice_sources"/>
+                        <field name="splitted_invoice_count" invisible="1"/>
+                    </group>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_invoice" class="oe_stat_button" icon="fa-bars" type="object"
+                            attrs="{'invisible': [ ('splitted_invoice_count', '=', 0)]}"
+                            string="Splitted">
+                    </button>
+
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_wizard_form" model="ir.ui.view">
+            <field name="name">split.invoice.wizard.form</field>
+            <field name="model">split.invoice.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Transfer">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="move_type"/>
+                                <field name="split_type"/>
+                                <label for="quantity_percentage"
+                                       attrs="{'invisible':[('split_type','!=','quantity_per')]}"/>
+                                <div class="o_row" attrs="{'invisible':[('split_type','!=','quantity_per')]}">
+                                    <field name="quantity_percentage"/>
+                                    <span class="h2">|</span>
+                                    <field name="quantity_percentage_second"/>
+
+                                </div>
+
+                            </group>
+                            <group>
+                                <field name="origin"/>
+                                <field name="invoice_sources"/>
+                                <field name="invoice_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+
+                            <page string="Lines">
+                                <field name="move_line_ids" attrs="{'readonly':[('split_type','=','quantity_per')]}">
+                                    <tree editable="bottom">
+                                        <field name="product_id" readonly="1" force_save="1"/>
+                                        <field name="invoice_line_id" invisible="1"/>
+                                        <field name="quantity"/>
+                                        <field name="price" readonly="1" force_save="1"/>
+                                        <field name="uom_id" readonly="1" force_save="1"/>
+                                        <field name="tax_ids" widget="many2many_tags" readonly="1" force_save="1"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                    <form>
+                                        <form>
+                                            <group>
+                                                <field name="product_id" readonly="1" force_save="1"/>
+                                                <field name="quantity" readonly="1" force_save="1"/>
+                                                <field name="price" readonly="1" force_save="1"/>
+                                                <field name="tax_ids" widget="many2many_tags" readonly="1"
+                                                       force_save="1"/>
+                                                <field name="currency_id" invisible="1"/>
+                                            </group>
+                                        </form>
+                                    </form>
+
+                                </field>
+                            </page>
+
+
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button name="split_invoice" string="Split Invoices " type="object"
+                                class="btn-primary"/>
+
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+    </data>
+</odoo>
