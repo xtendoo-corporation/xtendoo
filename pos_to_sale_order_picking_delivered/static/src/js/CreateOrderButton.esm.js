@@ -57,10 +57,8 @@ export class CreateOrderButton extends Component {
 
     async _actionCreateSaleOrder(order_state) {
         const current_order = this.pos.get_order();
-
         // Bloquear la interfaz mientras se crea la orden
         this.ui.block();
-
         try {
             // Crear la orden de venta llamando al ORM
             const result = await this.orm.call("sale.order", "create_order_from_pos", [
@@ -68,32 +66,27 @@ export class CreateOrderButton extends Component {
                 order_state,
             ]);
 
-            // Eliminar la orden actual del POS y crear una nueva
-            this.pos.removeOrder(current_order);
-            this.pos.add_new_order();
-
-            syncOrderResult = await this.pos.push_single_order(this.currentOrder);
-            console.log("syncOrderResult", syncOrderResult);
+            current_order.finalized = true;
            // Verificar si se ha creado un picking y generar el reporte si es así
-        if (result.picking_id) {
-            console.log("Generating picking report for ID:", result.picking_id);
-
-            // Generar el reporte del picking
-            await this.report.doAction("stock.action_report_delivery", [
-                 syncOrderResult[0].stock_picking,
-           ]);
-
-            console.log("Picking report generated");
-        } else {
-            console.error("No picking ID returned from create_order_from_pos");
+            if (result.picking_id) {
+                // Generar el reporte del picking
+                await this.report.doAction("stock.action_report_delivery", [
+                       result.picking_id
+               ]);
+                console.log("Picking report generated");
+            } else {
+                console.error("No picking ID returned from create_order_from_pos");
+            }
+        } catch (error) {
+            console.error("Error al crear el pedido:", error);
+        } finally {
+            // Desbloquear la interfaz
+            this.ui.unblock();
+             // Eliminar la orden actual del POS y crear una nueva
+                this.pos.removeOrder(current_order);
+                this.pos.add_new_order();
         }
-    } catch (error) {
-        console.error("Error al crear el pedido:", error);
-    } finally {
-        // Desbloquear la interfaz
-        this.ui.unblock();
     }
-}
 
     async selectPartner(isEditMode = false, missingFields = []) {
         const currentOrder = this.pos.get_order();

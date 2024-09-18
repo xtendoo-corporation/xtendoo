@@ -34,11 +34,9 @@ class SaleOrder(models.Model):
             pos_order_lines_data=[x[2] for x in order_data.get("lines", [])]
         ).create(order_vals)
 
-        print(f"Sale order {sale_order.id} created.")
 
         # Confirmar la orden de venta
         sale_order.action_confirm()
-        print(f"Sale order {sale_order.id} confirmed.")
 
         # Marcar todos los movimientos como entregados
         for move in sale_order.mapped("picking_ids.move_ids_without_package"):
@@ -47,7 +45,6 @@ class SaleOrder(models.Model):
         # Validar el picking
         pickings = sale_order.mapped("picking_ids")
         pickings.button_validate()
-        print(f"Pickings validated: {[picking.id for picking in pickings]}")
 
         # Devolver el ID del picking
         return {
