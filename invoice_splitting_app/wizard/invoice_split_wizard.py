@@ -101,11 +101,8 @@ class SplitInvoiceWiz(models.TransientModel):
                 raise UserError("Only Draft invoice Record Can be splitted.")
 
             if self.split_selection == 'full_invoice':
-                if not self.split_quantity:
-                    raise UserError("You need to add split Quantity.")
-
-                if self.split_quantity < 0.0:
-                    raise UserError("Sorry, Split Quantity is not less to the 0.0")
+                if not self.split_quantity or self.split_quantity < 0.0:
+                    raise UserError("Invalid split quantity. It must be greater than 0.")
 
                 account_move = self.env['account.move'].create(self._prepare_account_move_vals(invoice))
 
@@ -114,6 +111,7 @@ class SplitInvoiceWiz(models.TransientModel):
                         self._prepare_account_move_line_vals(account_move, line))
                     line.with_context(check_move_validity=False, skip_account_move_synchronization=True).update(
                         {'quantity': line.quantity - self.split_quantity})
+
 
             if self.split_selection == 'invoice_line':
                 # Split By Quantity
