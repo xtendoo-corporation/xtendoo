@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+
+        <record id="search_product_lot_filter_inherit_stock_product_expiry" model="ir.ui.view">
+            <field name="name">stock.production.lot.search.inherit</field>
+            <field name="model">stock.production.lot</field>
+            <field name="inherit_id" ref="stock.search_product_lot_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="after">
+                    <filter
+                        name="qty_on_hand_end_of_life"
+                        string="Vencidos"
+                        domain="[('product_qty', '&gt;', 0), ('life_date', '&lt;=', time.strftime('%Y-%m-%d %H:%M:%S'))]"
+                    />
+                    <filter
+                        name="qty_on_hand"
+                        string="Proximos a vencer"
+                        domain="[('product_qty', '&gt;', 0), ('life_date', '&gt;=', time.strftime('%Y-%m-%d %H:%M:%S'))]"
+                    />
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+
