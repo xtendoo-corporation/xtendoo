@@ -4,7 +4,7 @@
 {
     'name': 'Base Avaible Pricelist',
     'summary': """Base Partner Avaible Pricelist""",
-    'version': '13.0.1.0.0',
+    'version': '14.0.1.0.0',
     'description': """Base Partner Avaible Pricelist""",
     'author': 'Dani Domínguez',
     'company': 'Xtendoo',
