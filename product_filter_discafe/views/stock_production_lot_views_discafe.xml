@@ -29,6 +29,11 @@
                             domain="[('product_qty', '&gt;', 0), ('life_date', '&gt;=', time.strftime('%Y-%m-%d %H:%M:%S'))]"
                     />
                 </xpath>
+                <xpath expr="//filter[@name='expiration_alerts']" position="replace">
+                    <filter string="Alertas de Vencimiento" name="expiration_alerts"
+                            domain="[('product_qty', '&gt;', 0), ('alert_date', '&gt;', time.strftime('%Y-%m-%d %H:%M:%S'))]"
+                    />
+                </xpath>
             </field>
         </record>
 
