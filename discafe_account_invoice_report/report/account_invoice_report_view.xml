@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_invoice_report_tree_info" model="ir.ui.view">
+            <field name="name">account.invoice.report.tree.info.discafe</field>
+            <field name="model">account.invoice.report</field>
+            <field name="inherit_id" ref="account_invoice_line_report.view_invoice_report_tree_info"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    <field name="shipping_partner_id"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_account_invoice_report_search" model="ir.ui.view">
+            <field name="name">account.invoice.report.search.discafe</field>
+            <field name="model">account.invoice.report</field>
+            <field name="inherit_id" ref="account.view_account_invoice_report_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='company']" position="after">
+                    <filter string="Dirección de entrega" name="shipping_partner_id"
+                            context="{'group_by': 'shipping_partner_id'}"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
