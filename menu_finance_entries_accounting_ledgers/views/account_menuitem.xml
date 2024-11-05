@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="view_account_moves_ledger_general" model="ir.ui.view">
-        <field name="name">account.move.line.tree.grouped.misc</field>
+    <record id="view_move_line_tree_inherit" model="ir.ui.view">
+        <field name="name">account.move.line.tree.inherit</field>
         <field name="model">account.move.line</field>
-        <field name="mode">primary</field>
         <field name="inherit_id" ref="account.view_move_line_tree"/>
         <field name="arch" type="xml">
             <field name="tax_line_id" position="before">
-                <field name="cumulated_balance"/>
+                <field name="cumulated_balance" string="Cumulated Balance"/>
             </field>
             <field name="account_id" position="attributes">
                 <attribute name="optional">hide</attribute>
@@ -20,37 +19,22 @@
         </field>
     </record>
 
-<!--    <record id="search_view_account_moves_ledger_general" model="ir.ui.view">-->
-<!--        <field name="name">account.move.line.search</field>-->
-<!--        <field name="model">account.move.line</field>-->
-<!--        <field name="mode">primary</field>-->
-<!--        <field name="priority">20</field>-->
-<!--        <field name="inherit_id" ref="account.view_account_move_line_filter"/>-->
-<!--        <field name="arch" type="xml">-->
-<!--            <field name="balance" position="after">-->
-<!--            <xpath expr="//group" position="after">-->
-<!--                <searchpanel class="account_root">-->
-<!--                    <field name="account_root_id" icon="fa-filter" limit="0"/>-->
-<!--                </searchpanel>-->
-<!--            </xpath>-->
-<!--        </field>-->
-<!--    </record>-->
-
     <record id="action_account_moves_ledger_general" model="ir.actions.act_window">
-        <field name="context">{'journal_type':'general', 'search_default_group_by_account': 1, 'search_default_posted':1}</field>
+        <field name="context">{"journal_type": "general", "search_default_group_by_account": 1, "search_default_posted":
+            1}
+        </field>
         <field name="name">General Ledger</field>
         <field name="res_model">account.move.line</field>
         <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
-        <field name="view_id" ref="view_account_moves_ledger_general"/>
-<!--        <field name="search_view_id" ref="search_view_account_moves_ledger_general"/>-->
         <field name="view_mode">tree,pivot,graph</field>
     </record>
 
-    <menuitem id="menu_finance_entries_accounting_ledgers" name="Ledgers" sequence="3" parent="account.menu_finance_entries">
+    <menuitem id="menu_finance_entries_accounting_ledgers" name="Ledgers" sequence="3"
+              parent="account.menu_finance_entries">
         <menuitem id="menu_action_account_moves_ledger_general"
                   action="action_account_moves_ledger_general"
                   groups="account.group_account_readonly"
                   sequence="1"/>
-<!--        <menuitem id="menu_action_account_moves_ledger_partner" action="action_account_moves_ledger_partner" groups="account.group_account_readonly" sequence="2"/>-->
     </menuitem>
+
 </odoo>
