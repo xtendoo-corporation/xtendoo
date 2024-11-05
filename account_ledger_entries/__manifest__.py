@@ -1,8 +1,8 @@
 {
-    'name': "Menu Finance Entries Accounting Ledgers",
+    'name': "Account Ledger Entries",
     'version': '16.0.1.0.0',
-    'summary': """Menu Finance Entries Accounting Ledgers""",
-    'description': """Menu Finance Entries Accounting Ledgers""",
+    'summary': """Add menu item to access accounting ledgers""",
+    'description': """Add menu item to access accounting ledgers""",
     'author': "Salvador Gonzalez (Xtendoo)",
     'company': "Xtendoo",
     'maintainer': 'Xtendoo',

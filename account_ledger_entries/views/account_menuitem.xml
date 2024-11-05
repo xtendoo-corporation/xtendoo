@@ -38,7 +38,7 @@
         <field name="view_id" ref="view_move_line_tree_accounting_ledgers_inherit"/>
     </record>
 
-    <menuitem id="menu_finance_entries_accounting_ledgers" name="Ledgers" sequence="3"
+    <menuitem id="account_ledger_entries" name="Ledgers" sequence="3"
               parent="account.menu_finance_entries">
         <menuitem id="menu_action_account_moves_ledger_general"
                   action="action_account_moves_ledger_general"
