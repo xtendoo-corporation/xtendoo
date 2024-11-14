@@ -1,0 +1,31 @@
+<odoo>
+    <record id="view_product_pricelist_item_tree_inherited" model="ir.ui.view">
+        <field name="name">product.pricelist.item.tree.inherited</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_tree_view_from_product"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='min_quantity']" position="replace">
+            </xpath>
+            <xpath expr="//field[@name='fixed_price']" position="replace">
+                    <field name="fixed_price" string="Precio" required='1' invisible="not compute_price == 'fixed'"
+                           optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='fixed_price']" position="before">
+                    <field name="compute_price" string="Tipo Cálculo" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='fixed_price']" position="after">
+                <field name="percent_price" invisible="not compute_price == 'percentage'" string="Desc %"
+                       optional="show"/>
+                <field name="min_quantity" colspan="4" optional="show"/>
+                <field name="base" invisible="not compute_price == 'formula'" optional="show"/>
+                <field name="base_pricelist_id" invisible="not compute_price == 'formula' or not base == 'pricelist'"
+                       string="Otra Tarifa" optional="show"/>
+                <field name="price_discount" invisible="not compute_price == 'formula'" string="Desc %"
+                       optional="show"/>
+                <field name="price_surcharge" invisible="not compute_price == 'formula'" optional="show"/>
+                <field name="price_round" invisible="not compute_price == 'formula'" string="Redondeo" optional="show"/>
+                <field name="price_min_margin" invisible="not compute_price == 'formula'" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
