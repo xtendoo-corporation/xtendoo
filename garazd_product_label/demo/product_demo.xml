@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <record id="product.product_product_12" model="product.product">
+        <field name="barcode">0500010543219</field>
+    </record>
+    <record id="product.product_product_27" model="product.product">
+        <field name="name">Drawer with three panels and one lockable, on wheels, mobile and respectable</field>
+        <field name="barcode">1234567890128</field>
+    </record>
+    <!--    Product variant with EAN-8-->
+    <record id="product.product_product_10" model="product.product">
+        <field name="name">Cabinet with Doors: minimalistic wooden with brown top, divided by two sides, with drawer</field>
+        <field name="barcode">12345670</field>
+    </record>
+    <!--    Product variant with EAN-13-->
+    <record id="product.product_product_13" model="product.product">
+        <field name="name">Corner Desk Black with metal base and wooden table-top, ergonomic and comfortable</field>
+        <field name="barcode">4444000022222</field>
+    </record>
+    <!--    Product variant with Code 128: Customizable Desk (Legs: Aluminium, Color: White) -->
+    <record id="product.product_product_4c" model="product.product">
+        <field name="name">Customizable Desk: adjustment by height, maximum free space</field>
+        <field name="barcode">10203040506070809</field>
+    </record>
+
+</odoo>

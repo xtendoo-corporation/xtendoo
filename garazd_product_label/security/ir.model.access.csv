@@ -1,0 +1,4 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_print_product_label_line_user,access_print_product_label_line_user,model_print_product_label_line,base.group_user,1,1,1,1
+access_print_product_label_user,access_print_product_label_user,model_print_product_label,base.group_user,1,1,1,0
+access_print_label_type_user_read,access_print_label_type_user_read,model_print_label_type,base.group_user,1,0,0,0

@@ -1,2 +1,0 @@
-- Sylvain LE GAL (<https://www.twitter.com/legalsylvain>)
-- Chau Le (<chaulb@trobz.com>)

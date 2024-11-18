@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="garazd_product_label.filter_data_feed_apps" model="ir.filters">
+        <field name="is_default" eval="True"/>
+    </record>
+
+</odoo>

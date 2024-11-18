@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <record id="product_blank" model="product.product">
+        <field name="name">Blank Product</field>
+        <field name="type">consu</field>
+        <field name="description">Please do not delete this product! This product has been created by Garazd Product Label solution for technical purposes, and it's used for label printing.</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="garazd_product_label.product_blank_product_template" model="product.template">
+        <field name="active" eval="False"/>
+    </record>
+
+</odoo>
