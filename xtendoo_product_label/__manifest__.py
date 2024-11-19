@@ -9,6 +9,7 @@
     'images': [],
     'depends': [
         'product',
+        'stock',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -19,6 +20,7 @@
         'report/product_label_templates.xml',
         'wizard/print_product_label_views.xml',
         'views/res_config_settings_views.xml',
+        'views/stock_picking_views.xml',
     ],
     'demo': [
     ],

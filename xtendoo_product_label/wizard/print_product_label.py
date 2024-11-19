@@ -22,7 +22,6 @@ class PrintProductLabel(models.TransientModel):
     @api.model
     def _get_product_label_ids(self):
         res = []
-        # flake8: noqa: E501
         if self._context.get('active_model') == 'product.template':
             products = self.env[self._context.get('active_model')].browse(
                 self._context.get('default_product_template_ids')
@@ -39,6 +38,16 @@ class PrintProductLabel(models.TransientModel):
             for product in products:
                 label = self.env['print.product.label.line'].create({'product_id': product.id})
                 res.append(label.id)
+        elif self._context.get('active_model') == 'stock.picking':
+                picking = self.env['stock.picking'].browse(self._context.get('active_id'))
+                for move_line in picking.move_line_ids:
+                    product = move_line.product_id
+                    label = self.env['print.product.label.line'].create({
+                        'product_id': product.id,
+                        'qty': move_line.quantity,
+                        # Set the quantity to print as the quantity done in the stock picking
+                    })
+                    res.append(label.id)
         res = self._complete_label_fields(res)
         return res
 
@@ -98,7 +107,8 @@ class PrintProductLabel(models.TransientModel):
     def _compute_is_template_report(self):
         for wizard in self:
             # flake8: noqa: E501
-            wizard.is_template_report = self.report_id == self.env.ref('xtendoo_product_label.action_report_product_label_from_template')
+            wizard.is_template_report = self.report_id == self.env.ref(
+                'xtendoo_product_label.action_report_product_label_from_template')
 
     def get_labels_to_print(self):
         self.ensure_one()
@@ -141,7 +151,7 @@ class PrintProductLabel(models.TransientModel):
 
     @api.model
     def get_quick_report_action(
-            self, model_name: str, ids: List[int], qty: int = None, template=None, force_direct: bool = False,
+        self, model_name: str, ids: List[int], qty: int = None, template=None, force_direct: bool = False,
     ):
         """ Allow to get a report action for custom labels. Method to override. """
         wizard = self.with_context(
@@ -165,7 +175,9 @@ class PrintProductLabel(models.TransientModel):
         # flake8: noqa: E501
         for label in self.label_ids:
             sequence, processed_labels = self._set_sequence(label, sequence, processed_labels)
-            tmpl_labels = self.label_ids.filtered(lambda l: l.product_id.product_tmpl_id == label.product_id.product_tmpl_id).sorted(lambda l: l.product_id.id, reverse=True) - label
+            tmpl_labels = self.label_ids.filtered(
+                lambda l: l.product_id.product_tmpl_id == label.product_id.product_tmpl_id).sorted(
+                lambda l: l.product_id.id, reverse=True) - label
             for tmpl_label in tmpl_labels:
                 sequence, processed_labels = self._set_sequence(tmpl_label, sequence, processed_labels)
                 product_labels = tmpl_labels.filtered(lambda l: l.product_id == label.product_id) - tmpl_label

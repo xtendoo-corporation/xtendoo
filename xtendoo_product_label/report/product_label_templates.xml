@@ -58,43 +58,100 @@
         </t>
     </template>
 
-    <template id="report_product_label_38x21_template">
-        <t t-call="web.html_container">
-            <t t-call="web.basic_layout">
+    <template id="label_38x21">
+    <table class="table" style="margin: 0; padding: 0; border-spacing: 0;">
+        <tr height="21.2mm" style="border:0;margin:0;padding:0; width: 190mm;">
+            <td class="col-xs-4 text-center" style="width: 38mm; height: 21.2mm; page-break-inside: avoid; border-spacing: 0; padding: 0; margin: 0;">
+                <div class="o_label_full" style="padding: 0; margin: 0;">
+                    <div class="o_label_reference" style="font-size: 10pt; text-align: right; margin-top: 10px; margin-right: 5mm;">
+                        <span t-field="label.product_id.default_code"/>
+                    </div>
+                    <span style="font-size: 8pt; text-align: left; margin-left: 5mm;">
+                        <strong>P.V.P.</strong>
+                    </span>
+                    <div class="o_label_price" style="font-size: 18pt; font-weight: bold; margin-top: 5px; text-align: right; margin-right: 5mm;">
+                        <span t-field="label.product_id.lst_price"/>
+                        <span t-if="label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
+                        <span>€</span>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</template>
+
+<template id="report_product_label_38x21_template">
+    <t t-call="web.html_container">
+        <t t-call="web.basic_layout">
+            <t t-set="count" t-value="0"/>
+            <div class="page">
+                <div class="oe_structure"/>
                 <t t-foreach="docs" t-as="label">
                     <t t-set="qty" t-value="1"/>
-                    <t t-if="label.qty" t-set="qty" t-value="label.qty"/>
-
-                    <div class="page" style="page-break-inside:avoid;">
-                        <table style="border-collapse: collapse;">
-                            <tr>
-                                <t t-foreach="list(range(qty))" t-as="index_qty">
-                                    <td style="width: 38mm; height: 21.2mm; border: 1px solid black; margin-top: 10px; page-break-inside: avoid;">
-                                        <div class="o_label_full">
-                                            <div class="o_label_reference"
-                                                 style="font-size: 10pt; text-align: right; margin-top: 10px; margin-right: 15px;">
-                                                <span t-field="label.product_id.default_code"/>
-                                            </div>
-                                            <span style="font-size: 8pt; text-align: left; margin-left: 15px;">
-                                                <strong>P.V.P.</strong>
-                                            </span>
-                                            <div class="o_label_price"
-                                                 style="font-size: 12pt; font-weight: bold; margin-top: 5px; text-align: right; margin-right: 15px;">
-                                                <span t-field="label.product_id.lst_price"/>
-                                                <span t-if="label.product_id.currency_id.position == 'after'"
-                                                      t-field="label.product_id.currency_id.symbol"/>
-                                                <span> €</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </t>
-                            </tr>
-                        </table>
-                    </div>
+                    <t t-if="label.qty">
+                        <t t-set="qty" t-value="label.qty"/>
+                    </t>
+                    <t t-foreach="list(range(qty))" t-as="index_qty">
+                        <div t-if="count % 65 == 0" style="page-break-after:always;"/>
+                        <div t-if="count % 5 == 0" style="clear:both;"/>
+                        <div t-att-style="'width: 38mm; float: left; height: 21.2mm; margin: 0; padding: 0; border-spacing: 0;'">
+                            <t t-call="xtendoo_product_label.label_38x21"/>
+                        </div>
+                        <t t-set="count" t-value="count+1"/>
+                    </t>
                 </t>
-            </t>
+            </div>
         </t>
-    </template>
+    </t>
+</template>
+
+    <!--    <template id="report_product_label_38x21_template">-->
+    <!--        <t t-call="web.html_container">-->
+    <!--            <t t-call="web.basic_layout">-->
+    <!--                <t t-foreach="docs" t-as="label">-->
+    <!--                    <t t-set="qty" t-value="1"/>-->
+    <!--                    <t t-if="label.qty" t-set="qty" t-value="label.qty"/>-->
+
+    <!--                    &lt;!&ndash; Dividir las etiquetas en filas y columnas &ndash;&gt;-->
+    <!--                    <div class="page" style="page-break-inside: avoid;">-->
+    <!--                        <table style="border-collapse: collapse; margin-left: 10mm; margin-right: 10mm;">-->
+    <!--                            <t t-set="rows" t-value="range(0, qty, 5)"/>-->
+    <!--                            <t t-foreach="rows" t-as="row_start">-->
+    <!--                                <tr>-->
+    <!--                                    <t t-set="row_end" t-value="row_start + 5"/>-->
+    <!--                                    <t t-foreach="list(range(row_start, min(row_end, qty)))" t-as="index_qty">-->
+    <!--                                        <td style="width: 38mm; height: 21.2mm; border: 1px solid black; page-break-inside: avoid;">-->
+    <!--                                            <div class="o_label_full">-->
+    <!--                                                <div class="o_label_reference"-->
+    <!--                                                     style="font-size: 10pt; text-align: right; margin-top: 10px; margin-right: 15px;">-->
+    <!--                                                    <span t-field="label.product_id.default_code"/>-->
+    <!--                                                </div>-->
+    <!--                                                <span style="font-size: 8pt; text-align: left; margin-left: 15px;">-->
+    <!--                                                    <strong>P.V.P.</strong>-->
+    <!--                                                </span>-->
+    <!--                                                <div class="o_label_price"-->
+    <!--                                                     style="font-size: 12pt; font-weight: bold; margin-top: 5px; text-align: right; margin-right: 15px;">-->
+    <!--                                                    <span t-field="label.product_id.lst_price"/>-->
+    <!--                                                    <span t-if="label.product_id.currency_id.position == 'after'"-->
+    <!--                                                          t-field="label.product_id.currency_id.symbol"/>-->
+    <!--                                                    <span>€</span>-->
+    <!--                                                </div>-->
+    <!--                                            </div>-->
+    <!--                                        </td>-->
+    <!--                                    </t>-->
+    <!--                                    <t t-if="row_end - row_start &lt; 5">-->
+    <!--                                        <t t-foreach="list(range(5 - (row_end - row_start)))" t-as="empty_cell">-->
+    <!--                                            <td style="width: 38mm; height: 21.2mm; border: 1px solid black;"/>-->
+    <!--                                        </t>-->
+    <!--                                    </t>-->
+    <!--                                </tr>-->
+    <!--                            </t>-->
+    <!--                        </table>-->
+    <!--                    </div>-->
+    <!--                </t>-->
+    <!--            </t>-->
+    <!--        </t>-->
+    <!--    </template>-->
 
     <template id="report_product_label_from_template">
         <t t-call="web.basic_layout"/>
