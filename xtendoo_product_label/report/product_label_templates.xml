@@ -63,13 +63,13 @@
         <tr height="21.2mm" style="border:0;margin:0;padding:0; width: 190mm;">
             <td class="col-xs-4 text-center" style="width: 38mm; height: 21.2mm; page-break-inside: avoid; border-spacing: 0; padding: 0; margin: 0;">
                 <div class="o_label_full" style="padding: 0; margin: 0;">
-                    <div class="o_label_reference" style="font-size: 10pt; text-align: right; margin-top: 10px; margin-right: 5mm;">
+                    <div class="o_label_reference" style="font-size: 10pt; text-align: right; margin-right: 5mm;">
                         <span t-field="label.product_id.default_code"/>
                     </div>
                     <span style="font-size: 8pt; text-align: left; margin-left: 5mm;">
                         <strong>P.V.P.</strong>
                     </span>
-                    <div class="o_label_price" style="font-size: 18pt; font-weight: bold; margin-top: 5px; text-align: right; margin-right: 5mm;">
+                    <div class="o_label_price" style="font-size: 18pt; font-weight: bold; text-align: right; margin-right: 5mm;">
                         <span t-field="label.product_id.lst_price"/>
                         <span t-if="label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
                         <span>€</span>
