@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <template
+            id="document_format_grego.report_deliveryslip"
+            inherit_id="stock.report_deliveryslip"
+        >
+            <xpath expr="//t[@t-call]" position="replace">
+                <t t-if="o.sale_id">
+                    <t t-call="stock.report_delivery_document" t-lang="o.partner_id.lang"/>
+                </t>
+                <t t-else="">
+                    <t t-call="document_format_grego.report_delivery_without_price_document" t-lang="o.partner_id.lang"/>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

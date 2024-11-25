@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="woo_on_board_instance_configuration_wizard" model="ir.ui.view">
+        <field name="name">Configure Instance</field>
+        <field name="model">res.config.woo.instance</field>
+        <field name="arch" type="xml">
+            <form string="Configure Instance" class="o_woo_ept">
+                <group class="o_onboard_padding">
+                    <group>
+                        <field name="name" required="1"
+                               readonly="context.get('is_already_instance_created', False)"
+                               string="Name"/>
+                        <field name='woo_company_id' required="1"
+                               options="{'no_create':True,'no_create_edit':True}"
+                               readonly="context.get('is_already_instance_created', False)"
+                               string="Company"/>
+                    </group>
+                    <group class="woo_store_timezone_alignment">
+                        <field name='woo_host' required="1"
+                               placeholder="http://woo.dev.emiprotechnologies.com"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                        <field name="woo_version" invisible="1"/>
+                        <field name="store_timezone" required="1" widget="select"
+                               class="o_light_label mt4 o_onboard_select"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                    </group>
+                </group>
+                <div class='row o_onboard_padding'>
+                    <div class='col-md-6'>
+                        <group class="woo_consumer_secret_alignment">
+                            <field name="woo_consumer_key" required="1"
+                                   readonly="context.get('is_already_instance_created', False)"/>
+                            <field name="woo_consumer_secret" required="1"
+                                   readonly="context.get('is_already_instance_created', False)"/>
+                            <field name="woo_verify_ssl" readonly="context.get('is_already_instance_created', False)"
+                                   class="o_onboard_boolean_toggle" widget="boolean_toggle"/>
+                        </group>
+                    </div>
+                     <style>
+                        .embed-responsive-item {
+                            width: 25rem !important;
+                            min-height: 15rem !important;
+                        }
+                     </style>
+                    <div class='col-md-6'>
+                        <field name="woo_instance_video_url" string="WooCommerce Instance Video" invisible="1"/>
+                        <div class="p-2">
+                            <field name="woo_instance_video_embed_code" class="mt-2"/>
+                        </div>
+                    </div>
+                </div>
+                <group class="o_onboard_padding"
+                       invisible="context.get('is_already_instance_created', False)">
+                    <group class="woo_is_export_update_images_alignment">
+                        <field name='is_export_update_images' widget="boolean_toggle"
+                               class="o_onboard_boolean_toggle"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                    </group>
+                </group>
+                <group string="Administrator Info" class="o_onboard_padding"
+                       attrs="{'invisible':[('is_export_update_images','=',False)]}">
+                    <p colspan="4" class="alert alert-warning" role="alert"
+                       attrs="{'invisible':[('is_export_update_images','=',False)]}">
+                        <div style="color:#ff0000; font-size:15px;">
+                            <b>WooCommerce admin panel username and password:</b>
+                        </div>
+                        <div class="d-inline-block w-100">
+                            <div class="row">
+                                <div class="col-11 p-0">
+                                    <ul>
+                                        <li>Enter the username and password only if you plan to sync
+                                            images from
+                                            Odoo to WooCommerce store.
+                                        </li>
+                                        <li>You can always modify them here, WooCommerce =>
+                                            Configuration => Instance.
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </p>
+                    <group>
+                        <field name='woo_admin_username'
+                               attrs="{'required':[('is_export_update_images','=',True)]}"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                    </group>
+                    <group>
+                        <field name='woo_admin_password' password="1"
+                               attrs="{'required':[('is_export_update_images','=',True)]}"
+                               readonly="context.get('is_already_instance_created', False)"/>
+                    </group>
+                </group>
+                <group invisible="context.get('is_calling_from_onboarding_panel', False)"
+                       class="o_onboard_padding">
+                    <p colspan="2" class="alert alert-warning" role="alert">
+                        <div style="color:#ff0000; font-size:15px;">
+                            <b>Important Note:</b>
+                        </div>
+                        <div class="d-inline-block w-100">
+                            <div class="row">
+                                <div class="col-11 p-0">
+                                    <ul>
+                                        <li>
+                                            After creating the instance, please make sure you
+                                            complete
+                                            all the
+                                            other
+                                            necessary configurations such as Tax,
+                                            Warehouse,
+                                            Pricelist
+                                            etc. from
+                                            the WooCommerce
+                                            setting screen.
+                                        </li>
+                                        <li>
+                                            WooCommerce =&gt; Configuration =&gt; Settings
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </p>
+                </group>
+                <footer>
+                    <button string="Create" type="object"
+                            name="woo_test_connection" class="oe_highlight o_onboard_button"
+                            invisible="context.get('is_already_instance_created', False)"/>
+                    <button class="oe_highlight o_onboard_button_white" special="cancel"
+                            string="Cancel"
+                            invisible="context.get('is_already_instance_created', False)"/>
+                    <button class="oe_highlight o_onboard_button_white" special="cancel"
+                            string="Close"
+                            invisible="not context.get('is_already_instance_created', False)"/>
+                </footer>
+                <script>
+                    $('document').ready(function(){
+                    $('div.o_form_nosheet.o_woo_ept').parents('div.modal-content').addClass('on_board_custom_form');
+                    $('div.on_board_custom_form').find('table.o_group').find('label').addClass('on_board_field_label');
+                    $('div.on_board_custom_form').find('table.o_group').find('td').find('span').addClass('on_board_field');
+                    $('div.on_board_custom_form').find('table.o_group').find('td').find('a').addClass('on_board_field');
+                    $('div.on_board_custom_form').find('table.o_group').find('td').find('a').find('span').removeClass('on_board_field');
+                    });
+                </script>
+            </form>
+        </field>
+    </record>
+
+    <record id="woo_on_board_instance_configuration_action"
+            model="ir.actions.act_window">
+        <field name="name">Instances</field>
+        <field name="res_model">res.config.woo.instance</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="woo_on_board_instance_configuration_wizard"/>
+    </record>
+</odoo>

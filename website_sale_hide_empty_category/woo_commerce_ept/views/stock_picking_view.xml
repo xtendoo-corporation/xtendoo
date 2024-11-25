@@ -1,0 +1,133 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="view_picking_form_ept" model="ir.ui.view">
+        <field name="name">stock.picking.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field eval="12" name="priority"/>
+        <field name="arch" type="xml">
+            <field name="move_type" position="after">
+                <field name="is_woo_delivery_order" invisible="1"/>
+                <field name="updated_in_woo" readonly="1" attrs="{'invisible':[('is_woo_delivery_order','!=',True)]}"
+                       string="Updated In WooCommerce"/>
+                <field name="canceled_in_woo" readonly="1" attrs="{'invisible':[('is_woo_delivery_order','!=',True)]}"
+                       string="Cancelled In WooCommerce"/>
+                <field name="woo_instance_id" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="stock_picking_tree_ept" model="ir.ui.view">
+        <field name="name">stock.picking.tree</field>
+        <field name="model">stock.picking</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <tree create="false" sample="1">
+                <field name="picking_type_code" invisible="1"/>
+                <field name="name"/>
+                <field name="location_dest_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="origin"/>
+                <field name="group_id" invisible="1"/>
+                <field name="backorder_id"/>
+                <field name="state"/>
+                <field name="priority" invisible="1"/>
+                <field name="picking_type_id" invisible="1"/>
+                <field name="updated_in_woo" string="Updated In WooCommerce"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="action_picking_view_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_woo_delivery_order','=','True')]</field>
+        <field name="view_id" ref="stock_picking_tree_ept"/>
+        <field name="help" type="html">
+            <div>
+                <br/>
+                <br/>
+                <br/>
+                <p class="o_view_nocontent_smiling_face">
+                    There is no any Delivery Order created for any of WooCommerce Sale Orders. If your WooCommerce
+                    Instance's Invoice Policy is set to "Before Delivery", then after Invoice being totally paid,
+                    Delivery order for WooCommerce will be created automatically and it will be visible over here.
+                    From here, you can't manually create delivery order for WooCommerce. It must be created via Sale
+                    Order.
+                </p>
+            </div>
+        </field>
+    </record>
+
+    <!-- action of Delivery Orders by instance wise of main Dashboard -->
+    <record id="action_woo_stock_picking_instance_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('woo_instance_id','=',active_id)]</field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="stock_picking_tree_ept"/>
+    </record>
+
+    <!-- action of Confirm Delivery Orders by instance wise of main Dashboard of more menu -->
+    <record id="action_picking_view_confirm_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_woo_delivery_order','=','True'),('woo_instance_id','=',active_id),('state','=','confirmed')]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="stock_picking_tree_ept"/>
+    </record>
+
+    <!-- action of Partial Available Delivery Orders by instance wise of main Dashboard of more menu -->
+    <record id="action_picking_view_partially_available_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_woo_delivery_order','=','True'),('woo_instance_id','=',active_id),('state','=','partially_available')]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="stock_picking_tree_ept"/>
+    </record>
+
+    <!-- action of Ready To transfer Delivery Orders by instance wise of main Dashboard of more menu -->
+    <record id="action_picking_view_assigned_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_woo_delivery_order','=','True'),('woo_instance_id','=',active_id),('state','=','assigned')]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="stock_picking_tree_ept"/>
+    </record>
+
+    <!-- action of Transferred Delivery Orders by instance wise of main Dashboard of more menu -->
+    <record id="action_picking_view_done_ept" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('is_woo_delivery_order','=','True'),('woo_instance_id','=',active_id),('state','=','done')]
+        </field>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="view_id" ref="stock_picking_tree_ept"/>
+    </record>
+
+    <menuitem id="menu_item_woo_delivery_order_ept" name="Delivery Orders" parent="woo_sales_menu"
+              action="action_picking_view_ept" sequence="3"/>
+
+</odoo>

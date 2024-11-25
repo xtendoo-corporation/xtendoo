@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<odoo>
+    <menuitem id="woo_commerce_main_menu" name="WooCommerce" sequence="20" groups="woo_commerce_ept.group_woo_ept"/>
+</odoo>

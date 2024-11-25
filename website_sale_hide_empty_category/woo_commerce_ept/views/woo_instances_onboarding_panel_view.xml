@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ONBOARDING STEPS -->
+    <template id="onboarding_woo_instance_configuration">
+        <t t-call="base.onboarding_step">
+            <t t-set="title">Create Instance</t>
+            <t t-set="description">Create the new WooCommerce instance here.</t>s
+            <t t-set="done_icon" t-value="'fa-star'"/>
+            <t t-set="done_text">Looks great!</t>
+            <t t-set="btn_text">Create Instance</t>
+            <t t-set="model" t-value="'res.config.woo.instance'"/>
+            <t t-set="method" t-value="'action_open_woo_instance_wizard'"/>
+            <t t-set="state" t-value="state.get('woo_instance_onboarding_state')"/>
+        </t>
+    </template>
+
+    <template id="onboarding_woo_basic_configuration">
+        <t t-call="base.onboarding_step">
+            <t t-set="title">Manage Configurations</t>
+            <t t-set="description">Manage the configuration for your instance.</t>
+            <t t-set="done_icon" t-value="'fa-star'"/>
+            <t t-set="done_text">Great!</t>
+            <t t-set="btn_text">Configure</t>
+            <t t-set="model" t-value="'res.config.settings'"/>
+            <t t-set="method" t-value="'action_woo_open_basic_configuration_wizard'"/>
+            <t t-set="state" t-value="state.get('woo_basic_configuration_onboarding_state')"/>
+        </t>
+    </template>
+
+    <template id="onboarding_woo_financial_status_configuration">
+        <t t-call="base.onboarding_step">
+            <t t-set="title">Financial Status</t>
+            <t t-set="description">Configure the WooCommerce Financial Status and Webhooks here.</t>
+            <t t-set="btn_text">Configure</t>
+            <t t-set="done_icon" t-value="'fa-magic'"/>
+            <t t-set="done_text">Nice!</t>
+            <t t-set="model" t-value="'res.config.settings'"/>
+            <t t-set="method" t-value="'action_woo_open_financial_status_wizard'"/>
+            <t t-set="state" t-value="state.get('woo_financial_status_onboarding_state')"/>
+        </t>
+    </template>
+    <template id="onboarding_woo_cron_configuration">
+        <t t-call="base.onboarding_step">
+            <t t-set="title">Scheduler Configurations</t>
+            <t t-set="description">Configure the schedule actions for automation.</t>
+            <t t-set="btn_text">Configure</t>
+            <t t-set="method" t-value="'action_woo_open_cron_configuration_wizard'"/>
+            <t t-set="model" t-value="'woo.cron.configuration.ept'"/>
+            <t t-set="state" t-value="state.get('woo_cron_configuration_onboarding_state')"/>
+        </t>
+    </template>
+
+    <!-- ONBOARDING PANEL-->
+    <template id="woo_instances_onboarding_panel_ept" name="woo.instances.onboarding.panel.ept">
+        <t t-call="base.onboarding_container">
+            <t t-set="is_woo_panel" t-value="'is_woo_panel'"/>
+            <t t-set="classes" t-value="'o_onboarding_violet hide_in_mobile_device woo_onboarding_ept'"/>
+            <t t-set="bg_image"
+               t-value="'/sale/static/src/img/sale_quotation_onboarding_bg.jpg'"/>
+            <t t-set="close_method" t-value="'action_close_woo_instances_onboarding_panel'"/>
+            <t t-set="close_model" t-value="'res.company'"/>
+            <t t-call="woo_commerce_ept.onboarding_woo_instance_configuration"
+               name="woo_instance_step"/>
+            <t t-call="woo_commerce_ept.onboarding_woo_basic_configuration"
+               name="woo_basic_configuration_step"/>
+            <t t-call="woo_commerce_ept.onboarding_woo_financial_status_configuration"
+               name="woo_financial_status_step"/>
+            <t t-call="woo_commerce_ept.onboarding_woo_cron_configuration"
+               name="woo_cron_configurations_step"/>
+        </t>
+    </template>
+
+    <template id="inherit_onboarding_container" inherit_id="base.onboarding_container">
+        <xpath expr="div[hasclass('o_onboarding_container')]" position="before">
+            <t t-if="is_woo_panel">
+                <button id="woo_button_toggle" t-att-data-company-id="toggle_company_id"
+                        type="button"
+                        t-att-class="'d-none btn btn-link' if is_button_active else 'btn btn-link'"
+                        t-att-style="'background-color:#ececec;border:1px solid #ccc' if hide_panel else ''">
+                    <t t-esc="btn_value"></t>
+                </button>
+            </t>
+        </xpath>
+
+        <!-- Changes to class to toogle the onBoadring panel-->
+        <xpath expr="div[hasclass('o_onboarding_container')]" position="attributes">
+            <attribute name="t-att-class">'o_onboarding_container collapse' if hide_panel else 'o_onboarding_container collapse show'</attribute>
+        </xpath>
+
+        <!-- Remove close button from onboarding panel-->
+        <xpath expr="//div[hasclass('o_onboarding_container')]//a" position="attributes">
+            <attribute name="class">float-right o_onboarding_btn_close common_close_button_hide_ept</attribute>
+        </xpath>
+    </template>
+
+</odoo>

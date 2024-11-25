@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_woo_shipping_method_search" model="ir.ui.view">
+        <field name="name">WooCommerce Shipping Method</field>
+        <field name="model">woo.shipping.method</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="WooCommerce Shipping Method">
+                <field name="name"/>
+                <field name="code"/>
+                <group expand="0" string="Group By">
+                    <filter name="shipping_code" string="Shipping Code" context="{'group_by':'code'}"/>
+                    <filter name="instance" string="Instance" context="{'group_by':'woo_instance_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_woo_shipping_method_form" model="ir.ui.view">
+        <field name="name">woo.shipping.method.form</field>
+        <field name="model">woo.shipping.method</field>
+        <field name="arch" type="xml">
+            <form string="Woo Payment Gateway">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="woo_instance_id" domain="[('active','=',True)]"
+                                   options="{'no_create':True,'no_create_edit': True}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_woo_shipping_method_tree" model="ir.ui.view">
+        <field name="name">woo.shipping.method.tree</field>
+        <field name="model">woo.shipping.method</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="woo_instance_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_woo_shipping_methods"
+            model="ir.actions.act_window">
+        <field name="name">WooCommerce Shipping Method</field>
+        <field name="res_model">woo.shipping.method</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <div>
+                <p class="o_view_nocontent_smiling_face">
+                    <b>No WooCommerce Shipping Method Details are available right now.</b>
+                </p>
+            </div>
+        </field>
+    </record>
+
+    <!-- action of payment gateway by instance wise of dashboard of more menu -->
+    <record id="action_woo_instance_shipping_method_ept" model="ir.actions.act_window">
+        <field name="name">WooCommerce Shipping Method</field>
+        <field name="res_model">woo.shipping.method</field>
+        <field name="domain">[('woo_instance_id','=',active_id)]</field>
+        <field name="view_id" ref="view_woo_shipping_method_tree"/>
+    </record>
+
+    <menuitem id="woo_menu_item_shipping_methods" name="WooCommerce Shipping Method"
+              parent="woo_commerce_ept.woo_configuration_menu_items" action="action_woo_shipping_methods" sequence="5"
+              groups="woo_commerce_ept.group_woo_manager_ept"/>
+
+</odoo>

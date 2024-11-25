@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <!--Tree view of customer data queue line which is use in queue line dashboard-->
+    <record id="view_woo_customer_data_queue_line_tree" model="ir.ui.view">
+        <field name="name">woo.customer.data.queue.line.ept.tree</field>
+        <field name="model">woo.customer.data.queue.line.ept</field>
+        <field name="arch" type="xml">
+            <tree create="0" duplicate="0" edit="false" sample="1" decoration-danger="state=='failed'"
+                  decoration-success="state=='done'" decoration-info="state=='draft'">
+                <header>
+                    <button name="%(woo_commerce_ept.action_customer_import_process_manual)d"
+                            string="Process Queue Line" type="action"/>
+                </header>
+                <field name="woo_synced_data_id" string="Woo Customer ID"/>
+                <field name="name"/>
+                <field name="last_process_date"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-danger="state == 'failed'"
+                       decoration-warning="state == 'cancel'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="woo_customer_data_queue_line_ept_form_view" model="ir.ui.view">
+        <field name="name">WooCommerce Customer Queue Line Ept</field>
+        <field name="model">woo.customer.data.queue.line.ept</field>
+        <field name="arch" type="xml">
+            <form string=">WooCommerce Customer Queue Line" create="0" edit="0" delete="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="woo_instance_id"/>
+                            <field name="woo_synced_data_id" string="Woo Customer ID"/>
+                        </group>
+                        <group>
+                            <field name="queue_id" string="Customer Data Queue"/>
+                            <field name="write_date" string="Last Updated On"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Log">
+                            <field name="common_log_lines_ids">
+                                <tree>
+                                    <field name="message" string="Message"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Customer Data">
+                            <field name="woo_synced_data"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

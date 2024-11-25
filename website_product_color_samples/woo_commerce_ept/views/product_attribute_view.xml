@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_woo_attribute_form_view_ept" model="ir.ui.view">
+        <field name="name">WooCommerce Attribute</field>
+        <field name="model">woo.product.attribute.ept</field>
+        <field name="arch" type="xml">
+            <form string="WooCommerce Attribute" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="attribute_id"/>
+                            <field name="woo_attribute_id" readonly="1" string="WooCommerce Attribute"/>
+                            <field name="attribute_type" readonly="1"/>
+                            <field name="exported_in_woo" readonly="1" string="Exported In WooCommerce"/>
+                        </group>
+                        <group>
+                            <field name="slug"/>
+                            <field name="order_by"/>
+                            <field name="has_archives"/>
+                            <field name="woo_instance_id" domain="[('active','=',True)]"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="product_woo_attribute_tree_view_ept" model="ir.ui.view">
+        <field name="name">WooCommerce Attribute</field>
+        <field name="model">woo.product.attribute.ept</field>
+        <field name="arch" type="xml">
+            <tree create="false" sample="1">
+                <field name="name"/>
+                <field name="attribute_id"/>
+                <field name="woo_attribute_id" string="WooCommerce Attribute"/>
+                <field name="woo_instance_id"/>
+                <field name="exported_in_woo" string="Exported In WooCommerce"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="product_woo_attribute_search_view_ept" model="ir.ui.view">
+        <field name="name">WooCommerce Attribute</field>
+        <field name="model">woo.product.attribute.ept</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="woo_attribute_id"/>
+                <group expand="0" string="Group By...">
+                    <filter name="instance" string="Instance" icon="terp-personal"
+                            context="{'group_by':'woo_instance_id'}"/>
+                    <filter name="sort_order" string="Sort Order" icon="terp-personal"
+                            context="{'group_by':'order_by'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="product_attribute_action_ept" model="ir.actions.act_window">
+        <field name="name">Product Attribute</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">woo.product.attribute.ept</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
+
+    <menuitem action="product_attribute_action_ept" id="product_attribute_menu_ept" name="Product Attributes"
+              parent="woo_commerce_ept.menu_item_parent_woo_products_ept" sequence="4"/>
+</odoo>

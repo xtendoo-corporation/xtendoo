@@ -1,0 +1,185 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="woo_customer_data_data_queue_ept_tree_view" model="ir.ui.view">
+        <field name="name">WooCommerce Customer Queue Data</field>
+        <field name="model">woo.customer.data.queue.ept</field>
+        <field name="arch" type="xml">
+            <tree create="0" delete="0" default_order="id desc" decoration-primary="is_process_queue==True" sample="1"
+                  js_class="queue_line_ept_dashboard">
+                <header>
+                    <button name="%(woo_commerce_ept.action_customer_import_process_manual)d"
+                            string="Process Queue" type="action"/>
+                </header>
+                <field name="name"/>
+                <field name="woo_instance_id"/>
+                <field name="create_date"/>
+                <field name="state" decoration-success="state == 'done'" decoration-info="state == 'draft'"
+                       decoration-warning="state == 'partial'" decoration-danger="state == 'failed'" widget="badge"/>
+                <field name="is_action_require" invisible="1"/>
+                <button title="Need manual interaction" icon="fa-exclamation-triangle text-danger"
+                        attrs="{'invisible': ['|',('is_action_require','=',False),('state','=','done')]}"/>
+                <field name="is_process_queue" invisible="1"/>
+                <field name="running_status" attrs="{'invisible':[('is_process_queue', '=', False)]}"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="woo_customer_data_data_queue_ept_form_view" model="ir.ui.view">
+        <field name="name">WooCommerce Customer Queue Data</field>
+        <field name="model">woo.customer.data.queue.ept</field>
+        <field name="arch" type="xml">
+            <form string="WooCommerce Synced Queue" create="0" edit="0" delete="0">
+                <header>
+                    <button
+                            name="%(woo_commerce_ept.action_customer_import_process_manual)d"
+                            string="Process Queue Manually" type="action" class="btn-primary"
+                            attrs="{'invisible':['|',('is_process_queue', '=', True),('state','in',('done'))]}"/>
+                    <button name="action_force_done" string="Force Done" type="object"
+                            attrs="{'invisible':['|',('is_process_queue', '=', True),('state','in',('done'))]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                    <field name="is_process_queue" invisible="1"/>
+                </header>
+                <div class="alert alert-danger" role="alert" style="margin-bottom:0px;"
+                     attrs="{'invisible': ['|',('is_action_require','=',False),('state','=','done')]}">
+                    <strong>
+                        - Need to process this queue manually. There are 3 attempts been made by automated action to
+                        process this queue, but due to some reason it couldn't process it.
+                        <br/>
+                        - Ignore, if this queue is already processed.
+                    </strong>
+                </div>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-users" disabled="1">
+                            <field name="customers_count" widget="statinfo" string="Total Customers"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-info" disabled="1">
+                            <field name="draft_state_count" widget="statinfo" string="Draft"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-times" disabled="1"
+                                attrs="{'invisible':[('state', 'in', ['partial'])]}">
+                            <field name="failed_state_count" widget="statinfo" string="Failed"/>
+                        </button>
+                        <button class="oe_stat_button" attrs="{'invisible':[('state', 'not in', ['partial'])]}"
+                                disabled="1">
+                            <span class="fa-stack fa-lg"
+                                  style="padding-top: 6px; margin-left:-3px; margin-top:2PX; font-size: 22px; color:#ff0000;">
+                                <i class="fa fa-times-circle" style="margin-left:18px;" title="circle"/>
+                            </span>
+                            <field name="failed_state_count" widget="statinfo" string="Failed"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-trash" disabled="1">
+                            <field name="cancelled_line_count" widget="statinfo" string="Cancelled"/>
+                        </button>
+                        <button attrs="{'invisible':[('state', 'in', ['done'])]}" class="oe_stat_button"
+                                icon="fa-check" disabled="1">
+                            <field name="done_state_count" widget="statinfo" string="Done"/>
+                        </button>
+                        <button class="oe_stat_button" attrs="{'invisible':[('state', 'not in', ['done'])]}"
+                                disabled="1">
+                            <span class="fa-stack fa-lg" style="padding-top: 6px; margin-left:10px; color:#00ff00;">
+                                <i class="fa fa-check fa-stack-1x" style="margin-left:4px;" title="stack"/>
+                                <i class="fa fa-check fa-inverse fa-stack-1x" style="margin-left:-3px;"
+                                   title="stack inverse"/>
+                                <i class="fa fa-check  fa-stack-1x" style="margin-left:-4px" title="Stack 1x"/>
+                            </span>
+                            <field name="done_state_count" widget="statinfo" string="Done"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" text="Processed" attrs="{'invisible': [('state','!=','done')]}"/>
+                    <widget name="web_ribbon" text="Processing..."
+                            attrs="{'invisible':[('is_process_queue', '=', False)]}"/>
+                    <div>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="woo_instance_id"/>
+                            <field name="create_date" string="Created On"/>
+                            <field name="is_action_require" invisible="1"/>
+                            <field name="queue_process_count" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Queue Lines" name="queue_line_log">
+                            <field name="queue_line_ids" widget="section_and_note_one2many" mode="tree,kanban">
+                                <tree>
+                                    <field name="woo_synced_data_id" string="Woo Customer ID"/>
+                                    <field name="name"/>
+                                    <field name="write_date" string="Last Updated On"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'done'"
+                                           decoration-danger="state == 'failed'"
+                                           decoration-warning="state == 'cancel'"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Log Lines" name="queue line logs">
+                            <field name="common_log_lines_ids">
+                                <tree>
+                                    <field name="woo_customer_data_queue_line_id" string="Customer"/>
+                                    <field name="message" string="Message"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="woo_customer_data_queue_ept_filter" model="ir.ui.view">
+        <field name="name">woo.customer.data.queue.ept.filter</field>
+        <field name="model">woo.customer.data.queue.ept</field>
+        <field name="arch" type="xml">
+            <search string="Filter State Wise">
+                <field name="name"/>
+                <field name="woo_instance_id"/>
+                <field name="is_process_queue" invisible="1"/>
+                <separator/>
+
+                <filter string="Created by Sync Process" domain="[('created_by', '=', 'import')]"
+                        name="created_by_import"/>
+                <filter string="Created by Webhook" domain="[('created_by', '=', 'webhook')]"
+                        name="created_by_webhook"/>
+                <filter string="Running Queue" domain="[('is_process_queue', '=', 'True')]" name="running_queue"/>
+                <separator/>
+                <filter string="Draft" domain="[('state', '=', 'draft')]" name="draft"/>
+                <filter string="Partial" domain="[('state', '=', 'partial')]" name="partial"/>
+                <filter string="Done" domain="[('state', '=', 'done')]" name="done"/>
+                <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Instance" name="instance" domain="[]" context="{'group_by': 'woo_instance_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="woo_customer_data_queue_ept_action" model="ir.actions.act_window">
+        <field name="name">Customer Data Queues</field>
+        <field name="res_model">woo.customer.data.queue.ept</field>
+        <field name="view_id" ref="woo_customer_data_data_queue_ept_tree_view"/>
+        <field name="search_view_id" ref="woo_commerce_ept.woo_customer_data_queue_ept_filter"/>
+        <field name="context">{'search_default_draft': 1,'search_default_partial': 1,'search_default_failed': 1}</field>
+        <field name="help" type="html">
+            <div>
+                <br/>
+                <br/>
+                <br/>
+                <p class="o_view_nocontent_smiling_face">
+                    <b>There is no synced data yet.</b>
+                </p>
+            </div>
+        </field>
+    </record>
+    <menuitem id="woo_data_menu" name="Customers Queue" parent="woo_commerce_ept.menu_woo_logs" sequence="4"
+              action="woo_customer_data_queue_ept_action"/>
+</odoo>

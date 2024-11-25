@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <report
+            id="report_invoice_dossier"
+            string="Informe"
+            model="account.move"
+            report_type="qweb-pdf"
+            name="document_format_grego.format_report_invoice_document_dossier"
+            print_report_name="(object._get_report_base_filename())"
+        />
+        <template id="document_format_grego.format_report_invoice_document_dossier">
+            <t t-name="document_format_grego.format_report_invoice_document_dossier">
+            <t t-set="moneda" t-value=""/>
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="moneda" t-value="o.currency_id"/>
+                </t>
+                <t t-call="web.html_container">
+                    <t t-call="web.external_layout">
+                        <table
+                            class="table table-sm o_main_table"
+                            name="invoice_table"
+                            style="clear:both;"
+                        >
+                            <thead>
+                                <tr>
+                                    <th style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Número
+                                    </th>
+                                    <th style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Cliente
+                                    </th>
+                                    <th style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Fecha
+                                    </th>
+                                    <th style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Comercial
+                                    </th>
+                                    <th style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Vencimiento
+                                    </th>
+                                    <th class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Impuestos excluidos
+                                    </th>
+                                    <th class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Impuestos
+                                    </th>
+                                    <th class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Total
+                                    </th>
+                                    <th class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        Importe adeudado
+                                    </th>
+                                </tr>
+                            </thead>
+                            <t t-set="subtotal" t-value="0.0"/>
+                            <t t-foreach="docs" t-as="o">
+                                <t t-set="subtotal"
+                                    t-value="subtotal + o.amount_untaxed_signed"/>
+                                <tr>
+                                    <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.name"/>
+                                    </td>
+                                    <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.invoice_partner_display_name"/>
+                                    </td>
+                                    <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.invoice_date"/>
+                                    </td>
+                                    <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.invoice_user_id"/>
+                                    </td>
+                                    <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.invoice_date_due"/>
+                                    </td>
+                                    <td class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.amount_untaxed_signed"/>
+                                    </td>
+                                    <td class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.amount_tax_signed"/>
+                                    </td>
+                                    <td class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.amount_total_signed"/>
+                                    </td>
+                                    <td class="text-right"
+                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                        <span t-field="o.amount_residual_signed"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <tr>
+                                <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td class="text-right" style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td class="text-right" style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td class="text-right" style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                </td>
+                                <td class="text-right"
+                                    style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;">
+                                    <strong
+                                        t-esc="subtotal"
+                                        t-options='{"widget": "monetary", "display_currency": docs[0].currency_id}'
+                                    />
+                                </td>
+                            </tr>
+                        </table>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

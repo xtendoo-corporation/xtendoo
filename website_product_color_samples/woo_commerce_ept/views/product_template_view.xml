@@ -1,0 +1,242 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="act_woo_template" model="ir.actions.act_window">
+        <field name="name">WooCommerce Product Template</field>
+        <field name="res_model">woo.product.template.ept</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('product_tmpl_id','=',active_id)]</field>
+        <field name="context">{'search_default_product_tmpl_id': active_id}
+        </field>
+    </record>
+
+    <record id="product_template_woo_button" model="ir.ui.view">
+        <field name="name">product.template.woo.button</field>
+        <field name="model">product.template</field>
+        <field name="priority">55</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" name="%(woo_commerce_ept.act_woo_template)d" type="action"
+                        attrs="{'invisible':[('type', '=', 'service')]}" icon="fa-external-link"
+                        help="WooCommerce Templates">
+                    <field string="Woo Templates" name="woo_template_count" widget="statinfo"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record id="woo_product_template_tree_view_ept" model="ir.ui.view">
+        <field name="name">WooCommerce Product Template Tree View</field>
+        <field name="model">woo.product.template.ept</field>
+        <field name="arch" type="xml">
+            <tree create="false" decoration-bf="exported_in_woo == False" sample="1">
+                <header>
+                    <button name="%(woo_commerce_ept.action_wizard_woo_update_selected_products)d"
+                            string="Update Product" type="action"/>
+                    <button name="%(woo_commerce_ept.action_wizard_woo_update_product_stock)d"
+                            string="Export Stock" type="action"/>
+                </header>
+                <field name="name"/>
+                <field name="woo_instance_id"/>
+                <field name="product_tmpl_id"/>
+                <field name="woo_categ_ids" widget="many2many_tags"/>
+                <field name="woo_tmpl_id"/>
+                <field name="total_variants_in_woo"/>
+                <field name="total_sync_variants"/>
+                <field name="exported_in_woo" decoration-bf="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="woo_product_template_search_view_ept">
+        <field name="name">WooCommerce Product Template Search View</field>
+        <field name="model">woo.product.template.ept</field>
+        <field name="arch" type="xml">
+            <search string="WooCommerce Products">
+                <field name="name" string="Product" filter_domain="[('name','ilike',self)]"/>
+                <field name="product_tmpl_id"/>
+                <field name="woo_tmpl_id"/>
+                <filter name="not_exported_in_odoo" string="Not Exported In Woo" icon="terp-accessories-archiver"
+                        domain="[('exported_in_woo','=',False)]"/>
+                <filter name="archive_products" string="Archived" icon="terp-accessories-archiver"
+                        domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Instance" name="instance_ept" context="{'group_by':'woo_instance_id'}"/>
+                    <filter string="Template" name="template_ept" context="{'group_by':'product_tmpl_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="woo_product_template_form_view_ept" model="ir.ui.view">
+        <field name="name">WooCommerce Product Template Form View</field>
+        <field name="model">woo.product.template.ept</field>
+        <field name="arch" type="xml">
+            <form string="WooCommerce Product Form View" create="false">
+                <sheet>
+                    <field name="active" class="oe_inline" invisible='1'/>
+                    <div class="ribbon ribbon-top-right" attrs="{'invisible': [('active','=',True)]}">
+                        <span class="bg-danger" style="left: -4px !important;top: 20px !important">Archived
+                        </span>
+                    </div>
+                    <div class="oe_title" style="width: 390px;">
+                        <label class="oe_edit_only" for="name" string="Title"/>
+                        <h1>
+                            <field name="name" class="oe_inline"/>
+                        </h1>
+                    </div>
+                    <field name="website_published" invisible="1"/>
+                    <button name="woo_published" class="pull-right" type="object" string="Click to Publish"
+                            attrs="{'invisible': ['|',('exported_in_woo','=',False),('website_published','=',True)]}"/>
+                    <button name="woo_unpublished" class="pull-right" type="object" string="Click to Unpublish"
+                            attrs="{'invisible': ['|',('exported_in_woo','=',False),('website_published','=',False)]}"/>
+                    <notebook>
+                        <page string="WooCommerce Info">
+                            <group>
+                                <group>
+                                    <field name="woo_instance_id" domain="[('active','=',True)]"
+                                           attrs="{'readonly': [('exported_in_woo','=',True)]}"/>
+                                    <field name="product_tmpl_id" required="1" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="woo_categ_ids" domain="[('woo_instance_id','=',woo_instance_id)]"
+                                           widget="many2many_tags"/>
+                                    <field name="woo_tag_ids" domain="[('woo_instance_id','=',woo_instance_id)]"
+                                           widget="many2many_tags"/>
+                                </group>
+                                <group>
+                                    <field name="created_at" readonly="1"/>
+                                    <field name="updated_at" readonly="1"/>
+                                </group>
+                                <group>
+                                    <label for="woo_tmpl_id"/>
+                                    <div name="woo_product_link">
+                                        <field name="woo_tmpl_id" readonly="1" string="WooCommerce Template Id"
+                                               style="width:auto !important;"/>
+                                        <button name="get_product_link" type="object"
+                                                title="WooCommerce Product Reference"
+                                                class="oe_stat_button" icon="fa-external-link"
+                                                attrs="{'invisible': [('exported_in_woo','=',False)]}"/>
+                                    </div>
+                                    <field name="exported_in_woo" readonly="1" string="Exported In WooCommerce"/>
+                                    <field name="taxable"/>
+                                </group>
+                                <group>
+                                    <field name="total_variants_in_woo" readonly="1"
+                                           string="Total Variants In WooCommerce"/>
+                                    <field name="total_sync_variants"/>
+                                </group>
+                                <group>
+                                    <field name="woo_product_type" readonly="1" string="WooCommerce Product Type"/>
+                                    <field name="is_virtual_product" readonly="1"/>
+                                </group>
+                            </group>
+                            <div string="Description">
+                                <label class="oe_edit_only" for="woo_description" string="Description"/>
+                                <field name="woo_description"/>
+                            </div>
+                            <div string="Short Description">
+                                <label class="oe_edit_only" for="woo_short_description" string="Short Description"/>
+                                <field name="woo_short_description"/>
+                            </div>
+                        </page>
+                        <page string="Variants" attrs="{'invisible': [('active','=',False)]}">
+                            <field name="woo_product_ids" nolabel="1"/>
+                        </page>
+                        <page string="Images">
+                            <group string="Images Info" colspan="4">
+                                <field name="woo_image_ids" context="{'default_woo_template_id':id}" mode="kanban"
+                                       options="{'create_text':'Add a Media','no_create_edit':True}" nolabel="1">
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_woo_product_template_ept" model="ir.actions.act_window">
+        <field name="name">WooCommerce Product Template</field>
+        <field name="res_model">woo.product.template.ept</field>
+        <field name="view_id" ref="woo_product_template_tree_view_ept"/>
+        <field name="help" type="html">
+            <div>
+                <br/>
+                <br/>
+                <br/>
+                <p class="o_view_nocontent_smiling_face">
+                    <b>There are no any WooCommerce Product Created yet</b>
+                </p>
+                <p>
+                    You can't create WooCommerce products directly from here. In order to create products for
+                    WooCommerce, You need to go to menu
+                    <b>Sales
+                        <i class="fa fa-angle-double-right"/>
+                        Products
+                        <i class="fa fa-angle-double-right"/>
+                        Products
+                    </b>
+                    Products list view. Select the products that you want to export to WooCommerce. Once the selection
+                    is done click on
+                    <b>Action</b>
+                    dropdown shown above the list view, select the
+                    <b>Woo - Export Products in CSV</b>
+                    Clicking on that option, will open a popup screen. Click on
+                    <b>Export Products In CSV</b>
+                    button, which will export the products in a csv file.
+                </p>
+            </div>
+        </field>
+    </record>
+
+    <menuitem id="menu_item_parent_woo_products_ept" name="Products" parent="woo_commerce_ept.woo_commerce_main_menu"
+              sequence="3"/>
+
+    <menuitem id="menu_item_woo_products_template_ept" name="Products"
+              parent="woo_commerce_ept.menu_item_parent_woo_products_ept" sequence="1"
+              action="action_woo_product_template_ept"/>
+
+    <!--    <menuitem id="woo_catalog" parent="woo_commerce_ept.menu_item_parent_woo_products_ept" sequence="5"-->
+    <!--              name="Catalog"/>-->
+
+    <record id="action_woo_product_template_instance_ept" model="ir.actions.act_window">
+        <field name="name">WooCommerce Products</field>
+        <field name="res_model">woo.product.template.ept</field>
+        <field name="view_id" ref="woo_product_template_tree_view_ept"/>
+        <field name="domain">[('woo_instance_id','=',active_id)]</field>
+    </record>
+
+    <record id="action_woo_product_template_exported_ept" model="ir.actions.act_window">
+        <field name="name">Exported Product</field>
+        <field name="res_model">woo.product.template.ept</field>
+        <field name="view_id" ref="woo_product_template_tree_view_ept"/>
+        <field name="domain">[('exported_in_woo','=',True),('woo_instance_id','=',active_id)]</field>
+    </record>
+
+    <record id="action_woo_product_template_not_exported_ept" model="ir.actions.act_window">
+        <field name="name">Ready to Export Product</field>
+        <field name="res_model">woo.product.template.ept</field>
+        <field name="view_id" ref="woo_product_template_tree_view_ept"/>
+        <field name="domain">[('exported_in_woo','=',False),('woo_instance_id','=',active_id)]</field>
+    </record>
+
+    <record id="action_woo_product_template_published_ept" model="ir.actions.act_window">
+        <field name="name">Published Product</field>
+        <field name="res_model">woo.product.template.ept</field>
+        <field name="view_id" ref="woo_product_template_tree_view_ept"/>
+        <field name="domain">[('website_published','=',True),('woo_instance_id','=',active_id)]</field>
+    </record>
+
+    <record id="action_woo_product_template_not_published_ept" model="ir.actions.act_window">
+        <field name="name">Unpublished Products</field>
+        <field name="res_model">woo.product.template.ept</field>
+        <field name="view_id" ref="woo_product_template_tree_view_ept"/>
+        <field name="domain">
+            [('website_published','=',False),('woo_instance_id','=',active_id),('exported_in_woo','=',True)]
+        </field>
+    </record>
+
+
+</odoo>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Multi-Company Rules -->
+    <record model="ir.rule" id="woo_instance_comp_rule">
+        <field name="name">Woo Instance multi-company</field>
+        <field name="model_id" ref="model_woo_instance_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('company_id','=',False),('company_id','in',company_ids)]</field>
+    </record>
+
+    <!--multi company woo product template rule -->
+    <record model="ir.rule" id="woo_product_template_rule">
+        <field name="name">WooCommerce Product Template multi-company</field>
+        <field name="model_id" ref="model_woo_product_template_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company woo product varaint -->
+    <record model="ir.rule" id="woo_product_variant_rule">
+        <field name="name">WooCommerce Product variant multi-company</field>
+        <field name="model_id" ref="model_woo_product_product_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company woo product tags -->
+    <record model="ir.rule" id="woo_product_tags_rule">
+        <field name="name">WooCommerce Product tags multi-company</field>
+        <field name="model_id" ref="model_woo_tags_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company woo product categories -->
+    <record model="ir.rule" id="woo_product_category_rule">
+        <field name="name">WooCommerce Product category multi-company</field>
+        <field name="model_id" ref="model_woo_product_categ_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company woo product attributes -->
+    <record model="ir.rule" id="woo_product_attribute_rule">
+        <field name="name">WooCommerce Product attribute multi-company</field>
+        <field name="model_id" ref="model_woo_product_attribute_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company woo product attributes term -->
+    <record model="ir.rule" id="woo_product_attribute_term_rule">
+        <field name="name">WooCommerce Product attribute term multi-company</field>
+        <field name="model_id" ref="model_woo_product_attribute_term_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company woo coupons -->
+    <record model="ir.rule" id="woo_coupons_rule">
+        <field name="name">WooCommerce Product attribute multi-company</field>
+        <field name="model_id" ref="model_woo_coupons_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company product queue -->
+    <record model="ir.rule" id="woo_product_queue_rule">
+        <field name="name">WooCommerce Product data queue multi-company</field>
+        <field name="model_id" ref="model_woo_product_data_queue_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company customer queue -->
+    <record model="ir.rule" id="woo_customer_queue_rule">
+        <field name="name">WooCommerce customer data queue multi-company</field>
+        <field name="model_id" ref="model_woo_customer_data_queue_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company order queue -->
+    <record model="ir.rule" id="woo_order_queue_rule">
+        <field name="name">WooCommerce order data queue multi-company</field>
+        <field name="model_id" ref="model_woo_order_data_queue_ept"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('instance_id.company_id','=',False),
+            ('instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <!--multi company payment gateway -->
+    <record model="ir.rule" id="woo_payment_gateway_rule">
+        <field name="name">WooCommerce payment multi-company</field>
+        <field name="model_id" ref="model_woo_payment_gateway"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('woo_instance_id.company_id','=',False),
+            ('woo_instance_id.company_id','in',company_ids)]
+        </field>
+    </record>
+
+    <record model="ir.module.category" id="module_woo_ept">
+        <field name="name">Woo Commerce</field>
+        <field name="description">Woo Commerce User Access Rights</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <record model="res.groups" id="group_woo_ept">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_woo_ept"/>
+        <field name="implied_ids"
+               eval="[(4,ref('sales_team.group_sale_salesman_all_leads')),(4,ref('stock.group_stock_user')),(4,ref('account.group_account_invoice'))]"/>
+    </record>
+
+    <record model="res.groups" id="group_woo_manager_ept">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_woo_ept"/>
+        <field name="implied_ids"
+               eval="[(4, ref('group_woo_ept')),(4,ref('stock.group_stock_manager')),(4,ref('sales_team.group_sale_manager')),(4,ref('account.group_account_manager'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')),(4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

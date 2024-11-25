@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record model="import.order.status.ept" id="pending_payment">
+        <field name="name">Pending Payment</field>
+        <field name="status">pending</field>
+    </record>
+
+    <record model="import.order.status.ept" id="processing">
+        <field name="name">Processing</field>
+        <field name="status">processing</field>
+    </record>
+
+    <record model="import.order.status.ept" id="onhold">
+        <field name="name">On Hold</field>
+        <field name="status">on-hold</field>
+    </record>
+</odoo>

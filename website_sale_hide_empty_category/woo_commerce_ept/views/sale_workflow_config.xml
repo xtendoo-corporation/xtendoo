@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- VIEW FOR THE OBJECT : sale_workflow_process -->
+    <record id="sale_workflow_process_view_form" model="ir.ui.view">
+        <field name="name">sale_automic_workflow.sale_workflow_process.view_form</field>
+        <field name="model">woo.sale.auto.workflow.configuration</field>
+        <field eval="16" name="priority"/>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="sale_workflow_process">
+                <group>
+                    <group>
+                        <field name="woo_auto_workflow_id" required="1"/>
+                        <field name="woo_financial_status" required="1"/>
+                        <field name="woo_payment_gateway_id" domain="[('woo_instance_id','=',woo_instance_id)]"
+                               required="1"/>
+                        <field name="woo_order_status" required="1"/>
+                    </group>
+                    <group>
+                        <field name="woo_instance_id" domain="[('active','=',True)]" required="1"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="woo_sale_workflow_search_view_ept" model="ir.ui.view">
+        <field name="name">Sale Workflow Search View</field>
+        <field name="model">woo.sale.auto.workflow.configuration</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Sale Workflow">
+                <field name="woo_financial_status"/>
+                <field name="woo_instance_id"/>
+                <field name="woo_payment_gateway_id"/>
+                <field name="woo_order_status"/>
+                <filter name="archive_financial_status" string="Archived" icon="terp-accessories-archiver"
+                        domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By...">
+                    <filter name="instance" string="Instance" icon="terp-personal"
+                            context="{'group_by':'woo_instance_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="sale_workflow_process_view_tree" model="ir.ui.view">
+        <field name="name">sale_automic_workflow.sale_workflow_process.view_tree</field>
+        <field name="model">woo.sale.auto.workflow.configuration</field>
+        <field eval="16" name="priority"/>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree editable="top" sample="1">
+                <field name="woo_instance_id" options="{'no_create':True,'no_create_edit': True}"
+                       domain="[('active','=',True)]"/>
+                <field name="woo_auto_workflow_id"/>
+                <field name="woo_payment_gateway_id" domain="[('woo_instance_id','=',woo_instance_id)]"/>
+                <field name="woo_financial_status"/>
+                <field name="woo_order_status"/>
+            </tree>
+        </field>
+    </record>
+
+    <menuitem id="woo_configuration_menu_items" name="Configuration" parent="woo_commerce_ept.woo_commerce_main_menu"
+              sequence="7" groups="woo_commerce_ept.group_woo_manager_ept"/>
+
+    <record id="act_sale_workflow_process_form" model="ir.actions.act_window">
+        <field name="name">Auto Workflow</field>
+        <field name="res_model">sale.workflow.process.ept</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- action of Financial Status by instance wise of dashboard-->
+    <record id="act_sale_workflow_config_instance_form_ept" model="ir.actions.act_window">
+        <field name="name">Financial Status</field>
+        <field name="res_model">woo.sale.auto.workflow.configuration</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('woo_instance_id','=',active_id)]</field>
+    </record>
+
+    <menuitem id="woo_instance_menu_item_sale_autoworkflow" name="Sale Auto Workflow"
+              parent="woo_commerce_ept.woo_configuration_menu_items" action="act_sale_workflow_process_form"
+              sequence="3" groups="woo_commerce_ept.group_woo_manager_ept"/>
+
+    <record id="act_sale_workflow_config_instance_form" model="ir.actions.act_window">
+        <field name="name">Financial Status</field>
+        <field name="res_model">woo.sale.auto.workflow.configuration</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('woo_instance_id','=',active_id)]</field>
+    </record>
+
+    <record id="act_sale_workflow_config_form" model="ir.actions.act_window">
+        <field name="name">Financial Status</field>
+        <field name="res_model">woo.sale.auto.workflow.configuration</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="woo_commerce_ept.woo_sale_workflow_search_view_ept"/>
+    </record>
+
+    <menuitem id="woo_instance_menu_item_sale_autoworkflow_config"
+              parent="woo_commerce_ept.woo_configuration_menu_items" action="act_sale_workflow_config_form"
+              sequence="51" groups="woo_commerce_ept.group_woo_manager_ept"/>
+
+</odoo>

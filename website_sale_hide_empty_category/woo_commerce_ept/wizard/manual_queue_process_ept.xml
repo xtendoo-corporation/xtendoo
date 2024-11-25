@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Common View of Manual Order, Customer and Product Import Process Manually -->
+    <record id="view_order_product_customer_import_process_manual" model="ir.ui.view">
+        <field name="name">Process Queue Manually</field>
+        <field name="model">woo.manual.queue.process.ept</field>
+        <field name="arch" type="xml">
+            <form string="Manual Queue Process">
+                <p>
+                    This process might take some time to complete.
+                </p>
+                <footer>
+                    <button name="process_queue_manually" string="Process" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action of Order Import Process Manually -->
+    <record id="action_order_import_process_manual" model="ir.actions.act_window">
+        <field name="name">Order Import Process</field>
+        <field name="res_model">woo.manual.queue.process.ept</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'queue_type': 'order'}</field>
+        <field name="view_id" ref="view_order_product_customer_import_process_manual"/>
+    </record>
+
+    <!-- Action of Customer Import Process Manually -->
+    <record id="action_customer_import_process_manual" model="ir.actions.act_window">
+        <field name="name">Customer Import Process</field>
+        <field name="res_model">woo.manual.queue.process.ept</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'queue_type': 'customer'}</field>
+        <field name="view_id" ref="view_order_product_customer_import_process_manual"/>
+    </record>
+
+    <!-- Action of Product Import Process Manually -->
+    <record id="action_product_import_process_manual" model="ir.actions.act_window">
+        <field name="name">Product Import Process</field>
+        <field name="res_model">woo.manual.queue.process.ept</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'queue_type': 'product'}</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_order_product_customer_import_process_manual"/>
+    </record>
+
+    <!-- Action of Coupon Import Process Manually -->
+    <record id="action_coupon_import_process_manual" model="ir.actions.act_window">
+        <field name="name">Coupon Import Process</field>
+        <field name="res_model">woo.manual.queue.process.ept</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'queue_type': 'coupon'}</field>
+        <field name="view_id" ref="view_order_product_customer_import_process_manual"/>
+    </record>
+
+    <!-- Action of Export Stock Process Manually -->
+    <record id="action_export_stock_process_manual" model="ir.actions.act_window">
+        <field name="name">Export Stock Process</field>
+        <field name="res_model">woo.manual.queue.process.ept</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'queue_type': 'export_stock'}</field>
+        <field name="view_id" ref="view_order_product_customer_import_process_manual"/>
+    </record>
+
+    <!--Below view used to display, how many records are inactive while instance inactive-->
+    <record id="view_inactive_woo_instance" model="ir.ui.view">
+        <field name="name">Active/Inactive Instance Details</field>
+        <field name="model">woo.manual.queue.process.ept</field>
+        <field name="arch" type="xml">
+            <form string="Manual Queue Process">
+                <p colspan="2" class="alert alert-warning" role="alert">
+                    <u>
+                        <h3 style="font-weight:bold;color:#7d5a29">Note :</h3>
+                    </u>
+                    <b>
+                        <ol>
+                            During the archive instance, it will archive/delete below data:
+                            <br/>
+                            1) It deletes all queues and Webhooks which related to this instance.
+                            <br/>
+                            2) Deactivate WooCommerce layer products and it's variant.
+                            <br/>
+                            3) Deactivate related cron job(Scheduled Actions).
+                            <br/>
+                            4) Deactivate related Payment Gateway and Financial Status.
+                        </ol>
+                        <ol>
+                            During the Unarchive instance, it will do below:
+                            <br/>
+                            1) Check the connection between Odoo and Woocmmerce store.
+                            <br/>
+                            2) Active WooCommerce layer products and it's variant.
+                        </ol>
+                    </b>
+                </p>
+                <footer>
+                    <button name="woo_action_archive" string="OK" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
