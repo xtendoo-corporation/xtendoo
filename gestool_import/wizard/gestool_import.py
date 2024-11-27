@@ -110,7 +110,7 @@ class GestoolImport(models.TransientModel):
                     "product_tmpl_id": product.id,
                     'applied_on': "1_product",
                     'compute_price': "fixed",
-                    'fixed_price': row[4],
+                    'fixed_price': row[2],
                 })
 
                 # La aplicamos al cliente
