@@ -96,7 +96,6 @@ class GestoolImport(models.TransientModel):
 
         if product:
             if partner:
-
                 # Comprobamos que no exista
                 headpricelist = self.env["product.pricelist"].search([("name", "=", partner.name), ])
 
