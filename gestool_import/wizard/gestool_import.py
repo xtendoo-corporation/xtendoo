@@ -91,6 +91,9 @@ class GestoolImport(models.TransientModel):
         partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
         product = self.env["product.template"].search([("default_code", "=", row[1]), ])
 
+        print("Cliente", row[0])
+        print("Articulo", row[1])
+
         if product:
             if partner:
 
