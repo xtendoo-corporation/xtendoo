@@ -72,7 +72,7 @@
                     <div class="o_label_price" style="font-size: 18pt; font-weight: bold; text-align: right; margin-right: 5mm;">
                         <span t-field="label.product_id.lst_price"/>
                         <span t-if="label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol"/>
-                        <span>€</span>
+                        <span t-else="">€</span>
                     </div>
                 </div>
             </td>
