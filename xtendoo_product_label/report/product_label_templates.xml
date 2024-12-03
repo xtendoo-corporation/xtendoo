@@ -59,7 +59,7 @@
     </template>
 
     <template id="label_38x21">
-    <table class="table" style="margin: 0; padding: 0; border-spacing: 0;">
+    <table class="table" style="border:0; margin: 0; padding: 0; border-spacing: 0;">
         <tr height="21.2mm" style="border:0;margin:0;padding:0; width: 190mm;">
             <td class="col-xs-4 text-center" style="width: 38mm; height: 21.8mm; page-break-inside: avoid; border-spacing: 0; padding: 0; margin: 0;">
                 <div class="o_label_full" style="padding: 0; margin: 0;">
