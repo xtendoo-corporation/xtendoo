@@ -61,15 +61,15 @@
     <template id="label_38x21">
     <table border="0" style="margin: 0; padding: 0; border-spacing: 0; border-collapse: collapse; border-color: #ffffff;">
         <tr style="margin:0;padding:0; width: 190mm;">
-            <td style="min-width: 37mm; min-height: 21.8mm; page-break-inside: avoid; border: none;">
+            <td style="min-width: 32mm; min-height: 21mm; page-break-inside: avoid; border: none;">
                 <div>
-                    <div style="font-size: 10pt; text-align: right; margin-right: 5mm;">
+                    <div style="font-size: 10pt; text-align: right;">
                         <span t-field="label.product_id.default_code" style="border: none !important;"/>
                     </div>
-                    <span style="font-size: 8pt; text-align: left; margin-left: 5mm; border: none;">
+                    <span style="font-size: 8pt; text-align: left; border: none;">
                         <strong>P.V.P.</strong>
                     </span>
-                    <div style="font-size: 18pt; font-weight: bold; text-align: right; margin-right: 5mm;">
+                    <div style="font-size: 18pt; font-weight: bold; text-align: right;">
                         <span t-field="label.product_id.lst_price" style="border: none;"/>
                         <span t-if="label.product_id.currency_id.position == 'after'" t-field="label.product_id.currency_id.symbol" style="border: none;"/>
                         <span t-else="" style="border: none;">€</span>
@@ -94,7 +94,7 @@
                     <t t-foreach="list(range(qty))" t-as="index_qty">
                         <div t-if="count % 65 == 0" style="page-break-after:always;"/>
                         <div t-if="count % 5 == 0" style="clear:both;"/>
-                        <div t-att-style="'min-width: 37mm; float: left; min-height: 21.8mm;'">
+                        <div t-att-style="'min-width: 32.5mm; float: left; min-height: 21.42mm; margin-right: 2mm; margin-left: 2mm;'">
                             <t t-call="xtendoo_product_label.label_38x21"/>
                         </div>
                         <t t-set="count" t-value="count+1"/>

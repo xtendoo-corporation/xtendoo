@@ -24,10 +24,10 @@
         <field name="page_height">0</field>
         <field name="page_width">0</field>
         <field name="orientation">Portrait</field>
-        <field name="margin_top">8</field>
-        <field name="margin_bottom">7</field>
-        <field name="margin_left">8</field>
-        <field name="margin_right">8</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
         <field name="disable_shrinking" eval="True"/>
