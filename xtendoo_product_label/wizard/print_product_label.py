@@ -169,28 +169,13 @@ class PrintProductLabel(models.TransientModel):
         return seq, processed
 
     def action_sort_by_product(self):
-        # self.ensure_one()
-        # sequence = 1000
-        # processed_labels = self.env['print.product.label.line'].browse()
-        # # flake8: noqa: E501
-        # for label in self.label_ids:
-        #     sequence, processed_labels = self._set_sequence(label, sequence, processed_labels)
-        #     tmpl_labels = self.label_ids.filtered(
-        #         lambda l: l.product_id.product_tmpl_id == label.product_id.product_tmpl_id).sorted(
-        #         lambda l: l.product_id.id, reverse=True) - label
-        #     for tmpl_label in tmpl_labels:
-        #         sequence, processed_labels = self._set_sequence(tmpl_label, sequence, processed_labels)
-        #         product_labels = tmpl_labels.filtered(lambda l: l.product_id == label.product_id) - tmpl_label
-        #         for product_label in product_labels:
-        #             sequence, processed_labels = self._set_sequence(product_label, sequence, processed_labels)
         self.ensure_one()
         sequence = 1000
         processed_labels = self.env['print.product.label.line'].browse()
-        # Ordenar las etiquetas por el campo `sequence`
-        sorted_labels = self.label_ids.sorted(key=lambda l: l.sequence)
-        for label in sorted_labels:
+        # flake8: noqa: E501
+        for label in self.label_ids.sorted(key=lambda l: l.product_id.name):
             sequence, processed_labels = self._set_sequence(label, sequence, processed_labels)
-            tmpl_labels = sorted_labels.filtered(
+            tmpl_labels = self.label_ids.filtered(
                 lambda l: l.product_id.product_tmpl_id == label.product_id.product_tmpl_id).sorted(
                 lambda l: l.product_id.id, reverse=True) - label
             for tmpl_label in tmpl_labels:
@@ -198,6 +183,23 @@ class PrintProductLabel(models.TransientModel):
                 product_labels = tmpl_labels.filtered(lambda l: l.product_id == label.product_id) - tmpl_label
                 for product_label in product_labels:
                     sequence, processed_labels = self._set_sequence(product_label, sequence, processed_labels)
+
+    def action_sort_by_product_reverse(self):
+        self.ensure_one()
+        sequence = 1000
+        processed_labels = self.env['print.product.label.line'].browse()
+        # flake8: noqa: E501
+        for label in self.label_ids.sorted(key=lambda l: l.product_id.name, reverse=True):
+            sequence, processed_labels = self._set_sequence(label, sequence, processed_labels)
+            tmpl_labels = self.label_ids.filtered(
+                lambda l: l.product_id.product_tmpl_id == label.product_id.product_tmpl_id).sorted(
+                lambda l: l.product_id.id, reverse=True) - label
+            for tmpl_label in tmpl_labels:
+                sequence, processed_labels = self._set_sequence(tmpl_label, sequence, processed_labels)
+                product_labels = tmpl_labels.filtered(lambda l: l.product_id == label.product_id) - tmpl_label
+                for product_label in product_labels:
+                    sequence, processed_labels = self._set_sequence(product_label, sequence, processed_labels)
+
 
     def get_pdf(self):
         self.ensure_one()

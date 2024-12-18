@@ -41,3 +41,5 @@ class PrintProductLabelLine(models.TransientModel):
             self.update({'qty': self.qty - 1})
             if not self.qty:
                 self.update({'selected': False})
+
+
