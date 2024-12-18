@@ -31,12 +31,12 @@ class GestoolImport(models.TransientModel):
     # )
     # filename = fields.Char()
 
-    data_file_atypical_rate = fields.Binary(
+    data_file_atypical = fields.Binary(
         string="File to Import",
         required=False,
         help="Get you data from Gestool.",
     )
-    filename = fields.Char()
+    filename_atypical = fields.Char()
 
     # data_file_category = fields.Binary(
     #     string="File to Import",
@@ -44,13 +44,13 @@ class GestoolImport(models.TransientModel):
     #     help="Get you data from Gestool.",
     # )
     # filename = fields.Char()
-    #
-    # data_file_product = fields.Binary(
-    #     string="File to Import",
-    #     required=False,
-    #     help="Get you data from Gestool.",
-    # )
-    # filename = fields.Char()
+
+    data_file_product = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename_product = fields.Char()
 
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
@@ -64,30 +64,34 @@ class GestoolImport(models.TransientModel):
         # if data_file_partner:
         #     self._import_partner(data_file_partner)
 
-        data_file_atypical_rate = b64decode(self.data_file_atypical_rate)
-        if data_file_atypical_rate:
-            self._import_atypical_rate(data_file_atypical_rate)
+        if self.data_file_atypical:
+            data_file_atypical = b64decode(self.data_file_atypical)
+            if data_file_atypical:
+                self._import_atypica(data_file_atypical)
 
         # data_file_category = b64decode(self.data_file_category)
         # if data_file_category:
         #     self._import_category(data_file_category)
-        #
-        # data_file_product = b64decode(self.data_file_product)
-        # if data_file_product:
-        #     self._import_product(data_file_product)
 
-    def _import_atypical_rate(self, data_file_atypical_rate):
+        if self.data_file_product:
+            data_file_product = b64decode(self.data_file_product)
+            if data_file_product:
+                self._import_product(data_file_product)
+
+    def _import_atypical(self, data_file_atypical):
         try:
-            csv_data = reader(StringIO(data_file_atypical_rate.decode("utf-8")))
+            if data_file_atypical:
+                csv_data = reader(StringIO(data_file_atypical.decode("utf-8")))
         except Exception:
             raise UserError(_("Can not read the file"))
 
-        for row in csv_data:
-            print("--------------------Atipicas de clientes--------------------------")
-            self.parse_atypical_rate(row)
-        return
+        if csv_data:
+            for row in csv_data:
+                print("--------------------Atipicas de clientes--------------------------")
+                self.parse_atypical(row)
+            return
 
-    def parse_atypical_rate(self, row):
+    def parse_atypical(self, row):
         partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
         product = self.env["product.template"].search([("default_code", "=", row[1]), ])
 
@@ -247,45 +251,48 @@ class GestoolImport(models.TransientModel):
 
         for row in csv_data:
             print("--------------------PRODUCT--------------------------")
-            # self.parse_products(row)
+            self.parse_products(row)
         return
 
-    # def parse_products(self, row):
-    #     print("--------------------PRODUCT--------------------------")
-    #     print(row)
-    #
-    #     taxes_id = self.env["account.tax"].search([("name", "=", row[7]), ])
-    #     if taxes_id:
-    #         taxes_id = [(6, 0, [taxes_id.id])]
-    #     else:
-    #         taxes_id = [(6, 0, [])]
-    #
-    #     supplier_taxes_id = self.env["account.tax"].search([("name", "=", row[8]), ])
-    #     if supplier_taxes_id:
-    #         supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
-    #     else:
-    #         supplier_taxes_id = [(6, 0, [])]
-    #
-    #     product = self.env["product.template"].search([("name", "=", row[2]),])
-    #
-    #     if not product:
-    #         self.env["product.template"].create({
-    #             "name": row[2],
-    #             "list_price": row[5],
-    #             "standard_price": row[6],
-    #             "available_in_pos": 1,
-    #             "taxes_id": taxes_id,
-    #             "supplier_taxes_id": supplier_taxes_id,
-    #         })
-    #     else:
-    #         product.sudo().write({
-    #             "name": row[2],
-    #             "list_price": row[5],
-    #             "standard_price": row[6],
-    #             "available_in_pos": 1,
-    #             "taxes_id": taxes_id,
-    #             "supplier_taxes_id": supplier_taxes_id,
-    #         })
+    def parse_products(self, row):
+        print(row)
+
+        taxes_id = self.env["account.tax"].search([("description", "=", row[6]), ])
+        print("taxes_id", taxes_id.name)
+        if taxes_id:
+            taxes_id = [(6, 0, [taxes_id.id])]
+        else:
+            taxes_id = [(6, 0, [])]
+
+        supplier_taxes_id = self.env["account.tax"].search([("description", "=", row[7]), ])
+        print("supplier_taxes_id", supplier_taxes_id.name)
+        if supplier_taxes_id:
+            supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
+        else:
+            supplier_taxes_id = [(6, 0, [])]
+
+        product = self.env["product.template"].search([("default_code", "=", row[0]),])
+
+        if not product:
+            print("Producto No existe-------------------------------")
+            self.env["product.template"].create({
+                "default_code": row[0],
+                "name": row[2],
+                "list_price": row[4],
+                "standard_price": row[5],
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
+                "detailed_type": "product",
+            })
+        else:
+            print("Producto existe-------------------------------")
+            product.sudo().write({
+                "name": row[2],
+                "list_price": row[4],
+                "standard_price": row[5],
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
+            })
 
     def _import_agentes(self, data_file_agentes):
         try:
