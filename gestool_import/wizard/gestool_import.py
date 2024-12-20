@@ -157,39 +157,21 @@ class GestoolImport(models.TransientModel):
     #
         agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
         if agent_id:
-            agent_id = [(6, 0, [agent_id.id])]
+            agent_id = agent_id.id
         else:
-            agent_id = [(6, 0, [])]
+            agent_id = ""
 
         print("/////////CLIENTE//////////")
         print("partner", partner)
         print("nombre:", row[1])
-        # print("ref",row[0])
-        # print("name",row[1])
-        # print('street',row[3])
-        # print('city',row[4])
-        # print('zip',row[5])
-        # print('phone',row[7])
-        # print('mobile',row[8])
-        # print('website',row[9])
-        # print('email',row[10])
-        # print('display_name',row[14])
-        # print('company_name',row[15])
-        # print('comment',row[17])
-        # print('customer_rank',row[19])
-        # print('supplier_rank',row[20])
-        # print('company', row[25])
-        # print('State', row[6].capitalize())
-        # print('state_id', state_id)
-        # print('DNI', row[2])
-        # print('country_id', country_id)
-
         print('agent', row[23])
         print('agent_id', agent_id)
 
         if partner:
+            print("Entro a modificar")
             partner.sudo().write({
-                'agent_ids': agent_id,
+                # 'user_id': agent_id,
+                'user_id': agent_id,
             })
     #     else:
     #         self.env["res.partner"].sudo().create({
