@@ -12,20 +12,20 @@
 <!--                &lt;!&ndash;agentes&ndash;&gt;-->
 <!--                <field-->
 <!--                    name="data_file_agentes"-->
-<!--                    filename="filename"-->
+<!--                    filename="filename_agentes"-->
 <!--                    placeholder="Choose a file to import..."-->
 <!--                />-->
-<!--                <field name="filename" invisible="1" />-->
+<!--                <field name="filename_agentes" invisible="1" />-->
 <!--                <br/>-->
-<!--                <h5>Seleccione fichero de Clientes/Proveedores</h5>-->
-<!--                &lt;!&ndash;clientes&ndash;&gt;-->
-<!--                <field-->
-<!--                    name="data_file_partner"-->
-<!--                    filename="filename"-->
-<!--                    placeholder="Choose a file to import..."-->
-<!--                />-->
-<!--                <field name="filename" invisible="1" />-->
-<!--                <br/>-->
+                <h5>Seleccione fichero de Clientes/Proveedores</h5>
+                <!--clientes-->
+                <field
+                    name="data_file_partner"
+                    filename="filename_partner"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_partner" invisible="1" />
+                <br/>
                 <h5>Seleccione fichero de Tarifas Atípicas</h5>
                 <!--Atipicas de clientes-->
                 <field
@@ -34,24 +34,24 @@
                     placeholder="Choose a file to import..."
                 />
                 <field name="filename_atypical" invisible="1" />
-                <br/>
+<!--                <br/>-->
 <!--                <h5>Seleccione fichero de Categorias</h5>-->
 <!--                &lt;!&ndash;categorias&ndash;&gt;-->
 <!--                <field-->
 <!--                    name="data_file_category"-->
-<!--                    filename="filename"-->
+<!--                    filename="filename_category"-->
 <!--                    placeholder="Choose a file to import..."-->
 <!--                />-->
-<!--                <field name="filename" invisible="1" />-->
-                <br/>
-                <h5>Seleccione fichero de Productos</h5>
-                <!--articulos-->
-                <field
-                    name="data_file_product"
-                    filename="filename_product"
-                    placeholder="Choose a file to import..."
-                />
-                <field name="filename_product" invisible="1" />
+<!--                <field name="filename_category" invisible="1" />-->
+<!--                <br/>-->
+<!--                <h5>Seleccione fichero de Productos</h5>-->
+<!--                &lt;!&ndash;articulos&ndash;&gt;-->
+<!--                <field-->
+<!--                    name="data_file_product"-->
+<!--                    filename="filename_product"-->
+<!--                    placeholder="Choose a file to import..."-->
+<!--                />-->
+<!--                <field name="filename_product" invisible="1" />-->
                 <footer>
                     <button
                         name="import_file"

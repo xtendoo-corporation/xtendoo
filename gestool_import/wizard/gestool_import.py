@@ -22,14 +22,14 @@ class GestoolImport(models.TransientModel):
     #     required=False,
     #     help="Get you data from Gestool.",
     # )
-    # filename = fields.Char()
-    #
-    # data_file_partner = fields.Binary(
-    #     string="File to Import",
-    #     required=False,
-    #     help="Get you data from Gestool.",
-    # )
-    # filename = fields.Char()
+    # filename_agentes = fields.Char()
+
+    data_file_partner = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename_partner = fields.Char()
 
     data_file_atypical = fields.Binary(
         string="File to Import",
@@ -43,40 +43,43 @@ class GestoolImport(models.TransientModel):
     #     required=False,
     #     help="Get you data from Gestool.",
     # )
-    # filename = fields.Char()
-
-    data_file_product = fields.Binary(
-        string="File to Import",
-        required=False,
-        help="Get you data from Gestool.",
-    )
-    filename_product = fields.Char()
+    # filename_category = fields.Char()
+    #
+    # data_file_product = fields.Binary(
+    #     string="File to Import",
+    #     required=False,
+    #     help="Get you data from Gestool.",
+    # )
+    # filename_product = fields.Char()
 
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
         self.ensure_one()
 
-        # data_file_agentes = b64decode(self.data_file_agentes)
-        # if data_file_agentes:
-        #     self._import_agentes(data_file_agentes)
-        #
-        # data_file_partner = b64decode(self.data_file_partner)
-        # if data_file_partner:
-        #     self._import_partner(data_file_partner)
+        # if self.data_file_agentes:
+        #     data_file_agentes = b64decode(self.data_file_agentes)
+        #     if data_file_agentes:
+        #         self._import_agentes(data_file_agentes)
+
+        if self.data_file_partner:
+            data_file_partner = b64decode(self.data_file_partner)
+            if data_file_partner:
+                self._import_partner(data_file_partner)
 
         if self.data_file_atypical:
             data_file_atypical = b64decode(self.data_file_atypical)
             if data_file_atypical:
                 self._import_atypica(data_file_atypical)
 
-        # data_file_category = b64decode(self.data_file_category)
-        # if data_file_category:
-        #     self._import_category(data_file_category)
-
-        if self.data_file_product:
-            data_file_product = b64decode(self.data_file_product)
-            if data_file_product:
-                self._import_product(data_file_product)
+        # if self.data_file_category:
+        #     data_file_category = b64decode(self.data_file_category)
+        #     if data_file_category:
+        #         self._import_category(data_file_category)
+        #
+        # if self.data_file_product:
+        #     data_file_product = b64decode(self.data_file_product)
+        #     if data_file_product:
+        #         self._import_product(data_file_product)
 
     def _import_atypical(self, data_file_atypical):
         try:
@@ -131,17 +134,18 @@ class GestoolImport(models.TransientModel):
 
     def _import_partner(self, data_file_partner):
         try:
-            csv_data = reader(StringIO(data_file_partner.decode("utf-8")))
+            if data_file_partner:
+                csv_data = reader(StringIO(data_file_partner.decode("utf-8")))
         except Exception:
             raise UserError(_("Can not read the file"))
 
         for row in csv_data:
             print("--------------------CLIENES--------------------------")
-            # self.parse_partner(row)
+            self.parse_partner(row)
         return
 
-    # def parse_partner(self, row):
-    #     partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
+    def parse_partner(self, row):
+        partner = self.env["res.partner"].search([("name", "=", row[1]), ])
     #
     #     # country_id = self.env["res.country"].search([("name", "=", "España", ])
     #     # if country_id:
@@ -151,53 +155,42 @@ class GestoolImport(models.TransientModel):
     #     if state_id:
     #         state_id = state_id.id
     #
-    #     # agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
-    #     # if agent_id:
-    #     #     agent_id = [(6, 0, [agent_id.id])]
-    #     # else:
-    #     #     agent_id = [(6, 0, [])]
-    #
-    #     print("/////////CLIENTE//////////")
-    #     print("partner", partner)
-    #     print("nombre:", row[1])
-    #     print("ref",row[0])
-    #     print("name",row[1])
-    #     print('street',row[3])
-    #     print('city',row[4])
-    #     print('zip',row[5])
-    #     print('phone',row[7])
-    #     print('mobile',row[8])
-    #     print('website',row[9])
-    #     print('email',row[10])
-    #     print('display_name',row[14])
-    #     print('company_name',row[15])
-    #     print('comment',row[17])
-    #     print('customer_rank',row[19])
-    #     print('supplier_rank',row[20])
-    #     print('company', row[25])
-    #     print('State', row[6].capitalize())
-    #     print('state_id', state_id)
-    #     print('DNI', row[2])
-    #     # print('country_id', country_id)
-    #
-    #     if partner:
-    #         partner.sudo().write({
-    #             "name": row[1],
-    #             'street': row[3],
-    #             'city': row[4],
-    #             'zip': row[5],
-    #             'phone': row[7],
-    #             'mobile': row[8],
-    #             'website': row[9],
-    #             'email': row[10],
-    #             'display_name': row[14],
-    #             'company_name': row[15],
-    #             'comment': row[17],
-    #             'state_id': state_id,
-    #             'vat': row[2],
-    #             'country_id': 68,
-    #             # 'agent_ids': agent_id,
-    #         })
+        agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
+        if agent_id:
+            agent_id = [(6, 0, [agent_id.id])]
+        else:
+            agent_id = [(6, 0, [])]
+
+        print("/////////CLIENTE//////////")
+        print("partner", partner)
+        print("nombre:", row[1])
+        # print("ref",row[0])
+        # print("name",row[1])
+        # print('street',row[3])
+        # print('city',row[4])
+        # print('zip',row[5])
+        # print('phone',row[7])
+        # print('mobile',row[8])
+        # print('website',row[9])
+        # print('email',row[10])
+        # print('display_name',row[14])
+        # print('company_name',row[15])
+        # print('comment',row[17])
+        # print('customer_rank',row[19])
+        # print('supplier_rank',row[20])
+        # print('company', row[25])
+        # print('State', row[6].capitalize())
+        # print('state_id', state_id)
+        # print('DNI', row[2])
+        # print('country_id', country_id)
+
+        print('agent', row[23])
+        print('agent_id', agent_id)
+
+        if partner:
+            partner.sudo().write({
+                'agent_ids': agent_id,
+            })
     #     else:
     #         self.env["res.partner"].sudo().create({
     #             "ref": row[0],
@@ -224,109 +217,111 @@ class GestoolImport(models.TransientModel):
     #             # 'agent_ids': agent_id,
     #         })
 
-    def _import_category(self, data_file_category):
-        try:
-            csv_data = reader(StringIO(data_file_category.decode("utf-8")))
-        except Exception:
-            raise UserError(_("Can not read the file"))
-
-        for row in csv_data:
-            # self.parse_categories(row)
-            print("--------------------CATEGORY--------------------------")
-        return
-
-    # def parse_categories(self, row):
-    #     category = self.env["product.category"].search([("name", "=", row[0]),])
-    #     if not category:
-    #         self.env["product.category"].create({
-    #             "name": row[0],
-    #             "parent_id" : 1,
-    #         })
-
-    def _import_product(self, data_file_product):
-        try:
-            csv_data = reader(StringIO(data_file_product.decode("utf-8")))
-        except Exception:
-            raise UserError(_("Can not read the file"))
-
-        for row in csv_data:
-            print("--------------------PRODUCT--------------------------")
-            self.parse_products(row)
-        return
-
-    def parse_products(self, row):
-        print(row)
-
-        taxes_id = self.env["account.tax"].search([("description", "=", row[6]), ])
-        print("taxes_id", taxes_id.name)
-        if taxes_id:
-            taxes_id = [(6, 0, [taxes_id.id])]
-        else:
-            taxes_id = [(6, 0, [])]
-
-        supplier_taxes_id = self.env["account.tax"].search([("description", "=", row[7]), ])
-        print("supplier_taxes_id", supplier_taxes_id.name)
-        if supplier_taxes_id:
-            supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
-        else:
-            supplier_taxes_id = [(6, 0, [])]
-
-        product = self.env["product.template"].search([("default_code", "=", row[0]),])
-
-        if not product:
-            print("Producto No existe-------------------------------")
-            self.env["product.template"].create({
-                "default_code": row[0],
-                "name": row[2],
-                "list_price": row[4],
-                "standard_price": row[5],
-                "taxes_id": taxes_id,
-                "supplier_taxes_id": supplier_taxes_id,
-                "detailed_type": "product",
-            })
-        else:
-            print("Producto existe-------------------------------")
-            product.sudo().write({
-                "name": row[2],
-                "list_price": row[4],
-                "standard_price": row[5],
-                "taxes_id": taxes_id,
-                "supplier_taxes_id": supplier_taxes_id,
-            })
-
-    def _import_agentes(self, data_file_agentes):
-        try:
-            csv_data = reader(StringIO(data_file_agentes.decode("utf-8")))
-        except Exception:
-            raise UserError(_("Can not read the file"))
-
-        for row in csv_data:
-            # self.parse_agentes(row)
-            print("--------------------AGENTES--------------------------")
-        return
-
-    # def parse_agentes(self, row):
-    #     agente = self.env["res.partner"].search([("ref", "=", row[0]), ])
-    #     if agente:
-    #         agente.write({
-    #             "name": row[1],
-    #             'email': row[10],
-    #             'display_name': row[1],
-    #             'is_company': 0,
-    #             'active': 1,
-    #             'customer_rank': 0,
-    #             'supplier_rank': 0,
-    #             'agent':1,
+    # def _import_category(self, data_file_category):
+    #     try:
+    #         if data_file_category:
+    #             csv_data = reader(StringIO(data_file_category.decode("utf-8")))
+    #     except Exception:
+    #         raise UserError(_("Can not read the file"))
+    #
+    #     for row in csv_data:
+    #         print("--------------------CATEGORY--------------------------")
+    #         # self.parse_categories(row)
+    #     return
+    #
+    # # def parse_categories(self, row):
+    # #     category = self.env["product.category"].search([("name", "=", row[0]),])
+    # #     if not category:
+    # #         self.env["product.category"].create({
+    # #             "name": row[0],
+    # #             "parent_id" : 1,
+    # #         })
+    #
+    # def _import_product(self, data_file_product):
+    #     try:
+    #         csv_data = reader(StringIO(data_file_product.decode("utf-8")))
+    #     except Exception:
+    #         raise UserError(_("Can not read the file"))
+    #
+    #     for row in csv_data:
+    #         print("--------------------PRODUCT--------------------------")
+    #         self.parse_products(row)
+    #     return
+    #
+    # def parse_products(self, row):
+    #     print(row)
+    #
+    #     taxes_id = self.env["account.tax"].search([("description", "=", row[6]), ])
+    #     print("taxes_id", taxes_id.name)
+    #     if taxes_id:
+    #         taxes_id = [(6, 0, [taxes_id.id])]
+    #     else:
+    #         taxes_id = [(6, 0, [])]
+    #
+    #     supplier_taxes_id = self.env["account.tax"].search([("description", "=", row[7]), ])
+    #     print("supplier_taxes_id", supplier_taxes_id.name)
+    #     if supplier_taxes_id:
+    #         supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
+    #     else:
+    #         supplier_taxes_id = [(6, 0, [])]
+    #
+    #     product = self.env["product.template"].search([("default_code", "=", row[0]),])
+    #
+    #     if not product:
+    #         print("Producto No existe-------------------------------")
+    #         self.env["product.template"].create({
+    #             "default_code": row[0],
+    #             "name": row[2],
+    #             "list_price": row[4],
+    #             "standard_price": row[5],
+    #             "taxes_id": taxes_id,
+    #             "supplier_taxes_id": supplier_taxes_id,
+    #             "detailed_type": "product",
     #         })
     #     else:
-    #         self.env["res.partner"].create({
-    #             "ref": row[0],
-    #             "name": row[1],
-    #             'email': row[10],
-    #             'display_name': row[1],
-    #             'is_company': 0,
-    #             'active': 1,
-    #             'customer_rank': 0,
-    #             'supplier_rank': 0,
-    #             'agent':1,
+    #         print("Producto existe-------------------------------")
+    #         product.sudo().write({
+    #             "name": row[2],
+    #             "list_price": row[4],
+    #             "standard_price": row[5],
+    #             "taxes_id": taxes_id,
+    #             "supplier_taxes_id": supplier_taxes_id,
     #         })
+    #
+    # # def _import_agentes(self, data_file_agentes):
+    # #     try:
+    # #         if data_file_agentes:
+    # #             csv_data = reader(StringIO(data_file_agentes.decode("utf-8")))
+    # #     except Exception:
+    # #         raise UserError(_("Can not read the file"))
+    # #
+    # #     for row in csv_data:
+    # #         print("--------------------AGENTES--------------------------")
+    # #         # self.parse_agentes(row)
+    # #     return
+    #
+    # # def parse_agentes(self, row):
+    # #     agente = self.env["res.partner"].search([("ref", "=", row[0]), ])
+    # #     if agente:
+    # #         agente.write({
+    # #             "name": row[1],
+    # #             'email': row[10],
+    # #             'display_name': row[1],
+    # #             'is_company': 0,
+    # #             'active': 1,
+    # #             'customer_rank': 0,
+    # #             'supplier_rank': 0,
+    # #             'agent':1,
+    # #         })
+    # #     else:
+    # #         self.env["res.partner"].create({
+    # #             "ref": row[0],
+    # #             "name": row[1],
+    # #             'email': row[10],
+    # #             'display_name': row[1],
+    # #             'is_company': 0,
+    # #             'active': 1,
+    # #             'customer_rank': 0,
+    # #             'supplier_rank': 0,
+    # #             'agent':1,
+    # #         })
