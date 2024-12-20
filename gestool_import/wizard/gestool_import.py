@@ -155,7 +155,7 @@ class GestoolImport(models.TransientModel):
     #     if state_id:
     #         state_id = state_id.id
     #
-        agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
+        agent_id = self.env[("res.users")].search([("name", "=", row[23]), ])
         if agent_id:
             agent_id = agent_id.id
         else:
