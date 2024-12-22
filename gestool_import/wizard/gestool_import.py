@@ -31,6 +31,13 @@ class GestoolImport(models.TransientModel):
     )
     filename_partner = fields.Char()
 
+    data_file_bank = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename_bank = fields.Char()
+
     data_file_atypical = fields.Binary(
         string="File to Import",
         required=False,
@@ -65,6 +72,11 @@ class GestoolImport(models.TransientModel):
             data_file_partner = b64decode(self.data_file_partner)
             if data_file_partner:
                 self._import_partner(data_file_partner)
+
+        if self.data_file_bank:
+            data_file_bank = b64decode(self.data_file_bank)
+            if data_file_bank:
+                self._import_bank(data_file_bank)
 
         if self.data_file_atypical:
             data_file_atypical = b64decode(self.data_file_atypical)
@@ -198,6 +210,39 @@ class GestoolImport(models.TransientModel):
     #             'country_id': 68,
     #             # 'agent_ids': agent_id,
     #         })
+
+    def _import_bank(self, data_file_bank):
+        try:
+            if data_file_bank:
+                csv_data = reader(StringIO(data_file_bank.decode("utf-8")))
+        except Exception:
+            raise UserError(_("Can not read the file"))
+
+        for row in csv_data:
+            print("--------------------Banco de cliente--------------------------")
+            self.parse_bank(row)
+        return
+
+    def parse_bank(self, row):
+        partner = self.env["res.partner"].search([("name", "=", row[5]), ])
+        acc_bank = self.env["res.partner.bank"].search([("acc_number", "=", row[0]), ])
+
+        print("/////////Bancos//////////")
+        print("acc_number", row[0])
+        print("sanitized_acc_number:", row[1])
+        print('partner', row[5])
+
+        if partner:
+            if acc_bank:
+                print("Cuenta de cliente ya existe")
+            else:
+                self.env["res.partner.bank"].sudo().create({
+                    "acc_number": row[0],
+                    "sanitized_acc_number": row[1],
+                    'partner_id': partner.id,
+                })
+        else:
+            print("Cliente no existe")
 
     # def _import_category(self, data_file_category):
     #     try:

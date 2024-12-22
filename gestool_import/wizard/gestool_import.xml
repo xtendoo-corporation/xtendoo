@@ -26,6 +26,15 @@
                 />
                 <field name="filename_partner" invisible="1" />
                 <br/>
+                <h5>Seleccione fichero de bancos de Clientes/Proveedores</h5>
+                <!--clientes-->
+                <field
+                    name="data_file_bank"
+                    filename="filename_bank"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_bank" invisible="1" />
+                <br/>
                 <h5>Seleccione fichero de Tarifas Atípicas</h5>
                 <!--Atipicas de clientes-->
                 <field
