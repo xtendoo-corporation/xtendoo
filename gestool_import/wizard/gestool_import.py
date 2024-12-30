@@ -81,7 +81,7 @@ class GestoolImport(models.TransientModel):
         if self.data_file_atypical:
             data_file_atypical = b64decode(self.data_file_atypical)
             if data_file_atypical:
-                self._import_atypica(data_file_atypical)
+                self._import_atypical(data_file_atypical)
 
         # if self.data_file_category:
         #     data_file_category = b64decode(self.data_file_category)
@@ -112,6 +112,8 @@ class GestoolImport(models.TransientModel):
 
         print("Cliente", row[0])
         print("Articulo", row[1])
+        print("Precio", row[2])
+        print("Descuento", row[3])
 
         if product:
             if partner:
