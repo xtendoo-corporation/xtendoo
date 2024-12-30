@@ -5,8 +5,6 @@ from io import StringIO
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from odoo.custom.src.odoo.odoo.tools import float_is_zero
-
 _logger = logging.getLogger(__name__)
 
 try:
