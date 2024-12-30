@@ -127,7 +127,7 @@ class GestoolImport(models.TransientModel):
                         "name": partner.name,
                     })
 
-                if row[2]:
+                if int(row[2]) > 0:
                     # Metemos las lineas de las tarifas
                     self.env["product.pricelist.item"].sudo().create({
                         "pricelist_id": headpricelist.id,
@@ -136,10 +136,9 @@ class GestoolImport(models.TransientModel):
                         'compute_price': "fixed",
                         'fixed_price': row[2],
                     })
+                    print("creado por precio")
 
-                print("creado por precio")
-
-                if row[3]:
+                if int(row[3]) > 0:
                     # Metemos las lineas de las tarifas
                     self.env["product.pricelist.item"].sudo().create({
                         "pricelist_id": headpricelist.id,
@@ -148,8 +147,7 @@ class GestoolImport(models.TransientModel):
                         'compute_price': "percentage",
                         'percent_price': row[3],
                     })
-
-                print("creado por descuento")
+                    print("creado por descuento")
 
                 # La aplicamos al cliente
                 partner.sudo().write({
