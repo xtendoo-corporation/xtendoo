@@ -5,6 +5,8 @@ from io import StringIO
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from odoo.custom.src.odoo.odoo.tools import float_is_zero
+
 _logger = logging.getLogger(__name__)
 
 try:
@@ -127,7 +129,7 @@ class GestoolImport(models.TransientModel):
                         "name": partner.name,
                     })
 
-                if int(row[2]) > 0:
+                if float(row[2]) > 0:
                     # Metemos las lineas de las tarifas
                     self.env["product.pricelist.item"].sudo().create({
                         "pricelist_id": headpricelist.id,
@@ -138,7 +140,7 @@ class GestoolImport(models.TransientModel):
                     })
                     print("creado por precio")
 
-                if int(row[3]) > 0:
+                if float(row[3]) > 0:
                     # Metemos las lineas de las tarifas
                     self.env["product.pricelist.item"].sudo().create({
                         "pricelist_id": headpricelist.id,
