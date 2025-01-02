@@ -113,7 +113,7 @@ class GestoolImport(models.TransientModel):
         print("Cliente", row[0])
         print("Articulo", row[1])
         print("Precio", row[2])
-        print("Descuento", row[3])
+        #print("Descuento", row[3])
 
         if product:
             if partner:
@@ -138,7 +138,7 @@ class GestoolImport(models.TransientModel):
                     })
                     print("creado por precio")
 
-                if row[3] != "0.000":
+                if len(row) > 3 and row[3] != "0.000":
                     # Metemos las lineas de las tarifas
                     self.env["product.pricelist.item"].sudo().create({
                         "pricelist_id": headpricelist.id,
