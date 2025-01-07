@@ -194,22 +194,28 @@ class GestoolImport(models.TransientModel):
         else:
             pago_id = ""
 
+        ruta_id = self.env[("partner.delivery.zone")].search([("name", "=", row[26]), ])
+        if ruta_id:
+            ruta_id = ruta_id.id
+        else:
+            ruta_id = ""
+
         print("/////////CLIENTE//////////")
         print("partner", partner)
         print("nombre:", row[1])
         # print('agent', row[23])
         # print('agent_id', agent_id)
-        print('Ref', row[24])
-        print('Pago', row[21])
-        print('Pago id', pago_id)
+        print('ruta', row[26])
+        print('ruta_id', ruta_id)
 
         if partner:
             print("Entro a modificar")
             partner.sudo().write({
                 # 'user_id': agent_id,
                 # 'user_id': agent_id,
-                "ref": row[24],
-                "property_payment_term_id": pago_id,
+                # "ref": row[24],
+                # "property_payment_term_id": pago_id,
+                "delivery_zone_id": ruta_id,
             })
     #     else:
     #         self.env["res.partner"].sudo().create({
