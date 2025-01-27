@@ -229,22 +229,54 @@
                                             name="account_invoice_line_name"
                                             style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
                                         >
-                                            <t
-                                                t-set="productName"
-                                                t-value="line.name"
-                                            />
-                                            <t
-                                                t-set="name_num"
-                                                t-value="productName.find(']') + 1 "
-                                            />
-                                            <t
-                                                t-set="name"
-                                                t-value="productName[name_num:]"
-                                            />
-                                            <span
-                                                t-esc="name"
-                                                t-options="{'widget': 'text'}"
-                                            />
+                                            <t t-if="line.product_id">
+                                                 <t
+                                                    t-set="productName"
+                                                    t-value="line.name"
+                                                />
+                                                 <t
+                                                    t-set="productName"
+                                                    t-value="line.name"
+                                                />
+                                                <t
+                                                    t-set="name_num"
+                                                    t-value="productName.find(']') + 1 "
+                                                />
+                                                <t
+                                                    t-set="name"
+                                                    t-value="productName[name_num:]"
+                                                />
+                                                <span
+                                                    t-esc="name"
+                                                    t-options="{'widget': 'text'}"
+                                                />
+                                            </t>
+                                            <t t-else="">
+                                                <t
+                                                    t-set="name"
+                                                    t-value=""
+                                                />
+                                                     <span
+                                                    t-esc="name"
+                                                    t-options="{'widget': 'text'}"
+                                                />
+                                            </t>
+<!--                                            <t-->
+<!--                                                t-set="productName"-->
+<!--                                                t-value="line.name"-->
+<!--                                            />-->
+<!--                                            <t-->
+<!--                                                t-set="name_num"-->
+<!--                                                t-value="productName.find(']') + 1 "-->
+<!--                                            />-->
+<!--                                            <t-->
+<!--                                                t-set="name"-->
+<!--                                                t-value="productName[name_num:]"-->
+<!--                                            />-->
+<!--                                            <span-->
+<!--                                                t-esc="name"-->
+<!--                                                t-options="{'widget': 'text'}"-->
+<!--                                            />-->
                                         </td>
                                         <td
                                             class="text-end"
