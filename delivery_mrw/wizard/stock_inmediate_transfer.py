@@ -1,12 +1,30 @@
 # Copyright 2022 ForgeFlow, S.L.
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-from odoo import fields, models
+from odoo import fields, models, api
 
 
 class StockImmediateTransfer(models.TransientModel):
     _inherit = "stock.immediate.transfer"
 
     mrw_to_address = fields.Html("Address sent to MRW", readonly=True)
+
+    number_of_packages = fields.Integer(
+        string="Number of Packages",
+        compute="_compute_number_of_packages",
+        readonly=False,
+        store=True,
+        default=0,
+        copy=False,
+    )
+
+    ask_number_of_packages = fields.Boolean(compute="_compute_ask_number_of_packages")
+
+    @api.depends("pick_ids.package_ids")
+    def _compute_number_of_packages(self):
+        for record in self:
+            for picking in record.pick_ids:
+                if picking.package_ids:
+                    picking.number_of_packages = len(picking.package_ids)
 
     def default_get(self, fields):
         res = super().default_get(fields)
