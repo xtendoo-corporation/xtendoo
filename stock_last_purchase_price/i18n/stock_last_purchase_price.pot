@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-17 08:08+0000\n"
-"PO-Revision-Date: 2025-02-17 08:08+0000\n"
+"POT-Creation-Date: 2025-02-17 08:07+0000\n"
+"PO-Revision-Date: 2025-02-17 08:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,32 +18,32 @@ msgstr ""
 #. module: stock_last_purchase_price
 #: model:ir.model.fields.selection,name:stock_last_purchase_price.selection__product_category__property_cost_method__average
 msgid "Average Cost (AVCO)"
-msgstr "Coste promedio (AVCO)"
+msgstr ""
 
 #. module: stock_last_purchase_price
 #: model:ir.model.fields,field_description:stock_last_purchase_price.field_product_category__property_cost_method
 msgid "Costing Method"
-msgstr "Método de coste"
+msgstr ""
 
 #. module: stock_last_purchase_price
 #: model:ir.model.fields.selection,name:stock_last_purchase_price.selection__product_category__property_cost_method__fifo
 msgid "First In First Out (FIFO)"
-msgstr "Primeras entradas, primeras salidas (FIFO)"
+msgstr ""
 
 #. module: stock_last_purchase_price
 #: model:ir.model.fields.selection,name:stock_last_purchase_price.selection__product_category__property_cost_method__last
 msgid "Last Purchase Price"
-msgstr "Último precio de compra"
+msgstr ""
 
 #. module: stock_last_purchase_price
 #: model:ir.model,name:stock_last_purchase_price.model_product_category
 msgid "Product Category"
-msgstr "Categoría de producto"
+msgstr ""
 
 #. module: stock_last_purchase_price
 #: model:ir.model.fields.selection,name:stock_last_purchase_price.selection__product_category__property_cost_method__standard
 msgid "Standard Price"
-msgstr "Precio estándar"
+msgstr ""
 
 #. module: stock_last_purchase_price
 #: model:ir.model.fields,help:stock_last_purchase_price.field_product_category__property_cost_method
@@ -57,12 +57,8 @@ msgid ""
 "            on the product will updated automatically with last purchase \n"
 "            price."
 msgstr ""
-"Precio estándar: Los productos se valoran según su coste estándar definido en el producto.\n"
-"        Coste promedio (AVCO): Los productos se valoran según su coste promedio ponderado\n"
-"        Primeras entradas, primeras salidas (FIFO): Los productos se valoran dando por hecho que los primeros en entrar en la empresa son también los primeros en salir.\n"
-"        "
 
 #. module: stock_last_purchase_price
 #: model:ir.model,name:stock_last_purchase_price.model_stock_move
 msgid "Stock Move"
-msgstr "Movimiento de stock"
+msgstr ""
