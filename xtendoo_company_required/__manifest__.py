@@ -4,11 +4,16 @@
     'category': 'Extra Tools',
     'author': 'Manuel Calero Solis (Xtendoo)',
     'website': '',
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'summary': 'Xtendoo Company Required',
     'images': [],
     'depends': [
         'product',
+    ],
+    "data": [
+        "views/product_category.xml",
+        "views/product_template_view.xml",
+        "security/ir_rule.xml",
     ],
     'application': True,
     'installable': True,
