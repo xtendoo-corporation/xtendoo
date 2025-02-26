@@ -15,8 +15,8 @@ class PosCategory(models.Model):
     parent_id = fields.Many2one(check_company=True)
     # child_id = fields.One2many(check_company=True)
 
-    # @api.model
-    # def _search(self, domain, *args, **kwargs):
-    #     if "company_id" not in (item[0] for item in domain):
-    #         domain += [("company_id", "in", self.env.user.company_ids.ids)]
-    #     return super()._search(domain, *args, **kwargs)
+    @api.model
+    def _search(self, domain, *args, **kwargs):
+        if "company_id" not in (item[0] for item in domain):
+            domain += [("company_id", "in", self.env.user.company_ids.ids)]
+        return super()._search(domain, *args, **kwargs)
