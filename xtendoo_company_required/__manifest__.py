@@ -9,11 +9,12 @@
     'images': [],
     'depends': [
         'product',
+        'point_of_sale',
     ],
     "data": [
-        "views/product_category.xml",
-        "views/product_template_view.xml",
         "views/pos_category_view.xml",
+        "views/product_category_view.xml",
+        "views/product_template_view.xml",
         "security/ir_rule.xml",
     ],
     'application': True,

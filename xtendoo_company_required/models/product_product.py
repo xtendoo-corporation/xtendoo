@@ -8,5 +8,5 @@ class ProductProduct(models.Model):
         comodel_name='res.company',
         string='Company',
         required=True,
-        default=lambda self: self.env.company
+        default=lambda self: self.env.company,
     )
