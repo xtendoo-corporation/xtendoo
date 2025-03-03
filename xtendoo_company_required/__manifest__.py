@@ -12,10 +12,7 @@
         'point_of_sale',
     ],
     "data": [
-        "views/pos_category_view.xml",
-        "views/product_category_view.xml",
         "views/product_template_view.xml",
-        "security/ir_rule.xml",
     ],
     'application': True,
     'installable': True,
