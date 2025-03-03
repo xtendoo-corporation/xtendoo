@@ -11,9 +11,6 @@
         'product',
         'point_of_sale',
     ],
-    "data": [
-        "views/product_template_view.xml",
-    ],
     'application': True,
     'installable': True,
     'auto_install': False,

@@ -5,10 +5,6 @@
         <field name="inherit_id" ref="product.product_category_form_view" />
         <field name="arch" type="xml">
             <xpath expr="//group[@name='first']" position="inside">
-                <!--
-                    We will move the parent_id and company_id field into this div
-                    later.
-                -->
                 <div name="parent_row" />
             </xpath>
         </field>
@@ -22,11 +18,6 @@
             ref="product.product_category_form_view"
         />
         <field name="arch" type="xml">
-            <!--
-                This xpath expression doesn't work when inheriting from the
-                product module, so we create a second record inheriting from our
-                own module.
-            -->
             <xpath expr="//div[@name='parent_row']" position="inside">
                 <field name="parent_id" position="move" />
             </xpath>
