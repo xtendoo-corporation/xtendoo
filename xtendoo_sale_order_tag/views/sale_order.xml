@@ -11,6 +11,7 @@
             <field name="partner_id" position="before">
                 <field
                     name="so_tag_ids"
+                    string="Etiqueta del pedido de venta"
                     options="{'color_field': 'color'}"
                     widget="many2many_tags"
                 />
@@ -28,6 +29,7 @@
                     name="so_tag_ids"
                     placeholder="tag..."
                     widget="many2many_tags"
+                    string="Etiqueta del pedido de venta"
                     options="{'color_field': 'color'}"
                     domain="['|',('team_ids', 'in', team_id), ('team_ids', '=', False)]"
                 />
@@ -40,7 +42,7 @@
         <field name="inherit_id" ref="sale.view_sales_order_filter" />
         <field name="arch" type="xml">
             <field name='order_line' position="after">
-                <field name="so_tag_ids" />
+                <field name="so_tag_ids" string="Etiqueta del pedido de venta"/>
             </field>
         </field>
     </record>
