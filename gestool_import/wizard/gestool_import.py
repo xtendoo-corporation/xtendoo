@@ -340,7 +340,9 @@ class GestoolImport(models.TransientModel):
             category_id = 1
 
         pos_categ_ids = self.env["pos.category"].search([("name", "ilike", row[6])], limit=1)
-        if not pos_categ_ids:
+        if pos_categ_ids:
+            pos_categ_ids = [(6, 0, [pos_categ_ids.id])]
+        else:
             print("POS no encontrada", row[6])
             pos_categ_ids = [(6, 0, [])]
 
@@ -348,6 +350,7 @@ class GestoolImport(models.TransientModel):
         print("supplier_taxes_id", supplier_taxes_id)
         print("category_id", category_id)
         print("company_id", company_id)
+        print("pos_categ_ids", pos_categ_ids)
 
         product = self.env["product.template"].search([("default_code", "=", row[0]), ])
         if not product:
