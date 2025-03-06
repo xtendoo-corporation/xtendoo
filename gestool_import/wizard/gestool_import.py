@@ -339,11 +339,10 @@ class GestoolImport(models.TransientModel):
             print("categoria no encontrada", row[6])
             category_id = 1
 
-        pos_categ_ids = self.env["pos.category"].search([("name", "ilike", row[6])], limit=1)
+        pos_categ_ids = self._get_or_create_pos_category(row[6])
         if pos_categ_ids:
             pos_categ_ids = [(6, 0, [pos_categ_ids.id])]
         else:
-            print("POS no encontrada", row[6])
             pos_categ_ids = [(6, 0, [])]
 
         print("taxes_id", taxes_id)
@@ -386,6 +385,14 @@ class GestoolImport(models.TransientModel):
                 "available_in_pos": True,
                 "pos_categ_ids": pos_categ_ids,
             })
+
+    def _get_or_create_pos_category(self, name):
+        pos_category = self.env["pos.category"].search([("name", "ilike", name)])
+        if not pos_category:
+            pos_category = self.env["pos.category"].create({
+                "name": name,
+            })
+        return pos_category
 
     # # def _import_agentes(self, data_file_agentes):
     # #     try:
