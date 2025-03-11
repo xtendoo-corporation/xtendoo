@@ -26,35 +26,35 @@ class GestoolImport(models.TransientModel):
     # filename_agentes = fields.Char()
 
     data_file_partner = fields.Binary(
-        string="File to Import",
+        string="Partners to Import",
         required=False,
         help="Get you data from Gestool.",
     )
     filename_partner = fields.Char()
 
     data_file_bank = fields.Binary(
-        string="File to Import",
+        string="Banks to Import",
         required=False,
         help="Get you data from Gestool.",
     )
     filename_bank = fields.Char()
 
     data_file_atypical = fields.Binary(
-        string="File to Import",
+        string="Atypical to Import",
         required=False,
         help="Get you data from Gestool.",
     )
     filename_atypical = fields.Char()
 
     data_file_category = fields.Binary(
-        string="File to Import",
+        string="Category to Import",
         required=False,
         help="Get you data from Gestool.",
     )
     filename_category = fields.Char()
 
     data_file_product = fields.Binary(
-        string="File to Import",
+        string="Product to Import",
         required=False,
         help="Get you data from Gestool.",
     )
