@@ -1,0 +1,12 @@
+<odoo>
+    <record id="contract_line_form_view_inherited" model="ir.ui.view">
+        <field name="name">contract.line form view inherited</field>
+        <field name="model">contract.line</field>
+        <field name="inherit_id" ref="contract.contract_line_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='last_date_invoiced']" position="attributes">
+                <attribute name="readonly">0</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
