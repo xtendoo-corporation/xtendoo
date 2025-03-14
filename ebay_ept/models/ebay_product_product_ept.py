@@ -389,13 +389,13 @@ class EbayProductProductEpt(models.Model):
         :param instance: eBay instance object
         :return: dictionary of product ids
         Migration done by Haresh Mori @ Emipro on date 3 January 2022 .
-        # Deduct 5 hours from the below date for not skip any product in stock update time purpose.
+        # Deduct 1 day from the below date for not skip any product in stock update time purpose.
         """
         instance_export_date = instance.last_inventory_export_date
         if not instance_export_date:
             instance_export_date = datetime.today() - timedelta(days=365)
         else:
-            instance_export_date = instance_export_date - timedelta(hours=5)
+            instance_export_date = instance_export_date - timedelta(days=1)
         company_id = instance.warehouse_id.company_id
         product_ids = self.env['product.product'].get_products_based_on_movement_date_ept(instance_export_date,
                                                                                           company_id)

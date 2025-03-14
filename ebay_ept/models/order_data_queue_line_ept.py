@@ -113,9 +113,9 @@ class EbayOrderDataQueueLineEpt(models.Model):
         ebay_import_order_queue_obj = self.env["ebay.order.data.queue.ept"]
         query = """select queue.id from ebay_order_data_queue_line_ept as queue_line
                         inner join ebay_order_data_queue_ept as queue on queue_line.ebay_order_data_queue_id = queue.id
-                        where queue_line.state='draft' and queue.is_action_require = 'False'
+                        where queue_line.state=%s and queue.is_action_require = %s
                         ORDER BY queue_line.create_date ASC"""
-        self._cr.execute(query)
+        self._cr.execute(query, ('draft', 'False'))
         order_data_queue_list = self._cr.fetchall()
         for result in order_data_queue_list:
             order_queue_ids.append(result[0])
@@ -160,9 +160,9 @@ class EbayOrderDataQueueLineEpt(models.Model):
         queue_id = self.ebay_order_data_queue_id
         if queue_id:
             seller_id = queue_id.seller_id
-            self.env.cr.execute(
-                """update ebay_order_data_queue_ept set is_process_queue = False
-                where is_process_queue = True and id = %s""", (queue_id.id,))
+            qry = """update ebay_order_data_queue_ept set is_process_queue = False
+                where is_process_queue = True and id = %s"""
+            self._cr.execute(qry, (queue_id.id,))
             self._cr.commit()
             for order_queue_line in self:
                 sale_order_obj.create_ebay_sales_order_ept(seller_id, order_queue_line, queue_id)

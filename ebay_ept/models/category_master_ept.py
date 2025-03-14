@@ -415,7 +415,9 @@ class EbayCategoryMasterEpt(models.Model):
         if not instance and self.instance_id:
             instance = self.instance_id
         if not instance:
-            instance = self.env['ebay.instance.ept'].search([('site_id', '=', self.site_id.id)], limit=1)
+            instance = self.env['ebay.instance.ept'].search(
+                [('site_id', '=', self.site_id.id), ('seller_id', '=', self.instance_id.seller_id.id)], limit=1)
+
         if self.ebay_category_id and instance:
             category_results = self.get_item_conditions_api(instance)
             if category_results:

@@ -37,7 +37,8 @@ class EbayInstanceEpt(models.Model):
     seller_id = fields.Many2one('ebay.seller.ept', string='eBay sellers')
     warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse')
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist')
-    fiscal_position_id = fields.Many2one('account.fiscal.position',string='Fiscal Position')  # Added by Tushal Nimavat on 23/06/2022
+    fiscal_position_id = fields.Many2one('account.fiscal.position',
+                                         string='Fiscal Position')  # Added by Tushal Nimavat on 23/06/2022
     lang_id = fields.Many2one('res.lang', string='Language')
     auto_workflow_id = fields.Many2one('sale.workflow.process.ept', string='Auto Workflow')
     country_id = fields.Many2one("res.country", "Country")
@@ -121,19 +122,16 @@ class EbayInstanceEpt(models.Model):
         :return:
         """
         for instance in self:
-            self._cr.execute(
-                "SELECT count(*) AS row_count FROM sale_order WHERE "
-                "state not in ('draft','sent','cancel') and ebay_instance_id = %s", (instance.id,))
+            qry = "SELECT count(*) AS row_count FROM sale_order WHERE state not in ('draft','sent','cancel') and ebay_instance_id = %s"
+            self._cr.execute(qry, (instance.id,))
             instance.sale_order_count = self._cr.fetchall()[0][0]
 
-            self._cr.execute(
-                "SELECT count(*) AS row_count FROM account_move WHERE "
-                "ebay_instance_id = %s and state='posted' and move_type='out_invoice'", (instance.id,))
+            qry = "SELECT count(*) AS row_count FROM account_move WHERE ebay_instance_id = %s and state='posted' and move_type='out_invoice'"
+            self._cr.execute(qry, (instance.id,))
             instance.invoice_count = self._cr.fetchall()[0][0]
 
-            self._cr.execute(
-                "SELECT count(*) AS row_count FROM stock_picking WHERE "
-                "ebay_instance_id = %s", (instance.id,))
+            qry = "SELECT count(*) AS row_count FROM stock_picking WHERE ebay_instance_id = %s"
+            self._cr.execute(qry, (instance.id,))
             instance.delivery_order_count = self._cr.fetchall()[0][0]
 
     def _compute_kanban_ebay_order_data(self):
@@ -186,7 +184,7 @@ class EbayInstanceEpt(models.Model):
         """
 
         def get_current_week_date(record):
-            self._cr.execute("""SELECT to_char(date(d.day),'DAY'), t.amount_untaxed as sum
+            qry = """SELECT to_char(date(d.day),'DAY'), t.amount_untaxed as sum
                                 FROM  (
                                    SELECT day
                                    FROM generate_series(date(date_trunc('week', (current_date)))
@@ -202,11 +200,12 @@ class EbayInstanceEpt(models.Model):
                                    AND ebay_instance_id=%s and state in ('sale','done')
                                    GROUP  BY 1
                                    ) t USING (day)
-                                ORDER  BY day""" % record.id)
+                                ORDER  BY day"""
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def graph_of_current_month(record):
-            self._cr.execute("""select EXTRACT(DAY from date(date_day)) :: integer,sum(amount_untaxed) from (
+            qry = """select EXTRACT(DAY from date(date_day)) :: integer,sum(amount_untaxed) from (
                         SELECT 
                           day::date as date_day,
                           0 as amount_untaxed
@@ -224,11 +223,12 @@ class EbayInstanceEpt(models.Model):
                         group by 1
                         )foo 
                         GROUP  BY 1
-                        ORDER  BY 1""" % record.id)
+                        ORDER  BY 1"""
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def graph_of_current_year(record):
-            self._cr.execute("""select TRIM(TO_CHAR(DATE_TRUNC('month',month),'MONTH')),sum(amount_untaxed) from
+            qry = """select TRIM(TO_CHAR(DATE_TRUNC('month',month),'MONTH')),sum(amount_untaxed) from
                                 (SELECT DATE_TRUNC('month',date(day)) as month,
                                   0 as amount_untaxed
                                 FROM generate_series(date(date_trunc('year', (current_date)))
@@ -246,14 +246,16 @@ class EbayInstanceEpt(models.Model):
                                 order by month
                                 )foo 
                                 GROUP  BY foo.month
-                                order by foo.month""" % record.id)
+                                order by foo.month"""
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def graph_of_all_time(record):
-            self._cr.execute("""select TRIM(TO_CHAR(DATE_TRUNC('month',date_order),'YYYY-MM')),sum(amount_untaxed)
+            qry = """select TRIM(TO_CHAR(DATE_TRUNC('month',date_order),'YYYY-MM')),sum(amount_untaxed)
                                 from sale_order where ebay_instance_id = %s and state in ('sale','done')
                                 group by DATE_TRUNC('month',date_order) 
-                                order by DATE_TRUNC('month',date_order)""" % record.id)
+                                order by DATE_TRUNC('month',date_order)"""
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         # Prepare values for Graph
@@ -283,19 +285,21 @@ class EbayInstanceEpt(models.Model):
             current_total = 0.0
             previous_total = 0.0
             day_of_week = date.weekday(date.today())
-            self._cr.execute("""select sum(amount_untaxed) as current_week from sale_order
+            qry = """select sum(amount_untaxed) as current_week from sale_order
                                 where date(date_order) >= (select date_trunc('week', date(current_date))) and
-                                ebay_instance_id=%s and state in ('sale','done')""" % record.id)
+                                ebay_instance_id=%s and state in ('sale','done')"""
+            self._cr.execute(qry, (record.id,))
             current_week_data = self._cr.dictfetchone()
             if current_week_data:
                 current_total = current_week_data.get('current_week') if current_week_data.get('current_week') else 0
             # Previous week data
-            self._cr.execute("""select sum(amount_untaxed) as previous_week from sale_order
+            qry = """select sum(amount_untaxed) as previous_week from sale_order
                             where date(date_order) between (select date_trunc('week', current_date) - interval '7 day') 
                             and (select date_trunc('week', (select date_trunc('week', current_date) - interval '7
                             day')) + interval '%s day')
                             and ebay_instance_id=%s and state in ('sale','done')
-                            """ % (day_of_week, record.id))
+                            """
+            self._cr.execute(qry, (day_of_week, record.id,))
             previous_week_data = self._cr.dictfetchone()
             if previous_week_data:
                 previous_total = previous_week_data.get('previous_week') if previous_week_data.get(
@@ -306,19 +310,21 @@ class EbayInstanceEpt(models.Model):
             current_total = 0.0
             previous_total = 0.0
             day_of_month = date.today().day - 1
-            self._cr.execute("""select sum(amount_untaxed) as current_month from sale_order
+            qry = """select sum(amount_untaxed) as current_month from sale_order
                                 where date(date_order) >= (select date_trunc('month', date(current_date)))
-                                and ebay_instance_id=%s and state in ('sale','done')""" % record.id)
+                                and ebay_instance_id=%s and state in ('sale','done')"""
+            self._cr.execute(qry, (record.id,))
             current_data = self._cr.dictfetchone()
             if current_data:
                 current_total = current_data.get('current_month') if current_data.get('current_month') else 0
             # Previous week data
-            self._cr.execute("""select sum(amount_untaxed) as previous_month from sale_order where date(date_order)
+            qry = """select sum(amount_untaxed) as previous_month from sale_order where date(date_order)
                             between (select date_trunc('month', current_date) - interval '1 month') and
                             (select date_trunc('month', (select date_trunc('month', current_date) - interval
                             '1 month')) + interval '%s days')
                             and ebay_instance_id=%s and state in ('sale','done')
-                            """ % (day_of_month, record.id))
+                            """
+            self._cr.execute(qry, (day_of_month, record.id,))
             previous_data = self._cr.dictfetchone()
             if previous_data:
                 previous_total = previous_data.get('previous_month') if previous_data.get('previous_month') else 0
@@ -330,18 +336,20 @@ class EbayInstanceEpt(models.Model):
             year_begin = date.today().replace(month=1, day=1)
             year_end = date.today()
             delta = (year_end - year_begin).days - 1
-            self._cr.execute("""select sum(amount_untaxed) as current_year from sale_order
+            qry = """select sum(amount_untaxed) as current_year from sale_order
                                 where date(date_order) >= (select date_trunc('year', date(current_date)))
-                                and ebay_instance_id=%s and state in ('sale','done')""" % record.id)
+                                and ebay_instance_id=%s and state in ('sale','done')"""
+            self._cr.execute(qry, (record.id,))
             current_data = self._cr.dictfetchone()
             if current_data:
                 current_total = current_data.get('current_year') if current_data.get('current_year') else 0
             # Previous week data
-            self._cr.execute("""select sum(amount_untaxed) as previous_year from sale_order where date(date_order)
+            qry = """select sum(amount_untaxed) as previous_year from sale_order where date(date_order)
                             between (select date_trunc('year', date(current_date) - interval '1 year')) and 
                             (select date_trunc('year', date(current_date) - interval '1 year') + interval '%s days') 
                             and ebay_instance_id=%s and state in ('sale','done')
-                            """ % (delta, record.id))
+                            """
+            self._cr.execute(qry, (delta, record.id,))
             previous_data = self._cr.dictfetchone()
             if previous_data:
                 previous_total = previous_data.get('previous_year') if previous_data.get('previous_year') else 0
@@ -374,33 +382,34 @@ class EbayInstanceEpt(models.Model):
         """
 
         def orders_of_current_week(record):
-            self._cr.execute("""select id from sale_order where date(date_order)
+            qry = """select id from sale_order where date(date_order)
                                 >= (select date_trunc('week', date(current_date)))
                                 and ebay_instance_id= %s and state in ('sale','done')
                                 order by date(date_order)
-                        """ % record.id)
+                        """
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def orders_of_current_month(record):
-            self._cr.execute("""select id from sale_order where date(date_order) >=
+            qry = """select id from sale_order where date(date_order) >=
                                 (select date_trunc('month', date(current_date)))
                                 and ebay_instance_id= %s and state in ('sale','done')
                                 order by date(date_order)
-                        """ % record.id)
+                        """
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def orders_of_current_year(record):
-            self._cr.execute("""select id from sale_order where date(date_order) >=
+            qry = """select id from sale_order where date(date_order) >=
                                 (select date_trunc('year', date(current_date))) 
                                 and ebay_instance_id= %s and state in ('sale','done')
                                 order by date(date_order)"""
-                             % record.id)
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def orders_of_all_time(record):
-            self._cr.execute(
-                """select id from sale_order where ebay_instance_id = %s and state in ('sale','done')""" % (
-                    record.id))
+            qry = """select id from sale_order where ebay_instance_id = %s and state in ('sale','done')"""
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         order_data = {}
@@ -430,25 +439,25 @@ class EbayInstanceEpt(models.Model):
                              inner join sale_order so on so.procurement_group_id=sp.group_id inner 
                              join stock_location on stock_location.id=sp.location_dest_id and stock_location.usage='customer' 
                              where sp.updated_in_ebay = True and sp.state != 'cancel' and 
-                             so.ebay_instance_id=%s""" % record.id
+                             so.ebay_instance_id=%s"""
 
         def shipped_order_of_current_week(shipped_query):
             qry = shipped_query + " and date(so.date_order) >= (select date_trunc('week', date(current_date)))"
-            self._cr.execute(qry)
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def shipped_order_of_current_month(shipped_query):
             qry = shipped_query + " and date(so.date_order) >= (select date_trunc('month', date(current_date)))"
-            self._cr.execute(qry)
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def shipped_order_of_current_year(shipped_query):
             qry = shipped_query + " and date(so.date_order) >= (select date_trunc('year', date(current_date)))"
-            self._cr.execute(qry)
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def shipped_order_of_all_time(shipped_query):
-            self._cr.execute(shipped_query)
+            self._cr.execute(shipped_query, (record.id,))
             return self._cr.dictfetchall()
 
         order_data = {}
@@ -475,8 +484,9 @@ class EbayInstanceEpt(models.Model):
         :return: total number of eBay products ids and action for products
         """
         product_data = {}
-        self._cr.execute("""select count(id) as total_count from ebay_product_template_ept where
-                        exported_in_ebay = True and instance_id = %s""" % record.id)
+        qry = """select count(id) as total_count from ebay_product_template_ept where
+                        exported_in_ebay = True and instance_id = %s"""
+        self._cr.execute(qry, (record.id,))
         result = self._cr.dictfetchall()
         if result:
             total_count = result[0].get('total_count')
@@ -509,25 +519,25 @@ class EbayInstanceEpt(models.Model):
         refund_data = {}
         refund_ids = []
         refund_query = """select id from account_move where ebay_instance_id=%s and
-                            move_type='out_refund'""" % record.id
+                            move_type='out_refund'"""
 
         def refund_of_current_week(refund_query):
             qry = refund_query + " and date(invoice_date) >= (select date_trunc('week', date(current_date)))"
-            self._cr.execute(qry)
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def refund_of_current_month(refund_query):
             qry = refund_query + " and date(invoice_date) >= (select date_trunc('month', date(current_date)))"
-            self._cr.execute(qry)
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def refund_of_current_year(refund_query):
             qry = refund_query + " and date(invoice_date) >= (select date_trunc('year', date(current_date)))"
-            self._cr.execute(qry)
+            self._cr.execute(qry, (record.id,))
             return self._cr.dictfetchall()
 
         def refund_of_all_time(refund_query):
-            self._cr.execute(refund_query)
+            self._cr.execute(refund_query, (record.id,))
             return self._cr.dictfetchall()
 
         refund_data = {}

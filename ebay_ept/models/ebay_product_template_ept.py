@@ -259,11 +259,13 @@ class EbayProductTemplateEpt(models.Model):
         """
         product_tmpl_id = []
         if operator == '!=':
-            self._cr.execute("""SELECT ebay_product_tmpl_id from ebay_product_listing_ept WHERE state = 'Active'""")
+            qry = """SELECT ebay_product_tmpl_id from ebay_product_listing_ept WHERE state = %s"""
+            self._cr.execute(qry, ('Active',))
             ebay_product_templates = self._cr.dictfetchall()
         elif operator == '=':
-            self._cr.execute("""SELECT distinct ebay_product_tmpl_id from ebay_product_listing_ept WHERE state = 'Ended'
-            except (SELECT distinct ebay_product_tmpl_id from ebay_product_listing_ept WHERE state = 'Active')""")
+            qry = """SELECT distinct ebay_product_tmpl_id from ebay_product_listing_ept WHERE state = %s
+            except (SELECT distinct ebay_product_tmpl_id from ebay_product_listing_ept WHERE state = %s)"""
+            self._cr.execute(qry, ('Ended', 'Active'))
             ebay_product_templates = self._cr.dictfetchall()
         for ebay_product_template in ebay_product_templates:
             product_tmpl_id.append(ebay_product_template.get('ebay_product_tmpl_id'))
@@ -457,6 +459,7 @@ class EbayProductTemplateEpt(models.Model):
         ebay_seller_shipping_policy = ebay_product_template.ebay_seller_shipping_policy_id
         ebay_seller_payment_policy = ebay_product_template.ebay_seller_payment_policy_id
         ebay_seller_return_policy = ebay_product_template.ebay_seller_return_policy_id
+
         if ebay_seller_payment_policy or ebay_seller_return_policy or ebay_seller_shipping_policy:
             sub_dict.update({'SellerProfiles': {}})
             if ebay_seller_payment_policy:
@@ -724,14 +727,26 @@ class EbayProductTemplateEpt(models.Model):
             try:
                 results = self.call_add_or_update_items_api(add_items, instance, 'AddItems')
             except Exception as error:
-                raise UserError(_(str(error.response.dict())))
-                # log_line = log_line_obj.create_common_log_line_ept(message=str(error.response.dict()),
-                #                                                    module='ebay_ept', ebay_instance_id=instance.id,
-                #                                                    ebay_product_tmpl_id=ebay_product_template.id,
-                #                                                    model_name='ebay.product.template.ept',
-                #                                                    log_line_type='fail', mismatch=False)
-                # log_line.message_post(body='Prepare dictionary data for export product:  ' + str(product_dict))
-                # return False
+                _logger.info(error)
+                error_dict = error.response.dict()
+                list_of_error = []
+                if type(error_dict.get('AddItemResponseContainer').get('Errors')) != list:
+                    list_of_error.append(error_dict.get('AddItemResponseContainer').get('Errors'))
+                else:
+                    list_of_error = error_dict.get('AddItemResponseContainer').get('Errors')
+
+                error_messages = []
+
+                for error_item in list_of_error:
+                    if error_item.get('LongMessage'):
+                        long_message = error_item.get('LongMessage')
+                        error_code = error_item.get('ErrorCode')
+                        if error_code not in [msg.split(',')[0].strip().split(':')[1].strip() for msg in
+                                              error_messages]:
+                            error_messages.append('Error Code : ' + error_code + ' , Error Message : ' + long_message)
+                if error_messages:
+                    raise UserError("\n".join(error_messages))
+
             if not results:
                 results = {}
             if results.get('Ack', False) in ["Success", "Warning"]:
@@ -809,16 +824,30 @@ class EbayProductTemplateEpt(models.Model):
         try:
             result = trading_api.execute('AddFixedPriceItem', product_dict)
         except Exception as error:
+            _logger.info(error)
             result = trading_api.response
+            # trading_api.response.dict()
+            error_dict = trading_api.response.dict()
+            list_of_error = []
+            if type(error_dict.get('Errors')) != list:
+                list_of_error.append(error_dict.get('Errors'))
+            else:
+                list_of_error = error_dict.get('Errors')
+
+            error_messages = []
+
+            for error_item in list_of_error:
+                if error_item.get('LongMessage'):
+                    long_message = error_item.get('LongMessage')
+                    error_code = error_item.get('ErrorCode')
+                    if error_code not in [msg.split(',')[0].strip().split(':')[1].strip() for msg in error_messages]:
+                        error_messages.append('Error Code : ' + error_code + ' , Error Message : ' + long_message)
+            if error_messages:
+                raise UserError("\n".join(error_messages))
+
             if result.dict().get('Ack') not in ["Success", "Warning"]:
                 raise UserError(_(str(error)))
-                # log_line = log_line_obj.create_common_log_line_ept(message=str(error),
-                #                                                    module='ebay_ept', ebay_instance_id=instance.id,
-                #                                                    ebay_product_tmpl_id=ebay_product_template.id,
-                #                                                    model_name='ebay.product.template.ept',
-                #                                                    log_line_type='fail', mismatch=False)
-                # log_line.message_post(body='Prepare dictionary data for export product:  ' + str(product_dict))
-                # return False
+
         if result.dict().get('Ack') in ["Success", "Warning"]:
             self.create_ebay_product_listing(instance, result.dict(), ebay_product_template, 'FixedPriceItem')
             ebay_product_template.write({'exported_in_ebay': True})

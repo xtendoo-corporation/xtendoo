@@ -175,9 +175,11 @@ class EbayOrderDataQueueEpt(models.Model):
         if shipped_order_to_date:
             to_date = shipped_order_to_date.strftime(ebay_date_time_format)
         else:
-            to_date = seller.get_ebay_official_time()
+            # to_date = seller.get_ebay_official_time()
+            to_date = datetime.now().strftime(ebay_date_time_format)
         if shipped_order_from_date:
-            current_date = seller.get_ebay_official_time()
+            #current_date = seller.get_ebay_official_time()
+            current_date = shipped_order_from_date.strftime(ebay_date_time_format)
             max_allow_time = datetime.strptime(current_date, ebay_date_time_format) - timedelta(days=90)
             max_allow_date = max_allow_time.strftime(ebay_date_time_format)
             from_date = shipped_order_from_date.strftime(ebay_date_time_format)

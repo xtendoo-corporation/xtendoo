@@ -92,9 +92,10 @@ class EbayProductListingEpt(models.Model):
                         time_remaining = time_split[0]
                     locate = time_remaining
                     locate_first = locate[0]
-                if locate_first == '-':
+                if locate_first == '-' and cur_record.listing_duration != 'GTC':
                     cur_record.state = 'Ended'
-                    self._cr.execute("UPDATE ebay_product_listing_ept SET state='Ended' where id=%d" % cur_record.id)
+                    qry = "UPDATE ebay_product_listing_ept SET state='Ended' where id=%d"
+                    self._cr.execute(qry, (cur_record.id,))
                     self._cr.commit()
             cur_record.time_remain_function = locate
 
@@ -595,7 +596,7 @@ class EbayProductListingEpt(models.Model):
         :return: product product object
         """
         product_product_obj = self.env[_PRODUCT_PRODUCT]
-        return product_product_obj.search([('default_code', '=', sku)],limit=1)
+        return product_product_obj.search([('default_code', '=', sku)], limit=1)
 
     def search_ebay_product_template(self, odoo_product_tmpl_id, instance_id):
         """
@@ -624,11 +625,12 @@ class EbayProductListingEpt(models.Model):
         """
         ebay_product_template_obj = self.env[_EBAY_PRODUCT_TEMPLATE_EPT]
         ebay_product_tmpl_id = self.search_ebay_product_template(odoo_product_tmpl_id, instance_id)
+        prod_tmpl_vals = {'name': item_title, 'instance_id': instance_id, 'exported_in_ebay': True,
+                          'description': item_description, 'product_tmpl_id': odoo_product_tmpl_id}
         if not ebay_product_tmpl_id:
-            prod_tmpl_vals = {'name': item_title, 'instance_id': instance_id, 'exported_in_ebay': True,
-                              'description': item_description, 'product_tmpl_id': odoo_product_tmpl_id
-                              }
             ebay_product_tmpl_id = ebay_product_template_obj.create(prod_tmpl_vals)
+        else:
+            ebay_product_tmpl_id.write(prod_tmpl_vals)
         return ebay_product_tmpl_id
 
     def create_ebay_product_listing(self, instance, item, ebay_product):
@@ -666,6 +668,8 @@ class EbayProductListingEpt(models.Model):
         """
         for variant in odoo_product_variant_ids:
             ebay_product_variant = self.search_ebay_product_by_product_id(variant.id, instance.id)
+            if ebay_product_tmpl_id:
+                ebay_product_variant.write({'ebay_product_tmpl_id': ebay_product_tmpl_id})
             if not ebay_product_variant and variant.default_code == sku:
                 ebay_product_id = self.create_ebay_product(
                     variant, ebay_product_tmpl_id, instance.id, item.get('Description'))
@@ -710,6 +714,7 @@ class EbayProductListingEpt(models.Model):
         item_id = item.get('ItemID')
         item_dict = self.get_item_listing(instance, item_id)
         _logger.info("Start the variation process of itemid: %s" % item_id)
+        ebay_product_tmpl_id = False
         for variation in variations:
             sku = variation.get('SKU')
             if not sku:
@@ -734,9 +739,10 @@ class EbayProductListingEpt(models.Model):
             if odoo_product:
                 self.sync_product_stock_price(item, product_queue_line.is_sync_stock, product_queue_line.is_sync_price,
                                               instance, sku)
-                ebay_product_tmpl_id = self.search_or_create_ebay_product_template(odoo_product.product_tmpl_id.id,
-                                                                                   instance.id, item.get('Title'),
-                                                                                   item.get('Description'))
+                if not ebay_product_tmpl_id:
+                    ebay_product_tmpl_id = self.search_or_create_ebay_product_template(odoo_product.product_tmpl_id.id,
+                                                                                       instance.id, item.get('Title'),
+                                                                                       item.get('Description'))
                 listing = self.search_or_create_ebay_product(instance, item,
                                                              odoo_product.product_tmpl_id.product_variant_ids, sku,
                                                              ebay_product_tmpl_id.id, listing)
@@ -782,6 +788,10 @@ class EbayProductListingEpt(models.Model):
         """
         try:
             listing = self.create_ebay_product_listing(instance, item, ebay_product)
+            if listing.id and listing.state == 'Active':
+                listing.ebay_product_tmpl_id.exported_in_ebay = True
+                listing.ebay_variant_id.exported_in_ebay = True
+
             _logger.info("New listing created: %s" % listing.name)
             if listing:
                 self.update_active_listing_categories(item, listing)
@@ -801,7 +811,8 @@ class EbayProductListingEpt(models.Model):
         log_line_obj = self.env['common.log.lines.ept']
         product_response = json.loads(queue_line.product_data)
         site_name = product_response.get('Site', '')
-        instance = self.env['ebay.instance.ept'].search([('site_id.name', '=', site_name),('seller_id', '=', queue_line.seller_id.id)])
+        instance = self.env['ebay.instance.ept'].search(
+            [('site_id.name', '=', site_name), ('seller_id', '=', queue_line.seller_id.id)])
         if not instance:
             message = "Cannot be able to find eBay instance for site %s!" % site_name
             log_line = log_line_obj.create_common_log_line_ept(message=message, model_name='ebay.product.listing.ept',
@@ -920,6 +931,9 @@ class EbayProductListingEpt(models.Model):
                 self.env.context.update({'is_product_queue_fail': True})
             self.map_odoo_product_with_ebay_product(ebay_product, item, is_create_auto_odoo_product)
             product_listing_id = self.create_ebay_product_listing(instance, item, ebay_product)
+            if product_listing_id.id and product_listing_id['state'] == 'Active':
+                product_listing_id.ebay_product_tmpl_id.write({'exported_in_ebay': True})
+                product_listing_id.ebay_variant_id.write({'exported_in_ebay': True})
             self.sync_product_stock_price(item, product_queue_line.is_sync_stock, is_sync_price, instance, ebay_sku)
             self.update_active_listing_categories(item, product_listing_id)
             self.create_update_seller_policy(item, product_listing_id)

@@ -105,9 +105,9 @@ class SyncImportProductQueueLine(models.Model):
         ebay_import_product_queue_obj = self.env["ebay.import.product.queue"]
         query = """select queue.id from ebay_import_product_queue_line as queue_line
                 inner join ebay_import_product_queue as queue on queue_line.sync_import_product_queue_id = queue.id
-                where queue_line.state='draft' and queue.is_action_require = 'False'
+                where queue_line.state=%s and queue.is_action_require = %s
                 ORDER BY queue_line.create_date ASC"""
-        self._cr.execute(query)
+        self._cr.execute(query, ('draft', 'False'))
         product_data_queue_list = self._cr.fetchall()
         for result in product_data_queue_list:
             product_queue_ids.append(result[0])
@@ -152,9 +152,9 @@ class SyncImportProductQueueLine(models.Model):
         product_listing_obj = self.env['ebay.product.listing.ept']
         queue_id = self.sync_import_product_queue_id
         if queue_id:
-            self.env.cr.execute(
-                """update ebay_import_product_queue set is_process_queue = False
-                where is_process_queue = True and id = %s""", (queue_id.id,))
+            qry = """update ebay_import_product_queue set is_process_queue = False
+                where is_process_queue = True and id = %s"""
+            self._cr.execute(qry, (queue_id.id,))
             self._cr.commit()
             count = 0
             for product_queue_line in self:

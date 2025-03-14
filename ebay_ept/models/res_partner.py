@@ -111,6 +111,10 @@ class ResPartner(models.Model):
         @author: Haresh Mori @Emipro Technologies Pvt. Ltd on date 7 January 2022 .
         Task_id: 180140 - Import Unshipped Orders
         """
+        phone_no = address_info.get('Phone', False)
+        if phone_no == "Invalid Request":
+            phone_no = ''
+
         partner_values = {
             'name': ship_name,
             'street': address_info.get('Street1', False),
@@ -119,7 +123,7 @@ class ResPartner(models.Model):
             'city': address_info.get('CityName', False),
             'state_id': state and state.id or False,
             'country_id': country and country.id or False,
-            'phone': address_info.get('Phone', False),
+            'phone': phone_no,
             'email': email,
             'lang': instance.lang_id.code,
             'ebay_user_email_id': email,

@@ -54,9 +54,9 @@ class SaleOrder(models.Model):
                    and sale_order.ebay_order_id is not null
                    inner join stock_location on stock_location.id=stock_picking.location_dest_id 
                    and (stock_location.usage='customer')
-                   where stock_picking.updated_in_ebay=False and stock_picking.state='done'    
+                   where stock_picking.updated_in_ebay=%s and stock_picking.state=%s    
                  """
-        self._cr.execute(query)
+        self._cr.execute(query, (False, 'done'))
         results = self._cr.fetchall()
         order_ids = []
         for result_tuple in results:
@@ -196,9 +196,9 @@ class SaleOrder(models.Model):
                     ebay_variant_id = listing_record.ebay_variant_id
                     ebay_sku = ebay_variant_id and ebay_variant_id.ebay_sku
             if not ebay_pr_sku or (
-                ebay_pr_sku and (instance.id not in ebay_pr_sku.keys() or
-                                 (instance.id in ebay_pr_sku.keys()
-                                  and ebay_sku not in ebay_pr_sku[instance.id].keys()))):
+                    ebay_pr_sku and (instance.id not in ebay_pr_sku.keys() or
+                                     (instance.id in ebay_pr_sku.keys()
+                                      and ebay_sku not in ebay_pr_sku[instance.id].keys()))):
                 ebay_product, skip_order = self.search_or_create_ebay_product(
                     instance, ebay_sku, order_line, log_book_id, order_ref, order_data_queue_line_id, skip_order)
                 if not skip_order:
@@ -209,7 +209,7 @@ class SaleOrder(models.Model):
         return skip_order
 
     def search_or_create_ebay_product(
-        self, instance, ebay_sku, order_line, log_book_id, order_ref, order_data_queue_line_id, skip_order):
+            self, instance, ebay_sku, order_line, log_book_id, order_ref, order_data_queue_line_id, skip_order):
         """
         Search eBay product. if not found then create eBay product.
         :param instance: eBay instance object
@@ -248,7 +248,7 @@ class SaleOrder(models.Model):
         return ebay_product, skip_order
 
     def search_or_create_odoo_product(
-        self, order_line, ebay_sku, create_new_product, skip_order, instance):
+            self, order_line, ebay_sku, create_new_product, skip_order, instance):
         """
         Search or create Odoo product if it is not exist.
         :param order_line: Order item received from eBay.
@@ -320,7 +320,8 @@ class SaleOrder(models.Model):
             order_values = self.create_ebay_sales_order_values(partner, shipping_partner, order_response, instance)
             order_values.update({'is_ebay_remit_tax': is_ebay_remit_tax})
             if instance.fiscal_position_id:
-                order_values.update({'fiscal_position_id': instance.fiscal_position_id.id})  # Added by Tushal Nimavat on 23/06/2022
+                order_values.update(
+                    {'fiscal_position_id': instance.fiscal_position_id.id})  # Added by Tushal Nimavat on 23/06/2022
             sale_order = self.create(order_values)
             _logger.info("Created sale order: %s and creating sale order line" % sale_order.name)
             order_lines = self.create_ebay_sale_order_lines(order_response, instance, sale_order, order_queue)
@@ -638,7 +639,9 @@ class SaleOrder(models.Model):
             _logger.info("We are processing Sale order '%s' and Picking '%s' for update order status", sale_order.name,
                          picking.name)
             if sale_order.ebay_order_id in updated_ebay_orders:
-                _logger.info("Already updated status on ebay for Sale order '%s' and Picking '%s' for update order status",sale_order.name,picking.name)
+                _logger.info(
+                    "Already updated status on ebay for Sale order '%s' and Picking '%s' for update order status",
+                    sale_order.name, picking.name)
                 picking.write({'updated_in_ebay': True})
                 continue
             order_lines = sale_order.order_line.filtered(lambda ol: ol.product_id.detailed_type != 'service' and
@@ -655,7 +658,8 @@ class SaleOrder(models.Model):
                                                          log_line_type='fail', mismatch=True,
                                                          ebay_instance_id=instance.id)
                 continue
-            for order_line in order_lines.filtered(lambda s: s.product_id.detailed_type != 'service' and s.ebay_order_line_item_id):
+            for order_line in order_lines.filtered(
+                    lambda s: s.product_id.detailed_type != 'service' and s.ebay_order_line_item_id):
                 tracking_dict = self.ebay_prepare_tracking_info(picking, carrier_name, order_line)
                 update_order_parameter = self.prepare_ebay_update_order_parameter_dict(order_line, sale_order,
                                                                                        tracking_dict)
@@ -685,7 +689,7 @@ class SaleOrder(models.Model):
         trading_api = instance.get_trading_api_object()
         for ebay_order_ids in split_every(20, pickings.sale_id.mapped('ebay_order_id')):
             try:
-                trade_api_param = {'OrderIDArray': {'OrderID': list(ebay_order_ids)},'DetailLevel': 'ReturnAll'}
+                trade_api_param = {'OrderIDArray': {'OrderID': list(ebay_order_ids)}, 'DetailLevel': 'ReturnAll'}
                 trading_api.execute('GetOrders', trade_api_param)
                 results = trading_api.response.dict()
                 orders = []
@@ -699,6 +703,7 @@ class SaleOrder(models.Model):
                 if result.get('ShippedTime'):
                     updated_ebay_orders.append(result.get('OrderID'))
         return updated_ebay_orders
+
     def ebay_search_picking_for_update_order_status(self, instance):
         """
         This method is used to search picking for the update order status.
@@ -823,7 +828,7 @@ class SaleOrder(models.Model):
 
             shipping_costs = float(order_line_dict.get('ActualShippingCost', {}).get('value', 0.0))
             if order_response.get('IsMultiLegShipping').lower() == 'true' and order_response.get(
-                'MultiLegShippingDetails'):
+                    'MultiLegShippingDetails'):
                 shipping_costs = float(
                     order_response.get('MultiLegShippingDetails', {}).get('SellerShipmentToLogisticsProvider', {}).get(
                         'ShippingServiceDetails', {}).get('TotalShippingCost', {}).get('value', 0.0))
