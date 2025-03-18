@@ -13,6 +13,7 @@
         'delivery_gls_asm',
     ],
     'data': [
+        "views/stock_picking_views.xml",
     ],
     "installable": True,
     "auto_install": False,
