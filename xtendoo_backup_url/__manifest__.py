@@ -7,7 +7,7 @@
     'description': "Module to get database backup from url",
     'depends': [
         'base',
-        'web'
+        'web',
     ],
     'auto_install': False,
     'installable': True,
