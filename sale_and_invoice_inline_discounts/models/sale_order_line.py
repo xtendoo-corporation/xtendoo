@@ -19,9 +19,8 @@ class SaleOrderLine(models.Model):
             self.sale_inline_discount_ids = self.order_id.partner_id.sale_inline_discount_ids
             self.onchange_sale_inline_discount_ids()
 
-
-    def _prepare_invoice_line(self):
-        res = super()._prepare_invoice_line()
+    def _prepare_invoice_line(self, **kwargs):
+        res = super()._prepare_invoice_line(**kwargs)
         if not res.get('account_inline_discount_ids'):
             res['account_inline_discount_ids'] = self.sale_inline_discount_ids
         return res
