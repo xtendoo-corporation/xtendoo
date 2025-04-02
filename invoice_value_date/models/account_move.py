@@ -19,7 +19,7 @@ class AccountMove(models.Model):
     @api.model
     def create(self, vals):
         res = super(AccountMove, self).create(vals)
-        if vals['type'] == 'out_refund':
+        if vals.get('type') == 'out_refund':
             date = self._get_invoice_date(vals)
         else:
             date = self._get_sale_order_date(vals)
