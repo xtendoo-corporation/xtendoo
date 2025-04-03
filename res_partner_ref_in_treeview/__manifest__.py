@@ -14,7 +14,7 @@
     ],
     'license': 'AGPL-3',
     'data': [
-        'views/view_move_line_tree.xml',
+        'views/res_partner_view.xml',
     ],
     'demo': [],
     'installable': True,
