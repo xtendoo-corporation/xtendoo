@@ -29,15 +29,15 @@ class AccountMove(models.Model):
 
     def _get_sale_order_date(self, vals):
         sale_order_date = None
-        if not vals['invoice_origin']:
+        if not vals.get('invoice_origin'):
             return sale_order_date
-        for origin in vals['invoice_origin'].split(', '):
+        for origin in vals.get('invoice_origin').split(', '):
             sale_order = self.env['sale.order'].search([('name', '=', origin)], limit=1)
             if sale_order and (sale_order_date is None or sale_order.date_order > sale_order_date):
                 sale_order_date = sale_order.date_order
         return sale_order_date
 
     def _get_invoice_date(self, vals):
-        if vals['invoice_date']:
-            return vals['invoice_date']
+        if vals.get('invoice_date'):
+            return vals.get('invoice_date')
         return None
