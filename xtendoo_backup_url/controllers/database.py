@@ -54,7 +54,7 @@ class Database(http.Controller):
 
         return qweb_render('database_manager', d, load)
 
-    @http.route('/web/database/administration', type='http', auth="none")
+    @http.route('/web/database/backupdb', type='http', auth="none")
     def manager(self, **kw):
         if request.db:
             request.env.cr.close()
