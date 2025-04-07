@@ -26,20 +26,20 @@ DBNAME_PATTERN = '^[a-zA-Z0-9][a-zA-Z0-9_.-]+$'
 class Database(http.Controller):
 
     def _render_template(self, **d):
+        templates = {}
+
         d.setdefault('manage', True)
         d['insecure'] = odoo.tools.config.verify_admin_password('admin')
         d['list_db'] = odoo.tools.config['list_db']
         d['langs'] = odoo.service.db.exp_list_lang()
         d['countries'] = odoo.service.db.exp_list_countries()
         d['pattern'] = DBNAME_PATTERN
-        # databases list
+
         try:
             d['databases'] = http.db_list()
             d['incompatible_databases'] = odoo.service.db.list_db_incompatible(d['databases'])
         except odoo.exceptions.AccessDenied:
             d['databases'] = [request.db] if request.db else []
-
-        templates = {}
 
         with file_open("xtendoo_backup_url/static/src/public/database_manager.qweb.html", "r") as fd:
             templates['database_manager'] = fd.read()
