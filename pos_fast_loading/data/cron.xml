@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : <https://store.webkul.com/license.html/> -->
+<odoo>
+	<data>
+		<record id="ir_cron_scheduler_product_cache_notification" model="ir.cron">
+			<field name="name">Sync Product In Backend</field>
+			<field eval="True" name="active" />
+			<field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">12</field>
+            <field name="interval_type">hours</field>
+			<!-- <field name="numbercall">-1</field> -->
+			<field ref="model_mongo_server_config" name="model_id"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_products()</field>
+		</record>
+
+		<record id="ir_cron_scheduler_partner_cache_notification" model="ir.cron">
+			<field name="name">Sync Partners In Backend</field>
+			<field eval="True" name="active" />
+			<field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">12</field>
+            <field name="interval_type">hours</field>
+			<!-- <field name="numbercall">-1</field> -->
+			<field ref="model_mongo_server_config" name="model_id"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_partners()</field>
+		</record>
+    </data>
+</odoo>

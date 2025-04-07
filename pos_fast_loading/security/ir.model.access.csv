@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_model_data_record,model.data.record.manager,model_model_data_record,point_of_sale.group_pos_manager,1,1,1,1
+access_model_data_record_user, mongo.server.config.user ,model_model_data_record,point_of_sale.group_pos_user,1,1,1,0
+access_loyalty_management_user, mongo.server.config ,model_mongo_server_config,point_of_sale.group_pos_user,1,1,1,0
+access_redeem_rule_list_user,mongo.server.config.user,model_mongo_server_config,point_of_sale.group_pos_manager,1,1,1,1
+access_model_common_cache_notification_manager,common.cache.notification,model_common_cache_notification,point_of_sale.group_pos_manager,1,1,1,1
+access_model_common_cache_notification_user, common.cache.notification ,model_common_cache_notification,point_of_sale.group_pos_user,1,1,1,0
+
+
+access_model_pos_fast_loading_message_manager,pos.fast.loading.message,model_pos_fast_loading_message,point_of_sale.group_pos_manager,1,1,1,1
+access_model_pos_fast_loading_message_user, pos.fast.loading.message ,model_pos_fast_loading_message,point_of_sale.group_pos_user,1,1,1,0

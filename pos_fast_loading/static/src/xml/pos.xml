@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : <https://store.webkul.com/license.html/> -->
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_fast_loading.SynchNotificationWidget" owl="1">
+        <div title="Sync" class="oe_status btn btn-light rounded-0 session_update current" style="display:none;float:right" t-on-click="_onClickSessionUpdate">
+            <div class="oe_icon oe_black" style="cursor: pointer;">
+                <i class="fa fa fa-refresh"></i>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="pos_fast_loading.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('status-buttons')]/div[1]" position="before">
+            <SynchNotificationWidget/>
+        </xpath>
+    </t>
+</templates>
