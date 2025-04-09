@@ -5,7 +5,7 @@
         <field name="model">res.users</field>
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='access_rights']/group[3]" position="before">
+            <xpath expr="//page[@name='access_rights']/group" position="before">
                 <group string="Allowed Pricelist">
                     <field name="pricelist_ids"
                            widget="many2many_tags"
