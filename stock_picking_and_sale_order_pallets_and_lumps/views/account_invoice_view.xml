@@ -9,7 +9,7 @@
             <xpath expr="//field[@name='invoice_vendor_bill_id']" position="before">
                 <field name="has_picking" readonly="1" invisible ="1"/>
                 <field name="lumps_number" readonly="1" attrs="{'invisible': [('has_picking', '=', False)]}"/>
-                <field name="palets_number" readonly="1" attrs="{'invisible': [('has_picking', '=', False)]}"/>
+                <field name="pallets_number" readonly="1" attrs="{'invisible': [('has_picking', '=', False)]}"/>
             </xpath>
         </field>
     </record>

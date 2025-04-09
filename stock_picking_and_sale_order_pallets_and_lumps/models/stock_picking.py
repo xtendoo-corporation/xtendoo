@@ -4,14 +4,18 @@
 from odoo import api, fields, models, _
 
 
-class StockPickingBatch(models.Model):
-    _inherit = ["stock.picking"]
+class StockPicking(models.Model):
+    _inherit = "stock.picking"
 
     lumps_number = fields.Integer(
         string="Lumps",
         store=True,
+        default=0,
+        copy=False,
     )
-    palets_number = fields.Integer(
-        string="Palets",
+    pallets_number = fields.Integer(
+        string="Pallets",
         store=True,
+        default=0,
+        copy=False,
     )

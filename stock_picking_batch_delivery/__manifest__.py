@@ -3,7 +3,7 @@
 {
     'name': 'Stock Picking Batch Delivery',
     'summary': """Stock Picking Batch Delivery""",
-    'version': '13.0.1.0.0',
+    'version': '14.0.1.0.0',
     'description': """Stock Picking Batch Delivery""",
     'author': 'DDL',
     'company': 'Xtendoo',
