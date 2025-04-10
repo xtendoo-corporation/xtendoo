@@ -14,4 +14,16 @@
             </field>
         </field>
     </record>
+
+    <!-- Vista de árbol específica para facturas de proveedores -->
+    <record id="view_vendor_bill_tree_inherit" model="ir.ui.view">
+        <field name="name">account.move.supplier.tree.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="last_payment" optional="show"/>
+            </field>
+        </field>
+    </record>
 </odoo>
