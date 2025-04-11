@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <template
+            id="document_format_xtendoo.external_layout_clean"
+            inherit_id="document_format_clean.external_layout_clean_xtendoo">
+             <xpath expr="//div[@class='row mt8']" position="after">
+                 <div class="col-12">
+                      <img
+                    style="width:80%;margin-top:-20px;margin-left:10%;"
+                    src="/document_format_xtendoo/static/src/img/pie_factura_transparente.png"
+                />
+                 </div>
+
+            </xpath>
+        </template>
+    </data>
+</odoo>
