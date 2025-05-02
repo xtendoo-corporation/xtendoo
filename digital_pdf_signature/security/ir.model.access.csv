@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_digital_signature_user,digital.signature.user,model_digital_signature,base.group_user,1,1,1,1
+access_digital_signature_portal,digital.signature.portal,model_digital_signature,base.group_portal,1,0,0,0
+access_sign_pdf_wizard_user,sign.pdf.wizard.user,model_sign_pdf_wizard,base.group_user,1,1,1,0

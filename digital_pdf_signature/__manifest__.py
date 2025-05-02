@@ -10,11 +10,14 @@
     ],
     'data': [
         'security/ir.model.access.csv',
-        'views/views.xml',
+        'views/digital_signature_views.xml',
         'wizards/sign_pdf_wizard.xml',
     ],
     'external_dependencies': {
-        'python': ['endesive', 'PyPDF2'],
+        'python': [
+            'endesive',
+            'PyPDF2',
+        ],
     },
     'installable': True,
     'application': True,

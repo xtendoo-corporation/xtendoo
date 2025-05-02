@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario -->
+    <record id="view_digital_signature_form" model="ir.ui.view">
+        <field name="name">digital.signature.form</field>
+        <field name="model">digital.signature</field>
+        <field name="arch" type="xml">
+            <form string="Firma Digital">
+                <header>
+                    <button name="action_sign_pdf" string="Firmar documento" type="object"
+                        class="oe_highlight" attrs="{'invisible': [('state', '=', 'signed')]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,signed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="certificate_id" options="{'no_create': True}" attrs="{'readonly': [('state', '=', 'signed')]}"/>
+                            <field name="signing_date" readonly="1" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                        </group>
+                        <group>
+                            <field name="original_pdf" filename="original_filename" widget="binary" attrs="{'readonly': [('state', '=', 'signed')]}"/>
+                            <field name="original_filename" invisible="1"/>
+                            <field name="signed_pdf" filename="signed_filename" widget="binary" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                            <field name="signed_filename" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol/lista -->
+    <record id="view_digital_signature_tree" model="ir.ui.view">
+        <field name="name">digital.signature.tree</field>
+        <field name="model">digital.signature</field>
+        <field name="arch" type="xml">
+            <tree string="Firmas Digitales" decoration-info="state == 'draft'" decoration-success="state == 'signed'">
+                <field name="name"/>
+                <field name="original_filename"/>
+                <field name="certificate_id"/>
+                <field name="signing_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de búsqueda -->
+    <record id="view_digital_signature_search" model="ir.ui.view">
+        <field name="name">digital.signature.search</field>
+        <field name="model">digital.signature</field>
+        <field name="arch" type="xml">
+            <search string="Buscar firmas digitales">
+                <field name="name"/>
+                <field name="original_filename"/>
+                <field name="certificate_id"/>
+                <field name="signing_date"/>
+                <filter string="Borradores" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Firmados" name="signed" domain="[('state', '=', 'signed')]"/>
+                <group expand="0" string="Agrupar Por...">
+                    <filter string="Certificado" name="group_by_certificate" context="{'group_by': 'certificate_id'}"/>
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Fecha de firma" name="group_by_date" context="{'group_by': 'signing_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de ventana -->
+    <record id="action_digital_signature" model="ir.actions.act_window">
+        <field name="name">Firmas Digitales</field>
+        <field name="res_model">digital.signature</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_digital_signature_search"/>
+        <field name="context">{'search_default_draft': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree su primera firma digital
+            </p>
+            <p>
+                Firme sus documentos PDF con sus certificados digitales
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú -->
+    <menuitem id="menu_digital_signature"
+              name="Documentos Firmados"
+              action="action_digital_signature"
+              parent="certificate.certificate_root_menu"
+              sequence="20"/>
+</odoo>
