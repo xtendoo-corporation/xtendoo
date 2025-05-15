@@ -43,6 +43,15 @@
                     placeholder="Choose a file to import..."
                 />
                 <field name="filename_atypical" invisible="1" />
+                <br/>
+                <h5>Seleccione fichero de Lista de materiales</h5>
+                <!--Listas de materiales-->
+                <field
+                    name="data_file_kits"
+                    filename="filename_kits"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_kits" invisible="1" />
 <!--                <br/>-->
 <!--                <h5>Seleccione fichero de Categorias</h5>-->
 <!--                &lt;!&ndash;categorias&ndash;&gt;-->
