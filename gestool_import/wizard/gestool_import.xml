@@ -61,6 +61,24 @@
                     placeholder="Choose a file to import..."
                 />
                 <field name="filename_product" invisible="1" />
+                <br/>
+                <h5>Seleccione fichero de tickets</h5>
+                <!--Tickets-->
+                <field
+                    name="data_file_ticket"
+                    filename="filename_ticket"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_ticket" invisible="1" />
+                <br/>
+                <h5>Seleccione fichero de Lista de materiales</h5>
+                <!--Listas de materiales-->
+                <field
+                    name="data_file_kits"
+                    filename="filename_kits"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_kits" invisible="1" />
                 <footer>
                     <button
                         name="import_file"

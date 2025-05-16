@@ -60,6 +60,20 @@ class GestoolImport(models.TransientModel):
     )
     filename_product = fields.Char()
 
+    data_file_ticket = fields.Binary(
+        string="Tickets header to import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename_ticket = fields.Char()
+
+    data_file_kits = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename_kits = fields.Char()
+
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
         self.ensure_one()
@@ -93,6 +107,16 @@ class GestoolImport(models.TransientModel):
             data_file_product = b64decode(self.data_file_product)
             if data_file_product:
                 self._import_product(data_file_product)
+
+        if self.data_file_ticket:
+            data_file_ticket = b64decode(self.data_file_ticket)
+            if data_file_ticket:
+                self._import_ticket(data_file_ticket)
+
+        if self.data_file_kits:
+            data_file_kits = b64decode(self.data_file_kits)
+            if data_file_kits:
+                self._import_kits(data_file_kits)
 
     def _import_atypical(self, data_file_atypical):
         try:
@@ -159,6 +183,54 @@ class GestoolImport(models.TransientModel):
                 print("No existe el partner con código:", row[0])
         else:
             print("No existe el producto con código:", row[1])
+
+    def _import_kits(self, data_file_kits):
+        try:
+            if data_file_kits:
+                csv_data = reader(StringIO(data_file_kits.decode("utf-8")))
+        except Exception:
+            raise UserError(_("Can not read the file"))
+
+        if csv_data:
+            for row in csv_data:
+                print("--------------------Listas de materiales--------------------------")
+                self.parse_kits(row)
+            return
+
+    def parse_kits(self, row):
+
+        print("Compuesto", row[0])
+        print("Componente", row[1])
+        print("Unidades", row[2])
+
+        # Busca el producto compuesto
+        compound = self.env["product.template"].search([("default_code", "=", row[0])], )
+        # Busca el producto componente
+        component = self.env["product.template"].search([("default_code", "=", row[1])], )
+
+        if not compound:
+            print(f"No existe el producto compuesto con código: {row[0]}")
+            return
+
+        if not component:
+            print(f"No existe el producto componente con código: {row[1]}")
+            return
+
+        # Busca o crea la lista de materiales (BOM)
+        bom = self.env["mrp.bom"].search([("product_tmpl_id", "=", compound.id)], limit=1)
+        if not bom:
+            bom = self.env["mrp.bom"].sudo().create({
+                "product_tmpl_id": compound.id,
+                "type": "normal",
+            })
+
+        # Añade el componente a la lista de materiales
+        self.env["mrp.bom.line"].sudo().create({
+            "bom_id": bom.id,
+            "product_id": component.id,
+            "product_qty": row[2],
+        })
+        print(f"Componente añadido a la lista de materiales: {component.name}")
 
     def _import_partner(self, data_file_partner):
         try:
@@ -393,6 +465,33 @@ class GestoolImport(models.TransientModel):
                 "name": name,
             })
         return pos_category
+
+    def _import_ticket(self, data_file_ticket):
+        try:
+            csv_data = reader(StringIO(data_file_ticket_.decode("utf-8")))
+        except Exception:
+            raise UserError(_("Can not read the file"))
+
+        for index, row in enumerate(csv_data):
+            if index >= 1:
+                print("--------------------Tickets--------------------------")
+                print(row)
+                self.parse_ticket_(row)
+        return
+
+    def parse_ticket(self, row):
+
+        print("Ticket-------------------------------")
+
+        partner = self.env["res.partner"].search([("ref", "=", row[9]), ])
+
+        pos_order = self.env["pos.order"].search([("pos_reference", "=", row[3])], limit=1)
+        if not pos_order:
+            self.env["pos.order"].create({
+                "pos_reference": row[3],
+                "partner_id": partner.id,
+                "lines": [],
+            })
 
     # # def _import_agentes(self, data_file_agentes):
     # #     try:
