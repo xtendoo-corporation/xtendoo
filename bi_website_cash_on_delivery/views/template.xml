@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="cod_acquirer_button">
+        <form t-att-action="tx_url" method="post">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            <input type="hidden" name="data_set" t-att-data-action-url="tx_url" data-remove-me=""/>
+            <!--t t-if="return_url"-->
+            <input t-if="return_url" type='hidden' name='return_url' t-att-value='return_url'/>
+            <!--/t-->
+            <input type='hidden' name='reference' t-att-value='reference'/>
+            <input type='hidden' name='amount' t-att-value='amount'/>
+            <input type='hidden' name='currency' t-att-value='currency.name'/>
+        </form>
+    </template>
+
+    <template id="website_product_cod" inherit_id='website_sale.product'>
+        <xpath expr="//div[@id='contact_us_wrapper']" position="before">
+            <t t-foreach="website.get_cod_conf()" t-as='cod'>
+                <t t-if="product.cod_available == True">
+
+                    <p>
+                        <span style="color:green">
+                            <t t-esc='cod.cod_config.cod_msg'/>
+                        </span>
+                    </p>
+                    <p>
+                        <t t-esc='cod.cod_config.cod_poilicy'/>
+                    </p>
+                    <t t-if="cod.cod_config.delivery_date == True">
+                        <p>
+                            This Product will be Delivered within
+                            <t t-esc='cod.cod_config.exp_delivery_interval'/>
+                            days.
+                        </p>
+                    </t>
+                </t>
+
+                <t t-if="product.cod_available == False">
+                    <p>
+                        <span style="color:red">
+                            <t t-esc='cod.cod_config.cod_unavailable_msg'/>
+                        </span>
+                    </p>
+                </t>
+            </t>
+        </xpath>
+        <xpath expr="//div[@id='product_details']/p[last()]" position="replace">
+            <p></p>
+        </xpath>
+    </template>
+
+    <template id="website_product_cod_payment" inherit_id='website_sale.payment'>
+        <xpath expr="//div[@id='address_on_payment']" position="before">
+
+            <t t-set='cod_not' t-value='0'/>
+            <t t-foreach="website.get_cod_conf()" t-as='cod2'>
+                <t t-foreach="website_sale_order.website_order_line" t-as="line">
+                    <t t-if="order.amount_total &gt; cod2.cod_config.max_amt or order.amount_total &lt; cod2.cod_config.min_amt or line.product_id.product_tmpl_id in cod2.cod_config.excl_product or website.get_all_zip() == 'No'">
+                        <t t-set='cod_not' t-value='cod_not + 1'/>
+                    </t>
+                </t>
+            </t>
+            <t t-if="cod_not != 0">
+                <br/>
+                <div class="alert alert-danger">
+                    <t t-foreach="website.get_cod_conf()" t-as='cod_pay'>
+                        <h4>
+                            <t t-esc='cod_pay.cod_config.cod_unavailable_msg_payment'/>
+                        </h4>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+   <template id="custom_payment_method_form_cod" inherit_id="payment.method_form">
+    <xpath expr="//div[contains(@class, 'd-flex') and contains(@class, 'gap-2') and contains(@class, 'flex-grow-1') and contains(@class, 'me-auto')]
+" position="replace">
+       <div class="d-flex gap-2 flex-grow-1 me-auto">
+                        <!-- === Method label === -->
+                        <label t-out="pm_sudo.name"
+                               class="o_payment_option_label mb-0 text-break"
+                               t-attf-for="o_payment_method_{{pm_sudo.id}}"
+                        />
+                        <div class="d-flex flex-nowrap gap-2 mt-1">
+                            <!-- === "Unpublished" icon === -->
+                            <t t-if="is_unpublished" t-call="payment.form_icon">
+                                <t t-set="icon_name" t-value="'eye-slash'"/>
+                                <t t-set="color_name" t-value="'danger'"/>
+                                <t t-set="title" t-value="'Unpublished'"/>
+                            </t>
+                            <!-- === "Test mode" icon === -->
+                            <t t-if="is_test" t-call="payment.form_icon">
+                                <t t-set="icon_name" t-value="'exclamation-triangle'"/>
+                                <t t-set="color_name" t-value="'warning'"/>
+                                <t t-set="title" t-value="'Test mode'"/>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="gap-1 flex-wrap d-flex">
+                        <!-- === Payment method logos === -->
+                        <t t-set="pm_index" t-value="0"/>
+                        <t t-foreach="pms_to_display_sudo" t-as="pm_to_display_sudo">
+                            <t t-if="pm_index &lt; 4" t-call="payment.form_logo">
+                                <t t-set="logo_pm_sudo" t-value="pm_to_display_sudo"/>
+                            </t>
+                            <t t-set="pm_index" t-value="pm_index + 1"/>
+                        </t>
+                    </div>
+    </xpath>
+</template>
+
+
+
+
+</odoo>

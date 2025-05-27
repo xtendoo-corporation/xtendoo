@@ -1,0 +1,544 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* bi_website_cash_on_delivery
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-12-08 07:59+0000\n"
+"PO-Revision-Date: 2022-12-08 13:41+0530\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: fr\n"
+"X-Generator: Poedit 2.3\n"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/cod_payment.py:0
+#, python-format
+msgid "; multiple order found"
+msgstr "; plusieurs commandes trouvées"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/cod_payment.py:0
+#, python-format
+msgid "; no order found"
+msgstr "; aucune commande trouvée"
+
+#. module: bi_website_cash_on_delivery
+#: model:mail.template,body_html:bi_website_cash_on_delivery.confirm_mail
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Hello\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Bonjour\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Cash on Delivery Payment Collection :</strong>"
+msgstr "<strong>Paiement en espèces à la livraison :</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Collection Amount</strong>"
+msgstr "<strong>Montant de la collecte</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Company</strong>"
+msgstr "<strong>Entreprise</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Customer</strong>"
+msgstr "<strong>Client</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Delivery Company/Person</strong>"
+msgstr "<strong>Entreprise/personne de livraison</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Notes</strong>"
+msgstr "<strong>Remarques</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Order Amount</strong>"
+msgstr "<strong>Montant de la commande</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "<strong>Payment Transaction</strong>"
+msgstr "<strong>Transaction de paiement</strong>"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_payment_provider__delivery_fees
+msgid "Add Delivery Fees"
+msgstr "Ajouter des frais de livraison"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_product_product__cod_available
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_product_template__cod_available
+msgid "Allow Cash on Delivery"
+msgstr "Autoriser le paiement à la livraison"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_sale_order__order_cod_available
+msgid "Allow Cash on Delivery For Sale order"
+msgstr "Autoriser le paiement à la livraison pour la commande de vente"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__cod_state
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_form
+msgid "Allow States"
+msgstr "Autoriser les États"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_form
+msgid "Allow ZIP"
+msgstr "Autoriser le code postal"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__cod_zip
+msgid "Allow Zip"
+msgstr "Autoriser le code postal"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__cod_msg
+msgid "COD Availability Alert"
+msgstr "Alerte de disponibilité COD"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.actions.act_window,name:bi_website_cash_on_delivery.action_cod_collection_tree
+msgid "COD Collections"
+msgstr "Collections contre remboursement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__cod_id
+msgid "COD Configuration"
+msgstr "Configuration DCO"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.actions.act_window,name:bi_website_cash_on_delivery.action_cod_collection
+#: model:ir.ui.menu,name:bi_website_cash_on_delivery.menu_cod_collection
+#: model:ir.ui.menu,name:bi_website_cash_on_delivery.menu_cod_collection_main
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.inherit_view_sale_cod_collection
+msgid "COD Payment Collections"
+msgstr "Encaissements de paiement contre remboursement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__cod_poilicy
+msgid "COD Policy"
+msgstr "Politique de remboursement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__cod_unavailable_msg
+msgid "COD Unavailable Message"
+msgstr "Message d'indisponibilité COD"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__cod_unavailable_msg_payment
+msgid "COD Unavailable Message Payment"
+msgstr "COD Indisponible Message Paiement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__excl_product
+msgid "COD Unavailable for the Products"
+msgstr "COD non disponible pour les produits"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields.selection,name:bi_website_cash_on_delivery.selection__cod_payment_collection__state__cancel
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_cod_collection_form
+msgid "Cancel"
+msgstr "Annuler"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/cod_payment.py:0
+#: model:ir.model.fields.selection,name:bi_website_cash_on_delivery.selection__payment_provider__code__cod
+#: model:payment.provider,name:bi_website_cash_on_delivery.payment_acquirer_cod
+#, python-format
+msgid "Cash on Delivery"
+msgstr "Paiement à la livraison"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_form
+msgid "Cash on Delivery Applicability"
+msgstr "Paiement à la livraison Applicabilité"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_cod_collection_form
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_cod_collection_tree
+msgid "Cash on Delivery Collection"
+msgstr "Encaissement à la livraison"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_form
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_tree
+msgid "Cash on Delivery Configuration"
+msgstr "Paiement à la livraison Configuration"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_payment_provider__cod_config
+msgid "Cash on Delivery Configuraton"
+msgstr "Configuration du paiement à la livraison"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:payment.provider,pre_msg:bi_website_cash_on_delivery.payment_acquirer_cod
+msgid "Cash on Delivery Payment Method."
+msgstr "Méthode de paiement en espèces à la livraison."
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.actions.report,name:bi_website_cash_on_delivery.action_cod_collections
+msgid "Cash on Delivery Payment Report"
+msgstr "Rapport de paiement contre remboursement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_payment_provider__code
+msgid "Code"
+msgstr "Code"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__collection_amt
+msgid "Collection Amount"
+msgstr "Montant de la collecte"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__company_id
+msgid "Company"
+msgstr "Compagnie"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_cod_collection_form
+msgid "Confirm"
+msgstr "Confirmer"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields.selection,name:bi_website_cash_on_delivery.selection__cod_payment_collection__state__confirm
+msgid "Confirmed"
+msgstr "Confirmé"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__create_uid
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__create_uid
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__create_uid
+msgid "Created by"
+msgstr "Créé par"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__create_date
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__create_date
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__create_date
+msgid "Created on"
+msgstr "Créé sur"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__partner_id
+msgid "Customer"
+msgstr "Client"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__delivery_person_id
+msgid "Delivery Company/Person"
+msgstr "Entreprise/Personne de livraison"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_product_product__delivery_fees
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_product_template__delivery_fees
+msgid "Delivery Fees"
+msgstr "Frais de livraison"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__delivery_date
+msgid "Display Expected Delivery Date"
+msgstr "Afficher la date de livraison prévue"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__display_name
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__display_name
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__display_name
+msgid "Display Name"
+msgstr "Afficher un nom"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields.selection,name:bi_website_cash_on_delivery.selection__cod_payment_collection__state__done
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_cod_collection_form
+msgid "Done"
+msgstr "Fait"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields.selection,name:bi_website_cash_on_delivery.selection__cod_payment_collection__state__draft
+msgid "Draft"
+msgstr "Brouillon"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__exp_delivery_interval
+msgid "Expected Delivery Interval"
+msgstr "Intervalle de livraison prévu"
+
+#. module: bi_website_cash_on_delivery
+#: model:product.template,description_sale:bi_website_cash_on_delivery.product_product_fees
+#: model:product.template,name:bi_website_cash_on_delivery.product_product_fees
+msgid "Extra Fees"
+msgstr "Frais supplémentaires"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.website_product_cod_payment_payment
+msgid "Fees"
+msgstr "Frais"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_form
+msgid "General Configuration"
+msgstr "Paramétrage général"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__id
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__id
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__id
+msgid "ID"
+msgstr "IDENTIFIANT"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_account_move
+msgid "Journal Entry"
+msgstr "Entrée de journal"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config____last_update
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection____last_update
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip____last_update
+msgid "Last Modified on"
+msgstr "Dernière modification le"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__write_uid
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__write_uid
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__write_uid
+msgid "Last Updated by"
+msgstr "Dernière mise à jour par"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__write_date
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__write_date
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__write_date
+msgid "Last Updated on"
+msgstr "Dernière mise à jour le"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.report_cod_collection
+msgid "Logo"
+msgstr "Logo"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__max_amt
+msgid "Maximum Order Amount"
+msgstr "Montant maximal de la commande"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/cash_on_delivery.py:0
+#, python-format
+msgid "Maximum Order Amount Should not be zero"
+msgstr "Le montant maximum de la commande ne doit pas être égal à zéro"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__min_amt
+msgid "Minimum Order Amount"
+msgstr "Montant minimum de commande"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_config__name
+msgid "Name"
+msgstr "Nom"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__notes
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_cod_collection_form
+msgid "Notes"
+msgstr "Notes"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__order_amt
+msgid "Order Amount"
+msgstr "Montant de la commande"
+
+#. module: bi_website_cash_on_delivery
+#: model:mail.template,name:bi_website_cash_on_delivery.confirm_mail
+msgid "Order Confirmed: Send by email"
+msgstr "Commande confirmée : envoyer par e-mail"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_payment_provider
+msgid "Payment Provider"
+msgstr "Fournisseur de paiement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_payment_transaction
+msgid "Payment Transaction"
+msgstr "Transaction"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/cash_on_delivery.py:0
+#, python-format
+msgid "Please Enter Valid Collection Amount."
+msgstr "Veuillez saisir un montant de collecte valide."
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_product_template
+msgid "Product"
+msgstr "Article"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_form
+msgid "Product Configuration"
+msgstr "Configuration du produit"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/account_move.py:0
+#, python-format
+msgid "Register Payment"
+msgstr "Enregistrer le paiement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__sale_order_id
+msgid "Sale Order"
+msgstr "Ordre de vente"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_sale_order
+msgid "Sales Order"
+msgstr "Bon de commande"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.website_product_cod_payment_payment
+msgid "Save my payment details"
+msgstr "Enregistrer mes informations de paiement"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__state
+msgid "State"
+msgstr "État"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.website_product_cod_payment_payment
+msgid "Test Mode"
+msgstr "Mode d'essai"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,help:bi_website_cash_on_delivery.field_payment_provider__code
+msgid "The technical code of this payment provider."
+msgstr "Le code technique de ce fournisseur de paiement."
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.website_product_cod
+msgid "This Product will be Delivered within"
+msgstr "Ce produit sera livré dans"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_cod_payment_collection__transaction_id
+msgid "Transaction"
+msgstr "Transaction"
+
+#. module: bi_website_cash_on_delivery
+#: model:product.template,uom_name:bi_website_cash_on_delivery.product_product_fees
+msgid "Units"
+msgstr "Unités"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.website_product_cod_payment_payment
+msgid "Unpublished"
+msgstr "Inédit"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_website
+msgid "Website"
+msgstr "Site Web"
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.view_website_cod_form
+msgid "Website Product Page Configuration"
+msgstr "Configuration de la page produit du site Web"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/account_move.py:0
+#, python-format
+msgid "You can not register payment because COD payment are still pending."
+msgstr "Vous ne pouvez pas enregistrer de paiement car le paiement COD est toujours en attente."
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:payment.provider,auth_msg:bi_website_cash_on_delivery.payment_acquirer_cod
+msgid "Your payment has been authorized."
+msgstr "Votre paiement a été autorisé."
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:payment.provider,cancel_msg:bi_website_cash_on_delivery.payment_acquirer_cod
+msgid "Your payment has been cancelled."
+msgstr "Votre paiement a été annulé."
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:payment.provider,pending_msg:bi_website_cash_on_delivery.payment_acquirer_cod
+msgid "Your payment has been successfully processed but is waiting for approval."
+msgstr "Votre paiement a été traité avec succès mais est en attente d'approbation."
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:payment.provider,done_msg:bi_website_cash_on_delivery.payment_acquirer_cod
+msgid "Your payment has been successfully processed. Thank you!"
+msgstr "Votre paiement a été traité avec succès. Merci!"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model.fields,field_description:bi_website_cash_on_delivery.field_res_zip__zip_code
+msgid "ZIP"
+msgstr "ZIP"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_cod_config
+msgid "cod.config"
+msgstr ""
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_cod_payment_collection
+msgid "cod.payment.collection"
+msgstr ""
+
+#. module: bi_website_cash_on_delivery
+#: model_terms:ir.ui.view,arch_db:bi_website_cash_on_delivery.website_product_cod
+msgid "days."
+msgstr "journées."
+
+#. module: bi_website_cash_on_delivery
+#: model:mail.template,subject:bi_website_cash_on_delivery.confirm_mail
+msgid "order confirm"
+msgstr "confirmation de commande"
+
+#. module: bi_website_cash_on_delivery
+#. odoo-python
+#: code:addons/bi_website_cash_on_delivery/models/cod_payment.py:0
+#, python-format
+msgid "received data for reference %s"
+msgstr "données reçues pour la référence %s"
+
+#. module: bi_website_cash_on_delivery
+#: model:ir.model,name:bi_website_cash_on_delivery.model_res_zip
+msgid "res.zip"
+msgstr ""
