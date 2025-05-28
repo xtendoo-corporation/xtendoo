@@ -25,17 +25,17 @@ class WebsiteCODPayment(http.Controller):
         acquirer_sudo = tx_sudo.provider_id
         request.env['payment.transaction'].sudo()._handle_notification_data('cod', post)
         return werkzeug.utils.redirect(post.pop('return_url', '/'))
-    
-    
+
+
     @http.route('/shop/payment/cod', type='json', auth="public", methods=['POST'], website=True)
     def codline(self, payment_id, **post):
         return True
-    
+
     @http.route('/shop/payment/default', type='json', auth="public", methods=['POST'], website=True)
-    def payment_default(self, payment_id, **post):      
-        
+    def payment_default(self, payment_id, **post):
+
         cr, uid, context = request.cr, request.uid, request.context
-        
+
         return request.redirect('/shop/payment/validate')
 
 
@@ -85,20 +85,30 @@ class WebsiteCODPayment(WebsiteSale):
             return request.redirect('/shop')
 
         if tx.provider_id.code == 'cod':
-            payment_acquirer_obj = request.env['payment.provider'].sudo().search([('id','=', tx.provider_id.id)]) 
-        
+            payment_acquirer_obj = request.env['payment.provider'].sudo().search([('id','=', tx.provider_id.id)])
+
             product_obj = request.env['product.product']
-            extra_fees_product = request.env['ir.model.data']._xmlid_lookup('bi_website_cash_on_delivery.product_product_fees')[2]
-            product_ids = product_obj.sudo().search([('product_tmpl_id.id', '=', extra_fees_product)])
-            
+            extra_fees_product_id = request.env.ref('bi_website_cash_on_delivery.product_product_fees',
+                                                    raise_if_not_found=False)
+
+            if not extra_fees_product_id:
+                raise UserError("El producto para tarifas extra no está configurado correctamente.")
+
+            product_ids = request.env['product.product'].sudo().search(
+                [('product_tmpl_id', '=', extra_fees_product_id.id)], limit=1
+            )
+
+            if not product_ids:
+                raise UserError("No se encontró un producto asociado a las tarifas extra.")
+
             order_line_obj = request.env['sale.order.line'].sudo().search([])
-            
-            
+
+
             flag = 0
             for i in order_line_obj:
                 if i.product_id.id == product_ids.id and i.order_id.id == order.id:
                     flag = flag + 1
-            
+
             if flag == 0:
                 order_line_obj.sudo().create({
                         'product_id': product_ids.id,
@@ -106,22 +116,21 @@ class WebsiteCODPayment(WebsiteSale):
                         'price_unit': payment_acquirer_obj.delivery_fees,
                         'order_id': order.id,
                         'product_uom':product_ids.uom_id.id,
-                    
-                    })
-                tx.update({
-                    'fees' : payment_acquirer_obj.delivery_fees
-                    })   
 
-            order1 = order.sudo()         
+                    })
+               # tx.update({
+               #     'fees' : payment_acquirer_obj.delivery_fees
+                #    })
+
+            order1 = order.sudo()
 
             order.action_confirm()
             email_act = order.action_quotation_send()
             email_ctx = email_act.get('context', {})
-            order1.with_context(**email_ctx).message_post_with_template(email_ctx.get('default_template_id'))
-            
-            request.website.sale_reset()            
+            #order1.with_context(**email_ctx).message_post_with_template(email_ctx.get('default_template_id'))
 
-        PaymentPostProcessing.remove_transactions(tx)
+            request.website.sale_reset()
+
         return request.redirect('/shop/confirmation')
-                
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:        
+
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

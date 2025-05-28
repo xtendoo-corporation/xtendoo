@@ -66,34 +66,5 @@
 		</xpath>
 	</template>
 
-    <template id="payment_form_debug" inherit_id="payment.form">
-    <xpath expr="//div[@id='o_payment_methods']" position="replace">
-        <div t-if="payment_methods_sudo"
-             id="o_payment_methods"
-             t-att-class="'collapse' if collapse_payment_methods else ''"
-        >
-            <h4 class="fs-6 small text-uppercase fw-bolder">
-                <t t-if="not collapse_payment_methods">Choose a payment method</t>
-                <t t-else="">Other payment methods</t>
-            </h4>
-            <ul class="list-group">
-                <t t-foreach="payment_methods_sudo" t-as="pm_sudo">
-                    <t t-esc="pm_sudo.name"/>
-                    <li name="o_payment_option"
-                        class="list-group-item d-flex flex-column gap-2 py-3 o_outline"
-                    >
-                        <t t-call="payment.method_form">
-                            <t t-set="is_selected"
-                               t-value="pm_sudo.id == selected_method_id"
-                            />
-                        </t>
-                    </li>
-                </t>
-            </ul>
-        </div>
-    </xpath>
-</template>
-
-
 
 </odoo>
