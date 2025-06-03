@@ -98,10 +98,10 @@ class GestoolImport(models.TransientModel):
             if data_file_atypical:
                 self._import_atypical(data_file_atypical)
 
-        # if self.data_file_category:
-        #     data_file_category = b64decode(self.data_file_category)
-        #     if data_file_category:
-        #         self._import_category(data_file_category)
+        if self.data_file_category:
+            data_file_category = b64decode(self.data_file_category)
+            if data_file_category:
+                self._import_category(data_file_category)
 
         if self.data_file_product:
             data_file_product = b64decode(self.data_file_product)
@@ -350,25 +350,32 @@ class GestoolImport(models.TransientModel):
         else:
             print("Cliente no existe")
 
-    # def _import_category(self, data_file_category):
-    #     try:
-    #         if data_file_category:
-    #             csv_data = reader(StringIO(data_file_category.decode("utf-8")))
-    #     except Exception:
-    #         raise UserError(_("Can not read the file"))
-    #
-    #     for row in csv_data:
-    #         print("--------------------CATEGORY--------------------------")
-    #         # self.parse_categories(row)
-    #     return
-    #
-    # # def parse_categories(self, row):
-    # #     category = self.env["product.category"].search([("name", "=", row[0]),])
-    # #     if not category:
-    # #         self.env["product.category"].create({
-    # #             "name": row[0],
-    # #             "parent_id" : 1,
-    # #         })
+    def _import_category(self, data_file_category):
+        try:
+            if data_file_category:
+                csv_data = reader(StringIO(data_file_category.decode("utf-8")))
+        except Exception:
+            raise UserError(_("Can not read the file"))
+
+        for row in csv_data:
+            print("--------------------CATEGORY--------------------------")
+            print(row)
+            self.parse_categories(row)
+        return
+
+    def parse_categories(self, row):
+        category = self.env["product.category"].search([("name", "=", row[0]),])
+        if not category:
+            self.env["product.category"].create({
+                "name": row[0],
+                "parent_id" : 1,
+            })
+
+        pos_category = self.env["pos.category"].search([("name", "=", row[0]),])
+        if not pos_category:
+            self.env["pos.category"].create({
+                "name": row[0],
+            })
 
     def _import_product(self, data_file_product):
         try:
@@ -384,43 +391,40 @@ class GestoolImport(models.TransientModel):
         return
 
     def parse_products(self, row):
-        taxes_id = self.env["account.tax"].search([("description", "ilike", row[4]), ("type_tax_use", "=", "sale")], limit=1)
+        taxes_id = self.env["account.tax"].search([("description", "=", row[6]),])
         if taxes_id:
             taxes_id = [(6, 0, [taxes_id.id])]
-        else:
-            print("impuesto no encontrado", row[4])
-            taxes_id = [(6, 0, [])]
 
-        supplier_taxes_id = self.env["account.tax"].search([("description", "ilike", row[5]), ("type_tax_use", "=", "purchase")], limit=1)
+        supplier_taxes_id = self.env["account.tax"].search([("description", "=", row[7]), ],)
         if supplier_taxes_id:
             supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
         else:
-            print("impuesto no encontrado", row[5])
+            print("impuesto no encontrado", row[7])
             supplier_taxes_id = [(6, 0, [])]
 
-        company_id = self.env["res.company"].search([("name", "=", row[7])])
-        if company_id:
-            company_id = company_id.id
-        else:
-            company_id = self.env.company.id
+        # company_id = self.env["res.company"].search([("name", "=", row[7])])
+        # if company_id:
+        #     company_id = company_id.id
+        # else:
+        #     company_id = self.env.company.id
 
-        category_id = self.env["product.category"].search([("name", "ilike", row[6])], limit=1)
+        category_id = self.env["product.category"].search([("name", "=", row[8])], limit=1)
         if category_id:
             category_id = category_id.id
         else:
-            print("categoria no encontrada", row[6])
+            print("categoria no encontrada", row[8])
             category_id = 1
 
-        pos_categ_ids = self._get_or_create_pos_category(row[6])
-        if pos_categ_ids:
-            pos_categ_ids = [(6, 0, [pos_categ_ids.id])]
+        pos_category = self.env["pos.category"].search([("name", "=", row[8])])
+        if pos_category:
+            pos_categ_ids = [(6, 0, [pos_category.id])]
         else:
             pos_categ_ids = [(6, 0, [])]
 
         print("taxes_id", taxes_id)
         print("supplier_taxes_id", supplier_taxes_id)
         print("category_id", category_id)
-        print("company_id", company_id)
+        # print("company_id", company_id)
         print("pos_categ_ids", pos_categ_ids)
 
         product = self.env["product.template"].search([("default_code", "=", row[0]), ])
@@ -429,14 +433,11 @@ class GestoolImport(models.TransientModel):
             self.env["product.template"].create({
                 "default_code": row[0],
                 "barcode": row[0],
-                "name": row[1],
-                "list_price": row[2],
-                "standard_price": row[3],
-                "taxes_id": taxes_id,
-                "supplier_taxes_id": supplier_taxes_id,
+                "name": row[2],
+                "list_price": row[4],
+                "standard_price": row[5],
                 "type": 'consu',
                 "is_storable": True,
-                "company_id": company_id,
                 "categ_id": category_id,
                 "available_in_pos": True,
                 "pos_categ_ids": pos_categ_ids,
@@ -445,26 +446,19 @@ class GestoolImport(models.TransientModel):
             print("Producto existe-------------------------------")
             product.sudo().write({
                 "barcode": row[0],
-                "name": row[1],
-                "list_price": row[2],
-                "standard_price": row[3],
-                "taxes_id": taxes_id,
-                "supplier_taxes_id": supplier_taxes_id,
+                "name": row[2],
+                "list_price": row[4],
+                "standard_price": row[5],
                 "type": 'consu',
                 "is_storable": True,
-                "company_id": company_id,
                 "categ_id": category_id,
                 "available_in_pos": True,
                 "pos_categ_ids": pos_categ_ids,
             })
+            # "company_id": company_id,
+            # "taxes_id": taxes_id,
+            # "supplier_taxes_id": supplier_taxes_id,
 
-    def _get_or_create_pos_category(self, name):
-        pos_category = self.env["pos.category"].search([("name", "ilike", name)])
-        if not pos_category:
-            pos_category = self.env["pos.category"].create({
-                "name": name,
-            })
-        return pos_category
 
     def _import_ticket(self, data_file_ticket):
         try:
