@@ -251,7 +251,7 @@ class GestoolImport(models.TransientModel):
         if country_id:
             country_id = country_id.id
 
-        state_id = self.env["res.country.state"].search([("name", "=", row[6].capitalize()), ])
+        state_id = self.env["res.country.state"].search([("name", "=", row[6].capitalize()), ("country_id.name", "=", "España")])
         if state_id:
             state_id = state_id.id
 
