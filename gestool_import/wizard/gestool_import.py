@@ -74,6 +74,13 @@ class GestoolImport(models.TransientModel):
     )
     filename_kits = fields.Char()
 
+    data_file_property = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename_property = fields.Char()
+
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
         self.ensure_one()
@@ -117,6 +124,11 @@ class GestoolImport(models.TransientModel):
             data_file_kits = b64decode(self.data_file_kits)
             if data_file_kits:
                 self._import_kits(data_file_kits)
+
+        if self.data_file_property:
+            data_file_property = b64decode(self.data_file_property)
+            if data_file_property:
+                self._import_property(data_file_property)
 
     def _import_atypical(self, data_file_atypical):
         try:
@@ -494,6 +506,39 @@ class GestoolImport(models.TransientModel):
                 "pos_reference": row[3],
                 "partner_id": partner.id,
                 "lines": [],
+            })
+
+    def _import_property(self, data_file_property):
+        try:
+            csv_data = reader(StringIO(data_file_property.decode("utf-8")))
+        except Exception:
+            raise UserError(_("Can not read the file"))
+
+        for index, row in enumerate(csv_data):
+            if index >= 1:
+                print("--------------------Propiedades--------------------------")
+                print(row)
+                self.parse_property(row)
+        return
+
+    def parse_property(self, row):
+
+        print("Propiedades-------------------------------")
+
+        # Crear o buscar el atributo
+        attribute = self.env["product.attribute"].search([("name", "=", row[0])],)
+        if not attribute:
+            attribute = self.env["product.attribute"].create({"name": row[0]})
+
+        # Crear o buscar el valor del atributo
+        value = self.env["product.attribute.value"].search([
+            ("name", "=", row[2]),
+            ("attribute_id", "=", attribute.id)
+        ], )
+        if not value:
+            self.env["product.attribute.value"].create({
+                "name": row[2],
+                "attribute_id": attribute.id,
             })
 
     # # def _import_agentes(self, data_file_agentes):

@@ -79,6 +79,15 @@
                     placeholder="Choose a file to import..."
                 />
                 <field name="filename_kits" invisible="1" />
+                <br/>
+                <h5>Seleccione fichero de propiedades</h5>
+                <!--Propiedades-->
+                <field
+                    name="data_file_property"
+                    filename="filename_property"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_property" invisible="1" />
                 <footer>
                     <button
                         name="import_file"
