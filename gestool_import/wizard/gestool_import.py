@@ -245,77 +245,86 @@ class GestoolImport(models.TransientModel):
         return
 
     def parse_partner(self, row):
-        partner = self.env["res.partner"].search([("name", "=", row[1]), ])
-        #
-        #     # country_id = self.env["res.country"].search([("name", "=", "España", ])
-        #     # if country_id:
-        #     #     country_id = country_id.id
-        #
-        #     state_id = self.env["res.country.state"].search([("name", "=", row[6].capitalize()), ])
-        #     if state_id:
-        #         state_id = state_id.id
-        #
+        partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
+
+        country_id = self.env["res.country"].search([("name", "=", "España", )] )
+        if country_id:
+            country_id = country_id.id
+
+        state_id = self.env["res.country.state"].search([("name", "=", row[6].capitalize()), ])
+        if state_id:
+            state_id = state_id.id
+
         # agent_id = self.env[("res.users")].search([("name", "=", row[23]), ])
         # if agent_id:
         #     agent_id = agent_id.id
         # else:
         #     agent_id = ""
 
-        pago_id = self.env[("account.payment.term")].search([("name", "=", row[21]), ])
-        if pago_id:
-            pago_id = pago_id.id
-        else:
-            pago_id = ""
+        # pago_id = self.env[("account.payment.term")].search([("name", "=", row[21]), ])
+        # if pago_id:
+        #     pago_id = pago_id.id
+        # else:
+        #     pago_id = ""
 
-        ruta_id = self.env[("partner.delivery.zone")].search([("name", "=", row[26]), ])
-        if ruta_id:
-            ruta_id = ruta_id.id
-        else:
-            ruta_id = ""
+        # ruta_id = self.env[("partner.delivery.zone")].search([("name", "=", row[26]), ])
+        # if ruta_id:
+        #     ruta_id = ruta_id.id
+        # else:
+        #     ruta_id = ""
 
         print("/////////CLIENTE//////////")
         print("partner", partner)
         print("nombre:", row[1])
-        # print('agent', row[23])
-        # print('agent_id', agent_id)
-        print('ruta', row[26])
-        print('ruta_id', ruta_id)
 
         if partner:
-            print("Entro a modificar")
             partner.sudo().write({
-                # 'user_id': agent_id,
-                # 'user_id': agent_id,
-                # "ref": row[24],
-                # "property_payment_term_id": pago_id,
-                "delivery_zone_id": ruta_id,
+                "name": row[1],
+                'street': row[3],
+                'city': row[4],
+                'zip': row[5],
+                'phone': row[7],
+                'mobile': row[8],
+                'website': row[9],
+                'email': row[10],
+                'display_name': row[14],
+                'company_name': row[15],
+                'is_company': 1,
+                'active': 1,
+                'comment': row[17],
+                'customer_rank': row[19],
+                'supplier_rank': row[20],
+                'company_id': 1,
+                'lang': "es_ES",
+                'state_id': state_id,
+                'vat': row[2],
+                'country_id': country_id,
             })
 
-    #     else:
-    #         self.env["res.partner"].sudo().create({
-    #             "ref": row[0],
-    #             "name": row[1],
-    #             'street': row[3],
-    #             'city': row[4],
-    #             'zip': row[5],
-    #             'phone': row[7],
-    #             'mobile': row[8],
-    #             'website': row[9],
-    #             'email': row[10],
-    #             'display_name': row[14],
-    #             'company_name': row[15],
-    #             'is_company': 1,
-    #             'active': 1,
-    #             'comment': row[17],
-    #             'customer_rank': row[19],
-    #             'supplier_rank': row[20],
-    #             'company_id': 1,
-    #             'lang': "es_ES",
-    #             'state_id': state_id,
-    #             'vat': row[2],
-    #             'country_id': 68,
-    #             # 'agent_ids': agent_id,
-    #         })
+        else:
+            self.env["res.partner"].sudo().create({
+                "ref": row[0],
+                "name": row[1],
+                'street': row[3],
+                'city': row[4],
+                'zip': row[5],
+                'phone': row[7],
+                'mobile': row[8],
+                'website': row[9],
+                'email': row[10],
+                'display_name': row[14],
+                'company_name': row[15],
+                'is_company': 1,
+                'active': 1,
+                'comment': row[17],
+                'customer_rank': row[19],
+                'supplier_rank': row[20],
+                'company_id': 1,
+                'lang': "es_ES",
+                'state_id': state_id,
+                'vat': row[2],
+                'country_id': country_id,
+            })
 
     def _import_bank(self, data_file_bank):
         try:
