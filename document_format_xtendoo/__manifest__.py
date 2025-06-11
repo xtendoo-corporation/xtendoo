@@ -10,7 +10,7 @@
     "depends": ["document_format_clean"],
     "license": "AGPL-3",
     "data": [
-        "views/layout/external_layout_clean.xml",
+        #"views/layout/external_layout_clean.xml",
         "views/invoice/invoice_document.xml",
     ],
     "demo": [],
