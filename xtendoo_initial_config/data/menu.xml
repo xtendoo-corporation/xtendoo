@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_xtendoo_config_wizard" model="ir.actions.act_window">
+        <field name="name">Asistente de Configuración Xtendoo</field>
+        <field name="res_model">xtendoo.config.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_xtendoo_config_wizard"
+        name="Asistente de Configuración Xtendoo"
+        parent="base.menu_administration"
+        action="action_xtendoo_config_wizard"
+        sequence="100"/>
+</odoo>

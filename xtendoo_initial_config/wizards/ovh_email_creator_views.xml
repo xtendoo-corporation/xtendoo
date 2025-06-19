@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Formulario del wizard -->
+    <record id="view_ovh_email_creator_form" model="ir.ui.view">
+        <field name="name">ovh.email.creator.form</field>
+        <field name="model">ovh.email.creator</field>
+        <field name="arch" type="xml">
+            <form string="Crear cuenta de correo en OVH">
+                <sheet>
+                    <div class="alert alert-info" role="alert" invisible="not validation_url">
+                        <p><strong>IMPORTANTE:</strong> Se ha generado un nuevo Consumer Key.</p>
+                        <p>Para autorizar la aplicación, debes acceder a la siguiente URL:</p>
+                        <field name="validation_url" widget="url" readonly="1"/>
+                    </div>
+                    <field name="account_created" invisible="1"/>
+                    <field name="email_full" invisible="1"/>
+                    <group string="Credenciales API OVH">
+                        <field name="application_key"/>
+                        <field name="application_secret"/>
+                        <field name="endpoint"/>
+                        <field name="domain"/>
+                        <field name="consumer_key"/>
+                    </group>
+                    <group string="Datos de la cuenta de correo">
+                        <field name="email_address" placeholder="usuario"/>
+                        <field name="password" password="True"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_create_email" string="Crear cuenta" type="object" class="btn-primary" />
+                    <button name="action_configure_mail_servers" string="Configurar servidores de correo" type="object" class="btn-success"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción del wizard -->
+    <record id="action_ovh_email_creator" model="ir.actions.act_window">
+        <field name="name">Crear cuenta de correo en OVH</field>
+        <field name="res_model">ovh.email.creator</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Elemento de menú para acceder al wizard -->
+    <menuitem id="menu_ovh_email_creator"
+              name="Crear cuenta de correo OVH"
+              action="action_ovh_email_creator"
+              parent="base.menu_administration"
+              sequence="99"/>
+</odoo>

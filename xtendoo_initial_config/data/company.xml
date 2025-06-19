@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Actualización de los datos de la compañía existente -->
+        <record id="base.main_company" model="res.company">
+            <field name="name">company_name</field>
+            <!-- Aquí puedes añadir más campos según necesites:
+            <field name="street">Calle Ejemplo 123</field>
+            <field name="city">Ciudad Ejemplo</field>
+            <field name="zip">12345</field>
+            <field name="country_id" ref="base.es"/>
+            <field name="email">info@example.com</field>
+            <field name="phone">+34 912345678</field>
+            <field name="vat">ESA12345678</field>
+            -->
+        </record>
+    </data>
+</odoo>
+

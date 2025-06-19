@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_xtendoo_config_wizard_form" model="ir.ui.view">
+        <field name="name">xtendoo.config.wizard.form</field>
+        <field name="model">xtendoo.config.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Asistente de Configuración Inicial">
+                <div class="alert alert-info" role="alert">
+                    <p>Este asistente le ayudará a configurar los aspectos básicos de Odoo.</p>
+                </div>
+                <group>
+                    <field name="summary" readonly="1" widget="html" nolabel="1" invisible="not summary"/>
+                </group>
+                <footer>
+                    <button name="action_apply_config" type="object" string="Aplicar Configuración" class="btn-primary"/>
+                    <button special="cancel" string="Cerrar" class="btn-secondary"/>
+                    <button name="action_start_spanish_tour" type="object" string="Instalar idioma español (Tour)" class="btn-info"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

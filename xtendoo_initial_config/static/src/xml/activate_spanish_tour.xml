@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="xtendoo_initial_config.activate_spanish_button">
+        <button type="button" class="btn btn-primary start_spanish_tour">
+            Instalar idioma español (Tour)
+        </button>
+    </t>
+</templates>
+
