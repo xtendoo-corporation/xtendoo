@@ -14,7 +14,6 @@
                 <footer>
                     <button name="action_apply_config" type="object" string="Aplicar Configuración" class="btn-primary"/>
                     <button special="cancel" string="Cerrar" class="btn-secondary"/>
-                    <button name="action_start_spanish_tour" type="object" string="Instalar idioma español (Tour)" class="btn-info"/>
                 </footer>
             </form>
         </field>

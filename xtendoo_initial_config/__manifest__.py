@@ -26,7 +26,6 @@
         'contacts',
         'stock',
         'l10n_es_toponyms',
-        'web_tour',
     ],
     'data': [
         'data/security.xml',
@@ -37,16 +36,6 @@
         'security/ir.model.access.csv',
         'data/menu.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            'xtendoo_initial_config/static/src/js/activate_spanish_tour.js',
-            'xtendoo_initial_config/static/src/js/activate_spanish_client_action.js',
-        ],
-        'web.assets_qweb': [
-            'xtendoo_initial_config/static/src/xml/activate_spanish_tour.xml',
-            'xtendoo_initial_config/static/src/xml/activate_spanish_tour_action.xml',
-        ],
-    },
     'installable': True,
     'auto_install': False,
     'application': False,
