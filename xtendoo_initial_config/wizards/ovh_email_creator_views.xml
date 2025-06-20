@@ -9,6 +9,7 @@
                 <sheet>
                     <field name="email_full" invisible="1"/>
                     <group string="Datos de la cuenta de correo">
+                        <field name="domain" placeholder="dominio"/>
                         <field name="email_address" placeholder="usuario"/>
                         <field name="password" password="True"/>
                     </group>
