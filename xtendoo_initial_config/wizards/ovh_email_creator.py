@@ -14,25 +14,7 @@ class OvhEmailCreator(models.TransientModel):
                               help='Introduce solo la parte local (antes del @). El dominio se añadirá automáticamente.')
     password = fields.Char(string='Contraseña', required=True)
     domain = fields.Char(string='Dominio', required=True)
-    email_full = fields.Char(string='Email completo', compute='_compute_email_full', store=True)
-    consumer_key = fields.Char(string='Consumer Key', help='Clave de acceso a la API de OVH')
-
-    @api.depends('email_address', 'domain')
-    def _compute_email_full(self):
-        for record in self:
-            if record.email_address and record.domain:
-                record.email_full = f"{record.email_address}@{record.domain}"
-            else:
-                record.email_full = False
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        """Override del método create con soporte para operaciones en batch"""
-        records = super(OvhEmailCreator, self).create(vals_list)
-        for record in records:
-            if not record.consumer_key:
-                record._generate_consumer_key()
-        return records
+    email_full = fields.Char(string='Email completo', store=True)
 
     def _create_smtp_server(self, email_full):
         """Configura el servidor SMTP en Odoo usando la cuenta de correo creada"""
