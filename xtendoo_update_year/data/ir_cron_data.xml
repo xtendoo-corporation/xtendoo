@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Definición del trabajo programado para actualizar la fecha de expiración -->
+        <record id="ir_cron_update_expiration_date" model="ir.cron">
+            <field name="name">Actualizar Fecha de Expiración de Base de Datos</field>
+            <field name="model_id" ref="model_update_expiration_date"/>
+            <field name="state">code</field>
+            <field name="code">model._update_expiration_date()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="nextcall" eval="(datetime.now().replace(hour=1, minute=0, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>
+

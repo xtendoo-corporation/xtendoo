@@ -7,27 +7,13 @@
         <field name="arch" type="xml">
             <form string="Crear cuenta de correo en OVH">
                 <sheet>
-                    <div class="alert alert-info" role="alert" invisible="not validation_url">
-                        <p><strong>IMPORTANTE:</strong> Se ha generado un nuevo Consumer Key.</p>
-                        <p>Para autorizar la aplicación, debes acceder a la siguiente URL:</p>
-                        <field name="validation_url" widget="url" readonly="1"/>
-                    </div>
-                    <field name="account_created" invisible="1"/>
                     <field name="email_full" invisible="1"/>
-                    <group string="Credenciales API OVH">
-                        <field name="application_key"/>
-                        <field name="application_secret"/>
-                        <field name="endpoint"/>
-                        <field name="domain"/>
-                        <field name="consumer_key"/>
-                    </group>
                     <group string="Datos de la cuenta de correo">
                         <field name="email_address" placeholder="usuario"/>
                         <field name="password" password="True"/>
                     </group>
                 </sheet>
                 <footer>
-                    <button name="action_create_email" string="Crear cuenta" type="object" class="btn-primary" />
                     <button name="action_configure_mail_servers" string="Configurar servidores de correo" type="object" class="btn-success"/>
                     <button string="Cancelar" class="btn-secondary" special="cancel"/>
                 </footer>
