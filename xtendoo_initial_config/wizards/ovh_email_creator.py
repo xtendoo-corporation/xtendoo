@@ -16,15 +16,6 @@ class OvhEmailCreator(models.TransientModel):
     domain = fields.Char(string='Dominio', required=True)
     email_full = fields.Char(string='Email completo', compute='_compute_email_full', store=True)
     consumer_key = fields.Char(string='Consumer Key', help='Clave de acceso a la API de OVH')
-    endpoint = fields.Selection([
-        ('ovh-eu', 'OVH Europa'),
-        ('ovh-ca', 'OVH Canadá'),
-        ('ovh-us', 'OVH Estados Unidos'),
-        ('soyoustart-eu', 'SoYouStart Europa'),
-        ('soyoustart-ca', 'SoYouStart Canadá'),
-        ('kimsufi-eu', 'Kimsufi Europa'),
-        ('kimsufi-ca', 'Kimsufi Canadá'),
-    ], string='Endpoint', default='ovh-eu', required=True)
 
     @api.depends('email_address', 'domain')
     def _compute_email_full(self):
@@ -33,23 +24,6 @@ class OvhEmailCreator(models.TransientModel):
                 record.email_full = f"{record.email_address}@{record.domain}"
             else:
                 record.email_full = False
-
-    @api.onchange('domain', 'endpoint')
-    def _onchange_domain_endpoint(self):
-        """Genera un nuevo consumer key si cambia el dominio o el endpoint y no hay uno ya definido"""
-        if not self.consumer_key:
-            self._generate_consumer_key()
-
-    def _generate_consumer_key(self):
-        """Genera un nuevo consumer key para la API de OVH"""
-        try:
-            # Aquí iría la lógica para generar el consumer key con la API de OVH
-            # Como ejemplo, simplemente asignamos un valor placeholder
-            self.consumer_key = "placeholder_consumer_key"
-            _logger.info("Consumer key generado correctamente")
-        except Exception as e:
-            _logger.error("Error al generar el consumer key: %s", str(e))
-            raise UserError(_("No se pudo generar el consumer key: %s") % str(e))
 
     @api.model_create_multi
     def create(self, vals_list):
