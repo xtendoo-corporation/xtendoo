@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import fields, models, api
 
 
 class StockWarehouseOrderpoint(models.Model):
@@ -7,14 +7,11 @@ class StockWarehouseOrderpoint(models.Model):
     is_under_minimum = fields.Boolean(
         string="Under Minimum",
         compute="_compute_is_under_minimum",
-        store=False,
-        help="Indicates if the current quantity on hand is less than the minimum quantity",
+        store=True,
+        help="This field indicates if the current quantity is below the minimum quantity"
     )
 
-    @api.depends("qty_on_hand", "product_min_qty")
+    @api.depends("product_min_qty", "qty_on_hand")
     def _compute_is_under_minimum(self):
-        """Compute if the current quantity on hand is less than the minimum quantity"""
-        for orderpoint in self:
-            orderpoint.is_under_minimum = (
-                orderpoint.qty_on_hand < orderpoint.product_min_qty
-            )
+        for record in self:
+            record.is_under_minimum = record.qty_on_hand < record.product_min_qty
