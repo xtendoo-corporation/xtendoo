@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_warehouse_orderpoint_search_under_minimum" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.search.under.minimum</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.warehouse_orderpoint_search"/>
+        <field name="arch" type="xml">
+            <filter name="trigger" position="after">
+                <filter string="Under Minimum Quantity" name="under_minimum" domain="[('is_under_minimum', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="view_warehouse_orderpoint_tree_under_minimum" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.tree.under.minimum</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.view_warehouse_orderpoint_tree_editable"/>
+        <field name="arch" type="xml">
+            <tree position="attributes">
+                <attribute name="decoration-danger">is_under_minimum == True</attribute>
+            </tree>
+        </field>
+    </record>
+</odoo>
