@@ -5,9 +5,6 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-# Credenciales fijas para la API de OVH
-OVH_APPLICATION_KEY = '9d14d317ec8e63c2'
-OVH_APPLICATION_SECRET = '062157b0c4ca960674e23713a52cd835'
 
 class OvhEmailCreator(models.TransientModel):
     _name = 'ovh.email.creator'

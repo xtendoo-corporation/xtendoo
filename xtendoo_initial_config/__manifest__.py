@@ -37,7 +37,4 @@
     'installable': True,
     'auto_install': False,
     'application': False,
-    'external_dependencies': {
-        'python': ['ovh'],
-    },
 }
