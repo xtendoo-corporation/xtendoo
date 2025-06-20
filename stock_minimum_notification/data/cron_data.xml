@@ -1,0 +1,15 @@
+<odoo>
+    <data noupdate="1">
+        <record id="ir_cron_check_stock_levels" model="ir.cron">
+            <field name="name">Verificar niveles de stock mínimo</field>
+            <field name="model_id" ref="model_stock_minimum_notification"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_check_stock_levels()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>
