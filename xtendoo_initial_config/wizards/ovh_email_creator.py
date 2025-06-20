@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import ovh
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
