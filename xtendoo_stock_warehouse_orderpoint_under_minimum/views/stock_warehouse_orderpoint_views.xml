@@ -5,9 +5,9 @@
         <field name="model">stock.warehouse.orderpoint</field>
         <field name="inherit_id" ref="stock.warehouse_orderpoint_search"/>
         <field name="arch" type="xml">
-            <filter name="trigger" position="after">
+            <field name="trigger" position="after">
                 <filter string="Under Minimum Quantity" name="under_minimum" domain="[('is_under_minimum', '=', True)]"/>
-            </filter>
+            </field>
         </field>
     </record>
 
