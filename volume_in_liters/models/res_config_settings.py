@@ -6,12 +6,7 @@ from odoo import api, fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    product_volume_volume_in_cubic_feet = fields.Selection(selection_add=[
-        ('0', 'Cubic Meters'),
-        ('1', 'Cubic Feet'),
-        ('2', 'Liters'),
-    ],
-        string='Volume unit of measure',
-        config_parameter='product.volume_in_cubic_feet',
-        default='0'
+    product_volume_volume_in_cubic_feet = fields.Selection(
+        selection_add=[('2', 'Litros')],
+        ondelete={'2': 'set default'}
     )
