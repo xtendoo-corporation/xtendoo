@@ -132,28 +132,28 @@
                                             <th
                                                 name="th_code"
                                                 class="text-start"
-                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
                                                 <strong>Código</strong>
                                             </th>
                                             <th
                                                 name="th_description"
                                                 class="text-start"
-                                                style="solid; black; padding: 1px; margin: 0px; width:32%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:32%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
                                                 <strong>Descripción</strong>
                                             </th>
                                             <th
                                                 name="th_quantity"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
                                                 <strong>Unds</strong>
                                             </th>
                                             <th
                                                 name="th_priceunit"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
                                                 <strong>Importe</strong>
                                             </th>
@@ -161,7 +161,7 @@
                                                 name="th_discount"
                                                 t-if="display_discount"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                                 groups="product.group_discount_per_so_line"
                                             >
                                                 <strong>Dto.%</strong>
@@ -169,7 +169,7 @@
                                             <th
                                                 name="th_subtotal"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:14%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:14%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
                                                 <strong>
                                                     <t
