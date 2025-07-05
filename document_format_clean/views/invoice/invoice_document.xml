@@ -306,7 +306,7 @@
                                                 </td>
                                                 <td
                                                     class="text-end o_price_total"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                    style="border-bottom: 1px solid black; padding: 0px; margin: 0px; width:14%; font-size:0.8em; !important; display:table-cell !important;"
                                                 >
                                                     <t t-if="o.move_type in ('out_refund','in_refund')">
                                                         <span>-</span>
