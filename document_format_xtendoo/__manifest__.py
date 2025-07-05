@@ -1,8 +1,8 @@
 {
     "name": "document_format_xtendoo",
-    "summary": """Formatos de documentos Xtendoo""",
+    "summary": "Formatos de documentos Xtendoo",
     "version": "17.0.1.0.0",
-    "description": """Formatos de documentos Xtendoo""",
+    "description": "Formatos de documentos Xtendoo",
     "author": "DDL",
     "company": "Xtendoo",
     "website": "http://www.xtendoo.es",
