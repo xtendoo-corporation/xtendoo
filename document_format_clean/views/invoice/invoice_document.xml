@@ -183,13 +183,13 @@
                                         <th
                                             name="th_subtotal"
                                             class="text-end"
-                                            style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                         >
                                             <t groups="account.group_show_line_subtotals_tax_excluded">
-                                                Total
+                                                <strong>Total</strong>
                                             </t>
                                             <t groups="account.group_show_line_subtotals_tax_included">
-                                                Total I.I.
+                                                <strong>Total I.I.</strong>
                                             </t>
                                         </th>
                                     </tr>
