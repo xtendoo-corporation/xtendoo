@@ -175,22 +175,24 @@
                                             name="th_discount"
                                             t-if="display_discount"
                                             class="text-end"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             groups="product.group_discount_per_so_line"
                                         >
-                                            Dto.%
+                                            <strong>Dto.%</strong>
                                         </th>
                                         <th
                                             name="th_subtotal"
                                             class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                         >
-                                            <t groups="account.group_show_line_subtotals_tax_excluded">
-                                                <strong>Total</strong>
-                                            </t>
-                                            <t groups="account.group_show_line_subtotals_tax_included">
-                                                <strong>Total I.I.</strong>
-                                            </t>
+                                            <strong>
+                                                <t groups="account.group_show_line_subtotals_tax_excluded">
+                                                    Total
+                                                </t>
+                                                <t groups="account.group_show_line_subtotals_tax_included">
+                                                    Total I.I.
+                                                </t>
+                                            </strong>
                                         </th>
                                     </tr>
                                 </thead>

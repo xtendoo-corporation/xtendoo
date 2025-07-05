@@ -132,53 +132,55 @@
                                             <th
                                                 name="th_code"
                                                 class="text-start"
-                                                style="solid; black; padding: 1px; margin: 0px; width:13%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
-                                                Código
+                                                <strong>Código</strong>
                                             </th>
                                             <th
                                                 name="th_description"
                                                 class="text-start"
-                                                style="solid; black; padding: 1px; margin: 0px; width:35%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:32%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
-                                                Descripción
+                                                <strong>Descripción</strong>
                                             </th>
                                             <th
                                                 name="th_quantity"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
-                                                Unds
+                                                <strong>Unds</strong>
                                             </th>
                                             <th
                                                 name="th_priceunit"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
-                                                Importe
+                                                <strong>Importe</strong>
                                             </th>
                                             <th
                                                 name="th_discount"
                                                 t-if="display_discount"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                                 groups="product.group_discount_per_so_line"
                                             >
-                                                Dto.%
+                                                <strong>Dto.%</strong>
                                             </th>
                                             <th
                                                 name="th_subtotal"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important;"
+                                                style="solid; black; padding: 1px; margin: 0px; width:14%; font-size:0.8em; !important; display: block !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
                                             >
-                                                <t
-                                                    groups="account.group_show_line_subtotals_tax_excluded"
-                                                >Total
-                                                </t>
-                                                <t
-                                                    groups="account.group_show_line_subtotals_tax_included"
-                                                >Total I.I.
-                                                </t>
+                                                <strong>
+                                                    <t
+                                                        groups="account.group_show_line_subtotals_tax_excluded"
+                                                    >Total
+                                                    </t>
+                                                    <t
+                                                        groups="account.group_show_line_subtotals_tax_included"
+                                                    >Total I.I.
+                                                    </t>
+                                                </strong>
                                             </th>
                                         </tr>
                                     </thead>
@@ -208,7 +210,7 @@
                                                 <t t-if="not line.display_type">
                                                     <td
                                                         class="text-start"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:13%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
                                                     >
                                                         <span
                                                             t-field="line.product_id.default_code"
@@ -216,7 +218,7 @@
                                                     </td>
                                                     <td
                                                         name="td_name"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:35%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:0.8em; !important;"
                                                     >
                                                         <t
                                                             t-set="productName"
@@ -251,7 +253,7 @@
                                                     <td
                                                         name="td_price_unit"
                                                         class="text-end"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
                                                     >
                                                         <span t-field="line.price_unit"/>
                                                     </td>
