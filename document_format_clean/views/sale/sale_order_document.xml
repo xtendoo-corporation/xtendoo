@@ -125,35 +125,35 @@
                                     t-set="display_discount"
                                     t-value="any([l.discount for l in doc.order_line])"
                                 />
-                                <table class="table table-sm table-borderless">
+                                <table class="table table-sm table-borderless o_main_table" style="border-bottom: 1px solid black;">
                                     <!--Cabecera -->
-                                    <thead>
+                                    <thead style="border-bottom: 1px solid black;">
                                         <tr>
                                             <th
                                                 name="th_code"
                                                 class="text-start"
-                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 12%;"
                                             >
                                                 <strong>Código</strong>
                                             </th>
                                             <th
                                                 name="th_description"
                                                 class="text-start"
-                                                style="solid; black; padding: 1px; margin: 0px; width:32%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 32%;"
                                             >
                                                 <strong>Descripción</strong>
                                             </th>
                                             <th
                                                 name="th_quantity"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 10%;"
                                             >
                                                 <strong>Unds</strong>
                                             </th>
                                             <th
                                                 name="th_priceunit"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 12%;"
                                             >
                                                 <strong>Importe</strong>
                                             </th>
@@ -161,7 +161,7 @@
                                                 name="th_discount"
                                                 t-if="display_discount"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 10%;"
                                                 groups="product.group_discount_per_so_line"
                                             >
                                                 <strong>Dto.%</strong>
@@ -169,18 +169,9 @@
                                             <th
                                                 name="th_subtotal"
                                                 class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:14%; font-size:0.8em; !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 14%;"
                                             >
-                                                <strong>
-                                                    <t
-                                                        groups="account.group_show_line_subtotals_tax_excluded"
-                                                    >Total
-                                                    </t>
-                                                    <t
-                                                        groups="account.group_show_line_subtotals_tax_included"
-                                                    >Total I.I.
-                                                    </t>
-                                                </strong>
+                                                <strong>Total</strong>
                                             </th>
                                         </tr>
                                     </thead>
