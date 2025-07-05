@@ -9,9 +9,8 @@
              </xpath>
 
              <!-- Ocultar el contenido de la columna de impuestos en cada línea -->
-             <xpath expr="//span[@t-esc='', '.join(map(lambda x: (x.description or x.name), line.tax_ids))']" position="replace">
+             <xpath expr="//span[@id='line_tax_ids']" position="replace">
              </xpath>
          </template>
     </data>
 </odoo>
-
