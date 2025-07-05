@@ -12,6 +12,8 @@
     "data": [
         "views/layout/external_layout_clean.xml",
         "views/invoice/invoice_document.xml",
+        "views/invoice/hide_taxes_column.xml",
+        "views/sale/hide_taxes_column.xml",
     ],
     "demo": [],
     "installable": True,

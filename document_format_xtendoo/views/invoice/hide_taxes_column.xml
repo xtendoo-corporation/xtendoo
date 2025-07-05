@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+         <template
+            id="document_format_xtendoo.hide_taxes_invoice"
+            inherit_id="document_format_clean.report_invoice_document_xtendoo">
+             <!-- Ocultar el encabezado de la columna de impuestos -->
+             <xpath expr="//th[@name='th_taxes']" position="replace">
+             </xpath>
+
+             <!-- Ocultar el contenido de la columna de impuestos en cada línea -->
+             <xpath expr="//span[@t-esc='', '.join(map(lambda x: (x.description or x.name), line.tax_ids))']" position="replace">
+             </xpath>
+         </template>
+    </data>
+</odoo>
+
