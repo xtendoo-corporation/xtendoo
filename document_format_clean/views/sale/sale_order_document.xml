@@ -167,13 +167,6 @@
                                                 Dto.%
                                             </th>
                                             <th
-                                                name="th_taxes"
-                                                class="text-end"
-                                                style="solid; black; padding: 1px; margin: 0px; width:10%; font-size:0.8em; !important;"
-                                            >
-                                                IVA%
-                                            </th>
-                                            <th
                                                 name="th_subtotal"
                                                 class="text-end"
                                                 style="solid; black; padding: 1px; margin: 0px; width:12%; font-size:0.8em; !important;"
@@ -269,15 +262,6 @@
                                                         groups="product.group_discount_per_so_line"
                                                     >
                                                         <span t-field="line.discount"/>
-                                                    </td>
-                                                    <td
-                                                        name="td_taxes"
-                                                        class="text-end"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
-                                                    >
-                                                        <span
-                                                            t-esc="', '.join(map(lambda x: (str(x.amount)), line.tax_id))"
-                                                            id="line.tax_id"/>
                                                     </td>
                                                     <td
                                                         name="td_subtotal"

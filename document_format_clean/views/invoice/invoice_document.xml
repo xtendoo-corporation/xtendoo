@@ -181,13 +181,6 @@
                                             Dto.%
                                         </th>
                                         <th
-                                            name="th_taxes"
-                                            class="text-end"
-                                            style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
-                                        >
-                                            IVA%
-                                        </th>
-                                        <th
                                             name="th_subtotal"
                                             class="text-end"
                                             style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
@@ -314,15 +307,6 @@
                                                     <span
                                                         class="text-nowrap"
                                                         t-field="line.discount"
-                                                    />
-                                                </td>
-                                                <td
-                                                    t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}"
-                                                    style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
-                                                >
-                                                    <span
-                                                        t-esc="', '.join(map(lambda x: str(x.amount), line.tax_ids))"
-                                                        id="line_tax_ids"
                                                     />
                                                 </td>
                                                 <td
