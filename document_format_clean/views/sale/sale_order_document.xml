@@ -127,7 +127,7 @@
                                 />
                                 <table class="table table-sm table-borderless o_main_table">
                                     <!--Cabecera -->
-                                    <thead>
+                                    <thead style="border-bottom: 1px solid black;">
                                         <tr>
                                             <th
                                                 name="th_code"
