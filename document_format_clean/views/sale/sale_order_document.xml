@@ -125,35 +125,35 @@
                                     t-set="display_discount"
                                     t-value="any([l.discount for l in doc.order_line])"
                                 />
-                                <table class="table table-sm table-borderless o_main_table" style="border-bottom: 1px solid black;">
+                                <table class="table table-sm table-borderless o_main_table">
                                     <!--Cabecera -->
-                                    <thead style="border-bottom: 1px solid black;">
+                                    <thead>
                                         <tr>
                                             <th
                                                 name="th_code"
                                                 class="text-start"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 12%;"
+                                                style="padding: 1px; margin: 0px; font-size:1.0em; !important; width: 12%;"
                                             >
                                                 <strong>Código</strong>
                                             </th>
                                             <th
                                                 name="th_description"
                                                 class="text-start"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 32%;"
+                                                style="padding: 1px; margin: 0px; font-size:1.0em; !important; width: 32%;"
                                             >
                                                 <strong>Descripción</strong>
                                             </th>
                                             <th
                                                 name="th_quantity"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 10%;"
+                                                style="padding: 1px; margin: 0px; font-size:1.0em; !important; width: 10%;"
                                             >
                                                 <strong>Unds</strong>
                                             </th>
                                             <th
                                                 name="th_priceunit"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 12%;"
+                                                style="padding: 1px; margin: 0px; font-size:1.0em; !important; width: 12%;"
                                             >
                                                 <strong>Importe</strong>
                                             </th>
@@ -161,7 +161,7 @@
                                                 name="th_discount"
                                                 t-if="display_discount"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 10%;"
+                                                style="padding: 1px; margin: 0px; font-size:1.0em; !important; width: 10%;"
                                                 groups="product.group_discount_per_so_line"
                                             >
                                                 <strong>Dto.%</strong>
@@ -169,7 +169,7 @@
                                             <th
                                                 name="th_subtotal"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 14%;"
+                                                style="padding: 1px; margin: 0px; font-size:1.0em; !important; width: 14%;"
                                             >
                                                 <strong>Total</strong>
                                             </th>
@@ -259,7 +259,7 @@
                                                     <td
                                                         name="td_subtotal"
                                                         class="text-end o_price_total"
-                                                        style="border-bottom: 1px solid black; padding: 0px; margin: 0px; width:14%; font-size:1.0em;!important; display:table-cell !important;"
+                                                        style="padding: 0px; margin: 0px; width:14%; font-size:1.0em;!important; display:table-cell !important;"
                                                     >
                                                         <span
                                                             t-field="line.price_subtotal"
