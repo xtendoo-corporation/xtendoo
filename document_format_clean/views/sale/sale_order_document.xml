@@ -272,7 +272,7 @@
                                                     <td
                                                         name="td_section_line"
                                                         colspan="99"
-                                                        style="solid; black; padding: 0px; margin: 0px; font-size:1.0em; !important;"
+                                                        style="background-color: white !important; solid; black; padding: 0px; margin: 0px; font-size:1.0em; font-weight: bold !important;"
                                                     >
                                                         <span t-field="line.name"/>
                                                     </td>
