@@ -132,28 +132,28 @@
                                             <th
                                                 name="th_code"
                                                 class="text-start"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 12%;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 12%;"
                                             >
                                                 <strong>Código</strong>
                                             </th>
                                             <th
                                                 name="th_description"
                                                 class="text-start"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 32%;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 32%;"
                                             >
                                                 <strong>Descripción</strong>
                                             </th>
                                             <th
                                                 name="th_quantity"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 10%;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 10%;"
                                             >
                                                 <strong>Unds</strong>
                                             </th>
                                             <th
                                                 name="th_priceunit"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 12%;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 12%;"
                                             >
                                                 <strong>Importe</strong>
                                             </th>
@@ -161,7 +161,7 @@
                                                 name="th_discount"
                                                 t-if="display_discount"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 10%;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 10%;"
                                                 groups="product.group_discount_per_so_line"
                                             >
                                                 <strong>Dto.%</strong>
@@ -169,7 +169,7 @@
                                             <th
                                                 name="th_subtotal"
                                                 class="text-end"
-                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:0.8em; !important; width: 14%;"
+                                                style="border-bottom: 1px solid black; padding: 1px; margin: 0px; font-size:1.0em; !important; width: 14%;"
                                             >
                                                 <strong>Total</strong>
                                             </th>
@@ -201,7 +201,7 @@
                                                 <t t-if="not line.display_type">
                                                     <td
                                                         class="text-start"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:1.0em; !important;"
                                                     >
                                                         <span
                                                             t-field="line.product_id.default_code"
@@ -209,7 +209,7 @@
                                                     </td>
                                                     <td
                                                         name="td_name"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:32%; font-size:1.0em; !important;"
                                                     >
                                                         <t
                                                             t-set="productName"
@@ -231,7 +231,7 @@
                                                     <td
                                                         name="td_quantity"
                                                         class="text-end"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:1.0em; !important;"
                                                     >
                                                         <span
                                                             t-field="line.product_uom_qty"
@@ -244,14 +244,14 @@
                                                     <td
                                                         name="td_price_unit"
                                                         class="text-end"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:12%; font-size:1.0em; !important;"
                                                     >
                                                         <span t-field="line.price_unit"/>
                                                     </td>
                                                     <td
                                                         t-if="display_discount"
                                                         class="text-end"
-                                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; width:10%; font-size:1.0em; !important;"
                                                         groups="product.group_discount_per_so_line"
                                                     >
                                                         <span t-field="line.discount"/>
@@ -259,7 +259,7 @@
                                                     <td
                                                         name="td_subtotal"
                                                         class="text-end o_price_total"
-                                                        style="border-bottom: 1px solid black; padding: 0px; margin: 0px; width:14%; font-size:0.8em;!important; display:table-cell !important;"
+                                                        style="border-bottom: 1px solid black; padding: 0px; margin: 0px; width:14%; font-size:1.0em;!important; display:table-cell !important;"
                                                     >
                                                         <span
                                                             t-field="line.price_subtotal"
@@ -272,7 +272,7 @@
                                                     <td
                                                         name="td_section_line"
                                                         colspan="99"
-                                                        style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; font-size:1.0em; !important;"
                                                     >
                                                         <span t-field="line.name"/>
                                                     </td>
@@ -289,7 +289,7 @@
                                                     <td
                                                         name="td_note_line"
                                                         colspan="99"
-                                                        style="solid; black; padding: 0px; margin: 0px; font-size:0.8em; !important;"
+                                                        style="solid; black; padding: 0px; margin: 0px; font-size:1.0em; !important;"
                                                     >
                                                         <span t-field="line.name"/>
                                                     </td>
