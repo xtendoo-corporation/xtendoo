@@ -196,7 +196,7 @@
                                             <!-- Fin variables FOREACH -->
                                             <!-- Lineas Impresión -->
                                             <tr
-                                                t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''"
+                                                t-att-class="'font-weight-bold' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''"
                                             >
                                                 <t t-if="not line.display_type">
                                                     <td
