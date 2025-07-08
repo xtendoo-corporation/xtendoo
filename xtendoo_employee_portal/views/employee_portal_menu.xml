@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Menú principal del portal de empleados -->
+        <record id="menu_employee_portal_root" model="ir.ui.menu">
+            <field name="name">Portal de Empleados</field>
+            <field name="sequence">200</field>
+            <field name="groups_id" eval="[(4, ref('hr.group_hr_user'))]"/>
+            <field name="web_icon">xtendoo_employee_portal,static/description/icon.png</field>
+        </record>
+
+        <!-- Menú para configuración -->
+        <record id="menu_employee_portal_configuration" model="ir.ui.menu">
+            <field name="name">Configuración</field>
+            <field name="parent_id" ref="menu_employee_portal_root"/>
+            <field name="sequence">100</field>
+        </record>
+
+        <!-- Menú para acceder a las sesiones -->
+        <record id="menu_employee_portal_sessions" model="ir.ui.menu">
+            <field name="name">Sesiones Activas</field>
+            <field name="parent_id" ref="menu_employee_portal_configuration"/>
+            <field name="action" ref="action_employee_portal_sessions"/>
+            <field name="sequence">10</field>
+        </record>
+    </data>
+</odoo>
+

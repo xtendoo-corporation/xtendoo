@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Extender la vista de formulario de empleado para añadir el campo PIN -->
+        <record id="hr_employee_view_form_inherit_pin" model="ir.ui.view">
+            <field name="name">hr.employee.view.form.inherit.pin</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Portal de Empleados" name="employee_portal">
+                        <group>
+                            <group string="Configuración del Portal" name="portal_config">
+                                <field name="employee_pin" password="True"/>
+                            </group>
+                        </group>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+    </data>
+</odoo>
