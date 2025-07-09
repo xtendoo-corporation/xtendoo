@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="login_empleado" name="Login Empleado">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <t t-call="portal.portal_searchbar">
+        <t t-set="title">Portal de Empleados</t>
+      </t>
+      <div class="container mt-4">
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Acceso de Empleados</h3>
+              </div>
+              <div class="card-body">
+
+                <!-- Mensajes de error -->
+                <t t-if="request.params.get('error') == 'pin_invalid'">
+                  <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-circle"></i> PIN incorrecto. Verifica tu PIN e intenta de nuevo.
+                  </div>
+                </t>
+                <t t-if="request.params.get('error') == 'pin_required'">
+                  <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle"></i> Debes introducir tu PIN para acceder.
+                  </div>
+                </t>
+
+                <form action="/mi/verificar_empleado" method="POST">
+                  <div class="form-group mb-3">
+                    <label for="pin">PIN:</label>
+                    <input type="password"
+                           name="pin"
+                           class="form-control form-control-lg text-center"
+                           id="pin"
+                           placeholder="Ingresa tu PIN numérico"
+                           required="required"
+                           maxlength="10"
+                           pattern="[0-9]*"
+                           inputmode="numeric"
+                           style="font-size: 1.5rem; letter-spacing: 0.5rem;"/>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-lg btn-block">
+                    <i class="fa fa-sign-in"></i> Entrar
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="ver_asistencias" name="Mis Asistencias">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <t t-call="portal.portal_searchbar">
+        <t t-set="title">Mis Asistencias</t>
+      </t>
+      <div class="container mt-4">
+        <div class="row">
+          <div class="col-12">
+            <h2>Asistencias de <t t-esc="empleado.name"/></h2>
+            <div class="row mb-3">
+              <div class="col">
+                <a href="/mi/dashboard" class="btn btn-primary mr-2">
+                  <i class="fa fa-home"></i> Dashboard
+                </a>
+                <a href="/mi/login_empleado" class="btn btn-outline-danger">Salir</a>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                        <th>Horas Trabajadas</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-foreach="asistencias_procesadas" t-as="a">
+                        <tr>
+                          <td><t t-esc="a['fecha'] or '-'"/></td>
+                          <td><t t-esc="a['hora_entrada']"/></td>
+                          <td><t t-esc="a['hora_salida']"/></td>
+                          <td><t t-esc="a['worked_hours'] and ('%.2f h' % a['worked_hours']) or '-'"/></td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="ver_ausencias" name="Mis Ausencias">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <t t-call="portal.portal_searchbar">
+        <t t-set="title">Mis Ausencias</t>
+      </t>
+      <div class="container mt-4">
+        <div class="row">
+          <div class="col-12">
+            <h2>Ausencias de <t t-esc="empleado.name"/></h2>
+            <div class="row mb-3">
+              <div class="col">
+                <a href="/mi/dashboard" class="btn btn-primary mr-2">
+                  <i class="fa fa-home"></i> Dashboard
+                </a>
+                <a href="/mi/solicitar_ausencia" class="btn btn-success mr-2">
+                  <i class="fa fa-plus"></i> Solicitar Ausencia
+                </a>
+                <a href="/mi/login_empleado" class="btn btn-outline-danger">Salir</a>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Tipo</th>
+                        <th>Desde</th>
+                        <th>Hasta</th>
+                        <th>Días</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-foreach="ausencias" t-as="l">
+                        <tr>
+                          <td><t t-esc="l.holiday_status_id.name or '-'"/></td>
+                          <td><t t-esc="l.request_date_from or '-'"/></td>
+                          <td><t t-esc="l.request_date_to or '-'"/></td>
+                          <td><t t-esc="l.number_of_days or '-'"/></td>
+                          <td>
+                            <span t-if="l.state == 'validate'" class="badge badge-success">Aprobado</span>
+                            <span t-elif="l.state == 'refuse'" class="badge badge-danger">Rechazado</span>
+                            <span t-elif="l.state == 'confirm'" class="badge badge-warning">Pendiente</span>
+                            <span t-else="" class="badge badge-secondary"><t t-esc="l.state"/></span>
+                          </td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="ver_partes" name="Mis Partes de Horas">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <t t-call="portal.portal_searchbar">
+        <t t-set="title">Mis Partes de Horas</t>
+      </t>
+      <div class="container mt-4">
+        <div class="row">
+          <div class="col-12">
+            <h2>Parte de horas de <t t-esc="empleado.name"/></h2>
+            <div class="row mb-3">
+              <div class="col">
+                <a href="/mi/dashboard" class="btn btn-primary mr-2">
+                  <i class="fa fa-home"></i> Dashboard
+                </a>
+                <a href="/mi/login_empleado" class="btn btn-outline-danger">Salir</a>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Proyecto</th>
+                        <th>Tarea</th>
+                        <th>Descripción</th>
+                        <th>Horas</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-foreach="partes" t-as="p">
+                        <tr>
+                          <td><t t-esc="p.date or '-'"/></td>
+                          <td><t t-esc="p.project_id.name or '-'"/></td>
+                          <td><t t-esc="p.task_id.name or '-'"/></td>
+                          <td><t t-esc="p.name or '-'"/></td>
+                          <td><t t-esc="('%.2f h' % p.unit_amount) if p.unit_amount else '-'"/></td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="solicitar_ausencia" name="Solicitar Ausencia">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <t t-call="portal.portal_searchbar">
+        <t t-set="title">Solicitar Ausencia</t>
+      </t>
+      <div class="container mt-4">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Solicitar Ausencia - <t t-esc="empleado.name"/></h3>
+              </div>
+              <div class="card-body">
+                <!-- Mensajes de éxito y error -->
+                <t t-if="request.params.get('success') == '1'">
+                  <div class="alert alert-success">
+                    <i class="fa fa-check-circle"></i> Solicitud de ausencia enviada correctamente. Pendiente de aprobación.
+                  </div>
+                </t>
+                <t t-if="request.params.get('error') == 'invalid_dates'">
+                  <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-circle"></i> Las fechas no son válidas. La fecha de fin debe ser posterior a la fecha de inicio.
+                  </div>
+                </t>
+                <t t-if="request.params.get('error') == 'missing_data'">
+                  <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-circle"></i> Faltan datos requeridos. Por favor, completa todos los campos.
+                  </div>
+                </t>
+
+                <form action="/mi/procesar_solicitud_ausencia" method="POST">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group mb-3">
+                        <label for="tipo_ausencia">Tipo de Ausencia:</label>
+                        <select name="tipo_ausencia" class="form-control" id="tipo_ausencia" required="required">
+                          <option value="">Selecciona un tipo...</option>
+                          <t t-foreach="tipos_ausencia" t-as="tipo">
+                            <option t-att-value="tipo.id"><t t-esc="tipo.name"/></option>
+                          </t>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group mb-3">
+                        <label for="request_unit_half">Tipo de Solicitud:</label>
+                        <select name="request_unit_half" class="form-control" id="request_unit_half" required="required">
+                          <option value="False">Días completos</option>
+                          <option value="True">Medio día</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group mb-3">
+                        <label for="request_date_from">Fecha de Inicio:</label>
+                        <input type="date" name="request_date_from" class="form-control" id="request_date_from" required="required"/>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group mb-3">
+                        <label for="request_date_to">Fecha de Fin:</label>
+                        <input type="date" name="request_date_to" class="form-control" id="request_date_to" required="required"/>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group mb-3">
+                    <label for="name">Motivo/Descripción:</label>
+                    <textarea name="name" class="form-control" id="name" rows="3"
+                              placeholder="Describe brevemente el motivo de tu ausencia..." required="required"></textarea>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <a href="/mi/dashboard" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Volver al dashboard
+                      </a>
+                    </div>
+                    <div class="col-md-6 text-right">
+                      <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane"></i> Enviar Solicitud
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="dashboard" name="Dashboard Empleado">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <t t-call="portal.portal_searchbar">
+        <t t-set="title">Portal de Empleados</t>
+      </t>
+      <div class="container mt-4">
+        <div class="row">
+          <div class="col-12">
+            <h2>Bienvenido, <t t-esc="empleado.name"/>!</h2>
+            <p class="text-muted">Hora actual: <t t-esc="hora_actual"/></p>
+
+            <!-- Mensajes de éxito y error -->
+            <t t-if="request.params.get('success') == 'check_in'">
+              <div class="alert alert-success">
+                <i class="fa fa-check-circle"></i> ¡Entrada registrada correctamente!
+              </div>
+            </t>
+            <t t-if="request.params.get('success') == 'check_out'">
+              <div class="alert alert-success">
+                <i class="fa fa-check-circle"></i> ¡Salida registrada correctamente!
+              </div>
+            </t>
+            <t t-if="request.params.get('error') == 'already_checked_in'">
+              <div class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle"></i> Ya tienes una entrada registrada hoy. Debes fichar la salida primero.
+              </div>
+            </t>
+            <t t-if="request.params.get('error') == 'no_check_in'">
+              <div class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle"></i> No tienes una entrada registrada. Debes fichar la entrada primero.
+              </div>
+            </t>
+            <t t-if="request.params.get('error') == 'check_in_failed'">
+              <div class="alert alert-danger">
+                <i class="fa fa-exclamation-circle"></i> Error al registrar la entrada. Inténtalo de nuevo.
+              </div>
+            </t>
+            <t t-if="request.params.get('error') == 'check_out_failed'">
+              <div class="alert alert-danger">
+                <i class="fa fa-exclamation-circle"></i> Error al registrar la salida. Inténtalo de nuevo.
+              </div>
+            </t>
+          </div>
+        </div>
+
+        <!-- Sección de Fichaje -->
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card border-success">
+              <div class="card-header bg-success text-white">
+                <h4><i class="fa fa-clock-o"></i> Control de Asistencia</h4>
+              </div>
+              <div class="card-body text-center">
+                <t t-if="not asistencia_abierta">
+                  <!-- No hay fichaje abierto - Mostrar botón de entrada -->
+                  <h5 class="text-success">¿Listo para empezar tu jornada?</h5>
+                  <form action="/mi/fichar_entrada" method="POST" class="mt-3">
+                    <button type="submit" class="btn btn-success btn-lg">
+                      <i class="fa fa-sign-in fa-2x"></i><br/>
+                      <strong>FICHAR ENTRADA</strong>
+                    </button>
+                  </form>
+                </t>
+                <t t-if="asistencia_abierta">
+                  <!-- Hay fichaje abierto - Mostrar info y botón de salida -->
+                  <h5 class="text-info">¡Ya estás trabajando!</h5>
+                  <p class="text-muted">
+                    Entrada registrada: <strong><t t-esc="asistencia_abierta_hora or '-'"/></strong>
+                  </p>
+                  <form action="/mi/fichar_salida" method="POST" class="mt-3">
+                    <button type="submit" class="btn btn-danger btn-lg">
+                      <i class="fa fa-sign-out fa-2x"></i><br/>
+                      <strong>FICHAR SALIDA</strong>
+                    </button>
+                  </form>
+                </t>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-info">
+              <div class="card-header bg-info text-white">
+                <h4><i class="fa fa-info-circle"></i> Última Actividad</h4>
+              </div>
+              <div class="card-body">
+                <t t-if="ultima_asistencia_procesada">
+                  <p><strong>Última entrada:</strong> <t t-esc="ultima_asistencia_procesada['check_in_str']"/></p>
+                  <p><strong>Última salida:</strong>
+                    <t t-if="ultima_asistencia_procesada['check_out_str']">
+                      <t t-esc="ultima_asistencia_procesada['check_out_str']"/>
+                    </t>
+                    <t t-else="">
+                      <span class="text-warning">En curso</span>
+                    </t>
+                  </p>
+                  <t t-if="ultima_asistencia_procesada['worked_hours']">
+                    <p><strong>Horas trabajadas:</strong> <t t-esc="'%.2f h' % ultima_asistencia_procesada['worked_hours']"/></p>
+                  </t>
+                </t>
+                <t t-else="">
+                  <p class="text-muted">No hay registros de asistencia</p>
+                </t>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Menú de navegación -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h4><i class="fa fa-list"></i> Menú Principal</h4>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-3 mb-3">
+                    <a href="/mi/asistencias" class="btn btn-outline-primary btn-block btn-lg">
+                      <i class="fa fa-calendar"></i><br/>
+                      Ver Asistencias
+                    </a>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <a href="/mi/ausencias" class="btn btn-outline-secondary btn-block btn-lg">
+                      <i class="fa fa-plane"></i><br/>
+                      Ver Ausencias
+                    </a>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <a href="/mi/solicitar_ausencia" class="btn btn-outline-success btn-block btn-lg">
+                      <i class="fa fa-plus"></i><br/>
+                      Solicitar Ausencia
+                    </a>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <a href="/mi/partes" class="btn btn-outline-info btn-block btn-lg">
+                      <i class="fa fa-tasks"></i><br/>
+                      Partes de Horas
+                    </a>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-3 mb-3">
+                    <a href="/mi/planificaciones" class="btn btn-outline-warning btn-block btn-lg" style="border-color: #fd7e14; color: #fd7e14;">
+                      <i class="fa fa-clock-o"></i><br/>
+                      Mis Turnos
+                    </a>
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-12 text-center">
+                    <a href="/mi/login_empleado" class="btn btn-outline-danger">
+                      <i class="fa fa-sign-out"></i> Salir
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="ver_planificaciones" name="Mis Turnos">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <t t-call="portal.portal_searchbar">
+        <t t-set="title">Mis Planificaciones</t>
+      </t>
+      <div class="container mt-4">
+        <div class="row">
+          <div class="col-12">
+            <h2>Planificaciones de <t t-esc="empleado.name"/></h2>
+            <div class="row mb-3">
+              <div class="col">
+                <a href="/mi/dashboard" class="btn btn-primary mr-2">
+                  <i class="fa fa-home"></i> Dashboard
+                </a>
+                <a href="/mi/login_empleado" class="btn btn-outline-danger">Salir</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h4><i class="fa fa-calendar"></i> Mis Turnos Planificados</h4>
+                <small class="text-muted">Mostrando turnos de las últimas 4 semanas y próximas 4 semanas</small>
+              </div>
+              <div class="card-body">
+                <t t-if="planificaciones">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                      <thead class="thead-dark">
+                        <tr>
+                          <th><i class="fa fa-calendar"></i> Fecha</th>
+                          <th><i class="fa fa-calendar-o"></i> Día</th>
+                          <th><i class="fa fa-clock-o"></i> Hora Inicio</th>
+                          <th><i class="fa fa-clock-o"></i> Hora Fin</th>
+                          <th><i class="fa fa-hourglass"></i> Duración</th>
+                          <th><i class="fa fa-user"></i> Rol</th>
+                          <th><i class="fa fa-info"></i> Descripción</th>
+                          <th><i class="fa fa-flag"></i> Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <t t-foreach="planificaciones" t-as="p">
+                          <tr>
+                            <td>
+                              <strong><t t-esc="p['fecha_str']"/></strong>
+                            </td>
+                            <td>
+                              <span class="badge badge-secondary">
+                                <t t-esc="p['dia_semana']"/>
+                              </span>
+                            </td>
+                            <td>
+                              <span class="badge badge-success">
+                                <i class="fa fa-play"></i> <t t-esc="p['hora_inicio']"/>
+                              </span>
+                            </td>
+                            <td>
+                              <span class="badge badge-danger">
+                                <i class="fa fa-stop"></i> <t t-esc="p['hora_fin']"/>
+                              </span>
+                            </td>
+                            <td>
+                              <span class="badge badge-info">
+                                <t t-esc="p['duracion_horas']"/>h
+                              </span>
+                            </td>
+                            <td><t t-esc="p['rol']"/></td>
+                            <td><t t-esc="p['nombre']"/></td>
+                            <td>
+                              <span t-if="p['estado'] == 'published'" class="badge badge-success">Publicado</span>
+                              <span t-elif="p['estado'] == 'draft'" class="badge badge-warning">Borrador</span>
+                              <span t-elif="p['estado'] == 'confirmed'" class="badge badge-primary">Confirmado</span>
+                              <span t-else="" class="badge badge-secondary"><t t-esc="p['estado']"/></span>
+                            </td>
+                          </tr>
+                        </t>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Resumen de turnos -->
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                          <h5><i class="fa fa-bar-chart"></i> Resumen de Turnos</h5>
+                        </div>
+                        <div class="card-body">
+                          <p><strong>Total de turnos planificados:</strong> <t t-esc="total_planificaciones"/></p>
+                          <t t-set="total_horas" t-value="sum(p['duracion_horas'] for p in planificaciones if isinstance(p['duracion_horas'], (int, float)))"/>
+                          <p><strong>Total de horas planificadas:</strong> <t t-esc="'%.1f' % total_horas"/>h</p>
+                          <p class="text-muted">
+                            <small><i class="fa fa-info-circle"></i> Información basada en las planificaciones asignadas.</small>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                          <h5><i class="fa fa-exclamation-triangle"></i> Recordatorio</h5>
+                        </div>
+                        <div class="card-body">
+                          <p>Revisa regularmente tus turnos planificados.</p>
+                          <p>Si tienes dudas sobre algún turno, contacta con tu supervisor.</p>
+                          <p class="text-muted">
+                            <small>Los turnos pueden estar sujetos a cambios según las necesidades del servicio.</small>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </t>
+                <t t-else="">
+                  <div class="alert alert-warning text-center">
+                    <i class="fa fa-calendar-times-o fa-3x mb-3"></i>
+                    <h4>No hay turnos planificados</h4>
+                    <p>No tienes turnos asignados en el período consultado.</p>
+                    <p class="text-muted">
+                      <strong>Modelo de planning:</strong> <t t-esc="modelo_planning"/>
+                    </p>
+                    <t t-if="modelo_planning == 'No encontrado'">
+                      <div class="alert alert-danger mt-3">
+                        <i class="fa fa-exclamation-circle"></i>
+                        <strong>Atención:</strong> No se encontró un módulo de planificación instalado.
+                        Contacta con el administrador del sistema.
+                      </div>
+                    </t>
+                    <t t-else="">
+                      <p class="text-muted">Contacta con tu supervisor si esperas tener turnos asignados.</p>
+                    </t>
+                  </div>
+                </t>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+</odoo>
