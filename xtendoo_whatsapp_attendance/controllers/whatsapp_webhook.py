@@ -1,5 +1,7 @@
 import logging
 import json
+import re
+from datetime import datetime
 from http import HTTPStatus
 from werkzeug.exceptions import Forbidden
 
@@ -13,13 +15,13 @@ _logger = logging.getLogger(__name__)
 class WhatsAppAttendanceWebhook(Webhook):
     """
     Controlador que hereda de Webhook para mostrar información detallada
-    de las peticiones recibidas en el webhook de WhatsApp
+    de las peticiones recibidas en el webhook de WhatsApp y gestionar asistencia automática
     """
 
     @http.route('/whatsapp/webhook/', methods=['POST'], type="json", auth="public")
     def webhookpost(self):
         """
-        Método heredado que procesa mensajes de WhatsApp y muestra toda la información recibida.
+        Método heredado que procesa mensajes de WhatsApp y gestiona asistencia automática.
         ESTE ES EL MÉTODO QUE RECIBE LOS MENSAJES REALES DE TU MÓVIL.
         """
         print("="*80)
@@ -50,6 +52,9 @@ class WhatsAppAttendanceWebhook(Webhook):
         # Mostrar datos JSON parseados
         print(f"\n--- DATOS JSON PARSEADOS ---")
         print(json.dumps(data, indent=2, ensure_ascii=False))
+
+        # Procesar mensajes para asistencia automática
+        self._process_attendance_messages(data)
 
         # Analizar estructura del webhook
         print(f"\n--- ANÁLISIS DE LA ESTRUCTURA ---")
@@ -122,6 +127,219 @@ class WhatsAppAttendanceWebhook(Webhook):
             print(f"❌ Error en procesamiento original: {e}")
             print("="*80)
             raise
+
+    def _process_attendance_messages(self, data):
+        """
+        Procesa los mensajes de WhatsApp para detectar comandos de asistencia
+        y registrar entrada/salida automáticamente
+        """
+        print("\n🏢 --- PROCESAMIENTO DE ASISTENCIA AUTOMÁTICA ---")
+
+        try:
+            for entry in data.get('entry', []):
+                for change in entry.get('changes', []):
+                    if change.get('field') == 'messages':
+                        value = change.get('value', {})
+
+                        # Procesar mensajes recibidos
+                        for message in value.get('messages', []):
+                            if message.get('type') == 'text':
+                                self._handle_attendance_message(message, value)
+
+        except Exception as e:
+            print(f"❌ Error procesando asistencia: {e}")
+            _logger.error("Error en procesamiento de asistencia: %s", e)
+
+    def _handle_attendance_message(self, message, value):
+        """
+        Maneja un mensaje de texto individual para detectar comandos de asistencia
+        """
+        try:
+            # Extraer información del mensaje
+            phone_number = message.get('from', '')
+            text_content = message.get('text', {}).get('body', '').strip().lower()
+            message_id = message.get('id', '')
+            timestamp = message.get('timestamp', '')
+
+            print(f"\n📋 Procesando mensaje de asistencia:")
+            print(f"   Teléfono: {phone_number}")
+            print(f"   Texto: '{text_content}'")
+            print(f"   ID Mensaje: {message_id}")
+            print(f"   Timestamp: {timestamp}")
+
+            # Detectar comando de asistencia
+            attendance_type = self._detect_attendance_command(text_content)
+
+            if attendance_type:
+                print(f"✅ Comando detectado: {attendance_type}")
+
+                # Buscar empleado por número de teléfono
+                employee = self._find_employee_by_phone(phone_number)
+
+                if employee:
+                    print(f"👤 Empleado encontrado: {employee.name} (ID: {employee.id})")
+
+                    # Registrar asistencia
+                    attendance_result = self._register_attendance(employee, attendance_type)
+
+                    if attendance_result:
+                        print(f"✅ Asistencia registrada exitosamente")
+                        # Aquí podrías enviar un mensaje de confirmación de vuelta
+                        self._send_confirmation_message(phone_number, attendance_type, employee)
+                    else:
+                        print(f"❌ Error al registrar asistencia")
+                        self._send_error_message(phone_number, "Error al registrar asistencia")
+                else:
+                    print(f"❌ No se encontró empleado con el teléfono: {phone_number}")
+                    self._send_error_message(phone_number, "No se encontró empleado asociado a este número")
+            else:
+                print(f"ℹ️ Mensaje no es comando de asistencia: '{text_content}'")
+
+        except Exception as e:
+            print(f"❌ Error manejando mensaje de asistencia: {e}")
+            _logger.error("Error manejando mensaje de asistencia: %s", e)
+
+    def _detect_attendance_command(self, text):
+        """
+        Detecta si el texto contiene un comando de asistencia válido
+        Retorna 'check_in', 'check_out' o None
+        """
+        # Normalizar texto (quitar acentos, espacios extra, etc.)
+        normalized_text = re.sub(r'\s+', ' ', text.lower().strip())
+
+        # Patrones para entrada
+        entrada_patterns = [
+            r'\bentrada\b', r'\bentrar\b', r'\bllegar\b', r'\bllego\b',
+            r'\bcheck\s*in\b', r'\bfichar\s*entrada\b', r'\binicio\b',
+            r'\bcomenzar\b', r'\bempezar\b'
+        ]
+
+        # Patrones para salida
+        salida_patterns = [
+            r'\bsalida\b', r'\bsalir\b', r'\bmarchar\b', r'\bme\s*voy\b',
+            r'\bcheck\s*out\b', r'\bfichar\s*salida\b', r'\bfin\b',
+            r'\bterminar\b', r'\bacabar\b', r'\bfinalizar\b'
+        ]
+
+        # Buscar patrones de entrada
+        for pattern in entrada_patterns:
+            if re.search(pattern, normalized_text):
+                return 'check_in'
+
+        # Buscar patrones de salida
+        for pattern in salida_patterns:
+            if re.search(pattern, normalized_text):
+                return 'check_out'
+
+        return None
+
+    def _find_employee_by_phone(self, phone_number):
+        """
+        Busca un empleado por su número de teléfono/WhatsApp
+        """
+        try:
+            # Limpiar número de teléfono (quitar caracteres no numéricos)
+            clean_phone = re.sub(r'[^\d]', '', phone_number)
+
+            print(f"🔍 Buscando empleado con teléfono: {phone_number} (limpio: {clean_phone})")
+
+            # Buscar en diferentes campos donde podría estar el teléfono
+            domain = [
+                '|', '|', '|',
+                ('mobile_phone', 'ilike', phone_number),
+                ('work_phone', 'ilike', phone_number),
+                ('mobile_phone', 'ilike', clean_phone),
+                ('work_phone', 'ilike', clean_phone)
+            ]
+
+            # Si el número tiene código de país, también buscar sin él
+            if len(clean_phone) > 9:
+                # Intentar sin código de país (últimos 9 dígitos)
+                local_phone = clean_phone[-9:]
+                domain.extend([
+                    '|', '|',
+                    ('mobile_phone', 'ilike', local_phone),
+                    ('work_phone', 'ilike', local_phone)
+                ])
+
+            employee = request.env['hr.employee'].sudo().search(domain, limit=1)
+
+            if employee:
+                print(f"✅ Empleado encontrado: {employee.name}")
+                print(f"   Teléfono móvil: {employee.mobile_phone}")
+                print(f"   Teléfono trabajo: {employee.work_phone}")
+            else:
+                print(f"❌ No se encontró empleado")
+
+            return employee
+
+        except Exception as e:
+            print(f"❌ Error buscando empleado: {e}")
+            _logger.error("Error buscando empleado por teléfono: %s", e)
+            return None
+
+    def _register_attendance(self, employee, attendance_type):
+        """
+        Registra la asistencia del empleado
+        """
+        try:
+            print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
+
+            # Buscar si ya tiene una asistencia abierta hoy
+            today = datetime.now().date()
+            existing_attendance = request.env['hr.attendance'].sudo().search([
+                ('employee_id', '=', employee.id),
+                ('check_in', '>=', f"{today} 00:00:00"),
+                ('check_out', '=', False)
+            ], limit=1)
+
+            if attendance_type == 'check_in':
+                if existing_attendance:
+                    print(f"⚠️ El empleado ya tiene una entrada registrada hoy")
+                    return False
+
+                # Crear nueva entrada
+                attendance = request.env['hr.attendance'].sudo().create({
+                    'employee_id': employee.id,
+                    'check_in': datetime.now(),
+                })
+                print(f"✅ Entrada registrada - ID: {attendance.id}")
+                return attendance
+
+            elif attendance_type == 'check_out':
+                if not existing_attendance:
+                    print(f"⚠️ No se encontró entrada previa para registrar salida")
+                    return False
+
+                # Actualizar con la salida
+                existing_attendance.sudo().write({
+                    'check_out': datetime.now()
+                })
+                print(f"✅ Salida registrada - ID: {existing_attendance.id}")
+                return existing_attendance
+
+            return False
+
+        except Exception as e:
+            print(f"❌ Error registrando asistencia: {e}")
+            _logger.error("Error registrando asistencia: %s", e)
+            return False
+
+    def _send_confirmation_message(self, phone_number, attendance_type, employee):
+        """
+        Envía mensaje de confirmación al empleado (funcionalidad futura)
+        """
+        action_text = "entrada" if attendance_type == 'check_in' else "salida"
+        time_now = datetime.now().strftime("%H:%M")
+
+        print(f"📤 [FUTURO] Enviar confirmación a {phone_number}:")
+        print(f"    '✅ {employee.name}, tu {action_text} ha sido registrada a las {time_now}'")
+
+    def _send_error_message(self, phone_number, error_message):
+        """
+        Envía mensaje de error al remitente (funcionalidad futura)
+        """
+        print(f"📤 [FUTURO] Enviar error a {phone_number}: '{error_message}'")
 
     @http.route('/whatsapp/webhook/', methods=['GET'], type="http", auth="public", csrf=False)
     def webhookget(self, **kwargs):
