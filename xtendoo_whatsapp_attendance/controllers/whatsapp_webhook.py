@@ -465,10 +465,44 @@ class WhatsAppAttendanceWebhook(Webhook):
         """
         try:
             action_text = "entrada" if attendance_type == 'check_in' else "salida"
-            time_now = datetime.now().strftime("%H:%M")
+
+            # Obtener la hora real de la asistencia registrada
+            today = datetime.now().date()
+            if attendance_type == 'check_in':
+                # Buscar la entrada más reciente de hoy
+                attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '=', False)
+                ], limit=1, order='check_in desc')
+
+                if attendance and attendance.check_in:
+                    # Convertir a hora local y formatear
+                    attendance_time = attendance.check_in.strftime("%H:%M")
+                    print(f"🕐 Hora real de entrada: {attendance_time}")
+                else:
+                    attendance_time = datetime.now().strftime("%H:%M")
+                    print(f"⚠️ No se encontró registro de entrada, usando hora actual: {attendance_time}")
+
+            else:  # check_out
+                # Buscar la asistencia con salida más reciente de hoy
+                attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '!=', False)
+                ], limit=1, order='check_out desc')
+
+                if attendance and attendance.check_out:
+                    # Convertir a hora local y formatear
+                    attendance_time = attendance.check_out.strftime("%H:%M")
+                    print(f"🕐 Hora real de salida: {attendance_time}")
+                else:
+                    attendance_time = datetime.now().strftime("%H:%M")
+                    print(f"⚠️ No se encontró registro de salida, usando hora actual: {attendance_time}")
+
             date_now = datetime.now().strftime("%d/%m/%Y")
 
-            message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente.\n\n🕐 Hora: {time_now}\n📅 Fecha: {date_now}\n\n¡Que tengas un buen día!"
+            message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente.\n\n🕐 Hora: {attendance_time}\n📅 Fecha: {date_now}\n\n¡Que tengas un buen día!"
 
             print(f"📤 Enviando confirmación a {phone_number}: {message}")
 
