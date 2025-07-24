@@ -112,9 +112,10 @@ class CalendarEvent(models.Model):
 
         for alarm in whatsapp_alarms:
             # Calcular cuándo se debe enviar el recordatorio
-            reminder_time = self.start - fields.Datetime.to_datetime(
-                f"1970-01-01 {alarm.duration_minutes//60:02d}:{alarm.duration_minutes%60:02d}:00"
-            )
+            # Convertir duration_minutes a timedelta y restar del tiempo de inicio
+            from datetime import timedelta
+            reminder_delta = timedelta(minutes=alarm.duration_minutes)
+            reminder_time = self.start - reminder_delta
 
             # Si es tiempo de enviar el recordatorio
             if current_time >= reminder_time and not self.whatsapp_reminder_sent:
