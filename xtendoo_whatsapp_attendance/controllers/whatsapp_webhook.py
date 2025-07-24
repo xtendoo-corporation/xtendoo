@@ -351,40 +351,29 @@ class WhatsAppAttendanceWebhook(Webhook):
         """
         try:
             print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
-
-            # VERIFICAR REGISTROS DE HORAS EXTRAS ANTES DE HACER NADA
-            today = datetime.now().date()
-            overtime_before = request.env['hr.attendance'].sudo().search([
-                ('employee_id', '=', employee.id),
-                ('date', '=', today)
-            ])
-            print(f"🕐 Registros de asistencia ANTES de {attendance_type}: {len(overtime_before)}")
+            print(f"📊 Estado actual del empleado: {employee.attendance_state}")
 
             if attendance_type == 'check_in':
-                # Usar el método nativo de Odoo para check-in
-                print(f"🔄 Usando método nativo de Odoo para entrada...")
-
                 # Verificar si ya está trabajando
                 if employee.attendance_state == 'checked_in':
                     print(f"⚠️ El empleado ya está marcado como presente")
                     return False
 
-                # Usar el método nativo employee_check_in
+                print(f"🔄 Usando método nativo de Odoo para entrada...")
+                # Usar el método nativo para check-in
                 attendance = employee.sudo()._attendance_action_change()
 
                 print(f"✅ Entrada registrada con método nativo - ID: {attendance.id}")
                 return attendance
 
             elif attendance_type == 'check_out':
-                # Usar el método nativo de Odoo para check-out
-                print(f"🔄 Usando método nativo de Odoo para salida...")
-
                 # Verificar si está trabajando
                 if employee.attendance_state == 'checked_out':
                     print(f"⚠️ El empleado ya está marcado como ausente")
                     return False
 
-                # Usar el método nativo employee_check_out
+                print(f"🔄 Usando método nativo de Odoo para salida...")
+                # Usar el método nativo para check-out
                 attendance = employee.sudo()._attendance_action_change()
 
                 print(f"✅ Salida registrada con método nativo - ID: {attendance.id}")
@@ -549,12 +538,31 @@ class WhatsAppAttendanceWebhook(Webhook):
         try:
             import requests
 
+            # Obtener el token de acceso (puede estar en diferentes campos según la versión)
+            access_token = None
+
+            # Intentar diferentes nombres de campos para el token
+            token_fields = ['access_token', 'token', 'app_secret', 'permanent_access_token']
+
+            for field in token_fields:
+                if hasattr(wa_account, field):
+                    token_value = getattr(wa_account, field)
+                    if token_value:
+                        access_token = token_value
+                        print(f"🔑 Token encontrado en campo: {field}")
+                        break
+
+            if not access_token:
+                print(f"❌ No se encontró token de acceso en la cuenta de WhatsApp")
+                print(f"   Campos disponibles: {[field for field in dir(wa_account) if not field.startswith('_') and 'token' in field.lower()]}")
+                return False
+
             # URL de la API de WhatsApp Business
             url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
 
             # Headers de la petición
             headers = {
-                'Authorization': f'Bearer {wa_account.access_token}',
+                'Authorization': f'Bearer {access_token}',
                 'Content-Type': 'application/json'
             }
 
@@ -574,6 +582,7 @@ class WhatsAppAttendanceWebhook(Webhook):
             print(f"📡 Enviando a API WhatsApp:")
             print(f"   URL: {url}")
             print(f"   Teléfono: {clean_phone}")
+            print(f"   Token: {access_token[:20]}..." if access_token else "Sin token")
             print(f"   Mensaje: {message[:50]}...")
 
             # Realizar la petición
