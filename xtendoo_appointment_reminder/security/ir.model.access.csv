@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_calendar_alarm_whatsapp_user,calendar.alarm.whatsapp.user,calendar.model_calendar_alarm,base.group_user,1,1,1,1
+access_calendar_event_whatsapp_user,calendar.event.whatsapp.user,calendar.model_calendar_event,base.group_user,1,1,1,1
+

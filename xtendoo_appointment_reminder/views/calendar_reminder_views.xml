@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista formulario para alarmas de calendario con WhatsApp -->
+    <record id="view_calendar_alarm_form_whatsapp" model="ir.ui.view">
+        <field name="name">calendar.alarm.form.whatsapp</field>
+        <field name="model">calendar.alarm</field>
+        <field name="arch" type="xml">
+            <form string="Recordatorio de Calendario">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="alarm_type"/>
+                            <field name="duration"/>
+                            <field name="interval"/>
+                        </group>
+                        <group>
+                            <field name="whatsapp_template_id"
+                                   invisible="alarm_type != 'whatsapp'"
+                                   required="alarm_type == 'whatsapp'"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista lista para alarmas de calendario con WhatsApp -->
+    <record id="view_calendar_alarm_tree_whatsapp" model="ir.ui.view">
+        <field name="name">calendar.alarm.tree.whatsapp</field>
+        <field name="model">calendar.alarm</field>
+        <field name="arch" type="xml">
+            <list string="Recordatorios de Calendario">
+                <field name="name"/>
+                <field name="alarm_type"/>
+                <field name="duration"/>
+                <field name="interval"/>
+                <field name="whatsapp_template_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Acción para configurar recordatorios WhatsApp -->
+    <record id="action_calendar_alarm_whatsapp" model="ir.actions.act_window">
+        <field name="name">Recordatorios WhatsApp</field>
+        <field name="res_model">calendar.alarm</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('alarm_type', '=', 'whatsapp')]</field>
+        <field name="context">{'default_alarm_type': 'whatsapp'}</field>
+        <field name="help">Configure recordatorios automáticos por WhatsApp para eventos de calendario.</field>
+    </record>
+
+    <!-- Menú para recordatorios WhatsApp -->
+    <menuitem id="menu_calendar_alarm_whatsapp"
+              name="Recordatorios WhatsApp"
+              parent="calendar.menu_calendar_configuration"
+              action="action_calendar_alarm_whatsapp"
+              sequence="15"/>
+</odoo>

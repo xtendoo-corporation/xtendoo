@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista formulario extendida para eventos de calendario -->
+    <record id="view_calendar_event_form_whatsapp" model="ir.ui.view">
+        <field name="name">calendar.event.form.whatsapp</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="WhatsApp" name="whatsapp_info">
+                    <group>
+                        <group string="Estado WhatsApp">
+                            <field name="whatsapp_reminder_sent" readonly="1"/>
+                            <field name="whatsapp_reminder_date" readonly="1"/>
+                            <field name="whatsapp_reminder_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <div class="oe_button_box">
+                        <button name="action_send_whatsapp_reminder"
+                                type="object"
+                                class="btn btn-primary"
+                                string="Enviar Recordatorio WhatsApp"
+                                icon="fa-whatsapp"/>
+                    </div>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <!-- Vista lista extendida para eventos de calendario -->
+    <record id="view_calendar_event_tree_whatsapp" model="ir.ui.view">
+        <field name="name">calendar.event.tree.whatsapp</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_tree"/>
+        <field name="arch" type="xml">
+            <field name="partner_ids" position="after">
+                <field name="whatsapp_reminder_sent" optional="hide"/>
+                <field name="whatsapp_reminder_count" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Acción para eventos con recordatorios WhatsApp -->
+    <record id="action_calendar_event_whatsapp_reminders" model="ir.actions.act_window">
+        <field name="name">Eventos con WhatsApp</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="domain">[('alarm_ids.alarm_type', '=', 'whatsapp')]</field>
+        <field name="help">Eventos que tienen configurados recordatorios por WhatsApp.</field>
+    </record>
+
+    <!-- Menú para eventos con WhatsApp -->
+    <menuitem id="menu_calendar_event_whatsapp"
+              name="Eventos WhatsApp"
+              parent="calendar.menu_calendar_configuration"
+              action="action_calendar_event_whatsapp_reminders"
+              sequence="20"/>
+</odoo>

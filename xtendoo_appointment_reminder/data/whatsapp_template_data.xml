@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Plantilla predeterminada para recordatorios de citas -->
+    <record id="whatsapp_template_appointment_reminder" model="whatsapp.template">
+        <field name="name">Recordatorio de Cita - WhatsApp</field>
+        <field name="model">calendar.event</field>
+        <field name="body">📅 *Recordatorio de Cita*
+
+Hola {{ object.partner_id.name or 'Estimado cliente' }},
+
+Te recordamos tu cita programada:
+
+📋 *Asunto:* {{ object.name }}
+📅 *Fecha:* {{ object.start.strftime('%d/%m/%Y') if object.start else 'Por confirmar' }}
+🕐 *Hora:* {{ object.start.strftime('%H:%M') if object.start else 'Por confirmar' }}
+📍 *Ubicación:* {{ object.location or 'Por confirmar' }}
+
+{% if object.description %}
+📝 *Detalles:* {{ object.description }}
+{% endif %}
+
+Si necesitas cancelar o reprogramar, por favor contáctanos con anticipación.
+
+¡Te esperamos!
+
+{{ object.env.company.name }}</field>
+        <field name="status">approved</field>
+    </record>
+
+    <!-- Plantilla para confirmación de cita -->
+    <record id="whatsapp_template_appointment_confirmation" model="whatsapp.template">
+        <field name="name">Confirmación de Cita - WhatsApp</field>
+        <field name="model">calendar.event</field>
+        <field name="body">✅ *Cita Confirmada*
+
+Hola {{ object.partner_id.name or 'Estimado cliente' }},
+
+Tu cita ha sido confirmada:
+
+📋 *Asunto:* {{ object.name }}
+📅 *Fecha:* {{ object.start.strftime('%d/%m/%Y') if object.start else 'Por confirmar' }}
+🕐 *Hora:* {{ object.start.strftime('%H:%M') if object.start else 'Por confirmar' }}
+📍 *Ubicación:* {{ object.location or 'Por confirmar' }}
+
+Te enviaremos un recordatorio antes de la cita.
+
+¡Gracias por confiar en nosotros!
+
+{{ object.env.company.name }}</field>
+        <field name="status">approved</field>
+    </record>
+
+    <!-- Plantilla para cancelación de cita -->
+    <record id="whatsapp_template_appointment_cancellation" model="whatsapp.template">
+        <field name="name">Cancelación de Cita - WhatsApp</field>
+        <field name="model">calendar.event</field>
+        <field name="body">❌ *Cita Cancelada*
+
+Hola {{ object.partner_id.name or 'Estimado cliente' }},
+
+Te informamos que tu cita ha sido cancelada:
+
+📋 *Asunto:* {{ object.name }}
+📅 *Fecha:* {{ object.start.strftime('%d/%m/%Y') if object.start else 'Por confirmar' }}
+🕐 *Hora:* {{ object.start.strftime('%H:%M') if object.start else 'Por confirmar' }}
+
+Si deseas reprogramar, por favor contáctanos.
+
+Disculpa las molestias.
+
+{{ object.env.company.name }}</field>
+        <field name="status">approved</field>
+    </record>
+</odoo>
