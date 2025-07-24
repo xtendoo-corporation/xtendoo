@@ -352,9 +352,18 @@ class WhatsAppAttendanceWebhook(Webhook):
         try:
             print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
 
+            # VERIFICAR REGISTROS DE HORAS EXTRAS ANTES DE HACER NADA
+            today = datetime.now().date()
+            overtime_before = request.env['hr.attendance.overtime'].sudo().search([
+                ('employee_id', '=', employee.id),
+                ('date', '=', today)
+            ])
+            print(f"🕐 Registros de horas extras ANTES de {attendance_type}: {len(overtime_before)}")
+            for ot in overtime_before:
+                print(f"   - ID: {ot.id}, Duración: {ot.duration}, Creado: {ot.create_date}")
+
             if attendance_type == 'check_in':
                 # Verificar si ya tiene una entrada hoy
-                today = datetime.now().date()
                 existing_attendance = request.env['hr.attendance'].sudo().search([
                     ('employee_id', '=', employee.id),
                     ('check_in', '>=', f"{today} 00:00:00"),
@@ -365,18 +374,27 @@ class WhatsAppAttendanceWebhook(Webhook):
                     print(f"⚠️ El empleado ya tiene una entrada registrada hoy a las {existing_attendance.check_in}")
                     return False
 
+                print(f"🔄 Creando entrada de asistencia...")
                 # Crear nueva entrada usando método estándar de Odoo
                 attendance = request.env['hr.attendance'].sudo().create({
                     'employee_id': employee.id,
                     'check_in': datetime.now(),
                 })
 
+                # VERIFICAR REGISTROS DE HORAS EXTRAS DESPUÉS DE LA ENTRADA
+                overtime_after = request.env['hr.attendance.overtime'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('date', '=', today)
+                ])
+                print(f"🕐 Registros de horas extras DESPUÉS de crear entrada: {len(overtime_after)}")
+                for ot in overtime_after:
+                    print(f"   - ID: {ot.id}, Duración: {ot.duration}, Creado: {ot.create_date}")
+
                 print(f"✅ Entrada registrada - ID: {attendance.id}")
                 return attendance
 
             elif attendance_type == 'check_out':
                 # Buscar la entrada abierta más reciente
-                today = datetime.now().date()
                 existing_attendance = request.env['hr.attendance'].sudo().search([
                     ('employee_id', '=', employee.id),
                     ('check_in', '>=', f"{today} 00:00:00"),
@@ -387,10 +405,20 @@ class WhatsAppAttendanceWebhook(Webhook):
                     print(f"⚠️ No se encontró entrada previa para registrar salida")
                     return False
 
+                print(f"🔄 Actualizando salida de asistencia...")
                 # Registrar salida usando método estándar de Odoo
                 existing_attendance.sudo().write({
                     'check_out': datetime.now()
                 })
+
+                # VERIFICAR REGISTROS DE HORAS EXTRAS DESPUÉS DE LA SALIDA
+                overtime_after = request.env['hr.attendance.overtime'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('date', '=', today)
+                ])
+                print(f"🕐 Registros de horas extras DESPUÉS de registrar salida: {len(overtime_after)}")
+                for ot in overtime_after:
+                    print(f"   - ID: {ot.id}, Duración: {ot.duration}, Creado: {ot.create_date}")
 
                 print(f"✅ Salida registrada - ID: {existing_attendance.id}")
                 return existing_attendance
@@ -602,4 +630,3 @@ class WhatsAppAttendanceWebhook(Webhook):
             print(f"❌ Error llamando API WhatsApp: {e}")
             _logger.error("Error llamando API WhatsApp: %s", e)
             return False
-
