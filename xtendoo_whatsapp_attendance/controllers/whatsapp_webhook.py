@@ -347,18 +347,14 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _register_attendance(self, employee, attendance_type):
         """
-        Registra la asistencia del empleado limpiando primero duplicados de horas extras
+        Registra la asistencia del empleado usando los métodos estándar de Odoo
         """
         try:
             print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
 
-            # Limpiar posibles registros duplicados de horas extras ANTES de crear asistencia
-            self._clean_overtime_duplicates(employee)
-
-            today = datetime.now().date()
-
             if attendance_type == 'check_in':
-                # Verificar si ya existe entrada hoy
+                # Verificar si ya tiene una entrada hoy
+                today = datetime.now().date()
                 existing_attendance = request.env['hr.attendance'].sudo().search([
                     ('employee_id', '=', employee.id),
                     ('check_in', '>=', f"{today} 00:00:00"),
@@ -369,12 +365,95 @@ class WhatsAppAttendanceWebhook(Webhook):
                     print(f"⚠️ El empleado ya tiene una entrada registrada hoy a las {existing_attendance.check_in}")
                     return False
 
-                # Crear nueva entrada con manejo de errores robusto
-                attendance = self._create_attendance_safe(employee, 'check_in')
-                if attendance:
-                    print(f"✅ Entrada registrada - ID: {attendance.id}")
-                    return attendance
-                return False
+                # Crear nueva entrada usando método estándar de Odoo
+                attendance = request.env['hr.attendance'].sudo().create({
+                    'employee_id': employee.id,
+                    'check_in': datetime.now(),
+                })
+
+                print(f"✅ Entrada registrada - ID: {attendance.id}")
+                return attendance
+
+            elif attendance_type == 'check_out':
+                # Buscar la entrada abierta más reciente
+                today = datetime.now().date()
+                existing_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '=', False)
+                ], limit=1, order='check_in desc')
+
+                if not existing_attendance:
+                    print(f"⚠️ No se encontró entrada previa para registrar salida")
+                    return False
+
+                # Registrar salida usando método estándar de Odoo
+                existing_attendance.sudo().write({
+                    'check_out': datetime.now()
+                })
+
+                print(f"✅ Salida registrada - ID: {existing_attendance.id}")
+                return existing_attendance
+
+            return False
+
+        except Exception as e:
+            print(f"❌ Error registrando asistencia: {e}")
+            _logger.error("Error registrando asistencia: %s", e)
+
+            # Si hay un error específico de horas extras, intentamos solucionarlo
+            if "hr_attendance_overtime_unique_employee_per_day" in str(e):
+                print("🔧 Detectado error de duplicado en horas extras, intentando solucionarlo...")
+                return self._handle_overtime_duplicate_error(employee, attendance_type)
+
+            return False
+
+    def _handle_overtime_duplicate_error(self, employee, attendance_type):
+        """
+        Maneja específicamente los errores de duplicados en horas extras
+        """
+        try:
+            today = datetime.now().date()
+
+            # Limpiar registros duplicados de horas extras
+            print("🧹 Limpiando registros duplicados de horas extras...")
+            overtime_records = request.env['hr.attendance.overtime'].sudo().search([
+                ('employee_id', '=', employee.id),
+                ('date', '=', today)
+            ])
+
+            if len(overtime_records) > 1:
+                print(f"   Encontrados {len(overtime_records)} registros duplicados")
+                # Eliminar todos los registros de horas extras de hoy para este empleado
+                overtime_records.sudo().unlink()
+                print("   ✅ Registros duplicados eliminados")
+
+                # Hacer commit para aplicar los cambios
+                request.env.cr.commit()
+
+            # Intentar registrar la asistencia nuevamente
+            print("🔄 Reintentando registro de asistencia...")
+
+            if attendance_type == 'check_in':
+                # Verificar nuevamente si existe entrada
+                existing_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '=', False)
+                ], limit=1)
+
+                if existing_attendance:
+                    print(f"⚠️ El empleado ya tiene una entrada registrada")
+                    return False
+
+                # Crear entrada
+                attendance = request.env['hr.attendance'].sudo().create({
+                    'employee_id': employee.id,
+                    'check_in': datetime.now(),
+                })
+
+                print(f"✅ Entrada registrada después de limpiar duplicados - ID: {attendance.id}")
+                return attendance
 
             elif attendance_type == 'check_out':
                 # Buscar entrada abierta
@@ -382,115 +461,24 @@ class WhatsAppAttendanceWebhook(Webhook):
                     ('employee_id', '=', employee.id),
                     ('check_in', '>=', f"{today} 00:00:00"),
                     ('check_out', '=', False)
-                ], limit=1)
+                ], limit=1, order='check_in desc')
 
                 if not existing_attendance:
                     print(f"⚠️ No se encontró entrada previa para registrar salida")
                     return False
 
-                # Actualizar con la salida
-                result = self._update_attendance_safe(existing_attendance, 'check_out')
-                if result:
-                    print(f"✅ Salida registrada - ID: {existing_attendance.id}")
-                    return existing_attendance
-                return False
+                # Registrar salida
+                existing_attendance.sudo().write({
+                    'check_out': datetime.now()
+                })
 
+                print(f"✅ Salida registrada después de limpiar duplicados - ID: {existing_attendance.id}")
+                return existing_attendance
+
+        except Exception as e2:
+            print(f"❌ Error al manejar duplicados de horas extras: {e2}")
+            _logger.error("Error manejando duplicados de horas extras: %s", e2)
             return False
-
-        except Exception as e:
-            print(f"❌ Error general registrando asistencia: {e}")
-            _logger.error("Error general registrando asistencia: %s", e)
-            return False
-
-    def _clean_overtime_duplicates(self, employee):
-        """
-        Limpia registros duplicados de horas extras para evitar conflictos
-        """
-        try:
-            today = datetime.now().date()
-
-            # Buscar registros de horas extras duplicados para hoy
-            overtime_records = request.env['hr.attendance.overtime'].sudo().search([
-                ('employee_id', '=', employee.id),
-                ('date', '=', today)
-            ])
-
-            if len(overtime_records) > 1:
-                print(f"🧹 Limpiando {len(overtime_records)} registros duplicados de horas extras")
-                # Mantener solo el primero, eliminar el resto
-                overtime_records[1:].unlink()
-                print(f"✅ Duplicados eliminados")
-
-        except Exception as e:
-            print(f"⚠️ Error limpiando duplicados de horas extras: {e}")
-            # No fallar por esto, es solo limpieza preventiva
-
-    def _create_attendance_safe(self, employee, attendance_type):
-        """
-        Crea un registro de asistencia de forma segura con múltiples intentos
-        """
-        attempts = [
-            # Intento 1: Con contexto para evitar horas extras
-            {'context': {'no_attendance_overtime': True, 'skip_overtime_calculation': True}},
-            # Intento 2: Sin contexto especial
-            {'context': {}},
-            # Intento 3: Deshabilitando triggers automáticos
-            {'context': {'tracking_disable': True, 'mail_notrack': True}},
-        ]
-
-        for i, attempt in enumerate(attempts, 1):
-            try:
-                print(f"🔄 Intento {i} de creación de asistencia...")
-
-                with request.env.cr.savepoint():
-                    attendance = request.env['hr.attendance'].sudo().with_context(**attempt['context']).create({
-                        'employee_id': employee.id,
-                        'check_in': datetime.now(),
-                    })
-                    print(f"✅ Asistencia creada exitosamente en intento {i}")
-                    return attendance
-
-            except Exception as e:
-                print(f"❌ Intento {i} falló: {e}")
-                if i == len(attempts):
-                    print(f"❌ Todos los intentos fallaron")
-                    return False
-                continue
-
-        return False
-
-    def _update_attendance_safe(self, attendance, attendance_type):
-        """
-        Actualiza un registro de asistencia de forma segura
-        """
-        attempts = [
-            # Intento 1: Con contexto para evitar horas extras
-            {'context': {'no_attendance_overtime': True, 'skip_overtime_calculation': True}},
-            # Intento 2: Sin contexto especial
-            {'context': {}},
-            # Intento 3: Deshabilitando triggers automáticos
-            {'context': {'tracking_disable': True, 'mail_notrack': True}},
-        ]
-
-        for i, attempt in enumerate(attempts, 1):
-            try:
-                print(f"🔄 Intento {i} de actualización de asistencia...")
-
-                with request.env.cr.savepoint():
-                    attendance.sudo().with_context(**attempt['context']).write({
-                        'check_out': datetime.now()
-                    })
-                    print(f"✅ Asistencia actualizada exitosamente en intento {i}")
-                    return True
-
-            except Exception as e:
-                print(f"❌ Intento {i} falló: {e}")
-                if i == len(attempts):
-                    print(f"❌ Todos los intentos fallaron")
-                    return False
-                continue
-
-        return False
 
     def _send_confirmation_message(self, phone_number, attendance_type, employee):
         """
