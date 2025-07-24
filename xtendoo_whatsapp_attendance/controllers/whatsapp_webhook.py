@@ -464,7 +464,17 @@ class WhatsAppAttendanceWebhook(Webhook):
         Envía mensaje de confirmación al empleado via WhatsApp
         """
         try:
+            from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+            from datetime import timezone
+            import pytz
+
             action_text = "entrada" if attendance_type == 'check_in' else "salida"
+
+            # Obtener la zona horaria del usuario o del sistema
+            user_tz = request.env.user.tz or 'Europe/Madrid'  # Por defecto España
+            local_tz = pytz.timezone(user_tz)
+
+            print(f"🌍 Zona horaria detectada: {user_tz}")
 
             # Obtener la hora real de la asistencia registrada
             today = datetime.now().date()
@@ -477,12 +487,17 @@ class WhatsAppAttendanceWebhook(Webhook):
                 ], limit=1, order='check_in desc')
 
                 if attendance and attendance.check_in:
-                    # Convertir a hora local y formatear
-                    attendance_time = attendance.check_in.strftime("%H:%M")
-                    print(f"🕐 Hora real de entrada: {attendance_time}")
+                    # Convertir de UTC a zona horaria local
+                    utc_time = attendance.check_in.replace(tzinfo=pytz.UTC)
+                    local_time = utc_time.astimezone(local_tz)
+                    attendance_time = local_time.strftime("%H:%M")
+                    print(f"🕐 Hora UTC: {attendance.check_in.strftime('%H:%M')}")
+                    print(f"🕐 Hora local ({user_tz}): {attendance_time}")
                 else:
-                    attendance_time = datetime.now().strftime("%H:%M")
-                    print(f"⚠️ No se encontró registro de entrada, usando hora actual: {attendance_time}")
+                    # Si no se encuentra, usar hora actual en zona local
+                    now_local = datetime.now(local_tz)
+                    attendance_time = now_local.strftime("%H:%M")
+                    print(f"⚠️ No se encontró registro de entrada, usando hora actual local: {attendance_time}")
 
             else:  # check_out
                 # Buscar la asistencia con salida más reciente de hoy
@@ -493,12 +508,17 @@ class WhatsAppAttendanceWebhook(Webhook):
                 ], limit=1, order='check_out desc')
 
                 if attendance and attendance.check_out:
-                    # Convertir a hora local y formatear
-                    attendance_time = attendance.check_out.strftime("%H:%M")
-                    print(f"🕐 Hora real de salida: {attendance_time}")
+                    # Convertir de UTC a zona horaria local
+                    utc_time = attendance.check_out.replace(tzinfo=pytz.UTC)
+                    local_time = utc_time.astimezone(local_tz)
+                    attendance_time = local_time.strftime("%H:%M")
+                    print(f"🕐 Hora UTC: {attendance.check_out.strftime('%H:%M')}")
+                    print(f"🕐 Hora local ({user_tz}): {attendance_time}")
                 else:
-                    attendance_time = datetime.now().strftime("%H:%M")
-                    print(f"⚠️ No se encontró registro de salida, usando hora actual: {attendance_time}")
+                    # Si no se encuentra, usar hora actual en zona local
+                    now_local = datetime.now(local_tz)
+                    attendance_time = now_local.strftime("%H:%M")
+                    print(f"⚠️ No se encontró registro de salida, usando hora actual local: {attendance_time}")
 
             date_now = datetime.now().strftime("%d/%m/%Y")
 
