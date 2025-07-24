@@ -347,49 +347,113 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _register_attendance(self, employee, attendance_type):
         """
-        Registra la asistencia del empleado
+        Registra la asistencia del empleado usando transacciones separadas para evitar conflictos
         """
         try:
             print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
 
-            # Buscar si ya tiene una asistencia abierta hoy
-            today = datetime.now().date()
-            existing_attendance = request.env['hr.attendance'].sudo().search([
-                ('employee_id', '=', employee.id),
-                ('check_in', '>=', f"{today} 00:00:00"),
-                ('check_out', '=', False)
-            ], limit=1)
+            # Usar una nueva transacción para evitar conflictos
+            with request.env.cr.savepoint():
+                # Buscar si ya tiene una asistencia abierta hoy
+                today = datetime.now().date()
+                existing_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '=', False)
+                ], limit=1)
 
-            if attendance_type == 'check_in':
-                if existing_attendance:
-                    print(f"⚠️ El empleado ya tiene una entrada registrada hoy")
-                    return False
+                if attendance_type == 'check_in':
+                    if existing_attendance:
+                        print(f"⚠️ El empleado ya tiene una entrada registrada hoy")
+                        return False
 
-                # Crear nueva entrada
-                attendance = request.env['hr.attendance'].sudo().create({
-                    'employee_id': employee.id,
-                    'check_in': datetime.now(),
-                })
-                print(f"✅ Entrada registrada - ID: {attendance.id}")
-                return attendance
+                    # Crear nueva entrada sin activar el cálculo automático de horas extras
+                    attendance = request.env['hr.attendance'].sudo().with_context(
+                        no_attendance_overtime=True  # Evitar cálculo automático de horas extras
+                    ).create({
+                        'employee_id': employee.id,
+                        'check_in': datetime.now(),
+                    })
+                    print(f"✅ Entrada registrada - ID: {attendance.id}")
+                    return attendance
 
-            elif attendance_type == 'check_out':
-                if not existing_attendance:
-                    print(f"⚠️ No se encontró entrada previa para registrar salida")
-                    return False
+                elif attendance_type == 'check_out':
+                    if not existing_attendance:
+                        print(f"⚠️ No se encontró entrada previa para registrar salida")
+                        return False
 
-                # Actualizar con la salida
-                existing_attendance.sudo().write({
-                    'check_out': datetime.now()
-                })
-                print(f"✅ Salida registrada - ID: {existing_attendance.id}")
-                return existing_attendance
+                    # Actualizar con la salida sin activar el cálculo automático de horas extras
+                    existing_attendance.sudo().with_context(
+                        no_attendance_overtime=True  # Evitar cálculo automático de horas extras
+                    ).write({
+                        'check_out': datetime.now()
+                    })
+                    print(f"✅ Salida registrada - ID: {existing_attendance.id}")
+                    return existing_attendance
 
-            return False
+                return False
 
         except Exception as e:
             print(f"❌ Error registrando asistencia: {e}")
             _logger.error("Error registrando asistencia: %s", e)
+
+            # Si hay error con horas extras, intentar registrar solo la asistencia básica
+            try:
+                print("🔄 Intentando registro básico de asistencia sin cálculo de horas extras...")
+
+                with request.env.cr.savepoint():
+                    if attendance_type == 'check_in':
+                        # Verificar si ya existe entrada hoy
+                        today = datetime.now().date()
+                        existing = request.env['hr.attendance'].sudo().search([
+                            ('employee_id', '=', employee.id),
+                            ('check_in', '>=', f"{today} 00:00:00"),
+                            ('check_out', '=', False)
+                        ], limit=1)
+
+                        if existing:
+                            print(f"⚠️ Ya existe entrada para hoy")
+                            return False
+
+                        # Crear solo el registro de asistencia básico
+                        attendance = request.env['hr.attendance'].sudo().create({
+                            'employee_id': employee.id,
+                            'check_in': datetime.now(),
+                        })
+
+                        # Hacer commit inmediato para evitar conflictos
+                        request.env.cr.commit()
+                        print(f"✅ Entrada básica registrada - ID: {attendance.id}")
+                        return attendance
+
+                    elif attendance_type == 'check_out':
+                        # Buscar entrada abierta
+                        today = datetime.now().date()
+                        existing_attendance = request.env['hr.attendance'].sudo().search([
+                            ('employee_id', '=', employee.id),
+                            ('check_in', '>=', f"{today} 00:00:00"),
+                            ('check_out', '=', False)
+                        ], limit=1)
+
+                        if not existing_attendance:
+                            print(f"⚠️ No hay entrada abierta para cerrar")
+                            return False
+
+                        # Actualizar solo la salida
+                        existing_attendance.sudo().write({
+                            'check_out': datetime.now()
+                        })
+
+                        # Hacer commit inmediato
+                        request.env.cr.commit()
+                        print(f"✅ Salida básica registrada - ID: {existing_attendance.id}")
+                        return existing_attendance
+
+            except Exception as e2:
+                print(f"❌ Error en registro básico: {e2}")
+                _logger.error("Error en registro básico de asistencia: %s", e2)
+                return False
+
             return False
 
     def _send_confirmation_message(self, phone_number, attendance_type, employee):
