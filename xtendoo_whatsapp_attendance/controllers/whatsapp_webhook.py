@@ -347,92 +347,54 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _register_attendance(self, employee, attendance_type):
         """
-        Registra la asistencia del empleado usando los métodos estándar de Odoo
+        Registra la asistencia del empleado usando los métodos nativos de Odoo
         """
         try:
             print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
 
             # VERIFICAR REGISTROS DE HORAS EXTRAS ANTES DE HACER NADA
             today = datetime.now().date()
-            overtime_before = request.env['hr.attendance.overtime'].sudo().search([
+            overtime_before = request.env['hr.attendance'].sudo().search([
                 ('employee_id', '=', employee.id),
                 ('date', '=', today)
             ])
-            print(f"🕐 Registros de horas extras ANTES de {attendance_type}: {len(overtime_before)}")
-            for ot in overtime_before:
-                print(f"   - ID: {ot.id}, Duración: {ot.duration}, Creado: {ot.create_date}")
+            print(f"🕐 Registros de asistencia ANTES de {attendance_type}: {len(overtime_before)}")
 
             if attendance_type == 'check_in':
-                # Verificar si ya tiene una entrada hoy
-                existing_attendance = request.env['hr.attendance'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('check_in', '>=', f"{today} 00:00:00"),
-                    ('check_out', '=', False)
-                ], limit=1)
+                # Usar el método nativo de Odoo para check-in
+                print(f"🔄 Usando método nativo de Odoo para entrada...")
 
-                if existing_attendance:
-                    print(f"⚠️ El empleado ya tiene una entrada registrada hoy a las {existing_attendance.check_in}")
+                # Verificar si ya está trabajando
+                if employee.attendance_state == 'checked_in':
+                    print(f"⚠️ El empleado ya está marcado como presente")
                     return False
 
-                print(f"🔄 Creando entrada de asistencia...")
-                # Crear nueva entrada usando método estándar de Odoo
-                attendance = request.env['hr.attendance'].sudo().create({
-                    'employee_id': employee.id,
-                    'check_in': datetime.now(),
-                })
+                # Usar el método nativo employee_check_in
+                attendance = employee.sudo()._attendance_action_change()
 
-                # VERIFICAR REGISTROS DE HORAS EXTRAS DESPUÉS DE LA ENTRADA
-                overtime_after = request.env['hr.attendance.overtime'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('date', '=', today)
-                ])
-                print(f"🕐 Registros de horas extras DESPUÉS de crear entrada: {len(overtime_after)}")
-                for ot in overtime_after:
-                    print(f"   - ID: {ot.id}, Duración: {ot.duration}, Creado: {ot.create_date}")
-
-                print(f"✅ Entrada registrada - ID: {attendance.id}")
+                print(f"✅ Entrada registrada con método nativo - ID: {attendance.id}")
                 return attendance
 
             elif attendance_type == 'check_out':
-                # Buscar la entrada abierta más reciente
-                existing_attendance = request.env['hr.attendance'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('check_in', '>=', f"{today} 00:00:00"),
-                    ('check_out', '=', False)
-                ], limit=1, order='check_in desc')
+                # Usar el método nativo de Odoo para check-out
+                print(f"🔄 Usando método nativo de Odoo para salida...")
 
-                if not existing_attendance:
-                    print(f"⚠️ No se encontró entrada previa para registrar salida")
+                # Verificar si está trabajando
+                if employee.attendance_state == 'checked_out':
+                    print(f"⚠️ El empleado ya está marcado como ausente")
                     return False
 
-                print(f"🔄 Actualizando salida de asistencia...")
-                # Registrar salida usando método estándar de Odoo
-                existing_attendance.sudo().write({
-                    'check_out': datetime.now()
-                })
+                # Usar el método nativo employee_check_out
+                attendance = employee.sudo()._attendance_action_change()
 
-                # VERIFICAR REGISTROS DE HORAS EXTRAS DESPUÉS DE LA SALIDA
-                overtime_after = request.env['hr.attendance.overtime'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('date', '=', today)
-                ])
-                print(f"🕐 Registros de horas extras DESPUÉS de registrar salida: {len(overtime_after)}")
-                for ot in overtime_after:
-                    print(f"   - ID: {ot.id}, Duración: {ot.duration}, Creado: {ot.create_date}")
-
-                print(f"✅ Salida registrada - ID: {existing_attendance.id}")
-                return existing_attendance
+                print(f"✅ Salida registrada con método nativo - ID: {attendance.id}")
+                return attendance
 
             return False
 
         except Exception as e:
             print(f"❌ Error registrando asistencia: {e}")
             _logger.error("Error registrando asistencia: %s", e)
-
-            # Si hay un error específico de horas extras, intentamos solucionarlo
-            if "hr_attendance_overtime_unique_employee_per_day" in str(e):
-                print("🔧 Detectado error de duplicado en horas extras, intentando solucionarlo...")
-                return self._handle_overtime_duplicate_error(employee, attendance_type)
 
             return False
 
