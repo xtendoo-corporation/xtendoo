@@ -236,14 +236,85 @@ class WhatsAppAttendanceWebhook(Webhook):
     def _find_employee_by_phone(self, phone_number):
         """
         Busca un empleado por su número de teléfono/WhatsApp
+        Normaliza los números para eliminar códigos de país, espacios y caracteres especiales
         """
         try:
-            # Limpiar número de teléfono (quitar caracteres no numéricos)
+            # Función auxiliar para normalizar números de teléfono
+            def normalize_phone(phone):
+                if not phone:
+                    return ""
+                # Quitar todo excepto números
+                clean = re.sub(r'[^\d]', '', str(phone))
+                # Si empieza con código de país común, quitarlo
+                # España: 34, México: 52, Argentina: 54, Colombia: 57, etc.
+                if len(clean) > 9:
+                    # Códigos de país comunes de 2 dígitos
+                    country_codes_2 = ['34', '52', '54', '57', '58', '51', '56', '55', '33', '49', '44', '39']
+                    # Códigos de país de 1 dígito (como +1 USA/Canadá)
+                    country_codes_1 = ['1']
+
+                    for code in country_codes_2:
+                        if clean.startswith(code) and len(clean) >= len(code) + 9:
+                            return clean[len(code):]
+
+                    for code in country_codes_1:
+                        if clean.startswith(code) and len(clean) >= len(code) + 10:
+                            return clean[len(code):]
+
+                return clean
+
+            # Normalizar el número recibido del webhook
+            normalized_incoming = normalize_phone(phone_number)
+
+            print(f"🔍 Buscando empleado con teléfono:")
+            print(f"   Original: {phone_number}")
+            print(f"   Normalizado: {normalized_incoming}")
+
+            # Buscar todos los empleados que tengan teléfono
+            employees = request.env['hr.employee'].sudo().search([
+                '|',
+                ('mobile_phone', '!=', False),
+                ('work_phone', '!=', False)
+            ])
+
+            print(f"📱 Empleados con teléfono: {len(employees)}")
+
+            # Buscar coincidencia normalizando cada número de empleado
+            for employee in employees:
+                # Normalizar números del empleado
+                mobile_normalized = normalize_phone(employee.mobile_phone)
+                work_normalized = normalize_phone(employee.work_phone)
+
+                print(f"👤 Comparando con {employee.name}:")
+                print(f"   Mobile original: {employee.mobile_phone} → normalizado: {mobile_normalized}")
+                print(f"   Work original: {employee.work_phone} → normalizado: {work_normalized}")
+
+                # Verificar coincidencias exactas
+                if (normalized_incoming and
+                    (normalized_incoming == mobile_normalized or
+                     normalized_incoming == work_normalized)):
+
+                    print(f"✅ ¡COINCIDENCIA ENCONTRADA! Empleado: {employee.name}")
+                    return employee
+
+                # También verificar los últimos 9 dígitos (número local)
+                if len(normalized_incoming) >= 9:
+                    local_incoming = normalized_incoming[-9:]
+
+                    if len(mobile_normalized) >= 9 and local_incoming == mobile_normalized[-9:]:
+                        print(f"✅ ¡COINCIDENCIA POR NÚMERO LOCAL (mobile)! Empleado: {employee.name}")
+                        return employee
+
+                    if len(work_normalized) >= 9 and local_incoming == work_normalized[-9:]:
+                        print(f"✅ ¡COINCIDENCIA POR NÚMERO LOCAL (work)! Empleado: {employee.name}")
+                        return employee
+
+            print(f"❌ No se encontró empleado con el número normalizado: {normalized_incoming}")
+
+            # Búsqueda fallback usando LIKE (método anterior como respaldo)
+            print("🔄 Intentando búsqueda fallback con LIKE...")
             clean_phone = re.sub(r'[^\d]', '', phone_number)
 
-            print(f"🔍 Buscando empleado con teléfono: {phone_number} (limpio: {clean_phone})")
-
-            # Buscar en diferentes campos donde podría estar el teléfono
             domain = [
                 '|', '|', '|',
                 ('mobile_phone', 'ilike', phone_number),
@@ -252,9 +323,7 @@ class WhatsAppAttendanceWebhook(Webhook):
                 ('work_phone', 'ilike', clean_phone)
             ]
 
-            # Si el número tiene código de país, también buscar sin él
             if len(clean_phone) > 9:
-                # Intentar sin código de país (últimos 9 dígitos)
                 local_phone = clean_phone[-9:]
                 domain.extend([
                     '|', '|',
@@ -265,11 +334,9 @@ class WhatsAppAttendanceWebhook(Webhook):
             employee = request.env['hr.employee'].sudo().search(domain, limit=1)
 
             if employee:
-                print(f"✅ Empleado encontrado: {employee.name}")
-                print(f"   Teléfono móvil: {employee.mobile_phone}")
-                print(f"   Teléfono trabajo: {employee.work_phone}")
+                print(f"✅ Empleado encontrado con búsqueda fallback: {employee.name}")
             else:
-                print(f"❌ No se encontró empleado")
+                print(f"❌ No se encontró empleado ni con búsqueda fallback")
 
             return employee
 
