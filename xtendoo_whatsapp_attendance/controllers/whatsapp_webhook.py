@@ -347,218 +347,271 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _register_attendance(self, employee, attendance_type):
         """
-        Registra la asistencia del empleado usando transacciones separadas para evitar conflictos
+        Registra la asistencia del empleado limpiando primero duplicados de horas extras
         """
         try:
             print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
 
-            # Usar una nueva transacción para evitar conflictos
-            with request.env.cr.savepoint():
-                # Buscar si ya tiene una asistencia abierta hoy
-                today = datetime.now().date()
+            # Limpiar posibles registros duplicados de horas extras ANTES de crear asistencia
+            self._clean_overtime_duplicates(employee)
+
+            today = datetime.now().date()
+
+            if attendance_type == 'check_in':
+                # Verificar si ya existe entrada hoy
                 existing_attendance = request.env['hr.attendance'].sudo().search([
                     ('employee_id', '=', employee.id),
                     ('check_in', '>=', f"{today} 00:00:00"),
                     ('check_out', '=', False)
                 ], limit=1)
 
-                if attendance_type == 'check_in':
-                    if existing_attendance:
-                        print(f"⚠️ El empleado ya tiene una entrada registrada hoy")
-                        return False
+                if existing_attendance:
+                    print(f"⚠️ El empleado ya tiene una entrada registrada hoy a las {existing_attendance.check_in}")
+                    return False
 
-                    # Crear nueva entrada sin activar el cálculo automático de horas extras
-                    attendance = request.env['hr.attendance'].sudo().with_context(
-                        no_attendance_overtime=True  # Evitar cálculo automático de horas extras
-                    ).create({
-                        'employee_id': employee.id,
-                        'check_in': datetime.now(),
-                    })
+                # Crear nueva entrada con manejo de errores robusto
+                attendance = self._create_attendance_safe(employee, 'check_in')
+                if attendance:
                     print(f"✅ Entrada registrada - ID: {attendance.id}")
                     return attendance
-
-                elif attendance_type == 'check_out':
-                    if not existing_attendance:
-                        print(f"⚠️ No se encontró entrada previa para registrar salida")
-                        return False
-
-                    # Actualizar con la salida sin activar el cálculo automático de horas extras
-                    existing_attendance.sudo().with_context(
-                        no_attendance_overtime=True  # Evitar cálculo automático de horas extras
-                    ).write({
-                        'check_out': datetime.now()
-                    })
-                    print(f"✅ Salida registrada - ID: {existing_attendance.id}")
-                    return existing_attendance
-
                 return False
 
-        except Exception as e:
-            print(f"❌ Error registrando asistencia: {e}")
-            _logger.error("Error registrando asistencia: %s", e)
+            elif attendance_type == 'check_out':
+                # Buscar entrada abierta
+                existing_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '=', False)
+                ], limit=1)
 
-            # Si hay error con horas extras, intentar registrar solo la asistencia básica
-            try:
-                print("🔄 Intentando registro básico de asistencia sin cálculo de horas extras...")
+                if not existing_attendance:
+                    print(f"⚠️ No se encontró entrada previa para registrar salida")
+                    return False
 
-                with request.env.cr.savepoint():
-                    if attendance_type == 'check_in':
-                        # Verificar si ya existe entrada hoy
-                        today = datetime.now().date()
-                        existing = request.env['hr.attendance'].sudo().search([
-                            ('employee_id', '=', employee.id),
-                            ('check_in', '>=', f"{today} 00:00:00"),
-                            ('check_out', '=', False)
-                        ], limit=1)
-
-                        if existing:
-                            print(f"⚠️ Ya existe entrada para hoy")
-                            return False
-
-                        # Crear solo el registro de asistencia básico
-                        attendance = request.env['hr.attendance'].sudo().create({
-                            'employee_id': employee.id,
-                            'check_in': datetime.now(),
-                        })
-
-                        # Hacer commit inmediato para evitar conflictos
-                        request.env.cr.commit()
-                        print(f"✅ Entrada básica registrada - ID: {attendance.id}")
-                        return attendance
-
-                    elif attendance_type == 'check_out':
-                        # Buscar entrada abierta
-                        today = datetime.now().date()
-                        existing_attendance = request.env['hr.attendance'].sudo().search([
-                            ('employee_id', '=', employee.id),
-                            ('check_in', '>=', f"{today} 00:00:00"),
-                            ('check_out', '=', False)
-                        ], limit=1)
-
-                        if not existing_attendance:
-                            print(f"⚠️ No hay entrada abierta para cerrar")
-                            return False
-
-                        # Actualizar solo la salida
-                        existing_attendance.sudo().write({
-                            'check_out': datetime.now()
-                        })
-
-                        # Hacer commit inmediato
-                        request.env.cr.commit()
-                        print(f"✅ Salida básica registrada - ID: {existing_attendance.id}")
-                        return existing_attendance
-
-            except Exception as e2:
-                print(f"❌ Error en registro básico: {e2}")
-                _logger.error("Error en registro básico de asistencia: %s", e2)
+                # Actualizar con la salida
+                result = self._update_attendance_safe(existing_attendance, 'check_out')
+                if result:
+                    print(f"✅ Salida registrada - ID: {existing_attendance.id}")
+                    return existing_attendance
                 return False
 
             return False
 
+        except Exception as e:
+            print(f"❌ Error general registrando asistencia: {e}")
+            _logger.error("Error general registrando asistencia: %s", e)
+            return False
+
+    def _clean_overtime_duplicates(self, employee):
+        """
+        Limpia registros duplicados de horas extras para evitar conflictos
+        """
+        try:
+            today = datetime.now().date()
+
+            # Buscar registros de horas extras duplicados para hoy
+            overtime_records = request.env['hr.attendance.overtime'].sudo().search([
+                ('employee_id', '=', employee.id),
+                ('date', '=', today)
+            ])
+
+            if len(overtime_records) > 1:
+                print(f"🧹 Limpiando {len(overtime_records)} registros duplicados de horas extras")
+                # Mantener solo el primero, eliminar el resto
+                overtime_records[1:].unlink()
+                print(f"✅ Duplicados eliminados")
+
+        except Exception as e:
+            print(f"⚠️ Error limpiando duplicados de horas extras: {e}")
+            # No fallar por esto, es solo limpieza preventiva
+
+    def _create_attendance_safe(self, employee, attendance_type):
+        """
+        Crea un registro de asistencia de forma segura con múltiples intentos
+        """
+        attempts = [
+            # Intento 1: Con contexto para evitar horas extras
+            {'context': {'no_attendance_overtime': True, 'skip_overtime_calculation': True}},
+            # Intento 2: Sin contexto especial
+            {'context': {}},
+            # Intento 3: Deshabilitando triggers automáticos
+            {'context': {'tracking_disable': True, 'mail_notrack': True}},
+        ]
+
+        for i, attempt in enumerate(attempts, 1):
+            try:
+                print(f"🔄 Intento {i} de creación de asistencia...")
+
+                with request.env.cr.savepoint():
+                    attendance = request.env['hr.attendance'].sudo().with_context(**attempt['context']).create({
+                        'employee_id': employee.id,
+                        'check_in': datetime.now(),
+                    })
+                    print(f"✅ Asistencia creada exitosamente en intento {i}")
+                    return attendance
+
+            except Exception as e:
+                print(f"❌ Intento {i} falló: {e}")
+                if i == len(attempts):
+                    print(f"❌ Todos los intentos fallaron")
+                    return False
+                continue
+
+        return False
+
+    def _update_attendance_safe(self, attendance, attendance_type):
+        """
+        Actualiza un registro de asistencia de forma segura
+        """
+        attempts = [
+            # Intento 1: Con contexto para evitar horas extras
+            {'context': {'no_attendance_overtime': True, 'skip_overtime_calculation': True}},
+            # Intento 2: Sin contexto especial
+            {'context': {}},
+            # Intento 3: Deshabilitando triggers automáticos
+            {'context': {'tracking_disable': True, 'mail_notrack': True}},
+        ]
+
+        for i, attempt in enumerate(attempts, 1):
+            try:
+                print(f"🔄 Intento {i} de actualización de asistencia...")
+
+                with request.env.cr.savepoint():
+                    attendance.sudo().with_context(**attempt['context']).write({
+                        'check_out': datetime.now()
+                    })
+                    print(f"✅ Asistencia actualizada exitosamente en intento {i}")
+                    return True
+
+            except Exception as e:
+                print(f"❌ Intento {i} falló: {e}")
+                if i == len(attempts):
+                    print(f"❌ Todos los intentos fallaron")
+                    return False
+                continue
+
+        return False
+
     def _send_confirmation_message(self, phone_number, attendance_type, employee):
         """
-        Envía mensaje de confirmación al empleado (funcionalidad futura)
+        Envía mensaje de confirmación al empleado via WhatsApp
         """
-        action_text = "entrada" if attendance_type == 'check_in' else "salida"
-        time_now = datetime.now().strftime("%H:%M")
+        try:
+            action_text = "entrada" if attendance_type == 'check_in' else "salida"
+            time_now = datetime.now().strftime("%H:%M")
+            date_now = datetime.now().strftime("%d/%m/%Y")
 
-        print(f"📤 [FUTURO] Enviar confirmación a {phone_number}:")
-        print(f"    '✅ {employee.name}, tu {action_text} ha sido registrada a las {time_now}'")
+            message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente.\n\n🕐 Hora: {time_now}\n📅 Fecha: {date_now}\n\n¡Que tengas un buen día!"
+
+            print(f"📤 Enviando confirmación a {phone_number}: {message}")
+
+            # Buscar la cuenta de WhatsApp activa
+            wa_account = request.env['whatsapp.account'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
+
+            if not wa_account:
+                print(f"❌ No se encontró cuenta de WhatsApp activa")
+                return False
+
+            print(f"📱 Usando cuenta WhatsApp: {wa_account.name}")
+
+            # Enviar mensaje usando la API de WhatsApp
+            success = self._send_whatsapp_message(wa_account, phone_number, message)
+
+            if success:
+                print(f"✅ Mensaje de confirmación enviado exitosamente")
+                return True
+            else:
+                print(f"❌ Error enviando mensaje de confirmación")
+                return False
+
+        except Exception as e:
+            print(f"❌ Error enviando confirmación: {e}")
+            _logger.error("Error enviando confirmación de asistencia: %s", e)
+            return False
 
     def _send_error_message(self, phone_number, error_message):
         """
-        Envía mensaje de error al remitente (funcionalidad futura)
+        Envía mensaje de error al remitente
         """
-        print(f"📤 [FUTURO] Enviar error a {phone_number}: '{error_message}'")
+        try:
+            message = f"❌ *Error de Asistencia*\n\n{error_message}\n\nPor favor, contacta con Recursos Humanos si el problema persiste."
 
-    @http.route('/whatsapp/webhook/', methods=['GET'], type="http", auth="public", csrf=False)
-    def webhookget(self, **kwargs):
+            print(f"📤 Enviando error a {phone_number}: {message}")
+
+            # Buscar la cuenta de WhatsApp activa
+            wa_account = request.env['whatsapp.account'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
+
+            if not wa_account:
+                print(f"❌ No se encontró cuenta de WhatsApp activa")
+                return False
+
+            # Enviar mensaje
+            success = self._send_whatsapp_message(wa_account, phone_number, message)
+
+            if success:
+                print(f"✅ Mensaje de error enviado exitosamente")
+                return True
+            else:
+                print(f"❌ Error enviando mensaje de error")
+                return False
+
+        except Exception as e:
+            print(f"❌ Error enviando mensaje de error: {e}")
+            _logger.error("Error enviando mensaje de error: %s", e)
+            return False
+
+    def _send_whatsapp_message(self, wa_account, phone_number, message):
         """
-        Método heredado que verifica el webhook y muestra toda la información recibida.
-        Añade logs detallados para debugging y seguimiento de asistencia.
+        Envía un mensaje de WhatsApp usando la API
         """
-        print("="*80)
-        print("XTENDOO WHATSAPP ATTENDANCE - WEBHOOK GET REQUEST")
-        print("="*80)
+        try:
+            import requests
 
-        # Mostrar información de la petición HTTP
-        print(f"Método HTTP: {request.httprequest.method}")
-        print(f"URL completa: {request.httprequest.url}")
-        print(f"Ruta: {request.httprequest.path}")
-        print(f"Query string: {request.httprequest.query_string.decode()}")
+            # URL de la API de WhatsApp Business
+            url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
 
-        # Mostrar headers de la petición
-        print("\n--- HEADERS DE LA PETICIÓN ---")
-        for header_name, header_value in request.httprequest.headers.items():
-            print(f"{header_name}: {header_value}")
+            # Headers de la petición
+            headers = {
+                'Authorization': f'Bearer {wa_account.access_token}',
+                'Content-Type': 'application/json'
+            }
 
-        # Mostrar todos los parámetros recibidos
-        print("\n--- PARÁMETROS RECIBIDOS (kwargs) ---")
-        for key, value in kwargs.items():
-            print(f"{key}: {value}")
+            # Limpiar el número de teléfono (quitar el + si existe)
+            clean_phone = phone_number.lstrip('+')
 
-        # Extraer parámetros específicos del webhook
-        token = kwargs.get('hub.verify_token')
-        mode = kwargs.get('hub.mode')
-        challenge = kwargs.get('hub.challenge')
+            # Datos del mensaje
+            data = {
+                "messaging_product": "whatsapp",
+                "to": clean_phone,
+                "type": "text",
+                "text": {
+                    "body": message
+                }
+            }
 
-        print("\n--- PARÁMETROS DEL WEBHOOK ---")
-        print(f"Token de verificación: {token}")
-        print(f"Modo: {mode}")
-        print(f"Challenge: {challenge}")
+            print(f"📡 Enviando a API WhatsApp:")
+            print(f"   URL: {url}")
+            print(f"   Teléfono: {clean_phone}")
+            print(f"   Mensaje: {message[:50]}...")
 
-        # Información del entorno de Odoo
-        print("\n--- INFORMACIÓN DEL ENTORNO ---")
-        print(f"Base de datos: {request.env.cr.dbname}")
-        print(f"Usuario: {request.env.user.name if request.env.user else 'Sin usuario'}")
+            # Realizar la petición
+            response = requests.post(url, headers=headers, json=data, timeout=10)
 
-        # Validación de parámetros requeridos
-        if not (token and mode and challenge):
-            print("\n❌ ERROR: Faltan parámetros requeridos (token, mode o challenge)")
-            print("Retornando Forbidden()")
-            print("="*80)
-            return Forbidden()
+            print(f"📨 Respuesta API: {response.status_code}")
+            print(f"📄 Contenido: {response.text}")
 
-        # Buscar cuenta de WhatsApp
-        print(f"\n--- BÚSQUEDA DE CUENTA WHATSAPP ---")
-        print(f"Buscando cuenta con webhook_verify_token: {token}")
+            if response.status_code == 200:
+                return True
+            else:
+                print(f"❌ Error en API WhatsApp: {response.status_code} - {response.text}")
+                return False
 
-        wa_account = request.env['whatsapp.account'].sudo().search([
-            ('webhook_verify_token', '=', token)
-        ])
+        except Exception as e:
+            print(f"❌ Error llamando API WhatsApp: {e}")
+            _logger.error("Error llamando API WhatsApp: %s", e)
+            return False
 
-        print(f"Cuentas encontradas: {len(wa_account)}")
-        if wa_account:
-            for account in wa_account:
-                print(f"  - ID: {account.id}, Nombre: {account.name}")
-                print(f"  - Account UID: {account.account_uid}")
-                print(f"  - Phone UID: {account.phone_uid}")
-
-        # Verificación del modo subscribe
-        if mode == 'subscribe' and wa_account:
-            print("\n✅ VERIFICACIÓN EXITOSA")
-            print(f"Modo es 'subscribe' y cuenta encontrada")
-            print(f"Retornando challenge: {challenge}")
-
-            response = request.make_response(challenge)
-            response.status_code = HTTPStatus.OK
-
-            print(f"Response status: {response.status_code}")
-            print("="*80)
-            return response
-
-        # Si llegamos aquí, la verificación falló
-        print("\n❌ VERIFICACIÓN FALLIDA")
-        if mode != 'subscribe':
-            print(f"Modo incorrecto: {mode} (esperado: subscribe)")
-        if not wa_account:
-            print("No se encontró cuenta de WhatsApp con el token proporcionado")
-
-        response = request.make_response({})
-        response.status_code = HTTPStatus.FORBIDDEN
-
-        print(f"Response status: {response.status_code}")
-        print("="*80)
-
-        return response
