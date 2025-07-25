@@ -817,7 +817,7 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _send_location_request_with_button(self, wa_account, phone_number, employee, action_text):
         """
-        Envía un mensaje con botones para solicitar ubicación o permitir registro sin ubicación
+        Envía una plantilla de WhatsApp con botones integrados para solicitar ubicación
         """
         try:
             import requests
@@ -844,12 +844,12 @@ class WhatsAppAttendanceWebhook(Webhook):
 
             clean_phone = phone_number.lstrip('+')
 
-            # Buscar plantilla de solicitud de ubicación
+            # Buscar plantilla de solicitud de ubicación con botones
             location_template = self._get_location_request_template()
 
             if location_template:
-                # Usar plantilla de WhatsApp para solicitud de ubicación
-                print(f"📋 Usando plantilla para solicitud de ubicación: {location_template}")
+                # Usar plantilla de WhatsApp con botones integrados
+                print(f"📋 Usando plantilla con botones: {location_template}")
 
                 template_params = [employee.name, action_text]
 
@@ -876,57 +876,63 @@ class WhatsAppAttendanceWebhook(Webhook):
                     }
                 }
 
-                print(f"📋 Enviando plantilla de solicitud de ubicación:")
+                print(f"📋 Enviando plantilla con botones integrados:")
                 print(f"   Plantilla: {location_template}")
                 print(f"   Parámetros: {template_params}")
 
-            else:
-                # Fallback: Mensaje interactivo con botones de respuesta rápida
-                data = {
-                    "messaging_product": "whatsapp",
-                    "to": clean_phone,
-                    "type": "interactive",
-                    "interactive": {
-                        "type": "button",
-                        "body": {
-                            "text": f"📍 Hola {employee.name}!\n\nPara registrar tu {action_text}, ¿deseas compartir tu ubicación?"
-                        },
-                        "action": {
-                            "buttons": [
-                                {
-                                    "type": "reply",
-                                    "reply": {
-                                        "id": "share_location",
-                                        "title": "📍 Compartir ubicación"
-                                    }
-                                },
-                                {
-                                    "type": "reply",
-                                    "reply": {
-                                        "id": "no_location",
-                                        "title": "✅ Sin ubicación"
-                                    }
+                response = requests.post(url, headers=headers, json=data, timeout=10)
+
+                if response.status_code == 200:
+                    print(f"✅ Plantilla con botones enviada exitosamente")
+                    return True
+                else:
+                    print(f"⚠️ Plantilla falló: {response.text}")
+                    print(f"🔄 Cambiando a mensaje interactivo fallback...")
+
+            # Fallback: Mensaje interactivo si la plantilla no funciona
+            data = {
+                "messaging_product": "whatsapp",
+                "to": clean_phone,
+                "type": "interactive",
+                "interactive": {
+                    "type": "button",
+                    "body": {
+                        "text": f"📍 Hola {employee.name}!\n\nPara registrar tu {action_text}, ¿deseas compartir tu ubicación?"
+                    },
+                    "action": {
+                        "buttons": [
+                            {
+                                "type": "reply",
+                                "reply": {
+                                    "id": "share_location",
+                                    "title": "📍 Compartir ubicación"
                                 }
-                            ]
-                        }
+                            },
+                            {
+                                "type": "reply",
+                                "reply": {
+                                    "id": "no_location",
+                                    "title": "✅ Sin ubicación"
+                                }
+                            }
+                        ]
                     }
                 }
+            }
 
-                print(f"📋 Enviando mensaje interactivo con botones (fallback)")
-
-            print(f"📡 Enviando solicitud de ubicación:")
-            print(f"   Teléfono: {clean_phone}")
-            print(f"   Empleado: {employee.name}")
-
+            print(f"📋 Enviando mensaje interactivo fallback")
             response = requests.post(url, headers=headers, json=data, timeout=10)
 
+            print(f"📡 Solicitud enviada:")
+            print(f"   Teléfono: {clean_phone}")
+            print(f"   Empleado: {employee.name}")
             print(f"📨 Respuesta API: {response.status_code}")
             print(f"📄 Contenido: {response.text}")
 
             return response.status_code == 200
 
         except Exception as e:
-            print(f"❌ Error enviando solicitud de ubicación interactiva: {e}")
+            print(f"❌ Error enviando solicitud de ubicación: {e}")
             return False
 
     def _extract_location_from_message(self, message, value):
