@@ -905,7 +905,7 @@ class WhatsAppAttendanceWebhook(Webhook):
                                 "type": "reply",
                                 "reply": {
                                     "id": "share_location",
-                                    "title": "📍 Compartir ubicación"
+                                    "title": "📍 Con ubicación"
                                 }
                             },
                             {
