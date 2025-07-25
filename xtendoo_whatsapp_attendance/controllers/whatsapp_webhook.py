@@ -148,6 +148,10 @@ class WhatsAppAttendanceWebhook(Webhook):
                             elif message.get('type') == 'location':
                                 # Manejar mensajes de ubicación directamente
                                 self._handle_attendance_message(message, value)
+                            elif message.get('type') == 'interactive':
+                                # Manejar respuestas de botones interactivos
+                                print(f"🔘 Procesando mensaje interactivo (botón presionado)")
+                                self._handle_attendance_message(message, value)
 
         except Exception as e:
             print(f"❌ Error procesando asistencia: {e}")
