@@ -160,15 +160,34 @@ class WhatsAppAttendanceWebhook(Webhook):
         try:
             # Extraer información del mensaje
             phone_number = message.get('from', '')
-            text_content = message.get('text', {}).get('body', '').strip().lower()
             message_id = message.get('id', '')
             timestamp = message.get('timestamp', '')
 
             print(f"\n📋 Procesando mensaje de asistencia:")
             print(f"   Teléfono: {phone_number}")
-            print(f"   Texto: '{text_content}'")
             print(f"   ID Mensaje: {message_id}")
             print(f"   Timestamp: {timestamp}")
+            print(f"   Tipo: {message.get('type')}")
+
+            # Verificar si es una respuesta de botón interactivo
+            if message.get('type') == 'interactive':
+                button_reply = message.get('interactive', {}).get('button_reply', {})
+                if button_reply:
+                    button_id = button_reply.get('id', '')
+                    print(f"   🔘 Respuesta de botón: {button_id}")
+
+                    if button_id == 'share_location':
+                        print(f"📍 Usuario eligió compartir ubicación")
+                        self._send_location_sharing_instructions(phone_number)
+                        return
+                    elif button_id == 'no_location':
+                        print(f"✅ Usuario eligió registrar sin ubicación")
+                        self._process_no_location_choice(phone_number)
+                        return
+
+            # Procesar mensajes de texto normales
+            text_content = message.get('text', {}).get('body', '').strip().lower() if message.get('type') == 'text' else ''
+            print(f"   Texto: '{text_content}'")
 
             # Detectar comando de asistencia
             attendance_type = self._detect_attendance_command(text_content)
@@ -798,7 +817,7 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _send_location_request_with_button(self, wa_account, phone_number, employee, action_text):
         """
-        Envía un mensaje con botón para solicitar ubicación automáticamente
+        Envía un mensaje con botones para solicitar ubicación o permitir registro sin ubicación
         """
         try:
             import requests
@@ -825,23 +844,77 @@ class WhatsAppAttendanceWebhook(Webhook):
 
             clean_phone = phone_number.lstrip('+')
 
-            # Mensaje con botón interactivo para ubicación
-            data = {
-                "messaging_product": "whatsapp",
-                "to": clean_phone,
-                "type": "interactive",
-                "interactive": {
-                    "type": "location_request_message",
-                    "body": {
-                        "text": f"📍 Hola {employee.name}!\n\nPara registrar tu {action_text}, necesito confirmar tu ubicación.\n\nToca el botón de abajo para compartirla automáticamente:"
-                    },
-                    "action": {
-                        "name": "send_location"
+            # Buscar plantilla de solicitud de ubicación
+            location_template = self._get_location_request_template()
+
+            if location_template:
+                # Usar plantilla de WhatsApp para solicitud de ubicación
+                print(f"📋 Usando plantilla para solicitud de ubicación: {location_template}")
+
+                template_params = [employee.name, action_text]
+
+                data = {
+                    "messaging_product": "whatsapp",
+                    "to": clean_phone,
+                    "type": "template",
+                    "template": {
+                        "name": location_template,
+                        "language": {
+                            "code": "es"
+                        },
+                        "components": [
+                            {
+                                "type": "body",
+                                "parameters": [
+                                    {
+                                        "type": "text",
+                                        "text": param
+                                    } for param in template_params
+                                ]
+                            }
+                        ]
                     }
                 }
-            }
 
-            print(f"📡 Enviando solicitud de ubicación interactiva:")
+                print(f"📋 Enviando plantilla de solicitud de ubicación:")
+                print(f"   Plantilla: {location_template}")
+                print(f"   Parámetros: {template_params}")
+
+            else:
+                # Fallback: Mensaje interactivo con botones de respuesta rápida
+                data = {
+                    "messaging_product": "whatsapp",
+                    "to": clean_phone,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "body": {
+                            "text": f"📍 Hola {employee.name}!\n\nPara registrar tu {action_text}, ¿deseas compartir tu ubicación?"
+                        },
+                        "action": {
+                            "buttons": [
+                                {
+                                    "type": "reply",
+                                    "reply": {
+                                        "id": "share_location",
+                                        "title": "📍 Compartir ubicación"
+                                    }
+                                },
+                                {
+                                    "type": "reply",
+                                    "reply": {
+                                        "id": "no_location",
+                                        "title": "✅ Sin ubicación"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                print(f"📋 Enviando mensaje interactivo con botones (fallback)")
+
+            print(f"📡 Enviando solicitud de ubicación:")
             print(f"   Teléfono: {clean_phone}")
             print(f"   Empleado: {employee.name}")
 
@@ -855,3 +928,325 @@ class WhatsAppAttendanceWebhook(Webhook):
         except Exception as e:
             print(f"❌ Error enviando solicitud de ubicación interactiva: {e}")
             return False
+
+    def _extract_location_from_message(self, message, value):
+        """
+        Extrae datos de ubicación de un mensaje de WhatsApp
+        """
+        try:
+            # Verificar si el mensaje contiene ubicación
+            if message.get('type') == 'location':
+                location_data = message.get('location', {})
+                print(f"📍 Ubicación recibida: {location_data}")
+                return {
+                    'latitude': location_data.get('latitude'),
+                    'longitude': location_data.get('longitude'),
+                    'name': location_data.get('name', ''),
+                    'address': location_data.get('address', '')
+                }
+
+            # También verificar en mensajes de texto que contengan coordenadas
+            if message.get('type') == 'text':
+                text = message.get('text', {}).get('body', '')
+                # Buscar patrones de coordenadas en texto
+                coord_pattern = r'(-?\d+\.?\d*),\s*(-?\d+\.?\d*)'
+                match = re.search(coord_pattern, text)
+                if match:
+                    print(f"📍 Coordenadas encontradas en texto: {match.groups()}")
+                    return {
+                        'latitude': float(match.group(1)),
+                        'longitude': float(match.group(2)),
+                        'name': '',
+                        'address': text
+                    }
+
+            return None
+
+        except Exception as e:
+            print(f"❌ Error extrayendo ubicación: {e}")
+            return None
+
+    def _process_location_response(self, phone_number, location_data):
+        """
+        Procesa la respuesta de ubicación y registra la asistencia
+        """
+        try:
+            # Obtener solicitud pendiente
+            pending_key = f'whatsapp_attendance_pending_{phone_number}'
+            pending_data = request.env['ir.config_parameter'].sudo().get_param(pending_key)
+
+            if not pending_data:
+                print(f"⚠️ No hay solicitud de asistencia pendiente para {phone_number}")
+                self._send_error_message(phone_number, "No hay registro de asistencia pendiente")
+                return False
+
+            # Parsear datos pendientes
+            employee_id, attendance_type = pending_data.split('|')
+            employee = request.env['hr.employee'].sudo().browse(int(employee_id))
+
+            if not employee.exists():
+                print(f"❌ Empleado no encontrado: {employee_id}")
+                return False
+
+            print(f"📍 Procesando ubicación para {employee.name}: {location_data}")
+
+            # Registrar asistencia con ubicación
+            attendance_result = self._register_attendance_with_location(
+                employee, attendance_type, location_data
+            )
+
+            if attendance_result:
+                # Limpiar solicitud pendiente
+                request.env['ir.config_parameter'].sudo().set_param(pending_key, False)
+
+                # Enviar confirmación
+                self._send_confirmation_message_with_location(
+                    phone_number, attendance_type, employee, location_data
+                )
+
+                print(f"✅ Asistencia con ubicación registrada exitosamente")
+                return True
+            else:
+                print(f"❌ Error registrando asistencia con ubicación")
+                self._send_error_message(phone_number, "Error al registrar asistencia")
+                return False
+
+        except Exception as e:
+            print(f"❌ Error procesando ubicación: {e}")
+            _logger.error("Error procesando ubicación: %s", e)
+            return False
+
+    def _register_attendance_with_location(self, employee, attendance_type, location_data):
+        """
+        Registra asistencia incluyendo datos de geolocalización
+        """
+        try:
+            print(f"📝 Registrando asistencia CON ubicación: {attendance_type} para {employee.name}")
+
+            # Registrar asistencia normal
+            attendance = self._register_attendance(employee, attendance_type)
+
+            if not attendance:
+                return False
+
+            # Obtener dirección aproximada
+            address = self._get_address_from_coordinates(
+                location_data.get('latitude'),
+                location_data.get('longitude')
+            )
+
+            # Actualizar registro de asistencia con ubicación
+            attendance.sudo().write({
+                'whatsapp_latitude': location_data.get('latitude'),
+                'whatsapp_longitude': location_data.get('longitude'),
+                'whatsapp_location_address': address or location_data.get('address', ''),
+                'whatsapp_location_accuracy': location_data.get('accuracy', 0.0)
+            })
+
+            # Actualizar última ubicación del empleado
+            employee.sudo().write({
+                'last_whatsapp_latitude': location_data.get('latitude'),
+                'last_whatsapp_longitude': location_data.get('longitude'),
+                'last_whatsapp_location_time': datetime.now(),
+                'last_whatsapp_address': address or location_data.get('address', '')
+            })
+
+            print(f"✅ Ubicación guardada: {location_data.get('latitude')}, {location_data.get('longitude')}")
+            return attendance
+
+        except Exception as e:
+            print(f"❌ Error registrando asistencia con ubicación: {e}")
+            _logger.error("Error registrando asistencia con ubicación: %s", e)
+            return False
+
+    def _register_attendance_without_location(self, employee, attendance_type, phone_number):
+        """
+        Registra asistencia sin ubicación cuando hay error o timeout
+        """
+        try:
+            print(f"📝 Registrando asistencia SIN ubicación para {employee.name}")
+
+            attendance_result = self._register_attendance(employee, attendance_type)
+
+            if attendance_result:
+                self._send_confirmation_message(phone_number, attendance_type, employee)
+                print(f"✅ Asistencia sin ubicación registrada exitosamente")
+            else:
+                self._send_error_message(phone_number, "Error al registrar asistencia")
+
+        except Exception as e:
+            print(f"❌ Error registrando asistencia sin ubicación: {e}")
+            _logger.error("Error registrando asistencia sin ubicación: %s", e)
+
+    def _send_confirmation_message_with_location(self, phone_number, attendance_type, employee, location_data):
+        """
+        Envía mensaje de confirmación incluyendo información de ubicación
+        """
+        try:
+            # Enviar confirmación normal primero
+            success = self._send_confirmation_message(phone_number, attendance_type, employee)
+
+            if success:
+                # Enviar información adicional de ubicación
+                lat = location_data.get('latitude')
+                lng = location_data.get('longitude')
+
+                if lat and lng:
+                    location_message = f"📍 *Ubicación registrada:*\n\n🗺️ Coordenadas: {lat:.6f}, {lng:.6f}\n\n📍 Ver en Google Maps: https://maps.google.com/?q={lat},{lng}"
+
+                    # Buscar cuenta WhatsApp
+                    wa_account = request.env['whatsapp.account'].sudo().search([
+                        ('active', '=', True)
+                    ], limit=1)
+
+                    if wa_account:
+                        self._send_whatsapp_message(wa_account, phone_number, location_message)
+
+            return success
+
+        except Exception as e:
+            print(f"❌ Error enviando confirmación con ubicación: {e}")
+            return False
+
+    def _get_location_request_template(self):
+        """
+        Obtiene el nombre de la plantilla de WhatsApp para solicitar ubicación
+        desde la configuración de base de datos
+        """
+        try:
+            # Buscar configuración de plantilla de ubicación
+            config = request.env['ir.config_parameter'].sudo()
+            template_name = config.get_param('whatsapp_attendance.location_request_template')
+
+            if template_name:
+                print(f"📋 Plantilla de ubicación configurada: {template_name}")
+                return template_name
+            else:
+                print(f"⚠️ No hay plantilla de ubicación configurada")
+                return None
+
+        except Exception as e:
+            print(f"❌ Error obteniendo plantilla de ubicación: {e}")
+            return None
+
+    def _get_address_from_coordinates(self, latitude, longitude):
+        """
+        Obtiene dirección aproximada desde coordenadas usando servicio de geocoding
+        """
+        try:
+            # Por ahora, retorna un placeholder
+            if latitude and longitude:
+                return f"Ubicación aproximada: {latitude:.6f}, {longitude:.6f}"
+
+            return None
+
+        except Exception as e:
+            print(f"⚠️ Error obteniendo dirección: {e}")
+            return None
+
+    def _send_location_sharing_instructions(self, phone_number):
+        """
+        Envía instrucciones para compartir ubicación cuando el usuario elige el botón correspondiente
+        """
+        try:
+            print(f"📍 Enviando instrucciones para compartir ubicación a {phone_number}")
+
+            # Buscar plantilla de instrucciones de ubicación
+            instruction_template = self._get_location_instruction_template()
+
+            # Buscar la cuenta de WhatsApp activa
+            wa_account = request.env['whatsapp.account'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
+
+            if not wa_account:
+                print(f"❌ No se encontró cuenta de WhatsApp activa")
+                return False
+
+            if instruction_template:
+                # Usar plantilla de WhatsApp para instrucciones
+                print(f"📋 Usando plantilla de instrucciones: {instruction_template}")
+
+                success = self._send_whatsapp_message(
+                    wa_account,
+                    phone_number,
+                    message=None,
+                    template_id=instruction_template,
+                    template_params=[]
+                )
+            else:
+                # Usar mensaje de texto libre como fallback
+                message = f"📍 *Instrucciones para compartir ubicación:*\n\n1️⃣ Toca el botón 📎 (clip) en WhatsApp\n2️⃣ Selecciona *Ubicación*\n3️⃣ Elige *Ubicación actual*\n4️⃣ Envía tu ubicación\n\n⏰ Tienes 2 minutos para enviarla, después se registrará sin ubicación."
+
+                success = self._send_whatsapp_message(wa_account, phone_number, message)
+
+            if success:
+                print(f"✅ Instrucciones de ubicación enviadas exitosamente")
+                return True
+            else:
+                print(f"❌ Error enviando instrucciones de ubicación")
+                return False
+
+        except Exception as e:
+            print(f"❌ Error enviando instrucciones de ubicación: {e}")
+            _logger.error("Error enviando instrucciones de ubicación: %s", e)
+            return False
+
+    def _process_no_location_choice(self, phone_number):
+        """
+        Procesa cuando el usuario elige registrar asistencia sin ubicación
+        """
+        try:
+            print(f"✅ Procesando elección de registrar sin ubicación para {phone_number}")
+
+            # Obtener solicitud pendiente
+            pending_key = f'whatsapp_attendance_pending_{phone_number}'
+            pending_data = request.env['ir.config_parameter'].sudo().get_param(pending_key)
+
+            if not pending_data:
+                print(f"⚠️ No hay solicitud de asistencia pendiente para {phone_number}")
+                self._send_error_message(phone_number, "No hay registro de asistencia pendiente")
+                return False
+
+            # Parsear datos pendientes
+            employee_id, attendance_type = pending_data.split('|')
+            employee = request.env['hr.employee'].sudo().browse(int(employee_id))
+
+            if not employee.exists():
+                print(f"❌ Empleado no encontrado: {employee_id}")
+                return False
+
+            print(f"👤 Registrando asistencia sin ubicación para {employee.name}")
+
+            # Limpiar solicitud pendiente
+            request.env['ir.config_parameter'].sudo().set_param(pending_key, False)
+
+            # Registrar asistencia sin ubicación
+            self._register_attendance_without_location(employee, attendance_type, phone_number)
+
+            return True
+
+        except Exception as e:
+            print(f"❌ Error procesando elección sin ubicación: {e}")
+            _logger.error("Error procesando elección sin ubicación: %s", e)
+            return False
+
+    def _get_location_instruction_template(self):
+        """
+        Obtiene el nombre de la plantilla de WhatsApp para instrucciones de ubicación
+        """
+        try:
+            # Buscar configuración de plantilla de instrucciones
+            config = request.env['ir.config_parameter'].sudo()
+            template_name = config.get_param('whatsapp_attendance.location_instruction_template')
+
+            if template_name:
+                print(f"📋 Plantilla de instrucciones configurada: {template_name}")
+                return template_name
+            else:
+                print(f"⚠️ No hay plantilla de instrucciones configurada")
+                return None
+
+        except Exception as e:
+            print(f"❌ Error obteniendo plantilla de instrucciones: {e}")
+            return None

@@ -32,5 +32,40 @@ Tu *salida* ha sido registrada correctamente.
             <field name="status">approved</field>
         </record>
 
+        <!-- Plantilla WhatsApp para solicitar ubicación -->
+        <record id="whatsapp_template_location_request" model="whatsapp.template">
+            <field name="name">Solicitud de Ubicación</field>
+            <field name="template_name">solicitud_ubicacion_asistencia</field>
+            <field name="body">📍 Hola {{1}},
+
+Para registrar tu {{2}}, necesito confirmar tu ubicación.
+
+Por favor, elige una opción:
+
+🔘 *Compartir ubicación* - Para enviar tu ubicación actual
+🔘 *Sin ubicación* - Para registrar sin geolocalización
+
+¿Qué prefieres hacer?</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para instrucciones de ubicación -->
+        <record id="whatsapp_template_location_instructions" model="whatsapp.template">
+            <field name="name">Instrucciones de Ubicación</field>
+            <field name="template_name">instrucciones_ubicacion_asistencia</field>
+            <field name="body">📍 *Instrucciones para compartir ubicación:*
+
+1️⃣ Toca el botón 📎 (clip) en WhatsApp
+2️⃣ Selecciona *Ubicación*
+3️⃣ Elige *Ubicación actual*
+4️⃣ Envía tu ubicación
+
+⏰ Tienes 2 minutos para enviarla.
+Si no la envías, se registrará la asistencia sin ubicación.
+
+¡Gracias por tu colaboración!</field>
+            <field name="status">approved</field>
+        </record>
+
     </data>
 </odoo>
