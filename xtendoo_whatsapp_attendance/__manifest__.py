@@ -15,7 +15,6 @@
     'data': [
         'security/ir.model.access.csv',
         'data/whatsapp_templates.xml',
-        'data/system_parameters.xml',
         'views/attendance_keyword_config_views.xml',
         'views/hr_employee_geolocation_views.xml',
         'data/default_keywords.xml',
