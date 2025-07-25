@@ -145,6 +145,9 @@ class WhatsAppAttendanceWebhook(Webhook):
                         for message in value.get('messages', []):
                             if message.get('type') == 'text':
                                 self._handle_attendance_message(message, value)
+                            elif message.get('type') == 'location':
+                                # Manejar mensajes de ubicación directamente
+                                self._handle_attendance_message(message, value)
 
         except Exception as e:
             print(f"❌ Error procesando asistencia: {e}")
@@ -179,12 +182,20 @@ class WhatsAppAttendanceWebhook(Webhook):
                 if employee:
                     print(f"👤 Empleado encontrado: {employee.name} (ID: {employee.id})")
 
-                    # Registrar asistencia
+                    # Verificar si tiene geolocalización activada
+                    if employee.whatsapp_geotrack_enabled:
+                        print(f"🗺️ Geolocalización activada para {employee.name}")
+                        # Solicitar ubicación antes de registrar asistencia
+                        self._request_location_for_attendance(phone_number, employee, attendance_type)
+                        return
+                    else:
+                        print(f"ℹ️ Geolocalización desactivada para {employee.name}")
+
+                    # Registrar asistencia sin geolocalización
                     attendance_result = self._register_attendance(employee, attendance_type)
 
                     if attendance_result:
                         print(f"✅ Asistencia registrada exitosamente")
-                        # Aquí podrías enviar un mensaje de confirmación de vuelta
                         self._send_confirmation_message(phone_number, attendance_type, employee)
                     else:
                         print(f"❌ Error al registrar asistencia")
@@ -193,7 +204,12 @@ class WhatsAppAttendanceWebhook(Webhook):
                     print(f"❌ No se encontró empleado con el teléfono: {phone_number}")
                     self._send_error_message(phone_number, "No se encontró empleado asociado a este número")
             else:
-                print(f"ℹ️ Mensaje no es comando de asistencia: '{text_content}'")
+                # Verificar si es una respuesta de ubicación
+                location_data = self._extract_location_from_message(message, value)
+                if location_data:
+                    self._process_location_response(phone_number, location_data)
+                else:
+                    print(f"ℹ️ Mensaje no es comando de asistencia: '{text_content}'")
 
         except Exception as e:
             print(f"❌ Error manejando mensaje de asistencia: {e}")
@@ -735,4 +751,107 @@ class WhatsAppAttendanceWebhook(Webhook):
         except Exception as e:
             print(f"❌ Error llamando API WhatsApp: {e}")
             _logger.error("Error llamando API WhatsApp: %s", e)
+            return False
+
+    def _request_location_for_attendance(self, phone_number, employee, attendance_type):
+        """
+        Solicita la ubicación al empleado de forma automática usando botones interactivos
+        """
+        try:
+            action_text = "entrada" if attendance_type == 'check_in' else "salida"
+
+            # Guardar temporalmente la solicitud pendiente
+            request.env['ir.config_parameter'].sudo().set_param(
+                f'whatsapp_attendance_pending_{phone_number}',
+                f'{employee.id}|{attendance_type}'
+            )
+
+            # Buscar la cuenta de WhatsApp activa
+            wa_account = request.env['whatsapp.account'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
+
+            if not wa_account:
+                print(f"❌ No se encontró cuenta de WhatsApp activa")
+                return False
+
+            print(f"📍 Solicitando ubicación automática a {employee.name} para {attendance_type}")
+
+            # Enviar mensaje con botón de ubicación
+            success = self._send_location_request_with_button(wa_account, phone_number, employee, action_text)
+
+            if success:
+                print(f"✅ Solicitud de ubicación con botón enviada exitosamente")
+                return True
+            else:
+                print(f"❌ Error enviando solicitud de ubicación, registrando sin ubicación...")
+                # Si falla, registrar sin ubicación
+                self._register_attendance_without_location(employee, attendance_type, phone_number)
+                return False
+
+        except Exception as e:
+            print(f"❌ Error solicitando ubicación: {e}")
+            _logger.error("Error solicitando ubicación: %s", e)
+            # Si hay error, registrar sin ubicación
+            self._register_attendance_without_location(employee, attendance_type, phone_number)
+            return False
+
+    def _send_location_request_with_button(self, wa_account, phone_number, employee, action_text):
+        """
+        Envía un mensaje con botón para solicitar ubicación automáticamente
+        """
+        try:
+            import requests
+
+            # Obtener token de acceso
+            access_token = None
+            token_fields = ['access_token', 'token', 'app_secret', 'permanent_access_token']
+
+            for field in token_fields:
+                if hasattr(wa_account, field):
+                    token_value = getattr(wa_account, field)
+                    if token_value:
+                        access_token = token_value
+                        break
+
+            if not access_token:
+                return False
+
+            url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            }
+
+            clean_phone = phone_number.lstrip('+')
+
+            # Mensaje con botón interactivo para ubicación
+            data = {
+                "messaging_product": "whatsapp",
+                "to": clean_phone,
+                "type": "interactive",
+                "interactive": {
+                    "type": "location_request_message",
+                    "body": {
+                        "text": f"📍 Hola {employee.name}!\n\nPara registrar tu {action_text}, necesito confirmar tu ubicación.\n\nToca el botón de abajo para compartirla automáticamente:"
+                    },
+                    "action": {
+                        "name": "send_location"
+                    }
+                }
+            }
+
+            print(f"📡 Enviando solicitud de ubicación interactiva:")
+            print(f"   Teléfono: {clean_phone}")
+            print(f"   Empleado: {employee.name}")
+
+            response = requests.post(url, headers=headers, json=data, timeout=10)
+
+            print(f"📨 Respuesta API: {response.status_code}")
+            print(f"📄 Contenido: {response.text}")
+
+            return response.status_code == 200
+
+        except Exception as e:
+            print(f"❌ Error enviando solicitud de ubicación interactiva: {e}")
             return False

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista formulario para empleado - agregar campos de geolocalización -->
+    <record id="view_employee_form_geolocation" model="ir.ui.view">
+        <field name="name">hr.employee.form.geolocation</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='work_phone']" position="after">
+                <field name="whatsapp_geotrack_enabled"/>
+            </xpath>
+
+            <!-- Agregar pestaña de Geolocalización WhatsApp -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Geolocalización WhatsApp" invisible="not whatsapp_geotrack_enabled">
+                    <group string="Última Ubicación Registrada">
+                        <group>
+                            <field name="last_whatsapp_latitude" readonly="1"/>
+                            <field name="last_whatsapp_longitude" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="last_whatsapp_location_time" readonly="1"/>
+                            <field name="last_whatsapp_address" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-info">
+                        <strong>Información sobre Geolocalización:</strong>
+                        <ul>
+                            <li>Cuando esté activada, el sistema solicitará la ubicación al empleado via WhatsApp</li>
+                            <li>La ubicación se registrará automáticamente con cada entrada/salida</li>
+                            <li>Esto ayuda a verificar que el empleado esté en la ubicación correcta</li>
+                            <li>La precisión depende del GPS del dispositivo móvil</li>
+                        </ul>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista lista para empleados - mostrar estado de geolocalización -->
+    <record id="view_employee_tree_geolocation" model="ir.ui.view">
+        <field name="name">hr.employee.tree.geolocation</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='work_phone']" position="after">
+                <field name="whatsapp_geotrack_enabled" widget="boolean_toggle"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista formulario para asistencia - mostrar geolocalización -->
+    <record id="view_attendance_form_geolocation" model="ir.ui.view">
+        <field name="name">hr.attendance.form.geolocation</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='check_out']" position="after">
+                <group string="Ubicación WhatsApp" invisible="not whatsapp_latitude">
+                    <field name="whatsapp_latitude" readonly="1"/>
+                    <field name="whatsapp_longitude" readonly="1"/>
+                    <field name="whatsapp_location_address" readonly="1"/>
+                    <field name="whatsapp_location_accuracy" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
