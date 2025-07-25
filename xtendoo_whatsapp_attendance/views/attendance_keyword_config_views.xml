@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista formulario para configuración de palabras clave -->
+    <record id="view_attendance_keyword_config_form" model="ir.ui.view">
+        <field name="name">attendance.keyword.config.form</field>
+        <field name="model">attendance.keyword.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración Palabras Clave Asistencia">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre de la configuración"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active"/>
+                            <field name="attendance_type"/>
+                        </group>
+                        <group>
+                            <field name="use_template"/>
+                            <field name="whatsapp_template_id" invisible="not use_template"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Palabras Clave">
+                            <field name="keywords" placeholder="Una palabra clave por línea. Ejemplos:
+entrada
+entrar
+llegar
+check in
+fichar entrada"/>
+                            <div class="alert alert-info">
+                                <strong>Ayuda:</strong>
+                                <ul>
+                                    <li>Escribe una palabra clave por línea</li>
+                                    <li>Se pueden usar expresiones regulares básicas</li>
+                                    <li>No es sensible a mayúsculas/minúsculas</li>
+                                    <li>Ejemplos: entrada, entrar, llegar, check in, etc.</li>
+                                </ul>
+                            </div>
+                        </page>
+
+                        <page string="Mensaje de Respuesta">
+                            <field name="custom_message" placeholder="Mensaje personalizado de confirmación.
+
+Variables disponibles:
+{employee_name} - Nombre del empleado
+{time} - Hora del registro
+{date} - Fecha del registro
+{action} - Acción realizada (entrada/salida)
+
+Ejemplo:
+✅ Hola {employee_name},
+Tu {action} ha sido registrada a las {time} del {date}.
+¡Que tengas un buen día!" invisible="use_template"/>
+
+                            <div class="alert alert-info" invisible="use_template">
+                                <strong>Variables disponibles:</strong>
+                                <ul>
+                                    <li><code>{employee_name}</code> - Nombre del empleado</li>
+                                    <li><code>{time}</code> - Hora del registro</li>
+                                    <li><code>{date}</code> - Fecha del registro</li>
+                                    <li><code>{action}</code> - Acción realizada (entrada/salida)</li>
+                                </ul>
+                            </div>
+
+                            <div class="alert alert-warning" invisible="not use_template">
+                                <strong>Plantilla WhatsApp:</strong>
+                                <p>Cuando uses una plantilla de WhatsApp, asegúrate de que esté aprobada por Meta.</p>
+                                <p>Las variables se reemplazarán en el orden: {{1}} = empleado, {{2}} = acción, {{3}} = hora, {{4}} = fecha</p>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista lista para configuración de palabras clave -->
+    <record id="view_attendance_keyword_config_tree" model="ir.ui.view">
+        <field name="name">attendance.keyword.config.tree</field>
+        <field name="model">attendance.keyword.config</field>
+        <field name="arch" type="xml">
+            <list string="Configuración Palabras Clave">
+                <field name="name"/>
+                <field name="attendance_type"/>
+                <field name="active" widget="boolean_toggle"/>
+                <field name="use_template" widget="boolean_toggle"/>
+                <field name="whatsapp_template_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Acción para abrir las configuraciones -->
+    <record id="action_attendance_keyword_config" model="ir.actions.act_window">
+        <field name="name">Configuración Palabras Clave</field>
+        <field name="res_model">attendance.keyword.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configura las palabras clave para la asistencia automática por WhatsApp
+            </p>
+            <p>
+                Aquí puedes configurar qué palabras o frases activarán automáticamente
+                el registro de entrada o salida cuando los empleados envíen mensajes por WhatsApp.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú en Asistencias → Configuración -->
+    <menuitem id="menu_attendance_keyword_config"
+              name="WhatsApp - Palabras Clave"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="action_attendance_keyword_config"
+              groups="base.group_user,base.group_system"
+              sequence="50"/>
+
+</odoo>

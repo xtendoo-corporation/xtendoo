@@ -203,34 +203,38 @@ class WhatsAppAttendanceWebhook(Webhook):
         """
         Detecta si el texto contiene un comando de asistencia válido
         Retorna 'check_in', 'check_out' o None
+        Usa configuración de base de datos en lugar de patrones hardcodeados
         """
         # Normalizar texto (quitar acentos, espacios extra, etc.)
         normalized_text = re.sub(r'\s+', ' ', text.lower().strip())
 
-        # Patrones para entrada
-        entrada_patterns = [
-            r'\bentrada\b', r'\bentrar\b', r'\bllegar\b', r'\bllego\b',
-            r'\bcheck\s*in\b', r'\bfichar\s*entrada\b', r'\binicio\b',
-            r'\bcomenzar\b', r'\bempezar\b'
-        ]
+        # Obtener palabras clave de entrada desde configuración
+        entrada_keywords = request.env['attendance.keyword.config'].sudo().get_active_keywords('check_in')
 
-        # Patrones para salida
-        salida_patterns = [
-            r'\bsalida\b', r'\bsalir\b', r'\bmarchar\b', r'\bme\s*voy\b',
-            r'\bcheck\s*out\b', r'\bfichar\s*salida\b', r'\bfin\b',
-            r'\bterminar\b', r'\bacabar\b', r'\bfinalizar\b'
-        ]
+        # Obtener palabras clave de salida desde configuración
+        salida_keywords = request.env['attendance.keyword.config'].sudo().get_active_keywords('check_out')
+
+        print(f"🔍 Palabras clave configuradas:")
+        print(f"   Entrada: {entrada_keywords}")
+        print(f"   Salida: {salida_keywords}")
 
         # Buscar patrones de entrada
-        for pattern in entrada_patterns:
+        for keyword in entrada_keywords:
+            # Crear patrón regex con límites de palabra
+            pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
             if re.search(pattern, normalized_text):
+                print(f"✅ Coincidencia encontrada para ENTRADA: '{keyword}'")
                 return 'check_in'
 
         # Buscar patrones de salida
-        for pattern in salida_patterns:
+        for keyword in salida_keywords:
+            # Crear patrón regex con límites de palabra
+            pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
             if re.search(pattern, normalized_text):
+                print(f"✅ Coincidencia encontrada para SALIDA: '{keyword}'")
                 return 'check_out'
 
+        print(f"❌ No se encontraron coincidencias para: '{normalized_text}'")
         return None
 
     def _find_employee_by_phone(self, phone_number):
@@ -462,6 +466,7 @@ class WhatsAppAttendanceWebhook(Webhook):
     def _send_confirmation_message(self, phone_number, attendance_type, employee):
         """
         Envía mensaje de confirmación al empleado via WhatsApp
+        Usa plantillas de WhatsApp aprobadas desde base de datos
         """
         try:
             from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
@@ -522,9 +527,60 @@ class WhatsAppAttendanceWebhook(Webhook):
 
             date_now = datetime.now().strftime("%d/%m/%Y")
 
-            message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente.\n\n🕐 Hora: {attendance_time}\n📅 Fecha: {date_now}\n\n¡Que tengas un buen día!"
+            # Obtener configuración de respuesta desde base de datos
+            response_config = request.env['attendance.keyword.config'].sudo().get_response_config(attendance_type)
 
-            print(f"📤 Enviando confirmación a {phone_number}: {message}")
+            if response_config and response_config.use_template and response_config.whatsapp_template_id:
+                print(f"📋 Usando plantilla de WhatsApp: {response_config.whatsapp_template_id.name}")
+
+                # Obtener el template_name de la plantilla
+                template_name = response_config.whatsapp_template_id.template_name
+
+                # Preparar parámetros para la plantilla
+                template_params = [
+                    employee.name,      # {{1}} = nombre del empleado
+                    attendance_time,    # {{2}} = hora
+                    date_now           # {{3}} = fecha
+                ]
+
+                # Buscar la cuenta de WhatsApp activa
+                wa_account = request.env['whatsapp.account'].sudo().search([
+                    ('active', '=', True)
+                ], limit=1)
+
+                if not wa_account:
+                    print(f"❌ No se encontró cuenta de WhatsApp activa")
+                    return False
+
+                print(f"📱 Usando cuenta WhatsApp: {wa_account.name}")
+                print(f"📋 Plantilla: {template_name}")
+                print(f"📋 Parámetros: {template_params}")
+
+                # Enviar usando plantilla de WhatsApp
+                success = self._send_whatsapp_message(
+                    wa_account,
+                    phone_number,
+                    message=None,  # No se usa mensaje de texto
+                    template_id=template_name,
+                    template_params=template_params
+                )
+
+                if success:
+                    print(f"✅ Plantilla de WhatsApp enviada exitosamente")
+                    return True
+                else:
+                    print(f"❌ Error enviando plantilla de WhatsApp, intentando mensaje de texto...")
+                    # Fallback a mensaje de texto si falla la plantilla
+
+            # Usar mensaje personalizado o por defecto si no hay plantilla
+            if response_config and response_config.custom_message:
+                print(f"📋 Usando mensaje personalizado: {response_config.name}")
+                message = response_config.get_response_message(employee.name, attendance_time, date_now, action_text)
+            else:
+                print(f"⚠️ No se encontró configuración, usando mensaje por defecto")
+                message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente.\n\n🕐 Hora: {attendance_time}\n📅 Fecha: {date_now}\n\n¡Que tengas un buen día!"
+
+            print(f"📤 Enviando confirmación de texto a {phone_number}: {message}")
 
             # Buscar la cuenta de WhatsApp activa
             wa_account = request.env['whatsapp.account'].sudo().search([
@@ -537,7 +593,7 @@ class WhatsAppAttendanceWebhook(Webhook):
 
             print(f"📱 Usando cuenta WhatsApp: {wa_account.name}")
 
-            # Enviar mensaje usando la API de WhatsApp
+            # Enviar mensaje de texto libre
             success = self._send_whatsapp_message(wa_account, phone_number, message)
 
             if success:
@@ -585,17 +641,16 @@ class WhatsAppAttendanceWebhook(Webhook):
             _logger.error("Error enviando mensaje de error: %s", e)
             return False
 
-    def _send_whatsapp_message(self, wa_account, phone_number, message):
+    def _send_whatsapp_message(self, wa_account, phone_number, message, template_id=None, template_params=None):
         """
         Envía un mensaje de WhatsApp usando la API
+        Soporta tanto mensajes de texto libre como plantillas aprobadas
         """
         try:
             import requests
 
-            # Obtener el token de acceso (puede estar en diferentes campos según la versión)
+            # Obtener el token de acceso
             access_token = None
-
-            # Intentar diferentes nombres de campos para el token
             token_fields = ['access_token', 'token', 'app_secret', 'permanent_access_token']
 
             for field in token_fields:
@@ -608,7 +663,6 @@ class WhatsAppAttendanceWebhook(Webhook):
 
             if not access_token:
                 print(f"❌ No se encontró token de acceso en la cuenta de WhatsApp")
-                print(f"   Campos disponibles: {[field for field in dir(wa_account) if not field.startswith('_') and 'token' in field.lower()]}")
                 return False
 
             # URL de la API de WhatsApp Business
@@ -620,24 +674,51 @@ class WhatsAppAttendanceWebhook(Webhook):
                 'Content-Type': 'application/json'
             }
 
-            # Limpiar el número de teléfono (quitar el + si existe)
+            # Limpiar el número de teléfono
             clean_phone = phone_number.lstrip('+')
 
             # Datos del mensaje
-            data = {
-                "messaging_product": "whatsapp",
-                "to": clean_phone,
-                "type": "text",
-                "text": {
-                    "body": message
+            if template_id and template_params:
+                # Usar plantilla de WhatsApp
+                data = {
+                    "messaging_product": "whatsapp",
+                    "to": clean_phone,
+                    "type": "template",
+                    "template": {
+                        "name": template_id,
+                        "language": {
+                            "code": "es"
+                        },
+                        "components": [
+                            {
+                                "type": "body",
+                                "parameters": [
+                                    {
+                                        "type": "text",
+                                        "text": param
+                                    } for param in template_params
+                                ]
+                            }
+                        ]
+                    }
                 }
-            }
+                print(f"📋 Enviando plantilla: {template_id}")
+                print(f"📋 Parámetros: {template_params}")
+            else:
+                # Usar mensaje de texto libre
+                data = {
+                    "messaging_product": "whatsapp",
+                    "to": clean_phone,
+                    "type": "text",
+                    "text": {
+                        "body": message
+                    }
+                }
+                print(f"📝 Enviando texto libre")
 
             print(f"📡 Enviando a API WhatsApp:")
             print(f"   URL: {url}")
             print(f"   Teléfono: {clean_phone}")
-            print(f"   Token: {access_token[:20]}..." if access_token else "Sin token")
-            print(f"   Mensaje: {message[:50]}...")
 
             # Realizar la petición
             response = requests.post(url, headers=headers, json=data, timeout=10)

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Plantilla WhatsApp para confirmación de ENTRADA -->
+        <record id="whatsapp_template_attendance_check_in" model="whatsapp.template">
+            <field name="name">Confirmación Entrada Asistencia</field>
+            <field name="template_name">confirmacion_entrada_asistencia</field>
+            <field name="body">✅ Hola {{1}},
+
+Tu *entrada* ha sido registrada correctamente.
+
+🕐 Hora: {{2}}
+📅 Fecha: {{3}}
+
+¡Que tengas un buen día!</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para confirmación de SALIDA -->
+        <record id="whatsapp_template_attendance_check_out" model="whatsapp.template">
+            <field name="name">Confirmación Salida Asistencia</field>
+            <field name="template_name">confirmacion_salida_asistencia</field>
+            <field name="body">✅ Hola {{1}},
+
+Tu *salida* ha sido registrada correctamente.
+
+🕐 Hora: {{2}}
+📅 Fecha: {{3}}
+
+¡Que tengas un excelente día!</field>
+            <field name="status">approved</field>
+        </record>
+
+    </data>
+</odoo>
