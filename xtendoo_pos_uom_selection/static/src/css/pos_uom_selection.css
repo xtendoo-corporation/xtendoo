@@ -1,0 +1,69 @@
+/* Estilos para el módulo de selección de UoM en POS */
+
+.uom-selection-button {
+    font-size: 0.8em;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.uom-selection-button:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.uom-info {
+    margin-top: 4px;
+    font-size: 0.85em;
+}
+
+.uom-info .badge {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.uom-info .badge:hover {
+    background-color: #0d6efd !important;
+    transform: scale(1.1);
+}
+
+.uom-selection-popup {
+    max-width: 500px;
+    width: 90vw;
+}
+
+.uom-selection-popup .popup-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.uom-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.uom-item:hover {
+    border-color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.uom-item.bg-primary {
+    border-color: #0d6efd;
+}
+
+.uom-radio i {
+    font-size: 1.2em;
+}
+
+.product-info {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.uom-type .badge {
+    font-size: 0.7em;
+}

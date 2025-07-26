@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Extensión de la línea de pedido para mostrar botón de UoM -->
+    <t t-name="xtendoo_pos_uom_selection.OrderlineUomButton" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('product-name')]" position="after">
+            <div t-if="env.services.pos.config.allow_uom_selection and line.product.hasMultipleUoms()"
+                 class="uom-selection-button btn btn-sm btn-outline-primary ms-2"
+                 t-on-click="() => this.env.services.pos.get_order().get_screen_data('ProductScreen').onUomButtonClick(line.product, line)">
+                <i class="fa fa-balance-scale me-1"/>
+                <t t-esc="line.uom_id ? line.uom_id[1] : line.product.uom_id[1]"/>
+            </div>
+        </xpath>
+    </t>
+
+    <!-- Extensión de la tarjeta de producto para mostrar botón de UoM -->
+    <t t-name="xtendoo_pos_uom_selection.ProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('product-name')]" position="after">
+            <div t-if="env.services.pos.config.allow_uom_selection and product.hasMultipleUoms()"
+                 class="uom-info text-muted small">
+                <i class="fa fa-balance-scale me-1"/>
+                UoM: <t t-esc="product.uom_id[1]"/>
+                <span class="badge badge-info ms-1"
+                      t-on-click.stop="() => env.services.pos.get_order().get_screen_data('ProductScreen').onUomButtonClick(product, null)">
+                    Cambiar
+                </span>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

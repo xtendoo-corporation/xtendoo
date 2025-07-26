@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="xtendoo_pos_uom_selection.UomSelectionPopup">
+        <div class="popup uom-selection-popup">
+            <div class="popup-header">
+                <div class="title">
+                    <t t-esc="props.title"/>
+                </div>
+            </div>
+
+            <div class="popup-body">
+                <div class="product-info mb-3">
+                    <div class="product-name h5">
+                        <t t-esc="props.product.display_name"/>
+                    </div>
+                    <div class="text-muted">
+                        Selecciona la unidad de medición deseada:
+                    </div>
+                </div>
+
+                <div class="uom-list">
+                    <div t-foreach="props.uoms" t-as="uom" t-key="uom.id"
+                         class="uom-item d-flex align-items-center p-3 border rounded mb-2"
+                         t-att-class="isSelected(uom) ? 'bg-primary text-white' : 'bg-light'"
+                         t-on-click="() => selectUom(uom)">
+
+                        <div class="uom-radio me-3">
+                            <i t-att-class="isSelected(uom) ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"/>
+                        </div>
+
+                        <div class="uom-details flex-grow-1">
+                            <div class="uom-name fw-bold">
+                                <t t-esc="uom.name"/>
+                            </div>
+                            <div class="uom-category text-muted small">
+                                Categoría: <t t-esc="uom.category_id[1]"/>
+                            </div>
+                            <div t-if="getConversionInfo(uom)" class="uom-conversion text-muted small">
+                                <t t-esc="getConversionInfo(uom)"/>
+                            </div>
+                        </div>
+
+                        <div class="uom-type">
+                            <span t-if="uom.uom_type === 'reference'" class="badge bg-success">Base</span>
+                            <span t-elif="uom.uom_type === 'bigger'" class="badge bg-info">Mayor</span>
+                            <span t-elif="uom.uom_type === 'smaller'" class="badge bg-warning">Menor</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="popup-footer d-flex justify-content-end">
+                <button class="btn btn-secondary me-2" t-on-click="cancel">
+                    Cancelar
+                </button>
+                <button class="btn btn-primary" t-on-click="confirm">
+                    <i class="fa fa-check me-1"/>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </t>
+
+</templates>
