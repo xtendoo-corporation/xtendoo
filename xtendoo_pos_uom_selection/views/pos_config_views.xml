@@ -3,7 +3,7 @@
     <record id="view_pos_config_form_uom" model="ir.ui.view">
         <field name="name">pos.config.form.uom</field>
         <field name="model">pos.config</field>
-        <field name="inherit_id" ref="point_of_sale.view_pos_config_form"/>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@name='product_management']" position="inside">
                 <div class="col-12 col-lg-6 o_setting_box">
