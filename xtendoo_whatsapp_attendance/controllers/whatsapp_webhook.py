@@ -219,7 +219,7 @@ class WhatsAppAttendanceWebhook(Webhook):
                         print(f"ℹ️ Geolocalización desactivada para {employee.name}")
 
                     # Registrar asistencia sin geolocalización
-                    attendance_result = self._register_attendance(employee, attendance_type)
+                    attendance_result = self._register_attendance(employee, attendance_type, validation_result)
 
                     if attendance_result:
                         print(f"✅ Asistencia registrada exitosamente")
@@ -431,16 +431,17 @@ class WhatsAppAttendanceWebhook(Webhook):
             _logger.error("Error buscando empleado por teléfono: %s", e)
             return None
 
-    def _register_attendance(self, employee, attendance_type):
+    def _register_attendance(self, employee, attendance_type, validation_result=None):
         """
         Registra la asistencia del empleado usando los métodos nativos de Odoo
+        Para check_out: usa la entrada pendiente encontrada en la validación
         """
         try:
             print(f"📝 Registrando asistencia: {attendance_type} para {employee.name}")
             print(f"📊 Estado actual del empleado: {employee.attendance_state}")
 
             if attendance_type == 'check_in':
-                # Verificar si ya está trabajando
+                # Para entrada, verificar que no esté ya trabajando
                 if employee.attendance_state == 'checked_in':
                     print(f"⚠️ El empleado ya está marcado como presente")
                     return False
@@ -453,17 +454,39 @@ class WhatsAppAttendanceWebhook(Webhook):
                 return attendance
 
             elif attendance_type == 'check_out':
-                # Verificar si está trabajando
-                if employee.attendance_state == 'checked_out':
-                    print(f"⚠️ El empleado ya está marcado como ausente")
-                    return False
+                # Para salida, usar la entrada pendiente encontrada en la validación
+                if validation_result and 'open_attendance' in validation_result:
+                    open_attendance = validation_result['open_attendance']
+                    print(f"📋 Usando entrada pendiente encontrada en validación: ID {open_attendance.id}")
 
-                print(f"🔄 Usando método nativo de Odoo para salida...")
-                # Usar el método nativo para check-out
-                attendance = employee.sudo()._attendance_action_change()
+                    # Registrar la salida directamente en el registro de entrada pendiente
+                    open_attendance.sudo().write({
+                        'check_out': datetime.now()
+                    })
 
-                print(f"✅ Salida registrada con método nativo - ID: {attendance.id}")
-                return attendance
+                    check_in_date = open_attendance.check_in.strftime('%d/%m/%Y %H:%M')
+                    check_out_date = datetime.now().strftime('%d/%m/%Y %H:%M')
+                    print(f"✅ Salida registrada - Entrada: {check_in_date}, Salida: {check_out_date}")
+                    return open_attendance
+                else:
+                    # Fallback: buscar entrada pendiente manualmente
+                    print(f"🔍 Buscando entrada pendiente manualmente...")
+                    open_attendance = request.env['hr.attendance'].sudo().search([
+                        ('employee_id', '=', employee.id),
+                        ('check_out', '=', False)
+                    ], limit=1, order='check_in desc')
+
+                    if not open_attendance:
+                        print(f"❌ No se encontró entrada pendiente")
+                        return False
+
+                    # Registrar la salida
+                    open_attendance.sudo().write({
+                        'check_out': datetime.now()
+                    })
+
+                    print(f"✅ Salida registrada en entrada ID: {open_attendance.id}")
+                    return open_attendance
 
             return False
 
@@ -1306,43 +1329,75 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _validate_attendance_state(self, employee, attendance_type):
         """
-        Valida el estado de asistencia del empleado antes de registrar entrada/salida
-        Retorna un diccionario con el resultado de la validación
+        Valida si el empleado puede registrar el tipo de asistencia solicitado.
+        Para check_out: busca cualquier entrada sin salida de cualquier día (no solo el actual)
+        Para check_in: verifica que no tenga una entrada activa sin salida
         """
         try:
-            today = datetime.now().date()
+            print(f"🔍 Validando estado de asistencia para {employee.name}")
+            print(f"   Tipo solicitado: {attendance_type}")
+            print(f"   Estado actual: {employee.attendance_state}")
 
             if attendance_type == 'check_in':
-                # Verificar si ya hay una entrada registrada hoy
-                existing_attendance = request.env['hr.attendance'].sudo().search([
+                # Para entrada: verificar que no tenga entrada activa sin salida de cualquier día
+                open_attendance = request.env['hr.attendance'].sudo().search([
                     ('employee_id', '=', employee.id),
-                    ('check_in', '>=', f"{today} 00:00:00"),
-                    ('check_out', '=', False)
-                ], limit=1)
-
-                if existing_attendance:
-                    return {
-                        'valid': False,
-                        'message': 'Ya tienes una entrada registrada para hoy.'
-                    }
-
-            elif attendance_type == 'check_out':
-                # Verificar si hay una entrada abierta para poder registrar salida
-                existing_attendance = request.env['hr.attendance'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('check_in', '>=', f"{today} 00:00:00"),
                     ('check_out', '=', False)
                 ], limit=1, order='check_in desc')
 
-                if not existing_attendance:
+                if open_attendance:
+                    check_in_date = open_attendance.check_in.strftime('%d/%m/%Y %H:%M')
+                    print(f"❌ Ya tiene entrada activa desde: {check_in_date}")
                     return {
                         'valid': False,
-                        'message': 'No se encontró una entrada abierta para registrar salida.'
+                        'message': f"Ya tienes una entrada registrada desde el {check_in_date}. Debes registrar salida primero."
                     }
 
-            return {'valid': True}
+                print(f"✅ Puede registrar entrada")
+                return {
+                    'valid': True,
+                    'message': 'Entrada autorizada'
+                }
+
+            elif attendance_type == 'check_out':
+                # Para salida: buscar cualquier entrada sin salida (de cualquier día)
+                open_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_out', '=', False)
+                ], limit=1, order='check_in desc')
+
+                if not open_attendance:
+                    print(f"❌ No hay entrada activa para registrar salida")
+                    return {
+                        'valid': False,
+                        'message': "No tienes ninguna entrada registrada pendiente de salida."
+                    }
+
+                # Mostrar información de la entrada encontrada
+                check_in_date = open_attendance.check_in.strftime('%d/%m/%Y')
+                check_in_time = open_attendance.check_in.strftime('%H:%M')
+                today = datetime.now().strftime('%d/%m/%Y')
+
+                if check_in_date == today:
+                    print(f"✅ Entrada encontrada del mismo día: {check_in_time}")
+                else:
+                    print(f"✅ Entrada encontrada de día anterior: {check_in_date} a las {check_in_time}")
+
+                return {
+                    'valid': True,
+                    'message': f'Salida autorizada para entrada del {check_in_date}',
+                    'open_attendance': open_attendance
+                }
+
+            return {
+                'valid': False,
+                'message': 'Tipo de asistencia no válido'
+            }
 
         except Exception as e:
-            print(f"❌ Error en validación de estado de asistencia: {e}")
-            _logger.error("Error en validación de estado de asistencia: %s", e)
-            return {'valid': False, 'message': str(e)}
+            print(f"❌ Error validando estado de asistencia: {e}")
+            _logger.error("Error validando estado de asistencia: %s", e)
+            return {
+                'valid': False,
+                'message': 'Error interno al validar asistencia'
+            }
