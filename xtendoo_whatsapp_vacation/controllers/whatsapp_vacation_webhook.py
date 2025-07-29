@@ -367,16 +367,29 @@ class WhatsAppVacationWebhook(Webhook):
 
             # Buscar tipo de ausencia para vacaciones
             holiday_type = request.env['hr.leave.type'].sudo().search([
-                ('code', '=', 'leave')
+                ('name', 'ilike', 'vacation')
             ], limit=1)
 
             if not holiday_type:
                 holiday_type = request.env['hr.leave.type'].sudo().search([
-                    ('name', 'ilike', 'leave')
+                    ('name', 'ilike', 'vacaciones')
                 ], limit=1)
 
             if not holiday_type:
-                holiday_type = request.env['hr.leave.type'].sudo().search([], limit=1)
+                holiday_type = request.env['hr.leave.type'].sudo().search([
+                    ('name', 'ilike', 'holiday')
+                ], limit=1)
+
+            if not holiday_type:
+                holiday_type = request.env['hr.leave.type'].sudo().search([
+                    ('name', 'ilike', 'time off')
+                ], limit=1)
+
+            if not holiday_type:
+                # Si no encuentra ninguno específico, tomar el primero disponible
+                holiday_type = request.env['hr.leave.type'].sudo().search([
+                    ('active', '=', True)
+                ], limit=1)
 
             if not holiday_type:
                 raise Exception("No se encontró tipo de ausencia configurado")
