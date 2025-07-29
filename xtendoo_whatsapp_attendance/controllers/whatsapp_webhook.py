@@ -179,8 +179,8 @@ class WhatsAppAttendanceWebhook(Webhook):
                     print(f"   🔘 Respuesta de botón: {button_id}")
 
                     if button_id == 'share_location':
-                        print(f"📍 Usuario eligió compartir ubicación")
-                        self._send_location_sharing_instructions(phone_number)
+                        print(f"📍 Usuario eligió compartir ubicación - REGISTRANDO ASISTENCIA INMEDIATAMENTE")
+                        self._process_share_location_choice(phone_number)
                         return
                     elif button_id == 'no_location':
                         print(f"✅ Usuario eligió registrar sin ubicación")
@@ -1044,7 +1044,10 @@ class WhatsAppAttendanceWebhook(Webhook):
 
     def _process_location_response(self, phone_number, location_data):
         """
-        Procesa la respuesta de ubicación y registra la asistencia
+        Procesa la respuesta de ubicación y registra la asistencia o añade ubicación a registro existente
+        MODIFICADO: Ahora maneja dos casos:
+        1. Registro normal con ubicación (flujo anterior)
+        2. Añadir ubicación a asistencia ya registrada (nuevo flujo)
         """
         try:
             # Obtener solicitud pendiente
@@ -1057,8 +1060,14 @@ class WhatsAppAttendanceWebhook(Webhook):
                 return False
 
             # Parsear datos pendientes
-            employee_id, attendance_type = pending_data.split('|')
-            employee = request.env['hr.employee'].sudo().browse(int(employee_id))
+            pending_parts = pending_data.split('|')
+            employee_id = int(pending_parts[0])
+            attendance_type = pending_parts[1]
+
+            # Verificar si hay ID de asistencia (nuevo flujo)
+            attendance_id = int(pending_parts[2]) if len(pending_parts) > 2 else None
+
+            employee = request.env['hr.employee'].sudo().browse(employee_id)
 
             if not employee.exists():
                 print(f"❌ Empleado no encontrado: {employee_id}")
@@ -1066,26 +1075,56 @@ class WhatsAppAttendanceWebhook(Webhook):
 
             print(f"📍 Procesando ubicación para {employee.name}: {location_data}")
 
-            # Registrar asistencia con ubicación
-            attendance_result = self._register_attendance_with_location(
-                employee, attendance_type, location_data
-            )
+            if attendance_id:
+                # NUEVO FLUJO: Añadir ubicación a asistencia ya registrada
+                print(f"🔄 NUEVO FLUJO: Añadiendo ubicación a asistencia existente ID: {attendance_id}")
 
-            if attendance_result:
-                # Limpiar solicitud pendiente
-                request.env['ir.config_parameter'].sudo().set_param(pending_key, False)
+                attendance = request.env['hr.attendance'].sudo().browse(attendance_id)
+                if not attendance.exists():
+                    print(f"❌ Registro de asistencia no encontrado: {attendance_id}")
+                    self._send_error_message(phone_number, "Registro de asistencia no encontrado")
+                    return False
 
-                # Enviar confirmación
-                self._send_confirmation_message_with_location(
-                    phone_number, attendance_type, employee, location_data
+                # Añadir ubicación al registro existente
+                success = self._add_location_to_existing_attendance(attendance, location_data)
+
+                if success:
+                    # Limpiar solicitud pendiente
+                    request.env['ir.config_parameter'].sudo().set_param(pending_key, False)
+
+                    # Enviar confirmación de ubicación añadida
+                    self._send_location_added_confirmation(phone_number, attendance_type, employee, location_data)
+
+                    print(f"✅ Ubicación añadida exitosamente al registro {attendance_id}")
+                    return True
+                else:
+                    print(f"❌ Error añadiendo ubicación al registro")
+                    self._send_error_message(phone_number, "Error al añadir ubicación")
+                    return False
+
+            else:
+                # FLUJO ANTERIOR: Registrar asistencia con ubicación
+                print(f"🔄 FLUJO ANTERIOR: Registrando asistencia con ubicación")
+
+                attendance_result = self._register_attendance_with_location(
+                    employee, attendance_type, location_data
                 )
 
-                print(f"✅ Asistencia con ubicación registrada exitosamente")
-                return True
-            else:
-                print(f"❌ Error registrando asistencia con ubicación")
-                self._send_error_message(phone_number, "Error al registrar asistencia")
-                return False
+                if attendance_result:
+                    # Limpiar solicitud pendiente
+                    request.env['ir.config_parameter'].sudo().set_param(pending_key, False)
+
+                    # Enviar confirmación
+                    self._send_confirmation_message_with_location(
+                        phone_number, attendance_type, employee, location_data
+                    )
+
+                    print(f"✅ Asistencia con ubicación registrada exitosamente")
+                    return True
+                else:
+                    print(f"❌ Error registrando asistencia con ubicación")
+                    self._send_error_message(phone_number, "Error al registrar asistencia")
+                    return False
 
         except Exception as e:
             print(f"❌ Error procesando ubicación: {e}")
@@ -1182,6 +1221,78 @@ class WhatsAppAttendanceWebhook(Webhook):
 
         except Exception as e:
             print(f"❌ Error enviando confirmación con ubicación: {e}")
+            return False
+
+    def _add_location_to_existing_attendance(self, attendance, location_data):
+        """
+        Añade datos de ubicación a un registro de asistencia ya existente
+        """
+        try:
+            print(f"📍 Añadiendo ubicación al registro de asistencia ID: {attendance.id}")
+
+            # Obtener dirección aproximada
+            address = self._get_address_from_coordinates(
+                location_data.get('latitude'),
+                location_data.get('longitude')
+            )
+
+            # Actualizar registro de asistencia con ubicación
+            attendance.sudo().write({
+                'whatsapp_latitude': location_data.get('latitude'),
+                'whatsapp_longitude': location_data.get('longitude'),
+                'whatsapp_location_address': address or location_data.get('address', ''),
+                'whatsapp_location_accuracy': location_data.get('accuracy', 0.0)
+            })
+
+            # Actualizar última ubicación del empleado
+            employee = attendance.employee_id
+            employee.sudo().write({
+                'last_whatsapp_latitude': location_data.get('latitude'),
+                'last_whatsapp_longitude': location_data.get('longitude'),
+                'last_whatsapp_location_time': datetime.now(),
+                'last_whatsapp_address': address or location_data.get('address', '')
+            })
+
+            print(f"✅ Ubicación añadida exitosamente: {location_data.get('latitude')}, {location_data.get('longitude')}")
+            return True
+
+        except Exception as e:
+            print(f"❌ Error añadiendo ubicación al registro: {e}")
+            _logger.error("Error añadiendo ubicación al registro: %s", e)
+            return False
+
+    def _send_location_added_confirmation(self, phone_number, attendance_type, employee, location_data):
+        """
+        Envía confirmación de que la ubicación ha sido añadida al registro de asistencia
+        """
+        try:
+            action_text = "entrada" if attendance_type == 'check_in' else "salida"
+            lat = location_data.get('latitude')
+            lng = location_data.get('longitude')
+
+            if lat and lng:
+                location_message = f"🎉 *¡Ubicación añadida exitosamente!*\n\nTu {action_text} ahora incluye tu ubicación:\n\n📍 Coordenadas: {lat:.6f}, {lng:.6f}\n\n🗺️ Ver en Google Maps: https://maps.google.com/?q={lat},{lng}\n\n✅ Registro completado"
+
+                # Buscar cuenta WhatsApp
+                wa_account = request.env['whatsapp.account'].sudo().search([
+                    ('active', '=', True)
+                ], limit=1)
+
+                if wa_account:
+                    success = self._send_whatsapp_message(wa_account, phone_number, location_message)
+
+                    if success:
+                        print(f"✅ Confirmación de ubicación añadida enviada exitosamente")
+                        return True
+                    else:
+                        print(f"❌ Error enviando confirmación de ubicación añadida")
+                        return False
+
+            return False
+
+        except Exception as e:
+            print(f"❌ Error enviando confirmación de ubicación añadida: {e}")
+            _logger.error("Error enviando confirmación de ubicación añadida: %s", e)
             return False
 
     def _get_location_request_template(self):
@@ -1305,6 +1416,91 @@ class WhatsAppAttendanceWebhook(Webhook):
         except Exception as e:
             print(f"❌ Error procesando elección sin ubicación: {e}")
             _logger.error("Error procesando elección sin ubicación: %s", e)
+            return False
+
+    def _process_share_location_choice(self, phone_number):
+        """
+        Procesa cuando el usuario elige registrar asistencia CON ubicación.
+        NUEVA FUNCIONALIDAD: Registra la asistencia inmediatamente y luego pide la ubicación
+        para añadirla al registro ya creado.
+        """
+        try:
+            print(f"📍 Procesando elección de registrar CON ubicación para {phone_number}")
+
+            # Obtener solicitud pendiente
+            pending_key = f'whatsapp_attendance_pending_{phone_number}'
+            pending_data = request.env['ir.config_parameter'].sudo().get_param(pending_key)
+
+            if not pending_data:
+                print(f"⚠️ No hay solicitud de asistencia pendiente para {phone_number}")
+                self._send_error_message(phone_number, "No hay registro de asistencia pendiente")
+                return False
+
+            # Parsear datos pendientes
+            employee_id, attendance_type = pending_data.split('|')
+            employee = request.env['hr.employee'].sudo().browse(int(employee_id))
+
+            if not employee.exists():
+                print(f"❌ Empleado no encontrado: {employee_id}")
+                return False
+
+            print(f"👤 Registrando asistencia INMEDIATAMENTE para {employee.name}")
+
+            # 1. REGISTRAR ASISTENCIA INMEDIATAMENTE
+            validation_result = self._validate_attendance_state(employee, attendance_type)
+            if not validation_result['valid']:
+                print(f"❌ Validación fallida: {validation_result['message']}")
+                self._send_error_message(phone_number, validation_result['message'])
+                # Limpiar solicitud pendiente
+                request.env['ir.config_parameter'].sudo().set_param(pending_key, False)
+                return False
+
+            # Registrar la asistencia SIN ubicación primero
+            attendance_result = self._register_attendance(employee, attendance_type, validation_result)
+
+            if not attendance_result:
+                print(f"❌ Error al registrar asistencia")
+                self._send_error_message(phone_number, "Error al registrar asistencia")
+                # Limpiar solicitud pendiente
+                request.env['ir.config_parameter'].sudo().set_param(pending_key, False)
+                return False
+
+            print(f"✅ Asistencia registrada inmediatamente - ID: {attendance_result.id}")
+
+            # 2. ENVIAR CONFIRMACIÓN DE REGISTRO
+            action_text = "entrada" if attendance_type == 'check_in' else "salida"
+            self._send_confirmation_message(phone_number, attendance_type, employee)
+
+            # 3. ACTUALIZAR DATOS PENDIENTES CON EL ID DE LA ASISTENCIA REGISTRADA
+            # Ahora guardamos también el ID de la asistencia para poder actualizarla después
+            request.env['ir.config_parameter'].sudo().set_param(
+                f'whatsapp_attendance_pending_{phone_number}',
+                f'{employee.id}|{attendance_type}|{attendance_result.id}'
+            )
+
+            # 4. ENVIAR INSTRUCCIONES PARA COMPARTIR UBICACIÓN
+            print(f"📍 Enviando instrucciones para añadir ubicación al registro {attendance_result.id}")
+
+            # Buscar la cuenta de WhatsApp activa
+            wa_account = request.env['whatsapp.account'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
+
+            if wa_account:
+                location_message = f"📍 Tu {action_text} ya está registrada ✅\n\nAhora puedes enviar tu ubicación para completar el registro.\n\n*Instrucciones:*\n1️⃣ Toca el botón 📎 (clip)\n2️⃣ Selecciona *Ubicación* \n3️⃣ Elige *Ubicación actual*\n4️⃣ Envía tu ubicación\n\n⏰ Tienes 3 minutos para enviarla."
+
+                success = self._send_whatsapp_message(wa_account, phone_number, location_message)
+
+                if success:
+                    print(f"✅ Instrucciones de ubicación enviadas exitosamente")
+                else:
+                    print(f"⚠️ Error enviando instrucciones, pero asistencia ya registrada")
+
+            return True
+
+        except Exception as e:
+            print(f"❌ Error procesando elección con ubicación: {e}")
+            _logger.error("Error procesando elección con ubicación: %s", e)
             return False
 
     def _get_location_instruction_template(self):
