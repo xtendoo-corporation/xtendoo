@@ -63,21 +63,21 @@ class HrAttendance(models.Model):
 
     def action_open_google_maps(self):
         """
-        Abre Google Maps con la ubicación del empleado en una nueva ventana
+        Abre Google Maps con la ubicación de esta asistencia específica
         """
-        if not self.last_whatsapp_latitude or not self.last_whatsapp_longitude:
+        if not self.whatsapp_latitude or not self.whatsapp_longitude:
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
-                    'message': 'No hay ubicación registrada para este empleado',
+                    'message': 'No hay ubicación registrada para esta asistencia',
                     'type': 'warning',
                     'sticky': False,
                 }
             }
 
-        # URL de Google Maps con las coordenadas
-        google_maps_url = f"https://www.google.com/maps?q={self.last_whatsapp_latitude},{self.last_whatsapp_longitude}"
+        # URL de Google Maps con las coordenadas de la asistencia
+        google_maps_url = f"https://www.google.com/maps?q={self.whatsapp_latitude},{self.whatsapp_longitude}"
 
         return {
             'type': 'ir.actions.act_url',

@@ -202,7 +202,6 @@ class WhatsAppAttendanceWebhook(Webhook):
 
                 if employee:
                     print(f"👤 Empleado encontrado: {employee.name} (ID: {employee.id})")
-
                     # Validar estado de asistencia antes de proceder
                     validation_result = self._validate_attendance_state(employee, attendance_type)
                     if not validation_result['valid']:
