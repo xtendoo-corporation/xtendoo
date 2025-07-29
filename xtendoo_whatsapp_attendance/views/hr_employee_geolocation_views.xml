@@ -25,6 +25,60 @@
                         </group>
                     </group>
 
+                    <!-- Widget de mapa para mostrar la ubicación -->
+                    <group string="Visualización de Ubicación" invisible="not last_whatsapp_latitude">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Widget de mapa integrado -->
+                                <field name="last_whatsapp_latitude" widget="map"
+                                       options="{'lat_field': 'last_whatsapp_latitude', 'lng_field': 'last_whatsapp_longitude'}"
+                                       readonly="1"/>
+                            </div>
+                            <div class="col-md-4">
+                                <!-- Botones de acción para mapas -->
+                                <div class="oe_button_box">
+                                    <button type="object" name="action_open_google_maps"
+                                            class="oe_stat_button"
+                                            icon="fa-map-marker"
+                                            invisible="not last_whatsapp_latitude">
+                                        <div class="o_field_widget o_stat_info">
+                                            <span class="o_stat_text">Ver en</span>
+                                            <span class="o_stat_text">Google Maps</span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Información adicional -->
+                                <div class="alert alert-success mt-3" style="margin-top: 15px;">
+                                    <strong>📍 Última Ubicación Registrada</strong><br/>
+                                    <small>
+                                        La ubicación se actualiza automáticamente<br/>
+                                        cuando el empleado registra asistencia<br/>
+                                        via WhatsApp con geolocalización activada.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </group>
+
+                    <!-- Enlace directo a Google Maps (alternativa simple) -->
+                    <group string="Enlace a Mapa" invisible="not last_whatsapp_latitude">
+                        <div class="o_field_widget">
+                            <p><strong>🗺️ Ubicación en Google Maps:</strong></p>
+                            <div class="btn-group">
+                                <button type="object" name="action_open_google_maps"
+                                        class="btn btn-primary btn-sm">
+                                    <i class="fa fa-external-link"/> Abrir en Google Maps
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Haz clic en "Abrir en Google Maps" para ver la ubicación exacta del empleado
+                                </small>
+                            </div>
+                        </div>
+                    </group>
+
                     <div class="alert alert-info">
                         <strong>Información sobre Geolocalización:</strong>
                         <ul>
@@ -32,6 +86,7 @@
                             <li>La ubicación se registrará automáticamente con cada entrada/salida</li>
                             <li>Esto ayuda a verificar que el empleado esté en la ubicación correcta</li>
                             <li>La precisión depende del GPS del dispositivo móvil</li>
+                            <li>📍 El mapa muestra la última ubicación registrada del empleado</li>
                         </ul>
                     </div>
                 </page>

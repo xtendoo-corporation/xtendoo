@@ -7,15 +7,15 @@
             <field name="name">Palabras Clave - Entrada</field>
             <field name="active" eval="True"/>
             <field name="attendance_type">check_in</field>
-            <field name="keywords">entrada
-entrar
-llegar
-llego
-check in
-fichar entrada
-inicio
-comenzar
-empezar</field>
+            <field name="keywords">/entrada
+/entrar
+/llegar
+/llego
+/check in
+/fichar entrada
+/inicio
+/comenzar
+/empezar</field>
             <field name="use_template" eval="True"/>
             <field name="whatsapp_template_id" ref="whatsapp_template_attendance_check_in"/>
             <field name="custom_message">✅ Hola {employee_name},
@@ -33,16 +33,16 @@ Tu *{action}* ha sido registrada correctamente.
             <field name="name">Palabras Clave - Salida</field>
             <field name="active" eval="True"/>
             <field name="attendance_type">check_out</field>
-            <field name="keywords">salida
-salir
-marchar
-me voy
-check out
-fichar salida
-fin
-terminar
-acabar
-finalizar</field>
+            <field name="keywords">/salida
+/salir
+/marchar
+/me voy
+/check out
+/fichar salida
+/fin
+/terminar
+/acabar
+/finalizar</field>
             <field name="use_template" eval="True"/>
             <field name="whatsapp_template_id" ref="whatsapp_template_attendance_check_out"/>
             <field name="custom_message">✅ Hola {employee_name},

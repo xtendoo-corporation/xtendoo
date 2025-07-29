@@ -2,8 +2,6 @@ import logging
 import json
 import re
 from datetime import datetime
-from http import HTTPStatus
-from werkzeug.exceptions import Forbidden
 
 from odoo import http
 from odoo.http import request
@@ -204,6 +202,13 @@ class WhatsAppAttendanceWebhook(Webhook):
 
                 if employee:
                     print(f"👤 Empleado encontrado: {employee.name} (ID: {employee.id})")
+
+                    # Validar estado de asistencia antes de proceder
+                    validation_result = self._validate_attendance_state(employee, attendance_type)
+                    if not validation_result['valid']:
+                        print(f"❌ Validación fallida: {validation_result['message']}")
+                        self._send_error_message(phone_number, validation_result['message'])
+                        return
 
                     # Verificar si tiene geolocalización activada
                     if employee.whatsapp_geotrack_enabled:
@@ -1260,3 +1265,46 @@ class WhatsAppAttendanceWebhook(Webhook):
         except Exception as e:
             print(f"❌ Error obteniendo plantilla de instrucciones: {e}")
             return None
+
+    def _validate_attendance_state(self, employee, attendance_type):
+        """
+        Valida el estado de asistencia del empleado antes de registrar entrada/salida
+        Retorna un diccionario con el resultado de la validación
+        """
+        try:
+            today = datetime.now().date()
+
+            if attendance_type == 'check_in':
+                # Verificar si ya hay una entrada registrada hoy
+                existing_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '=', False)
+                ], limit=1)
+
+                if existing_attendance:
+                    return {
+                        'valid': False,
+                        'message': 'Ya tienes una entrada registrada para hoy.'
+                    }
+
+            elif attendance_type == 'check_out':
+                # Verificar si hay una entrada abierta para poder registrar salida
+                existing_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                    ('check_out', '=', False)
+                ], limit=1, order='check_in desc')
+
+                if not existing_attendance:
+                    return {
+                        'valid': False,
+                        'message': 'No se encontró una entrada abierta para registrar salida.'
+                    }
+
+            return {'valid': True}
+
+        except Exception as e:
+            print(f"❌ Error en validación de estado de asistencia: {e}")
+            _logger.error("Error en validación de estado de asistencia: %s", e)
+            return {'valid': False, 'message': str(e)}

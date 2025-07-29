@@ -34,6 +34,30 @@ class HrEmployee(models.Model):
         help='Dirección aproximada de la última ubicación registrada'
     )
 
+    def action_open_google_maps(self):
+        """
+        Abre Google Maps con la ubicación del empleado en una nueva ventana
+        """
+        if not self.last_whatsapp_latitude or not self.last_whatsapp_longitude:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': 'No hay ubicación registrada para este empleado',
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+
+        # URL de Google Maps con las coordenadas
+        google_maps_url = f"https://www.google.com/maps?q={self.last_whatsapp_latitude},{self.last_whatsapp_longitude}"
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': google_maps_url,
+            'target': 'new',
+        }
+
 
 class HrAttendance(models.Model):
     _inherit = 'hr.attendance'
