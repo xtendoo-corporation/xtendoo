@@ -171,7 +171,7 @@ class WhatsAppVacationWebhook(Webhook):
             "✨ ¡Estoy aquí para ayudarte!"
         )
 
-        self._send_whatsapp_message(phone_number, message)
+        self._send_whatsapp_message_vacation(phone_number, message)
 
     def _continue_vacation_process(self, phone_number, employee, text_content, vacation_state):
         """
@@ -194,7 +194,7 @@ class WhatsAppVacationWebhook(Webhook):
             # Extraer número de días
             days_match = re.search(r'\d+', text_content.strip())
             if not days_match:
-                self._send_whatsapp_message(
+                self._send_whatsapp_message_vacation(
                     phone_number,
                     "❌ No pude entender el número de días.\n\n"
                     "Por favor responde solo con el número (ej: 5)\n"
@@ -206,7 +206,7 @@ class WhatsAppVacationWebhook(Webhook):
 
             # Validar días mínimos y máximos
             if days <= 0:
-                self._send_whatsapp_message(
+                self._send_whatsapp_message_vacation(
                     phone_number,
                     "❌ El número de días debe ser mayor a 0.\n\n"
                     "Por favor indica cuántos días quieres solicitar.\n"
@@ -215,7 +215,7 @@ class WhatsAppVacationWebhook(Webhook):
                 return
 
             if days > 30:
-                self._send_whatsapp_message(
+                self._send_whatsapp_message_vacation(
                     phone_number,
                     "⚠️ Solicitas muchos días de vacaciones (más de 30).\n\n"
                     "Por favor verifica el número o contacta con Recursos Humanos.\n"
@@ -246,7 +246,7 @@ class WhatsAppVacationWebhook(Webhook):
                     "Para cancelar escribe: `/cancelar`"
                 )
 
-            self._send_whatsapp_message(phone_number, message)
+            self._send_whatsapp_message_vacation(phone_number, message)
 
         except Exception as e:
             print(f"❌ Error procesando días: {e}")
@@ -260,7 +260,7 @@ class WhatsAppVacationWebhook(Webhook):
             # Intentar parsear la fecha
             date_start = self._parse_date(text_content.strip())
             if not date_start:
-                self._send_whatsapp_message(
+                self._send_whatsapp_message_vacation(
                     phone_number,
                     "❌ No pude entender la fecha.\n\n"
                     "Por favor usa el formato: **DD/MM/YYYY**\n"
@@ -271,7 +271,7 @@ class WhatsAppVacationWebhook(Webhook):
 
             # Validar que la fecha no sea en el pasado
             if date_start < datetime.now().date():
-                self._send_whatsapp_message(
+                self._send_whatsapp_message_vacation(
                     phone_number,
                     "❌ La fecha no puede ser en el pasado.\n\n"
                     "Por favor indica una fecha futura.\n"
@@ -306,7 +306,7 @@ class WhatsAppVacationWebhook(Webhook):
                     "Para cancelar escribe: `/cancelar`"
                 )
 
-                self._send_whatsapp_message(phone_number, message)
+                self._send_whatsapp_message_vacation(phone_number, message)
 
         except Exception as e:
             print(f"❌ Error procesando fecha: {e}")
@@ -326,7 +326,7 @@ class WhatsAppVacationWebhook(Webhook):
                 # Intentar parsear nueva fecha
                 new_date_end = self._parse_date(text_content.strip())
                 if not new_date_end:
-                    self._send_whatsapp_message(
+                    self._send_whatsapp_message_vacation(
                         phone_number,
                         "❌ No pude entender la respuesta.\n\n"
                         "Responde **SÍ** para confirmar la fecha propuesta\n"
@@ -338,7 +338,7 @@ class WhatsAppVacationWebhook(Webhook):
                 # Validar nueva fecha
                 date_start = datetime.fromisoformat(vacation_state['date_from']).date()
                 if new_date_end < date_start:
-                    self._send_whatsapp_message(
+                    self._send_whatsapp_message_vacation(
                         phone_number,
                         f"❌ La fecha de fin no puede ser anterior a la fecha de inicio ({date_start.strftime('%d/%m/%Y')}).\n\n"
                         "Por favor indica una fecha válida.\n"
@@ -427,7 +427,7 @@ class WhatsAppVacationWebhook(Webhook):
                 "¡Te notificaremos cuando sea aprobada! 🏖️"
             )
 
-            self._send_whatsapp_message(phone_number, message)
+            self._send_whatsapp_message_vacation(phone_number, message)
 
         except Exception as e:
             print(f"❌ Error creando solicitud: {e}")
@@ -441,14 +441,14 @@ class WhatsAppVacationWebhook(Webhook):
         vacation_state = self._get_vacation_state(phone_number)
         if vacation_state:
             self._clear_vacation_state(phone_number)
-            self._send_whatsapp_message(
+            self._send_whatsapp_message_vacation(
                 phone_number,
                 "❌ **Proceso cancelado**\n\n"
                 "Tu solicitud de vacaciones ha sido cancelada.\n"
                 "Puedes iniciar una nueva cuando gustes escribiendo `/vacaciones`"
             )
         else:
-            self._send_whatsapp_message(
+            self._send_whatsapp_message_vacation(
                 phone_number,
                 "ℹ️ No hay ningún proceso de vacaciones activo para cancelar."
             )
@@ -562,9 +562,10 @@ class WhatsAppVacationWebhook(Webhook):
         except Exception as e:
             print(f"❌ Error limpiando estado: {e}")
 
-    def _send_whatsapp_message(self, phone_number, message):
+    def _send_whatsapp_message_vacation(self, phone_number, message=None, template_name=None, template_params=None, **kwargs):
         """
-        Envía un mensaje de WhatsApp
+        Envía un mensaje de WhatsApp específicamente para el módulo de vacaciones
+        Soporta tanto mensajes de texto como plantillas
         """
         try:
             wa_account = request.env['whatsapp.account'].sudo().search([
@@ -575,7 +576,6 @@ class WhatsAppVacationWebhook(Webhook):
                 print(f"❌ No se encontró cuenta de WhatsApp activa")
                 return False
 
-            # Implementar envío de mensaje (similar al módulo de asistencias)
             import requests
 
             access_token = None
@@ -589,6 +589,7 @@ class WhatsAppVacationWebhook(Webhook):
                         break
 
             if not access_token:
+                print(f"❌ No se encontró token de acceso")
                 return False
 
             url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
@@ -598,17 +599,93 @@ class WhatsAppVacationWebhook(Webhook):
             }
 
             clean_phone = phone_number.lstrip('+')
-            data = {
-                "messaging_product": "whatsapp",
-                "to": clean_phone,
-                "type": "text",
-                "text": {
-                    "body": message
-                }
-            }
 
+            # Si se proporciona template_name, enviar como plantilla
+            if template_name:
+                print(f"📋 Enviando plantilla: {template_name} con parámetros: {template_params}")
+
+                # Buscar la plantilla en Odoo
+                template = request.env['whatsapp.template'].sudo().search([
+                    ('name', '=', template_name),
+                    ('status', '=', 'approved'),
+                    ('wa_account_id', '=', wa_account.id)
+                ], limit=1)
+
+                if not template:
+                    print(f"❌ No se encontró plantilla aprobada: {template_name}")
+                    # Fallback a mensaje de texto si no se encuentra la plantilla
+                    if message:
+                        data = {
+                            "messaging_product": "whatsapp",
+                            "to": clean_phone,
+                            "type": "text",
+                            "text": {
+                                "body": message
+                            }
+                        }
+                    else:
+                        return False
+                else:
+                    # Construir datos para plantilla
+                    data = {
+                        "messaging_product": "whatsapp",
+                        "to": clean_phone,
+                        "type": "template",
+                        "template": {
+                            "name": template_name,
+                            "language": {
+                                "code": template.language or "es"
+                            }
+                        }
+                    }
+
+                    # Agregar parámetros si existen
+                    if template_params:
+                        components = []
+                        if template.header_type in ['text'] and template.header_text:
+                            # Contar parámetros en header
+                            header_param_count = template.header_text.count('{{')
+                            if header_param_count > 0:
+                                header_params = template_params[:header_param_count]
+                                components.append({
+                                    "type": "header",
+                                    "parameters": [{"type": "text", "text": str(param)} for param in header_params]
+                                })
+                                template_params = template_params[header_param_count:]
+
+                        # Parámetros del cuerpo
+                        if template_params:
+                            components.append({
+                                "type": "body",
+                                "parameters": [{"type": "text", "text": str(param)} for param in template_params]
+                            })
+
+                        if components:
+                            data["template"]["components"] = components
+            else:
+                # Mensaje de texto simple
+                if not message:
+                    print(f"❌ No se proporcionó mensaje ni plantilla")
+                    return False
+
+                data = {
+                    "messaging_product": "whatsapp",
+                    "to": clean_phone,
+                    "type": "text",
+                    "text": {
+                        "body": message
+                    }
+                }
+
+            print(f"📤 Enviando mensaje a {clean_phone}")
             response = requests.post(url, headers=headers, json=data, timeout=10)
-            return response.status_code == 200
+
+            if response.status_code == 200:
+                print(f"✅ Mensaje enviado exitosamente")
+                return True
+            else:
+                print(f"❌ Error en respuesta: {response.status_code} - {response.text}")
+                return False
 
         except Exception as e:
             print(f"❌ Error enviando mensaje: {e}")
@@ -619,4 +696,4 @@ class WhatsAppVacationWebhook(Webhook):
         Envía mensaje de error al usuario
         """
         message = f"❌ **Error**\n\n{error_message}\n\nPor favor, contacta con Recursos Humanos si el problema persiste."
-        self._send_whatsapp_message(phone_number, message)
+        self._send_whatsapp_message_vacation(phone_number, message)
