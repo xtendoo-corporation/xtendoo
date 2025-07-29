@@ -25,56 +25,50 @@
                         </group>
                     </group>
 
-                    <!-- Widget de mapa para mostrar la ubicación -->
-                    <group string="Visualización de Ubicación" invisible="not last_whatsapp_latitude">
+                    <!-- Enlace directo a Google Maps (alternativa simple) -->
+                    <group string="Mapa de Ubicación" invisible="not last_whatsapp_latitude">
                         <div class="row">
-                            <div class="col-md-8">
-                                <!-- Widget de mapa integrado -->
-                                <field name="last_whatsapp_latitude" widget="map"
-                                       options="{'lat_field': 'last_whatsapp_latitude', 'lng_field': 'last_whatsapp_longitude'}"
-                                       readonly="1"/>
-                            </div>
-                            <div class="col-md-4">
-                                <!-- Botones de acción para mapas -->
-                                <div class="oe_button_box">
-                                    <button type="object" name="action_open_google_maps"
-                                            class="oe_stat_button"
-                                            icon="fa-map-marker"
-                                            invisible="not last_whatsapp_latitude">
-                                        <div class="o_field_widget o_stat_info">
-                                            <span class="o_stat_text">Ver en</span>
-                                            <span class="o_stat_text">Google Maps</span>
-                                        </div>
-                                    </button>
+                            <div class="col-md-6">
+                                <p><strong>📍 Última ubicación registrada:</strong></p>
+                                <div class="form-group">
+                                    <div class="o_form_label">Coordenadas:</div>
+                                    <div class="text-info">
+                                        <span class="fa fa-map-marker"/>
+                                        <field name="last_whatsapp_latitude" readonly="1" style="display:inline; width:auto;" class="oe_inline"/> ,
+                                        <field name="last_whatsapp_longitude" readonly="1" style="display:inline; width:auto;" class="oe_inline"/>
+                                    </div>
                                 </div>
-
-                                <!-- Información adicional -->
-                                <div class="alert alert-success mt-3" style="margin-top: 15px;">
-                                    <strong>📍 Última Ubicación Registrada</strong><br/>
-                                    <small>
-                                        La ubicación se actualiza automáticamente<br/>
-                                        cuando el empleado registra asistencia<br/>
-                                        via WhatsApp con geolocalización activada.
-                                    </small>
+                                <div class="form-group">
+                                    <div class="o_form_label">Última actualización:</div>
+                                    <div class="text-muted">
+                                        <field name="last_whatsapp_location_time" readonly="1" style="display:inline;" class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <div class="btn-group-vertical" style="width: 100%;">
+                                        <button type="object" name="action_open_google_maps"
+                                                class="btn btn-primary btn-lg"
+                                                style="margin-bottom: 10px;">
+                                            <i class="fa fa-map-marker"/> Ver en Google Maps
+                                        </button>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            Haz clic en "Ver en Google Maps" para<br/>
+                                            visualizar la ubicación exacta del empleado
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </group>
 
-                    <!-- Enlace directo a Google Maps (alternativa simple) -->
-                    <group string="Enlace a Mapa" invisible="not last_whatsapp_latitude">
-                        <div class="o_field_widget">
-                            <p><strong>🗺️ Ubicación en Google Maps:</strong></p>
-                            <div class="btn-group">
-                                <button type="object" name="action_open_google_maps"
-                                        class="btn btn-primary btn-sm">
-                                    <i class="fa fa-external-link"/> Abrir en Google Maps
-                                </button>
-                            </div>
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    Haz clic en "Abrir en Google Maps" para ver la ubicación exacta del empleado
-                                </small>
+                        <!-- Dirección si está disponible -->
+                        <div class="form-group" invisible="not last_whatsapp_address">
+                            <div class="o_form_label">Dirección aproximada:</div>
+                            <div class="text-success">
+                                <field name="last_whatsapp_address" readonly="1" class="oe_inline"/>
                             </div>
                         </div>
                     </group>
