@@ -264,18 +264,57 @@ class WhatsAppAttendanceWebhook(Webhook):
 
         # Buscar patrones de entrada
         for keyword in entrada_keywords:
-            # Crear patrón regex con límites de palabra
-            pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
-            if re.search(pattern, normalized_text):
-                print(f"✅ Coincidencia encontrada para ENTRADA: '{keyword}'")
+            keyword_lower = keyword.lower()
+
+            # Para palabras clave que empiezan con caracteres especiales (como /entrada)
+            # usamos coincidencia exacta o al inicio/final de línea
+            if keyword_lower.startswith('/') or keyword_lower.startswith('#') or keyword_lower.startswith('!'):
+                # Buscar coincidencia exacta o al inicio de línea/palabra
+                patterns = [
+                    r'^' + re.escape(keyword_lower) + r'$',  # Coincidencia exacta
+                    r'^' + re.escape(keyword_lower) + r'\s',  # Al inicio seguido de espacio
+                    r'\s' + re.escape(keyword_lower) + r'$',  # Al final precedido de espacio
+                    r'\s' + re.escape(keyword_lower) + r'\s'  # En medio con espacios
+                ]
+            else:
+                # Para palabras normales, usar límites de palabra tradicionales
+                patterns = [r'\b' + re.escape(keyword_lower) + r'\b']
+
+            # Probar todos los patrones
+            for pattern in patterns:
+                if re.search(pattern, normalized_text):
+                    print(f"✅ Coincidencia encontrada para ENTRADA: '{keyword}' con patrón: {pattern}")
+                    return 'check_in'
+
+            # También probar coincidencia simple sin regex para casos especiales
+            if keyword_lower == normalized_text or keyword_lower in normalized_text:
+                print(f"✅ Coincidencia simple encontrada para ENTRADA: '{keyword}'")
                 return 'check_in'
 
-        # Buscar patrones de salida
+        # Buscar patrones de salida con la misma lógica
         for keyword in salida_keywords:
-            # Crear patrón regex con límites de palabra
-            pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
-            if re.search(pattern, normalized_text):
-                print(f"✅ Coincidencia encontrada para SALIDA: '{keyword}'")
+            keyword_lower = keyword.lower()
+
+            # Para palabras clave que empiezan con caracteres especiales
+            if keyword_lower.startswith('/') or keyword_lower.startswith('#') or keyword_lower.startswith('!'):
+                patterns = [
+                    r'^' + re.escape(keyword_lower) + r'$',  # Coincidencia exacta
+                    r'^' + re.escape(keyword_lower) + r'\s',  # Al inicio seguido de espacio
+                    r'\s' + re.escape(keyword_lower) + r'$',  # Al final precedido de espacio
+                    r'\s' + re.escape(keyword_lower) + r'\s'  # En medio con espacios
+                ]
+            else:
+                patterns = [r'\b' + re.escape(keyword_lower) + r'\b']
+
+            # Probar todos los patrones
+            for pattern in patterns:
+                if re.search(pattern, normalized_text):
+                    print(f"✅ Coincidencia encontrada para SALIDA: '{keyword}' con patrón: {pattern}")
+                    return 'check_out'
+
+            # También probar coincidencia simple
+            if keyword_lower == normalized_text or keyword_lower in normalized_text:
+                print(f"✅ Coincidencia simple encontrada para SALIDA: '{keyword}'")
                 return 'check_out'
 
         print(f"❌ No se encontraron coincidencias para: '{normalized_text}'")
