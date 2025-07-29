@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Plantilla WhatsApp para confirmación de solicitud de vacaciones -->
+        <record id="whatsapp_template_vacation_confirmation" model="whatsapp.template">
+            <field name="name">Confirmación Solicitud Vacaciones</field>
+            <field name="template_name">confirmacion_solicitud_vacaciones</field>
+            <field name="body">🎉 ¡Hola {{1}}!
+
+Tu solicitud de vacaciones ha sido creada exitosamente.
+
+📋 **Detalles:**
+• Días: {{2}}
+• Fecha inicio: {{3}}
+• Fecha fin: {{4}}
+• Número de solicitud: {{5}}
+
+Tu solicitud está pendiente de aprobación por Recursos Humanos.
+¡Te notificaremos cuando sea aprobada! 🏖️</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para inicio de proceso de vacaciones -->
+        <record id="whatsapp_template_vacation_start" model="whatsapp.template">
+            <field name="name">Inicio Proceso Vacaciones</field>
+            <field name="template_name">inicio_proceso_vacaciones</field>
+            <field name="body">🏖️ ¡Hola {{1}}!
+
+Vamos a procesar tu solicitud de vacaciones.
+
+📅 **¿Cuántos días de vacaciones quieres solicitar?**
+
+• Responde solo con el número (ej: 5)
+• Para cancelar en cualquier momento escribe: /cancelar
+
+✨ ¡Estoy aquí para ayudarte!</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para solicitar fechas -->
+        <record id="whatsapp_template_vacation_dates" model="whatsapp.template">
+            <field name="name">Solicitud de Fechas</field>
+            <field name="template_name">solicitud_fechas_vacaciones</field>
+            <field name="body">✅ Perfecto, solicitas **{{1}} día(s)** de vacaciones.
+
+📅 **¿Para qué fecha{{2}}?**
+
+Escribe la fecha en formato: **DD/MM/YYYY**
+Ejemplo: 15/08/2024
+
+Para cancelar escribe: /cancelar</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para errores -->
+        <record id="whatsapp_template_vacation_error" model="whatsapp.template">
+            <field name="name">Error Vacaciones</field>
+            <field name="template_name">error_vacaciones</field>
+            <field name="body">❌ **Error de Vacaciones**
+
+{{1}}
+
+Por favor, contacta con Recursos Humanos si el problema persiste.</field>
+            <field name="status">approved</field>
+        </record>
+
+    </data>
+</odoo>

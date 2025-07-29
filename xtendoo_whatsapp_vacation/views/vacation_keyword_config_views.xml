@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista lista para configuración de palabras clave de vacaciones -->
+    <record id="view_vacation_keyword_config_tree" model="ir.ui.view">
+        <field name="name">vacation.keyword.config.tree</field>
+        <field name="model">vacation.keyword.config</field>
+        <field name="arch" type="xml">
+            <list string="Palabras Clave de Vacaciones" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="keyword"/>
+                <field name="active"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista formulario para configuración de palabras clave de vacaciones -->
+    <record id="view_vacation_keyword_config_form" model="ir.ui.view">
+        <field name="name">vacation.keyword.config.form</field>
+        <field name="model">vacation.keyword.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración Palabra Clave Vacaciones">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="keyword"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Descripción">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para abrir las palabras clave de vacaciones -->
+    <record id="action_vacation_keyword_config" model="ir.actions.act_window">
+        <field name="name">Palabras Clave Vacaciones WhatsApp</field>
+        <field name="res_model">vacation.keyword.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                ¡Configura las palabras clave para vacaciones por WhatsApp!
+            </p>
+            <p>
+                Aquí puedes definir qué palabras o frases activarán el proceso de solicitud de vacaciones cuando un empleado las escriba en WhatsApp.
+            </p>
+            <p>
+                <strong>Ejemplos:</strong>
+                <ul>
+                    <li>/vacaciones</li>
+                    <li>/solicitar vacaciones</li>
+                    <li>/días libres</li>
+                    <li>/permisos</li>
+                </ul>
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú para configuración de vacaciones WhatsApp -->
+    <menuitem id="menu_whatsapp_vacation_root"
+              name="WhatsApp Vacaciones"
+              parent="hr_holidays.menu_hr_holidays_root"
+              sequence="50"/>
+
+    <menuitem id="menu_vacation_keyword_config"
+              name="Palabras Clave"
+              parent="menu_whatsapp_vacation_root"
+              action="action_vacation_keyword_config"
+              sequence="10"/>
+
+</odoo>
