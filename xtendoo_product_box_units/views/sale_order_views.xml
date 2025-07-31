@@ -2,20 +2,7 @@
 <!-- Copyright 2025 Xtendoo Software SLU -->
 <!-- License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0) -->
 <odoo>
-    <!-- Sale Order Line Tree View -->
-    <record id="view_order_form_box_units" model="ir.ui.view">
-        <field name="name">sale.order.form.box.units</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="before">
-                <field name="boxes" optional="show"/>
-                <field name="box_units" optional="hide" readonly="1"/>
-            </xpath>
-        </field>
-    </record>
-
-    <!-- Sale Order Line Form View -->
+    <!-- Sale Order Line Form View - Most reliable -->
     <record id="view_sale_order_line_form_box_units" model="ir.ui.view">
         <field name="name">sale.order.line.form.box.units</field>
         <field name="model">sale.order.line</field>
@@ -24,19 +11,6 @@
             <xpath expr="//field[@name='product_uom_qty']" position="before">
                 <field name="boxes"/>
                 <field name="box_units" readonly="1"/>
-            </xpath>
-        </field>
-    </record>
-
-    <!-- Sale Order Line Tree View (standalone) -->
-    <record id="view_sale_order_line_tree_box_units" model="ir.ui.view">
-        <field name="name">sale.order.line.tree.box.units</field>
-        <field name="model">sale.order.line</field>
-        <field name="inherit_id" ref="sale.view_sale_order_line_tree"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='product_uom_qty']" position="before">
-                <field name="boxes" optional="show"/>
-                <field name="box_units" optional="hide" readonly="1"/>
             </xpath>
         </field>
     </record>
