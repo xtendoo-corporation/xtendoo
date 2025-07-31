@@ -7,8 +7,8 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='weight']" position="after">
-                <field name="box_units" attrs="{'invisible': [('type', '!=', 'product')]}"/>
+            <xpath expr="//field[@name='type']" position="after">
+                <field name="box_units" invisible="type != 'product'"/>
             </xpath>
         </field>
     </record>
