@@ -10,13 +10,12 @@ class AccountMoveLine(models.Model):
     boxes = fields.Float(
         string='Boxes',
         digits='Product Unit of Measure',
-        default=0.0,
+        default=1.0,
         help='Number of boxes for this product'
     )
     box_units = fields.Float(
         string='Units per Box',
         related='product_id.product_tmpl_id.box_units',
-        readonly=True,
         help='Units per box from product configuration'
     )
 

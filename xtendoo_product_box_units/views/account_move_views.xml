@@ -2,15 +2,33 @@
 <!-- Copyright 2025 Xtendoo Software SLU -->
 <!-- License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0) -->
 <odoo>
-    <!-- Account Move Line Form View - Most reliable -->
+    <!-- Account Move Line Tree View in Invoice Form -->
+    <record id="view_move_form_box_units" model="ir.ui.view">
+        <field name="name">account.move.form.box.units</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_line_ids']/list//field[@name='quantity']" position="before">
+                <field name="boxes" string="Cajas" optional="show" widget="float" options="{'digits': [16, 2]}"/>
+                <field name="box_units" string="Unidades por Caja" optional="hide" widget="float" options="{'digits': [16, 2]}"/>
+            </xpath>
+            <!-- Add fields to kanban view for mobile invoices -->
+            <xpath expr="//field[@name='invoice_line_ids']/kanban//field[@name='quantity']" position="before">
+                <field name="boxes"/>
+                <field name="box_units"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Account Move Line Form View for mobile editing -->
     <record id="view_account_move_line_form_box_units" model="ir.ui.view">
         <field name="name">account.move.line.form.box.units</field>
         <field name="model">account.move.line</field>
         <field name="inherit_id" ref="account.view_move_line_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='quantity']" position="before">
-                <field name="boxes"/>
-                <field name="box_units" readonly="1"/>
+                <field name="boxes" string="Cajas" widget="float" options="{'digits': [16, 2]}"/>
+                <field name="box_units" string="Unidades por Caja" readonly="1" widget="float" options="{'digits': [16, 2]}"/>
             </xpath>
         </field>
     </record>
