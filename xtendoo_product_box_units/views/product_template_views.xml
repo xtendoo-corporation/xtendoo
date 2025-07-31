@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2025 Xtendoo Software SLU -->
+<!-- License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0) -->
+<odoo>
+    <record id="product_template_form_view_box_units" model="ir.ui.view">
+        <field name="name">product.template.form.box.units</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='weight']" position="after">
+                <field name="box_units" attrs="{'invisible': [('type', '!=', 'product')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_kanban_view_box_units" model="ir.ui.view">
+        <field name="name">product.template.kanban.box.units</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('product_lst_price')]" position="after">
+                <div t-if="record.box_units.raw_value and record.box_units.raw_value != 1">
+                    <strong>Box Units: </strong><field name="box_units"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,83 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* xtendoo_product_box_units
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-31 12:00+0000\n"
+"PO-Revision-Date: 2025-07-31 12:00+0000\n"
+"Last-Translator: Xtendoo Software SLU\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,field_description:xtendoo_product_box_units.field_product_template__box_units
+#: model:ir.model.fields,field_description:xtendoo_product_box_units.field_product_product__box_units
+msgid "Units per Box"
+msgstr "Unidades por Caja"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,help:xtendoo_product_box_units.field_product_template__box_units
+#: model:ir.model.fields,help:xtendoo_product_box_units.field_product_product__box_units
+msgid "Number of units contained in one box of this product"
+msgstr "Número de unidades contenidas en una caja de este producto"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,field_description:xtendoo_product_box_units.field_sale_order_line__boxes
+msgid "Boxes"
+msgstr "Cajas"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,help:xtendoo_product_box_units.field_sale_order_line__boxes
+msgid "Number of boxes for this product"
+msgstr "Número de cajas para este producto"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,help:xtendoo_product_box_units.field_sale_order_line__box_units
+msgid "Units per box from product configuration"
+msgstr "Unidades por caja desde la configuración del producto"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model,name:xtendoo_product_box_units.model_product_template
+msgid "Product Template"
+msgstr "Plantilla de Producto"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model,name:xtendoo_product_box_units.model_sale_order_line
+msgid "Sales Order Line"
+msgstr "Línea de Pedido de Venta"
+
+#. module: xtendoo_product_box_units
+#: model_terms:ir.ui.view,arch_db:xtendoo_product_box_units.product_template_kanban_view_box_units
+msgid "Box Units: "
+msgstr "Unidades por Caja: "
+
+#. module: xtendoo_product_box_units
+#: model:ir.model,name:xtendoo_product_box_units.model_account_move_line
+msgid "Journal Item"
+msgstr "Línea de Asiento"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,field_description:xtendoo_product_box_units.field_account_move_line__boxes
+msgid "Boxes"
+msgstr "Cajas"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,help:xtendoo_product_box_units.field_account_move_line__boxes
+msgid "Number of boxes for this product"
+msgstr "Número de cajas para este producto"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,field_description:xtendoo_product_box_units.field_account_move_line__box_units
+msgid "Units per Box"
+msgstr "Unidades por Caja"
+
+#. module: xtendoo_product_box_units
+#: model:ir.model.fields,help:xtendoo_product_box_units.field_account_move_line__box_units
+msgid "Units per box from product configuration"
+msgstr "Unidades por caja desde la configuración del producto"
