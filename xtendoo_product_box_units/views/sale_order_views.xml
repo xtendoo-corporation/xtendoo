@@ -3,23 +3,25 @@
 <!-- License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0) -->
 <odoo>
 
-    <!-- Sale Order Line Form View for mobile -->
-    <record id="view_order_form_box_units" model="ir.ui.view">
-        <field name="name">sale.order.form.box.units</field>
+    <record id="sale_order_commitment_date_form_view" model="ir.ui.view">
+        <field name="name">sale.order.commitment.date.form</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            <field name="order_line" position="attributes">
-                <attribute name="context">{'tree_view_ref': 'xtendoo_product_box_units.view_sale_order_line_tree_box_units'}</attribute>
-            </field>
-            <xpath expr="//field[@name='order_line']/list//field[@name='product_uom_qty']" position="before">
-                <field name="boxes" string="Cajas" widget="float" options="{'digits': [16, 2]}"/>
-                <field name="box_units" string="Unidades por Caja" widget="float" options="{'digits': [16, 2]}"/>
+            <xpath
+                expr="//field[@name='order_line']/form//field[@name='price_unit']"
+                position="before"
+            >
+                <br/>
+                <field name="boxes" />
+                <field name="box_units" string="Unidades por Caja"/>
             </xpath>
-            <!-- Add fields to kanban view for mobile -->
-            <xpath expr="//field[@name='order_line']/kanban//field[@name='product_uom_qty']" position="before">
-                <field name="boxes"/>
-                <field name="box_units"/>
+            <xpath
+                expr="//field[@name='order_line']/list/field[@name='price_unit']"
+                position="before"
+            >
+                <field name="boxes" />
+                <field name="box_units" string="Unidades por Caja"/>
             </xpath>
         </field>
     </record>
@@ -37,4 +39,15 @@
         </field>
     </record>
 
+    <record id="sale_order_line_ext_tree_view" model="ir.ui.view">
+        <field name="name">sale.order.line.ext.list</field>
+        <field name="model">sale.order.line</field>
+        <field name="inherit_id" ref="sale.view_order_line_tree" />
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="boxes" optional="show" />
+                <field name="box_units" optional="show" />
+            </field>
+        </field>
+    </record>
 </odoo>
