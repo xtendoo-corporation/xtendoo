@@ -6,21 +6,23 @@
     <record id="sale_order_commitment_date_form_view" model="ir.ui.view">
         <field name="name">sale.order.commitment.date.form</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath
-                expr="//field[@name='order_line']/form//field[@name='price_unit']"
-                position="before"
-            >
-                <br/>
-                <field name="boxes" />
-                <field name="box_units" string="Unidades por Caja"/>
+            <xpath expr="//label[@for='product_uom_qty']" position="before">
+                <div class="o_inline">
+                    <label for="boxes" class="o_form_label fw-bold">Cajas</label>
+                    <field name="boxes"/>
+                </div>
+                <div class="o_inline">
+                    <label for="box_units" class="o_form_label fw-bold">Unidades por Caja</label>
+                    <field name="box_units" string="Unidades por Caja"/>
+                </div>
             </xpath>
             <xpath
-                expr="//field[@name='order_line']/list/field[@name='price_unit']"
-                position="before"
+                expr="//field[@name='order_line']/list/field[@name='product_uom_qty']"
+                position="after"
             >
-                <field name="boxes" />
+                <field name="boxes"/>
                 <field name="box_units" string="Unidades por Caja"/>
             </xpath>
         </field>
@@ -42,11 +44,11 @@
     <record id="sale_order_line_ext_tree_view" model="ir.ui.view">
         <field name="name">sale.order.line.ext.list</field>
         <field name="model">sale.order.line</field>
-        <field name="inherit_id" ref="sale.view_order_line_tree" />
+        <field name="inherit_id" ref="sale.view_order_line_tree"/>
         <field name="arch" type="xml">
             <field name="name" position="after">
-                <field name="boxes" optional="show" />
-                <field name="box_units" optional="show" />
+                <field name="boxes" optional="show"/>
+                <field name="box_units" optional="show"/>
             </field>
         </field>
     </record>

@@ -31,6 +31,12 @@ class SaleOrderLine(models.Model):
             self.box_units = self.product_id.product_tmpl_id.box_units
             self.product_uom_qty = self.boxes * self.box_units
 
+    @api.onchange('box_units')
+    def _onchange_box_units(self):
+        """Update boxes when box_units is changed"""
+        if self.box_units :
+            self.product_uom_qty = self.boxes * self.box_units
+
     @api.onchange('product_uom_qty')
     def _onchange_product_uom_qty_boxes(self):
         """Update boxes when quantity is changed manually"""
