@@ -38,12 +38,18 @@ class CalendarAlarm(models.Model):
 
             # Obtener la cuenta de WhatsApp activa
             WhatsAppAccount = self.env['whatsapp.account']
+
+            # Intentar diferentes campos para encontrar cuentas activas
             whatsapp_account = WhatsAppAccount.search([
-                ('status', '=', 'active')
+                ('active', '=', True)
             ], limit=1)
 
+            # Si no hay cuentas con campo 'active', buscar cualquier cuenta disponible
             if not whatsapp_account:
-                _logger.error("No se encontró cuenta de WhatsApp activa")
+                whatsapp_account = WhatsAppAccount.search([], limit=1)
+
+            if not whatsapp_account:
+                _logger.error("No se encontró cuenta de WhatsApp disponible")
                 return False
 
             # Obtener el número de teléfono del participante

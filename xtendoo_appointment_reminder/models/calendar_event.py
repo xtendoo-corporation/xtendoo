@@ -171,8 +171,12 @@ class CalendarEvent(models.Model):
 
             # Verificar que hay una cuenta de WhatsApp activa
             whatsapp_account = self.env['whatsapp.account'].search([
-                ('status', '=', 'active')
+                ('active', '=', True)
             ], limit=1)
+
+            # Si no hay cuentas con campo 'active', buscar cualquier cuenta disponible
+            if not whatsapp_account:
+                whatsapp_account = self.env['whatsapp.account'].search([], limit=1)
 
             if not whatsapp_account:
                 return {
