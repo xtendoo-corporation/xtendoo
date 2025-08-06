@@ -89,9 +89,6 @@ class CalendarAlarm(models.Model):
             # Preparar el mensaje
             message_body = self._prepare_whatsapp_message(calendar_event)
 
-            # Crear el mensaje de WhatsApp usando el modelo nativo
-            WhatsAppMessage = self.env['whatsapp.message']
-
             # Verificar si el partner tiene un número de WhatsApp válido
             if not partner.mobile and not partner.phone:
                 _logger.error(f"Partner {partner.name} no tiene número de teléfono")
@@ -104,42 +101,70 @@ class CalendarAlarm(models.Model):
                 _logger.error(f"No se pudo normalizar el número de teléfono: {phone_number}")
                 return False
 
-            # Crear el mensaje de WhatsApp
-            message_vals = {
-                'body': message_body,
-                'wa_account_id': whatsapp_account.id,
-                'mobile_number': normalized_phone,
-                'mobile_number_formatted': normalized_phone,
-                'message_type': 'outbound',
-                'state': 'outgoing',
-            }
+            # Usar el método directo del servicio de WhatsApp de Odoo 18
+            try:
+                # Intentar usar el servicio de WhatsApp directamente
+                WhatsAppService = self.env['whatsapp.composer']
 
-            # Si hay plantilla, usarla
-            if self.whatsapp_template_id:
-                message_vals.update({
-                    'wa_template_id': self.whatsapp_template_id.id,
-                    'template_params': self._get_template_params(calendar_event),
+                # Crear contexto para el mensaje
+                composer_ctx = {
+                    'default_res_model': 'calendar.event',
+                    'default_res_id': calendar_event.id,
+                    'default_partner_ids': [(6, 0, [partner.id])],
+                    'default_wa_account_id': whatsapp_account.id,
+                }
+
+                # Crear el composer de WhatsApp
+                composer = WhatsAppService.with_context(composer_ctx).create({
+                    'res_model': 'calendar.event',
+                    'res_id': calendar_event.id,
+                    'partner_ids': [(6, 0, [partner.id])],
+                    'wa_account_id': whatsapp_account.id,
+                    'body': message_body,
                 })
 
-            whatsapp_message = WhatsAppMessage.create(message_vals)
+                # Enviar el mensaje
+                composer.action_send_whatsapp_message()
 
-            # Enviar el mensaje
-            try:
-                whatsapp_message.send()
+                _logger.info(f"Mensaje WhatsApp enviado usando composer para evento {calendar_event.name}")
+                return True
 
-                # Verificar si se envió correctamente
-                if whatsapp_message.state == 'sent':
-                    return True
-                else:
-                    _logger.error(f"El mensaje no se envió correctamente. Estado: {whatsapp_message.state}")
-                    return False
-
-            except Exception as send_error:
-                _logger.error(f"Error al enviar mensaje WhatsApp: {send_error}")
-                return False
+            except Exception as composer_error:
+                _logger.warning(f"Error con composer de WhatsApp: {composer_error}")
+                # Fallback a método alternativo
+                return self._send_whatsapp_fallback(whatsapp_account, partner, message_body, calendar_event)
 
         except Exception as e:
             _logger.error(f"Error en _send_via_odoo_whatsapp: {e}", exc_info=True)
+            return False
+
+    def _send_whatsapp_fallback(self, whatsapp_account, partner, message_body, calendar_event):
+        """
+        Método alternativo para enviar WhatsApp usando la API directa
+        """
+        try:
+            # Usar el método de la API directa como fallback
+            phone_number = partner.mobile or partner.phone
+            normalized_phone = self._normalize_phone_number(phone_number)
+
+            if not normalized_phone:
+                return False
+
+            # Intentar enviar usando el método directo de la cuenta de WhatsApp
+            if hasattr(whatsapp_account, 'send_message'):
+                result = whatsapp_account.send_message(
+                    phone_number=normalized_phone,
+                    message=message_body
+                )
+                if result:
+                    _logger.info(f"Mensaje WhatsApp enviado usando método directo de cuenta")
+                    return True
+
+            # Si no funciona, usar la API REST directa
+            return self._send_whatsapp_message(whatsapp_account, normalized_phone, message_body, calendar_event)
+
+        except Exception as e:
+            _logger.error(f"Error en método fallback: {e}")
             return False
 
     def _get_event_partner(self, calendar_event):
