@@ -88,18 +88,29 @@ class CalendarEvent(models.Model):
         """
         Método llamado por el cron para procesar recordatorios WhatsApp pendientes
         """
-        # Buscar eventos próximos que tengan recordatorios WhatsApp configurados
-        events_to_process = self.search([
-            ('start', '>', fields.Datetime.now()),
-            ('alarm_ids.alarm_type', '=', 'whatsapp'),
-            ('whatsapp_reminder_sent', '=', False)
-        ])
+        try:
+            # Verificar que el módulo WhatsApp esté instalado
+            if not self.env['ir.module.module'].search([('name', '=', 'whatsapp'), ('state', '=', 'installed')]):
+                _logger.warning("El módulo WhatsApp no está instalado")
+                return
 
-        for event in events_to_process:
-            try:
-                event._process_whatsapp_reminders()
-            except Exception as e:
-                _logger.error(f"Error procesando recordatorios para evento {event.id}: {e}")
+            # Buscar eventos próximos que tengan recordatorios WhatsApp configurados
+            events_to_process = self.search([
+                ('start', '>', fields.Datetime.now()),
+                ('alarm_ids.alarm_type', '=', 'whatsapp'),
+                ('whatsapp_reminder_sent', '=', False)
+            ])
+
+            _logger.info(f"Procesando {len(events_to_process)} eventos para recordatorios WhatsApp")
+
+            for event in events_to_process:
+                try:
+                    event._process_whatsapp_reminders()
+                except Exception as e:
+                    _logger.error(f"Error procesando recordatorios para evento {event.id}: {e}")
+
+        except Exception as e:
+            _logger.error(f"Error general en process_whatsapp_reminders: {e}")
 
     def _process_whatsapp_reminders(self):
         """
@@ -112,7 +123,6 @@ class CalendarEvent(models.Model):
 
         for alarm in whatsapp_alarms:
             # Calcular cuándo se debe enviar el recordatorio
-            # Convertir duration_minutes a timedelta y restar del tiempo de inicio
             from datetime import timedelta
             reminder_delta = timedelta(minutes=alarm.duration_minutes)
             reminder_time = self.start - reminder_delta
@@ -133,59 +143,146 @@ class CalendarEvent(models.Model):
         """
         Acción manual para enviar recordatorio WhatsApp
         """
-        whatsapp_alarms = self.alarm_ids.filtered(lambda a: a.alarm_type == 'whatsapp')
-
-        if not whatsapp_alarms:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': _("Sin Recordatorios"),
-                    'message': _("No hay recordatorios WhatsApp configurados para este evento"),
-                    'type': 'warning'
+        try:
+            # Verificar que el módulo WhatsApp esté instalado
+            if not self.env['ir.module.module'].search([('name', '=', 'whatsapp'), ('state', '=', 'installed')]):
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _("Módulo No Disponible"),
+                        'message': _("El módulo WhatsApp no está instalado"),
+                        'type': 'warning'
+                    }
                 }
-            }
 
-        success_count = 0
-        for alarm in whatsapp_alarms:
-            try:
-                if alarm._send_whatsapp_reminder(self):
-                    success_count += 1
-            except Exception as e:
-                _logger.error(f"Error enviando recordatorio manual: {e}")
+            whatsapp_alarms = self.alarm_ids.filtered(lambda a: a.alarm_type == 'whatsapp')
 
-        if success_count > 0:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': _("WhatsApp Enviado"),
-                    'message': _("Se enviaron %s recordatorio(s) por WhatsApp") % success_count,
-                    'type': 'success'
+            if not whatsapp_alarms:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _("Sin Recordatorios"),
+                        'message': _("No hay recordatorios WhatsApp configurados para este evento"),
+                        'type': 'warning'
+                    }
                 }
-            }
-        else:
+
+            # Verificar que hay una cuenta de WhatsApp activa
+            whatsapp_account = self.env['whatsapp.account'].search([
+                ('status', '=', 'active')
+            ], limit=1)
+
+            if not whatsapp_account:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _("Sin Cuenta WhatsApp"),
+                        'message': _("No hay cuenta de WhatsApp activa configurada"),
+                        'type': 'warning'
+                    }
+                }
+
+            # Verificar que el evento tiene un contacto con teléfono
+            partner = self._get_event_partner()
+            if not partner:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _("Sin Contacto"),
+                        'message': _("No se encontró contacto para este evento"),
+                        'type': 'warning'
+                    }
+                }
+
+            if not partner.mobile and not partner.phone:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _("Sin Teléfono"),
+                        'message': _("El contacto %s no tiene número de teléfono") % partner.name,
+                        'type': 'warning'
+                    }
+                }
+
+            success_count = 0
+            error_messages = []
+
+            for alarm in whatsapp_alarms:
+                try:
+                    if alarm._send_whatsapp_reminder(self):
+                        success_count += 1
+                    else:
+                        error_messages.append(f"Error con recordatorio: {alarm.name}")
+                except Exception as e:
+                    _logger.error(f"Error enviando recordatorio manual: {e}")
+                    error_messages.append(f"Error con recordatorio: {alarm.name} - {str(e)}")
+
+            if success_count > 0:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _("WhatsApp Enviado"),
+                        'message': _("Se enviaron %s recordatorio(s) por WhatsApp") % success_count,
+                        'type': 'success'
+                    }
+                }
+            else:
+                error_msg = "\n".join(error_messages) if error_messages else "Error desconocido"
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _("Error"),
+                        'message': _("No se pudo enviar ningún recordatorio por WhatsApp:\n%s") % error_msg,
+                        'type': 'danger'
+                    }
+                }
+
+        except Exception as e:
+            _logger.error(f"Error en action_send_whatsapp_reminder: {e}")
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': _("Error"),
-                    'message': _("No se pudo enviar ningún recordatorio por WhatsApp"),
-                    'type': 'warning'
+                    'message': _("Error inesperado: %s") % str(e),
+                    'type': 'danger'
                 }
             }
+
+    def _get_event_partner(self):
+        """
+        Obtiene el partner principal del evento
+        """
+        # Buscar en los asistentes del evento
+        for attendee in self.attendee_ids:
+            if attendee.partner_id:
+                return attendee.partner_id
+
+        # Si no hay asistentes, buscar en el partner del evento
+        if self.partner_ids:
+            return self.partner_ids[0]
+
+        return False
 
     def get_whatsapp_reminder_context(self):
         """
         Obtiene el contexto para las plantillas de WhatsApp
         """
+        partner = self._get_event_partner()
         return {
-            'event_name': self.name,
+            'event_name': self.name or '',
             'start_date': self.start.strftime('%d/%m/%Y') if self.start else '',
             'start_time': self.start.strftime('%H:%M') if self.start else '',
             'location': self.location or '',
             'description': self.description or '',
             'organizer': self.user_id.name if self.user_id else '',
-            'attendee_name': self.partner_id.name if self.partner_id else '',
+            'attendee_name': partner.name if partner else '',
             'company_name': self.env.company.name,
         }
