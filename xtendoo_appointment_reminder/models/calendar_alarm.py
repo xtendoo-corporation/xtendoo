@@ -115,12 +115,39 @@ class CalendarAlarm(models.Model):
             import requests
             import json
 
+            # Verificar la cuenta de WhatsApp
+            if not whatsapp_account:
+                _logger.error("No se proporcionó cuenta de WhatsApp")
+                return False
+
+            # Verificar campos necesarios en la cuenta
+            account_info = f"ID: {whatsapp_account.id}, Nombre: {whatsapp_account.name}"
+            _logger.info(f"Usando cuenta de WhatsApp: {account_info}")
+
             # Obtener configuración de la cuenta
             access_token = whatsapp_account.token
             phone_number_id = whatsapp_account.phone_uid
 
-            if not access_token or not phone_number_id:
-                _logger.error("Falta configuración de WhatsApp (token o phone_uid)")
+            # Verificar campos de la cuenta
+            if not access_token:
+                _logger.error(f"La cuenta de WhatsApp {account_info} no tiene token configurado")
+                return False
+
+            if not phone_number_id:
+                _logger.error(f"La cuenta de WhatsApp {account_info} no tiene phone_uid configurado")
+                return False
+
+            # Verificar el número de teléfono
+            if not phone_number:
+                _logger.error("No se proporcionó número de teléfono")
+                return False
+
+            # Limpiar número de teléfono (sin +)
+            clean_phone = phone_number.lstrip('+')
+
+            # Verificar que el número tenga un formato válido
+            if len(clean_phone) < 10:
+                _logger.error(f"El número de teléfono {clean_phone} parece ser demasiado corto")
                 return False
 
             # URL de la API de WhatsApp Business
@@ -132,8 +159,10 @@ class CalendarAlarm(models.Model):
                 'Content-Type': 'application/json'
             }
 
-            # Limpiar número de teléfono (sin +)
-            clean_phone = phone_number.lstrip('+')
+            # Verificar el mensaje
+            if not message_body:
+                _logger.error("No se proporcionó cuerpo del mensaje")
+                return False
 
             # Datos del mensaje
             data = {
@@ -146,20 +175,54 @@ class CalendarAlarm(models.Model):
             }
 
             _logger.info(f"Enviando vía API REST a {clean_phone}")
+            _logger.info(f"URL: {url}")
+            _logger.info(f"Datos: {json.dumps(data, ensure_ascii=False)}")
 
-            # Realizar petición
-            response = requests.post(url, headers=headers, json=data, timeout=30)
+            try:
+                # Realizar petición
+                response = requests.post(url, headers=headers, json=data, timeout=30)
 
-            if response.status_code == 200:
-                response_data = response.json()
-                _logger.info(f"Mensaje enviado exitosamente vía API REST: {response_data}")
-                return True
-            else:
-                _logger.error(f"Error en API REST: {response.status_code} - {response.text}")
+                # Registrar la respuesta completa para diagnóstico
+                _logger.info(f"Código de respuesta: {response.status_code}")
+                _logger.info(f"Respuesta completa: {response.text}")
+
+                if response.status_code == 200:
+                    response_data = response.json()
+                    _logger.info(f"Mensaje enviado exitosamente vía API REST: {response_data}")
+
+                    # Verificar si la respuesta contiene el ID del mensaje
+                    if 'messages' in response_data and response_data['messages']:
+                        message_id = response_data['messages'][0].get('id')
+                        _logger.info(f"ID del mensaje enviado: {message_id}")
+
+                    # Verificar el estado del contacto
+                    if 'contacts' in response_data and response_data['contacts']:
+                        contact_input = response_data['contacts'][0].get('input')
+                        contact_wa_id = response_data['contacts'][0].get('wa_id')
+                        _logger.info(f"Contacto - Número de entrada: {contact_input}, WhatsApp ID: {contact_wa_id}")
+
+                    return True
+                else:
+                    _logger.error(f"Error en API REST: {response.status_code} - {response.text}")
+
+                    # Intentar analizar la respuesta de error para más detalles
+                    try:
+                        error_data = response.json()
+                        if 'error' in error_data:
+                            error_message = error_data['error'].get('message', 'Desconocido')
+                            error_type = error_data['error'].get('type', 'Desconocido')
+                            error_code = error_data['error'].get('code', 'Desconocido')
+                            _logger.error(f"Detalles del error - Tipo: {error_type}, Código: {error_code}, Mensaje: {error_message}")
+                    except:
+                        _logger.error("No se pudieron analizar los detalles del error")
+
+                    return False
+            except requests.exceptions.RequestException as req_error:
+                _logger.error(f"Error en la petición HTTP: {req_error}")
                 return False
 
         except Exception as e:
-            _logger.error(f"Error en API REST: {e}")
+            _logger.error(f"Error en API REST: {e}", exc_info=True)
             return False
 
     def _get_event_partner(self, calendar_event):
@@ -286,11 +349,14 @@ class CalendarAlarm(models.Model):
             # Añadir los parámetros de la plantilla
             if params:
                 component_params = []
-                for key, value in params.items():
-                    component_params.append({
-                        "type": "text",
-                        "text": value
-                    })
+                # Añadir los parámetros en orden numérico
+                for i in range(1, 8):  # Del 1 al 7, según la plantilla
+                    key = str(i)
+                    if key in params and params[key]:
+                        component_params.append({
+                            "type": "text",
+                            "text": params[key]
+                        })
 
                 if component_params:
                     components.append({
@@ -298,22 +364,34 @@ class CalendarAlarm(models.Model):
                         "parameters": component_params
                     })
 
+            # Nombre exacto de la plantilla como está en XML
+            template_name = "Recordatorio de Cita"
+
             # Datos para la solicitud de la plantilla
             data = {
                 "messaging_product": "whatsapp",
                 "to": clean_phone,
                 "type": "template",
                 "template": {
-                    "name": template.name,
+                    "name": template_name,
                     "language": {"code": "es"},
-                    "components": components
                 }
             }
 
-            _logger.info(f"Enviando plantilla {template.name} vía API REST a {clean_phone}")
+            # Añadir componentes solo si hay parámetros
+            if components:
+                data["template"]["components"] = components
+
+            _logger.info(f"Enviando plantilla {template_name} vía API REST a {clean_phone}")
+            _logger.info(f"URL: {url}")
+            _logger.info(f"Datos de la plantilla: {json.dumps(data, ensure_ascii=False)}")
 
             # Realizar petición
             response = requests.post(url, headers=headers, json=data, timeout=30)
+
+            # Registrar la respuesta completa para diagnóstico
+            _logger.info(f"Código de respuesta: {response.status_code}")
+            _logger.info(f"Respuesta completa: {response.text}")
 
             if response.status_code == 200:
                 response_data = response.json()
@@ -321,6 +399,18 @@ class CalendarAlarm(models.Model):
                 return True
             else:
                 _logger.error(f"Error en API REST al enviar plantilla: {response.status_code} - {response.text}")
+
+                # Intentar analizar la respuesta de error para más detalles
+                try:
+                    error_data = response.json()
+                    if 'error' in error_data:
+                        error_message = error_data['error'].get('message', 'Desconocido')
+                        error_type = error_data['error'].get('type', 'Desconocido')
+                        error_code = error_data['error'].get('code', 'Desconocido')
+                        _logger.error(f"Detalles del error - Tipo: {error_type}, Código: {error_code}, Mensaje: {error_message}")
+                except:
+                    _logger.error("No se pudieron analizar los detalles del error")
+
                 return False
 
         except Exception as e:
