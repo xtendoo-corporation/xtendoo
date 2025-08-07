@@ -477,61 +477,80 @@ class CalendarAlarm(models.Model):
             # Nombre exacto de la plantilla como está aprobado en Facebook
             template_name = "recordatorio_de_cita"  # Nombre corregido según Facebook
 
-            # Datos para la solicitud de la plantilla
-            data = {
-                "messaging_product": "whatsapp",
-                "to": clean_phone,
-                "type": "template",
-                "template": {
-                    "name": template_name,
-                    "language": {"code": "en_US"},
-                }
-            }
+            # Probar enviar el mensaje directo sin plantilla primero
+            try:
+                message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
+                direct_success = self._send_via_rest_api(whatsapp_account, phone_number, message_body)
+                if direct_success:
+                    _logger.info("Mensaje de texto enviado exitosamente como alternativa a la plantilla")
+                    return True
+            except Exception as direct_error:
+                _logger.warning(f"Error enviando mensaje directo: {direct_error}")
 
-            # Añadir componentes solo si hay parámetros
-            if components:
-                data["template"]["components"] = components
+            # Ahora intentar con diferentes códigos de idioma
+            language_codes = ["en", "en_GB", "en_US", "es_ES", "es", ""]
 
-            _logger.info(f"Enviando plantilla {template_name} vía API REST a {clean_phone}")
-            _logger.info(f"URL: {url}")
-            _logger.info(f"Datos de la plantilla: {json.dumps(data, ensure_ascii=False)}")
-
-            # Realizar petición
-            response = requests.post(url, headers=headers, json=data, timeout=30)
-
-            # Registrar la respuesta completa para diagnóstico
-            _logger.info(f"Código de respuesta: {response.status_code}")
-            _logger.info(f"Respuesta completa: {response.text}")
-
-            if response.status_code == 200:
-                response_data = response.json()
-                _logger.info(f"Plantilla enviada exitosamente: {response_data}")
-                return True
-            else:
-                _logger.error(f"Error en API REST al enviar plantilla: {response.status_code} - {response.text}")
-
-                # Intentar analizar la respuesta de error para más detalles
+            for lang_code in language_codes:
                 try:
-                    error_data = response.json()
-                    if 'error' in error_data:
-                        error_message = error_data['error'].get('message', 'Desconocido')
-                        error_type = error_data['error'].get('type', 'Desconocido')
-                        error_code = error_data['error'].get('code', 'Desconocido')
-                        _logger.error(f"Detalles del error - Tipo: {error_type}, Código: {error_code}, Mensaje: {error_message}")
+                    # Datos para la solicitud de la plantilla
+                    data = {
+                        "messaging_product": "whatsapp",
+                        "to": clean_phone,
+                        "type": "template",
+                        "template": {
+                            "name": template_name,
+                        }
+                    }
 
-                        # Si el error es sobre la plantilla, intentar con mensaje de texto normal
-                        if error_code == 132001:
-                            _logger.warning("Plantilla no encontrada, intentando enviar mensaje de texto normal")
-                            message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
-                            return self._send_via_rest_api(whatsapp_account, phone_number, message_body)
-                except:
-                    _logger.error("No se pudieron analizar los detalles del error")
+                    # Añadir código de idioma solo si no está vacío
+                    if lang_code:
+                        data["template"]["language"] = {"code": lang_code}
 
-                return False
+                    # Añadir componentes solo si hay parámetros
+                    if components:
+                        data["template"]["components"] = components
+
+                    _logger.info(f"Enviando plantilla {template_name} vía API REST con idioma '{lang_code}' a {clean_phone}")
+                    _logger.info(f"URL: {url}")
+                    _logger.info(f"Datos de la plantilla: {json.dumps(data, ensure_ascii=False)}")
+
+                    # Realizar petición
+                    response = requests.post(url, headers=headers, json=data, timeout=30)
+
+                    # Registrar la respuesta completa para diagnóstico
+                    _logger.info(f"Código de respuesta: {response.status_code}")
+                    _logger.info(f"Respuesta completa: {response.text}")
+
+                    if response.status_code == 200:
+                        response_data = response.json()
+                        _logger.info(f"Plantilla enviada exitosamente con idioma {lang_code}: {response_data}")
+                        return True
+
+                    # Si es un error específico de plantilla, seguir intentando con otro idioma
+                    if "132001" in response.text:
+                        _logger.warning(f"La plantilla no existe en el idioma {lang_code}, probando otro")
+                        continue
+                    else:
+                        # Si es otro tipo de error, no seguir intentando
+                        _logger.error(f"Error no relacionado con el idioma: {response.text}")
+                        break
+
+                except Exception as e:
+                    _logger.error(f"Error al intentar con idioma {lang_code}: {e}")
+
+            # Si llegamos aquí, ningún idioma funcionó, intentar con mensaje de texto normal
+            _logger.warning("Ningún idioma funcionó para la plantilla, enviando mensaje de texto normal")
+            message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
+            return self._send_via_rest_api(whatsapp_account, phone_number, message_body)
 
         except Exception as e:
             _logger.error(f"Error enviando plantilla: {e}")
-            return False
+            # Intentar con mensaje directo como último recurso
+            try:
+                message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
+                return self._send_via_rest_api(whatsapp_account, phone_number, message_body)
+            except:
+                return False
 
     def _get_template_params(self, calendar_event):
         """
