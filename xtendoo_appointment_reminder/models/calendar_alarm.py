@@ -1,6 +1,7 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 import logging
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -16,7 +17,6 @@ class CalendarAlarm(models.Model):
     whatsapp_template_id = fields.Many2one(
         'whatsapp.template',
         string='WhatsApp Template',
-        domain=[('model', '=', 'calendar.event')],
         help="Template de WhatsApp para el recordatorio"
     )
 
@@ -37,35 +37,25 @@ class CalendarAlarm(models.Model):
                 return False
 
             # Obtener la cuenta de WhatsApp activa
-            WhatsAppAccount = self.env['whatsapp.account']
-
-            # Intentar diferentes campos para encontrar cuentas activas
-            whatsapp_account = WhatsAppAccount.search([
-                ('active', '=', True)
-            ], limit=1)
-
-            # Si no hay cuentas con campo 'active', buscar cualquier cuenta disponible
-            if not whatsapp_account:
-                whatsapp_account = WhatsAppAccount.search([], limit=1)
-
+            whatsapp_account = self._get_whatsapp_account()
             if not whatsapp_account:
                 _logger.error("No se encontró cuenta de WhatsApp disponible")
                 return False
 
-            # Obtener el número de teléfono del participante
-            attendee_phone = self._get_attendee_phone(calendar_event)
-            if not attendee_phone:
-                _logger.warning(f"No se encontró teléfono para el evento {calendar_event.name}")
-                return False
-
-            # Obtener o crear el contacto en WhatsApp
+            # Obtener el partner del evento
             partner = self._get_event_partner(calendar_event)
             if not partner:
                 _logger.warning(f"No se encontró partner para el evento {calendar_event.name}")
                 return False
 
-            # Usar el servicio nativo de WhatsApp de Odoo 18
-            success = self._send_via_odoo_whatsapp(whatsapp_account, partner, calendar_event)
+            # Obtener el número de teléfono
+            phone_number = self._get_partner_phone(partner)
+            if not phone_number:
+                _logger.warning(f"No se encontró teléfono para el partner {partner.name}")
+                return False
+
+            # Enviar el mensaje
+            success = self._send_whatsapp_message_odoo18(whatsapp_account, partner, calendar_event)
 
             if success:
                 _logger.info(f"Recordatorio WhatsApp enviado para evento {calendar_event.name}")
@@ -81,96 +71,97 @@ class CalendarAlarm(models.Model):
             _logger.error(f"Error enviando recordatorio WhatsApp: {e}", exc_info=True)
             return False
 
-    def _send_via_odoo_whatsapp(self, whatsapp_account, partner, calendar_event):
+    def _get_whatsapp_account(self):
+        """Obtiene una cuenta de WhatsApp disponible"""
+        WhatsAppAccount = self.env['whatsapp.account']
+
+        # Buscar cuenta activa
+        account = WhatsAppAccount.search([('active', '=', True)], limit=1)
+
+        # Si no hay cuenta activa, buscar cualquier cuenta
+        if not account:
+            account = WhatsAppAccount.search([], limit=1)
+
+        return account
+
+    def _send_whatsapp_message_odoo18(self, whatsapp_account, partner, calendar_event):
         """
-        Envía mensaje usando el sistema nativo de WhatsApp de Odoo 18
+        Envía mensaje usando la API de WhatsApp de Odoo 18
         """
         try:
             # Preparar el mensaje
             message_body = self._prepare_whatsapp_message(calendar_event)
-
-            # Verificar si el partner tiene un número de WhatsApp válido
-            if not partner.mobile and not partner.phone:
-                _logger.error(f"Partner {partner.name} no tiene número de teléfono")
-                return False
-
-            phone_number = partner.mobile or partner.phone
+            phone_number = self._get_partner_phone(partner)
             normalized_phone = self._normalize_phone_number(phone_number)
 
             if not normalized_phone:
                 _logger.error(f"No se pudo normalizar el número de teléfono: {phone_number}")
                 return False
 
-            # Usar el método directo del servicio de WhatsApp de Odoo 18
+            _logger.info(f"Enviando recordatorio WhatsApp a {normalized_phone} para evento {calendar_event.id}")
+
+            # Método 1: Intentar con composer simplificado
             try:
-                # Intentar usar el servicio de WhatsApp directamente
-                WhatsAppService = self.env['whatsapp.composer']
-
-                # Crear contexto para el mensaje
-                composer_ctx = {
-                    'default_res_model': 'calendar.event',
-                    'default_res_id': calendar_event.id,
-                    'default_partner_ids': [(6, 0, [partner.id])],
-                    'default_wa_account_id': whatsapp_account.id,
-                }
-
-                # Crear el composer de WhatsApp
-                composer = WhatsAppService.with_context(composer_ctx).create({
-                    'res_model': 'calendar.event',
-                    'res_id': calendar_event.id,
-                    'partner_ids': [(6, 0, [partner.id])],
+                composer = self.env['whatsapp.composer'].create({
                     'wa_account_id': whatsapp_account.id,
+                    'partner_ids': [(6, 0, [partner.id])],
                     'body': message_body,
                 })
 
-                # Enviar el mensaje
-                composer.action_send_whatsapp_message()
-
-                _logger.info(f"Mensaje WhatsApp enviado usando composer para evento {calendar_event.name}")
-                return True
+                # Verificar si el método existe antes de llamarlo
+                if hasattr(composer, 'action_send_whatsapp_message'):
+                    composer.action_send_whatsapp_message()
+                    _logger.info(f"Recordatorio WhatsApp enviado exitosamente usando composer")
+                    return True
+                else:
+                    _logger.warning("Método action_send_whatsapp_message no disponible")
 
             except Exception as composer_error:
-                _logger.warning(f"Error con composer de WhatsApp: {composer_error}")
-                # Fallback a método alternativo
-                return self._send_whatsapp_fallback(whatsapp_account, partner, message_body, calendar_event)
+                _logger.warning(f"Error con composer: {composer_error}")
+
+            # Método 2: Usar API directa si el composer falla
+            return self._send_via_api_direct(whatsapp_account, normalized_phone, message_body, calendar_event)
 
         except Exception as e:
-            _logger.error(f"Error en _send_via_odoo_whatsapp: {e}", exc_info=True)
+            _logger.error(f"Error en _send_whatsapp_message_odoo18: {e}", exc_info=True)
             return False
 
-    def _send_whatsapp_fallback(self, whatsapp_account, partner, message_body, calendar_event):
+    def _send_via_api_direct(self, whatsapp_account, phone_number, message_body, calendar_event):
         """
-        Método alternativo para enviar WhatsApp usando la API directa
+        Envía mensaje usando la API directa de WhatsApp
         """
         try:
-            # Usar el método de la API directa como fallback
-            phone_number = partner.mobile or partner.phone
-            normalized_phone = self._normalize_phone_number(phone_number)
+            # Intentar usar herramientas de WhatsApp de Odoo
+            from odoo.addons.whatsapp.tools import whatsapp_api
 
-            if not normalized_phone:
+            api_instance = whatsapp_api.WhatsAppApi(whatsapp_account)
+
+            # Preparar datos del mensaje
+            message_data = {
+                'phone_number': phone_number,
+                'message': message_body,
+            }
+
+            # Enviar mensaje
+            result = api_instance.send_message(**message_data)
+
+            if result and result.get('success', False):
+                _logger.info(f"Mensaje WhatsApp enviado exitosamente vía API directa")
+                return True
+            else:
+                error_msg = result.get('error', 'Unknown error') if result else 'No response'
+                _logger.error(f"Error en API directa: {error_msg}")
                 return False
 
-            # Intentar enviar usando el método directo de la cuenta de WhatsApp
-            if hasattr(whatsapp_account, 'send_message'):
-                result = whatsapp_account.send_message(
-                    phone_number=normalized_phone,
-                    message=message_body
-                )
-                if result:
-                    _logger.info(f"Mensaje WhatsApp enviado usando método directo de cuenta")
-                    return True
-
-            # Si no funciona, usar la API REST directa
-            return self._send_whatsapp_message(whatsapp_account, normalized_phone, message_body, calendar_event)
-
+        except ImportError:
+            _logger.error("No se pudo importar whatsapp_api")
+            return False
         except Exception as e:
-            _logger.error(f"Error en método fallback: {e}")
+            _logger.error(f"Error en envío vía API directa: {e}")
             return False
 
     def _get_event_partner(self, calendar_event):
-        """
-        Obtiene el partner principal del evento
-        """
+        """Obtiene el partner principal del evento"""
         # Buscar en los asistentes del evento
         for attendee in calendar_event.attendee_ids:
             if attendee.partner_id:
@@ -182,48 +173,45 @@ class CalendarAlarm(models.Model):
 
         return False
 
-    def _get_attendee_phone(self, calendar_event):
-        """
-        Obtiene el número de teléfono del asistente principal
-        """
-        # Buscar en los asistentes del evento
-        for attendee in calendar_event.attendee_ids:
-            if attendee.partner_id and attendee.partner_id.mobile:
-                return self._normalize_phone_number(attendee.partner_id.mobile)
-            elif attendee.partner_id and attendee.partner_id.phone:
-                return self._normalize_phone_number(attendee.partner_id.phone)
+    def _get_partner_phone(self, partner):
+        """Obtiene el número de teléfono del partner"""
+        return partner.mobile or partner.phone
 
-        # Si no hay asistentes, buscar en el partner del evento
-        if calendar_event.partner_ids:
-            for partner in calendar_event.partner_ids:
-                if partner.mobile:
-                    return self._normalize_phone_number(partner.mobile)
-                elif partner.phone:
-                    return self._normalize_phone_number(partner.phone)
+    def _normalize_phone_number(self, phone):
+        """Normaliza el número de teléfono para WhatsApp"""
+        if not phone:
+            return False
 
-        return False
+        # Eliminar espacios, guiones, paréntesis y puntos
+        clean_phone = re.sub(r'[\s\-\(\)\.]', '', phone)
+
+        # Eliminar caracteres no numéricos excepto el +
+        clean_phone = re.sub(r'[^\d\+]', '', clean_phone)
+
+        # Si no empieza con +, asumir código de país España
+        if not clean_phone.startswith('+'):
+            if len(clean_phone) == 9:  # Número español sin código
+                clean_phone = '+34' + clean_phone
+            elif len(clean_phone) == 11 and clean_phone.startswith('34'):
+                clean_phone = '+' + clean_phone
+            else:
+                # Para otros casos, añadir +34 por defecto
+                clean_phone = '+34' + clean_phone
+
+        # Validar formato básico
+        if len(clean_phone) < 10:
+            _logger.warning(f"Número de teléfono demasiado corto: {clean_phone}")
+            return False
+
+        return clean_phone
 
     def _prepare_whatsapp_message(self, calendar_event):
-        """
-        Prepara el mensaje de recordatorio para WhatsApp
-        """
-        if self.whatsapp_template_id:
-            # Usar plantilla personalizada
-            try:
-                # Para Odoo 18, usar el método correcto de renderizado
-                template_params = self._get_template_params(calendar_event)
-                return self.whatsapp_template_id._render_template([calendar_event.id], template_params)[calendar_event.id]
-            except Exception as e:
-                _logger.warning(f"Error renderizando plantilla, usando mensaje por defecto: {e}")
-                return self._get_default_whatsapp_message(calendar_event)
-        else:
-            # Mensaje predeterminado
-            return self._get_default_whatsapp_message(calendar_event)
+        """Prepara el mensaje de recordatorio para WhatsApp"""
+        # Usar mensaje predeterminado si no hay template
+        return self._get_default_whatsapp_message(calendar_event)
 
     def _get_default_whatsapp_message(self, calendar_event):
-        """
-        Genera un mensaje predeterminado para el recordatorio
-        """
+        """Genera un mensaje predeterminado para el recordatorio"""
         import pytz
         from datetime import datetime
 
@@ -268,129 +256,3 @@ Si necesitas cancelar o reprogramar, por favor contáctanos con anticipación.
 {self.env.company.name}"""
 
         return message
-
-    def _send_whatsapp_message(self, whatsapp_account, phone_number, message, calendar_event):
-        """
-        Envía el mensaje de WhatsApp usando la API
-        """
-        try:
-            import requests
-
-            # Obtener token de acceso
-            access_token = self._get_whatsapp_token(whatsapp_account)
-            if not access_token:
-                return False
-
-            # URL de la API de WhatsApp Business
-            url = f"https://graph.facebook.com/v18.0/{whatsapp_account.phone_uid}/messages"
-
-            # Headers
-            headers = {
-                'Authorization': f'Bearer {access_token}',
-                'Content-Type': 'application/json'
-            }
-
-            # Limpiar número de teléfono
-            clean_phone = phone_number.lstrip('+')
-
-            # Datos del mensaje
-            data = {
-                "messaging_product": "whatsapp",
-                "to": clean_phone,
-                "type": "text",
-                "text": {
-                    "body": message
-                }
-            }
-
-            _logger.info(f"Enviando recordatorio WhatsApp a {clean_phone} para evento {calendar_event.name}")
-
-            # Realizar petición
-            response = requests.post(url, headers=headers, json=data, timeout=30)
-
-            if response.status_code == 200:
-                _logger.info(f"Recordatorio WhatsApp enviado exitosamente")
-                return True
-            else:
-                _logger.error(f"Error en API WhatsApp: {response.status_code} - {response.text}")
-                return False
-
-        except Exception as e:
-            _logger.error(f"Error enviando mensaje WhatsApp: {e}")
-            return False
-
-    def _get_whatsapp_token(self, whatsapp_account):
-        """
-        Obtiene el token de acceso de la cuenta de WhatsApp
-        """
-        token_fields = ['access_token', 'token', 'app_secret', 'permanent_access_token']
-
-        for field in token_fields:
-            if hasattr(whatsapp_account, field):
-                token_value = getattr(whatsapp_account, field)
-                if token_value:
-                    return token_value
-
-        _logger.error("No se encontró token de acceso en la cuenta de WhatsApp")
-        return False
-
-    def _normalize_phone_number(self, phone):
-        """
-        Normaliza el número de teléfono para WhatsApp
-        """
-        if not phone:
-            return False
-
-        import re
-        # Eliminar espacios, guiones, paréntesis y puntos
-        clean_phone = re.sub(r'[\s\-\(\)\.]', '', phone)
-
-        # Eliminar caracteres no numéricos excepto el +
-        clean_phone = re.sub(r'[^\d\+]', '', clean_phone)
-
-        # Si no empieza con +, asumir código de país España
-        if not clean_phone.startswith('+'):
-            if len(clean_phone) == 9:  # Número español sin código
-                clean_phone = '+34' + clean_phone
-            elif len(clean_phone) == 11 and clean_phone.startswith('34'):
-                clean_phone = '+' + clean_phone
-            else:
-                # Para otros casos, añadir +34 por defecto
-                clean_phone = '+34' + clean_phone
-
-        # Validar formato básico
-        if len(clean_phone) < 10:
-            _logger.warning(f"Número de teléfono demasiado corto: {clean_phone}")
-            return False
-
-        return clean_phone
-
-    def _get_template_params(self, calendar_event):
-        """
-        Obtiene los parámetros para la plantilla de WhatsApp
-        """
-        import pytz
-
-        # Obtener zona horaria
-        user_tz = self.env.user.tz or 'Europe/Madrid'
-        local_tz = pytz.timezone(user_tz)
-
-        # Formatear fecha y hora en zona local
-        if calendar_event.start:
-            utc_time = calendar_event.start.replace(tzinfo=pytz.UTC)
-            local_time = utc_time.astimezone(local_tz)
-            date_str = local_time.strftime('%d/%m/%Y')
-            time_str = local_time.strftime('%H:%M')
-        else:
-            date_str = "fecha por confirmar"
-            time_str = "hora por confirmar"
-
-        return {
-            'event_name': calendar_event.name or '',
-            'start_date': date_str,
-            'start_time': time_str,
-            'location': calendar_event.location or 'Por confirmar',
-            'description': calendar_event.description or '',
-            'company_name': self.env.company.name or '',
-            'client_name': self._get_event_partner(calendar_event).name if self._get_event_partner(calendar_event) else 'Estimado cliente'
-        }
