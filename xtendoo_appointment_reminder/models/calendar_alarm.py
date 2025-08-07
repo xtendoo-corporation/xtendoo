@@ -484,7 +484,7 @@ class CalendarAlarm(models.Model):
                 "type": "template",
                 "template": {
                     "name": template_name,
-                    "language": {"code": "es"},
+                    "language": {"code": "en_US"},
                 }
             }
 
