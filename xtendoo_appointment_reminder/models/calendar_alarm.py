@@ -100,41 +100,7 @@ class CalendarAlarm(models.Model):
 
             _logger.info(f"Enviando recordatorio WhatsApp a {normalized_phone} para evento {calendar_event.id}")
 
-            # Método 1: Usar WhatsApp directamente a través del partner
-            try:
-                # Intentar enviar mensaje directamente al partner
-                vals = {
-                    'body': message_body,
-                    'number': normalized_phone,
-                    'partner_id': partner.id,
-                }
-
-                # Usar el módulo de WhatsApp nativo de Odoo 18 directamente
-                message = self.env['whatsapp.message'].create(vals)
-                message.send_message()
-
-                _logger.info(f"Mensaje WhatsApp enviado usando WhatsApp Message")
-                return True
-
-            except Exception as direct_error:
-                _logger.warning(f"Error con envío directo: {direct_error}")
-
-            # Método 2: Usar el método de la compañía
-            try:
-                company = self.env.company
-                result = company._send_whatsapp({
-                    'partner_id': partner.id,
-                    'body': message_body,
-                })
-
-                if result:
-                    _logger.info(f"Mensaje WhatsApp enviado usando método de compañía")
-                    return True
-
-            except Exception as company_error:
-                _logger.warning(f"Error con método de compañía: {company_error}")
-
-            # Método 3: API REST directa
+            # Usar el método API REST que ya sabemos que funciona
             return self._send_via_rest_api(whatsapp_account, normalized_phone, message_body)
 
         except Exception as e:
