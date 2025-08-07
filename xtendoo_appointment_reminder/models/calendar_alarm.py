@@ -100,64 +100,56 @@ class CalendarAlarm(models.Model):
 
             _logger.info(f"Enviando recordatorio WhatsApp a {normalized_phone} para evento {calendar_event.id}")
 
-            # Método 1: Intentar con composer simplificado
+            # Método 1: Usar whatsapp.composer con los campos correctos
             try:
+                # Crear composer con los campos correctos para Odoo 18
                 composer = self.env['whatsapp.composer'].create({
-                    'wa_account_id': whatsapp_account.id,
+                    'whatsapp_account_id': whatsapp_account.id,  # Campo correcto
                     'partner_ids': [(6, 0, [partner.id])],
                     'body': message_body,
                 })
 
-                # Verificar si el método existe antes de llamarlo
-                if hasattr(composer, 'action_send_whatsapp_message'):
-                    composer.action_send_whatsapp_message()
-                    _logger.info(f"Recordatorio WhatsApp enviado exitosamente usando composer")
-                    return True
-                else:
-                    _logger.warning("Método action_send_whatsapp_message no disponible")
+                # Intentar enviar el mensaje
+                result = composer.action_send_whatsapp_message()
+                _logger.info(f"Recordatorio WhatsApp enviado exitosamente usando composer")
+                return True
 
             except Exception as composer_error:
                 _logger.warning(f"Error con composer: {composer_error}")
 
-            # Método 2: Usar API directa si el composer falla
-            return self._send_via_api_direct(whatsapp_account, normalized_phone, message_body, calendar_event)
+            # Método 2: Usar directamente el servicio de WhatsApp
+            return self._send_via_whatsapp_service(whatsapp_account, partner, message_body, calendar_event)
 
         except Exception as e:
             _logger.error(f"Error en _send_whatsapp_message_odoo18: {e}", exc_info=True)
             return False
 
-    def _send_via_api_direct(self, whatsapp_account, phone_number, message_body, calendar_event):
+    def _send_via_whatsapp_service(self, whatsapp_account, partner, message_body, calendar_event):
         """
-        Envía mensaje usando la API directa de WhatsApp
+        Envía mensaje usando el servicio directo de WhatsApp
         """
         try:
-            # Intentar usar herramientas de WhatsApp de Odoo
-            from odoo.addons.whatsapp.tools import whatsapp_api
+            phone_number = self._get_partner_phone(partner)
+            normalized_phone = self._normalize_phone_number(phone_number)
 
-            api_instance = whatsapp_api.WhatsAppApi(whatsapp_account)
+            # Usar el servicio de WhatsApp directamente
+            whatsapp_service = self.env['whatsapp.composer']
 
-            # Preparar datos del mensaje
-            message_data = {
-                'phone_number': phone_number,
-                'message': message_body,
-            }
+            # Crear el mensaje usando el servicio nativo
+            message = whatsapp_service.create({
+                'whatsapp_account_id': whatsapp_account.id,
+                'partner_ids': [(6, 0, [partner.id])],
+                'body': message_body,
+            })
 
-            # Enviar mensaje
-            result = api_instance.send_message(**message_data)
+            # Enviar el mensaje
+            message._send()
 
-            if result and result.get('success', False):
-                _logger.info(f"Mensaje WhatsApp enviado exitosamente vía API directa")
-                return True
-            else:
-                error_msg = result.get('error', 'Unknown error') if result else 'No response'
-                _logger.error(f"Error en API directa: {error_msg}")
-                return False
+            _logger.info(f"Mensaje WhatsApp enviado usando servicio directo")
+            return True
 
-        except ImportError:
-            _logger.error("No se pudo importar whatsapp_api")
-            return False
         except Exception as e:
-            _logger.error(f"Error en envío vía API directa: {e}")
+            _logger.error(f"Error con servicio directo: {e}")
             return False
 
     def _get_event_partner(self, calendar_event):
