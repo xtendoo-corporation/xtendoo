@@ -474,8 +474,8 @@ class CalendarAlarm(models.Model):
                         "parameters": component_params
                     })
 
-            # Nombre exacto de la plantilla como está en XML
-            template_name = "Recordatorio de Cita"
+            # Nombre exacto de la plantilla como está aprobado en Facebook
+            template_name = "recordatorio_de_cita"  # Nombre corregido según Facebook
 
             # Datos para la solicitud de la plantilla
             data = {
@@ -518,6 +518,12 @@ class CalendarAlarm(models.Model):
                         error_type = error_data['error'].get('type', 'Desconocido')
                         error_code = error_data['error'].get('code', 'Desconocido')
                         _logger.error(f"Detalles del error - Tipo: {error_type}, Código: {error_code}, Mensaje: {error_message}")
+
+                        # Si el error es sobre la plantilla, intentar con mensaje de texto normal
+                        if error_code == 132001:
+                            _logger.warning("Plantilla no encontrada, intentando enviar mensaje de texto normal")
+                            message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
+                            return self._send_via_rest_api(whatsapp_account, phone_number, message_body)
                 except:
                     _logger.error("No se pudieron analizar los detalles del error")
 
