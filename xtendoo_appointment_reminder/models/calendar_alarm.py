@@ -89,8 +89,6 @@ class CalendarAlarm(models.Model):
         Envía mensaje usando la API de WhatsApp de Odoo 18
         """
         try:
-            # Preparar el mensaje
-            message_body = self._prepare_whatsapp_message(calendar_event)
             phone_number = self._get_partner_phone(partner)
             normalized_phone = self._normalize_phone_number(phone_number)
 
@@ -100,7 +98,25 @@ class CalendarAlarm(models.Model):
 
             _logger.info(f"Enviando recordatorio WhatsApp a {normalized_phone} para evento {calendar_event.id}")
 
-            # Usar el método API REST que ya sabemos que funciona
+            # Primero intentar usar la plantilla definida en XML
+            try:
+                # Buscar la plantilla por nombre
+                template = self.env['whatsapp.template'].search([
+                    ('name', '=', 'Recordatorio de Cita')
+                ], limit=1)
+
+                if template:
+                    _logger.info(f"Usando plantilla 'Recordatorio de Cita' con ID {template.id}")
+                    template_params = self._get_template_params(calendar_event)
+                    return self._send_template_via_api(whatsapp_account, normalized_phone, template, template_params)
+                else:
+                    _logger.warning("No se encontró la plantilla 'Recordatorio de Cita' en la base de datos")
+            except Exception as e:
+                _logger.warning(f"Error buscando plantilla: {e}")
+
+            # Si no se pudo usar la plantilla, intentar con mensaje directo
+            _logger.info("Fallback a mensaje de texto directo")
+            message_body = self._get_default_whatsapp_message(calendar_event)
             return self._send_via_rest_api(whatsapp_account, normalized_phone, message_body)
 
         except Exception as e:
@@ -195,11 +211,24 @@ class CalendarAlarm(models.Model):
                         message_id = response_data['messages'][0].get('id')
                         _logger.info(f"ID del mensaje enviado: {message_id}")
 
+                        # Guardar el ID del mensaje para seguimiento posterior
+                        self.env['whatsapp.message.log'].sudo().create({
+                            'name': f"Recordatorio para evento",
+                            'message_id': message_id,
+                            'phone_number': clean_phone,
+                            'message_body': message_body,
+                            'status': 'sent',
+                            'date': fields.Datetime.now()
+                        })
+
                     # Verificar el estado del contacto
                     if 'contacts' in response_data and response_data['contacts']:
                         contact_input = response_data['contacts'][0].get('input')
                         contact_wa_id = response_data['contacts'][0].get('wa_id')
                         _logger.info(f"Contacto - Número de entrada: {contact_input}, WhatsApp ID: {contact_wa_id}")
+
+                    # Intentar enviar un mensaje de prueba adicional
+                    self._test_message_reception(message_id, phone_number, whatsapp_account)
 
                     return True
                 else:
@@ -213,6 +242,11 @@ class CalendarAlarm(models.Model):
                             error_type = error_data['error'].get('type', 'Desconocido')
                             error_code = error_data['error'].get('code', 'Desconocido')
                             _logger.error(f"Detalles del error - Tipo: {error_type}, Código: {error_code}, Mensaje: {error_message}")
+
+                            # Si es un error relacionado con restricciones de mensajería
+                            if error_code in [130429, 131047, 131051]:
+                                _logger.warning("Error de restricción de WhatsApp, intentando fallback a SMS")
+                                return self._send_sms_fallback(phone_number, message_body)
                     except:
                         _logger.error("No se pudieron analizar los detalles del error")
 
@@ -225,6 +259,82 @@ class CalendarAlarm(models.Model):
             _logger.error(f"Error en API REST: {e}", exc_info=True)
             return False
 
+    def _test_message_reception(self, message_id, phone_number, whatsapp_account):
+        """
+        Envía un mensaje de diagnóstico para verificar si la cuenta puede enviar mensajes.
+        Solo para fines de depuración durante la configuración inicial.
+        """
+        try:
+            # Solo hacer esto durante la configuración inicial y luego deshabilitar
+            debug_mode = self.env['ir.config_parameter'].sudo().get_param('whatsapp.debug_mode', 'false').lower() == 'true'
+            if not debug_mode:
+                return
+
+            _logger.info(f"Enviando mensaje de prueba para diagnóstico...")
+
+            # Intentar enviar un mensaje simple de diagnóstico
+            import requests
+            import json
+
+            # URL de la API de WhatsApp Business
+            url = f"https://graph.facebook.com/v18.0/{whatsapp_account.phone_uid}/messages"
+
+            # Headers
+            headers = {
+                'Authorization': f'Bearer {whatsapp_account.token}',
+                'Content-Type': 'application/json'
+            }
+
+            # Plantilla de sistema (debería estar disponible por defecto)
+            data = {
+                "messaging_product": "whatsapp",
+                "to": phone_number.lstrip('+'),
+                "type": "template",
+                "template": {
+                    "name": "hello_world",
+                    "language": {"code": "en_US"}
+                }
+            }
+
+            _logger.info(f"Enviando plantilla de prueba hello_world...")
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+            _logger.info(f"Respuesta de diagnóstico: {response.status_code} - {response.text}")
+
+        except Exception as e:
+            _logger.warning(f"Error en prueba de diagnóstico: {e}")
+
+    def _send_sms_fallback(self, phone_number, message_body):
+        """
+        Envía un SMS como respaldo cuando WhatsApp falla
+        """
+        try:
+            # Verificar si el módulo SMS está disponible
+            if not self.env['ir.module.module'].search([('name', '=', 'sms'), ('state', '=', 'installed')]):
+                _logger.warning("El módulo SMS no está instalado para usar como fallback")
+                return False
+
+            _logger.info(f"Intentando enviar SMS de respaldo a {phone_number}")
+
+            # Preparar un mensaje SMS más corto
+            sms_body = message_body
+            if len(message_body) > 160:
+                # Acortar el mensaje para SMS
+                sms_body = message_body[:157] + "..."
+
+            # Enviar SMS usando el módulo nativo de Odoo
+            sms_api = self.env['sms.api']
+            result = sms_api.send_sms([phone_number], sms_body)
+
+            if result:
+                _logger.info(f"SMS de respaldo enviado exitosamente a {phone_number}")
+                return True
+            else:
+                _logger.warning(f"Fallo al enviar SMS de respaldo")
+                return False
+
+        except Exception as e:
+            _logger.error(f"Error en fallback a SMS: {e}")
+            return False
     def _get_event_partner(self, calendar_event):
         """Obtiene el partner principal del evento"""
         # Buscar en los asistentes del evento
