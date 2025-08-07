@@ -100,56 +100,100 @@ class CalendarAlarm(models.Model):
 
             _logger.info(f"Enviando recordatorio WhatsApp a {normalized_phone} para evento {calendar_event.id}")
 
-            # Método 1: Usar whatsapp.composer con los campos correctos
+            # Método 1: Usar WhatsApp directamente a través del partner
             try:
-                # Crear composer con los campos correctos para Odoo 18
-                composer = self.env['whatsapp.composer'].create({
-                    'whatsapp_account_id': whatsapp_account.id,  # Campo correcto
-                    'partner_ids': [(6, 0, [partner.id])],
+                # Intentar enviar mensaje directamente al partner
+                vals = {
+                    'body': message_body,
+                    'number': normalized_phone,
+                    'partner_id': partner.id,
+                }
+
+                # Usar el módulo de WhatsApp nativo de Odoo 18 directamente
+                message = self.env['whatsapp.message'].create(vals)
+                message.send_message()
+
+                _logger.info(f"Mensaje WhatsApp enviado usando WhatsApp Message")
+                return True
+
+            except Exception as direct_error:
+                _logger.warning(f"Error con envío directo: {direct_error}")
+
+            # Método 2: Usar el método de la compañía
+            try:
+                company = self.env.company
+                result = company._send_whatsapp({
+                    'partner_id': partner.id,
                     'body': message_body,
                 })
 
-                # Intentar enviar el mensaje
-                result = composer.action_send_whatsapp_message()
-                _logger.info(f"Recordatorio WhatsApp enviado exitosamente usando composer")
-                return True
+                if result:
+                    _logger.info(f"Mensaje WhatsApp enviado usando método de compañía")
+                    return True
 
-            except Exception as composer_error:
-                _logger.warning(f"Error con composer: {composer_error}")
+            except Exception as company_error:
+                _logger.warning(f"Error con método de compañía: {company_error}")
 
-            # Método 2: Usar directamente el servicio de WhatsApp
-            return self._send_via_whatsapp_service(whatsapp_account, partner, message_body, calendar_event)
+            # Método 3: API REST directa
+            return self._send_via_rest_api(whatsapp_account, normalized_phone, message_body)
 
         except Exception as e:
             _logger.error(f"Error en _send_whatsapp_message_odoo18: {e}", exc_info=True)
             return False
 
-    def _send_via_whatsapp_service(self, whatsapp_account, partner, message_body, calendar_event):
+    def _send_via_rest_api(self, whatsapp_account, phone_number, message_body):
         """
-        Envía mensaje usando el servicio directo de WhatsApp
+        Envía mensaje usando la API REST de WhatsApp directamente
         """
         try:
-            phone_number = self._get_partner_phone(partner)
-            normalized_phone = self._normalize_phone_number(phone_number)
+            import requests
+            import json
 
-            # Usar el servicio de WhatsApp directamente
-            whatsapp_service = self.env['whatsapp.composer']
+            # Obtener configuración de la cuenta
+            access_token = whatsapp_account.token
+            phone_number_id = whatsapp_account.phone_uid
 
-            # Crear el mensaje usando el servicio nativo
-            message = whatsapp_service.create({
-                'whatsapp_account_id': whatsapp_account.id,
-                'partner_ids': [(6, 0, [partner.id])],
-                'body': message_body,
-            })
+            if not access_token or not phone_number_id:
+                _logger.error("Falta configuración de WhatsApp (token o phone_uid)")
+                return False
 
-            # Enviar el mensaje
-            message._send()
+            # URL de la API de WhatsApp Business
+            url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
 
-            _logger.info(f"Mensaje WhatsApp enviado usando servicio directo")
-            return True
+            # Headers
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            }
+
+            # Limpiar número de teléfono (sin +)
+            clean_phone = phone_number.lstrip('+')
+
+            # Datos del mensaje
+            data = {
+                "messaging_product": "whatsapp",
+                "to": clean_phone,
+                "type": "text",
+                "text": {
+                    "body": message_body
+                }
+            }
+
+            _logger.info(f"Enviando vía API REST a {clean_phone}")
+
+            # Realizar petición
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+
+            if response.status_code == 200:
+                response_data = response.json()
+                _logger.info(f"Mensaje enviado exitosamente vía API REST: {response_data}")
+                return True
+            else:
+                _logger.error(f"Error en API REST: {response.status_code} - {response.text}")
+                return False
 
         except Exception as e:
-            _logger.error(f"Error con servicio directo: {e}")
+            _logger.error(f"Error en API REST: {e}")
             return False
 
     def _get_event_partner(self, calendar_event):
