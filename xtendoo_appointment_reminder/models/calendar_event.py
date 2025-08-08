@@ -97,18 +97,36 @@ class CalendarEvent(models.Model):
             # Hora actual para comparaciones
             current_time = fields.Datetime.now()
 
-            # Buscar eventos futuros que tengan recordatorios WhatsApp configurados y no se hayan enviado aún
+            # Buscar TODOS los eventos futuros que tengan recordatorios WhatsApp configurados
+            # y no se hayan enviado aún, en lugar de filtrar por tiempo aquí
             events_to_process = self.search([
-                ('start', '>', current_time),  # Eventos futuros
+                ('start', '!=', False),  # Eventos con fecha de inicio
                 ('alarm_ids.alarm_type', '=', 'whatsapp'),  # Con alarma tipo whatsapp
                 ('whatsapp_reminder_sent', '=', False)  # Que no se haya enviado recordatorio
             ])
 
+            if not events_to_process:
+                _logger.info("No se encontraron eventos pendientes para recordatorios WhatsApp")
+                # Verificar si existen eventos futuros en general para diagnosticar
+                future_events = self.search_count([('start', '>', current_time)])
+                events_with_alarms = self.search_count([
+                    ('start', '>', current_time),
+                    ('alarm_ids.alarm_type', '=', 'whatsapp')
+                ])
+                _logger.info(f"Diagnóstico: Existen {future_events} eventos futuros, {events_with_alarms} con alarmas WhatsApp")
+                return
+
             _logger.info(f"Procesando {len(events_to_process)} eventos para recordatorios WhatsApp")
 
             # Verificar cada evento para ver si ya es hora de enviar el recordatorio
+            reminder_count = 0
             for event in events_to_process:
                 try:
+                    # Solo procesar eventos que aún no han pasado
+                    if event.start <= current_time:
+                        _logger.debug(f"Saltando evento {event.name} (ID: {event.id}) porque ya ha pasado")
+                        continue
+
                     # Verificar alarmas de WhatsApp para este evento
                     for alarm in event.alarm_ids.filtered(lambda a: a.alarm_type == 'whatsapp'):
                         # Calcular cuándo se debe enviar el recordatorio
@@ -118,7 +136,7 @@ class CalendarEvent(models.Model):
 
                         # Si ya es tiempo de enviar el recordatorio
                         if current_time >= reminder_time:
-                            _logger.info(f"Enviando recordatorio para evento {event.name} (ID: {event.id})")
+                            _logger.info(f"Enviando recordatorio para evento {event.name} (ID: {event.id}) - Fecha evento: {event.start}, hora recordatorio: {reminder_time}")
                             success = alarm._send_whatsapp_reminder(event)
                             if success:
                                 event.write({
@@ -126,13 +144,16 @@ class CalendarEvent(models.Model):
                                     'whatsapp_reminder_date': fields.Datetime.now(),
                                     'whatsapp_reminder_count': event.whatsapp_reminder_count + 1
                                 })
+                                reminder_count += 1
                                 _logger.info(f"Recordatorio WhatsApp enviado para evento {event.name}")
                             else:
                                 _logger.warning(f"Fallo al enviar recordatorio WhatsApp para evento {event.name}")
                         else:
-                            _logger.debug(f"Aún no es tiempo de enviar recordatorio para evento {event.name}. Programado para: {reminder_time}")
+                            _logger.info(f"Aún no es tiempo de enviar recordatorio para evento {event.name} (ID: {event.id}). Programado para: {reminder_time}, hora actual: {current_time}")
                 except Exception as e:
                     _logger.error(f"Error procesando recordatorios para evento {event.id}: {e}", exc_info=True)
+
+            _logger.info(f"Proceso finalizado. Se enviaron {reminder_count} recordatorios de WhatsApp")
 
         except Exception as e:
             _logger.error(f"Error general en process_whatsapp_reminders: {e}", exc_info=True)
