@@ -2,7 +2,7 @@
 <odoo>
     <!-- Plantilla predeterminada para recordatorios de citas -->
     <record id="whatsapp_template_appointment_reminder" model="whatsapp.template">
-        <field name="name">Recordatorio de Cita Vitaltecuida</field>
+        <field name="name">Recordatorio de Cita Vitaltecuida 2</field>
         <field name="model">calendar.event</field>
         <field name="body">📅 *Recordatorio de Cita*
 
@@ -12,19 +12,18 @@
 
             📋 *Asunto:* {{2}}
             📅 *Fecha:* {{3}}
-            🕐 *Hora:* {{4}}
             Si necesitas cancelar o reprogramar, por favor contáctanos con anticipación.
 
             ¡Te esperamos!
 
-            {{5}}
+            {{4}}
         </field>
         <field name="status">approved</field>
     </record>
 
     <!-- Plantilla para confirmación de cita -->
     <record id="whatsapp_template_appointment_confirmation" model="whatsapp.template">
-        <field name="name">Confirmación de Cita</field>
+        <field name="name">Confirmación de Cita 2</field>
         <field name="model">calendar.event</field>
         <field name="body">✅ *Cita Confirmada*
 
@@ -34,20 +33,19 @@
 
             📋 *Asunto:* {{2}}
             📅 *Fecha:* {{3}}
-            🕐 *Hora:* {{4}}
 
             Te enviaremos un recordatorio antes de la cita.
 
             ¡Gracias por confiar en nosotros!
 
-            {{5}}
+            {{4}}
         </field>
         <field name="status">approved</field>
     </record>
 
     <!-- Plantilla para cancelación de cita -->
     <record id="whatsapp_template_appointment_cancellation" model="whatsapp.template">
-        <field name="name">Cancelación de Cita</field>
+        <field name="name">Cancelación de Cita 2</field>
         <field name="model">calendar.event</field>
         <field name="body">❌ *Cita Cancelada*
 
@@ -57,13 +55,12 @@
 
             📋 *Asunto:* {{2}}
             📅 *Fecha:* {{3}}
-            🕐 *Hora:* {{4}}
 
             Si deseas reprogramar, por favor contáctanos.
 
             Disculpa las molestias.
 
-            {{5}}
+            {{4}}
         </field>
         <field name="status">approved</field>
     </record>

@@ -57,7 +57,7 @@ class CalendarAlarm(models.Model):
 
             # Buscar la plantilla para el recordatorio
             template = self.env['whatsapp.template'].search([
-                ('name', '=', 'Recordatorio de Cita Vitaltecuida'),
+                ('name', '=', 'Recordatorio de Cita Vitaltecuida 2'),
                 ('model', '=', 'calendar.event')
             ], limit=1)
 
