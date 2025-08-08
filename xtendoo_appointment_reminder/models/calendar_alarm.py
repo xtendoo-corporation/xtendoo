@@ -55,27 +55,44 @@ class CalendarAlarm(models.Model):
                 _logger.warning(f"No se encontró teléfono para el partner {partner.name}")
                 return False
 
-            # Buscar la plantilla para el recordatorio
-            template = self.env['whatsapp.template'].search([
-                ('name', '=', 'Recordatorio de Cita Vitaltecuida 2'),
-                ('model', '=', 'calendar.event')
-            ], limit=1)
+            # Primero intentar con el template configurado en la alarma
+            template = self.whatsapp_template_id
+
+            # Si no hay template configurado, buscar alguna plantilla para eventos
+            if not template:
+                _logger.info("No hay template configurado en la alarma, buscando uno predeterminado")
+                # Buscar cualquier plantilla válida para eventos en este orden:
+                template_names = ['Recordatorio de Cita Vitaltecuida 2', 'Recordatorio de Cita Vitaltecuida', 'Recordatorio de Cita']
+
+                for name in template_names:
+                    template = self.env['whatsapp.template'].search([
+                        ('name', '=', name),
+                        ('model', '=', 'calendar.event')
+                    ], limit=1)
+                    if template:
+                        _logger.info(f"Encontrada plantilla por nombre: {name}")
+                        break
+
+                # Si no se encontró ninguna plantilla por nombre, buscar cualquier plantilla para eventos
+                if not template:
+                    _logger.warning("No se encontraron plantillas por nombre, buscando cualquier plantilla para eventos")
+                    template = self.env['whatsapp.template'].search([
+                        ('model', '=', 'calendar.event')
+                    ], limit=1)
 
             if not template:
-                _logger.warning("No se encontró la plantilla 'Recordatorio de Cita' para eventos")
-                # Intentar buscar cualquier plantilla para eventos
-                template = self.env['whatsapp.template'].search([
-                    ('model', '=', 'calendar.event')
-                ], limit=1)
-                if not template:
-                    _logger.error("No se encontró ninguna plantilla de WhatsApp para eventos")
-                    return False
+                _logger.error("No se encontró ninguna plantilla de WhatsApp para eventos")
+                return False
 
             _logger.info(f"Usando plantilla: {template.name} [ID: {template.id}]")
 
+            # Preparar contexto de renderizado
+            ctx = calendar_event.get_whatsapp_reminder_context()
+            _logger.info(f"Contexto de renderizado: {ctx}")
+
             # Crear un registro de compositor de WhatsApp igual que se hace en la interfaz
             composer_values = {
-                'wa_template_id': template.id,  # Nombre de campo corregido
+                'wa_template_id': template.id,
                 'res_model': 'calendar.event',
                 'res_ids': calendar_event.id,
                 'phone': phone_number,
