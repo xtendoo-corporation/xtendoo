@@ -57,7 +57,7 @@ class CalendarAlarm(models.Model):
 
             # Buscar la plantilla para el recordatorio
             template = self.env['whatsapp.template'].search([
-                ('name', '=', 'Recordatorio de Cita'),
+                ('name', '=', 'Recordatorio de Cita Vitaltecuida'),
                 ('model', '=', 'calendar.event')
             ], limit=1)
 
@@ -248,9 +248,8 @@ class CalendarAlarm(models.Model):
         import pytz
         from datetime import datetime
 
-        # Obtener zona horaria
-        user_tz = self.env.user.tz or 'Europe/Madrid'
-        local_tz = pytz.timezone(user_tz)
+        # Forzar el uso de zona horaria de Madrid
+        local_tz = pytz.timezone('Europe/Madrid')
 
         # Formatear fecha y hora en zona local
         if calendar_event.start:
@@ -280,7 +279,6 @@ Te recordamos tu evento programado:
 📋 *Asunto:* {calendar_event.name}
 📅 *Fecha:* {date_str}
 🕐 *Hora:* {time_str}
-📍 *Ubicación:* {location}
 
 Si necesitas cancelar o reprogramar, por favor contáctanos con anticipación.
 

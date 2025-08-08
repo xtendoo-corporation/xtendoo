@@ -2,7 +2,7 @@
 <odoo>
     <!-- Plantilla predeterminada para recordatorios de citas -->
     <record id="whatsapp_template_appointment_reminder" model="whatsapp.template">
-        <field name="name">Recordatorio de Cita</field>
+        <field name="name">Recordatorio de Cita Vitaltecuida</field>
         <field name="model">calendar.event</field>
         <field name="body">📅 *Recordatorio de Cita*
 
@@ -13,15 +13,11 @@
             📋 *Asunto:* {{2}}
             📅 *Fecha:* {{3}}
             🕐 *Hora:* {{4}}
-            📍 *Ubicación:* {{5}}
-
-            📝 *Detalles:* {{6}}
-
             Si necesitas cancelar o reprogramar, por favor contáctanos con anticipación.
 
             ¡Te esperamos!
 
-            {{7}}
+            {{5}}
         </field>
         <field name="status">approved</field>
     </record>
@@ -39,7 +35,6 @@
             📋 *Asunto:* {{2}}
             📅 *Fecha:* {{3}}
             🕐 *Hora:* {{4}}
-            📍 *Ubicación:* {{5}}
 
             Te enviaremos un recordatorio antes de la cita.
 
