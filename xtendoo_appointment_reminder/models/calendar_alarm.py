@@ -76,9 +76,8 @@ class CalendarAlarm(models.Model):
             # Crear un registro de compositor de WhatsApp igual que se hace en la interfaz
             composer_values = {
                 'wa_template_id': template.id,  # Nombre de campo corregido
-                'wa_account_id': whatsapp_account.id,
                 'res_model': 'calendar.event',
-                'res_id': calendar_event.id,
+                'res_ids': calendar_event.id,
                 'mobile': phone_number,
                 'body': template.body,  # El cuerpo se actualizará cuando se cargue la plantilla
                 'composition_mode': 'comment',
