@@ -40,7 +40,7 @@
 
             ¡Gracias por confiar en nosotros!
 
-            {{6}}
+            {{5}}
         </field>
         <field name="status">approved</field>
     </record>
