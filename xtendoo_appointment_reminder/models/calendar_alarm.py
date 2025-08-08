@@ -211,24 +211,65 @@ class CalendarAlarm(models.Model):
                         message_id = response_data['messages'][0].get('id')
                         _logger.info(f"ID del mensaje enviado: {message_id}")
 
-                        # Guardar el ID del mensaje para seguimiento posterior
-                        self.env['whatsapp.message.log'].sudo().create({
-                            'name': f"Recordatorio para evento",
-                            'message_id': message_id,
-                            'phone_number': clean_phone,
-                            'message_body': message_body,
-                            'status': 'sent',
-                            'date': fields.Datetime.now()
-                        })
+                        # Guardar el registro del mensaje enviado utilizando el modelo nativo de Odoo
+                        try:
+                            if hasattr(self.env, 'whatsapp_message'):
+                                self.env['whatsapp.message'].sudo().create({
+                                    'name': f"Recordatorio para evento",
+                                    'message_id': message_id,
+                                    'mobile': clean_phone,
+                                    'body': message_body,
+                                    'status': 'sent',
+                                })
+                        except Exception as log_error:
+                            _logger.warning(f"No se pudo registrar el mensaje en el historial: {log_error}")
+
+                        # Intentar añadir un mensaje en el chatter del evento
+                        try:
+                            # Buscar el evento relacionado con este mensaje
+                            # Primero intentamos obtener el evento desde el contexto
+                            event = self.env.context.get('calendar_event')
+
+                            # Si no está en el contexto, intentar encontrarlo por nombre/descripción en el mensaje
+                            if not event:
+                                # Extraer posibles identificadores del evento del mensaje
+                                import re
+                                event_identifier = None
+                                # Buscar el asunto en el mensaje (normalmente después de *Asunto:*)
+                                subject_match = re.search(r'\*Asunto:\*\s*([^\n]+)', message_body)
+                                if subject_match:
+                                    event_identifier = subject_match.group(1).strip()
+
+                                if event_identifier:
+                                    events = self.env['calendar.event'].sudo().search([
+                                        '|',
+                                        ('name', '=', event_identifier),
+                                        ('id', '=', event_identifier if event_identifier.isdigit() else -1)
+                                    ], limit=1)
+
+                                    if events:
+                                        event = events[0]
+
+                            # Crear mensaje en el chatter si encontramos el evento
+                            if event:
+                                # Verificar si el modelo tiene campo message_ids (chatter)
+                                if hasattr(event, 'message_post'):
+                                    # Crear mensaje en el chatter
+                                    event.sudo().message_post(
+                                        body=f"<b>Mensaje WhatsApp enviado</b><br/>{message_body.replace(chr(10), '<br/>')}",
+                                        subtype_id=self.env.ref('mail.mt_note').id,
+                                        message_type='comment',
+                                        author_id=self.env.user.partner_id.id
+                                    )
+                                    _logger.info(f"Mensaje registrado en el chatter del evento {event.name} (ID: {event.id})")
+                        except Exception as chatter_error:
+                            _logger.warning(f"Error al registrar mensaje en el chatter: {chatter_error}")
 
                     # Verificar el estado del contacto
                     if 'contacts' in response_data and response_data['contacts']:
                         contact_input = response_data['contacts'][0].get('input')
                         contact_wa_id = response_data['contacts'][0].get('wa_id')
                         _logger.info(f"Contacto - Número de entrada: {contact_input}, WhatsApp ID: {contact_wa_id}")
-
-                    # Intentar enviar un mensaje de prueba adicional
-                    self._test_message_reception(message_id, phone_number, whatsapp_account)
 
                     return True
                 else:
