@@ -453,33 +453,42 @@ class CalendarAlarm(models.Model):
             # Limpiar número de teléfono (sin +)
             clean_phone = phone_number.lstrip('+')
 
-            # Convertir los parámetros al formato requerido por la API
-            components = []
-
-            # Añadir los parámetros de la plantilla
-            if params:
-                component_params = []
-                # Añadir los parámetros en orden numérico
-                for i in range(1, 8):  # Del 1 al 7, según la plantilla
-                    key = str(i)
-                    if key in params and params[key]:
-                        component_params.append({
-                            "type": "text",
-                            "text": params[key]
-                        })
-
-                if component_params:
-                    components.append({
-                        "type": "body",
-                        "parameters": component_params
-                    })
-
             # Nombre exacto de la plantilla como está aprobado en Facebook
-            template_name = "recordatorio_de_cita"  # Nombre corregido según Facebook
+            template_name = "recordatorio_de_cita"  # Asegúrate de que este es el nombre exacto en Facebook
 
-            # Probar enviar el mensaje directo sin plantilla primero
+            # Extraer el ID del evento directamente desde params
+            event_id = None
+            if isinstance(params, dict) and '2' in params:
+                if isinstance(params['2'], int):
+                    event_id = params['2']
+                else:
+                    try:
+                        # Intentar convertir a entero si es posible
+                        event_id = int(params['2'])
+                    except (ValueError, TypeError):
+                        # Si no es un entero, podría ser el nombre del evento
+                        pass
+
+            # Intentar primero con mensaje directo (esto es más confiable)
             try:
-                message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
+                # Construir un mensaje de texto básico con los parámetros disponibles
+                message_body = f"""📅 *Recordatorio de Cita*
+
+Hola {params.get('1', 'Estimado cliente')},
+
+Te recordamos tu cita programada:
+
+📋 *Asunto:* {params.get('2', 'Cita')}
+📅 *Fecha:* {params.get('3', 'Por confirmar')}
+🕐 *Hora:* {params.get('4', 'Por confirmar')}
+📍 *Ubicación:* {params.get('5', 'Por confirmar')}
+
+Si necesitas cancelar o reprogramar, por favor contáctanos con anticipación.
+
+¡Te esperamos!
+
+{params.get('7', self.env.company.name)}"""
+
                 direct_success = self._send_via_rest_api(whatsapp_account, phone_number, message_body)
                 if direct_success:
                     _logger.info("Mensaje de texto enviado exitosamente como alternativa a la plantilla")
@@ -487,8 +496,37 @@ class CalendarAlarm(models.Model):
             except Exception as direct_error:
                 _logger.warning(f"Error enviando mensaje directo: {direct_error}")
 
+            # Preparar los parámetros para los componentes de la plantilla
+            components = []
+            component_params = []
+
+            # Asegurar que tenemos todos los parámetros necesarios (exactamente 7)
+            required_params = {
+                '1': params.get('1', 'Estimado cliente'),     # Nombre del cliente
+                '2': params.get('2', 'Evento'),               # Nombre del evento
+                '3': params.get('3', 'Por confirmar'),        # Fecha
+                '4': params.get('4', 'Por confirmar'),        # Hora
+                '5': params.get('5', 'Por confirmar'),        # Ubicación
+                '6': params.get('6', ''),                     # Descripción
+                '7': params.get('7', self.env.company.name)   # Empresa
+            }
+
+            # Añadir los parámetros en orden
+            for i in range(1, 8):  # Del 1 al 7, según la plantilla
+                key = str(i)
+                component_params.append({
+                    "type": "text",
+                    "text": required_params[key]
+                })
+
+            if component_params:
+                components.append({
+                    "type": "body",
+                    "parameters": component_params
+                })
+
             # Ahora intentar con diferentes códigos de idioma
-            language_codes = ["en", "en_GB", "en_US", "es_ES", "es", ""]
+            language_codes = ["en_US", "en", "es", "es_ES", ""]
 
             for lang_code in language_codes:
                 try:
@@ -499,16 +537,10 @@ class CalendarAlarm(models.Model):
                         "type": "template",
                         "template": {
                             "name": template_name,
+                            "language": {"code": lang_code or "en_US"},
+                            "components": components
                         }
                     }
-
-                    # Añadir código de idioma solo si no está vacío
-                    if lang_code:
-                        data["template"]["language"] = {"code": lang_code}
-
-                    # Añadir componentes solo si hay parámetros
-                    if components:
-                        data["template"]["components"] = components
 
                     _logger.info(f"Enviando plantilla {template_name} vía API REST con idioma '{lang_code}' a {clean_phone}")
                     _logger.info(f"URL: {url}")
@@ -526,30 +558,55 @@ class CalendarAlarm(models.Model):
                         _logger.info(f"Plantilla enviada exitosamente con idioma {lang_code}: {response_data}")
                         return True
 
-                    # Si es un error específico de plantilla, seguir intentando con otro idioma
-                    if "132001" in response.text:
-                        _logger.warning(f"La plantilla no existe en el idioma {lang_code}, probando otro")
-                        continue
-                    else:
-                        # Si es otro tipo de error, no seguir intentando
-                        _logger.error(f"Error no relacionado con el idioma: {response.text}")
-                        break
+                    # Analizar el error
+                    try:
+                        error_data = response.json()
+                        if 'error' in error_data:
+                            error_code = error_data['error'].get('code')
+                            error_message = error_data['error'].get('message')
+
+                            # Si es un error de plantilla, seguir intentando con otro idioma
+                            if error_code == 132001:  # Error de plantilla no existe en ese idioma
+                                _logger.warning(f"La plantilla no existe en el idioma {lang_code}, probando otro")
+                                continue
+                            else:
+                                # Si es otro tipo de error, registrar y continuar intentando
+                                _logger.error(f"Error no relacionado con el idioma: {error_message}")
+                    except Exception as e:
+                        _logger.error(f"Error al procesar respuesta de error: {e}")
 
                 except Exception as e:
                     _logger.error(f"Error al intentar con idioma {lang_code}: {e}")
 
-            # Si llegamos aquí, ningún idioma funcionó, intentar con mensaje de texto normal
+            # Si llegamos aquí, ningún idioma funcionó, usar mensaje de texto como último recurso
             _logger.warning("Ningún idioma funcionó para la plantilla, enviando mensaje de texto normal")
-            message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
             return self._send_via_rest_api(whatsapp_account, phone_number, message_body)
 
         except Exception as e:
             _logger.error(f"Error enviando plantilla: {e}")
-            # Intentar con mensaje directo como último recurso
+            # Si falla todo, intentar enviar mensaje directo
             try:
-                message_body = self._get_default_whatsapp_message(self.env['calendar.event'].browse(params.get('2', '')))
+                # Construir un mensaje de texto básico con los parámetros disponibles
+                message_body = f"""📅 *Recordatorio de Cita*
+
+Hola {params.get('1', 'Estimado cliente')},
+
+Te recordamos tu cita programada:
+
+📋 *Asunto:* {params.get('2', 'Cita')}
+📅 *Fecha:* {params.get('3', 'Por confirmar')}
+🕐 *Hora:* {params.get('4', 'Por confirmar')}
+📍 *Ubicación:* {params.get('5', 'Por confirmar')}
+
+Si necesitas cancelar o reprogramar, por favor contáctanos con anticipación.
+
+¡Te esperamos!
+
+{params.get('7', self.env.company.name)}"""
+
                 return self._send_via_rest_api(whatsapp_account, phone_number, message_body)
-            except:
+            except Exception as final_error:
+                _logger.error(f"Error en el último intento: {final_error}")
                 return False
 
     def _get_template_params(self, calendar_event):
