@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 import logging
+import pytz
 
 _logger = logging.getLogger(__name__)
 
@@ -40,6 +41,17 @@ class CalendarEvent(models.Model):
         store=False,
         help="Número de teléfono del partner principal del evento"
     )
+
+    start_local = fields.Char(string='Hora local', compute='_compute_start_local')
+
+    @api.depends('start')
+    def _compute_start_local(self):
+        tz = pytz.timezone(self.env.user.tz or 'Europe/Madrid')
+        for event in self:
+            if event.start:
+                event.start_local = event.start.astimezone(tz).strftime('%d/%m/%Y %H:%M')
+            else:
+                event.start_local = ''
 
     @api.depends('partner_ids', 'attendee_ids')
     def _compute_mobile(self):
