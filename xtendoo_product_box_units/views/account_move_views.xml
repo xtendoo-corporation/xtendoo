@@ -17,6 +17,11 @@
                 <field name="boxes"/>
                 <field name="box_units"/>
             </xpath>
+
+             <xpath expr="//form//sheet//group//field[@name='quantity']" position="before">
+                <field name="boxes" string="Cajas" widget="float" options="{'digits': [16, 2]}"/>
+                <field name="box_units" string="Unidades por Caja"  widget="float" options="{'digits': [16, 2]}"/>
+            </xpath>
         </field>
     </record>
 
