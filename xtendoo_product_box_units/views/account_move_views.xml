@@ -12,11 +12,6 @@
                 <field name="boxes" string="Cajas" optional="show" widget="float" options="{'digits': [16, 2]}"/>
                 <field name="box_units" string="Unidades por Caja" optional="hide" widget="float" options="{'digits': [16, 2]}"/>
             </xpath>
-            <!-- Add fields to kanban view for mobile invoices -->
-            <xpath expr="//field[@name='invoice_line_ids']/kanban//field[@name='quantity']" position="before">
-                <field name="boxes"/>
-                <field name="box_units"/>
-            </xpath>
 
              <xpath expr="//form//sheet//group//field[@name='quantity']" position="before">
                 <field name="boxes" string="Cajas" widget="float" options="{'digits': [16, 2]}"/>
