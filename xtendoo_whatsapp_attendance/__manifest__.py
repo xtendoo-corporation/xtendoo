@@ -11,6 +11,7 @@
     """,
     'author': 'Xtendoo',
     'website': 'https://www.xtendoo.com',
+    'license': 'LGPL-3',
     'depends': ['base', 'whatsapp', 'hr', 'hr_attendance'],
     'data': [
         'security/ir.model.access.csv',

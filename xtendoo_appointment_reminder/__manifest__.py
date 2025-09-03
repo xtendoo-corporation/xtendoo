@@ -15,6 +15,7 @@
     """,
     'author': 'Xtendoo',
     'website': 'https://www.xtendoo.com',
+    'license': 'LGPL-3',
     'depends': [
         'calendar',
         'whatsapp',

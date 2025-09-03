@@ -16,6 +16,7 @@
     """,
     'author': 'Xtendoo',
     'website': 'https://www.xtendoo.com',
+    'license': 'LGPL-3',
     'depends': ['base', 'whatsapp', 'hr', 'hr_holidays'],
     'data': [
         'security/ir.model.access.csv',
@@ -27,4 +28,3 @@
     'auto_install': False,
     'application': False,
 }
-

@@ -6,7 +6,8 @@
     """,
     'version': "18.0.1.0.0",
     'author': "Manuel Calero, Xtendoo SLU",
-    '"website': "https://xtendoo.es",
+    'website': "https://xtendoo.es",
+    'license': 'LGPL-3',
     'description': """
         Este módulo se encarga de realizar las configuraciones iniciales de Odoo 18.0:
         - Instalar el módulo de contactos
@@ -17,10 +18,7 @@
         - Cambiar los datos de la compañía actual
         - Creación de cuentas de correo en OVH mediante su API
     """,
-    'author': "Xtendoo",
-    'website': "https://www.xtendoo.es",
     'category': 'Tools',
-    'version': '18.0.1.0.0',
     'depends': [
         'base',
         'contacts',

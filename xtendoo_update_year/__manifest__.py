@@ -11,6 +11,7 @@
     """,
     'author': "Xtendoo",
     'website': "https://www.xtendoo.es",
+    'license': 'LGPL-3',
     'category': 'Tools',
     'version': '18.0.1.0.0',
     'depends': ['base'],
@@ -21,4 +22,3 @@
     'auto_install': False,
     'application': False,
 }
-
