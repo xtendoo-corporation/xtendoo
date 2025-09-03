@@ -108,30 +108,46 @@ def _create_extensions(cr):
 def _create_indexes_concurrently(cr):
     statements = IDX_SQL_BASIC + IDX_SQL_TEXT_ES
 
-    # Crear cada índice individualmente con manejo de errores
+    # Crear cada índice individualmente con manejo de errores usando savepoints
     for sql in statements:
+        savepoint_name = f"sp_{hash(sql) % 1000000}"
         try:
+            cr.execute(f"SAVEPOINT {savepoint_name}")
             cr.execute(sql)
             _logger.info("OK índice: %s", sql.split("ON", 1)[0].strip())
         except Exception as e:
+            cr.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
             # Si el índice ya existe, no es un error crítico
             if "already exists" in str(e):
                 _logger.info("Índice ya existe: %s", sql.split("ON", 1)[0].strip())
             else:
                 _logger.warning("Fallo creando índice (%s): %s", sql, e)
+        finally:
+            try:
+                cr.execute(f"RELEASE SAVEPOINT {savepoint_name}")
+            except:
+                pass  # Savepoint ya fue liberado
 
 def _apply_autovacuum_settings(cr):
     for table, params in AUTOVAC_SETTINGS.items():
-        if not _table_exists(cr, table):
-            _logger.info("Tabla %s no existe; se omiten ajustes de autovacuum.", table)
-            continue
-        pairs = ", ".join(f"{k} = {v}" for k, v in params.items())
-        sql = f"ALTER TABLE {table} SET ({pairs})"
+        savepoint_name = f"sp_autovac_{hash(table) % 1000000}"
         try:
+            cr.execute(f"SAVEPOINT {savepoint_name}")
+            if not _table_exists(cr, table):
+                _logger.info("Tabla %s no existe; se omiten ajustes de autovacuum.", table)
+                continue
+            pairs = ", ".join(f"{k} = {v}" for k, v in params.items())
+            sql = f"ALTER TABLE {table} SET ({pairs})"
             cr.execute(sql)
             _logger.info("Autovacuum ajustado en %s: %s", table, pairs)
         except Exception as e:
+            cr.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
             _logger.warning("No se pudo ajustar autovacuum en %s: %s", table, e)
+        finally:
+            try:
+                cr.execute(f"RELEASE SAVEPOINT {savepoint_name}")
+            except:
+                pass
 
 def _reset_autovacuum_settings(cr):
     keys = set()
