@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia de la vista de formulario para product.pricelist.item -->
+    <record id="product_pricelist_item_form_view_inherit" model="ir.ui.view">
+        <field name="name">product.pricelist.item.form.inherit.discount</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
+        <field name="arch" type="xml">
+            <group name="pricelist_rule_method" position="inside">
+                <label for="discount_in_column" string="Descuento en columna"/>
+                <div class="o_row">
+                    <field name="discount_in_column"/>
+                    <span>%</span>
+                </div>
+            </group>
+        </field>
+    </record>
+</odoo>
