@@ -15,7 +15,7 @@
                         <div class="d-flex align-items-center">
                             <i class="fa fa-exclamation-triangle mr-2" aria-hidden="true" title="Advertencia"/>
                             <div class="flex-grow-1">
-                                <strong>Advertencia: ¡El cliente tiene facturas vencidas!</strong>
+                                <strong>Advertencia: ¡El cliente tiene factura(s) vencida(s)!</strong>
                                 <div class="mt-1">
                                     <span>El cliente </span>
                                     <strong><field name="partner_name_simple" readonly="1" class="oe_inline"/></strong>
