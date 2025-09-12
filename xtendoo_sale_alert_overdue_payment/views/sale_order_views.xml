@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Extend sale order form view to add overdue payment alert -->
+        <record id="view_order_form_overdue_alert" model="ir.ui.view">
+            <field name="name">sale.order.form.overdue.alert</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Add alert banner after the header -->
+                <xpath expr="//header" position="after">
+                    <div class="alert alert-danger"
+                         invisible="has_overdue_invoices == False"
+                         role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-exclamation-triangle mr-2" aria-hidden="true" title="Advertencia"/>
+                            <div class="flex-grow-1">
+                                <strong>Advertencia: ¡El cliente tiene facturas vencidas!</strong>
+                                <div class="mt-1">
+                                    <span>El cliente </span>
+                                    <strong><field name="partner_name_simple" readonly="1" class="oe_inline"/></strong>
+                                    <span> tiene </span>
+                                    <strong><field name="overdue_invoices_count" readonly="1" class="oe_inline"/></strong>
+                                    <span> factura(s) vencida(s) por un importe total de </span>
+                                    <strong><field name="overdue_amount_total" readonly="1" class="oe_inline" widget="monetary"/></strong>
+                                </div>
+                            </div>
+                            <button type="object"
+                                    name="action_show_overdue_invoices"
+                                    class="btn btn-sm btn-outline-danger">
+                                Ver Facturas Vencidas
+                            </button>
+                        </div>
+                    </div>
+                </xpath>
+
+                <!-- Add invisible fields for computation -->
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="has_overdue_invoices" invisible="1"/>
+                    <field name="overdue_invoices_count" invisible="1"/>
+                    <field name="overdue_amount_total" invisible="1"/>
+                    <field name="partner_name_simple" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
