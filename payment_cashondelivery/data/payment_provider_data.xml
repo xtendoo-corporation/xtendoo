@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="payment_provider_cashondelivery" model="payment.provider">
+            <field name="code">cashondelivery</field>
+             <field name="redirect_form_view_id" ref="redirect_form"/>
+            <field name="cashondelivery_mode">cashondelivery</field>
+            <field name="payment_method_ids"
+                   eval="[Command.set([ref('payment_cashondelivery.payment_method_cashondelivery')])]"/>
+            <field name="pending_msg">
+                <![CDATA[
+        <p>El pago se realizará al recibir el pedido.</p>
+      ]]>
+            </field>
+            <field name="auth_msg">
+                <![CDATA[
+        <p>Su pago por contrarreembolso ha sido autorizado.</p>
+      ]]>
+            </field>
+            <field name="done_msg">
+                <![CDATA[
+        <p>Su pedido por contrarreembolso se ha procesado correctamente. ¡Gracias por confiar en nosotros!</p>
+      ]]>
+            </field>
+            <field name="cancel_msg">
+                <![CDATA[
+        <p>El pago por contrarreembolso ha sido cancelado.</p>
+      ]]>
+            </field>
+        </record>
+</odoo>
