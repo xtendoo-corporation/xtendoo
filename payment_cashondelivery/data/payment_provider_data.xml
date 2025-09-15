@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
         <record id="payment_provider_cashondelivery" model="payment.provider">
+            <field name="name">Pago Contra Reembolso</field> 
             <field name="code">cashondelivery</field>
              <field name="redirect_form_view_id" ref="redirect_form"/>
             <field name="cashondelivery_mode">cashondelivery</field>
