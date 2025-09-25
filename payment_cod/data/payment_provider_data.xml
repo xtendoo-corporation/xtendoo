@@ -7,7 +7,6 @@
         <field name="module_id" ref="base.module_delivery"/>
         <field name="code">custom</field>
         <field name="custom_mode">cash_on_delivery</field>
-        <field name="company_id" ref="base.main_company"/>
         <field
             name="payment_method_ids"
             eval="[Command.set([ref('payment_cod.payment_method_cash_on_delivery')])]"
