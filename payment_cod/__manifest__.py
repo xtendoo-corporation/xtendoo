@@ -7,7 +7,7 @@
     'sequence': 350,
     'summary': "A payment provider for Cash On Delivery",
     'description': " ",  # Non-empty string to avoid loading the README file.
-    'depends': ['payment'],
+    'depends': ['payment','payment_custom'],
     'data': [
         'views/payment_form_templates.xml',
         'views/payment_provider_views.xml',
