@@ -7,7 +7,7 @@
     'website': 'http://www.xtendoo.com',
     'description': """
 """,
-    'version': '17.0.1.0',
+    'version': '18.0.1.0.1',
     'depends': ['sale_management','sale'],
     'data': [
         "views/sale_order_view.xml"
