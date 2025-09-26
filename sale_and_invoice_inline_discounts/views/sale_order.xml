@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+      <record id="sale_line_discount_global_view" model="ir.ui.view">
+        <field name="name">sale.line.discount.global.view</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="after">
+                <field name="sale_inline_discount_ids" widget="many2many_tags" options="{'no_create_edit': True}"
+                       optional="show"
+                />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
