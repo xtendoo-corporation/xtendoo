@@ -1,0 +1,44 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* res_partner_hide_internal_notes
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 12.0-20190729\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-29 11:07+0000\n"
+"PO-Revision-Date: 2019-08-29 11:07+0000\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: res_partner_hide_internal_notes
+#: model:ir.model.fields,field_description:res_partner_hide_internal_notes.field_res_partner__admin_comment
+#: model:ir.model.fields,field_description:res_partner_hide_internal_notes.field_res_users__admin_comment
+msgid "Administrator Notes"
+msgstr "Notas de administrador"
+
+#. module: res_partner_hide_internal_notes
+#: model:ir.model.fields,field_description:res_partner_hide_internal_notes.field_res_partner__commercial_name
+#: model:ir.model.fields,field_description:res_partner_hide_internal_notes.field_res_users__commercial_name
+msgid "Commercial Name"
+msgstr "Nombre comercial"
+
+#. module: res_partner_hide_internal_notes
+#: model:ir.model,name:res_partner_hide_internal_notes.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: res_partner_hide_internal_notes
+#: model_terms:ir.ui.view,arch_db:res_partner_hide_internal_notes.res_partner_hide_comment
+msgid "Restricted notes..."
+msgstr "Notas de administrador"
+
+#. module: res_partner_hide_internal_notes
+#: model:res.groups,name:res_partner_hide_internal_notes.view_partner_internal_notes
+msgid "View Partner Internal Notes"
+msgstr "Ver Notas de Administrador"
+

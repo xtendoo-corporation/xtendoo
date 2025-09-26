@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="invoicing_monthly.invoicing_monthly_view" model="ir.ui.view">
+        <field name="name">Facturación Mensual</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='accounting']" position="inside">
+                <group string="Invoicing type" name="invoicing_type">
+                    <field name="monthly_invoicing"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
