@@ -2,9 +2,6 @@ from odoo import api, fields, models
 
 import logging
 
-
-
-
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 

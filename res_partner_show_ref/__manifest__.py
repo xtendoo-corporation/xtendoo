@@ -14,7 +14,7 @@ allows to display the field in the client file as well as edit it""",
     ],
     'license': 'AGPL-3',
     'data': [
-        'views/res_partner_show_ref.xml',
+        # 'views/res_partner_show_ref.xml',
     ],
     'demo': [],
     'installable': True,

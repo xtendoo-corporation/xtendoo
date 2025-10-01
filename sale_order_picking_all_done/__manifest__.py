@@ -34,7 +34,7 @@
     ],
     "license": "AGPL-3",
     "data": [
-        "views/views.xml",
+        # "views/views.xml",
     ],
     "installable": True,
     "auto_install": False,
