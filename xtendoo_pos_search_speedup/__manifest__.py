@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Xtendoo POS Search Speedup (Indexes)",
-    "version": "18.0.1.0.0",
+    "version": "19.0.1.0.0",
     "summary": "Acelera carga y búsquedas del POS creando extensiones/índices en PostgreSQL",
     "description": """
 Módulo de Optimización del Rendimiento del POS

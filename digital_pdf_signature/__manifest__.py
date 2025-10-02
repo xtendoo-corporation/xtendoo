@@ -1,6 +1,6 @@
 {
     'name': 'Firma Digital PDF',
-    'version': '18.0.0.1',
+    'version': '19.0.0.1',
     'category': 'Tools',
     'summary': 'Firma digital de documentos PDF con certificados',
     'author': 'Tu Nombre',

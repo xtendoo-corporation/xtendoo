@@ -3,7 +3,7 @@
 {
     "name": "Sale And Invoice Inline discounts",
     "summary": """Sale And Invoice Inline discounts""",
-    "version": "18.0.1.0.1",
+    "version": "19.0.1.0.1",
     "description": """Sale And Invoice Inline discounts""",
     "author": "Dani Domínguez",
     "company": "Xtendoo",

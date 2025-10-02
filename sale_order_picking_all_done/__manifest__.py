@@ -22,7 +22,7 @@
 {
     "name": "Sale Order Picking All Done",
     "summary": """Sale Order Picking All Done""",
-    "version": "18.0.1.0.1",
+    "version": "19.0.1.0.1",
     "description": """Sale Order Picking All Done""",
     "author": "Manuel Calero Solís,",
     "company": "Xtendoo",

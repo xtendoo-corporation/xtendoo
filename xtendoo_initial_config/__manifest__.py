@@ -2,14 +2,14 @@
 {
     'name': "Xtendoo Initial Config",
     'summary': """
-        Configuración inicial automática para instalaciones Odoo 18.0
+        Configuración inicial automática para instalaciones Odoo 19.0
     """,
-    'version': "18.0.1.0.0",
+    'version': "19.0.1.0.0",
     'author': "Manuel Calero, Xtendoo SLU",
     'website': "https://xtendoo.es",
     'license': 'LGPL-3',
     'description': """
-        Este módulo se encarga de realizar las configuraciones iniciales de Odoo 18.0:
+        Este módulo se encarga de realizar las configuraciones iniciales de Odoo 19.0:
         - Instalar el módulo de contactos
         - Instalar el idioma español (es_ES)
         - Cambiar a todos los usuarios y contactos al idioma español

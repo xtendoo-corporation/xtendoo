@@ -2,7 +2,7 @@
 {
     'name': 'Res Partner Hide Internal Notes',
     'summary': """Product Cost Price Will be Visible Only for Specified Group""",
-    'version': '18.0.1.0.1',
+    'version': '19.0.1.0.1',
     'description': """Product cost price will be visible only for specified group""",
     'author': 'Manuel Calero Solís',
     'company': 'Xtendoo',

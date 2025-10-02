@@ -3,7 +3,7 @@
 {
     'name': 'Res Partner Show Ref  in TreeView',
     'summary': """show customer reference in TreeView""",
-    'version': '18.0.1.0.1',
+    'version': '19.0.1.0.1',
     'description': """shows the ref field in the client tree view""",
     'author': 'Dani Domínguez',
     'company': 'Xtendoo',

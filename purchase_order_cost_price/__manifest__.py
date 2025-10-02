@@ -3,7 +3,7 @@
 {
     "name": "Purchase Order Cost Price",
     "summary": "If the relationship with the supplier does not exist or its price is 0.00, use the cost price",
-    "version": "18.0.1.0.1",
+    "version": "19.0.1.0.1",
     "category": "Purchases",
     "website": "xtendoo.es",
     "author": "ddl",

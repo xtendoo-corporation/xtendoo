@@ -24,7 +24,7 @@
 {
     'name': 'Res Partner Vat Search',
     'summary': """Add Vat Search To Res Partner""",
-    'version': '18.0.1.0.1',
+    'version': '19.0.1.0.1',
     'description': """Add Vat Search To Res Partner""",
     'author': 'Manuel Calero Solís',
     'company': 'Xtendoo',

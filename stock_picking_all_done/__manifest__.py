@@ -24,7 +24,7 @@
 {
     'name': 'Stock Picking All Done',
     'summary': """Stock Picking All Done""",
-    'version': '18.0.1.0.1',
+    'version': '19.0.1.0.1',
     'description': """Stock Picking All Done""",
     'author': 'Manuel Calero Solís',
     'company': 'Xtendoo',

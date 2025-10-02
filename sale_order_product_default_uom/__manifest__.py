@@ -1,7 +1,7 @@
 {
     "name": "Sale Order Product Default Uom",
     "summary": """Sale Order Product Default Uom""",
-    "version": "18.0.1.0.1",
+    "version": "19.0.1.0.1",
     "description": """Sale Order Product Default Uom""",
     "author": "Manuel Calero Solís, Camilo",
     "company": "Xtendoo",

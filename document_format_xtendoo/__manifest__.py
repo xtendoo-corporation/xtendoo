@@ -1,7 +1,7 @@
 {
     "name": "document_format_xtendoo",
     "summary": """Formatos de documentos Xtendoo""",
-    "version": "18.0.1.0.0",
+    "version": "19.0.1.0.0",
     "description": """Formatos de documentos Xtendoo""",
     "author": "DDL",
     "company": "Xtendoo",

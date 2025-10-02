@@ -3,7 +3,7 @@
 {
     "name": "Sale Picking State",
     "summary": """Añade un nuevo estado en pedido, en función de las entregas""",
-    "version": "18.0.1.0.1",
+    "version": "19.0.1.0.1",
     "description": """Añade un nuevo estado en pedido, en función de las entregas""",
     "author": "DDL",
     "company": "Xtendoo",

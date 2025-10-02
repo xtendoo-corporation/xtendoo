@@ -1,6 +1,6 @@
 {
     'name': 'Xtendoo Calendar WhatsApp Reminder',
-    'version': '18.0.1.0.0',
+    'version': '19.0.1.0.0',
     'category': 'Calendar',
     'summary': 'Enviar recordatorios de eventos de calendario por WhatsApp',
     'description': """

@@ -17,7 +17,7 @@
     "name"              :  "POS Fast Loading",
     "summary"           :  """This module is used to load the data fast into pos. It can load more than 1 Lac products and 50k customers in just few seconds. Keywords:Fast Data Loading | Load Data Faster | Faster Loading Data | Speed Up Loading | POS Data Load | Fast POS | POS Load Faster | Rapid POS Data Loading | Quick POS Sync | Efficient POS Data Load | Accelerated POS Loading | High-Speed POS Sync | Instant POS Data Load | Optimized POS Loading | POS Performance Boost | Lightning-Fast POS Load | Seamless POS Data Loading | Ultra-Fast POS Sync | Enhanced POS Speed | POS Data Sync Accelerator | Speedy POS Data Management | POS Optimize | Fast POS Data Integration""",
     "category"          :  "Point Of Sale",
-    "version"           :  "1.0.0",
+    "version"           :  "19.0.1.0.0",
     "sequence"          :  1,
     "author"            :  "Webkul Software Pvt. Ltd.",
     "license"           :  "Other proprietary",

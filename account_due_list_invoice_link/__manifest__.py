@@ -3,7 +3,7 @@
 
 {
     "name": "Account Due List Invoice Link",
-    "version": "18.0.1.0.1",
+    "version": "19.0.1.0.1",
     "category": "Generic Modules/Payment",
     "summary": "Adds link between invoices and due list",
     "author": "Xtendoo, " "Odoo Community Association (OCA)",

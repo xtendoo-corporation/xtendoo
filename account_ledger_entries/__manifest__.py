@@ -1,6 +1,6 @@
 {
     'name': "Account Ledger Entries",
-    'version': '18.0.1.0.0',
+    'version': '19.0.1.0.0',
     'summary': """Add menu item to access accounting ledgers""",
     'description': """Add menu item to access accounting ledgers""",
     'author': "Salvador Gonzalez (Xtendoo)",

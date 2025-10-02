@@ -1,0 +1,33 @@
+<odoo>
+  <record id="view_res_config_settings_xtd_matrix_weight" model="ir.ui.view">
+    <field name="name">res.config.settings.view.form.xtd.matrix.weight</field>
+    <field name="model">res.config.settings</field>
+    <field name="inherit_id" ref="base.view_res_config_settings"/>
+    <field name="arch" type="xml">
+      <xpath expr="//div[@id='settings']" position="inside">
+        <div class="app_settings_block" data-string="Báscula Matrix II" string="Báscula Matrix II">
+          <h2>Báscula Matrix II</h2>
+          <group>
+            <field name="xtd_scale_mode"/>
+            <group attrs="{'invisible': [('xtd_scale_mode','!=','tcp')]}">
+              <field name="xtd_scale_tcp_host"/>
+              <field name="xtd_scale_tcp_port"/>
+            </group>
+            <group attrs="{'invisible': [('xtd_scale_mode','!=','serial')]}">
+              <field name="xtd_scale_serial_port"/>
+              <field name="xtd_scale_serial_baud"/>
+              <field name="xtd_scale_serial_parity"/>
+              <field name="xtd_scale_serial_stopbits"/>
+            </group>
+            <group>
+              <field name="xtd_scale_terminator"/>
+              <field name="xtd_scale_command"/>
+              <field name="xtd_scale_timeout"/>
+              <field name="xtd_scale_retries"/>
+            </group>
+          </group>
+        </div>
+      </xpath>
+    </field>
+  </record>
+</odoo>

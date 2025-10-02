@@ -4,7 +4,7 @@
 {
     "name": "Pricelist Contraint Unique",
     "summary": """Pricelist Contraint Unique""",
-    "version": "18.0.1.0.1",
+    "version": "19.0.1.0.1",
     "license": "AGPL-3",
     "author": "DDL-Xtendoo",
     "website": "https://xtendoo.es",

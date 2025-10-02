@@ -4,7 +4,7 @@
 {
     'name': 'Product hide fields',
     'summary': """""",
-    'version': '18.0.1.0.1',
+    'version': '19.0.1.0.1',
     'description': """Hides the cost and pvp fields, and adds labels in the product view""",
     'author': 'Dani Domínguez',
     'company': 'Xtendoo',

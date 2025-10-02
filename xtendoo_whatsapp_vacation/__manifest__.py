@@ -1,6 +1,6 @@
 {
     'name': 'Xtendoo WhatsApp Vacation',
-    'version': '18.0.1.0.0',
+    'version': '19.0.1.0.0',
     'category': 'WhatsApp',
     'summary': 'Solicitar vacaciones a través de WhatsApp',
     'description': """

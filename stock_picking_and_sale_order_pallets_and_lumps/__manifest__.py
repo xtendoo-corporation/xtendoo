@@ -2,7 +2,7 @@
 {
     'name': 'Stock Picking and Sale Order Pallets and Lupms',
     'summary': """Stock Picking and Sale Order Pallets and Lupms""",
-    'version': '18.0.1.0.1',
+    'version': '19.0.1.0.1',
     'description': """Stock Picking and Sale Order Pallets and Lupms""",
     'author': 'Dani Domínguez',
     'company': 'Xtendoo',

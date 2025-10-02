@@ -13,7 +13,7 @@
     'website': "https://www.xtendoo.es",
     'license': 'LGPL-3',
     'category': 'Tools',
-    'version': '18.0.1.0.0',
+    'version': '19.0.1.0.0',
     'depends': ['base'],
     'data': [
         'data/ir_cron_data.xml',

@@ -1,6 +1,6 @@
 {
     'name': 'Xtendoo WhatsApp Attendance',
-    'version': '18.0.1.0.0',
+    'version': '19.0.1.0.0',
     'category': 'WhatsApp',
     'summary': 'Módulo para heredar webhook de WhatsApp y mostrar información de asistencia',
     'description': """
