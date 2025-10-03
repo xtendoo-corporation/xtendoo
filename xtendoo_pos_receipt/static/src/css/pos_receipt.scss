@@ -1,9 +1,46 @@
-.pos-receipt {
-    margin: 0 !important;
-    padding: 0 !important;
+ .pos-receipt {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .pos-receipt * {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .orderlines {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .orderline-spanish {
+            padding: 2px 0 !important;
+            margin: 0 !important;
+            line-height: 1.2;
+        }
+        .orderline-spanish + div {
+            padding-top: 1px !important;
+            padding-bottom: 1px !important;
+            margin: 0 !important;
+            line-height: 1.2;
+        }
+
+.pos-receipt .pos-receipt-logo {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block;
+    text-align: center;
 }
 
-.pos-receipt * {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+.pos-receipt .pos-receipt-header {
+    text-align: center;
+}
+
+.pos-receipt .pos-receipt-header img {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block;
 }
