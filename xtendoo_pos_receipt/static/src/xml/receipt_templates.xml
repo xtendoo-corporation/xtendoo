@@ -30,7 +30,7 @@
         <xpath expr="//OrderWidget" position="before">
             <div class="ticket-header"
                  style="display:flex; justify-content:space-between; font-weight:bold; border-bottom:1px solid #000; padding:5px 0;">
-                <span style="flex:0 0 60px;">UDS</span>
+                <span style="flex:0 0 30px;">UD</span>
                 <span style="flex:1;">DESCRIPCIÓN</span>
                 <span style="flex:0 0 80px; text-align:right;">IMPORTE</span>
             </div>
@@ -45,7 +45,7 @@
         <xpath expr="//OrderWidget" position="replace">
             <t t-foreach="props.data.orderlines or []" t-as="line" t-key="line.productName">
                 <li class="orderline-spanish position-relative d-flex align-items-center p-2 lh-sm cursor-pointer">
-                    <span style="flex:0 0 60px;" t-esc="getQtyInt(line)"/>
+                    <span style="flex:0 0 30px;" t-esc="getQtyInt(line)"/>
 
 
                     <span style="flex:1;" t-esc="line.productName"/>
