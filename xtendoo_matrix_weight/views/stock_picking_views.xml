@@ -6,7 +6,7 @@
     <field name="arch" type="xml">
       <xpath expr="//sheet/notebook/page[@name='operations']" position="after">
         <group string="Báscula">
-          <field name="weight_from_scale" attrs="{'readonly': True}"/>
+          <field name="weight_from_scale" readonly="1"/>
           <button name="action_xtd_read_weight" type="object" class="oe_highlight"
                   string="Leer peso de báscula" icon="fa-balance-scale"/>
         </group>

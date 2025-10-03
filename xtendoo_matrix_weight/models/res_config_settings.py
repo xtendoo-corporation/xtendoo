@@ -19,8 +19,8 @@ class ResConfigSettings(models.TransientModel):
         ("N","None"),("E","Even"),("O","Odd")
     ], string="Paridad", default="N", config_parameter="xtendoo_matrix_weight.parity")
     xtd_scale_serial_stopbits = fields.Selection([
-        (1,"1"),(2,"2")
-    ], string="Stop bits", default=1, config_parameter="xtendoo_matrix_weight.stopbits")
+        ("1","1"),("2","2")
+    ], string="Stop bits", default="1", config_parameter="xtendoo_matrix_weight.stopbits")
     xtd_scale_terminator = fields.Selection([
         ("\r","CR (\\r)"),
         ("\r\n","CRLF (\\r\\n)"),
