@@ -75,6 +75,10 @@
         <xpath expr="//div[hasclass('text-center')]" position="replace">
         </xpath>
 
+        <xpath expr="//div[hasclass('text-center')]" position="replace">
+            <div class="text-center">-----------------------------</div>
+        </xpath>
+
         <xpath expr="//t[@t-foreach='taxTotals.subtotals']" position="replace">
             <t t-foreach="taxTotals.subtotals" t-as="subtotal" t-key="subtotal.name">
                <div class="pos-receipt-amount receipt-total">
