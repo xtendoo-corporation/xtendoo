@@ -1,19 +1,20 @@
-/** @odoo-module **/
-
-import { patch } from "@web/core/utils/patch";
+/** @odoo-module */
 import { Orderline } from "@point_of_sale/app/generic_components/orderline/orderline";
+import { patch } from "@web/core/utils/patch";
 
-patch(Orderline.prototype, {
-    get line() {
-        const line = super.line || this.props.line;
-        const qty = line.qty || 0;
-
-        // Formatear cantidad: sin decimales si es entero
-        const qtyFormatted = qty % 1 === 0 ? Math.floor(qty).toString() : qty.toString();
-
-        return {
-            ...line,
-            qty: qtyFormatted
-        };
-    }
+patch(Orderline, {
+    props: {
+        ...Orderline.props,
+        line: {
+            ...Orderline.props.line,
+            shape: {
+                ...Orderline.props.line.shape,
+                qty_int: { type: Number, optional: true },
+            },
+        },
+    },
+    setup() {
+        this._super();
+        console.log("qty_int value:", this.props.line.qty_int);
+    },
 });

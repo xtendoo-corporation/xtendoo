@@ -41,26 +41,67 @@
             <div style="border-top:1px solid #000; margin:10px 0;"></div>
         </xpath>
 
+        <!-- xml -->
+        <xpath expr="//OrderWidget" position="replace">
+            <t t-foreach="props.data.orderlines or []" t-as="line" t-key="line.productName">
+                <li class="orderline-spanish position-relative d-flex align-items-center p-2 lh-sm cursor-pointer">
+                    <span style="flex:0 0 60px;" t-esc="getQtyInt(line)"/>
+
+
+                    <span style="flex:1;" t-esc="line.productName"/>
+                    <span style="flex:0 0 80px; text-align:right;">
+                        <t t-if="line.price === 'free'">Gratis</t>
+                        <t t-else="" t-esc="line.price"/>
+                    </span>
+                </li>
+                <div t-if="line.discount and line.discount !== '0' and !props.basic_receipt"
+                     style="padding-left:60px; font-size:0.9em; color:#666;">
+                    Descuento: <t t-esc="line.discount"/>%
+                </div>
+                <div t-if="line.customerNote"
+                     style="padding-left:60px; font-style:italic; color:#666; padding:5px 0;">
+                    <i class="fa fa-sticky-note me-1" role="img" aria-label="Nota del cliente"/>
+                    <t t-esc="line.customerNote"/>
+                </div>
+            </t>
+        </xpath>
+
+
+
+
+        <xpath expr="//div[hasclass('pos-receipt-amount receipt-total')]" position="replace">
+        </xpath>
+
+        <xpath expr="//div[hasclass('text-center')]" position="replace">
+        </xpath>
+
         <xpath expr="//t[@t-foreach='taxTotals.subtotals']" position="replace">
             <t t-foreach="taxTotals.subtotals" t-as="subtotal" t-key="subtotal.name">
-               <div class="text-center">
+               <div class="pos-receipt-amount receipt-total">
                    <span t-if="showTaxGroupLabels" class="me-2" style="visibility: hidden;">A</span>
                    <span class="fw-bolder text-nowrap mw-100" t-out="subtotal.name"/>
                    <span t-esc="props.formatCurrency(subtotal.base_amount_currency)" class="pos-receipt-right-align"/>
                </div>
-               <div t-foreach="subtotal.tax_groups" t-as="tax_group" t-key="tax_group.id" class="text-center">
+                <div t-foreach="subtotal.tax_groups" t-as="tax_group" t-key="tax_group.id"
+                     class="pos-receipt-amount receipt-total">
                     <t t-if="showTaxGroupLabels">
                          <span t-if="tax_group.group_label" t-out="tax_group.group_label" class="me-2"/>
-                         <span t-else="" class="me-2" style="visibility: hidden;">A</span>
+                        <span t-else="" class="me-2" style="visibility: hidden;">A</span>
                     </t>
                     <span>
                         <span t-esc="tax_group.group_name"/>
-                            <t t-if="!taxTotals.same_tax_base">
+                        <t t-if="!taxTotals.same_tax_base">
                                     on
-                                <span t-esc="props.formatCurrency(tax_group.base_amount_currency)" class="pos-receipt-right-align"/>
+                                <span t-esc="props.formatCurrency(tax_group.base_amount_currency)"
+                                      class="pos-receipt-right-align"/>
                             </t>
                         </span>
                     <span t-esc="props.formatCurrency(tax_group.tax_amount_currency)" class="pos-receipt-right-align"/>
+               </div>
+                <div class="pos-receipt-amount receipt-total">
+                    <t t-out="props.data.label_total"/>
+                    <span t-esc="props.formatCurrency(taxTotals.order_sign * taxTotals.order_total)"
+                          class="pos-receipt-right-align"/>
                </div>
             </t>
         </xpath>
@@ -68,42 +109,6 @@
 
         <xpath expr="//t[@t-if='props.data.total_discount']/div[@class='text-center']" position="attributes">
             <attribute name="class">text-start</attribute>
-        </xpath>
-
-    </t>
-
-    <!-- Herencia de Orderline para formato español -->
-    <t t-name="xtendoo.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
-
-        <!-- Reemplazar el li completo -->
-        <xpath expr="//li[hasclass('orderline')]" position="replace">
-            <li class="orderline-spanish">
-                <!-- Línea principal con cantidad, producto y precio -->
-                <div style="display:flex; justify-content:space-between; padding:3px 0;">
-                    <span style="flex:0 0 60px;" t-esc="line.qty"/>
-                    <span style="flex:1;" t-esc="line.productName"/>
-                    <span style="flex:0 0 80px; text-align:right;">
-                        <t t-if="line.price === 'free'">Gratis</t>
-                        <t t-else="" t-esc="line.price"/>
-                    </span>
-                </div>
-
-                <!-- Descuento si existe -->
-                <div t-if="line.discount and line.discount !== '0' and !props.basic_receipt"
-                     style="padding-left:60px; font-size:0.9em; color:#666;">
-                    Descuento: <t t-esc="line.discount"/>%
-                </div>
-
-                <!-- Nota del cliente -->
-                <div t-if="line.customerNote"
-                     style="padding-left:60px; font-style:italic; color:#666; padding:5px 0;">
-                    <i class="fa fa-sticky-note me-1" role="img" aria-label="Nota del cliente"/>
-                    <t t-esc="line.customerNote"/>
-                </div>
-
-                <!-- Slot para extensiones adicionales -->
-                <t t-slot="default"/>
-            </li>
         </xpath>
 
     </t>

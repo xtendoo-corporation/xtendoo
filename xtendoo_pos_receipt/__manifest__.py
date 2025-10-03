@@ -18,6 +18,8 @@
     'data': [],
     'assets': {
         'point_of_sale._assets_pos': [
+            'xtendoo_pos_receipt/static/src/js/orderline_patch.js',
+            'xtendoo_pos_receipt/static/src/js/order_receipt.js',
             'xtendoo_pos_receipt/static/src/css/pos_receipt.scss',
             'xtendoo_pos_receipt/static/src/xml/receipt_templates.xml',
         ],
