@@ -20,7 +20,7 @@
             </xpath>
             <xpath
                 expr="//field[@name='order_line']/list/field[@name='product_uom_qty']"
-                position="after"
+                position="before"
             >
                 <field name="boxes"/>
                 <field name="box_units" string="Unidades por Caja"/>
@@ -46,7 +46,7 @@
         <field name="model">sale.order.line</field>
         <field name="inherit_id" ref="sale.view_order_line_tree"/>
         <field name="arch" type="xml">
-            <field name="name" position="after">
+            <field name="name" position="before">
                 <field name="boxes" optional="show"/>
                 <field name="box_units" optional="show"/>
             </field>
