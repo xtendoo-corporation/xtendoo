@@ -32,7 +32,7 @@
         "views/invoice/invoice_dossier.xml",
         #"views/invoice/invoice_gruped_by_picking.xml",
         #"views/layout/external_layout_clean.xml",
-        "views/sale/sale_order_document.xml",
+        #"views/sale/sale_order_document.xml",
         "views/sale/sale_order_blank_document.xml",
         "views/purchase/purchase.xml",
         "views/invoice/account_tax_template.xml",
