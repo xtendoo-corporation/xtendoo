@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-name="xtendoo.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+
+        <xpath expr="//div[hasclass('pos-receipt')]" position="attributes">
+            <attribute name="style">margin: 0 !important; padding: 0 !important; width: 100%;</attribute>
+        </xpath>
+
+        <!-- Eliminar márgenes del contenedor principal -->
+        <xpath expr="//div[hasclass('pos-receipt')]" position="inside">
+            <style>
+                .pos-receipt {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                .pos-receipt * {
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                }
+                .orderlines {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                }
+
+
+            </style>
+        </xpath>
+
+        <!-- Cabecera de líneas de pedido -->
+        <xpath expr="//OrderWidget" position="before">
+            <div class="ticket-header"
+                 style="display:flex; justify-content:space-between; font-weight:bold; border-bottom:1px solid #000; padding:5px 0;">
+                <span style="flex:0 0 60px;">UDS</span>
+                <span style="flex:1;">DESCRIPCIÓN</span>
+                <span style="flex:0 0 80px; text-align:right;">IMPORTE</span>
+            </div>
+        </xpath>
+
+        <!-- Línea separadora después de las líneas -->
+        <xpath expr="//OrderWidget" position="after">
+            <div style="border-top:1px solid #000; margin:10px 0;"></div>
+        </xpath>
+
+        <xpath expr="//t[@t-foreach='taxTotals.subtotals']" position="replace">
+            <t t-foreach="taxTotals.subtotals" t-as="subtotal" t-key="subtotal.name">
+               <div class="text-center">
+                   <span t-if="showTaxGroupLabels" class="me-2" style="visibility: hidden;">A</span>
+                   <span class="fw-bolder text-nowrap mw-100" t-out="subtotal.name"/>
+                   <span t-esc="props.formatCurrency(subtotal.base_amount_currency)" class="pos-receipt-right-align"/>
+               </div>
+               <div t-foreach="subtotal.tax_groups" t-as="tax_group" t-key="tax_group.id" class="text-center">
+                    <t t-if="showTaxGroupLabels">
+                         <span t-if="tax_group.group_label" t-out="tax_group.group_label" class="me-2"/>
+                         <span t-else="" class="me-2" style="visibility: hidden;">A</span>
+                    </t>
+                    <span>
+                        <span t-esc="tax_group.group_name"/>
+                            <t t-if="!taxTotals.same_tax_base">
+                                    on
+                                <span t-esc="props.formatCurrency(tax_group.base_amount_currency)" class="pos-receipt-right-align"/>
+                            </t>
+                        </span>
+                    <span t-esc="props.formatCurrency(tax_group.tax_amount_currency)" class="pos-receipt-right-align"/>
+               </div>
+            </t>
+        </xpath>
+
+
+        <xpath expr="//t[@t-if='props.data.total_discount']/div[@class='text-center']" position="attributes">
+            <attribute name="class">text-start</attribute>
+        </xpath>
+
+    </t>
+
+    <!-- Herencia de Orderline para formato español -->
+    <t t-name="xtendoo.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+
+        <!-- Reemplazar el li completo -->
+        <xpath expr="//li[hasclass('orderline')]" position="replace">
+            <li class="orderline-spanish">
+                <!-- Línea principal con cantidad, producto y precio -->
+                <div style="display:flex; justify-content:space-between; padding:3px 0;">
+                    <span style="flex:0 0 60px;" t-esc="line.qty"/>
+                    <span style="flex:1;" t-esc="line.productName"/>
+                    <span style="flex:0 0 80px; text-align:right;">
+                        <t t-if="line.price === 'free'">Gratis</t>
+                        <t t-else="" t-esc="line.price"/>
+                    </span>
+                </div>
+
+                <!-- Descuento si existe -->
+                <div t-if="line.discount and line.discount !== '0' and !props.basic_receipt"
+                     style="padding-left:60px; font-size:0.9em; color:#666;">
+                    Descuento: <t t-esc="line.discount"/>%
+                </div>
+
+                <!-- Nota del cliente -->
+                <div t-if="line.customerNote"
+                     style="padding-left:60px; font-style:italic; color:#666; padding:5px 0;">
+                    <i class="fa fa-sticky-note me-1" role="img" aria-label="Nota del cliente"/>
+                    <t t-esc="line.customerNote"/>
+                </div>
+
+                <!-- Slot para extensiones adicionales -->
+                <t t-slot="default"/>
+            </li>
+        </xpath>
+
+    </t>
+</templates>
