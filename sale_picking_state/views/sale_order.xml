@@ -5,7 +5,6 @@
             <field name="name">sale.order.type.view.list</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_tree"/>
-            <field name="type">tree</field>
             <field name="arch" type="xml">
             <field name="state" position="before">
                 <field name="picking_state"/>
