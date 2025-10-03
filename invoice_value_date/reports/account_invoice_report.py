@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from odoo import fields, models
+from odoo.osv.expression import SQL
 
 
 class AccountInvoiceReport(models.Model):
@@ -13,10 +14,10 @@ class AccountInvoiceReport(models.Model):
     )
 
     def _select(self):
-        return super()._select() + ", date_value as date_value"
+        return SQL("%s, date_value as date_value", super()._select())
 
     def _sub_select(self):
-        return super()._sub_select() + ", date_value as date_value"
+        return SQL("%s, date_value as date_value", super()._sub_select())
 
     def _group_by(self):
         return super()._group_by() + ", date_value"
