@@ -6,7 +6,7 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="after">
+            <xpath expr="//field[@name='order_line']/list/field[@name='discount']" position="after">
                 <field name="sale_inline_discount_ids" widget="many2many_tags" options="{'no_create_edit': True}"
                        optional="show"
                 />
