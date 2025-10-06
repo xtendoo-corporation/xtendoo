@@ -12,14 +12,14 @@
             <xpath expr="//field[@name='invoice_line_ids']/list//field[@name='product_id']" position="after">
                 <field name="account_id" string="Cuenta"/>
                 <field name="boxes" string="Cajas" optional="show" widget="float" options="{'digits': [16, 2]}"/>
-                <field name="box_units" string="Unidades por Caja" optional="show" widget="float" options="{'digits': [16, 2]}"/>
+                <field name="box_units" string="Ud/Caja" optional="show" widget="float" options="{'digits': [16, 2]}"/>
             </xpath>
 
             <!-- Formulario principal dentro del invoice -->
             <xpath expr="//form//sheet//group//field[@name='quantity']" position="before">
                 <field name="account_id" string="Cuenta"/>
                 <field name="boxes" string="Cajas" widget="float" options="{'digits': [16, 2]}"/>
-                <field name="box_units" string="Unidades por Caja" widget="float" options="{'digits': [16, 2]}"/>
+                <field name="box_units" string="Ud/Caja" widget="float" options="{'digits': [16, 2]}"/>
             </xpath>
 
         </field>
@@ -34,7 +34,7 @@
             <xpath expr="//field[@name='quantity']" position="before">
                 <field name="account_id" string="Cuenta"/>
                 <field name="boxes" string="Cajas" widget="float" options="{'digits': [16, 2]}"/>
-                <field name="box_units" string="Unidades por Caja" widget="float" options="{'digits': [16, 2]}"/>
+                <field name="box_units" string="Ud/Caja" widget="float" options="{'digits': [16, 2]}"/>
             </xpath>
         </field>
     </record>

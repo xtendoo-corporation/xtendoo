@@ -14,8 +14,8 @@
                     <field name="boxes"/>
                 </div>
                 <div class="o_inline">
-                    <label for="box_units" class="o_form_label fw-bold">Unidades por Caja</label>
-                    <field name="box_units" string="Unidades por Caja"/>
+                    <label for="box_units" class="o_form_label fw-bold">Ud/Caja</label>
+                    <field name="box_units" string="Ud/Caja"/>
                 </div>
             </xpath>
             <xpath
@@ -23,7 +23,7 @@
                 position="before"
             >
                 <field name="boxes"/>
-                <field name="box_units" string="Unidades por Caja"/>
+                <field name="box_units" string="Ud/Caja"/>
             </xpath>
         </field>
     </record>
@@ -36,7 +36,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='product_uom_qty']" position="before">
                 <field name="boxes" string="Cajas"/>
-                <field name="box_units" string="Unidades por Caja"/>
+                <field name="box_units" string="Ud/Caja"/>
             </xpath>
         </field>
     </record>
