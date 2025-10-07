@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_xtendoo_invoice_ai_wizard_user,xtendoo.invoice.ai.wizard.user,model_xtendoo_invoice_ai_wizard,account.group_account_invoice,1,1,1,1
+access_xtendoo_invoice_ai_job_user,xtendoo.invoice.ai.job.user,model_xtendoo_invoice_ai_job,account.group_account_invoice,1,1,1,0
+access_xtendoo_invoice_ai_job_manager,xtendoo.invoice.ai.job.manager,model_xtendoo_invoice_ai_job,account.group_account_manager,1,1,1,1
+

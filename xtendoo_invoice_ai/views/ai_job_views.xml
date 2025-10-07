@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista árbol del histórico de trabajos -->
+    <record id="view_xtendoo_invoice_ai_job_tree" model="ir.ui.view">
+        <field name="name">xtendoo.invoice.ai.job.tree</field>
+        <field name="model">xtendoo.invoice.ai.job</field>
+        <field name="arch" type="xml">
+            <list string="AI Import History" decoration-success="state=='done'" decoration-danger="state=='error'">
+                <field name="create_date"/>
+                <field name="filename"/>
+                <field name="supplier_name"/>
+                <field name="invoice_number"/>
+                <field name="invoice_amount"/>
+                <field name="state"/>
+                <field name="processing_time"/>
+                <field name="tokens_used"/>
+                <field name="user_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista formulario del histórico de trabajos -->
+    <record id="view_xtendoo_invoice_ai_job_form" model="ir.ui.view">
+        <field name="name">xtendoo.invoice.ai.job.form</field>
+        <field name="model">xtendoo.invoice.ai.job</field>
+        <field name="arch" type="xml">
+            <form string="AI Import Job">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button
+                        name="action_view_invoice"
+                        type="object"
+                        string="View Invoice"
+                        class="oe_highlight"
+                        invisible="not invoice_id"
+                    />
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="filename"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="user_id"/>
+                            <field name="create_date"/>
+                        </group>
+                        <group>
+                            <field name="invoice_id"/>
+                            <field name="processing_time"/>
+                            <field name="tokens_used"/>
+                            <field name="pages_processed"/>
+                        </group>
+                    </group>
+                    <group string="Extracted Data">
+                        <group>
+                            <field name="supplier_name"/>
+                            <field name="invoice_number"/>
+                            <field name="invoice_amount"/>
+                        </group>
+                        <group>
+                            <field name="detected_language"/>
+                            <field name="detected_country"/>
+                        </group>
+                    </group>
+                    <group string="Error Details" invisible="state != 'error'">
+                        <field name="error_message" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista búsqueda -->
+    <record id="view_xtendoo_invoice_ai_job_search" model="ir.ui.view">
+        <field name="name">xtendoo.invoice.ai.job.search</field>
+        <field name="model">xtendoo.invoice.ai.job</field>
+        <field name="arch" type="xml">
+            <search string="AI Import Jobs">
+                <field name="filename"/>
+                <field name="supplier_name"/>
+                <field name="invoice_number"/>
+                <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
+                <filter name="error" string="Error" domain="[('state', '=', 'error')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

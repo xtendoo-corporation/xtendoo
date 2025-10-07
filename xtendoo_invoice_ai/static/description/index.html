@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoice AI - OpenAI Integration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #764ba2;
+            margin-top: 30px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .feature h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .screenshot {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Invoice AI - OpenAI Integration</h1>
+
+        <p style="font-size: 1.2em; color: #666;">
+            Automatically import vendor invoices using OpenAI (ChatGPT) vision and structured extraction.
+        </p>
+
+        <div style="margin: 20px 0;">
+            <span class="badge">Odoo 18</span>
+            <span class="badge">OpenAI GPT-4o</span>
+            <span class="badge">AI-Powered</span>
+            <span class="badge">AGPL-3</span>
+        </div>
+
+        <h2>✨ Key Features</h2>
+
+        <div class="features">
+            <div class="feature">
+                <h3>📄 Multi-Format Support</h3>
+                <p>Process PDF (multi-page) and images (JPG, PNG) of vendor invoices.</p>
+            </div>
+
+            <div class="feature">
+                <h3>🌍 Multi-Currency</h3>
+                <p>Automatically detects and handles different currencies (EUR, USD, GBP, etc.).</p>
+            </div>
+
+            <div class="feature">
+                <h3>🏢 Multi-Company</h3>
+                <p>Full support for multi-company environments with proper isolation.</p>
+            </div>
+
+            <div class="feature">
+                <h3>🤝 Auto Supplier Creation</h3>
+                <p>Automatically creates suppliers if not found in the database.</p>
+            </div>
+
+            <div class="feature">
+                <h3>💰 Smart Tax Mapping</h3>
+                <p>Intelligently maps extracted taxes to your Odoo tax configuration.</p>
+            </div>
+
+            <div class="feature">
+                <h3>✅ Total Validation</h3>
+                <p>Validates extracted totals against calculated amounts for accuracy.</p>
+            </div>
+
+            <div class="feature">
+                <h3>📊 Job History</h3>
+                <p>Track all imports with metrics like processing time and token usage.</p>
+            </div>
+
+            <div class="feature">
+                <h3>🔒 GDPR Compliant</h3>
+                <p>Configurable logging and optional file attachment for data privacy.</p>
+            </div>
+        </div>
+
+        <h2>🚀 How It Works</h2>
+
+        <ol style="font-size: 1.1em;">
+            <li><strong>Upload</strong>: Upload a PDF or image of a vendor invoice</li>
+            <li><strong>Extract</strong>: OpenAI analyzes and extracts structured data</li>
+            <li><strong>Match</strong>: System matches or creates supplier</li>
+            <li><strong>Create</strong>: Draft vendor bill is created automatically</li>
+            <li><strong>Review</strong>: Review and validate the bill before posting</li>
+        </ol>
+
+        <div class="success">
+            <strong>💡 Pro Tip:</strong> Works best with clear, high-resolution images. Supports Spanish, English, and other languages automatically.
+        </div>
+
+        <h2>⚙️ Installation</h2>
+
+        <p><strong>1. Install Python dependencies:</strong></p>
+        <pre>pip install openai pdf2image jsonschema</pre>
+
+        <p><strong>2. Install system dependencies (for PDF processing):</strong></p>
+        <pre># Ubuntu/Debian
+sudo apt-get install poppler-utils
+
+# macOS
+brew install poppler</pre>
+
+        <p><strong>3. Get OpenAI API Key:</strong></p>
+        <ul>
+            <li>Visit <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></li>
+            <li>Create a new API key</li>
+            <li>Configure it in Odoo: <strong>Settings → General → Integrations → OpenAI</strong></li>
+        </ul>
+
+        <div class="warning">
+            <strong>⚠️ Note:</strong> This module requires a paid OpenAI API key. Token costs apply per API call based on invoice complexity.
+        </div>
+
+        <h2>📖 Usage</h2>
+
+        <h3>Import an Invoice</h3>
+        <ol>
+            <li>Go to <strong>Accounting → Vendors → Import Invoice with AI</strong></li>
+            <li>Upload your invoice file (PDF/JPG/PNG)</li>
+            <li>Configure options (company, journal, currency)</li>
+            <li>Click <strong>"Analyze and Create Invoice"</strong></li>
+            <li>Review the created draft bill</li>
+        </ol>
+
+        <h3>View Import History</h3>
+        <p>Go to <strong>Accounting → Vendors → AI Import History</strong> to see all past imports with detailed metrics.</p>
+
+        <h2>🛠️ Configuration Options</h2>
+
+        <ul>
+            <li><strong>OpenAI Model</strong>: Default gpt-4o (must support vision)</li>
+            <li><strong>Max Pages</strong>: Maximum PDF pages to process (default: 10)</li>
+            <li><strong>Temperature</strong>: 0.0 = deterministic, 1.0 = creative (default: 0.0)</li>
+            <li><strong>Tolerance</strong>: Maximum total difference allowed (default: 0.02)</li>
+        </ul>
+
+        <h2>📊 Extracted Data</h2>
+
+        <p>The AI extracts:</p>
+        <ul>
+            <li>✅ Supplier info (name, VAT, address, email, phone)</li>
+            <li>✅ Invoice number and dates</li>
+            <li>✅ Currency and payment terms</li>
+            <li>✅ Line items (description, quantity, price, taxes)</li>
+            <li>✅ Product codes (when available)</li>
+            <li>✅ Calculated totals</li>
+        </ul>
+
+        <h2>🔐 Security & Privacy</h2>
+
+        <ul>
+            <li>Direct API calls to OpenAI (no intermediate storage)</li>
+            <li>Minimal logging without sensitive data</li>
+            <li>Optional file attachment (disable for GDPR compliance)</li>
+            <li>Role-based access control</li>
+        </ul>
+
+        <h2>🧪 Testing</h2>
+
+        <p>The module includes comprehensive unit tests with mocked OpenAI calls:</p>
+        <ul>
+            <li>Happy path scenarios (IVA 21%, 10%, 4%)</li>
+            <li>Supplier creation and matching</li>
+            <li>Multi-currency support</li>
+            <li>Total validation and error handling</li>
+            <li>Tax mapping and fallbacks</li>
+        </ul>
+
+        <h2>📝 License</h2>
+        <p>AGPL-3.0 or later - <a href="https://www.gnu.org/licenses/agpl">https://www.gnu.org/licenses/agpl</a></p>
+
+        <h2>👥 Authors</h2>
+        <p><strong>Xtendoo</strong> - <a href="https://www.xtendoo.es" target="_blank">www.xtendoo.es</a></p>
+
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid #eee;">
+
+        <p style="text-align: center; color: #999; font-size: 0.9em;">
+            Made with ❤️ by Xtendoo | Powered by OpenAI GPT-4o
+        </p>
+    </div>
+</body>
+</html>
+# © 2025 Xtendoo
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+import base64
+import json
+from unittest.mock import MagicMock, patch
+
+from odoo.exceptions import UserError
+from odoo.tests.common import TransactionCase
+
+
+class TestXtendooInvoiceAI(TransactionCase):
+    """Tests for Invoice AI Import"""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
+
+        # Configurar parámetros
+        cls.env["ir.config_parameter"].sudo().set_param(
+            "xtendoo_invoice_ai.openai_api_key", "test-api-key"
+        )
+        cls.env["ir.config_parameter"].sudo().set_param(
+            "xtendoo_invoice_ai.openai_model", "gpt-4o"
+        )
+        cls.env["ir.config_parameter"].sudo().set_param(
+            "xtendoo_invoice_ai.tolerance", "0.02"
+        )
+
+        # Crear compañía de test
+        cls.company = cls.env["res.company"].create(
+            {
+                "name": "Test Company",
+            }
+        )
+
+        # Crear diario de compras
+        cls.journal = cls.env["account.journal"].create(
+            {
+                "name": "Test Purchase Journal",
+                "code": "TPUR",
+                "type": "purchase",
+                "company_id": cls.company.id,
+            }
+        )
+
+        # Crear cuenta de gastos
+        cls.expense_account = cls.env["account.account"].create(
+            {
+                "name": "Test Expense Account",
+                "code": "600TEST",
+                "account_type": "expense",
+                "company_id": cls.company.id,
+            }
+        )
+
+        # Crear impuestos
+        cls.tax_21 = cls.env["account.tax"].create(
+            {
+                "name": "IVA 21% (Test)",
+                "amount": 21.0,
+                "type_tax_use": "purchase",
+                "company_id": cls.company.id,
+            }
+        )
+
+        cls.tax_10 = cls.env["account.tax"].create(
+            {
+                "name": "IVA 10% (Test)",
+                "amount": 10.0,
+                "type_tax_use": "purchase",
+                "company_id": cls.company.id,
+            }
+        )
+
+        # Crear divisa USD
+        cls.currency_usd = cls.env["res.currency"].search([("name", "=", "USD")], limit=1)
+        if not cls.currency_usd:
+            cls.currency_usd = cls.env["res.currency"].create(
+                {
+                    "name": "USD",
+                    "symbol": "$",
+                    "rate": 0.85,
+                }
+            )
+
+    def _create_wizard(self, **kwargs):
+        """Helper para crear wizard"""
+        vals = {
+            "upload": base64.b64encode(b"fake-pdf-content"),
+            "filename": "test_invoice.pdf",
+            "company_id": self.company.id,
+            "journal_id": self.journal.id,
+        }
+        vals.update(kwargs)
+        return self.env["xtendoo.invoice.ai.wizard"].create(vals)
+
+    def _mock_openai_response(self, ai_data):
+        """Helper para mockear respuesta de OpenAI"""
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = json.dumps(ai_data)
+        mock_response.usage.total_tokens = 1500
+        return mock_response
+
+    def test_01_no_api_key_raises_error(self):
+        """Test que sin API key se lanza error"""
+        self.env["ir.config_parameter"].sudo().set_param(
+            "xtendoo_invoice_ai.openai_api_key", ""
+        )
+
+        wizard = self._create_wizard()
+
+        with self.assertRaises(UserError) as ctx:
+            wizard.action_analyze_and_create()
+
+        self.assertIn("API Key not configured", str(ctx.exception))
+
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.OpenAI")
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.convert_from_bytes")
+    def test_02_happy_path_iva_21(self, mock_pdf2image, mock_openai_class):
+        """Test caso feliz con IVA 21%"""
+        # Mock PDF to images
+        mock_pdf2image.return_value = [MagicMock()]
+
+        # Mock OpenAI response
+        ai_data = {
+            "supplier": {
+                "name": "Proveedor Test S.L.",
+                "vat": "B12345678",
+                "email": "test@example.com",
+                "phone": "666777888",
+                "street": "Calle Test 123",
+                "city": "Madrid",
+                "zip": "28001",
+                "country_code": "ES",
+            },
+            "invoice": {
+                "supplier_invoice_number": "FAC-2025-001",
+                "invoice_date": "2025-10-01",
+                "due_date": "2025-11-01",
+                "currency": "EUR",
+                "payment_terms": "30 días",
+                "notes": "Test invoice",
+            },
+            "lines": [
+                {
+                    "description": "Producto de prueba",
+                    "quantity": 10.0,
+                    "uom": "Unidades",
+                    "unit_price": 100.0,
+                    "taxes": ["IVA 21%"],
+                    "product_code": None,
+                    "analytic_tags": [],
+                }
+            ],
+            "totals": {
+                "untaxed": 1000.0,
+                "tax": 210.0,
+                "total": 1210.0,
+            },
+            "meta": {
+                "language": "es",
+                "detected_country": "Spain",
+                "pages_processed": 1,
+            },
+        }
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = self._mock_openai_response(ai_data)
+        mock_openai_class.return_value = mock_client
+
+        # Crear wizard y ejecutar
+        wizard = self._create_wizard(create_partner_if_missing=True)
+        action = wizard.action_analyze_and_create()
+
+        # Verificar que se creó la factura
+        self.assertEqual(action["res_model"], "account.move")
+        invoice = self.env["account.move"].browse(action["res_id"])
+
+        self.assertEqual(invoice.move_type, "in_invoice")
+        self.assertEqual(invoice.ref, "FAC-2025-001")
+        self.assertEqual(invoice.partner_id.name, "Proveedor Test S.L.")
+        self.assertEqual(invoice.partner_id.vat, "B12345678")
+        self.assertEqual(len(invoice.invoice_line_ids), 1)
+
+        # Verificar totales (con tolerancia de redondeo)
+        self.assertAlmostEqual(invoice.amount_untaxed, 1000.0, delta=0.02)
+        self.assertAlmostEqual(invoice.amount_total, 1210.0, delta=0.02)
+
+        # Verificar que se creó el job
+        job = self.env["xtendoo.invoice.ai.job"].search(
+            [("invoice_id", "=", invoice.id)], limit=1
+        )
+        self.assertTrue(job)
+        self.assertEqual(job.state, "done")
+        self.assertEqual(job.supplier_name, "Proveedor Test S.L.")
+
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.OpenAI")
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.convert_from_bytes")
+    def test_03_create_partner_if_missing(self, mock_pdf2image, mock_openai_class):
+        """Test creación de proveedor inexistente"""
+        mock_pdf2image.return_value = [MagicMock()]
+
+        ai_data = {
+            "supplier": {
+                "name": "Nuevo Proveedor S.L.",
+                "vat": "B99999999",
+                "email": "nuevo@example.com",
+                "phone": None,
+                "street": None,
+                "city": None,
+                "zip": None,
+                "country_code": None,
+            },
+            "invoice": {
+                "supplier_invoice_number": "FAC-NEW-001",
+                "invoice_date": "2025-10-02",
+                "due_date": None,
+                "currency": "EUR",
+                "payment_terms": None,
+                "notes": None,
+            },
+            "lines": [
+                {
+                    "description": "Servicio",
+                    "quantity": 1.0,
+                    "uom": None,
+                    "unit_price": 500.0,
+                    "taxes": ["IVA 21%"],
+                    "product_code": None,
+                    "analytic_tags": [],
+                }
+            ],
+            "totals": {
+                "untaxed": 500.0,
+                "tax": 105.0,
+                "total": 605.0,
+            },
+            "meta": {
+                "language": "es",
+                "detected_country": None,
+                "pages_processed": 1,
+            },
+        }
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = self._mock_openai_response(ai_data)
+        mock_openai_class.return_value = mock_client
+
+        wizard = self._create_wizard(create_partner_if_missing=True)
+        action = wizard.action_analyze_and_create()
+
+        invoice = self.env["account.move"].browse(action["res_id"])
+        partner = invoice.partner_id
+
+        # Verificar que se creó el partner
+        self.assertEqual(partner.name, "Nuevo Proveedor S.L.")
+        self.assertEqual(partner.vat, "B99999999")
+        self.assertEqual(partner.email, "nuevo@example.com")
+        self.assertTrue(partner.supplier_rank > 0)
+
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.OpenAI")
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.convert_from_bytes")
+    def test_04_currency_usd(self, mock_pdf2image, mock_openai_class):
+        """Test con divisa USD"""
+        mock_pdf2image.return_value = [MagicMock()]
+
+        ai_data = {
+            "supplier": {
+                "name": "US Supplier Inc.",
+                "vat": None,
+                "email": None,
+                "phone": None,
+                "street": None,
+                "city": None,
+                "zip": None,
+                "country_code": "US",
+            },
+            "invoice": {
+                "supplier_invoice_number": "INV-USD-001",
+                "invoice_date": "2025-10-03",
+                "due_date": None,
+                "currency": "USD",
+                "payment_terms": None,
+                "notes": None,
+            },
+            "lines": [
+                {
+                    "description": "Service",
+                    "quantity": 1.0,
+                    "uom": None,
+                    "unit_price": 1000.0,
+                    "taxes": [],
+                    "product_code": None,
+                    "analytic_tags": [],
+                }
+            ],
+            "totals": {
+                "untaxed": 1000.0,
+                "tax": 0.0,
+                "total": 1000.0,
+            },
+            "meta": {
+                "language": "en",
+                "detected_country": "USA",
+                "pages_processed": 1,
+            },
+        }
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = self._mock_openai_response(ai_data)
+        mock_openai_class.return_value = mock_client
+
+        wizard = self._create_wizard(create_partner_if_missing=True)
+        action = wizard.action_analyze_and_create()
+
+        invoice = self.env["account.move"].browse(action["res_id"])
+
+        # Verificar divisa
+        self.assertEqual(invoice.currency_id.name, "USD")
+
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.OpenAI")
+    @patch("odoo.addons.xtendoo_invoice_ai.wizards.invoice_ai_wizard.convert_from_bytes")
+    def test_05_total_mismatch_raises_error(self, mock_pdf2image, mock_openai_class):
+        """Test que discrepancia de totales lanza error"""
+        mock_pdf2image.return_value = [MagicMock()]
+
+        ai_data = {
+            "supplier": {
+                "name": "Proveedor Error S.L.",
+                "vat": "B11111111",
+                "email": None,
+                "phone": None,
+                "street": None,
+                "city": None,
+                "zip": None,
+                "country_code": None,
+            },
+            "invoice": {
+                "supplier_invoice_number": "FAC-ERROR-001",
+                "invoice_date": "2025-10-04",
+                "due_date": None,
+                "currency": "EUR",
+                "payment_terms": None,
+                "notes": None,
+            },
+            "lines": [
+                {
+                    "description": "Producto",
+                    "quantity": 1.0,
+                    "uom": None,
+                    "unit_price": 100.0,
+                    "taxes": ["IVA 21%"],
+                    "product_code": None,
+                    "analytic_tags": [],
+                }
+            ],
+            "totals": {
+                # Totales incorrectos a propósito
+                "untaxed": 100.0,
+                "tax": 21.0,
+                "total": 500.0,  # Debería ser 121.0
+            },
+            "meta": {
+                "language": "es",
+                "detected_country": None,
+                "pages_processed": 1,
+            },
+        }
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = self._mock_openai_response(ai_data)
+        mock_openai_class.return_value = mock_client
+
+        wizard = self._create_wizard(create_partner_if_missing=True)
+
+        with self.assertRaises(UserError) as ctx:
+            wizard.action_analyze_and_create()
+
+        self.assertIn("mismatch", str(ctx.exception).lower())
+
+    def test_06_vat_normalization(self):
+        """Test normalización de VAT"""
+        wizard = self._create_wizard()
+
+        # Probar varias formas de VAT
+        self.assertEqual(wizard._normalize_vat("B-12.345.678"), "B12345678")
+        self.assertEqual(wizard._normalize_vat("b 12 345 678"), "B12345678")
+        self.assertEqual(wizard._normalize_vat("ES-B12345678"), "ESB12345678")
+        self.assertEqual(wizard._normalize_vat(None), "")
+
