@@ -13,7 +13,7 @@
         'account',
         'sale',
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         'views/res_partner_view.xml',
     ],

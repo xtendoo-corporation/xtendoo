@@ -10,7 +10,7 @@
     "depends": [
         "sale"
     ],
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "data": [
         "views/product_template_views.xml",
     ],

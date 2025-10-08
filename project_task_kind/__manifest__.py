@@ -8,7 +8,7 @@
     "depends": ["project"],
     "maintainers": ["dariocruzmauro"],
     "author": "Xtendoo",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "data": [
         "security/ir.model.access.csv",
         "views/project_task_kind_view.xml",

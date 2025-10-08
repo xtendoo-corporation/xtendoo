@@ -15,7 +15,7 @@
         'product',
         'product_template_tags',
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         #'views/product_view.xml',
     ],

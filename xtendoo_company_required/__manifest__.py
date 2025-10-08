@@ -4,7 +4,7 @@
     'category': 'Extra Tools',
     'author': 'Manuel Calero Solis (Xtendoo)',
     'website': '',
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'summary': 'Xtendoo Company Required',
     'images': [],
     'depends': [

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de la vista formulario de pedidos de venta -->
+    <record id="view_order_form_global_discounts" model="ir.ui.view">
+        <field name="name">sale.order.form.global.discounts</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Añadir botón en el header -->
+            <button name="action_confirm" position="before">
+                <button name="action_apply_partner_global_discounts"
+                        string="Aplicar Descuentos del Cliente"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state not in ['draft', 'sent', 'sale'] or not partner_id"/>
+            </button>
+
+            <!-- Añadir campos informativos -->
+            <field name="partner_id" position="after">
+                <field name="partner_global_discounts_applied" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extensión de la vista lista de pedidos -->
+    <record id="view_quotation_tree_global_discounts" model="ir.ui.view">
+        <field name="name">sale.order.list.global.discounts</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <field name="amount_total" position="after">
+                <field name="partner_global_discounts_applied" string="Desc. Cliente"/>
+            </field>
+        </field>
+    </record>
+</odoo>

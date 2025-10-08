@@ -7,7 +7,7 @@
     "category": "Purchases",
     "website": "xtendoo.es",
     "author": "ddl",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "depends": ["purchase",],
     "data": [],
 }

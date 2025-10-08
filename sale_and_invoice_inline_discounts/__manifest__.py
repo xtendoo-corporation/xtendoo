@@ -14,7 +14,7 @@
         "contacts",
         "account",
     ],
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "data": [
         "security/ir.model.access.csv",
         "views/sale_inline_discount.xml",

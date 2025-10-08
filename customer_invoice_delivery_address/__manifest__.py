@@ -3,7 +3,7 @@
     'author': 'Xtendoo Abraham Carrasco',
     'category': 'Sales',
     'summary': """Customer Invoice and Delivery address""",
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'website': 'http://www.xtendoo.com',
     'description': """
 """,

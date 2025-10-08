@@ -37,7 +37,7 @@
              'views/stock_picking_views.xml',
              'views/account_move_views.xml'],
     'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,

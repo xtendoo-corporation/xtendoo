@@ -8,7 +8,7 @@
     "website": "http://www.xtendoo.es",
     "category": "Extra Tools",
     "depends": ["document_format_clean"],
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "data": [
         #"views/layout/external_layout_clean.xml",
         "views/invoice/invoice_document.xml",

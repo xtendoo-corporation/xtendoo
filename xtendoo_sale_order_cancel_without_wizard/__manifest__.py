@@ -4,7 +4,7 @@
     'category': 'Extra Tools',
     'author': 'Abraham Carrasco (Xtendoo)',
     'website': '',
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'summary': 'Sale Order Cancel Without Wizard',
     'images': [],
     'depends': [

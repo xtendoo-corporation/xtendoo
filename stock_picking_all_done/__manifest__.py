@@ -33,7 +33,7 @@
     'depends': [
         'stock',
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         'views/views.xml',
     ],

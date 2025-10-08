@@ -11,7 +11,7 @@
     'depends': [
         'base'
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         'security/hide_internal_notes.xml',
         'views/hide_internal_notes.xml'

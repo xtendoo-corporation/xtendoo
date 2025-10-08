@@ -4,7 +4,7 @@
     'category': 'Extra Tools',
     'author': 'Manuel Calero Solis (Xtendoo)',
     'website': 'https://xtendoo.es',
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'summary': 'Xtendoo Validate Picking and Invoice',
     'images': [],
     'depends': [

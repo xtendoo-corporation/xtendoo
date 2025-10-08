@@ -7,7 +7,7 @@
     "category": "Accounting",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "summary": "Import vendor invoices using OpenAI (ChatGPT) vision and structured extraction",
     "depends": [
         "account",

@@ -14,7 +14,7 @@
         "sale",
         "stock",
     ],
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "data": [
         "views/sale_order.xml",
     ],

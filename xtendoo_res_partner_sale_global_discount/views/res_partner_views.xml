@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista formulario para descuentos globales -->
+    <record id="view_res_partner_discount_form" model="ir.ui.view">
+        <field name="name">res.partner.discount.form</field>
+        <field name="model">res.partner.discount</field>
+        <field name="arch" type="xml">
+            <form string="Descuento Global">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del descuento..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" invisible="1"/>
+                            <field name="discount_type"/>
+                            <field name="discount_value"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="document_types"/>
+                            <field name="journal_ids" widget="many2many_tags"
+                                   readonly="document_types != 'invoice'"
+                                   placeholder="Si no se especifica, se aplica en todos los diarios"/>
+                            <field name="min_amount"/>
+                            <field name="max_amount"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista lista para descuentos globales -->
+    <record id="view_res_partner_discount_tree" model="ir.ui.view">
+        <field name="name">res.partner.discount.list</field>
+        <field name="model">res.partner.discount</field>
+        <field name="arch" type="xml">
+            <list string="Descuentos Globales" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="discount_type"/>
+                <field name="discount_value"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="document_types"/>
+                <field name="journal_ids" widget="many2many_tags"
+                       readonly="document_types != 'invoice'"
+                       column_invisible="0"/>
+                <field name="min_amount"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Extensión de la vista de cliente -->
+    <record id="view_partner_form_global_discounts" model="ir.ui.view">
+        <field name="name">res.partner.form.global.discounts</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Descuentos Globales" name="global_discounts">
+                    <field name="global_discount_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="discount_type"/>
+                            <field name="discount_value"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="document_types"/>
+                            <field name="journal_ids" widget="many2many_tags"
+                                   readonly="document_types != 'invoice'"/>
+                            <field name="min_amount"/>
+                            <field name="active"/>
+                        </list>
+                        <form>
+                            <group>
+                                <group>
+                                    <field name="name"/>
+                                    <field name="discount_type"/>
+                                    <field name="discount_value"/>
+                                    <field name="sequence"/>
+                                    <field name="active"/>
+                                </group>
+                                <group>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="document_types"/>
+                                    <field name="journal_ids" widget="many2many_tags"
+                                           readonly="document_types != 'invoice'"
+                                           placeholder="Si no se especifica, se aplica en todos los diarios"/>
+                                    <field name="min_amount"/>
+                                    <field name="max_amount"/>
+                                </group>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <!-- Vista para mostrar indicador de descuentos en lista de clientes -->
+    <record id="view_partner_tree_global_discounts" model="ir.ui.view">
+        <field name="name">res.partner.list.global.discounts</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <field name="phone" position="after">
+                <field name="has_global_discounts" string="Desc. Globales"/>
+            </field>
+        </field>
+    </record>
+</odoo>

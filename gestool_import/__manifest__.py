@@ -5,7 +5,7 @@
     "depends": [
         "product",
     ],
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "application": True,
     "description": """
         Wizard to Import from gestool.

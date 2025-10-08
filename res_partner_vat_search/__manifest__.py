@@ -33,7 +33,7 @@
     'depends': [
         'base'
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         'views/vat_search.xml'
     ],

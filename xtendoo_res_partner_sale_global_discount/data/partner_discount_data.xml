@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Producto para descuentos globales -->
+        <record id="product_global_discount" model="product.product">
+            <field name="name">Descuento Global</field>
+            <field name="default_code">DESC_GLOBAL</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+            <field name="list_price">0.0</field>
+            <field name="standard_price">0.0</field>
+            <field name="sale_ok">True</field>
+            <field name="purchase_ok">False</field>
+            <field name="invoice_policy">order</field>
+            <field name="description">Producto utilizado para aplicar descuentos globales en documentos de venta</field>
+        </record>
+
+        <!-- Categoría de producto para descuentos (opcional) -->
+        <record id="product_category_discounts" model="product.category">
+            <field name="name">Descuentos</field>
+            <field name="parent_id" ref="product.product_category_all"/>
+        </record>
+    </data>
+</odoo>

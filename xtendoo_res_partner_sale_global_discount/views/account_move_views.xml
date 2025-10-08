@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de la vista formulario de facturas -->
+    <record id="view_move_form_global_discounts" model="ir.ui.view">
+        <field name="name">account.move.form.global.discounts</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Añadir botón en el header para facturas -->
+            <button name="action_post" position="before">
+                <button name="action_apply_partner_global_discounts"
+                        string="Aplicar Descuentos del Cliente"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="move_type not in ['out_invoice', 'out_refund'] or state != 'draft' or not partner_id"/>
+            </button>
+
+            <!-- Añadir campos informativos -->
+            <field name="partner_id" position="after">
+                <field name="partner_global_discounts_applied" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extensión de la vista lista de facturas -->
+    <record id="view_invoice_tree_global_discounts" model="ir.ui.view">
+        <field name="name">account.move.list.global.discounts</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
+        <field name="arch" type="xml">
+            <field name="amount_total_signed" position="after">
+                <field name="partner_global_discounts_applied" string="Desc. Cliente"/>
+            </field>
+        </field>
+    </record>
+</odoo>

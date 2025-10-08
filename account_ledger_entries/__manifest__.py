@@ -11,7 +11,7 @@
     'depends': [
         'account',
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         'views/account_menuitem.xml',
     ],

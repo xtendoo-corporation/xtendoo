@@ -16,7 +16,7 @@
         "base",
         "web",
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         # 'views/stock_picking_view.xml',
         # 'views/sale_order_view.xml',

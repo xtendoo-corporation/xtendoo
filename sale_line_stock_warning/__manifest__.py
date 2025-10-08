@@ -7,7 +7,7 @@
     "company": "Xtendoo",
     "website": "http://xtendoo.es",
     "category": "Extra Tools",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "depends": [
         "sale_stock",
     ],

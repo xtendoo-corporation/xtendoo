@@ -8,7 +8,7 @@
     "summary": "Adds link between invoices and due list",
     "author": "Xtendoo, " "Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/account-payment",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "depends": ["account_due_list"],
     "data": ["views/account_invoice_view.xml"],
     "installable": True,

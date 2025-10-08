@@ -14,7 +14,7 @@
         'base',
         'product',
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         'security/security_pricelist_rules.xml',
         'views/view_users_form_pricelist.xml',

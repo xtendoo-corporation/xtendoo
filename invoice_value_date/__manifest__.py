@@ -7,7 +7,7 @@
     'category': 'Invoicing',
     'author': 'Manuel Calero',
     'website': 'https://xtendoo.es',
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'summary': 'Invoice Value Date',
     'depends': [
         'base',

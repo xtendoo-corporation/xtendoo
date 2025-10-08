@@ -3,7 +3,7 @@
 {
     "name": "Globaldamac Sale Filter Delivery Address",
     "version": "18.0.1.0.0",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "author": "Abraham Carrasco Molina, Xtendoo",
     "category": "Website",
     "depends":

@@ -12,7 +12,7 @@ allows to display the field in the client file as well as edit it""",
     'depends': [
         'base'
     ],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         # 'views/res_partner_show_ref.xml',
     ],

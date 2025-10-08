@@ -10,7 +10,7 @@
     ''',
     'author': 'Xtendoo',
     'website': 'https://www.xtendoo.es',
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'depends': [
         'base',
         'product',
