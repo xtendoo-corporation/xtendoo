@@ -18,14 +18,6 @@
             </field>
         </record>
 
-        <!-- Acción específica para vista Kanban -->
-        <record id="action_xtendoo_fsm_order_kanban" model="ir.actions.act_window">
-            <field name="name">Órdenes de Trabajo - Kanban</field>
-            <field name="res_model">fsm.order</field>
-            <field name="view_mode">kanban,list,form</field>
-            <field name="context">{'default_view_mode': 'kanban'}</field>
-        </record>
-
         <!-- Acción específica para vista Calendario -->
         <record id="action_xtendoo_fsm_order_calendar" model="ir.actions.act_window">
             <field name="name">Calendario de Órdenes</field>

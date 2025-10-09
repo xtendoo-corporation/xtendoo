@@ -5,6 +5,7 @@
         <!-- Menú principal FSM -->
         <menuitem id="xtendoo_fsm_menu_main"
                   name="Órdenes de Trabajo"
+                  action="action_xtendoo_fsm_order"
                   sequence="5"/>
 
         <!-- Menú de órdenes - usar acciones universales -->
@@ -19,11 +20,6 @@
                   action="action_xtendoo_fsm_order"
                   sequence="10"/>
 
-        <menuitem id="xtendoo_fsm_menu_order_kanban"
-                  name="Vista Kanban"
-                  parent="xtendoo_fsm_menu_orders"
-                  action="action_xtendoo_fsm_order_kanban"
-                  sequence="20"/>
 
         <!-- Menú de planificación -->
         <menuitem id="xtendoo_fsm_menu_planning"
