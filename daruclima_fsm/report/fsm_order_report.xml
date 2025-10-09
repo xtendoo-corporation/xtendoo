@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Definición del reporte para Órdenes de Trabajo FSM -->
+        <record id="action_report_fsm_order" model="ir.actions.report">
+            <field name="name">Orden de Trabajo FSM</field>
+            <field name="model">daruclima.fsm.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">daruclima_fsm.report_fsm_order</field>
+            <field name="report_file">daruclima_fsm.report_fsm_order</field>
+            <field name="print_report_name">'Orden de Trabajo - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="model_daruclima_fsm_order"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Template principal del reporte -->
+        <template id="report_fsm_order">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="daruclima_fsm.report_fsm_order_document" t-lang="doc.partner_id.lang"/>
+                </t>
+            </t>
+        </template>
+
+        <!-- Documento de la orden de trabajo -->
+        <template id="report_fsm_order_document">
+            <t t-call="web.external_layout">
+                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+                <div class="page">
+                    <div class="oe_structure"/>
+
+                    <!-- Cabecera -->
+                    <div class="row">
+                        <div class="col-7">
+                            <h2>
+                                <span t-if="not doc.is_closed">Orden de Trabajo</span>
+                                <span t-if="doc.is_closed">Orden de Trabajo Finalizada</span>
+                                <span t-field="doc.name"/>
+                            </h2>
+                        </div>
+                        <div class="col-5">
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Fecha de Creación:</strong>
+                                </div>
+                                <div class="col-6">
+                                    <span t-field="doc.date_created" t-options="{'widget': 'date'}"/>
+                                </div>
+                            </div>
+                            <div class="row" t-if="doc.date_scheduled">
+                                <div class="col-6">
+                                    <strong>Fecha Programada:</strong>
+                                </div>
+                                <div class="col-6">
+                                    <span t-field="doc.date_scheduled"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Estado:</strong>
+                                </div>
+                                <div class="col-6">
+                                    <span t-field="doc.stage_id"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Prioridad:</strong>
+                                </div>
+                                <div class="col-6">
+                                    <t t-if="doc.priority_level == '0'">Muy Baja</t>
+                                    <t t-if="doc.priority_level == '1'">Baja</t>
+                                    <t t-if="doc.priority_level == '2'">Normal</t>
+                                    <t t-if="doc.priority_level == '3'">Alta</t>
+                                    <t t-if="doc.priority_level == '4'">Muy Alta</t>
+                                    <t t-if="doc.priority_level == '5'">Urgente</t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información del cliente -->
+                    <div class="row mt32 mb32">
+                        <div class="col-4 mb-2">
+                            <strong>Cliente:</strong>
+                            <div t-field="doc.partner_id"
+                                t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </div>
+                        <div class="col-4 mb-2" t-if="doc.contact_id">
+                            <strong>Contacto:</strong>
+                            <div t-field="doc.contact_id"
+                                t-options='{"widget": "contact", "fields": ["name", "phone", "email"], "no_marker": True, "phone_icons": True}'/>
+                        </div>
+                        <div class="col-4 mb-2" t-if="doc.location_id">
+                            <strong>Ubicación del Servicio:</strong>
+                            <div>
+                                <span t-field="doc.location_id.name"/><br/>
+                                <span t-field="doc.location_id.street" t-if="doc.location_id.street"/>
+                                <span t-field="doc.location_id.street2" t-if="doc.location_id.street2"/><br/>
+                                <span t-field="doc.location_id.zip" t-if="doc.location_id.zip"/>
+                                <span t-field="doc.location_id.city" t-if="doc.location_id.city"/>
+                                <span t-field="doc.location_id.country_id" t-if="doc.location_id.country_id"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción del trabajo -->
+                    <div class="row mt16 mb16">
+                        <div class="col-12">
+                            <h4>Descripción del Trabajo</h4>
+                            <p t-field="doc.description"/>
+                        </div>
+                    </div>
+
+                    <!-- Información del equipo y técnicos -->
+                    <div class="row mt16 mb16">
+                        <div class="col-6" t-if="doc.responsible_id or doc.person_ids">
+                            <h5>Equipo de Trabajo</h5>
+                            <div t-if="doc.responsible_id">
+                                <strong>Técnico Responsable:</strong> <span t-field="doc.responsible_id"/>
+                            </div>
+                            <div t-if="doc.person_ids">
+                                <strong>Técnicos Asignados:</strong>
+                                <t t-foreach="doc.person_ids" t-as="person">
+                                    <span t-field="person.name"/>
+                                    <t t-if="not person_last">, </t>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="col-6" t-if="doc.tag_ids">
+                            <h5>Etiquetas</h5>
+                            <div t-if="doc.tag_ids">
+                                <strong>Etiquetas:</strong>
+                                <t t-foreach="doc.tag_ids" t-as="tag">
+                                    <span t-field="tag.name"/>
+                                    <t t-if="not tag_last">, </t>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fechas de ejecución -->
+                    <div class="row mt16 mb16" t-if="doc.date_start or doc.date_end">
+                        <div class="col-12">
+                            <h4>Información de Ejecución</h4>
+                            <div class="row">
+                                <div class="col-4" t-if="doc.date_start">
+                                    <strong>Fecha de Inicio:</strong><br/>
+                                    <span t-field="doc.date_start"/>
+                                </div>
+                                <div class="col-4" t-if="doc.date_end">
+                                    <strong>Fecha de Finalización:</strong><br/>
+                                    <span t-field="doc.date_end"/>
+                                </div>
+                                <div class="col-4" t-if="doc.duration">
+                                    <strong>Duración:</strong><br/>
+                                    <span t-field="doc.duration"/> horas
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="row mt16 mb16" t-if="doc.internal_note or doc.customer_note">
+                        <div class="col-6" t-if="doc.customer_note">
+                            <h5>Notas del Cliente</h5>
+                            <p t-field="doc.customer_note"/>
+                        </div>
+                        <div class="col-6" t-if="doc.internal_note">
+                            <h5>Notas Internas</h5>
+                            <p t-field="doc.internal_note"/>
+                        </div>
+                    </div>
+
+                    <!-- Firma -->
+                    <div class="row mt64" t-if="doc.is_closed">
+                        <div class="col-6">
+                            <h5>Firma del Cliente</h5>
+                            <div style="height: 80px; border: 1px solid #ccc; margin-top: 10px;"></div>
+                            <p class="text-center mt8">
+                                <strong>Nombre y Firma</strong><br/>
+                                Fecha: _______________
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <h5>Firma del Técnico</h5>
+                            <div style="height: 80px; border: 1px solid #ccc; margin-top: 10px;"></div>
+                            <p class="text-center mt8">
+                                <strong><span t-field="doc.responsible_id" t-if="doc.responsible_id"/></strong><br/>
+                                Fecha: _______________
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="oe_structure"/>
+                </div>
+            </t>
+        </template>
+
+    </data>
+</odoo>

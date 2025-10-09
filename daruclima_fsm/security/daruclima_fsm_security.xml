@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Grupos de seguridad -->
+        <record id="group_fsm_user" model="res.groups">
+            <field name="name">FSM Usuario</field>
+            <field name="category_id" ref="base.module_category_services"/>
+            <field name="comment">Usuario básico de servicios de campo</field>
+        </record>
+
+        <record id="group_fsm_manager" model="res.groups">
+            <field name="name">FSM Manager</field>
+            <field name="category_id" ref="base.module_category_services"/>
+            <field name="implied_ids" eval="[(4, ref('group_fsm_user'))]"/>
+            <field name="comment">Manager de servicios de campo</field>
+        </record>
+
+        <!-- Reglas de registro -->
+        <record id="fsm_order_rule_user" model="ir.rule">
+            <field name="name">FSM Order: Usuario puede ver sus órdenes</field>
+            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="domain_force">[('person_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_fsm_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="fsm_order_rule_manager" model="ir.rule">
+            <field name="name">FSM Order: Manager puede ver todas</field>
+            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_fsm_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

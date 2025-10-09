@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Plantilla de correo para nueva orden FSM -->
+        <record id="mail_template_fsm_order_new" model="mail.template">
+            <field name="name">Nueva Orden de Servicio FSM</field>
+            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="subject">Nueva Orden de Servicio: ${object.name}</field>
+            <field name="email_to">${object.partner_id.email}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p>Estimado/a ${object.partner_id.name},</p>
+    <p>Se ha creado una nueva orden de servicio con los siguientes detalles:</p>
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+        <tr>
+            <td><strong>Número de Orden:</strong></td>
+            <td>${object.name}</td>
+        </tr>
+        <tr>
+            <td><strong>Descripción:</strong></td>
+            <td>${object.description}</td>
+        </tr>
+        <tr>
+            <td><strong>Fecha Programada:</strong></td>
+            <td>${object.date_scheduled or 'Por definir'}</td>
+        </tr>
+        <tr>
+            <td><strong>Técnico Responsable:</strong></td>
+            <td>${object.responsible_id.name or 'Por asignar'}</td>
+        </tr>
+        <tr>
+            <td><strong>Equipo:</strong></td>
+            <td>${object.team_id.name}</td>
+        </tr>
+    </table>
+    <p>Puede seguir el estado de su orden en el portal de cliente.</p>
+    <p>Saludos cordiales,<br/>
+    Equipo de Servicios de Campo</p>
+</div>
+            </field>
+        </record>
+
+        <!-- Plantilla de correo para orden completada -->
+        <record id="mail_template_fsm_order_completed" model="mail.template">
+            <field name="name">Orden de Servicio Completada</field>
+            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="subject">Orden de Servicio Completada: ${object.name}</field>
+            <field name="email_to">${object.partner_id.email}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p>Estimado/a ${object.partner_id.name},</p>
+    <p>Su orden de servicio <strong>${object.name}</strong> ha sido completada exitosamente.</p>
+    <p><strong>Resumen del servicio:</strong></p>
+    <p>${object.description}</p>
+    % if object.customer_note:
+    <p><strong>Notas del servicio:</strong></p>
+    <p>${object.customer_note}</p>
+    % endif
+    <p>Si tiene alguna pregunta o necesita servicios adicionales, no dude en contactarnos.</p>
+    <p>Gracias por confiar en nuestros servicios.</p>
+    <p>Saludos cordiales,<br/>
+    Equipo de Servicios de Campo</p>
+</div>
+            </field>
+        </record>
+
+    </data>
+</odoo>
