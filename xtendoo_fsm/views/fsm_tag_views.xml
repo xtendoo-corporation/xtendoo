@@ -3,9 +3,9 @@
     <data>
 
         <!-- Vista de lista para etiquetas -->
-        <record id="view_daruclima_fsm_tag_tree" model="ir.ui.view">
-            <field name="name">daruclima.fsm.tag.tree</field>
-            <field name="model">daruclima.fsm.tag</field>
+        <record id="view_xtendoo_fsm_tag_tree" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.tag.tree</field>
+            <field name="model">xtendoo.fsm.tag</field>
             <field name="arch" type="xml">
                 <list string="Etiquetas de Trabajo">
                     <field name="name"/>
@@ -16,9 +16,9 @@
         </record>
 
         <!-- Vista de formulario para etiquetas -->
-        <record id="view_daruclima_fsm_tag_form" model="ir.ui.view">
-            <field name="name">daruclima.fsm.tag.form</field>
-            <field name="model">daruclima.fsm.tag</field>
+        <record id="view_xtendoo_fsm_tag_form" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.tag.form</field>
+            <field name="model">xtendoo.fsm.tag</field>
             <field name="arch" type="xml">
                 <form string="Etiqueta de Trabajo">
                     <sheet>

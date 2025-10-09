@@ -19,7 +19,7 @@
         <!-- Reglas de registro -->
         <record id="fsm_order_rule_user" model="ir.rule">
             <field name="name">FSM Order: Usuario puede ver sus órdenes</field>
-            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="model_id" ref="model_xtendoo_fsm_order"/>
             <field name="domain_force">[('person_ids.user_id', '=', user.id)]</field>
             <field name="groups" eval="[(4, ref('group_fsm_user'))]"/>
             <field name="perm_read" eval="True"/>
@@ -30,7 +30,7 @@
 
         <record id="fsm_order_rule_manager" model="ir.rule">
             <field name="name">FSM Order: Manager puede ver todas</field>
-            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="model_id" ref="model_xtendoo_fsm_order"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_fsm_manager'))]"/>
             <field name="perm_read" eval="True"/>

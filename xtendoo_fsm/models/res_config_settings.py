@@ -10,12 +10,12 @@ class ResConfigSettings(models.TransientModel):
     # Configuración FSM
     fsm_auto_create_project = fields.Boolean(
         string='Crear Proyecto Automáticamente',
-        config_parameter='daruclima_fsm.auto_create_project',
+        config_parameter='xtendoo_fsm.auto_create_project',
         help="Crear automáticamente un proyecto para cada orden de trabajo"
     )
     fsm_enable_geolocation = fields.Boolean(
         string='Habilitar Geolocalización',
-        config_parameter='daruclima_fsm.enable_geolocation',
+        config_parameter='xtendoo_fsm.enable_geolocation',
         help="Habilitar funciones de geolocalización para órdenes de trabajo"
     )
     fsm_invoice_policy = fields.Selection([
@@ -23,6 +23,6 @@ class ResConfigSettings(models.TransientModel):
         ('timesheet', 'Basado en Hojas de Tiempo'),
         ('delivery', 'Al Completar Orden')
     ], string='Política de Facturación FSM',
-        config_parameter='daruclima_fsm.invoice_policy',
+        config_parameter='xtendoo_fsm.invoice_policy',
         default='manual'
     )

@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-#	* daruclima_fsm
+#	* xtendoo_fsm
 #
 msgid ""
 msgstr ""
@@ -12,42 +12,42 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: \n"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_order
 msgid "Orden de Servicio FSM"
 msgstr "Orden de Servicio FSM"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_team
 msgid "Equipo de Servicio FSM"
 msgstr "Equipo de Servicio FSM"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_location
 msgid "Ubicación de Servicio FSM"
 msgstr "Ubicación de Servicio FSM"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_stage
 msgid "Etapa de Servicio FSM"
 msgstr "Etapa de Servicio FSM"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_tag
 msgid "Etiqueta de Servicio FSM"
 msgstr "Etiqueta de Servicio FSM"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_material
 msgid "Material de Servicio FSM"
 msgstr "Material de Servicio FSM"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_person
 msgid "Persona de Servicio FSM"
 msgstr "Persona de Servicio FSM"
 
-#. module: daruclima_fsm
+#. module: xtendoo_fsm
 #: model:ir.model,name:daruclima_fsm.model_daruclima_fsm_equipment
 msgid "Equipo de Servicio FSM"
 msgstr "Equipo de Servicio FSM"

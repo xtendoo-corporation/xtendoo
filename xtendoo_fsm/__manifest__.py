@@ -2,13 +2,20 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0)
 
 {
-    'name': 'Daruclima - Work Order Management',
-    'summary': 'Gestión integral de partes de trabajo unificada para Daruclima',
+    'name': 'Xtendoo - Work Order Management',
+    'summary': 'Gestión integral de partes de trabajo unificada',
     'description': """
-Daruclima Work Order Management
-===============================
+Xtendoo Work Order Management
+=============================
 Módulo unificado que consolida toda la funcionalidad de gestión de partes
-de trabajo en una sola aplicación compacta.
+de trabajo en una sola aplicación compacta y reutilizable.
+
+Características principales:
+- Gestión completa de órdenes de trabajo
+- Seguimiento de estados y etapas
+- Portal del cliente
+- Informes y reportes
+- Integración con ventas, inventario y contabilidad
     """,
     'category': 'Services/Work Orders',
     'version': '18.0.1.0.0',
@@ -33,7 +40,7 @@ de trabajo en una sola aplicación compacta.
     ],
     'data': [
         # Security
-        'security/daruclima_fsm_security.xml',
+        'security/xtendoo_fsm_security.xml',
         'security/ir.model.access.csv',
 
         # Data

@@ -3,9 +3,9 @@
     <data noupdate="1">
 
         <!-- Secuencia para órdenes FSM -->
-        <record id="seq_daruclima_fsm_order" model="ir.sequence">
+        <record id="seq_xtendoo_fsm_order" model="ir.sequence">
             <field name="name">Orden de Servicio FSM</field>
-            <field name="code">daruclima.fsm.order</field>
+            <field name="code">xtendoo.fsm.order</field>
             <field name="prefix">FSM</field>
             <field name="padding">4</field>
             <field name="number_increment">1</field>

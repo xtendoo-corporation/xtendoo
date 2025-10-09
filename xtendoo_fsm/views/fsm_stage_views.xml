@@ -3,9 +3,9 @@
     <data>
 
         <!-- Vista de árbol para etapas FSM -->
-        <record id="view_daruclima_fsm_stage_tree" model="ir.ui.view">
-            <field name="name">daruclima.fsm.stage.list</field>
-            <field name="model">daruclima.fsm.stage</field>
+        <record id="view_xtendoo_fsm_stage_tree" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.stage.list</field>
+            <field name="model">xtendoo.fsm.stage</field>
             <field name="arch" type="xml">
                 <list string="Etapas de Órdenes de Trabajo">
                     <field name="sequence" widget="handle"/>
@@ -19,9 +19,9 @@
         </record>
 
         <!-- Vista de formulario para etapas FSM -->
-        <record id="view_daruclima_fsm_stage_form" model="ir.ui.view">
-            <field name="name">daruclima.fsm.stage.form</field>
-            <field name="model">daruclima.fsm.stage</field>
+        <record id="view_xtendoo_fsm_stage_form" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.stage.form</field>
+            <field name="model">xtendoo.fsm.stage</field>
             <field name="arch" type="xml">
                 <form string="Etapa de Orden de Trabajo">
                     <sheet>

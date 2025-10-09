@@ -6,8 +6,8 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
 
-class DaruclimeFSMOrder(models.Model):
-    _name = 'daruclima.fsm.order'
+class XtendooFSMOrder(models.Model):
+    _name = 'xtendoo.fsm.order'
     _description = 'Orden de Trabajo'
     _inherit = ['mail.thread', 'mail.activity.mixin', 'portal.mixin']
     _order = 'priority_level desc, date_scheduled asc, id desc'
@@ -61,7 +61,7 @@ class DaruclimeFSMOrder(models.Model):
 
     # Gestión de estados y prioridades
     stage_id = fields.Many2one(
-        'daruclima.fsm.stage',
+        'xtendoo.fsm.stage',
         string='Etapa',
         required=True,
         tracking=True,
@@ -121,7 +121,7 @@ class DaruclimeFSMOrder(models.Model):
     # Técnicos (eliminamos la referencia al equipo inexistente)
     person_ids = fields.Many2many(
         'hr.employee',
-        'daruclima_fsm_order_employee_rel',
+        'xtendoo_fsm_order_employee_rel',
         'order_id',
         'employee_id',
         string='Técnicos Asignados',
@@ -131,7 +131,7 @@ class DaruclimeFSMOrder(models.Model):
 
     # Equipos y servicios
     tag_ids = fields.Many2many(
-        'daruclima.fsm.tag',
+        'xtendoo.fsm.tag',
         string='Etiquetas',
         help="Etiquetas para clasificar y analizar órdenes"
     )
@@ -177,7 +177,7 @@ class DaruclimeFSMOrder(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get('name', _('Nuevo')) == _('Nuevo'):
-                vals['name'] = self.env['ir.sequence'].next_by_code('daruclima.fsm.order') or _('Nuevo')
+                vals['name'] = self.env['ir.sequence'].next_by_code('xtendoo.fsm.order') or _('Nuevo')
             # Garantizar etapa por defecto si no viene informada
             if not vals.get('stage_id'):
                 vals['stage_id'] = self._get_default_stage()
@@ -185,7 +185,7 @@ class DaruclimeFSMOrder(models.Model):
 
     def _get_default_stage(self):
         """Obtiene la etapa por defecto de forma robusta y devuelve su id"""
-        Stage = self.env['daruclima.fsm.stage'].sudo()
+        Stage = self.env['xtendoo.fsm.stage'].sudo()
         # Primero intentar buscar una etapa marcada como por defecto
         stage = Stage.search([
             ('is_default', '=', True),
@@ -233,7 +233,7 @@ class DaruclimeFSMOrder(models.Model):
     @api.model
     def _read_group_stage_ids(self, stages, domain):
         """Expand stage_ids for kanban view"""
-        stage_ids = self.env['daruclima.fsm.stage'].search([
+        stage_ids = self.env['xtendoo.fsm.stage'].search([
             ('company_id', 'in', [self.env.company.id, False])
         ])
         return stage_ids
@@ -248,7 +248,7 @@ class DaruclimeFSMOrder(models.Model):
         })
 
         # Cambiar a etapa "En Progreso" si existe
-        progress_stage = self.env['daruclima.fsm.stage'].search([
+        progress_stage = self.env['xtendoo.fsm.stage'].search([
             ('code', '=', 'progress'),
             ('company_id', 'in', [self.env.company.id, False])
         ], limit=1)
@@ -270,7 +270,7 @@ class DaruclimeFSMOrder(models.Model):
         })
 
         # Cambiar a etapa "Completado" si existe
-        done_stage = self.env['daruclima.fsm.stage'].search([
+        done_stage = self.env['xtendoo.fsm.stage'].search([
             ('code', '=', 'done'),
             ('company_id', 'in', [self.env.company.id, False])
         ], limit=1)
@@ -281,7 +281,7 @@ class DaruclimeFSMOrder(models.Model):
 
     def action_print_order(self):
         """Imprimir orden de trabajo"""
-        return self.env.ref('daruclima_fsm.action_report_fsm_order').report_action(self)
+        return self.env.ref('xtendoo_fsm.action_report_fsm_order').report_action(self)
 
     def action_create_repair(self):
         """Crea un parte de reparación basado en la orden de trabajo"""

@@ -3,9 +3,9 @@
     <data>
 
         <!-- Vista de árbol para órdenes FSM -->
-        <record id="view_daruclima_fsm_order_tree" model="ir.ui.view">
-            <field name="name">daruclima.fsm.order.tree</field>
-            <field name="model">daruclima.fsm.order</field>
+        <record id="view_xtendoo_fsm_order_tree" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.order.tree</field>
+            <field name="model">xtendoo.fsm.order</field>
             <field name="arch" type="xml">
                 <list string="Órdenes de Trabajo">
                     <field name="name"/>
@@ -21,9 +21,9 @@
         </record>
 
         <!-- Vista de formulario para órdenes FSM -->
-        <record id="view_daruclima_fsm_order_form" model="ir.ui.view">
-            <field name="name">daruclima.fsm.order.form</field>
-            <field name="model">daruclima.fsm.order</field>
+        <record id="view_xtendoo_fsm_order_form" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.order.form</field>
+            <field name="model">xtendoo.fsm.order</field>
             <field name="arch" type="xml">
                 <form string="Orden de Trabajo">
                     <header>
@@ -102,9 +102,9 @@
         </record>
 
         <!-- Vista kanban para órdenes FSM -->
-        <record id="view_daruclima_fsm_order_kanban" model="ir.ui.view">
-            <field name="name">daruclima.fsm.order.kanban</field>
-            <field name="model">daruclima.fsm.order</field>
+        <record id="view_xtendoo_fsm_order_kanban" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.order.kanban</field>
+            <field name="model">xtendoo.fsm.order</field>
             <field name="arch" type="xml">
                 <kanban default_group_by="stage_id" class="o_kanban_small_column">
                     <field name="stage_id"/>
@@ -154,9 +154,9 @@
         </record>
 
         <!-- Vista calendario para órdenes FSM -->
-        <record id="view_daruclima_fsm_order_calendar" model="ir.ui.view">
-            <field name="name">daruclima.fsm.order.calendar</field>
-            <field name="model">daruclima.fsm.order</field>
+        <record id="view_xtendoo_fsm_order_calendar" model="ir.ui.view">
+            <field name="name">xtendoo.fsm.order.calendar</field>
+            <field name="model">xtendoo.fsm.order</field>
             <field name="arch" type="xml">
                 <calendar string="Calendario de Órdenes"
                           date_start="date_scheduled"

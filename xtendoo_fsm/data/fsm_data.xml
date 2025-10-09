@@ -3,9 +3,9 @@
     <data noupdate="0">
 
         <!-- Secuencia para órdenes FSM -->
-        <record id="seq_daruclima_fsm_order" model="ir.sequence">
+        <record id="seq_xtendoo_fsm_order" model="ir.sequence">
             <field name="name">Orden de Trabajo</field>
-            <field name="code">daruclima.fsm.order</field>
+            <field name="code">xtendoo.fsm.order</field>
             <field name="prefix">ODT/%(year)s/</field>
             <field name="padding">4</field>
             <field name="number_increment">1</field>
@@ -13,7 +13,7 @@
         </record>
 
         <!-- Etapas por defecto -->
-        <record id="fsm_stage_new" model="daruclima.fsm.stage">
+        <record id="fsm_stage_new" model="xtendoo.fsm.stage">
             <field name="name">Nuevo</field>
             <field name="code">new</field>
             <field name="sequence">1</field>
@@ -22,7 +22,7 @@
             <field name="color">#E6E6FA</field>
         </record>
 
-        <record id="fsm_stage_scheduled" model="daruclima.fsm.stage">
+        <record id="fsm_stage_scheduled" model="xtendoo.fsm.stage">
             <field name="name">Programado</field>
             <field name="code">scheduled</field>
             <field name="sequence">2</field>
@@ -31,7 +31,7 @@
             <field name="color">#87CEEB</field>
         </record>
 
-        <record id="fsm_stage_in_progress" model="daruclima.fsm.stage">
+        <record id="fsm_stage_in_progress" model="xtendoo.fsm.stage">
             <field name="name">En Progreso</field>
             <field name="code">in_progress</field>
             <field name="sequence">3</field>
@@ -40,7 +40,7 @@
             <field name="color">#FFD700</field>
         </record>
 
-        <record id="fsm_stage_done" model="daruclima.fsm.stage">
+        <record id="fsm_stage_done" model="xtendoo.fsm.stage">
             <field name="name">Completado</field>
             <field name="code">done</field>
             <field name="sequence">4</field>
@@ -49,7 +49,7 @@
             <field name="color">#90EE90</field>
         </record>
 
-        <record id="fsm_stage_cancelled" model="daruclima.fsm.stage">
+        <record id="fsm_stage_cancelled" model="xtendoo.fsm.stage">
             <field name="name">Cancelado</field>
             <field name="code">cancelled</field>
             <field name="sequence">5</field>
@@ -59,22 +59,22 @@
         </record>
 
         <!-- Etiquetas por defecto -->
-        <record id="fsm_tag_maintenance" model="daruclima.fsm.tag">
+        <record id="fsm_tag_maintenance" model="xtendoo.fsm.tag">
             <field name="name">Mantenimiento</field>
             <field name="color">1</field>
         </record>
 
-        <record id="fsm_tag_repair" model="daruclima.fsm.tag">
+        <record id="fsm_tag_repair" model="xtendoo.fsm.tag">
             <field name="name">Reparación</field>
             <field name="color">2</field>
         </record>
 
-        <record id="fsm_tag_installation" model="daruclima.fsm.tag">
+        <record id="fsm_tag_installation" model="xtendoo.fsm.tag">
             <field name="name">Instalación</field>
             <field name="color">3</field>
         </record>
 
-        <record id="fsm_tag_emergency" model="daruclima.fsm.tag">
+        <record id="fsm_tag_emergency" model="xtendoo.fsm.tag">
             <field name="name">Emergencia</field>
             <field name="color">1</field>
         </record>

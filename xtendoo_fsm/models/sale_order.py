@@ -4,11 +4,11 @@
 from odoo import fields, models
 
 
-class RepairOrder(models.Model):
-    _inherit = 'repair.order'
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
 
     fsm_order_id = fields.Many2one(
-        'daruclima.fsm.order',
+        'xtendoo.fsm.order',
         string='Orden de Trabajo FSM',
-        help="Orden de trabajo FSM relacionada con esta reparación"
+        help="Orden de trabajo FSM que originó esta orden de venta"
     )

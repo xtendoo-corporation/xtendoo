@@ -4,8 +4,8 @@
 from odoo import api, fields, models, _
 
 
-class DaruclimeFSMTag(models.Model):
-    _name = 'daruclima.fsm.tag'
+class XtendooFSMTag(models.Model):
+    _name = 'xtendoo.fsm.tag'
     _description = 'Etiqueta de Orden de Trabajo'
     _order = 'name'
 
@@ -43,7 +43,7 @@ class DaruclimeFSMTag(models.Model):
         """Compute the number of FSM orders associated with this tag"""
         for record in self:
             # Buscar órdenes FSM que tengan esta etiqueta
-            orders = self.env['daruclima.fsm.order'].search([
+            orders = self.env['xtendoo.fsm.order'].search([
                 ('tag_ids', 'in', record.id)
             ])
             record.order_count = len(orders)

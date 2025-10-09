@@ -5,8 +5,8 @@ from odoo import api, fields, models, _
 import re
 
 
-class DaruclimeFSMStage(models.Model):
-    _name = 'daruclima.fsm.stage'
+class XtendooFSMStage(models.Model):
+    _name = 'xtendoo.fsm.stage'
     _description = 'Etapas de Orden de Trabajo'
     _order = 'sequence, name'
 
@@ -64,7 +64,7 @@ class DaruclimeFSMStage(models.Model):
     def _compute_order_count(self):
         """Compute the number of FSM orders in this stage"""
         for record in self:
-            orders = self.env['daruclima.fsm.order'].search([
+            orders = self.env['xtendoo.fsm.order'].search([
                 ('stage_id', '=', record.id)
             ])
             record.order_count = len(orders)
@@ -127,8 +127,8 @@ class DaruclimeFSMStage(models.Model):
         return super().write(vals)
 
 
-class DaruclimeFSMTag(models.Model):
-    _name = 'daruclima.fsm.tag'
+class XtendooFSMTag(models.Model):
+    _name = 'xtendoo.fsm.tag'
     _description = 'Etiquetas de Servicio'
     _order = 'name'
 
@@ -159,7 +159,7 @@ class DaruclimeFSMTag(models.Model):
     @api.depends('name')
     def _compute_order_count(self):
         for tag in self:
-            tag.order_count = self.env['daruclima.fsm.order'].search_count([
+            tag.order_count = self.env['xtendoo.fsm.order'].search_count([
                 ('tag_ids', 'in', [tag.id])
             ])
 
@@ -168,7 +168,7 @@ class DaruclimeFSMTag(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': f'Órdenes - {self.name}',
-            'res_model': 'daruclima.fsm.order',
+            'res_model': 'xtendoo.fsm.order',
             'view_mode': 'tree,form,kanban',
             'domain': [('tag_ids', 'in', [self.id])],
             'context': {'default_tag_ids': [(6, 0, [self.id])]}
