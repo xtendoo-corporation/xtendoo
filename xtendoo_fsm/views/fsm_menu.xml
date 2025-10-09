@@ -3,56 +3,61 @@
     <data>
 
         <!-- Menú principal FSM -->
-        <menuitem id="menu_xtendoo_fsm_main"
+        <menuitem id="xtendoo_fsm_menu_main"
                   name="Órdenes de Trabajo"
-                  sequence="50"
-                  web_icon="xtendoo_fsm,static/description/icon.png"/>
+                  sequence="5"/>
 
-        <!-- Menú de órdenes -->
-        <menuitem id="menu_xtendoo_fsm_orders"
+        <!-- Menú de órdenes - usar acciones universales -->
+        <menuitem id="xtendoo_fsm_menu_orders"
                   name="Órdenes"
-                  parent="menu_xtendoo_fsm_main"
+                  parent="xtendoo_fsm_menu_main"
                   sequence="10"/>
 
-        <menuitem id="menu_xtendoo_fsm_order_all"
+        <menuitem id="xtendoo_fsm_menu_order_all"
                   name="Todas las Órdenes"
-                  parent="menu_xtendoo_fsm_orders"
+                  parent="xtendoo_fsm_menu_orders"
                   action="action_xtendoo_fsm_order"
                   sequence="10"/>
 
-        <menuitem id="menu_xtendoo_fsm_order_new"
-                  name="Nueva Orden"
-                  parent="menu_xtendoo_fsm_orders"
-                  action="action_xtendoo_fsm_order"
+        <menuitem id="xtendoo_fsm_menu_order_kanban"
+                  name="Vista Kanban"
+                  parent="xtendoo_fsm_menu_orders"
+                  action="action_xtendoo_fsm_order_kanban"
                   sequence="20"/>
 
         <!-- Menú de planificación -->
-        <menuitem id="menu_xtendoo_fsm_planning"
+        <menuitem id="xtendoo_fsm_menu_planning"
                   name="Planificación"
-                  parent="menu_xtendoo_fsm_main"
+                  parent="xtendoo_fsm_menu_main"
                   sequence="20"/>
 
-        <menuitem id="menu_xtendoo_fsm_persons"
+        <menuitem id="xtendoo_fsm_menu_calendar"
+                  name="Calendario"
+                  parent="xtendoo_fsm_menu_planning"
+                  action="action_xtendoo_fsm_order_calendar"
+                  sequence="10"/>
+
+        <menuitem id="xtendoo_fsm_menu_persons"
                   name="Técnicos"
-                  parent="menu_xtendoo_fsm_planning"
+                  parent="xtendoo_fsm_menu_planning"
                   action="action_xtendoo_fsm_person"
                   sequence="20"/>
 
-        <!-- Menú de configuración -->
-        <menuitem id="menu_xtendoo_fsm_config"
+        <!-- Menú de configuración - usar acciones básicas -->
+        <menuitem id="xtendoo_fsm_menu_config"
                   name="Configuración"
-                  parent="menu_xtendoo_fsm_main"
+                  parent="xtendoo_fsm_menu_main"
                   sequence="90"/>
 
-        <menuitem id="menu_xtendoo_fsm_stages"
+        <menuitem id="xtendoo_fsm_menu_stages"
                   name="Etapas"
-                  parent="menu_xtendoo_fsm_config"
+                  parent="xtendoo_fsm_menu_config"
                   action="action_xtendoo_fsm_stage"
                   sequence="10"/>
 
-        <menuitem id="menu_xtendoo_fsm_tags"
+        <menuitem id="xtendoo_fsm_menu_tags"
                   name="Etiquetas"
-                  parent="menu_xtendoo_fsm_config"
+                  parent="xtendoo_fsm_menu_config"
                   action="action_xtendoo_fsm_tag"
                   sequence="20"/>
 

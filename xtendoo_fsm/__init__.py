@@ -4,8 +4,27 @@
 from . import models
 
 
-def _post_init_hook(env):
+def post_init_hook(env):
     """Hook ejecutado después de la instalación del módulo"""
+    # Asignar grupos FSM al usuario administrador
+    try:
+        # Buscar el usuario admin o el primer usuario activo
+        admin_user = env['res.users'].search([('login', '=', 'admin')], limit=1)
+        if not admin_user:
+            admin_user = env['res.users'].search([('active', '=', True)], limit=1)
+
+        if admin_user:
+            # Buscar los grupos FSM
+            fsm_user_group = env.ref('xtendoo_fsm.group_fsm_user', raise_if_not_found=False)
+            fsm_manager_group = env.ref('xtendoo_fsm.group_fsm_manager', raise_if_not_found=False)
+
+            if fsm_user_group and fsm_manager_group:
+                # Asignar los grupos al usuario
+                admin_user.groups_id = [(4, fsm_user_group.id), (4, fsm_manager_group.id)]
+                env.cr.commit()
+    except Exception as e:
+        print(f"Error asignando grupos FSM: {e}")
+
     # Crear proyecto por defecto para servicios de campo si no existe
     company = env.company
     project = env['project.project'].search([

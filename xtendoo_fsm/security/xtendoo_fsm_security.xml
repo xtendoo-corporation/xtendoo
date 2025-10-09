@@ -16,23 +16,36 @@
             <field name="comment">Manager de servicios de campo</field>
         </record>
 
-        <!-- Reglas de registro -->
-        <record id="fsm_order_rule_user" model="ir.rule">
-            <field name="name">FSM Order: Usuario puede ver sus órdenes</field>
+        <!-- Reglas de acceso simplificadas - temporalmente menos restrictivas -->
+        <record id="fsm_order_rule_all" model="ir.rule">
+            <field name="name">FSM Order: Acceso completo para usuarios FSM</field>
             <field name="model_id" ref="model_fsm_order"/>
-            <field name="domain_force">[('person_ids.user_id', '=', user.id)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_fsm_user'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="False"/>
-            <field name="perm_unlink" eval="False"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
         </record>
 
-        <record id="fsm_order_rule_manager" model="ir.rule">
-            <field name="name">FSM Order: Manager puede ver todas</field>
-            <field name="model_id" ref="model_fsm_order"/>
+        <!-- Regla para etapas -->
+        <record id="fsm_stage_rule_all" model="ir.rule">
+            <field name="name">FSM Stage: Acceso completo</field>
+            <field name="model_id" ref="model_fsm_stage"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(4, ref('group_fsm_manager'))]"/>
+            <field name="groups" eval="[(4, ref('group_fsm_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Regla para etiquetas -->
+        <record id="fsm_tag_rule_all" model="ir.rule">
+            <field name="name">FSM Tag: Acceso completo</field>
+            <field name="model_id" ref="model_fsm_tag"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_fsm_user'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
