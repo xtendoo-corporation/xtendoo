@@ -9,7 +9,7 @@ class ResPartner(models.Model):
 
     # Relaciones FSM
     fsm_order_ids = fields.One2many(
-        'daruclima.fsm.order',
+        'fsm.order',
         'partner_id',
         string='Órdenes de Trabajo'
     )
@@ -30,7 +30,7 @@ class ResPartner(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': f'Órdenes de Trabajo - {self.name}',
-            'res_model': 'daruclima.fsm.order',
+            'res_model': 'fsm.order',
             'view_mode': 'tree,form,kanban',
             'domain': [('partner_id', '=', self.id)],
             'context': {'default_partner_id': self.id}

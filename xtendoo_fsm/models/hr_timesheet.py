@@ -9,7 +9,7 @@ class AccountAnalyticLine(models.Model):
 
     # Integración con FSM
     fsm_order_id = fields.Many2one(
-        'daruclima.fsm.order',
+        'fsm.order',
         string='Orden de Servicio FSM',
         help="Orden de servicio de campo relacionada"
     )
@@ -29,7 +29,7 @@ class AccountAnalyticLine(models.Model):
         if self.fsm_order_id:
             return {
                 'type': 'ir.actions.act_window',
-                'res_model': 'daruclima.fsm.order',
+                'res_model': 'fsm.order',
                 'res_id': self.fsm_order_id.id,
                 'view_mode': 'form',
             }

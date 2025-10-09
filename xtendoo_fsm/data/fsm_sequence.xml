@@ -3,12 +3,11 @@
     <data noupdate="1">
 
         <!-- Secuencia para órdenes FSM -->
-        <record id="seq_xtendoo_fsm_order" model="ir.sequence">
-            <field name="name">Orden de Servicio FSM</field>
-            <field name="code">xtendoo.fsm.order</field>
+        <record id="fsm_order_sequence" model="ir.sequence">
+            <field name="name">Secuencia Órdenes de Trabajo FSM</field>
+            <field name="code">fsm.order</field>
             <field name="prefix">FSM</field>
             <field name="padding">4</field>
-            <field name="number_increment">1</field>
             <field name="company_id" eval="False"/>
         </record>
 

@@ -4,8 +4,7 @@
 
         <!-- Acción para órdenes FSM -->
         <record id="action_xtendoo_fsm_order" model="ir.actions.act_window">
-            <field name="name">Órdenes de Trabajo</field>
-            <field name="res_model">xtendoo.fsm.order</field>
+            <field name="name">Órdenes de Trabajo</field><field name="res_model">fsm.order</field>
             <field name="view_mode">kanban,list,form,calendar</field>
             <field name="context">{}</field>
             <field name="help" type="html">
@@ -38,7 +37,7 @@
         <!-- Acción para Etapas -->
         <record id="action_xtendoo_fsm_stage" model="ir.actions.act_window">
             <field name="name">Etapas de Trabajo</field>
-            <field name="res_model">xtendoo.fsm.stage</field>
+            <field name="res_model">fsm.stage</field>
             <field name="view_mode">list,form</field>
             <field name="context">{}</field>
             <field name="help" type="html">
@@ -54,7 +53,7 @@
         <!-- Acción para Etiquetas -->
         <record id="action_xtendoo_fsm_tag" model="ir.actions.act_window">
             <field name="name">Etiquetas de Trabajo</field>
-            <field name="res_model">xtendoo.fsm.tag</field>
+            <field name="res_model">fsm.tag</field>
             <field name="view_mode">list,form</field>
             <field name="context">{}</field>
             <field name="help" type="html">

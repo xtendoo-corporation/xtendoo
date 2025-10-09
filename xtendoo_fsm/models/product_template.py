@@ -16,8 +16,7 @@ class ProductTemplate(models.Model):
         string='Es Material FSM',
         help="Este producto se usa como material en servicios de campo"
     )
-    fsm_category_ids = fields.Many2many(
-        'daruclima.fsm.tag',
+    fsm_category_ids = fields.Many2many(        'fsm.tag',
         string='Categorías FSM',
         help="Categorías de servicio para este producto"
     )

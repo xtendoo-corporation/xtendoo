@@ -1,7 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_daruclima_fsm_order_user,daruclima.fsm.order.user,model_daruclima_fsm_order,group_fsm_user,1,1,1,0
-access_daruclima_fsm_order_manager,daruclima.fsm.order.manager,model_daruclima_fsm_order,group_fsm_manager,1,1,1,1
-access_daruclima_fsm_stage_user,daruclima.fsm.stage.user,model_daruclima_fsm_stage,group_fsm_user,1,0,0,0
-access_daruclima_fsm_stage_manager,daruclima.fsm.stage.manager,model_daruclima_fsm_stage,group_fsm_manager,1,1,1,1
-access_daruclima_fsm_tag_user,daruclima.fsm.tag.user,model_daruclima_fsm_tag,group_fsm_user,1,0,0,0
-access_daruclima_fsm_tag_manager,daruclima.fsm.tag.manager,model_daruclima_fsm_tag,group_fsm_manager,1,1,1,1
+access_fsm_order_user,fsm.order.user,model_fsm_order,group_fsm_user,1,1,1,0
+access_fsm_order_manager,fsm.order.manager,model_fsm_order,group_fsm_manager,1,1,1,1
+access_fsm_stage_user,fsm.stage.user,model_fsm_stage,group_fsm_user,1,0,0,0
+access_fsm_stage_manager,fsm.stage.manager,model_fsm_stage,group_fsm_manager,1,1,1,1
+access_fsm_tag_user,fsm.tag.user,model_fsm_tag,group_fsm_user,1,0,0,0
+access_fsm_tag_manager,fsm.tag.manager,model_fsm_tag,group_fsm_manager,1,1,1,1

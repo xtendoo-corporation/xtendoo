@@ -8,7 +8,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     fsm_order_id = fields.Many2one(
-        'xtendoo.fsm.order',
+        'fsm.order',
         string='Orden de Trabajo FSM',
         help="Orden de trabajo FSM que originó esta orden de venta"
     )

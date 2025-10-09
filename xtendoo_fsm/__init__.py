@@ -31,12 +31,12 @@ def _post_init_hook(env):
     ]
 
     for code, name, sequence, closed, color in stages:
-        existing = env['daruclima.fsm.stage'].search([
+        existing = env['fsm.stage'].search([
             ('code', '=', code),
             ('company_id', '=', company.id)
         ])
         if not existing:
-            env['daruclima.fsm.stage'].create({
+            env['fsm.stage'].create({
                 'name': name,
                 'code': code,
                 'sequence': sequence,

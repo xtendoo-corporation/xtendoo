@@ -5,7 +5,7 @@
         <!-- Secuencia para órdenes FSM -->
         <record id="seq_xtendoo_fsm_order" model="ir.sequence">
             <field name="name">Orden de Trabajo</field>
-            <field name="code">xtendoo.fsm.order</field>
+            <field name="code">fsm.order</field>
             <field name="prefix">ODT/%(year)s/</field>
             <field name="padding">4</field>
             <field name="number_increment">1</field>
@@ -13,16 +13,17 @@
         </record>
 
         <!-- Etapas por defecto -->
-        <record id="fsm_stage_new" model="xtendoo.fsm.stage">
+        <record id="fsm_stage_new" model="fsm.stage">
             <field name="name">Nuevo</field>
             <field name="code">new</field>
-            <field name="sequence">1</field>
-            <field name="is_default">True</field>
-            <field name="is_closed">False</field>
-            <field name="color">#E6E6FA</field>
+            <field name="description">Orden de trabajo recién creada</field>
+            <field name="sequence">10</field>
+            <field name="is_default" eval="True"/>
+            <field name="is_closed" eval="False"/>
+            <field name="color">#E3F2FD</field>
         </record>
 
-        <record id="fsm_stage_scheduled" model="xtendoo.fsm.stage">
+        <record id="fsm_stage_scheduled" model="fsm.stage">
             <field name="name">Programado</field>
             <field name="code">scheduled</field>
             <field name="sequence">2</field>
@@ -31,7 +32,7 @@
             <field name="color">#87CEEB</field>
         </record>
 
-        <record id="fsm_stage_in_progress" model="xtendoo.fsm.stage">
+        <record id="fsm_stage_in_progress" model="fsm.stage">
             <field name="name">En Progreso</field>
             <field name="code">in_progress</field>
             <field name="sequence">3</field>
@@ -40,41 +41,41 @@
             <field name="color">#FFD700</field>
         </record>
 
-        <record id="fsm_stage_done" model="xtendoo.fsm.stage">
+        <record id="fsm_stage_done" model="fsm.stage">
             <field name="name">Completado</field>
             <field name="code">done</field>
             <field name="sequence">4</field>
             <field name="is_default">False</field>
-            <field name="is_closed">True</field>
+            <field name="is_closed" eval="True"/>
             <field name="color">#90EE90</field>
         </record>
 
-        <record id="fsm_stage_cancelled" model="xtendoo.fsm.stage">
+        <record id="fsm_stage_cancelled" model="fsm.stage">
             <field name="name">Cancelado</field>
             <field name="code">cancelled</field>
             <field name="sequence">5</field>
             <field name="is_default">False</field>
-            <field name="is_closed">True</field>
+            <field name="is_closed" eval="True"/>
             <field name="color">#FFB6C1</field>
         </record>
 
         <!-- Etiquetas por defecto -->
-        <record id="fsm_tag_maintenance" model="xtendoo.fsm.tag">
+        <record id="fsm_tag_maintenance" model="fsm.tag">
             <field name="name">Mantenimiento</field>
             <field name="color">1</field>
         </record>
 
-        <record id="fsm_tag_repair" model="xtendoo.fsm.tag">
+        <record id="fsm_tag_repair" model="fsm.tag">
             <field name="name">Reparación</field>
             <field name="color">2</field>
         </record>
 
-        <record id="fsm_tag_installation" model="xtendoo.fsm.tag">
+        <record id="fsm_tag_installation" model="fsm.tag">
             <field name="name">Instalación</field>
             <field name="color">3</field>
         </record>
 
-        <record id="fsm_tag_emergency" model="xtendoo.fsm.tag">
+        <record id="fsm_tag_emergency" model="fsm.tag">
             <field name="name">Emergencia</field>
             <field name="color">1</field>
         </record>

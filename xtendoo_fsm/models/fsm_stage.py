@@ -6,7 +6,7 @@ import re
 
 
 class XtendooFSMStage(models.Model):
-    _name = 'xtendoo.fsm.stage'
+    _name = 'fsm.stage'
     _description = 'Etapas de Orden de Trabajo'
     _order = 'sequence, name'
 
@@ -64,7 +64,7 @@ class XtendooFSMStage(models.Model):
     def _compute_order_count(self):
         """Compute the number of FSM orders in this stage"""
         for record in self:
-            orders = self.env['xtendoo.fsm.order'].search([
+            orders = self.env['fsm.order'].search([
                 ('stage_id', '=', record.id)
             ])
             record.order_count = len(orders)
@@ -128,7 +128,7 @@ class XtendooFSMStage(models.Model):
 
 
 class XtendooFSMTag(models.Model):
-    _name = 'xtendoo.fsm.tag'
+    _name = 'fsm.tag'
     _description = 'Etiquetas de Servicio'
     _order = 'name'
 
@@ -159,7 +159,7 @@ class XtendooFSMTag(models.Model):
     @api.depends('name')
     def _compute_order_count(self):
         for tag in self:
-            tag.order_count = self.env['xtendoo.fsm.order'].search_count([
+            tag.order_count = self.env['fsm.order'].search_count([
                 ('tag_ids', 'in', [tag.id])
             ])
 
@@ -168,7 +168,7 @@ class XtendooFSMTag(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': f'Órdenes - {self.name}',
-            'res_model': 'xtendoo.fsm.order',
+            'res_model': 'fsm.order',
             'view_mode': 'tree,form,kanban',
             'domain': [('tag_ids', 'in', [self.id])],
             'context': {'default_tag_ids': [(6, 0, [self.id])]}

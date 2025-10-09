@@ -9,7 +9,7 @@ class ProjectTask(models.Model):
 
     # Integración con FSM
     fsm_order_id = fields.Many2one(
-        'daruclima.fsm.order',
+        'fsm.order',
         string='Orden de Servicio FSM',
         help="Orden de servicio de campo relacionada"
     )
@@ -24,7 +24,7 @@ class ProjectTask(models.Model):
         if self.fsm_order_id:
             return {
                 'type': 'ir.actions.act_window',
-                'res_model': 'daruclima.fsm.order',
+                'res_model': 'fsm.order',
                 'res_id': self.fsm_order_id.id,
                 'view_mode': 'form',
             }
@@ -37,8 +37,9 @@ class ProjectProject(models.Model):
         string='Proyecto FSM',
         help="Este proyecto se usa para gestión de servicios de campo"
     )
-    fsm_team_id = fields.Many2one(
-        'daruclima.fsm.team',
-        string='Equipo FSM',
-        help="Equipo de servicio de campo asignado a este proyecto"
-    )
+    # Comentado temporalmente hasta implementar el modelo fsm.team
+    # fsm_team_id = fields.Many2one(
+    #     'fsm.team',
+    #     string='Equipo FSM',
+    #     help="Equipo de servicio de campo asignado a este proyecto"
+    # )

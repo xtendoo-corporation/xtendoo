@@ -7,7 +7,7 @@ from odoo.exceptions import UserError, ValidationError
 
 
 class XtendooFSMOrder(models.Model):
-    _name = 'xtendoo.fsm.order'
+    _name = 'fsm.order'
     _description = 'Orden de Trabajo'
     _inherit = ['mail.thread', 'mail.activity.mixin', 'portal.mixin']
     _order = 'priority_level desc, date_scheduled asc, id desc'
@@ -61,7 +61,7 @@ class XtendooFSMOrder(models.Model):
 
     # Gestión de estados y prioridades
     stage_id = fields.Many2one(
-        'xtendoo.fsm.stage',
+        'fsm.stage',
         string='Etapa',
         required=True,
         tracking=True,
@@ -131,7 +131,7 @@ class XtendooFSMOrder(models.Model):
 
     # Equipos y servicios
     tag_ids = fields.Many2many(
-        'xtendoo.fsm.tag',
+        'fsm.tag',
         string='Etiquetas',
         help="Etiquetas para clasificar y analizar órdenes"
     )
@@ -177,7 +177,7 @@ class XtendooFSMOrder(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get('name', _('Nuevo')) == _('Nuevo'):
-                vals['name'] = self.env['ir.sequence'].next_by_code('xtendoo.fsm.order') or _('Nuevo')
+                vals['name'] = self.env['ir.sequence'].next_by_code('fsm.order') or _('Nuevo')
             # Garantizar etapa por defecto si no viene informada
             if not vals.get('stage_id'):
                 vals['stage_id'] = self._get_default_stage()
@@ -185,7 +185,7 @@ class XtendooFSMOrder(models.Model):
 
     def _get_default_stage(self):
         """Obtiene la etapa por defecto de forma robusta y devuelve su id"""
-        Stage = self.env['xtendoo.fsm.stage'].sudo()
+        Stage = self.env['fsm.stage'].sudo()
         # Primero intentar buscar una etapa marcada como por defecto
         stage = Stage.search([
             ('is_default', '=', True),
@@ -233,7 +233,7 @@ class XtendooFSMOrder(models.Model):
     @api.model
     def _read_group_stage_ids(self, stages, domain):
         """Expand stage_ids for kanban view"""
-        stage_ids = self.env['xtendoo.fsm.stage'].search([
+        stage_ids = self.env['fsm.stage'].search([
             ('company_id', 'in', [self.env.company.id, False])
         ])
         return stage_ids
@@ -248,7 +248,7 @@ class XtendooFSMOrder(models.Model):
         })
 
         # Cambiar a etapa "En Progreso" si existe
-        progress_stage = self.env['xtendoo.fsm.stage'].search([
+        progress_stage = self.env['fsm.stage'].search([
             ('code', '=', 'progress'),
             ('company_id', 'in', [self.env.company.id, False])
         ], limit=1)
@@ -270,7 +270,7 @@ class XtendooFSMOrder(models.Model):
         })
 
         # Cambiar a etapa "Completado" si existe
-        done_stage = self.env['xtendoo.fsm.stage'].search([
+        done_stage = self.env['fsm.stage'].search([
             ('code', '=', 'done'),
             ('company_id', 'in', [self.env.company.id, False])
         ], limit=1)

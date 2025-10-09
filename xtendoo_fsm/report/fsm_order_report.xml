@@ -5,12 +5,12 @@
         <!-- Definición del reporte para Órdenes de Trabajo FSM -->
         <record id="action_report_fsm_order" model="ir.actions.report">
             <field name="name">Orden de Trabajo FSM</field>
-            <field name="model">daruclima.fsm.order</field>
+            <field name="model">fsm.order</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">daruclima_fsm.report_fsm_order</field>
-            <field name="report_file">daruclima_fsm.report_fsm_order</field>
+            <field name="report_name">xtendoo_fsm.report_fsm_order</field>
+            <field name="report_file">xtendoo_fsm.report_fsm_order</field>
             <field name="print_report_name">'Orden de Trabajo - %s' % (object.name)</field>
-            <field name="binding_model_id" ref="model_daruclima_fsm_order"/>
+            <field name="binding_model_id" ref="model_fsm_order"/>
             <field name="binding_type">report</field>
         </record>
 
@@ -18,7 +18,7 @@
         <template id="report_fsm_order">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="doc">
-                    <t t-call="daruclima_fsm.report_fsm_order_document" t-lang="doc.partner_id.lang"/>
+                    <t t-call="xtendoo_fsm.report_fsm_order_document" t-lang="doc.partner_id.lang"/>
                 </t>
             </t>
         </template>

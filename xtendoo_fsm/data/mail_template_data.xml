@@ -5,7 +5,7 @@
         <!-- Plantilla de correo para nueva orden FSM -->
         <record id="mail_template_fsm_order_new" model="mail.template">
             <field name="name">Nueva Orden de Servicio FSM</field>
-            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="model_id" ref="model_fsm_order"/>
             <field name="subject">Nueva Orden de Servicio: ${object.name}</field>
             <field name="email_to">${object.partner_id.email}</field>
             <field name="body_html" type="html">
@@ -44,7 +44,7 @@
         <!-- Plantilla de correo para orden completada -->
         <record id="mail_template_fsm_order_completed" model="mail.template">
             <field name="name">Orden de Servicio Completada</field>
-            <field name="model_id" ref="model_daruclima_fsm_order"/>
+            <field name="model_id" ref="model_fsm_order"/>
             <field name="subject">Orden de Servicio Completada: ${object.name}</field>
             <field name="email_to">${object.partner_id.email}</field>
             <field name="body_html" type="html">
