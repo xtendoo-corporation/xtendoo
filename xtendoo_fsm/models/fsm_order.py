@@ -29,7 +29,21 @@ class XtendooFSMOrder(models.Model):
         string='Cliente',
         required=True,
         tracking=True,
-        help="Cliente para quien se realiza el servicio"
+        help="Cliente final para quien se realiza el servicio"
+    )
+    insurance_partner_id = fields.Many2one(
+        'res.partner',
+        string='Aseguradora',
+        required=False,
+        tracking=True,
+        domain="[('is_insurance_company', '=', True)]",
+        help="Compañía aseguradora que gestiona y paga el servicio"
+    )
+    franchise_amount = fields.Float(
+        string='Importe Franquicia',
+        tracking=True,
+        digits=(16, 2),
+        help="Importe de la franquicia a cargo del cliente cuando hay aseguradora"
     )
     location_id = fields.Many2one(
         'res.partner',
