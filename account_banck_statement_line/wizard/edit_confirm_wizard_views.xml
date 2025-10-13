@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista Form del wizard de confirmación -->
+    <record id="view_account_bank_statement_line_edit_wizard_form" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.edit.wizard.form</field>
+        <field name="model">account.bank.statement.line.edit.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Confirmar edición de línea crítica">
+                <sheet>
+                    <field name="warning_message" widget="html"/>
+
+                    <group>
+                        <group>
+                            <field name="line_id" readonly="1"/>
+                            <field name="is_reconciled" widget="boolean_toggle" readonly="1"/>
+                            <field name="statement_state" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="adjustment_reason"
+                               placeholder="Explica detalladamente por qué necesitas hacer este cambio..."
+                               nolabel="1"/>
+                    </group>
+
+                    <group>
+                        <field name="confirm_risks"/>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_confirm_edit"
+                            string="Confirmar y editar"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not confirm_risks or not adjustment_reason"/>
+                    <button name="action_cancel"
+                            string="Cancelar"
+                            type="object"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
+

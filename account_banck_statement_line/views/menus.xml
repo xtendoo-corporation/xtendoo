@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menú principal de Xtendoo bajo Contabilidad -->
+    <menuitem id="menu_xtendoo_accounting"
+              name="Xtendoo"
+              parent="account.menu_finance"
+              sequence="100"
+              groups="account.group_account_user"/>
+
+    <!-- Submenú para líneas de extracto -->
+    <menuitem id="menu_bank_statement_line_full_edit"
+              name="Líneas de extracto (edición total)"
+              parent="menu_xtendoo_accounting"
+              action="action_bank_statement_line_full_edit"
+              sequence="10"
+              groups="account.group_account_manager,account_banck_statement_line.group_xtendoo_bank_line_editor"/>
+
+</odoo>
+

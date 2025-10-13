@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista Tree editable para líneas de extracto -->
+    <record id="view_bank_statement_line_tree_full_edit" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.tree.full.edit</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <tree string="Líneas de extracto bancario" editable="bottom" create="1" delete="1">
+                <field name="sequence" widget="handle"/>
+                <field name="date"/>
+                <field name="payment_ref"/>
+                <field name="partner_id"/>
+                <field name="journal_id"/>
+                <field name="statement_id"/>
+                <field name="amount" sum="Total"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="foreign_currency_id" optional="hide"/>
+                <field name="amount_currency" optional="hide"/>
+                <field name="is_reconciled" widget="boolean_toggle"/>
+                <field name="is_critical_state" invisible="1"/>
+                <field name="company_id" invisible="1"/>
+                <badge name="is_reconciled" decoration-success="is_reconciled" decoration-warning="not is_reconciled"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form completa para edición -->
+    <record id="view_bank_statement_line_form_full_edit" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.form.full.edit</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <form string="Línea de extracto bancario">
+                <header>
+                    <!-- Badge de estado -->
+                    <field name="is_reconciled" invisible="1"/>
+                    <field name="is_critical_state" invisible="1"/>
+                    <button name="action_recalculate_amounts"
+                            type="object"
+                            string="Recalcular totales/conciliación"
+                            class="btn-primary"
+                            groups="account.group_account_manager,account_banck_statement_line.group_xtendoo_bank_line_editor"/>
+                    <button name="action_recalculate_running_balance"
+                            type="object"
+                            string="Recalcular Running Balance"
+                            class="btn-secondary"
+                            groups="account.group_account_manager,account_banck_statement_line.group_xtendoo_bank_line_editor"/>
+                    <widget name="web_ribbon" title="Conciliada" bg_color="bg-success" invisible="not is_reconciled"/>
+                    <widget name="web_ribbon" title="Pendiente" bg_color="bg-warning" invisible="is_reconciled"/>
+                </header>
+                <sheet>
+                    <!-- Mensaje de advertencia -->
+                    <field name="warning_message" widget="html" invisible="not is_critical_state"/>
+
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Smart button para ver el extracto -->
+                        <button name="%(account.action_bank_statement_tree)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-book"
+                                context="{'search_default_statement_id': statement_id}">
+                            <field name="statement_id" widget="statinfo" string="Extracto"/>
+                        </button>
+
+                        <!-- Smart button para ver el diario -->
+                        <button name="%(account.action_account_journal_form)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-book"
+                                context="{'search_default_id': journal_id}">
+                            <field name="journal_id" widget="statinfo" string="Diario"/>
+                        </button>
+
+                        <!-- Smart button para ver el partner -->
+                        <button name="%(base.action_partner_form)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-user"
+                                context="{'search_default_id': partner_id}"
+                                invisible="not partner_id">
+                            <field name="partner_id" widget="statinfo" string="Contacto"/>
+                        </button>
+                    </div>
+
+                    <group>
+                        <group string="Información General">
+                            <field name="sequence"/>
+                            <field name="internal_index" readonly="1"/>
+                            <field name="date"/>
+                            <field name="payment_ref"/>
+                            <field name="partner_id"/>
+                            <field name="narration"/>
+                        </group>
+
+                        <group string="Importe y Moneda">
+                            <field name="amount"/>
+                            <field name="currency_id"/>
+                            <field name="foreign_currency_id"/>
+                            <field name="amount_currency" invisible="not foreign_currency_id"/>
+                            <field name="running_balance" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Diario y Extracto">
+                            <field name="journal_id"/>
+                            <field name="statement_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+
+                        <group string="Conciliación">
+                            <field name="is_reconciled" widget="boolean_toggle"/>
+                            <field name="move_id" readonly="1"/>
+                            <field name="suitable_journal_ids" widget="many2many_tags" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Información Adicional">
+                            <group>
+                                <group string="Referencias">
+                                    <field name="ref"/>
+                                    <field name="transaction_type"/>
+                                    <field name="account_number"/>
+                                </group>
+                                <group string="Otros datos">
+                                    <field name="online_identifier" readonly="1"/>
+                                    <field name="unique_import_id" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Auditoría y Ajuste Manual">
+                            <group>
+                                <group string="Ajuste Manual">
+                                    <field name="manual_adjustment_reason"
+                                           placeholder="Documenta aquí el motivo del ajuste manual..."
+                                           nolabel="1"/>
+                                </group>
+                                <group string="Información de Auditoría">
+                                    <field name="create_date" readonly="1"/>
+                                    <field name="create_uid" readonly="1"/>
+                                    <field name="write_date" readonly="1"/>
+                                    <field name="write_uid" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <!-- Chatter -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Search con filtros -->
+    <record id="view_bank_statement_line_search_full_edit" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.search.full.edit</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <search string="Buscar líneas de extracto">
+                <field name="payment_ref" string="Referencia de pago"
+                       filter_domain="['|', ('payment_ref', 'ilike', self), ('narration', 'ilike', self)]"/>
+                <field name="partner_id"/>
+                <field name="journal_id"/>
+                <field name="statement_id"/>
+                <field name="date"/>
+                <field name="amount"/>
+
+                <filter string="Conciliadas" name="filter_reconciled"
+                        domain="[('is_reconciled', '=', True)]"/>
+                <filter string="Pendientes" name="filter_pending"
+                        domain="[('is_reconciled', '=', False)]"/>
+                <filter string="Estado crítico" name="filter_critical"
+                        domain="['|', ('is_reconciled', '=', True), ('statement_id.state', '=', 'posted')]"/>
+
+                <separator/>
+                <filter string="Hoy" name="filter_today"
+                        domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Este mes" name="filter_this_month"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-%m-01')),
+                                ('date', '&lt;=', (context_today() + relativedelta(day=31)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Este año" name="filter_this_year"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-01-01')),
+                                ('date', '&lt;=', context_today().strftime('%Y-12-31'))]"/>
+
+                <group expand="0" string="Agrupar por">
+                    <filter string="Extracto" name="group_statement" context="{'group_by': 'statement_id'}"/>
+                    <filter string="Diario" name="group_journal" context="{'group_by': 'journal_id'}"/>
+                    <filter string="Contacto" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'date'}"/>
+                    <filter string="Conciliado" name="group_reconciled" context="{'group_by': 'is_reconciled'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de ventana -->
+    <record id="action_bank_statement_line_full_edit" model="ir.actions.act_window">
+        <field name="name">Líneas de extracto (edición total)</field>
+        <field name="res_model">account.bank.statement.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_bank_statement_line_tree_full_edit"/>
+        <field name="search_view_id" ref="view_bank_statement_line_search_full_edit"/>
+        <field name="context">{
+            'search_default_filter_pending': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay líneas de extracto bancario
+            </p>
+            <p>
+                Las líneas de extracto se crean automáticamente al importar extractos bancarios
+                o se pueden crear manualmente desde aquí.
+            </p>
+        </field>
+    </record>
+
+</odoo>

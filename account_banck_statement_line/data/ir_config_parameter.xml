@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Parámetro de configuración para habilitar/deshabilitar edición total -->
+        <record id="config_param_allow_full_edit" model="ir.config_parameter">
+            <field name="key">account_banck_statement_line.allow_full_edit</field>
+            <field name="value">True</field>
+        </record>
+
+    </data>
+</odoo>
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html).
+
+from . import edit_confirm_wizard
+

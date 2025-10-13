@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Account Bank Statement Line - Full Edit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #7C7BAD;
+            border-bottom: 3px solid #7C7BAD;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #875A7B;
+            margin-top: 30px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .feature {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Account Bank Statement Line - Full Edit</h1>
+
+    <p><strong>Versión:</strong> 17.0.1.0.0</p>
+    <p><strong>Autor:</strong> Xtendoo Software S.L.U.</p>
+    <p><strong>Licencia:</strong> LGPL-3</p>
+
+    <h2>Descripción</h2>
+    <p>
+        Este módulo permite editar todos los campos del modelo de líneas de extracto bancario
+        (<code>account.bank.statement.line</code>) en Odoo 17, proporcionando acceso directo
+        a través de un menú dedicado bajo Contabilidad → Xtendoo.
+    </p>
+
+    <div class="feature">
+        <h3>✓ Características principales</h3>
+        <ul>
+            <li><strong>Edición total</strong> de todos los campos de líneas de extracto bancario</li>
+            <li><strong>Menú dedicado</strong> para acceso directo sin pasar por otras pantallas</li>
+            <li><strong>Control de permisos</strong> mediante grupo específico</li>
+            <li><strong>Trazabilidad completa</strong> con registro en chatter</li>
+            <li><strong>Wizard de confirmación</strong> para ediciones en estados críticos</li>
+            <li><strong>Auditoría</strong> con campo de motivo de ajuste manual</li>
+        </ul>
+    </div>
+
+    <h2>Funcionalidades</h2>
+
+    <h3>1. Interfaz de usuario mejorada</h3>
+    <ul>
+        <li>Vista tree editable en línea para cambios rápidos</li>
+        <li>Vista form completa con secciones organizadas</li>
+        <li>Smart buttons para navegación rápida</li>
+        <li>Filtros y búsquedas avanzadas</li>
+        <li>Badges visuales de estado</li>
+    </ul>
+
+    <h3>2. Seguridad y control</h3>
+    <ul>
+        <li>Grupo específico: <strong>Xtendoo - Editor líneas de extracto</strong></li>
+        <li>Acceso también para usuarios con rol Asesor</li>
+        <li>Wizard de confirmación para estados críticos</li>
+        <li>Banner de advertencia en líneas conciliadas o posteadas</li>
+    </ul>
+
+    <h3>3. Auditoría y trazabilidad</h3>
+    <ul>
+        <li>Registro automático en chatter de todos los cambios</li>
+        <li>Campo obligatorio para documentar motivo del ajuste</li>
+        <li>Tracking de campos clave (fecha, importe, contacto, etc.)</li>
+        <li>Información de auditoría (creado por, modificado por)</li>
+    </ul>
+
+    <h3>4. Gestión de riesgos</h3>
+    <ul>
+        <li>Parámetro de configuración para activar/desactivar edición total</li>
+        <li>Advertencias visuales en formularios</li>
+        <li>Botón para recalcular totales y conciliación</li>
+        <li>Validaciones para prevenir descuadres</li>
+    </ul>
+
+    <div class="warning">
+        <h3>⚠ Advertencias importantes</h3>
+        <ul>
+            <li><strong>Impacto contable:</strong> Editar líneas conciliadas puede afectar la contabilidad</li>
+            <li><strong>Documentación:</strong> Siempre documenta el motivo del ajuste</li>
+            <li><strong>Verificación:</strong> Después de ediciones, verifica que los totales cuadran</li>
+            <li><strong>Permisos:</strong> Solo otorga acceso a usuarios de confianza</li>
+        </ul>
+    </div>
+
+    <h2>Instalación</h2>
+    <ol>
+        <li>Actualizar la lista de módulos en Odoo</li>
+        <li>Buscar "Account Bank Statement Line - Full Edit"</li>
+        <li>Hacer clic en Instalar</li>
+        <li>Asignar permisos a los usuarios autorizados</li>
+    </ol>
+
+    <h2>Configuración</h2>
+    <p>
+        El módulo incluye un parámetro de sistema para controlar la edición total:
+    </p>
+    <p>
+        <strong>Ruta:</strong> Configuración → Técnico → Parámetros → Parámetros del Sistema<br>
+        <strong>Clave:</strong> <code>account_banck_statement_line.allow_full_edit</code><br>
+        <strong>Valores:</strong> True (activado) / False (desactivado)
+    </p>
+
+    <h2>Uso</h2>
+    <ol>
+        <li>Navegar a: <strong>Contabilidad → Xtendoo → Líneas de extracto (edición total)</strong></li>
+        <li>Seleccionar una línea o crearla nueva</li>
+        <li>Editar los campos necesarios</li>
+        <li>Documentar el motivo del ajuste en el campo correspondiente</li>
+        <li>Guardar los cambios</li>
+    </ol>
+
+    <h2>Soporte</h2>
+    <p>
+        <strong>Xtendoo Software S.L.U.</strong><br>
+        Web: <a href="https://www.xtendoo.es">https://www.xtendoo.es</a><br>
+        Email: info@xtendoo.es
+    </p>
+
+    <h2>Licencia</h2>
+    <p>
+        LGPL-3.0 or later (<a href="https://www.gnu.org/licenses/lgpl.html">https://www.gnu.org/licenses/lgpl.html</a>)
+    </p>
+
+</body>
+</html>
+

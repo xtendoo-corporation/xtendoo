@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Grupo específico para editores de líneas de extracto -->
+        <record id="group_xtendoo_bank_line_editor" model="res.groups">
+            <field name="name">Xtendoo - Editor líneas de extracto</field>
+            <field name="category_id" ref="base.module_category_accounting"/>
+            <field name="comment">Usuarios que pueden editar todos los campos de líneas de extracto bancario</field>
+        </record>
+
+    </data>
+</odoo>
+
