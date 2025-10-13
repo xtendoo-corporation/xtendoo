@@ -14,7 +14,7 @@
               parent="menu_xtendoo_accounting"
               action="action_bank_statement_line_full_edit"
               sequence="10"
-              groups="account.group_account_manager,account_banck_statement_line.group_xtendoo_bank_line_editor"/>
+              groups="account.group_account_manager,account_bank_statement_line.group_xtendoo_bank_line_editor"/>
 
 </odoo>
 

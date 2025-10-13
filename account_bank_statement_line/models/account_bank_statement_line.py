@@ -83,7 +83,7 @@ class AccountBankStatementLine(models.Model):
         """Sobrescribir write para añadir trazabilidad y validaciones"""
         # Verificar si la edición total está habilitada
         allow_full_edit = self.env['ir.config_parameter'].sudo().get_param(
-            'account_banck_statement_line.allow_full_edit',
+            'account_bank_statement_line.allow_full_edit',
             default='True'
         )
 
@@ -94,7 +94,7 @@ class AccountBankStatementLine(models.Model):
 
         # Verificar permisos para edición en estado crítico
         if not self.env.user.has_group('account.group_account_manager') and \
-           not self.env.user.has_group('account_banck_statement_line.group_xtendoo_bank_line_editor'):
+           not self.env.user.has_group('account_bank_statement_line.group_xtendoo_bank_line_editor'):
             for line in self:
                 if line.is_critical_state:
                     raise UserError(_(
@@ -204,4 +204,4 @@ class AccountBankStatementLine(models.Model):
     def check_edit_permission(self):
         """Verifica si el usuario actual puede editar líneas"""
         return self.env.user.has_group('account.group_account_manager') or \
-               self.env.user.has_group('account_banck_statement_line.group_xtendoo_bank_line_editor')
+               self.env.user.has_group('account_bank_statement_line.group_xtendoo_bank_line_editor')

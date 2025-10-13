@@ -29,7 +29,7 @@ Este módulo permite editar todos los campos del modelo de líneas de extracto b
 - Tracking automático en campos clave
 
 ### 4. Control de Riesgos
-- Parámetro de configuración: `account_banck_statement_line.allow_full_edit`
+- Parámetro de configuración: `account_bank_statement_line.allow_full_edit`
 - Wizard de confirmación para ediciones en estados críticos (posted/reconciled)
 - Banner de advertencia en formulario cuando el extracto está conciliado o posteado
 - Botón para recalcular totales y conciliación
@@ -50,7 +50,7 @@ Este módulo permite editar todos los campos del modelo de líneas de extracto b
 
 1. Copiar el módulo en la carpeta de addons de Xtendoo
 2. Actualizar la lista de módulos
-3. Instalar el módulo `account_banck_statement_line`
+3. Instalar el módulo `account_bank_statement_line`
 
 ## Configuración
 
@@ -60,7 +60,7 @@ El módulo incluye un parámetro de sistema que controla si la edición total es
 
 **Ruta**: Configuración → Técnico → Parámetros → Parámetros del Sistema
 
-**Clave**: `account_banck_statement_line.allow_full_edit`
+**Clave**: `account_bank_statement_line.allow_full_edit`
 
 **Valor**: `True` (activado) / `False` (desactivado)
 
@@ -124,7 +124,7 @@ Algunos campos compute sin inverse pueden no ser editables directamente. En esto
 ## Estructura del Módulo
 
 ```
-account_banck_statement_line/
+account_bank_statement_line/
 ├── __init__.py
 ├── __manifest__.py
 ├── README.md
@@ -163,7 +163,7 @@ El módulo incluye tests unitarios que verifican:
 Para ejecutar los tests:
 
 ```bash
-odoo-bin -c odoo.conf -d test_db -i account_banck_statement_line --test-enable --stop-after-init
+odoo-bin -c odoo.conf -d test_db -i account_bank_statement_line --test-enable --stop-after-init
 ```
 
 ## Soporte

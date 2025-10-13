@@ -39,12 +39,12 @@
                             type="object"
                             string="Recalcular totales/conciliación"
                             class="btn-primary"
-                            groups="account.group_account_manager,account_banck_statement_line.group_xtendoo_bank_line_editor"/>
+                            groups="account.group_account_manager,account_bank_statement_line.group_xtendoo_bank_line_editor"/>
                     <button name="action_recalculate_running_balance"
                             type="object"
                             string="Recalcular Running Balance"
                             class="btn-secondary"
-                            groups="account.group_account_manager,account_banck_statement_line.group_xtendoo_bank_line_editor"/>
+                            groups="account.group_account_manager,account_bank_statement_line.group_xtendoo_bank_line_editor"/>
                     <widget name="web_ribbon" title="Conciliada" bg_color="bg-success" invisible="not is_reconciled"/>
                     <widget name="web_ribbon" title="Pendiente" bg_color="bg-warning" invisible="is_reconciled"/>
                 </header>

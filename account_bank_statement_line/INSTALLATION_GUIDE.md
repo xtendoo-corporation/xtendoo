@@ -1,14 +1,14 @@
-# MÓDULO CREADO: account_banck_statement_line
+# MÓDULO CREADO: account_bank_statement_line
 
 ## ✓ Estado: COMPLETADO
 
 El módulo ha sido creado exitosamente en:
-`/home/xtendoo/Documentos/odoo/17/odoo/custom/src/xtendoo/account_banck_statement_line`
+`/home/xtendoo/Documentos/odoo/17/odoo/custom/src/xtendoo/account_bank_statement_line`
 
 ## Estructura del módulo
 
 ```
-account_banck_statement_line/
+account_bank_statement_line/
 ├── __init__.py                     ✓ Creado
 ├── __manifest__.py                 ✓ Creado
 ├── README.md                       ✓ Creado (documentación completa)
@@ -86,7 +86,7 @@ account_banck_statement_line/
 - Registra en chatter la autorización de edición
 
 ### ✓ 6. Configuración (data/ir_config_parameter.xml)
-- Parámetro: `account_banck_statement_line.allow_full_edit`
+- Parámetro: `account_bank_statement_line.allow_full_edit`
 - Valor por defecto: `True`
 - Permite activar/desactivar la edición total desde configuración
 
@@ -113,7 +113,7 @@ account_banck_statement_line/
 ### 2. Instalar el módulo
 1. Ir a **Aplicaciones**
 2. Quitar el filtro "Aplicaciones"
-3. Buscar: "account_banck_statement_line"
+3. Buscar: "account_bank_statement_line"
 4. Hacer clic en **Instalar**
 
 ### 3. Asignar permisos
@@ -135,7 +135,7 @@ account_banck_statement_line/
 - Validación en el método `write()` del modelo
 - Grupos requeridos:
   - `account.group_account_manager` (Asesor) ✓
-  - `account_banck_statement_line.group_xtendoo_bank_line_editor` ✓
+  - `account_bank_statement_line.group_xtendoo_bank_line_editor` ✓
 
 ### Advertencias visuales
 - Banner amarillo en formulario si la línea está en estado crítico
@@ -163,7 +163,7 @@ account_banck_statement_line/
 ### Parámetro de configuración
 **Ubicación**: Configuración → Técnico → Parámetros → Parámetros del Sistema
 
-**Clave**: `account_banck_statement_line.allow_full_edit`
+**Clave**: `account_bank_statement_line.allow_full_edit`
 
 **Valores**:
 - `True`: Edición total habilitada (por defecto) ✓
@@ -243,8 +243,8 @@ Para cualquier consulta o incidencia:
 
 ## ✓ CHECKLIST DE ENTREGABLES
 
-- [x] Nombre técnico correcto: `account_banck_statement_line` (con "banck")
-- [x] Ubicación correcta: `xtendoo/account_banck_statement_line/`
+- [x] Nombre técnico correcto: `account_bank_statement_line` (con "banck")
+- [x] Ubicación correcta: `xtendoo/account_bank_statement_line/`
 - [x] Versión compatible con Odoo 17.0
 - [x] Licencia LGPL-3
 - [x] Dependencias correctas (account, account_statement_base)

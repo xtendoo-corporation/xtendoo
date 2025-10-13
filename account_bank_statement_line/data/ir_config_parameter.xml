@@ -4,7 +4,7 @@
 
         <!-- Parámetro de configuración para habilitar/deshabilitar edición total -->
         <record id="config_param_allow_full_edit" model="ir.config_parameter">
-            <field name="key">account_banck_statement_line.allow_full_edit</field>
+            <field name="key">account_bank_statement_line.allow_full_edit</field>
             <field name="value">True</field>
         </record>
 
