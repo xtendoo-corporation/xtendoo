@@ -58,6 +58,7 @@ Características principales:
         'views/fsm_order_views.xml',
         'views/fsm_stage_views.xml',
         'views/fsm_tag_views.xml',
+        'views/sale_order_views.xml',
 
         # Menú (cargar al final)
         'views/fsm_menu.xml',

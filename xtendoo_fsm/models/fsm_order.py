@@ -343,32 +343,22 @@ class XtendooFSMOrder(models.Model):
 
     def action_create_sale_order(self):
         """Crea una orden de venta basada en la orden de trabajo"""
-        # Valores básicos para la creación de la orden de venta
-        sale_vals = {
+        self.ensure_one()
+        sale_order_vals = {
             'partner_id': self.partner_id.id,
-            'fsm_order_id': self.id,  # Vincular con la orden FSM
-            'origin': f'{_("Orden de Trabajo")} - {self.name}',
-            'note': self.description,
-            'company_id': self.company_id.id,
+            'insurance_partner_id': self.insurance_partner_id.id if self.insurance_partner_id else False,
+            'franchise_amount': self.franchise_amount,
         }
-
-        # Si hay dirección de servicio, usarla como dirección de entrega
-        if self.location_id:
-            sale_vals['partner_shipping_id'] = self.location_id.id
-
-        try:
-            sale_order = self.env['sale.order'].create(sale_vals)
-
-            return {
-                'type': 'ir.actions.act_window',
-                'name': _('Orden de Venta'),
-                'res_model': 'sale.order',
-                'res_id': sale_order.id,
-                'view_mode': 'form',
-                'target': 'current',
-            }
-        except Exception as e:
-            raise UserError(_('Error al crear la orden de venta: %s') % str(e))
+        sale_order = self.env['sale.order'].create(sale_order_vals)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Orden de Venta'),
+            'res_model': 'sale.order',
+            'view_mode': 'form',
+            'res_id': sale_order.id,
+            'view_id': self.env.ref('sale.view_order_form').id,
+            'target': 'current',
+        }
 
     def action_view_sale_orders(self):
         """Ver órdenes de venta relacionadas"""
