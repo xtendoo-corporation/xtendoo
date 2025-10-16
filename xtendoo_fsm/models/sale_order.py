@@ -35,7 +35,8 @@ class SaleOrder(models.Model):
         self.ensure_one()
         # Si no hay aseguradora o no tiene franquicia, nos salimos del flujo normal
         if not self.insurance_partner_id or self.franchise_amount == 0:
-            return super()._create_invoices(grouped=grouped, final=final, date=date)
+            # Llamada al super solo con los argumentos que acepta la versión base
+            return super()._create_invoices(grouped=grouped, final=final)
 
         # Factura para la aseguradora
         invoice_vals_aseguradora = self._prepare_invoice()
