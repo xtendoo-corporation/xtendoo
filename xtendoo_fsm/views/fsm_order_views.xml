@@ -168,5 +168,52 @@
             </field>
         </record>
 
+        <!-- Vista de búsqueda para órdenes FSM -->
+        <record id="view_xtendoo_fsm_order_search" model="ir.ui.view">
+            <field name="name">fsm.order.search</field>
+            <field name="model">fsm.order</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Órdenes de Trabajo">
+                    <field name="name" string="Número"/>
+                    <field name="partner_id" string="Cliente"/>
+                    <field name="location_id" string="Dirección"/>
+                    <field name="responsible_id" string="Técnico"/>
+                    <field name="stage_id" string="Etapa"/>
+                    <field name="tag_ids" string="Etiquetas"/>
+
+                    <separator/>
+                    <filter string="Mis Órdenes" name="my_orders"
+                            domain="[('responsible_id.user_id', '=', uid)]"/>
+                    <filter string="En Progreso" name="in_progress"
+                            domain="[('date_start', '!=', False), ('date_end', '=', False)]"/>
+                    <filter string="Cerradas" name="closed"
+                            domain="[('is_closed', '=', True)]"/>
+                    <filter string="Abiertas" name="open"
+                            domain="[('is_closed', '=', False)]"/>
+
+                    <separator/>
+                    <filter string="Programadas Hoy" name="today"
+                            domain="[('date_scheduled', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                     ('date_scheduled', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                    <filter string="Programadas Esta Semana" name="this_week"
+                            domain="[('date_scheduled', '&gt;=', (context_today() - relativedelta(weeks=0, weekday=0)).strftime('%Y-%m-%d 00:00:00')),
+                                     ('date_scheduled', '&lt;=', (context_today() + relativedelta(weeks=0, weekday=6)).strftime('%Y-%m-%d 23:59:59'))]"/>
+
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Cliente" name="group_partner"
+                                context="{'group_by': 'partner_id'}"/>
+                        <filter string="Técnico" name="group_responsible"
+                                context="{'group_by': 'responsible_id'}"/>
+                        <filter string="Etapa" name="group_stage"
+                                context="{'group_by': 'stage_id'}"/>
+                        <filter string="Prioridad" name="group_priority"
+                                context="{'group_by': 'priority_level'}"/>
+                        <filter string="Fecha Programada" name="group_date_scheduled"
+                                context="{'group_by': 'date_scheduled'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
     </data>
 </odoo>
