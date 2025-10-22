@@ -31,20 +31,6 @@ class XtendooFSMOrder(models.Model):
         tracking=True,
         help="Cliente final para quien se realiza el servicio"
     )
-    insurance_partner_id = fields.Many2one(
-        'res.partner',
-        string='Aseguradora',
-        required=False,
-        tracking=True,
-        domain="[('is_insurance_company', '=', True)]",
-        help="Compañía aseguradora que gestiona y paga el servicio"
-    )
-    franchise_amount = fields.Float(
-        string='Importe Franquicia',
-        tracking=True,
-        digits=(16, 2),
-        help="Importe de la franquicia a cargo del cliente cuando hay aseguradora"
-    )
     location_id = fields.Many2one(
         'res.partner',
         string='Dirección del Servicio',
@@ -346,8 +332,6 @@ class XtendooFSMOrder(models.Model):
         self.ensure_one()
         sale_order_vals = {
             'partner_id': self.partner_id.id,
-            'insurance_partner_id': self.insurance_partner_id.id if self.insurance_partner_id else False,
-            'franchise_amount': self.franchise_amount,
         }
         sale_order = self.env['sale.order'].create(sale_order_vals)
         return {

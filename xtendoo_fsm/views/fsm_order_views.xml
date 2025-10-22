@@ -10,7 +10,6 @@
                 <list string="Órdenes de Trabajo">
                     <field name="name"/>
                     <field name="partner_id"/>
-                    <field name="insurance_partner_id"/>
                     <field name="location_id"/>
                     <field name="stage_id"/>
                     <field name="priority_level" widget="priority"/>
@@ -65,8 +64,6 @@
                         <group>
                             <group name="customer_info" string="Información del Cliente">
                                 <field name="partner_id" required="1"/>
-                                <field name="insurance_partner_id"/>
-                                <field name="franchise_amount" invisible="not insurance_partner_id" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                 <field name="contact_id" domain="[('parent_id', '=', partner_id)]"/>
                                 <field name="location_id" domain="[('parent_id', '=', partner_id)]"/>
                             </group>
