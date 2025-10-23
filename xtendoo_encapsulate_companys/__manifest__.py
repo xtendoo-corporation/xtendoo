@@ -1,0 +1,20 @@
+{
+    'name': "Multi-Compañía Obligatorio",
+    'summary': "Fuerza company_id en la creación de registros y audita modelos.",
+    'description': "Modulo tecnico.",
+    'author': "Abraham (Xtendoo)",
+    'category': 'Technical',
+    'version': '19.0.1.0.0',
+    'depends': ['base', 'product','contacts'],
+    'installable': True,
+    'application': False,
+    'post_init_hook': 'post_init_check_company_id',
+    'license': 'LGPL-3',
+    'data': [
+        'security/product_category_rule.xml',
+        'security/product_attribute_rules.xml',
+        'security/product_tag_rule.xml',
+        'security/partner_rules.xml',
+        'security/res_partner_bank.xml',
+    ],
+}

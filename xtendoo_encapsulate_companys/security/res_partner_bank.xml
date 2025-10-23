@@ -1,0 +1,15 @@
+<odoo>
+    <record id="res_bank_company_rule" model="ir.rule">
+        <field name="name">Banco por compañía</field>
+        <field name="model_id" ref="base.model_res_bank"/>
+        <field name="domain_force">[('company_id', '=', user.company_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="res_partner_bank_company_rule" model="ir.rule">
+        <field name="name">Cuenta bancaria del contacto por compañía</field>
+        <field name="model_id" ref="base.model_res_partner_bank"/>
+        <field name="domain_force">[('company_id', '=', user.company_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>
+
