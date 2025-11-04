@@ -16,5 +16,6 @@
         'security/product_tag_rule.xml',
         'security/partner_rules.xml',
         'security/res_partner_bank.xml',
+        'views/res_partner_views.xml',
     ],
 }
