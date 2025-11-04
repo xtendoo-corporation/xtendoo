@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<!-- Copyright 2020 Xtendoo - Manuel Calero
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.line.tree.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="arch" type="xml">
+            <xpath
+                expr="//button[@name='action_cancel']"
+                position="after"
+            >
+                <field name="is_price_list_change" invisible="1" />
+                <button
+                    name="action_update_in_pricelist"
+                    string="Actualizar Tarifa"
+                    type="object"
+                    icon="fa-money"
+                    class="btn btn-outline-success"
+                    attrs="{'invisible': [('is_price_list_change','=',False)]}"
+                    groups="sale_order_pricelist_auto_update.pricelist_update_group"
+                />
+            </xpath>
+             <xpath
+                expr="//page/field[@name='order_line']/tree/field[@name='price_unit']"
+                position="after"
+            >
+                <field name="is_pricelist_change" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
