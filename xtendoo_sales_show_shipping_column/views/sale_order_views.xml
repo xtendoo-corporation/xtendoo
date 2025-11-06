@@ -1,34 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Sale Order Tree View -->
-    <record id="view_order_tree_inherit_shipping" model="ir.ui.view">
+    <!-- Sale Order Tree View - Base view that will apply to all sale orders and quotations -->
+    <record id="sale_order_tree_inherit_shipping" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.shipping</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_tree"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="shipping_address_display" string="Shipping Address" optional="show"/>
-            </xpath>
-        </field>
-    </record>
-
-    <!-- Sale Order Quotation Tree View -->
-    <record id="view_quotation_tree_inherit_shipping" model="ir.ui.view">
-        <field name="name">sale.order.quotation.tree.inherit.shipping</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_quotation_tree"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="shipping_address_display" string="Shipping Address" optional="show"/>
-            </xpath>
-        </field>
-    </record>
-
-    <!-- Sale Order with Line Tree View -->
-    <record id="view_quotation_tree_with_onboarding_inherit_shipping" model="ir.ui.view">
-        <field name="name">sale.order.tree.onboarding.inherit.shipping</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
+        <field name="inherit_id" ref="sale.sale_order_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="shipping_address_display" string="Shipping Address" optional="show"/>
