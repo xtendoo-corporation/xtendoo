@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista formulario heredada con botón en header -->
+    <record id="view_move_form_inherit_ai" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.ai</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar botón en la barra de estado para facturas de proveedor en borrador -->
+            <xpath expr="//header" position="inside">
+                <button name="action_import_invoice_with_ai"
+                        type="object"
+                        string="Importar con IA"
+                        class="oe_highlight"
+                        invisible="move_type != 'in_invoice' or state != 'draft'"
+                        help="Importar datos de factura usando IA"/>
+            </xpath>
+
+            <!-- Agregar campos para subir archivo en el notebook de facturas de proveedor -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Importación IA"
+                      invisible="move_type != 'in_invoice' or state != 'draft'">
+                    <group>
+                        <group>
+                            <field name="ai_invoice_file"
+                                   filename="ai_invoice_filename"
+                                   widget="binary"/>
+                            <field name="ai_invoice_filename" invisible="1"/>
+                        </group>
+                        <group>
+                            <div class="alert alert-info" role="alert">
+                                <p><strong>Cómo usar la importación con IA:</strong></p>
+                                <ol>
+                                    <li>Sube un archivo de factura (PDF, JPG o PNG)</li>
+                                    <li>Haz clic en el botón "Importar con IA"</li>
+                                    <li>La IA extraerá los datos y rellenará la factura</li>
+                                    <li>Revisa los datos importados y ajusta si es necesario</li>
+                                </ol>
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción de ventana para el wizard de importación -->
+    <record id="action_import_invoice_ai_wizard" model="ir.actions.act_window">
+        <field name="name">📄 Importar Factura con IA</field>
+        <field name="res_model">xtendoo.invoice.ai.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{
+            'default_create_partner_if_missing': True,
+            'default_attach_original': True,
+        }</field>
+    </record>
+
+    <!-- Acción de servidor para el menú contextual (Acción) -->
+    <record id="action_server_import_invoice_ai" model="ir.actions.server">
+        <field name="name">📄 Importar Factura con IA</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">
+action = env['xtendoo.invoice.ai.wizard'].create({
+    'company_id': env.company.id,
+    'create_partner_if_missing': True,
+    'attach_original': True,
+}).get_formview_action()
+        </field>
+    </record>
+
+    <!-- Botón adicional en el menú de Proveedores -->
+    <menuitem
+        id="menu_import_invoice_ai_shortcut"
+        name="📄 Importar Factura con IA"
+        parent="account.menu_finance_payables"
+        action="action_import_invoice_ai_wizard"
+        sequence="1"
+        groups="account.group_account_invoice"/>
+</odoo>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extender vista de configuración general -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.xtendoo.invoice.ai</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='general_settings']" position="after">
+                <app string="OpenAI Invoice Import" name="xtendoo_invoice_ai" groups="account.group_account_manager">
+                    <block title="OpenAI (ChatGPT) Integration">
+                        <setting>
+                            <label for="xtendoo_invoice_ai_openai_api_key" string="OpenAI API Key"/>
+                            <div class="text-muted">
+                                Your OpenAI API Key. Get it from https://platform.openai.com/api-keys
+                            </div>
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="xtendoo_invoice_ai_openai_api_key" password="True" placeholder="sk-proj-..."/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="xtendoo_invoice_ai_openai_model" string="OpenAI Model"/>
+                            <div class="text-muted">
+                                OpenAI model to use (must support vision)
+                            </div>
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="xtendoo_invoice_ai_openai_model" placeholder="gpt-4o"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="xtendoo_invoice_ai_openai_base" string="OpenAI Base URL"/>
+                            <div class="text-muted">
+                                Optional: Custom OpenAI base URL for enterprise endpoints
+                            </div>
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="xtendoo_invoice_ai_openai_base" placeholder="https://api.openai.com/v1"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="xtendoo_invoice_ai_max_pages" string="Max Pages to Process"/>
+                            <div class="text-muted">
+                                Maximum number of pages to process from PDF
+                            </div>
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="xtendoo_invoice_ai_max_pages"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="xtendoo_invoice_ai_temperature" string="Temperature"/>
+                            <div class="text-muted">
+                                Temperature (0.0 = deterministic, 1.0 = creative)
+                            </div>
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="xtendoo_invoice_ai_temperature"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="xtendoo_invoice_ai_tolerance" string="Total Tolerance"/>
+                            <div class="text-muted">
+                                Maximum difference allowed between AI totals and calculated totals
+                            </div>
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="xtendoo_invoice_ai_tolerance"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>
