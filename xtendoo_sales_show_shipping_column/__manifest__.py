@@ -6,7 +6,7 @@
     "summary": "Show shipping address column in sale orders and invoices tree views",
     "version": "17.0.1.0.0",
     "category": "Sales",
-    "website": "https://www.xtendoo.es",
+    "website": "https://xtendoo.es",
     "author": "Xtendoo",
     "license": "AGPL-3",
     "depends": [
