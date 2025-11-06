@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='origin']" position="after">
                 <field name="picking_id" />
-                <field name="picking_partner_id" />
+<!--                <field name="picking_partner_id" />-->
             </xpath>
         </field>
     </record>

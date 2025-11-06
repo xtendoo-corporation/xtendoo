@@ -12,7 +12,7 @@
     "website": "https://github.com/OCA/stock-logistics-workflow",
     "depends": ["stock", "stock_account", "purchase",],
     "data": [
-    #    "views/product.xml",
+       "views/product.xml",
     ],
     "installable": True,
 }

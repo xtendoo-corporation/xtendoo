@@ -14,7 +14,7 @@
     ],
     'license': 'AGPL-3',
     'data': [
-        # 'views/res_partner_view.xml',
+        'views/res_partner_view.xml',
     ],
     'demo': [],
     'installable': True,

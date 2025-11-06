@@ -10,8 +10,8 @@
     "depends": ["sale",],
     "license": "AGPL-3",
     "data": [
-        # "views/stock_picking.xml",
-        # "views/product_product.xml",
-        # "views/product_template.xml",
+        "views/stock_picking.xml",
+        "views/product_product.xml",
+        "views/product_template.xml",
     ],
 }

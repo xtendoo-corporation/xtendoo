@@ -10,6 +10,6 @@
     "depends": ["sale",],
     "license": "AGPL-3",
     "data": [
-    #    "views/stock_picking_view.xml", "views/stock_move_view.xml",
+       "views/stock_picking_view.xml", "views/stock_move_view.xml",
     ],
 }

@@ -7,7 +7,6 @@
             name="name"
         >product.product.form (in product_form_move_waiting_link)</field>
         <field name="model">product.product</field>
-        <field name="groups_id" eval="[(4, ref('sales_team.group_sale_salesman'))]" />
         <field name="inherit_id" ref="sale.product_form_view_sale_order_button" />
         <field name="arch" type="xml">
             <button name="action_view_sales" position="after">

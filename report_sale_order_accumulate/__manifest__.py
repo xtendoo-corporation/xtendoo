@@ -11,7 +11,7 @@
     "license": "AGPL-3",
     "depends": ["stock",],
     "data": [
-    #    "reports/report_saleorder_accumulate.xml",
+       "reports/report_saleorder_accumulate.xml",
     ],
     "installable": True,
     "auto_install": False,

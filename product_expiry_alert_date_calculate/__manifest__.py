@@ -12,7 +12,7 @@
         "product_expiry"
     ],
     "data": [
-       # "views/stock_production_lot.xml"
+       "views/stock_production_lot.xml"
     ],
     "installable": True,
 }

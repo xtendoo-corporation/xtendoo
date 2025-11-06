@@ -13,7 +13,7 @@
     "license": "AGPL-3",
     "depends": ["base", "stock",],
     "data": [
-    #    "views/wizards.xml",
+       "views/wizards.xml",
     ],
     "installable": True,
 }

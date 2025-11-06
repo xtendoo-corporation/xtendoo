@@ -20,6 +20,6 @@ This module adds the 'Margin Percent' on sales order.
     ],
     "data": [
         "security/ir.model.access.csv",
-        #"views/sale_oder_line_margin_percent_view.xml",
+        "views/sale_oder_line_margin_percent_view.xml",
     ],
 }

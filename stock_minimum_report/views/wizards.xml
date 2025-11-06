@@ -16,12 +16,13 @@
                         <field
                             name="warehouse_option"
                             widget="radio"
-                            attrs="{'required': True}"
+                            required="True"
                         />
                         <field
                             name="warehouse_selected"
                             widget="selection"
-                            attrs="{'required': [('warehouse_option', '=', '2')], 'invisible': [('warehouse_option', '=', '1')]}"
+                            required="warehouse_option == 2"
+                            invisible="warehouse_option == 1"
                         />
                     </group>
                 </group>

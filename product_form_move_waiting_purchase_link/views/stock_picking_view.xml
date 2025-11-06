@@ -14,7 +14,7 @@
                     name="action_picking_template_sale_list"
                     type="object"
                     icon="fa-list"
-                    attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"
+                    invisible ="picking_type_code == 'outgoing'"
                 >
                     <field
                         string="Pending Delivery"

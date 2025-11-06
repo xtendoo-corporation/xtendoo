@@ -10,7 +10,7 @@
     "website": "https://github.com/OCA/stock-logistics-workflow/",
     "depends": ["stock"],
     "data": [
-        #"views/views.xml",
-        #"wizard/stock_picking_return_views.xml"
+        "views/views.xml",
+        "wizard/stock_picking_return_views.xml"
              ],
 }
