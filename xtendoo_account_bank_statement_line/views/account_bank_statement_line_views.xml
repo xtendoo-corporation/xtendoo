@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View for Bank Statement Lines -->
+    <record id="view_bank_statement_line_tree_xtendoo" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.tree.xtendoo</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <tree string="Bank Statement Lines" create="false" delete="false">
+                <field name="date"/>
+                <field name="payment_ref"/>
+                <field name="partner_id"/>
+                <field name="partner_name"/>
+                <field name="journal_id"/>
+                <field name="statement_id"/>
+                <field name="amount" sum="Total Amount"/>
+                <field name="running_balance" sum="Running Balance"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="foreign_currency_id" optional="hide"/>
+                <field name="amount_currency" optional="hide"/>
+                <field name="amount_residual" optional="hide"/>
+                <field name="is_reconciled"/>
+                <field name="state"/>
+                <field name="company_id" optional="hide"/>
+                <field name="internal_index" optional="hide"/>
+                <field name="sequence" optional="hide"/>
+                <field name="account_number" optional="hide"/>
+                <field name="transaction_type" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View for Bank Statement Lines -->
+    <record id="view_bank_statement_line_form_xtendoo" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.form.xtendoo</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <form string="Bank Statement Line">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                </header>
+                <sheet>
+                    <!-- Campo técnico necesario para el dominio de journal_id -->
+                    <field name="suitable_journal_ids" invisible="1"/>
+                    <group>
+                        <group name="main_info" string="Main Information">
+                            <field name="date"/>
+                            <field name="payment_ref"/>
+                            <field name="partner_id"/>
+                            <field name="partner_name"/>
+                            <field name="account_number"/>
+                            <field name="transaction_type"/>
+                            <field name="is_reconciled"/>
+                        </group>
+                        <group name="amounts" string="Amounts">
+                            <field name="amount"/>
+                            <field name="currency_id"/>
+                            <field name="running_balance" class="oe_bold"/>
+                            <field name="amount_residual"/>
+                            <field name="foreign_currency_id"/>
+                            <field name="amount_currency" invisible="foreign_currency_id == False"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group name="statement_info" string="Statement Information">
+                            <field name="statement_id"/>
+                            <field name="statement_name"/>
+                            <field name="statement_complete"/>
+                            <field name="statement_valid"/>
+                            <field name="statement_balance_end_real"/>
+                        </group>
+                        <group name="journal_info" string="Journal &amp; Company">
+                            <field name="journal_id"/>
+                            <field name="company_id"/>
+                            <field name="country_code"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group name="technical_info" string="Technical Information">
+                            <field name="move_id"/>
+                            <field name="internal_index"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group name="payment_info" string="Payment Information">
+                            <field name="payment_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Transaction Details" name="transaction_details">
+                            <group>
+                                <field name="transaction_details" widget="json"/>
+                            </group>
+                        </page>
+                        <page string="Journal Entry" name="journal_entry">
+                            <field name="line_ids" readonly="1">
+                                <tree>
+                                    <field name="account_id"/>
+                                    <field name="partner_id"/>
+                                    <field name="name"/>
+                                    <field name="debit"/>
+                                    <field name="credit"/>
+                                    <field name="balance"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View for Bank Statement Lines -->
+    <record id="view_bank_statement_line_search_xtendoo" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.search.xtendoo</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <search string="Bank Statement Lines">
+                <field name="payment_ref" string="Reference"/>
+                <field name="partner_id"/>
+                <field name="partner_name"/>
+                <field name="journal_id"/>
+                <field name="statement_id"/>
+                <field name="date"/>
+                <filter string="Reconciled" name="reconciled" domain="[('is_reconciled', '=', True)]"/>
+                <filter string="Not Reconciled" name="not_reconciled" domain="[('is_reconciled', '=', False)]"/>
+                <separator/>
+                <filter string="Posted" name="posted" domain="[('state', '=', 'posted')]"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <separator/>
+                <filter string="With Statement" name="with_statement" domain="[('statement_id', '!=', False)]"/>
+                <filter string="Without Statement" name="without_statement" domain="[('statement_id', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Journal" name="group_journal" context="{'group_by': 'journal_id'}"/>
+                    <filter string="Statement" name="group_statement" context="{'group_by': 'statement_id'}"/>
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date'}"/>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action to open Bank Statement Lines -->
+    <record id="action_bank_statement_line_xtendoo" model="ir.actions.act_window">
+        <field name="name">Bank Statement Lines</field>
+        <field name="res_model">account.bank.statement.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_bank_statement_line_tree_xtendoo"/>
+        <field name="search_view_id" ref="view_bank_statement_line_search_xtendoo"/>
+        <field name="context">{
+            'search_default_posted': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No bank statement lines found!
+            </p>
+            <p>
+                This view allows you to see and edit all fields of bank statement lines.
+                You can verify that the running_balance field is correctly calculated.
+            </p>
+        </field>
+    </record>
+</odoo>
+

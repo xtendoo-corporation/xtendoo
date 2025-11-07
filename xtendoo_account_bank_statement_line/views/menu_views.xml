@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu Item -->
+    <menuitem id="menu_bank_statement_line_xtendoo"
+              name="Bank Statement Lines"
+              parent="account.menu_finance_entries"
+              action="action_bank_statement_line_xtendoo"
+              sequence="50"/>
+</odoo>
+

@@ -19,7 +19,7 @@ class AccountMove(models.Model):
         """Compute shipping address display for tree view."""
         for move in self:
             if move.partner_shipping_id:
-                move.shipping_address_display = move.partner_shipping_id
+                move.shipping_address_display = move.partner_shipping_id.name
             else:
                 move.shipping_address_display = False
 
