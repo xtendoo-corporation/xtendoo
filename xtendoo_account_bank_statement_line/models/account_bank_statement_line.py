@@ -19,3 +19,5 @@ class AccountBankStatementLine(models.Model):
         for line in self:
             line.display_name_custom = f"{line.date} - {line.payment_ref or 'N/A'} - {line.amount}"
 
+
+

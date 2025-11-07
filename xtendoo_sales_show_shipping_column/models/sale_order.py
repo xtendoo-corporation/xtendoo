@@ -21,6 +21,6 @@ class SaleOrder(models.Model):
             if order.partner_shipping_id:
                 order.shipping_address_display = order.partner_shipping_id.name
             else:
-                order.shipping_address_display = False
+                order.shipping_address_display = ""
 
 

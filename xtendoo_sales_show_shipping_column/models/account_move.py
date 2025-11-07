@@ -21,5 +21,5 @@ class AccountMove(models.Model):
             if move.partner_shipping_id:
                 move.shipping_address_display = move.partner_shipping_id.name
             else:
-                move.shipping_address_display = False
+                move.shipping_address_display = ""
 
