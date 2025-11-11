@@ -6,6 +6,7 @@
         <menuitem id="xtendoo_fsm_menu_main"
                   name="Órdenes de Trabajo"
                   action="action_xtendoo_fsm_order"
+                  web_icon="xtendoo_fsm,static/description/icon.png"
                   sequence="5"/>
 
         <!-- Menú de órdenes - usar acciones universales -->
