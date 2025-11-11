@@ -11,6 +11,7 @@
     'depends': [
         'account',
         'account_statement_base',
+        'vgr_bank_statement_internal_index',
     ],
     'data': [
         'security/security.xml',
