@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Preview List View -->
+    <record id="view_partner_merge_preview_tree" model="ir.ui.view">
+        <field name="name">partner.merge.preview.tree</field>
+        <field name="model">partner.merge.preview</field>
+        <field name="arch" type="xml">
+            <list string="Duplicate Groups" create="0" edit="0" delete="0">
+                <field name="email"/>
+                <field name="master_partner_id"/>
+                <field name="duplicate_count"/>
+                <field name="partner_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
     <!-- Wizard Form View -->
     <record id="view_partner_merge_wizard_form" model="ir.ui.view">
         <field name="name">partner.merge.wizard.form</field>
@@ -26,18 +40,7 @@
                         <field name="duplicate_count" string="Total Duplicates to Merge"/>
                     </group>
 
-                    <notebook>
-                        <page string="Preview">
-                            <field name="preview_ids" nolabel="1">
-                                <tree string="Duplicate Groups" create="false" edit="false" delete="false">
-                                    <field name="email"/>
-                                    <field name="master_partner_id"/>
-                                    <field name="duplicate_count"/>
-                                    <field name="partner_ids" widget="many2many_tags"/>
-                                </tree>
-                            </field>
-                        </page>
-                    </notebook>
+                    <field name="preview_ids" nolabel="1"/>
 
                     <div class="alert alert-warning" role="alert">
                         <p><strong>Warning:</strong> This action cannot be undone!</p>
