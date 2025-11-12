@@ -7,6 +7,7 @@
                   name="Órdenes de Trabajo"
                   action="action_xtendoo_fsm_order"
                   web_icon="xtendoo_fsm,static/description/icon.png"
+                  groups="xtendoo_fsm.group_fsm_user"
                   sequence="5"/>
 
         <!-- Menú de órdenes - usar acciones universales -->

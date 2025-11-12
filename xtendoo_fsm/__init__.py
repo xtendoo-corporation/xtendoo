@@ -7,21 +7,31 @@ from . import wizard
 
 def post_init_hook(env):
     """Hook ejecutado después de la instalación del módulo"""
-    # Asignar grupos FSM al usuario administrador
+    # Asignar grupos FSM a todos los usuarios internos
     try:
-        # Buscar el usuario admin o el primer usuario activo
-        admin_user = env['res.users'].search([('login', '=', 'admin')], limit=1)
-        if not admin_user:
-            admin_user = env['res.users'].search([('active', '=', True)], limit=1)
+        # Buscar los grupos FSM
+        fsm_user_group = env.ref('xtendoo_fsm.group_fsm_user', raise_if_not_found=False)
+        fsm_manager_group = env.ref('xtendoo_fsm.group_fsm_manager', raise_if_not_found=False)
 
-        if admin_user:
-            # Buscar los grupos FSM
-            fsm_user_group = env.ref('xtendoo_fsm.group_fsm_user', raise_if_not_found=False)
-            fsm_manager_group = env.ref('xtendoo_fsm.group_fsm_manager', raise_if_not_found=False)
+        if fsm_user_group:
+            # Buscar todos los usuarios internos activos (no portal, no público)
+            internal_users = env['res.users'].search([
+                ('active', '=', True),
+                ('share', '=', False),  # Solo usuarios internos (no portal)
+            ])
 
-            if fsm_user_group and fsm_manager_group:
-                # Asignar los grupos al usuario
-                admin_user.groups_id = [(4, fsm_user_group.id), (4, fsm_manager_group.id)]
+            if internal_users:
+                # Asignar el grupo FSM Usuario a todos los usuarios internos
+                for user in internal_users:
+                    if fsm_user_group.id not in user.groups_id.ids:
+                        user.groups_id = [(4, fsm_user_group.id)]
+
+                # Asignar FSM Manager solo al admin
+                admin_user = env['res.users'].search([('login', '=', 'admin')], limit=1)
+                if admin_user and fsm_manager_group:
+                    if fsm_manager_group.id not in admin_user.groups_id.ids:
+                        admin_user.groups_id = [(4, fsm_manager_group.id)]
+
                 env.cr.commit()
     except Exception as e:
         print(f"Error asignando grupos FSM: {e}")
