@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_partner_merge_wizard_form" model="ir.ui.view">
+        <field name="name">partner.merge.wizard.form</field>
+        <field name="model">partner.merge.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Merge Duplicate Partners">
+                <group>
+                    <group>
+                        <field name="state" invisible="1"/>
+                    </group>
+                </group>
+
+                <group invisible="state != 'draft'">
+                    <div class="alert alert-info" role="alert">
+                        <p>This wizard will find all partners with duplicate email addresses and merge them automatically.</p>
+                        <p>The oldest partner (by creation date) will be kept as the master record.</p>
+                        <p><strong>Click "Find Duplicates" to start.</strong></p>
+                    </div>
+                </group>
+
+                <group invisible="state != 'preview'">
+                    <group>
+                        <field name="email_groups_count" string="Email Groups Found"/>
+                        <field name="duplicate_count" string="Total Duplicates to Merge"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Preview">
+                            <field name="preview_ids" nolabel="1">
+                                <tree string="Duplicate Groups" create="false" edit="false" delete="false">
+                                    <field name="email"/>
+                                    <field name="master_partner_id"/>
+                                    <field name="duplicate_count"/>
+                                    <field name="partner_ids" widget="many2many_tags"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <div class="alert alert-warning" role="alert">
+                        <p><strong>Warning:</strong> This action cannot be undone!</p>
+                        <p>All duplicate partners will be deactivated and their records will be transferred to the master partner.</p>
+                    </div>
+                </group>
+
+                <group invisible="state != 'done'">
+                    <group>
+                        <field name="merged_count" string="Partners Merged"/>
+                    </group>
+                    <div class="alert alert-success" role="alert">
+                        <p><strong>Success!</strong> The merge operation has been completed.</p>
+                        <p><field name="merged_count"/> duplicate partners have been merged.</p>
+                    </div>
+                </group>
+
+                <footer>
+                    <button string="Find Duplicates"
+                            name="action_find_duplicates"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button string="Merge All"
+                            name="action_merge_all"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'preview'"
+                            confirm="Are you sure you want to merge all duplicate partners? This action cannot be undone!"/>
+
+                    <button string="Close"
+                            name="action_close"
+                            type="object"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open the wizard -->
+    <record id="action_partner_merge_wizard" model="ir.actions.act_window">
+        <field name="name">Merge Duplicate Partners</field>
+        <field name="res_model">partner.merge.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_partner_merge_wizard"
+              name="Merge Duplicate Partners"
+              parent="contacts.menu_contacts"
+              action="action_partner_merge_wizard"
+              sequence="100"/>
+</odoo>
+
