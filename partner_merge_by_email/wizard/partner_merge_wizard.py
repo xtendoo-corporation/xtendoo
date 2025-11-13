@@ -44,7 +44,7 @@ class PartnerMergeWizard(models.TransientModel):
 
         # Find partners with duplicate emails
         query = """
-            SELECT email, array_agg(id ORDER BY create_date ASC) as partner_ids, count(*) as count
+            SELECT LOWER(email) as email, array_agg(id ORDER BY create_date ASC) as partner_ids, count(*) as count
             FROM res_partner
             WHERE email IS NOT NULL
                 AND email != ''
