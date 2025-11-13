@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Agregar botón en la vista de partner para corregir ubicaciones -->
+    <record id="view_partner_form_stock_location_fix" model="ir.ui.view">
+        <field name="name">res.partner.form.stock.location.fix</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="stock.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='stock_property']" position="after">
+                <group string="Corrección de Ubicaciones" invisible="not company_id">
+                    <div class="alert alert-info" role="alert">
+                        Si este contacto tiene problemas de consistencia con las ubicaciones de stock,
+                        use el botón para corregirlas automáticamente.
+                    </div>
+                    <button name="action_fix_stock_locations"
+                            string="Corregir Ubicaciones de Stock"
+                            type="object"
+                            class="btn-primary"
+                            help="Actualiza las ubicaciones de stock para que sean consistentes con la empresa del contacto"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción para corregir múltiples partners -->
+    <record id="action_fix_partners_stock_locations" model="ir.actions.server">
+        <field name="name">Corregir Ubicaciones de Stock</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    for partner in records:
+        if partner.company_id:
+            partner.action_fix_stock_locations()
+
+    # Notificar al usuario
+    message = f"Se han corregido las ubicaciones de stock de {len(records.filtered(lambda p: p.company_id))} contactos."
+    return {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+            'title': 'Corrección Completada',
+            'message': message,
+            'type': 'success',
+            'sticky': False,
+        }
+    }
+        </field>
+    </record>
+
+</odoo>
+

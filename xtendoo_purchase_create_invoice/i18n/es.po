@@ -1,0 +1,145 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* xtendoo_purchase_create_invoice
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-13 12:00:00+0000\n"
+"PO-Revision-Date: 2025-11-13 12:00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+#. module: xtendoo_purchase_create_invoice
+#: model:ir.model.fields,field_description:xtendoo_purchase_create_invoice.field_purchase_make_invoice_advance__advance_payment_method
+msgid "Crear Factura"
+msgstr "Crear Factura"
+
+#. module: xtendoo_purchase_create_invoice
+#: model:ir.actions.act_window,name:xtendoo_purchase_create_invoice.action_purchase_make_invoice_advance
+#: model_terms:ir.ui.view,arch_db:xtendoo_purchase_create_invoice.view_purchase_make_invoice_advance_form
+msgid "Crear Factura de Compra"
+msgstr "Crear Factura de Compra"
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/models/purchase_order.py:0
+#, python-format
+msgid "No puede crear una factura para un pedido de compra que no está confirmado."
+msgstr "No puede crear una factura para un pedido de compra que no está confirmado."
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/models/purchase_order.py:0
+#, python-format
+msgid "No hay nada que facturar en este pedido."
+msgstr "No hay nada que facturar en este pedido."
+
+#. module: xtendoo_purchase_create_invoice
+#: selection:purchase.make.invoice.advance,advance_payment_method:0
+msgid "Cantidades Recibidas"
+msgstr "Cantidades Recibidas"
+
+#. module: xtendoo_purchase_create_invoice
+#: selection:purchase.make.invoice.advance,advance_payment_method:0
+msgid "Cantidades del Pedido"
+msgstr "Cantidades del Pedido"
+
+#. module: xtendoo_purchase_create_invoice
+#: selection:purchase.make.invoice.advance,advance_payment_method:0
+msgid "Anticipo (porcentaje)"
+msgstr "Anticipo (porcentaje)"
+
+#. module: xtendoo_purchase_create_invoice
+#: selection:purchase.make.invoice.advance,advance_payment_method:0
+msgid "Anticipo (cantidad fija)"
+msgstr "Anticipo (cantidad fija)"
+
+#. module: xtendoo_purchase_create_invoice
+#: model:ir.model.fields,field_description:xtendoo_purchase_create_invoice.field_purchase_make_invoice_advance__amount
+msgid "Cantidad de Anticipo"
+msgstr "Cantidad de Anticipo"
+
+#. module: xtendoo_purchase_create_invoice
+#: model:ir.model.fields,field_description:xtendoo_purchase_create_invoice.field_purchase_make_invoice_advance__product_id
+msgid "Producto de Anticipo"
+msgstr "Producto de Anticipo"
+
+#. module: xtendoo_purchase_create_invoice
+#: model:ir.ui.view,arch_db:xtendoo_purchase_create_invoice.view_purchase_order_form_inherit
+msgid "Crear Factura Manual"
+msgstr "Crear Factura Manual"
+
+#. module: xtendoo_purchase_create_invoice
+#: model_terms:ir.ui.view,arch_db:xtendoo_purchase_create_invoice.view_purchase_make_invoice_advance_form
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "Solo puede crear facturas para pedidos de compra confirmados."
+msgstr "Solo puede crear facturas para pedidos de compra confirmados."
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "No hay nada que facturar en los pedidos seleccionados."
+msgstr "No hay nada que facturar en los pedidos seleccionados."
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "No se crearon facturas. Verifique que haya líneas pendientes de facturar."
+msgstr "No se crearon facturas. Verifique que haya líneas pendientes de facturar."
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "Facturas de Compra"
+msgstr "Facturas de Compra"
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "El porcentaje debe estar entre 0 y 100."
+msgstr "El porcentaje debe estar entre 0 y 100."
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "Por favor, configure un producto de anticipo."
+msgstr "Por favor, configure un producto de anticipo."
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "Anticipo de %s%%"
+msgstr "Anticipo de %s%%"
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "La cantidad debe ser mayor a cero."
+msgstr "La cantidad debe ser mayor a cero."
+
+#. module: xtendoo_purchase_create_invoice
+#: code:addons/xtendoo_purchase_create_invoice/wizard/purchase_make_invoice_advance.py:0
+#, python-format
+msgid "Anticipo"
+msgstr "Anticipo"
+
+#. module: xtendoo_purchase_create_invoice
+#: model:ir.model,name:xtendoo_purchase_create_invoice.model_purchase_order
+msgid "Purchase Order"
+msgstr "Pedido de Compra"
+
+#. module: xtendoo_purchase_create_invoice
+#: model:ir.model,name:xtendoo_purchase_create_invoice.model_purchase_make_invoice_advance
+msgid "Wizard para crear facturas de compra"
+msgstr "Wizard para crear facturas de compra"
+

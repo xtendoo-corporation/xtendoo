@@ -1,6 +1,6 @@
 {
     'name': 'Xtendoo Company Required',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'category': 'Extra Tools',
     'author': 'Manuel Calero Solis (Xtendoo)',
     'website': '',
@@ -10,6 +10,10 @@
     'depends': [
         'product',
         'point_of_sale',
+        'stock',
+    ],
+    'data': [
+        'views/res_partner_view.xml',
     ],
     'application': True,
     'installable': True,
