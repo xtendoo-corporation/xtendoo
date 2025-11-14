@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista formulario heredada para configuración de alias de email -->
+    <record id="view_account_journal_form_inherit_ai_alias" model="ir.ui.view">
+        <field name="name">account.journal.form.inherit.ai.alias</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar página de configuración de IA en el notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Importación IA por Email" 
+                      invisible="type != 'purchase'">
+                    <group>
+                        <group string="Configuración de Email">
+                            <field name="ai_invoice_alias_enabled"/>
+                            <field name="ai_invoice_alias_id" 
+                                   invisible="1"/>
+                            <field name="ai_invoice_alias_name" 
+                                   invisible="not ai_invoice_alias_enabled"
+                                   required="ai_invoice_alias_enabled"/>
+                            <div class="alert alert-info" 
+                                 role="alert" 
+                                 invisible="not ai_invoice_alias_enabled">
+                                <p><strong>📧 Dirección de email para recibir facturas:</strong></p>
+                                <p>
+                                    <field name="ai_invoice_alias_id" 
+                                           widget="email_alias" 
+                                           nolabel="1"
+                                           invisible="not ai_invoice_alias_enabled"/>
+                                </p>
+                                <p class="text-muted">
+                                    Envía facturas en PDF o imagen a esta dirección y se procesarán automáticamente con IA.
+                                </p>
+                            </div>
+                        </group>
+                        <group string="Opciones de Procesamiento"
+                               invisible="not ai_invoice_alias_enabled">
+                            <field name="ai_invoice_create_partner"/>
+                            <field name="ai_invoice_attach_original"/>
+                        </group>
+                    </group>
+                    
+                    <group invisible="not ai_invoice_alias_enabled">
+                        <group>
+                            <div class="alert alert-success" role="alert">
+                                <h4><strong>✅ Cómo funciona:</strong></h4>
+                                <ol>
+                                    <li>Envía un email con la factura adjunta (PDF, JPG o PNG) a la dirección configurada arriba</li>
+                                    <li>El sistema detectará automáticamente los archivos adjuntos</li>
+                                    <li>La IA extraerá los datos de cada factura</li>
+                                    <li>Se crearán facturas borradores automáticamente en este diario</li>
+                                    <li>Recibirás una notificación por email con el resultado</li>
+                                    <li>Revisa y valida las facturas creadas antes de confirmarlas</li>
+                                </ol>
+                            </div>
+                        </group>
+                        <group>
+                            <div class="alert alert-warning" role="alert">
+                                <h4><strong>⚠️ Importante:</strong></h4>
+                                <ul>
+                                    <li>Solo se procesarán archivos PDF, JPG y PNG</li>
+                                    <li>Otros archivos adjuntos serán ignorados</li>
+                                    <li>Las facturas se crean en estado borrador para revisión</li>
+                                    <li>Asegúrate de tener configurada la API de OpenAI en Ajustes</li>
+                                    <li>El remitente recibirá un email de confirmación</li>
+                                </ul>
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

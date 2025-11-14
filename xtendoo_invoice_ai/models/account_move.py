@@ -33,6 +33,7 @@ except ImportError:
 
 class AccountMove(models.Model):
     _inherit = "account.move"
+    # ✅ account.move YA hereda de mail.thread por defecto en Odoo
 
     ai_invoice_file = fields.Binary(
         string="AI Invoice File",
@@ -41,12 +42,251 @@ class AccountMove(models.Model):
     )
     ai_invoice_filename = fields.Char(string="AI Filename", copy=False)
 
+    @api.model
+    def message_new(self, msg_dict, custom_values=None):
+        """
+        ✅ NUEVO: Procesar emails entrantes con facturas adjuntas.
+        Este método se llama cuando llega un email al alias configurado en el journal.
+        """
+        _logger.info(f"📧 Received email for invoice creation: {msg_dict.get('subject', 'No subject')}")
+
+        # Obtener el journal desde custom_values o alias_defaults
+        journal_id = None
+        if custom_values and custom_values.get("journal_id"):
+            journal_id = custom_values.get("journal_id")
+
+        if not journal_id:
+            _logger.error("❌ No journal_id found in custom_values, cannot process invoice email")
+            return super().message_new(msg_dict, custom_values=custom_values)
+
+        journal = self.env["account.journal"].browse(journal_id)
+
+        # Verificar que el journal tiene habilitada la importación por IA
+        if not journal.ai_invoice_alias_enabled:
+            _logger.info(f"ℹ️ AI invoice import not enabled for journal {journal.name}")
+            return super().message_new(msg_dict, custom_values=custom_values)
+
+        # Procesar adjuntos de facturas
+        attachments = msg_dict.get("attachments", [])
+        if not attachments:
+            _logger.info("ℹ️ No attachments found in email")
+            return super().message_new(msg_dict, custom_values=custom_values)
+
+        _logger.info(f"📎 Processing {len(attachments)} attachments from email")
+
+        created_invoices = []
+
+        for attachment in attachments:
+            try:
+                filename = attachment[0]
+                file_content = attachment[1]
+
+                # ✅ IMPORTANTE: Los adjuntos en msg_dict NO vienen en base64,
+                # pero el wizard espera base64. Necesitamos codificar.
+                if isinstance(file_content, bytes):
+                    file_content = base64.b64encode(file_content)
+                elif isinstance(file_content, str):
+                    # Si es string, asumir que es base64 ya
+                    file_content = file_content.encode() if isinstance(file_content, str) else file_content
+
+                # Validar tipo de archivo
+                if not self._is_valid_invoice_file(filename):
+                    _logger.info(f"⏭️ Skipping non-invoice file: {filename}")
+                    continue
+
+                _logger.info(f"🔄 Processing invoice file: {filename}")
+
+                # Crear factura(s) usando el wizard de IA
+                result = self._create_invoice_from_attachment(
+                    filename, file_content, msg_dict, journal
+                )
+
+                # result puede ser una factura o una lista de facturas (multi-page)
+                if result:
+                    if isinstance(result, list):
+                        created_invoices.extend(result)
+                    else:
+                        created_invoices.append(result)
+
+            except Exception as e:
+                _logger.error(f"❌ Error processing attachment {filename}: {str(e)}", exc_info=True)
+
+        # Enviar notificación al remitente
+        if created_invoices:
+            self._send_processing_notification(
+                msg_dict.get("email_from"),
+                len(created_invoices),
+                len(attachments) - len(created_invoices),
+                msg_dict.get("message_id"),
+                journal,
+            )
+
+        # Retornar la primera factura creada (o crear una vacía si no se procesó nada)
+        if created_invoices:
+            _logger.info(f"✅ Successfully created {len(created_invoices)} invoice(s) from email")
+            return created_invoices[0]
+        else:
+            _logger.warning("⚠️ No invoices were created from email attachments")
+            return super().message_new(msg_dict, custom_values=custom_values)
+
+    def _is_valid_invoice_file(self, filename):
+        """✅ NUEVO: Verificar si el archivo es un tipo válido para facturas"""
+        if not filename:
+            return False
+
+        filename_lower = filename.lower()
+        valid_extensions = (".pdf", ".jpg", ".jpeg", ".png")
+        return filename_lower.endswith(valid_extensions)
+
+    def _create_invoice_from_attachment(self, filename, file_content, msg_dict, journal):
+        """
+        ✅ NUEVO: Crear factura(s) borrador usando el wizard de IA.
+        ✨ MULTI-INVOICE: Detecta automáticamente PDFs con múltiples páginas y crea una factura por página.
+        """
+        # Detectar si el PDF tiene múltiples páginas
+        multi_invoice = False
+        if filename.lower().endswith('.pdf'):
+            try:
+                # Decodificar el PDF para contar páginas
+                pdf_data = base64.b64decode(file_content)
+                from pdf2image import convert_from_bytes
+                images = convert_from_bytes(pdf_data, first_page=1, last_page=2)  # Solo verificar primeras 2 páginas
+                if len(images) > 1:
+                    multi_invoice = True
+                    _logger.info(f"📄 PDF has multiple pages, enabling multi-invoice mode")
+            except Exception as e:
+                _logger.warning(f"Could not detect page count, assuming single page: {e}")
+
+        # Crear wizard
+        wizard = self.env["xtendoo.invoice.ai.wizard"].create({
+            "upload": file_content,
+            "filename": filename,
+            "company_id": journal.company_id.id,
+            "journal_id": journal.id,
+            "create_partner_if_missing": journal.ai_invoice_create_partner,
+            "attach_original": journal.ai_invoice_attach_original,
+            "multi_invoice": multi_invoice,  # ✅ Activar modo multi-factura si hay múltiples páginas
+        })
+
+        # Procesar con IA
+        result = wizard.action_analyze_and_create()
+
+        # Preparar nota de email
+        email_from = msg_dict.get("email_from", "Unknown")
+        subject = msg_dict.get("subject", "No subject")
+
+        note = _(
+            "📧 Invoice received by email\n"
+            "From: %s\n"
+            "Subject: %s\n"
+            "Processed automatically with AI"
+        ) % (email_from, subject)
+
+        # Manejar resultado según sea single o multi-invoice
+        if multi_invoice:
+            # Multi-invoice: result contiene domain con IDs de facturas
+            if result.get("domain"):
+                invoice_ids = result["domain"][0][2]  # [('id', 'in', [1,2,3])]
+                invoices = self.env["account.move"].browse(invoice_ids)
+
+                # Añadir nota a todas las facturas
+                for invoice in invoices:
+                    current_narration = invoice.narration or ""
+                    invoice.narration = current_narration + "\n\n" + note if current_narration else note
+
+                _logger.info(f"✅ Created {len(invoices)} invoices from multi-page email attachment {filename}")
+
+                # Retornar lista de facturas
+                return list(invoices) if invoices else None
+        else:
+            # Single invoice: result contiene res_id
+            if result.get("res_id"):
+                invoice = self.env["account.move"].browse(result["res_id"])
+
+                # Añadir nota con información del email
+                current_narration = invoice.narration or ""
+                invoice.narration = current_narration + "\n\n" + note if current_narration else note
+
+                _logger.info(f"✅ Created invoice {invoice.name} from email attachment {filename}")
+                return invoice
+
+        return None
+
+    def _send_processing_notification(self, email_to, success_count, error_count, in_reply_to, journal):
+        """
+        ✅ NUEVO: Enviar notificación por email sobre el resultado del procesamiento.
+        """
+        if not email_to:
+            return
+
+        subject = _("Invoice Processing Result - %s") % journal.name
+
+        if error_count == 0:
+            body = _(
+                "<p>Your invoice(s) have been successfully processed:</p>"
+                "<ul>"
+                "<li>✅ Successfully processed: <strong>%s</strong> invoice(s)</li>"
+                "</ul>"
+                "<p>The draft invoice(s) are now available in the system for review.</p>"
+            ) % success_count
+        else:
+            body = _(
+                "<p>Invoice processing completed with some issues:</p>"
+                "<ul>"
+                "<li>✅ Successfully processed: <strong>%s</strong> invoice(s)</li>"
+                "<li>❌ Failed: <strong>%s</strong> invoice(s)</li>"
+                "</ul>"
+                "<p>Please check the system logs or contact support for failed invoices.</p>"
+            ) % (success_count, error_count)
+
+        # Crear y enviar email
+        mail_values = {
+            "subject": subject,
+            "body_html": body,
+            "email_to": email_to,
+            "auto_delete": True,
+        }
+
+        if in_reply_to and journal.ai_invoice_alias_id:
+            mail_values["reply_to"] = journal.ai_invoice_alias_id.display_name
+            mail_values["headers"] = {"In-Reply-To": in_reply_to}
+
+        try:
+            mail = self.env["mail.mail"].create(mail_values)
+            mail.send()
+            _logger.info(f"📧 Sent processing notification to {email_to}")
+        except Exception as e:
+            _logger.error(f"❌ Failed to send notification email: {str(e)}")
+
+    # ========== MÉTODOS ORIGINALES (sin cambios) ==========
+
     def action_import_invoice_with_ai(self):
         """Importar factura usando IA desde el botón en la factura"""
         self.ensure_one()
 
-        if not self.ai_invoice_file:
-            raise UserError(_("Please upload an invoice file first."))
+        # Buscar archivo en el campo binario o en adjuntos
+        file_data = None
+        filename = None
+
+        if self.ai_invoice_file:
+            file_data = self.ai_invoice_file
+            filename = self.ai_invoice_filename
+        else:
+            # Buscar en adjuntos de la factura
+            attachments = self.env["ir.attachment"].search([
+                ("res_model", "=", "account.move"),
+                ("res_id", "=", self.id),
+                ("mimetype", "in", ["application/pdf", "image/jpeg", "image/png", "image/jpg"]),
+            ], limit=1, order="create_date desc")
+
+            if attachments:
+                file_data = attachments[0].datas
+                filename = attachments[0].name
+                _logger.info(f"Using attachment: {filename} for AI processing")
+
+        if not file_data:
+            raise UserError(
+                _("Please upload an invoice file first. You can either use the 'AI Invoice File' field in the 'Importación IA' tab or attach a PDF/image file to this invoice."))
 
         if self.state != "draft":
             raise UserError(_("You can only import AI data on draft invoices."))
@@ -56,8 +296,8 @@ class AccountMove(models.Model):
 
         # Usar el wizard para procesar
         wizard = self.env["xtendoo.invoice.ai.wizard"].create({
-            "upload": self.ai_invoice_file,
-            "filename": self.ai_invoice_filename,
+            "upload": file_data,
+            "filename": filename,
             "company_id": self.company_id.id,
             "journal_id": self.journal_id.id,
             "currency_id": self.currency_id.id if self.currency_id else False,
@@ -67,7 +307,7 @@ class AccountMove(models.Model):
 
         # Crear job
         job = self.env["xtendoo.invoice.ai.job"].create({
-            "filename": self.ai_invoice_filename,
+            "filename": self.ai_invoice_filename or filename,
             "state": "processing",
             "company_id": self.company_id.id,
             "user_id": self.env.user.id,
@@ -89,11 +329,15 @@ class AccountMove(models.Model):
             # Actualizar la factura actual con los datos extraídos
             self._update_invoice_from_ai_data(openai_result["json_data"])
 
-            # Adjuntar archivo original
-            if self.ai_invoice_file:
+            # Adjuntar archivo original si no existe ya
+            if file_data and not self.env["ir.attachment"].search([
+                ("res_model", "=", "account.move"),
+                ("res_id", "=", self.id),
+                ("name", "=", filename or "invoice.pdf"),
+            ], limit=1):
                 self.env["ir.attachment"].create({
-                    "name": self.ai_invoice_filename or "invoice.pdf",
-                    "datas": self.ai_invoice_file,
+                    "name": filename or "invoice.pdf",
+                    "datas": file_data,
                     "res_model": "account.move",
                     "res_id": self.id,
                     "type": "binary",
@@ -191,7 +435,17 @@ class AccountMove(models.Model):
         if invoice_data.get("notes"):
             vals["narration"] = invoice_data["notes"]
 
-        self.write(vals)
+        self.with_context(check_move_validity=False).write(vals)
+        # Forzar recálculo de campos relacionados con el partner
+        if partner:
+            self._onchange_partner_id()
+            # Asegurar que los valores se mantienen después del onchange
+            if invoice_date:
+                self.invoice_date = invoice_date
+            if invoice_data["supplier_invoice_number"]:
+                self.ref = invoice_data["supplier_invoice_number"]
+            if due_date:
+                self.invoice_date_due = due_date
 
         # 3. Eliminar líneas existentes (excepto las de impuestos)
         self.invoice_line_ids.filtered(lambda l: not l.display_type).unlink()
@@ -214,9 +468,9 @@ class AccountMove(models.Model):
             # Si hay producto, usar su cuenta
             if product:
                 account = (
-                    product.property_account_expense_id
-                    or product.categ_id.property_account_expense_categ_id
-                    or default_account
+                        product.property_account_expense_id
+                        or product.categ_id.property_account_expense_categ_id
+                        or default_account
                 )
 
             # Mapear impuestos
@@ -236,7 +490,7 @@ class AccountMove(models.Model):
                 )
 
             _logger.info(f"Creating line: {line_data['description']}, qty: {line_data['quantity']}, "
-                        f"price: {line_data['unit_price']}, taxes: {taxes.mapped('name')}")
+                         f"price: {line_data['unit_price']}, taxes: {taxes.mapped('name')}")
 
             line_vals = {
                 "move_id": self.id,
@@ -257,7 +511,7 @@ class AccountMove(models.Model):
 
         # 5. Validar totales
         _logger.info(f"Invoice totals after recompute - Untaxed: {self.amount_untaxed}, "
-                    f"Tax: {self.amount_tax}, Total: {self.amount_total}")
+                     f"Tax: {self.amount_tax}, Total: {self.amount_total}")
 
         tolerance = float(
             self.env["ir.config_parameter"]
@@ -281,10 +535,9 @@ class AccountMove(models.Model):
                 "Calculated: Untaxed=%.2f, Total=%.2f\n"
                 "Please review the invoice manually."
             ) % (
-                totals_data["untaxed"],
-                totals_data["total"],
-                self.amount_untaxed,
-                self.amount_total,
-            )
+                               totals_data["untaxed"],
+                               totals_data["total"],
+                               self.amount_untaxed,
+                               self.amount_total,
+                           )
             self.narration = current_narration + warning_note
-

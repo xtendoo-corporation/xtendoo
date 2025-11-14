@@ -12,6 +12,7 @@
     "depends": [
         "account",
         "base",
+        "mail",
     ],
     "data": [
         "security/ir.model.access.csv",
@@ -20,12 +21,13 @@
         "views/ai_job_views.xml",
         "views/settings_views.xml",
         "views/account_move_views.xml",
+        "views/account_journal_views.xml",
         "views/menus.xml",
     ],
     "assets": {
         "web.assets_backend": [
             "xtendoo_invoice_ai/static/src/js/invoice_ai_uploader.js",
-            "xtendoo_invoice_ai/static/src/js/invoice_ai_upload_button.js",
+          #  "xtendoo_invoice_ai/static/src/js/invoice_ai_upload_button.js",
             "xtendoo_invoice_ai/static/src/js/invoice_list_controller.js",
             "xtendoo_invoice_ai/static/src/xml/invoice_ai_uploader.xml",
         ],

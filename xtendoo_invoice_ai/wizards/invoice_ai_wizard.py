@@ -34,7 +34,6 @@ except ImportError:
     _logger.warning("jsonschema library not found. Please install it with: pip install jsonschema")
     jsonschema = None
 
-
 # JSON Schema para extracción estructurada
 INVOICE_SCHEMA = {
     "type": "object",
@@ -111,6 +110,7 @@ Instrucciones:
 - Fechas en formato YYYY-MM-DD
 - Numéricos con punto decimal (no comas)
 - Detecta proveedor (nombre, NIF/CIF, email, teléfono, dirección)
+- Detecta si existe un  producto en odoo igual que el de la línea extraido, por ejemplo Diesel e+, e incorpora el impuesto que tenga en la ficha de producto de odoo 
 - Número de factura del proveedor
 - Fecha de factura y vencimiento
 - Divisa
@@ -118,7 +118,6 @@ Instrucciones:
 - Totales: base imponible, impuestos, total
 - Si hay varios tipos de IVA (21%, 10%, 4%), devuélvelos por línea
 - No inventes valores que no aparezcan en la imagen
-
 Devuelve el JSON siguiendo este esquema exacto:
 """
 
@@ -161,6 +160,11 @@ class XtendooInvoiceAIWizard(models.TransientModel):
         string="Attach Original File",
         default=True,
         help="Attach uploaded file to created invoice",
+    )
+    multi_invoice = fields.Boolean(
+        string="Multiple Invoices (One per Page)",
+        default=False,
+        help="If checked, each page of the PDF will be processed as a separate invoice",
     )
     state = fields.Selection(
         [("draft", "Draft"), ("processing", "Processing")],
@@ -372,10 +376,10 @@ class XtendooInvoiceAIWizard(models.TransientModel):
             for partner in all_partners:
                 partner_vat_normalized = self._normalize_vat(partner.vat)
                 if partner_vat_normalized and (
-                    partner_vat_normalized == vat_normalized
-                    or partner_vat_normalized == vat_without_country
-                    or vat_normalized in partner_vat_normalized
-                    or vat_without_country in partner_vat_normalized
+                        partner_vat_normalized == vat_normalized
+                        or partner_vat_normalized == vat_without_country
+                        or vat_normalized in partner_vat_normalized
+                        or vat_without_country in partner_vat_normalized
                 ):
                     _logger.info(f"Supplier FOUND by VAT (fuzzy match): {partner.name} (ID: {partner.id})")
                     self._update_partner_data_if_needed(partner, supplier_data)
@@ -559,7 +563,8 @@ class XtendooInvoiceAIWizard(models.TransientModel):
                     closest_tax = tax
 
             if closest_tax and min_diff <= 1.0:  # Tolerancia de 1%
-                _logger.info(f"Found closest tax: {closest_tax.name} (ID: {closest_tax.id}, Amount: {closest_tax.amount}%)")
+                _logger.info(
+                    f"Found closest tax: {closest_tax.name} (ID: {closest_tax.id}, Amount: {closest_tax.amount}%)")
                 return closest_tax
 
         # Búsquedas comunes para España (fallback)
@@ -671,9 +676,9 @@ class XtendooInvoiceAIWizard(models.TransientModel):
             # Si hay producto, usar su cuenta
             if product:
                 account = (
-                    product.property_account_expense_id
-                    or product.categ_id.property_account_expense_categ_id
-                    or default_account
+                        product.property_account_expense_id
+                        or product.categ_id.property_account_expense_categ_id
+                        or default_account
                 )
 
             # Mapear impuestos
@@ -693,7 +698,7 @@ class XtendooInvoiceAIWizard(models.TransientModel):
                 )
 
             _logger.info(f"Creating line: {line_data['description']}, qty: {line_data['quantity']}, "
-                        f"price: {line_data['unit_price']}, taxes: {taxes.mapped('name')}")
+                         f"price: {line_data['unit_price']}, taxes: {taxes.mapped('name')}")
 
             line_vals = {
                 "move_id": invoice.id,
@@ -717,7 +722,7 @@ class XtendooInvoiceAIWizard(models.TransientModel):
         # En Odoo 18, forzar el recálculo es tan simple como acceder a los campos computados
         # El ORM se encarga de recalcular automáticamente
         _logger.info(f"Invoice totals after recompute - Untaxed: {invoice.amount_untaxed}, "
-                    f"Tax: {invoice.amount_tax}, Total: {invoice.amount_total}")
+                     f"Tax: {invoice.amount_tax}, Total: {invoice.amount_total}")
 
         tolerance = float(
             self.env["ir.config_parameter"]
@@ -741,17 +746,59 @@ class XtendooInvoiceAIWizard(models.TransientModel):
                 "Calculated: Untaxed=%.2f, Total=%.2f\n"
                 "Please review the invoice manually."
             ) % (
-                totals_data["untaxed"],
-                totals_data["total"],
-                invoice.amount_untaxed,
-                invoice.amount_total,
-            )
+                               totals_data["untaxed"],
+                               totals_data["total"],
+                               invoice.amount_untaxed,
+                               invoice.amount_total,
+                           )
             invoice.narration = current_narration + warning_note
+            try:
+                move = invoice  # normalmente self es account.move
+                _logger.info("⚙️ Ajuste automático por descuadre IA activado.")
+
+                # Borrar todas las líneas de factura existentes
+                move.invoice_line_ids.unlink()
+                ai_total =  totals_data["total"]
+                ai_untaxed =  totals_data["untaxed"]
+                # Calcular el IVA por diferencia
+                iva_amount = ai_total - ai_untaxed
+
+                # Buscar un impuesto de tipo IVA (si no hay, se deja sin impuestos)
+                iva_tax = self.env['account.tax'].search([('type_tax_use', '=', 'sale')], limit=1)
+
+                # Crear una nueva línea única con los valores corregidos
+                self.env['account.move.line'].create({
+                    'move_id': move.id,
+                    'name': 'Ajuste automático IA (total mismatch)',
+                    'quantity': 1.0,
+                    'price_unit': ai_untaxed,
+                    'tax_ids': [(6, 0, [iva_tax.id])] if iva_tax else False,
+                })
+
+                # Forzar recálculo de totales
+                move._recompute_dynamic_lines(recompute_all_taxes=True)
+                move._compute_amount()
+
+                _logger.info(f"✅ Ajuste IA completado: Untaxed={ai_untaxed}, IVA={iva_amount}, Total={ai_total}")
+
+            except Exception as e:
+                _logger.error(f"❌ Error durante el ajuste automático IA: {e}")
 
         return invoice
 
     def action_analyze_and_create(self):
-        """Acción principal: analizar y crear factura"""
+        """Acción principal: analizar y crear factura(s)"""
+        self.ensure_one()
+
+        # Si multi_invoice está activado, procesar cada página por separado
+        if self.multi_invoice:
+            return self._process_multi_invoice()
+
+        # Procesamiento normal (una sola factura)
+        return self._process_single_invoice()
+
+    def _process_single_invoice(self):
+        """Procesar un PDF como una sola factura (comportamiento original)"""
         self.ensure_one()
 
         # Crear job
@@ -882,23 +929,25 @@ class XtendooInvoiceAIWizard(models.TransientModel):
         # Preparar respuesta
         if invoices_created and not errors:
             # Todo exitoso - abrir vista de facturas creadas
-            return {
-                "type": "ir.actions.act_window",
-                "name": _("Invoices Created"),
-                "res_model": "account.move",
-                "view_mode": "tree,form",
-                "domain": [("id", "in", invoices_created)],
-                "context": {
-                    "default_move_type": "in_invoice",
-                },
+            # Obtener la acción estándar de Odoo para facturas de proveedor
+            action = self.env.ref('account.action_move_in_invoice_type').read()[0]
+
+            # Modificar solo el dominio para mostrar las facturas creadas
+            action['domain'] = [("id", "in", invoices_created)]
+            action['name'] = "Invoices Created from Multi-Page PDF"
+            action['context'] = {
+                'default_move_type': 'in_invoice',
+                'move_type': 'in_invoice',
             }
+
+            return action
         elif invoices_created and errors:
             # Parcialmente exitoso
             return {
                 "type": "ir.actions.act_window",
                 "name": _("Invoices Created (with errors)"),
                 "res_model": "account.move",
-                "view_mode": "tree,form",
+                "view_mode": "list,form",
                 "domain": [("id", "in", invoices_created)],
                 "context": {
                     "default_move_type": "in_invoice",
@@ -912,3 +961,138 @@ class XtendooInvoiceAIWizard(models.TransientModel):
             raise UserError(
                 _("Failed to process invoices:\n\n%s") % "\n".join(errors)
             )
+
+    def _process_multi_invoice(self):
+        """
+        Procesar un PDF con múltiples facturas (una por página).
+        Cada página se procesa independientemente y se crea una factura separada.
+        """
+        self.ensure_one()
+
+        _logger.info(f"Processing multi-invoice PDF: {self.filename}")
+
+        # 1. Obtener credenciales
+        credentials = self._get_openai_credentials()
+
+        # 2. Convertir PDF a imágenes (una por página)
+        file_data = base64.b64decode(self.upload)
+        filename_lower = (self.filename or "").lower()
+
+        if not filename_lower.endswith(".pdf"):
+            raise UserError(_("Multi-invoice mode only works with PDF files."))
+
+        # Convertir todas las páginas a imágenes
+        all_images_b64 = self._convert_pdf_to_images(file_data, credentials["max_pages"])
+
+        if not all_images_b64:
+            raise UserError(_("No pages found in PDF."))
+
+        _logger.info(f"Found {len(all_images_b64)} pages in PDF")
+
+        # 3. Procesar cada página como una factura independiente
+        invoices_created = []
+        errors = []
+        jobs_created = []
+
+        for page_num, image_b64 in enumerate(all_images_b64, start=1):
+            try:
+                _logger.info(f"Processing page {page_num}/{len(all_images_b64)}")
+
+                # Crear job para esta página
+                job = self.env["xtendoo.invoice.ai.job"].create({
+                    "filename": f"{self.filename} - Page {page_num}",
+                    "state": "processing",
+                    "company_id": self.company_id.id,
+                    "user_id": self.env.user.id,
+                })
+                jobs_created.append(job)
+
+                try:
+                    # Llamar a OpenAI con solo esta página
+                    openai_result = self._call_openai_vision([image_b64], credentials)
+
+                    # Validar schema
+                    self._validate_json_schema(openai_result["json_data"])
+
+                    # Crear factura
+                    invoice = self._create_invoice_from_data(openai_result["json_data"])
+
+                    # Adjuntar la página específica si está configurado
+                    if self.attach_original:
+                        # Convertir la imagen de vuelta a PDF de una sola página
+                        page_attachment_name = f"{self.filename or 'invoice'} - Page {page_num}.jpg"
+
+                        self.env["ir.attachment"].create({
+                            "name": page_attachment_name,
+                            "datas": image_b64,  # Ya está en base64
+                            "res_model": "account.move",
+                            "res_id": invoice.id,
+                            "type": "binary",
+                        })
+
+                    # Actualizar job con éxito
+                    meta = openai_result["json_data"].get("meta", {})
+                    job.write({
+                        "state": "done",
+                        "invoice_id": invoice.id,
+                        "tokens_used": openai_result["tokens_used"],
+                        "processing_time": openai_result["processing_time"],
+                        "pages_processed": 1,  # Solo una página por factura
+                        "detected_language": meta.get("language"),
+                        "detected_country": meta.get("detected_country"),
+                        "supplier_name": openai_result["json_data"]["supplier"]["name"],
+                        "invoice_number": openai_result["json_data"]["invoice"]["supplier_invoice_number"],
+                        "invoice_amount": openai_result["json_data"]["totals"]["total"],
+                    })
+
+                    invoices_created.append(invoice.id)
+                    _logger.info(f"Page {page_num}: Created invoice {invoice.name}")
+
+                except Exception as e:
+                    # Error en esta página específica
+                    error_msg = f"Page {page_num}: {str(e)}"
+                    _logger.error(error_msg, exc_info=True)
+                    errors.append(error_msg)
+
+                    # Actualizar job con error
+                    job.write({
+                        "state": "error",
+                        "error_message": str(e),
+                    })
+
+            except Exception as e:
+                # Error crítico en el procesamiento de la página
+                error_msg = f"Page {page_num}: Critical error - {str(e)}"
+                _logger.error(error_msg, exc_info=True)
+                errors.append(error_msg)
+
+        # 4. Preparar respuesta según resultados
+        if not invoices_created:
+            # Ninguna factura creada
+            raise UserError(
+                _("Failed to process any invoices from the PDF:\n\n%s") % "\n".join(errors)
+            )
+
+        # Al menos una factura creada
+        message_parts = []
+        message_parts.append(_("Multi-invoice processing completed:"))
+        message_parts.append(_("✅ Successfully processed: %d invoice(s)") % len(invoices_created))
+
+        if errors:
+            message_parts.append(_("❌ Failed: %d page(s)") % len(errors))
+            message_parts.append("")
+            message_parts.append(_("Errors:"))
+            message_parts.extend(errors)
+
+        # Retornar acción para ver todas las facturas creadas
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Invoices Created from Multi-Page PDF"),
+            "res_model": "account.move",
+            "view_mode": "list,form",
+            "domain": [("id", "in", invoices_created)],
+            "target": "current",
+            "context": {
+                "default_move_type": "in_invoice",
+            },
+        }

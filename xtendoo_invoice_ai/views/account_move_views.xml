@@ -75,7 +75,7 @@ action = env['xtendoo.invoice.ai.wizard'].create({
     <!-- Botón adicional en el menú de Proveedores -->
     <menuitem
         id="menu_import_invoice_ai_shortcut"
-        name="Importar Factura con IA"
+        name="📄 Importar Factura con IA"
         parent="account.menu_finance_payables"
         action="action_import_invoice_ai_wizard"
         sequence="1"

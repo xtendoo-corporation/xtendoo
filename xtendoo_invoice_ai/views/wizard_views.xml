@@ -17,6 +17,7 @@
                         <field name="currency_id"/>
                         <field name="create_partner_if_missing"/>
                         <field name="attach_original"/>
+                        <field name="multi_invoice"/>
                     </group>
                 </group>
                 <div class="alert alert-info" role="alert">
@@ -27,6 +28,15 @@
                         <li>A draft vendor bill will be created automatically</li>
                         <li>If supplier is not found, it will be created (if enabled)</li>
                         <li>Review and validate the bill before posting</li>
+                    </ul>
+                </div>
+                <div class="alert alert-warning" role="alert" invisible="not multi_invoice">
+                    <strong>⚠️ Multiple Invoices Mode:</strong>
+                    <ul>
+                        <li>Each page of the PDF will be processed as a separate invoice</li>
+                        <li>This is useful when you have multiple invoices in one PDF file</li>
+                        <li>Processing time will be longer (one API call per page)</li>
+                        <li>Each invoice will be created independently</li>
                     </ul>
                 </div>
                 <footer>
@@ -42,4 +52,3 @@
         </field>
     </record>
 </odoo>
-
