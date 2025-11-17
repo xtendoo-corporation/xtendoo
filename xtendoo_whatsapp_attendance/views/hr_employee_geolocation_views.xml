@@ -7,8 +7,23 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='work_phone']" position="after">
-                <field name="whatsapp_geotrack_enabled"/>
+            <!-- Agregar en la pestaña Settings, grupo Attendance/Point of Sale -->
+            <xpath expr="//page[@name='hr_settings']//group[@name='identification_group']" position="inside">
+                <field name="whatsapp_geotrack_enabled" string="WhatsApp Geolocation"/>
+            </xpath>
+
+            <!-- También mostrar última ubicación conocida -->
+            <xpath expr="//page[@name='hr_settings']//group[@name='identification_group']" position="after">
+                <group string="WhatsApp Location Tracking" name="whatsapp_location_group" invisible="not whatsapp_geotrack_enabled">
+                    <label for="last_whatsapp_latitude" string="Last Location"/>
+                    <div class="o_row">
+                        <field name="last_whatsapp_latitude" readonly="1" class="o_hr_narrow_field"/>
+                        <span>,</span>
+                        <field name="last_whatsapp_longitude" readonly="1" class="o_hr_narrow_field"/>
+                    </div>
+                    <field name="last_whatsapp_location_time" string="Timestamp" readonly="1"/>
+                    <field name="last_whatsapp_address" string="Address" readonly="1"/>
+                </group>
             </xpath>
         </field>
     </record>
@@ -19,8 +34,8 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_tree"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='work_phone']" position="after">
-                <field name="whatsapp_geotrack_enabled" widget="boolean_toggle"/>
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="whatsapp_geotrack_enabled" string="WhatsApp Geo" widget="boolean_toggle" optional="hide"/>
             </xpath>
         </field>
     </record>
@@ -32,39 +47,35 @@
         <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='check_out']" position="after">
-                <!-- Mapa de Ubicación en Asistencia -->
-                <group string="Mapa de Ubicación" invisible="not whatsapp_latitude">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>📍 Ubicación registrada con esta asistencia:</strong></p>
-                            <div class="form-group">
-                                <div class="o_form_label">Coordenadas:</div>
-                                <div class="text-info">
-                                    <span class="fa fa-map-marker"/>
-                                    <field name="whatsapp_latitude" readonly="1" style="display:inline; width:auto;" class="oe_inline"/> ,
-                                    <field name="whatsapp_longitude" readonly="1" style="display:inline; width:auto;" class="oe_inline"/>
-                                </div>
+                <!-- Campos invisibles para controlar visibilidad -->
+                <field name="whatsapp_latitude" invisible="1"/>
+                <field name="whatsapp_longitude" invisible="1"/>
+
+                <!-- Grupo de Ubicación WhatsApp -->
+                <group string="WhatsApp Location" invisible="not whatsapp_latitude">
+                    <group>
+                        <label for="whatsapp_latitude" string="Coordinates"/>
+                        <div class="o_row">
+                            <span class="fa fa-map-marker text-primary me-2"/>
+                            <field name="whatsapp_latitude" readonly="1" class="o_hr_narrow_field"/>
+                            <span>,</span>
+                            <field name="whatsapp_longitude" readonly="1" class="o_hr_narrow_field"/>
+                        </div>
+                        <field name="whatsapp_location_address" string="Address" readonly="1"/>
+                        <field name="whatsapp_location_accuracy" string="Accuracy (m)" readonly="1"/>
+                    </group>
+                    <group>
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <button type="object"
+                                    name="action_open_google_maps"
+                                    string="View on Google Maps"
+                                    class="btn btn-primary"
+                                    icon="fa-map-marker"/>
+                            <div class="text-muted text-center">
+                                <small>Click to view the exact location<br/>where this attendance was registered</small>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="text-center">
-                                <div class="btn-group-vertical" style="width: 100%;">
-                                    <button type="object" name="action_open_google_maps"
-                                            class="btn btn-primary btn-lg"
-                                            style="margin-bottom: 10px;">
-                                        <i class="fa fa-map-marker"/> Ver en Google Maps
-                                    </button>
-                                </div>
-                                <div class="mt-3">
-                                    <small class="text-muted">
-                                        Haz clic en "Ver en Google Maps" para<br/>
-                                        visualizar la ubicación exacta donde<br/>
-                                        se registró esta asistencia
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </group>
                 </group>
             </xpath>
         </field>
