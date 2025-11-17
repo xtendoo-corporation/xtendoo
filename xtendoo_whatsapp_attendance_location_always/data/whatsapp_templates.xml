@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Plantilla WhatsApp para confirmación de ENTRADA -->
+        <record id="whatsapp_template_attendance_check_in" model="whatsapp.template">
+            <field name="name">Confirmación Entrada Asistencia</field>
+            <field name="template_name">confirmacion_entrada_asistencia</field>
+            <field name="body">✅ Hola {{1}},
+
+Tu *entrada* ha sido registrada correctamente.
+
+🕐 Hora: {{2}}
+📅 Fecha: {{3}}
+
+¡Que tengas un buen día!</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para confirmación de SALIDA -->
+        <record id="whatsapp_template_attendance_check_out" model="whatsapp.template">
+            <field name="name">Confirmación Salida Asistencia</field>
+            <field name="template_name">confirmacion_salida_asistencia</field>
+            <field name="body">✅ Hola {{1}},
+
+Tu *salida* ha sido registrada correctamente.
+
+🕐 Hora: {{2}}
+📅 Fecha: {{3}}
+
+¡Que tengas un excelente día!</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para solicitar ubicación -->
+        <record id="whatsapp_template_location_request" model="whatsapp.template">
+            <field name="name">Solicitud de Ubicación</field>
+            <field name="template_name">solicitud_ubicacion_asistencia</field>
+            <field name="body">📍 Hola {{1}},
+
+Para registrar tu {{2}}, ¿deseas compartir tu ubicación?</field>
+            <field name="button_ids">[(0, 0, {
+                'button_type': 'quick_reply',
+                'text': '📍 Compartir ubicación',
+                'sequence': 1
+            }), (0, 0, {
+                'button_type': 'quick_reply',
+                'text': '✅ Sin ubicación',
+                'sequence': 2
+            })]</field>
+            <field name="status">approved</field>
+        </record>
+
+        <!-- Plantilla WhatsApp para instrucciones de ubicación -->
+        <record id="whatsapp_template_location_instructions" model="whatsapp.template">
+            <field name="name">Instrucciones de Ubicación</field>
+            <field name="template_name">instrucciones_ubicacion_asistencia</field>
+            <field name="body">📍 *Instrucciones para compartir ubicación:*
+
+1️⃣ Toca el botón 📎 (clip) en WhatsApp
+2️⃣ Selecciona *Ubicación*
+3️⃣ Elige *Ubicación actual*
+4️⃣ Envía tu ubicación
+
+⏰ Tienes 2 minutos para enviarla.
+Si no la envías, se registrará la asistencia sin ubicación.
+
+¡Gracias por tu colaboración!</field>
+            <field name="status">approved</field>
+        </record>
+
+    </data>
+</odoo>
