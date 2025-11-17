@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_invoice_tree_inherit_shipping" model="ir.ui.view">
+        <field name="name">account.move.invoice.tree.inherit.shipping</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_partner_display_name'][2]" position="after">
+                <field name="partner_shipping_id" string="Dirección de entrega" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
