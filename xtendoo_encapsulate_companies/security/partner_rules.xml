@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="res_partner_company_rule" model="ir.rule">
+        <field name="name">Contactos de la compañía del usuario actual</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">
+            ['|',
+                ('company_id', '=', False),
+                ('company_id', 'in', user.company_ids.ids)
+            ]
+        </field>
+        <field name="global" eval="True"/>
+    </record>
+
     <record id="res_partner_category_company_rule" model="ir.rule">
         <field name="name">Categoría del contacto por compañía</field>
         <field name="model_id" ref="base.model_res_partner_category"/>
