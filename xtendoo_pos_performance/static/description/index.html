@@ -1,0 +1,155 @@
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h2 class="oe_slogan" style="color:#875A7B;">Xtendoo POS Performance</h2>
+            <h3 class="oe_slogan">Mejora drásticamente el rendimiento del Punto de Venta</h3>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h2 class="oe_slogan" style="color:#875A7B;">¿Qué hace este módulo?</h2>
+            <p class="oe_mt32" style="font-size: 18px;">
+                Este módulo optimiza el <b>tiempo de arranque del TPV</b> en bases de datos con catálogos grandes
+                (por ejemplo, 35.000 productos o más).
+            </p>
+            <p style="font-size: 18px;">
+                Limita la carga inicial de productos y clientes, permitiendo que el POS se abra rápidamente
+                y cargue el resto de datos bajo demanda.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h2 class="oe_slogan" style="color:#875A7B;">Características principales</h2>
+        </div>
+        <div class="oe_span6">
+            <div class="oe_demo oe_picture oe_screenshot">
+                <i class="fa fa-rocket fa-5x" style="color:#875A7B;"></i>
+            </div>
+            <h3 class="oe_mb16" style="text-align: center;">Arranque ultra-rápido</h3>
+            <p class="oe_mb32" style="text-align: center;">
+                Reduce el tiempo de apertura del POS hasta un 90% en catálogos grandes
+            </p>
+        </div>
+        <div class="oe_span6">
+            <div class="oe_demo oe_picture oe_screenshot">
+                <i class="fa fa-cogs fa-5x" style="color:#875A7B;"></i>
+            </div>
+            <h3 class="oe_mb16" style="text-align: center;">Configuración visual</h3>
+            <p class="oe_mb32" style="text-align: center;">
+                Ajusta los límites desde Ajustes sin tocar código ni parámetros técnicos
+            </p>
+        </div>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span6">
+            <div class="oe_demo oe_picture oe_screenshot">
+                <i class="fa fa-language fa-5x" style="color:#875A7B;"></i>
+            </div>
+            <h3 class="oe_mb16" style="text-align: center;">Interfaz en español</h3>
+            <p class="oe_mb32" style="text-align: center;">
+                Todos los textos y ayudas en español para usuarios funcionales
+            </p>
+        </div>
+        <div class="oe_span6">
+            <div class="oe_demo oe_picture oe_screenshot">
+                <i class="fa fa-check-circle fa-5x" style="color:#875A7B;"></i>
+            </div>
+            <h3 class="oe_mb16" style="text-align: center;">100% compatible</h3>
+            <p class="oe_mb32" style="text-align: center;">
+                Compatible con Odoo 19.0 Community y Enterprise, multi-compañía
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h2 class="oe_slogan" style="color:#875A7B;">¿Cómo funciona?</h2>
+            <p class="oe_mt32" style="font-size: 16px;">
+                El módulo configura los parámetros internos de Odoo:
+            </p>
+            <ul style="font-size: 16px;">
+                <li><code>point_of_sale.limited_product_count</code>: Limita productos en el primer batch</li>
+                <li><code>point_of_sale.limited_customer_count</code>: Limita clientes en el primer batch</li>
+            </ul>
+            <p style="font-size: 16px;">
+                El resto de productos y clientes se cargan automáticamente cuando el usuario los busca,
+                manteniendo una experiencia fluida sin sacrificar funcionalidad.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h2 class="oe_slogan" style="color:#875A7B;">Valores recomendados</h2>
+            <table class="table table-bordered" style="margin-top: 20px; font-size: 16px;">
+                <thead style="background-color: #875A7B; color: white;">
+                    <tr>
+                        <th>Tamaño del catálogo</th>
+                        <th>Valor recomendado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>&lt; 5.000 productos</td>
+                        <td>0 (sin límite)</td>
+                    </tr>
+                    <tr>
+                        <td>5.000 - 15.000 productos</td>
+                        <td>500 - 1.000</td>
+                    </tr>
+                    <tr>
+                        <td>15.000 - 50.000 productos</td>
+                        <td>300 - 500</td>
+                    </tr>
+                    <tr>
+                        <td>&gt; 50.000 productos</td>
+                        <td>200 - 300</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h2 class="oe_slogan" style="color:#875A7B;">Configuración</h2>
+            <ol style="font-size: 16px; margin-top: 20px;">
+                <li>Ir a <b>Ajustes → Punto de venta</b></li>
+                <li>Desplazarse hasta la sección <b>"Rendimiento"</b></li>
+                <li>Ajustar los valores según el tamaño de tu catálogo</li>
+                <li>Guardar y listo</li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h2 class="oe_slogan" style="color:#875A7B;">Soporte y desarrollo</h2>
+            <p class="oe_mt32 text-center" style="font-size: 18px;">
+                Desarrollado por <b>Xtendoo Software S.L.U.</b>
+            </p>
+            <p class="text-center" style="font-size: 16px;">
+                <i class="fa fa-globe"></i> <a href="https://xtendoo.es" target="_blank">www.xtendoo.es</a><br/>
+                <i class="fa fa-envelope"></i> soporte@xtendoo.es
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_separator"></section>
+
