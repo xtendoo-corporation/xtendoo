@@ -20,15 +20,12 @@ IDX_SQL_BASIC = [
 ]
 
 # Índices para búsquedas de texto en español (requieren extensiones)
+# Nota: Solo creamos índice trigram en product_template ya que:
+# - product_product no tiene columna 'name' directa (viene de template)
+# - unaccent(lower()) no es IMMUTABLE y causa errores al crear índice
 IDX_SQL_TEXT_ES = [
     """CREATE INDEX IF NOT EXISTS idx_pt_name_es_trgm
        ON product_template USING gin ((name->>'es_ES') gin_trgm_ops)""",
-    """CREATE INDEX IF NOT EXISTS idx_pt_name_es_unaccent
-       ON product_template (unaccent(lower(name->>'es_ES')))""",
-    """CREATE INDEX IF NOT EXISTS idx_pp_name_es_trgm
-       ON product_product USING gin ((name->>'es_ES') gin_trgm_ops)""",
-    """CREATE INDEX IF NOT EXISTS idx_pp_name_es_unaccent
-       ON product_product (unaccent(lower(name->>'es_ES')))""",
 ]
 
 # ===== Configuración de Autovacuum por tabla =====
@@ -57,9 +54,6 @@ DROP_INDEXES = [
     "DROP INDEX IF EXISTS idx_pp_default_code",
     "DROP INDEX IF EXISTS idx_pp_barcode",
     "DROP INDEX IF EXISTS idx_pt_name_es_trgm",
-    "DROP INDEX IF EXISTS idx_pt_name_es_unaccent",
-    "DROP INDEX IF EXISTS idx_pp_name_es_trgm",
-    "DROP INDEX IF EXISTS idx_pp_name_es_unaccent",
 ]
 
 

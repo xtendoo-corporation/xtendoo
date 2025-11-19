@@ -28,7 +28,8 @@
         * **Índices optimizados:**
           - Campos de productos (código de barras, referencia, nombre)
           - Filtros del POS (disponible en POS, activo, compañía)
-          - Índices GIN para búsquedas de texto completo
+          - Índice GIN trigram para búsquedas de texto en español
+          - Nota: Solo en product_template (product_product hereda el nombre)
 
         * **Autovacuum personalizado:**
           - Mantenimiento automático optimizado de tablas de productos
