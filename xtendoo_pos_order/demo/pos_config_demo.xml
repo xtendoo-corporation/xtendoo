@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Datos de demostración para el módulo xtendoo_pos_order
+
+        NOTA: Este archivo es opcional y solo se carga cuando se instala
+        el módulo con datos de demostración activados.
+    -->
+
+    <!-- Punto de Venta configurado en modo Backend -->
+    <record id="pos_config_backend_demo" model="pos.config">
+        <field name="name">POS Backend Demo</field>
+        <field name="interface_type">backend</field>
+        <field name="module_pos_restaurant" eval="False"/>
+    </record>
+
+    <!-- Punto de Venta configurado en modo Frontend (estándar) -->
+    <record id="pos_config_frontend_demo" model="pos.config">
+        <field name="name">POS Frontend Demo</field>
+        <field name="interface_type">frontend</field>
+        <field name="module_pos_restaurant" eval="False"/>
+    </record>
+
+</odoo>
+

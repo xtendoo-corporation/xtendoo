@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Habilitar creación de órdenes POS desde la vista de árbol -->
+    <record id="view_pos_order_tree_backend_create" model="ir.ui.view">
+        <field name="name">pos.order.tree.backend.create</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+        <field name="arch" type="xml">
+            <!-- Habilitar botón Crear en la vista de árbol -->
+            <tree position="attributes">
+                <attribute name="create">true</attribute>
+                <attribute name="edit">true</attribute>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Mejorar vista de formulario para uso desde backend -->
+    <record id="view_pos_order_form_backend" model="ir.ui.view">
+        <field name="name">pos.order.form.backend</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <!-- Hacer campos editables cuando la orden está en draft -->
+            <xpath expr="//field[@name='config_id']" position="attributes">
+                <attribute name="required">1</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='session_id']" position="attributes">
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                <attribute name="domain">[('config_id', '=', config_id), ('state', '=', 'opened')]</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+
+            <!-- Agregar información útil en el formulario -->
+            <xpath expr="//field[@name='lines']" position="before">
+                <group name="order_info" col="4">
+                    <field name="pricelist_id" options="{'no_create': True}"/>
+                    <field name="fiscal_position_id" options="{'no_create': True}"/>
+                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                    <field name="user_id" string="Vendedor" options="{'no_create': True}"/>
+                </group>
+            </xpath>
+
+            <!-- Mejorar vista de líneas de orden -->
+            <xpath expr="//field[@name='lines']/tree" position="attributes">
+                <attribute name="editable">bottom</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='lines']/tree/field[@name='product_id']" position="attributes">
+                <attribute name="required">1</attribute>
+                <attribute name="domain">[('sale_ok', '=', True), ('available_in_pos', '=', True)]</attribute>
+            </xpath>
+
+            <!-- Agregar botones útiles en el header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_pos_order_paid"
+                        string="Marcar como Pagado"
+                        type="object"
+                        invisible="state not in ['draft']"
+                        class="oe_highlight"
+                        groups="point_of_sale.group_pos_user"/>
+                <button name="action_pos_order_invoice"
+                        string="Crear Factura"
+                        type="object"
+                        invisible="state in ['draft', 'cancel'] or invoice_id != False"
+                        class="oe_highlight"
+                        groups="point_of_sale.group_pos_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción para abrir órdenes POS en modo backend -->
+    <record id="action_pos_order_backend" model="ir.actions.act_window">
+        <field name="name">Órdenes POS (Backend)</field>
+        <field name="res_model">pos.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('point_of_sale.view_pos_order_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('point_of_sale.view_pos_pos_form')}),
+        ]"/>
+        <field name="domain">[('config_id.interface_type', '=', 'backend')]</field>
+        <field name="context">{
+            'search_default_config_id': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree una nueva orden de POS
+            </p>
+            <p>
+                Desde esta vista puede crear y gestionar órdenes de Punto de Venta
+                directamente desde el backend, sin necesidad de usar la interfaz
+                JavaScript estándar del POS.
+            </p>
+            <p>
+                Asegúrese de que el Punto de Venta esté configurado con
+                "Interface Type = Backend Orders Interface".
+            </p>
+        </field>
+    </record>
+
+    <!-- Opcionalmente, agregar menú para acceso directo -->
+    <menuitem id="menu_pos_order_backend"
+              name="Órdenes Backend"
+              parent="point_of_sale.menu_point_of_sale"
+              action="action_pos_order_backend"
+              sequence="20"
+              groups="point_of_sale.group_pos_user"/>
+</odoo>
+

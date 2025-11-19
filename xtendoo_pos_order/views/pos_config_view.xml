@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_config_form_interface_type" model="ir.ui.view">
+        <field name="name">pos.config.form.interface.type</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar campo de tipo de interfaz en la sección de configuración -->
+            <xpath expr="//group[@name='pos_ui']" position="after">
+                <group string="Interface Configuration" name="interface_config">
+                    <field name="interface_type" widget="radio"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

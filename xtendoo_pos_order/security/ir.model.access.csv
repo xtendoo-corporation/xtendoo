@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pos_order_backend,access.pos.order.backend,point_of_sale.model_pos_order,point_of_sale.group_pos_user,1,1,1,0
+access_pos_order_line_backend,access.pos.order.line.backend,point_of_sale.model_pos_order_line,point_of_sale.group_pos_user,1,1,1,1
+access_pos_order_manager,access.pos.order.manager,point_of_sale.model_pos_order,point_of_sale.group_pos_manager,1,1,1,1
+access_pos_order_line_manager,access.pos.order.line.manager,point_of_sale.model_pos_order_line,point_of_sale.group_pos_manager,1,1,1,1
+
