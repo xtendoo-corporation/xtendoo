@@ -2,67 +2,65 @@
 <odoo>
     <data>
 
-        <!-- Vista heredada de configuración de POS -->
-        <record id="res_config_settings_view_form" model="ir.ui.view">
+        <!-- Extender la vista de configuración de Punto de Venta -->
+        <record id="res_config_settings_view_form_pos_performance" model="ir.ui.view">
             <field name="name">res.config.settings.view.form.inherit.pos.performance</field>
             <field name="model">res.config.settings</field>
             <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
             <field name="arch" type="xml">
 
-                <!-- Insertamos los nuevos campos en la sección de POS -->
-                <!-- Buscamos un bloque existente de configuración de POS -->
-                <xpath expr="//div[@data-key='point_of_sale']" position="inside">
+                <!-- Agregar campos de rendimiento usando field position -->
+                <field name="pos_module_pos_restaurant" position="after">
 
-                    <!-- Sección de rendimiento -->
-                    <h2>Rendimiento</h2>
+                    <h2>Rendimiento del POS</h2>
 
-                    <!-- Campo: Productos cargados al iniciar -->
-                    <div class="row mt16 o_settings_container" id="pos_performance_settings">
+                    <div class="row mt16 o_settings_container">
+                        <!-- Límite de productos -->
                         <div class="col-12 col-lg-6 o_setting_box">
                             <div class="o_setting_left_pane"/>
                             <div class="o_setting_right_pane">
-                                <label for="pos_limited_product_count" string="Límite de productos al iniciar"/>
+                                <label for="pos_limited_product_count"/>
                                 <div class="text-muted">
-                                    Limita el número de productos cargados en el primer batch al abrir el TPV
+                                    Número máximo de productos a cargar al iniciar el TPV
                                 </div>
-                                <div class="content-group mt16">
-                                    <div class="row">
-                                        <label class="col-lg-4 o_light_label" for="pos_limited_product_count" string="Número de productos"/>
-                                        <field name="pos_limited_product_count" class="oe_inline"/>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="pos_limited_product_count" class="oe_inline" style="width: 100px;"/>
+                                        <span class="ms-2">productos</span>
                                     </div>
-                                    <div class="text-muted mt8">
-                                        Valores recomendados según el tamaño del catálogo:
-                                        <ul class="mb-0">
+                                    <div class="text-muted small mt8">
+                                        Recomendaciones:
+                                        <ul class="small mb-0 mt4">
                                             <li>&lt; 5.000 productos: 0 (sin límite)</li>
-                                            <li>5.000-15.000 productos: 500-1.000</li>
-                                            <li>15.000-50.000 productos: 300-500</li>
-                                            <li>&gt; 50.000 productos: 200-300</li>
+                                            <li>5.000-15.000: 500-1.000</li>
+                                            <li>15.000-50.000: 300-500</li>
+                                            <li>&gt; 50.000: 200-300</li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Campo: Clientes cargados al iniciar -->
+                        <!-- Límite de clientes -->
                         <div class="col-12 col-lg-6 o_setting_box">
                             <div class="o_setting_left_pane"/>
                             <div class="o_setting_right_pane">
-                                <label for="pos_limited_customer_count" string="Límite de clientes al iniciar"/>
+                                <label for="pos_limited_customer_count"/>
                                 <div class="text-muted">
-                                    Limita el número de clientes cargados en el primer batch al abrir el TPV
+                                    Número máximo de clientes a cargar al iniciar el TPV
                                 </div>
-                                <div class="content-group mt16">
-                                    <div class="row">
-                                        <label class="col-lg-4 o_light_label" for="pos_limited_customer_count" string="Número de clientes"/>
-                                        <field name="pos_limited_customer_count" class="oe_inline"/>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="pos_limited_customer_count" class="oe_inline" style="width: 100px;"/>
+                                        <span class="ms-2">clientes</span>
                                     </div>
-                                    <div class="text-muted mt8">
-                                        Valores recomendados según el número de clientes:
-                                        <ul class="mb-0">
+                                    <div class="text-muted small mt8">
+                                        Recomendaciones:
+                                        <ul class="small mb-0 mt4">
                                             <li>&lt; 5.000 clientes: 0 (sin límite)</li>
-                                            <li>5.000-15.000 clientes: 500-1.000</li>
-                                            <li>15.000-50.000 clientes: 300-500</li>
-                                            <li>&gt; 50.000 clientes: 200-300</li>
+                                            <li>5.000-15.000: 500-1.000</li>
+                                            <li>15.000-50.000: 300-500</li>
+                                            <li>&gt; 50.000: 200-300</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -70,7 +68,7 @@
                         </div>
                     </div>
 
-                </xpath>
+                </field>
 
             </field>
         </record>
