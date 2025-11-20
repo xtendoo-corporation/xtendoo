@@ -1619,7 +1619,7 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
                 f"🚶‍♂️ *Asistencias : {employee.name}*",
                 f"📅 Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
                 "",
-                "*Entrada* 🏃‍♂️‍➡️🚪  *Salida* 🚪🏃‍♂️‍➡️",
+                "*Entrada* 🚪  *Salida* 🏠🏃‍♂️",
 
             ]
             for att in attendances:
