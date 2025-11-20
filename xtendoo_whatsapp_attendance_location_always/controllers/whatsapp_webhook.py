@@ -1616,11 +1616,11 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
 
             # Generar contenido TXT con cabeceras correctas
             lines = [
-                f"*Asistencias : {employee.name}*",
-                f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+                f"🚶‍♂️ *Asistencias : {employee.name}*",
+                f"📅 Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
                 "",
-                "*Entrada*  |  *Salida*",
-                "-----------------------------"
+                "*Entrada* 🕒 |  *Salida* 🕛",
+
             ]
             for att in attendances:
                 check_in = att.check_in.strftime('%d/%m/%Y %H:%M') if att.check_in else '--'
