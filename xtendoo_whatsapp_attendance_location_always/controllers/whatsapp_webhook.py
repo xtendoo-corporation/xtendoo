@@ -2,7 +2,10 @@ import logging
 import json
 import re
 from datetime import datetime
-
+import tempfile
+import requests
+import pytz
+from odoo.tools.misc import file_path
 from odoo import http
 from odoo.http import request
 from odoo.addons.whatsapp.controller.main import Webhook
@@ -583,10 +586,6 @@ class WhatsAppAttendanceWebhook(Webhook):
         Usa plantillas de WhatsApp aprobadas desde base de datos
         """
         try:
-            from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
-            from datetime import timezone
-            import pytz
-
             action_text = "entrada" if attendance_type == 'check_in' else "salida"
 
             # Obtener la zona horaria del usuario o del sistema
@@ -662,10 +661,6 @@ class WhatsAppAttendanceWebhook(Webhook):
         Envía mensaje de confirmación al empleado via WhatsApp incluyendo la ubicación
         """
         try:
-            from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
-            from datetime import timezone
-            import pytz
-
             action_text = "entrada" if attendance_type == 'check_in' else "salida"
             user_tz = request.env.user.tz or 'Europe/Madrid'
             local_tz = pytz.timezone(user_tz)
@@ -776,12 +771,9 @@ class WhatsAppAttendanceWebhook(Webhook):
         Soporta tanto mensajes de texto libre como plantillas aprobadas
         """
         try:
-            import requests
-
             # Obtener el token de acceso
             access_token = None
             token_fields = ['access_token', 'token', 'app_secret', 'permanent_access_token']
-
             for field in token_fields:
                 if hasattr(wa_account, field):
                     token_value = getattr(wa_account, field)
@@ -789,23 +781,15 @@ class WhatsAppAttendanceWebhook(Webhook):
                         access_token = token_value
                         print(f"🔑 Token encontrado en campo: {field}")
                         break
-
             if not access_token:
                 print(f"❌ No se encontró token de acceso en la cuenta de WhatsApp")
                 return False
-
-            # URL de la API de WhatsApp Business
             url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
-
-            # Headers de la petición
             headers = {
                 'Authorization': f'Bearer {access_token}',
                 'Content-Type': 'application/json'
             }
-
-            # Limpiar el número de teléfono
             clean_phone = phone_number.lstrip('+')
-
             # Datos del mensaje
             if template_id and template_params:
                 # Usar plantilla de WhatsApp
@@ -844,23 +828,17 @@ class WhatsAppAttendanceWebhook(Webhook):
                     }
                 }
                 print(f"📝 Enviando texto libre")
-
             print(f"📡 Enviando a API WhatsApp:")
             print(f"   URL: {url}")
             print(f"   Teléfono: {clean_phone}")
-
-            # Realizar la petición
             response = requests.post(url, headers=headers, json=data, timeout=10)
-
             print(f"📨 Respuesta API: {response.status_code}")
             print(f"📄 Contenido: {response.text}")
-
             if response.status_code == 200:
                 return True
             else:
                 print(f"❌ Error en API WhatsApp: {response.status_code} - {response.text}")
                 return False
-
         except Exception as e:
             print(f"❌ Error llamando API WhatsApp: {e}")
             _logger.error("Error llamando API WhatsApp: %s", e)
@@ -1697,29 +1675,49 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
             if not access_token:
                 print(f"❌ No se encontró token de acceso en la cuenta de WhatsApp")
                 return False
-            url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
-            headers = {
+            clean_phone = phone_number.lstrip('+')
+            # 1. Subir el archivo a la API de WhatsApp para obtener media_id
+            media_url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/media"
+            headers_upload = {
                 'Authorization': f'Bearer {access_token}'
             }
-            clean_phone = phone_number.lstrip('+')
             with open(file_path, 'rb') as f:
                 files = {
                     'file': (filename or 'asistencias.txt', f, 'text/plain')
                 }
-                data = {
-                    'messaging_product': 'whatsapp',
-                    'to': clean_phone,
-                    'type': 'document',
-                    'document': json.dumps({
-                        'filename': filename or 'asistencias.txt',
-                        'caption': 'Reporte de asistencias',
-                    })
+                data_upload = {
+                    'messaging_product': 'whatsapp'
                 }
-                response = requests.post(url, headers=headers, files=files, data=data)
+                response_upload = requests.post(media_url, headers=headers_upload, files=files, data=data_upload)
+            print(f"📤 Respuesta API subida archivo: {response_upload.status_code}")
+            print(f"📄 Contenido subida: {response_upload.text}")
+            if response_upload.status_code != 200:
+                print(f"❌ Error subiendo archivo a WhatsApp")
+                return False
+            media_id = response_upload.json().get('id')
+            if not media_id:
+                print(f"❌ No se obtuvo media_id tras subir el archivo")
+                return False
+            # 2. Enviar el mensaje de documento usando el media_id
+            url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            }
+            data = {
+                'messaging_product': 'whatsapp',
+                'to': clean_phone,
+                'type': 'document',
+                'document': {
+                    'id': media_id,
+                    'filename': filename or 'asistencias.txt',
+                    'caption': 'Reporte de asistencias'
+                }
+            }
+            response = requests.post(url, headers=headers, json=data)
             print(f"📨 Respuesta API archivo: {response.status_code}")
             print(f"📄 Contenido: {response.text}")
             return response.status_code == 200
         except Exception as e:
             print(f"❌ Error enviando archivo por WhatsApp: {e}")
             return False
-
