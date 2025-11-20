@@ -151,6 +151,17 @@ class WhatsAppAttendanceWebhook(Webhook):
                                 print(f"🔘 Procesando mensaje interactivo (botón presionado)")
                                 self._handle_attendance_message(message, value)
 
+                            # Detectar comando de asistencia '/asistencia'
+                            text_content = message.get('text', {}).get('body', '').strip().lower()
+                            if text_content == '/asistencia':
+                                phone_number = message.get('from', '')
+                                employee = self._find_employee_by_phone(phone_number)
+                                if employee:
+                                    self._send_attendance_report(phone_number, employee)
+                                else:
+                                    self._send_error_message(phone_number, "No se encontró empleado asociado a este número")
+                                continue  # No procesar como comando normal
+
         except Exception as e:
             print(f"❌ Error procesando asistencia: {e}")
             _logger.error("Error en procesamiento de asistencia: %s", e)
@@ -1625,3 +1636,93 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
                 'valid': False,
                 'message': 'Error interno al validar asistencia'
             }
+
+    def _send_attendance_report(self, phone_number, employee):
+        """
+        Genera y envía un archivo TXT con las últimas 30 asistencias del empleado por WhatsApp
+        """
+        try:
+            # Buscar las últimas 30 asistencias
+            attendances = request.env['hr.attendance'].sudo().search([
+                ('employee_id', '=', employee.id)
+            ], order='check_in desc', limit=30)
+
+            if not attendances:
+                self._send_error_message(phone_number, "No se encontraron asistencias para este empleado.")
+                return
+
+            # Generar contenido TXT
+            lines = [
+                f"Reporte de Asistencias para {employee.name}",
+                f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+                "",
+                "Fecha Entrada | Hora Entrada | Fecha Salida | Hora Salida"
+                "\n----------------------------------------------------------"
+            ]
+            for att in attendances:
+                check_in = att.check_in.strftime('%d/%m/%Y|%H:%M') if att.check_in else '--|--'
+                check_out = att.check_out.strftime('%d/%m/%Y|%H:%M') if att.check_out else '--|--'
+                lines.append(f"{check_in} | {check_out}")
+            content = '\n'.join(lines)
+
+            # Guardar archivo temporal
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.txt', mode='w', encoding='utf-8') as tmp:
+                tmp.write(content)
+                tmp_path = tmp.name
+
+            # Enviar archivo por WhatsApp
+            self._send_whatsapp_file(phone_number, tmp_path, filename=f"asistencias_{employee.id}.txt")
+        except Exception as e:
+            print(f"❌ Error generando o enviando reporte de asistencias: {e}")
+            self._send_error_message(phone_number, "Error interno al generar el reporte de asistencias.")
+
+    def _send_whatsapp_file(self, phone_number, file_path, filename=None):
+        """
+        Envía un archivo (documento) por WhatsApp usando la API
+        """
+        try:
+            import requests
+            wa_account = request.env['whatsapp.account'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
+            if not wa_account:
+                print(f"❌ No se encontró cuenta de WhatsApp activa")
+                return False
+            access_token = None
+            token_fields = ['access_token', 'token', 'app_secret', 'permanent_access_token']
+            for field in token_fields:
+                if hasattr(wa_account, field):
+                    token_value = getattr(wa_account, field)
+                    if token_value:
+                        access_token = token_value
+                        break
+            if not access_token:
+                print(f"❌ No se encontró token de acceso en la cuenta de WhatsApp")
+                return False
+            url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
+            headers = {
+                'Authorization': f'Bearer {access_token}'
+            }
+            clean_phone = phone_number.lstrip('+')
+            with open(file_path, 'rb') as f:
+                files = {
+                    'file': (filename or 'asistencias.txt', f, 'text/plain')
+                }
+                data = {
+                    'messaging_product': 'whatsapp',
+                    'to': clean_phone,
+                    'type': 'document',
+                    'document': json.dumps({
+                        'filename': filename or 'asistencias.txt',
+                        'caption': 'Reporte de asistencias',
+                    })
+                }
+                response = requests.post(url, headers=headers, files=files, data=data)
+            print(f"📨 Respuesta API archivo: {response.status_code}")
+            print(f"📄 Contenido: {response.text}")
+            return response.status_code == 200
+        except Exception as e:
+            print(f"❌ Error enviando archivo por WhatsApp: {e}")
+            return False
+
