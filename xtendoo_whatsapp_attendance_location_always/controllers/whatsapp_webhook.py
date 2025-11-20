@@ -2,10 +2,8 @@ import logging
 import json
 import re
 from datetime import datetime
-import tempfile
 import requests
 import pytz
-from odoo.tools.misc import file_path
 from odoo import http
 from odoo.http import request
 from odoo.addons.whatsapp.controller.main import Webhook
@@ -1618,95 +1616,27 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
 
             # Generar contenido TXT con cabeceras correctas
             lines = [
-                f"Reporte de Asistencias para {employee.name}",
+                f"*Reporte de Asistencias para {employee.name}*",
                 f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
                 "",
-                "Fecha Entrada | Fecha Salida",
+                "*Fecha Entrada*  |  *Fecha Salida*",
                 "-----------------------------"
             ]
             for att in attendances:
                 check_in = att.check_in.strftime('%d/%m/%Y %H:%M') if att.check_in else '--'
                 check_out = att.check_out.strftime('%d/%m/%Y %H:%M') if att.check_out else '--'
-                lines.append(f"{check_in} | {check_out}")
+                lines.append(f"{check_in}  |  {check_out}")
             content = '\n'.join(lines)
 
-            # Guardar archivo temporal
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.txt', mode='w', encoding='utf-8') as tmp:
-                tmp.write(content)
-                tmp_path = tmp.name
-
-            # Enviar archivo por WhatsApp SOLO una vez
-            self._send_whatsapp_file(phone_number, tmp_path, filename=f"asistencias_{employee.id}.txt")
+            # WhatsApp API: máximo 4096 caracteres por mensaje
+            max_len = 4096
+            for i in range(0, len(content), max_len):
+                part = content[i:i+max_len]
+                wa_account = request.env['whatsapp.account'].sudo().search([
+                    ('active', '=', True)
+                ], limit=1)
+                if wa_account:
+                    self._send_whatsapp_message(wa_account, phone_number, part)
         except Exception as e:
             print(f"❌ Error generando o enviando reporte de asistencias: {e}")
             self._send_error_message(phone_number, "Error interno al generar el reporte de asistencias.")
-
-    def _send_whatsapp_file(self, phone_number, file_path, filename=None):
-        """
-        Envía un archivo (documento) por WhatsApp usando la API
-        """
-        try:
-            import requests
-            wa_account = request.env['whatsapp.account'].sudo().search([
-                ('active', '=', True)
-            ], limit=1)
-            if not wa_account:
-                print(f"❌ No se encontró cuenta de WhatsApp activa")
-                return False
-            access_token = None
-            token_fields = ['access_token', 'token', 'app_secret', 'permanent_access_token']
-            for field in token_fields:
-                if hasattr(wa_account, field):
-                    token_value = getattr(wa_account, field)
-                    if token_value:
-                        access_token = token_value
-                        break
-            if not access_token:
-                print(f"❌ No se encontró token de acceso en la cuenta de WhatsApp")
-                return False
-            clean_phone = phone_number.lstrip('+')
-            # 1. Subir el archivo a la API de WhatsApp para obtener media_id
-            media_url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/media"
-            headers_upload = {
-                'Authorization': f'Bearer {access_token}'
-            }
-            with open(file_path, 'rb') as f:
-                files = {
-                    'file': (filename or 'asistencias.txt', f, 'text/plain')
-                }
-                data_upload = {
-                    'messaging_product': 'whatsapp'
-                }
-                response_upload = requests.post(media_url, headers=headers_upload, files=files, data=data_upload)
-            print(f"📤 Respuesta API subida archivo: {response_upload.status_code}")
-            print(f"📄 Contenido subida: {response_upload.text}")
-            if response_upload.status_code != 200:
-                print(f"❌ Error subiendo archivo a WhatsApp")
-                return False
-            media_id = response_upload.json().get('id')
-            if not media_id:
-                print(f"❌ No se obtuvo media_id tras subir el archivo")
-                return False
-            # 2. Enviar el mensaje de documento usando el media_id
-            url = f"https://graph.facebook.com/v18.0/{wa_account.phone_uid}/messages"
-            headers = {
-                'Authorization': f'Bearer {access_token}',
-                'Content-Type': 'application/json'
-            }
-            data = {
-                'messaging_product': 'whatsapp',
-                'to': clean_phone,
-                'type': 'document',
-                'document': {
-                    'id': media_id,
-                    'filename': filename or 'asistencias.txt',
-                    'caption': 'Reporte de asistencias'
-                }
-            }
-            response = requests.post(url, headers=headers, json=data)
-            print(f"📨 Respuesta API archivo: {response.status_code}")
-            print(f"📄 Contenido: {response.text}")
-            return response.status_code == 200
-        except Exception as e:
-            print(f"❌ Error enviando archivo por WhatsApp: {e}")
-            return False
