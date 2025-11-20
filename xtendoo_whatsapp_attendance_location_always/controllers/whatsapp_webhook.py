@@ -182,17 +182,21 @@ class WhatsAppAttendanceWebhook(Webhook):
             print(f"   Timestamp: {timestamp}")
             print(f"   Tipo: {message.get('type')}")
 
-            # NOTA: En este módulo NO se procesan botones interactivos
-            # La ubicación se solicita directamente sin preguntar
-            # if message.get('type') == 'interactive':
-            #     ... código de botones eliminado ...
-
             # Procesar mensajes de texto normales
             text_content = message.get('text', {}).get('body', '').strip().lower() if message.get('type') == 'text' else ''
             print(f"   Texto: '{text_content}'")
 
             # Detectar comando de asistencia
             attendance_type = self._detect_attendance_command(text_content)
+
+            if attendance_type == 'attendance_report':
+                # Flujo especial para /asistencia
+                employee = self._find_employee_by_phone(phone_number)
+                if employee:
+                    self._send_attendance_report(phone_number, employee)
+                else:
+                    self._send_error_message(phone_number, "No se encontró empleado asociado a este número")
+                return
 
             if attendance_type:
                 print(f"✅ Comando detectado: {attendance_type}")
@@ -651,6 +655,86 @@ class WhatsAppAttendanceWebhook(Webhook):
         except Exception as e:
             print(f"❌ Error enviando confirmación: {e}")
             _logger.error("Error enviando confirmación de asistencia: %s", e)
+            return False
+
+    def _send_confirmation_message_with_location(self, phone_number, attendance_type, employee, location_data):
+        """
+        Envía mensaje de confirmación al empleado via WhatsApp incluyendo la ubicación
+        """
+        try:
+            from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+            from datetime import timezone
+            import pytz
+
+            action_text = "entrada" if attendance_type == 'check_in' else "salida"
+            user_tz = request.env.user.tz or 'Europe/Madrid'
+            local_tz = pytz.timezone(user_tz)
+            today = datetime.now().date()
+            attendance = None
+            if attendance_type == 'check_in':
+                attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_in', '>=', f"{today} 00:00:00"),
+                ], limit=1, order='check_in desc')
+            else:
+                attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_out', '!=', False)
+                ], limit=1, order='check_out desc')
+
+            if attendance:
+                if attendance_type == 'check_in' and attendance.check_in:
+                    utc_time = attendance.check_in.replace(tzinfo=pytz.UTC)
+                    local_time = utc_time.astimezone(local_tz)
+                    attendance_time = local_time.strftime("%H:%M")
+                elif attendance_type == 'check_out' and attendance.check_out:
+                    utc_time = attendance.check_out.replace(tzinfo=pytz.UTC)
+                    local_time = utc_time.astimezone(local_tz)
+                    attendance_time = local_time.strftime("%H:%M")
+                else:
+                    now_local = datetime.now(local_tz)
+                    attendance_time = now_local.strftime("%H:%M")
+            else:
+                now_local = datetime.now(local_tz)
+                attendance_time = now_local.strftime("%H:%M")
+
+            date_now = datetime.now().strftime("%d/%m/%Y")
+
+            lat = location_data.get('latitude')
+            lng = location_data.get('longitude')
+            address = location_data.get('address', '')
+            maps_url = f"https://maps.google.com/?q={lat},{lng}" if lat and lng else ''
+            message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente con ubicación.\n\n🕐 Hora: {attendance_time}\n📅 Fecha: {date_now}\n"
+            if lat and lng:
+                message += f"\n📍 Coordenadas: {lat}, {lng}\n🗺️ Ver en Google Maps: {maps_url}"
+            if address:
+                message += f"\nDirección: {address}"
+            message += "\n\n¡Que tengas un buen día!"
+
+            # Buscar la cuenta de WhatsApp activa
+            wa_account = request.env['whatsapp.account'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
+
+            if not wa_account:
+                print(f"❌ No se encontró cuenta de WhatsApp activa")
+                return False
+
+            print(f"📱 Usando cuenta WhatsApp: {wa_account.name}")
+
+            # Enviar mensaje de texto libre
+            success = self._send_whatsapp_message(wa_account, phone_number, message)
+
+            if success:
+                print(f"✅ Mensaje de confirmación con ubicación enviado exitosamente")
+                return True
+            else:
+                print(f"❌ Error enviando mensaje de confirmación con ubicación")
+                return False
+
+        except Exception as e:
+            print(f"❌ Error enviando confirmación con ubicación: {e}")
+            _logger.error("Error enviando confirmación de asistencia con ubicación: %s", e)
             return False
 
     def _send_error_message(self, phone_number, error_message):
