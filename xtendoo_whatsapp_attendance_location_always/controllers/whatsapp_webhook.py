@@ -261,6 +261,11 @@ class WhatsAppAttendanceWebhook(Webhook):
         print(f"   Entrada: {entrada_keywords}")
         print(f"   Salida: {salida_keywords}")
 
+        # Permitir comando especial /asistencia
+        if normalized_text == '/asistencia':
+            print("✅ Comando especial /asistencia detectado")
+            return 'attendance_report'
+
         # Buscar patrones de entrada
         for keyword in entrada_keywords:
             keyword_lower = keyword.lower()
@@ -588,104 +593,39 @@ class WhatsAppAttendanceWebhook(Webhook):
 
             # Obtener la hora real de la asistencia registrada
             today = datetime.now().date()
+            attendance = None
             if attendance_type == 'check_in':
                 # Buscar la entrada más reciente de hoy
                 attendance = request.env['hr.attendance'].sudo().search([
                     ('employee_id', '=', employee.id),
                     ('check_in', '>=', f"{today} 00:00:00"),
-                    ('check_out', '=', False)
                 ], limit=1, order='check_in desc')
-
-                if attendance and attendance.check_in:
-                    # Convertir de UTC a zona horaria local
-                    utc_time = attendance.check_in.replace(tzinfo=pytz.UTC)
-                    local_time = utc_time.astimezone(local_tz)
-                    attendance_time = local_time.strftime("%H:%M")
-                    print(f"🕐 Hora UTC: {attendance.check_in.strftime('%H:%M')}")
-                    print(f"🕐 Hora local ({user_tz}): {attendance_time}")
-                else:
-                    # Si no se encuentra, usar hora actual en zona local
-                    now_local = datetime.now(local_tz)
-                    attendance_time = now_local.strftime("%H:%M")
-                    print(f"⚠️ No se encontró registro de entrada, usando hora actual local: {attendance_time}")
-
             else:  # check_out
-                # Buscar la asistencia con salida más reciente de hoy
                 attendance = request.env['hr.attendance'].sudo().search([
                     ('employee_id', '=', employee.id),
-                    ('check_in', '>=', f"{today} 00:00:00"),
                     ('check_out', '!=', False)
                 ], limit=1, order='check_out desc')
 
-                if attendance and attendance.check_out:
-                    # Convertir de UTC a zona horaria local
+            if attendance:
+                if attendance_type == 'check_in' and attendance.check_in:
+                    utc_time = attendance.check_in.replace(tzinfo=pytz.UTC)
+                    local_time = utc_time.astimezone(local_tz)
+                    attendance_time = local_time.strftime("%H:%M")
+                elif attendance_type == 'check_out' and attendance.check_out:
                     utc_time = attendance.check_out.replace(tzinfo=pytz.UTC)
                     local_time = utc_time.astimezone(local_tz)
                     attendance_time = local_time.strftime("%H:%M")
-                    print(f"🕐 Hora UTC: {attendance.check_out.strftime('%H:%M')}")
-                    print(f"🕐 Hora local ({user_tz}): {attendance_time}")
                 else:
-                    # Si no se encuentra, usar hora actual en zona local
                     now_local = datetime.now(local_tz)
                     attendance_time = now_local.strftime("%H:%M")
-                    print(f"⚠️ No se encontró registro de salida, usando hora actual local: {attendance_time}")
+            else:
+                now_local = datetime.now(local_tz)
+                attendance_time = now_local.strftime("%H:%M")
 
             date_now = datetime.now().strftime("%d/%m/%Y")
 
-            # Obtener configuración de respuesta desde base de datos
-            response_config = request.env['attendance.keyword.config'].sudo().get_response_config(attendance_type)
-
-            if response_config and response_config.use_template and response_config.whatsapp_template_id:
-                print(f"📋 Usando plantilla de WhatsApp: {response_config.whatsapp_template_id.name}")
-
-                # Obtener el template_name de la plantilla
-                template_name = response_config.whatsapp_template_id.template_name
-
-                # Preparar parámetros para la plantilla
-                template_params = [
-                    employee.name,      # {{1}} = nombre del empleado
-                    attendance_time,    # {{2}} = hora
-                    date_now           # {{3}} = fecha
-                ]
-
-                # Buscar la cuenta de WhatsApp activa
-                wa_account = request.env['whatsapp.account'].sudo().search([
-                    ('active', '=', True)
-                ], limit=1)
-
-                if not wa_account:
-                    print(f"❌ No se encontró cuenta de WhatsApp activa")
-                    return False
-
-                print(f"📱 Usando cuenta WhatsApp: {wa_account.name}")
-                print(f"📋 Plantilla: {template_name}")
-                print(f"📋 Parámetros: {template_params}")
-
-                # Enviar usando plantilla de WhatsApp
-                success = self._send_whatsapp_message(
-                    wa_account,
-                    phone_number,
-                    message=None,  # No se usa mensaje de texto
-                    template_id=template_name,
-                    template_params=template_params
-                )
-
-                if success:
-                    print(f"✅ Plantilla de WhatsApp enviada exitosamente")
-                    return True
-                else:
-                    print(f"❌ Error enviando plantilla de WhatsApp, intentando mensaje de texto...")
-                    # Fallback a mensaje de texto si falla la plantilla
-
-            # Usar mensaje personalizado o por defecto si no hay plantilla
-            if response_config and response_config.custom_message:
-                print(f"📋 Usando mensaje personalizado: {response_config.name}")
-                message = response_config.get_response_message(employee.name, attendance_time, date_now, action_text)
-            else:
-                print(f"⚠️ No se encontró configuración, usando mensaje por defecto")
-                message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente.\n\n🕐 Hora: {attendance_time}\n📅 Fecha: {date_now}\n\n¡Que tengas un buen día!"
-
-            print(f"📤 Enviando confirmación de texto a {phone_number}: {message}")
+            # Mensaje por defecto
+            message = f"✅ Hola {employee.name},\n\nTu *{action_text}* ha sido registrada correctamente.\n\n🕐 Hora: {attendance_time}\n📅 Fecha: {date_now}\n\n¡Que tengas un buen día!"
 
             # Buscar la cuenta de WhatsApp activa
             wa_account = request.env['whatsapp.account'].sudo().search([
