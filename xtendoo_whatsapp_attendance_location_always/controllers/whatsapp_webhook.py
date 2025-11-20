@@ -1616,16 +1616,16 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
 
             # Generar contenido TXT con cabeceras correctas
             lines = [
-                f"*Reporte de Asistencias para {employee.name}*",
-                f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+                f"*Asistencias : {employee.name}*",
+                f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
                 "",
-                "*Fecha Entrada*  |  *Fecha Salida*",
+                "*Entrada*  |  *Salida*",
                 "-----------------------------"
             ]
             for att in attendances:
                 check_in = att.check_in.strftime('%d/%m/%Y %H:%M') if att.check_in else '--'
                 check_out = att.check_out.strftime('%d/%m/%Y %H:%M') if att.check_out else '--'
-                lines.append(f"{check_in}  |  {check_out}")
+                lines.append(f"{check_in}  >  {check_out}")
             content = '\n'.join(lines)
 
             # WhatsApp API: máximo 4096 caracteres por mensaje
