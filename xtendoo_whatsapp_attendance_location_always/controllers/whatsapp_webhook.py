@@ -154,16 +154,6 @@ class WhatsAppAttendanceWebhook(Webhook):
                                 print(f"🔘 Procesando mensaje interactivo (botón presionado)")
                                 self._handle_attendance_message(message, value)
 
-                            # Detectar comando de asistencia '/asistencia'
-                            text_content = message.get('text', {}).get('body', '').strip().lower()
-                            if text_content == '/asistencia':
-                                phone_number = message.get('from', '')
-                                employee = self._find_employee_by_phone(phone_number)
-                                if employee:
-                                    self._send_attendance_report(phone_number, employee)
-                                else:
-                                    self._send_error_message(phone_number, "No se encontró empleado asociado a este número")
-                                continue  # No procesar como comando normal
 
         except Exception as e:
             print(f"❌ Error procesando asistencia: {e}")
