@@ -1626,27 +1626,26 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
                 self._send_error_message(phone_number, "No se encontraron asistencias para este empleado.")
                 return
 
-            # Generar contenido TXT
+            # Generar contenido TXT con cabeceras correctas
             lines = [
                 f"Reporte de Asistencias para {employee.name}",
                 f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
                 "",
-                "Fecha Entrada | Hora Entrada | Fecha Salida | Hora Salida"
-                "\n----------------------------------------------------------"
+                "Fecha Entrada | Fecha Salida",
+                "-----------------------------"
             ]
             for att in attendances:
-                check_in = att.check_in.strftime('%d/%m/%Y|%H:%M') if att.check_in else '--|--'
-                check_out = att.check_out.strftime('%d/%m/%Y|%H:%M') if att.check_out else '--|--'
+                check_in = att.check_in.strftime('%d/%m/%Y %H:%M') if att.check_in else '--'
+                check_out = att.check_out.strftime('%d/%m/%Y %H:%M') if att.check_out else '--'
                 lines.append(f"{check_in} | {check_out}")
             content = '\n'.join(lines)
 
             # Guardar archivo temporal
-            import tempfile
             with tempfile.NamedTemporaryFile(delete=False, suffix='.txt', mode='w', encoding='utf-8') as tmp:
                 tmp.write(content)
                 tmp_path = tmp.name
 
-            # Enviar archivo por WhatsApp
+            # Enviar archivo por WhatsApp SOLO una vez
             self._send_whatsapp_file(phone_number, tmp_path, filename=f"asistencias_{employee.id}.txt")
         except Exception as e:
             print(f"❌ Error generando o enviando reporte de asistencias: {e}")
