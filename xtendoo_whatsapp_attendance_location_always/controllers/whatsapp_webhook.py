@@ -1189,13 +1189,23 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
                 location_data.get('longitude')
             )
 
-            # Actualizar registro de asistencia con ubicación
-            attendance.sudo().write({
-                'whatsapp_latitude': location_data.get('latitude'),
-                'whatsapp_longitude': location_data.get('longitude'),
-                'whatsapp_location_address': address or location_data.get('address', ''),
-                'whatsapp_location_accuracy': location_data.get('accuracy', 0.0)
-            })
+            # Actualizar registro de asistencia con ubicación según tipo
+            vals = {}
+            if attendance_type == 'check_in':
+                vals = {
+                    'whatsapp_check_in_latitude': location_data.get('latitude'),
+                    'whatsapp_check_in_longitude': location_data.get('longitude'),
+                    'whatsapp_check_in_location_address': address or location_data.get('address', ''),
+                    'whatsapp_check_in_location_accuracy': location_data.get('accuracy', 0.0)
+                }
+            elif attendance_type == 'check_out':
+                vals = {
+                    'whatsapp_check_out_latitude': location_data.get('latitude'),
+                    'whatsapp_check_out_longitude': location_data.get('longitude'),
+                    'whatsapp_check_out_location_address': address or location_data.get('address', ''),
+                    'whatsapp_check_out_location_accuracy': location_data.get('accuracy', 0.0)
+                }
+            attendance.sudo().write(vals)
 
             # Actualizar última ubicación del empleado
             employee.sudo().write({
@@ -1213,55 +1223,6 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
             _logger.error("Error registrando asistencia con ubicación: %s", e)
             return False
 
-    def _register_attendance_without_location(self, employee, attendance_type, phone_number):
-        """
-        Registra asistencia sin ubicación cuando hay error o timeout
-        """
-        try:
-            print(f"📝 Registrando asistencia SIN ubicación para {employee.name}")
-
-            attendance_result = self._register_attendance(employee, attendance_type)
-
-            if attendance_result:
-                self._send_confirmation_message(phone_number, attendance_type, employee)
-                print(f"✅ Asistencia sin ubicación registrada exitosamente")
-            else:
-                self._send_error_message(phone_number, "Error al registrar asistencia")
-
-        except Exception as e:
-            print(f"❌ Error registrando asistencia sin ubicación: {e}")
-            _logger.error("Error registrando asistencia sin ubicación: %s", e)
-
-    def _send_confirmation_message_with_location(self, phone_number, attendance_type, employee, location_data):
-        """
-        Envía mensaje de confirmación incluyendo información de ubicación
-        """
-        try:
-            # Enviar confirmación normal primero
-            success = self._send_confirmation_message(phone_number, attendance_type, employee)
-
-            if success:
-                # Enviar información adicional de ubicación
-                lat = location_data.get('latitude')
-                lng = location_data.get('longitude')
-
-                if lat and lng:
-                    location_message = f"📍 *Ubicación registrada:*\n\n🗺️ Coordenadas: {lat:.6f}, {lng:.6f}\n\n📍 Ver en Google Maps: https://maps.google.com/?q={lat},{lng}"
-
-                    # Buscar cuenta WhatsApp
-                    wa_account = request.env['whatsapp.account'].sudo().search([
-                        ('active', '=', True)
-                    ], limit=1)
-
-                    if wa_account:
-                        self._send_whatsapp_message(wa_account, phone_number, location_message)
-
-            return success
-
-        except Exception as e:
-            print(f"❌ Error enviando confirmación con ubicación: {e}")
-            return False
-
     def _add_location_to_existing_attendance(self, attendance, location_data):
         """
         Añade datos de ubicación a un registro de asistencia ya existente
@@ -1275,13 +1236,25 @@ _Tu asistencia se registrará una vez que reciba tu ubicación._"""
                 location_data.get('longitude')
             )
 
-            # Actualizar registro de asistencia con ubicación
-            attendance.sudo().write({
-                'whatsapp_latitude': location_data.get('latitude'),
-                'whatsapp_longitude': location_data.get('longitude'),
-                'whatsapp_location_address': address or location_data.get('address', ''),
-                'whatsapp_location_accuracy': location_data.get('accuracy', 0.0)
-            })
+            # Determinar si es entrada o salida según si check_out está vacío
+            vals = {}
+            if not attendance.check_out:
+                # Si no hay salida, es entrada
+                vals = {
+                    'whatsapp_check_in_latitude': location_data.get('latitude'),
+                    'whatsapp_check_in_longitude': location_data.get('longitude'),
+                    'whatsapp_check_in_location_address': address or location_data.get('address', ''),
+                    'whatsapp_check_in_location_accuracy': location_data.get('accuracy', 0.0)
+                }
+            else:
+                # Si hay salida, es salida
+                vals = {
+                    'whatsapp_check_out_latitude': location_data.get('latitude'),
+                    'whatsapp_check_out_longitude': location_data.get('longitude'),
+                    'whatsapp_check_out_location_address': address or location_data.get('address', ''),
+                    'whatsapp_check_out_location_accuracy': location_data.get('accuracy', 0.0)
+                }
+            attendance.sudo().write(vals)
 
             # Actualizar última ubicación del empleado
             employee = attendance.employee_id
