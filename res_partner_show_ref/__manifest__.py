@@ -2,7 +2,7 @@
 {
     'name': 'Res Partner Show Ref',
     'summary': """show customer reference""",
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0',
     'description': """
 allows to display the field in the client file as well as edit it""",
     'author': 'DDL',

@@ -3,7 +3,7 @@
 
 {
     "name": "Invoice AI - OpenAI Integration",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "category": "Accounting",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",

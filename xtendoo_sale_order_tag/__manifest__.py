@@ -7,7 +7,7 @@
     "author": "Patrick Wilson, Odoo Community Association (OCA), Dani Domínguez",
     "website": "https://github.com/OCA/sale-workflow",
     "category": "Sale",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "license": "AGPL-3",
     "depends": ["crm", "sale"],
     "data": [

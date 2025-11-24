@@ -4,7 +4,7 @@
 
 {
     "name": "Xtendoo Last Price Costing Method",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "category": "Warehouse",
     "license": "AGPL-3",
     "summary": "Add a new Costing Method 'Last Price'",

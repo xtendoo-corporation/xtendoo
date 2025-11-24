@@ -3,7 +3,7 @@
 {
     "name": "Sale Order Date Update",
     "summary": "In a sale order the date can be update",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "category": "Sale",
     "website": "https://xtendoo.es",
     "author": "DDL",

@@ -1,6 +1,6 @@
 {
     'name': 'POS UOM Selection',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0',
     'category': 'Point of Sale',
     'summary': 'Permite seleccionar unidades de medición en el POS',
     'description': """
@@ -20,6 +20,6 @@
     },
     'installable': True,
     'auto_install': False,
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
 }
 

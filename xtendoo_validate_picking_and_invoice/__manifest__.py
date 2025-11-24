@@ -1,6 +1,6 @@
 {
     'name': 'Xtendoo Validate Picking and Invoice',
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0',
     'category': 'Extra Tools',
     'author': 'Manuel Calero Solis (Xtendoo)',
     'website': 'https://xtendoo.es',

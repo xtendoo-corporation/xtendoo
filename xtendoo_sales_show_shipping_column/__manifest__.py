@@ -4,7 +4,7 @@
 {
     "name": "Sales Show Shipping Column",
     "summary": "Show shipping address column in sale orders and invoices tree views",
-    "version": "18.0.1.0.7",
+    "version": "18.0.1.0",
     "category": "Sales",
     "website": "https://xtendoo.es",
     "author": "Xtendoo",

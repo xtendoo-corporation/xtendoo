@@ -1,6 +1,6 @@
 {
     "name": "Sale Order Pricelist Auto Update",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "category": "Sales Management",
     "author": "Manuel Calero, Camilo",
     "website": "https://github.com/xtendoo-corporation/xtendoo",

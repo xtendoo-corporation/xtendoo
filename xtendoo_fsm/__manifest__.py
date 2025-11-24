@@ -18,8 +18,8 @@ Características principales:
 - Integración con ventas, inventario y contabilidad
     """,
     'category': 'Services/Work Orders',
-    'version': '18.0.1.0.0',
-    'license': 'LGPL-3',
+    'version': '18.0.1.0',
+    'license': 'AGPL-3',
     'author': 'Xtendoo Software SLU',
     'website': 'https://www.xtendoo.es',
     'depends': [

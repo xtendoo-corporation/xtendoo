@@ -1,7 +1,7 @@
 {
     "name": "Sale Order Show Partner City",
     "summary": """Sale Order Show Partner City""",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "description": """Sale Order Show Partner City""",
     "author": " Dani Domínguez",
     "company": "Xtendoo",

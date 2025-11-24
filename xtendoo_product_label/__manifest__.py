@@ -1,10 +1,10 @@
 {
     'name': 'Xtendoo Custom Product Labels',
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0',
     'category': 'Extra Tools',
     'author': 'Abraham Carrasco (Xtendoo)',
     'website': '',
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'summary': 'Print custom product labels',
     'images': [],
     'depends': [

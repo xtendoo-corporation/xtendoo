@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Barcode Scanning Support For Sale and Purchase',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0',
     'category': 'Extra Tools',
     'summary': 'This module will help you to use barcode scanner in sales '
                'and purchase.',

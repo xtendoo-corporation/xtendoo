@@ -3,7 +3,7 @@
 
 {
     'name': 'Product Box Units',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0',
     'category': 'Sales',
     'summary': 'Manage product box units in sales cycle',
     'description': """
@@ -19,7 +19,7 @@ This module adds box units functionality to products and sales process:
     """,
     'author': 'Xtendoo Software SLU',
     'website': 'https://xtendoo.es',
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'depends': [
         'sale',
         'product',

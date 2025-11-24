@@ -33,14 +33,16 @@ except ImportError:
 
 class AccountMove(models.Model):
     _inherit = "account.move"
-    # ✅ account.move YA hereda de mail.thread por defecto en Odoo
 
     ai_invoice_file = fields.Binary(
         string="AI Invoice File",
         help="Upload invoice file to analyze with AI",
         copy=False,
     )
-    ai_invoice_filename = fields.Char(string="AI Filename", copy=False)
+    ai_invoice_filename = fields.Char(
+        string="AI Filename",
+        copy=False
+    )
 
     @api.model
     def message_new(self, msg_dict, custom_values=None):

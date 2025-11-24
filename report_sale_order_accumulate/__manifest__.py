@@ -1,7 +1,7 @@
 {
     "name": "report_sale_order_accumulate",
     "summary": """Informe de ventas acumulados por tipo de producto""",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "description": """Informe de ventas acumulados por tipo de producto""",
     "author": "DDL",
     "company": "Xtendoo",

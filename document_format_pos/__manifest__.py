@@ -6,7 +6,7 @@
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
     "license": "AGPL-3",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.0",
     "depends": [
         "point_of_sale",
     ],

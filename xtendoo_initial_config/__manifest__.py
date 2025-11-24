@@ -4,10 +4,10 @@
     'summary': """
         Configuración inicial automática para instalaciones Odoo 18.0
     """,
-    'version': "18.0.1.0.0",
+    'version': "18.0.1.0",
     'author': "Manuel Calero, Xtendoo SLU",
     'website': "https://xtendoo.es",
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'description': """
         Este módulo se encarga de realizar las configuraciones iniciales de Odoo 18.0:
         - Instalar el módulo de contactos

@@ -4,7 +4,7 @@
 {
     "name": "Stock Production Lot Change Constraint",
     "summary": "Stock Production Lot Change Constraint",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "author": "Manuel Calero Solis - Xtendoo, Daniel Domínguez",
     "website": "https://xtendoo.es",
     "category": "Warehouse Management",

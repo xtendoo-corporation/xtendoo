@@ -3,7 +3,7 @@
 {
     'name': 'Facturación Mensual',
     'summary': """Facturación Mensual""",
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0',
     'description': """Facturación Mensual""",
     'author': 'Dani Domínguez',
     'company': 'Xtendoo',

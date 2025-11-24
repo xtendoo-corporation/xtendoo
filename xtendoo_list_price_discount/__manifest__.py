@@ -1,6 +1,6 @@
 {
     'name': 'Descuentos en Tarifas de Precios',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0',
     'category': 'Sales/Sales',
     'summary': 'Añade campo de descuento en tarifas de precios que se aplica automáticamente en ventas',
     'description': '''

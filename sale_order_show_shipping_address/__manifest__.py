@@ -1,7 +1,7 @@
 {
     "name": "Sale Order Show Shipping Address",
     "summary": """Sale Order Show Shipping Address""",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "description": """Sale Order Show Shipping Address""",
     "author": " Daniel Dominguez",
     "company": "Xtendoo",

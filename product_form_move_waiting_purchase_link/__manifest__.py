@@ -2,7 +2,7 @@
     "name": "Product Form Move Waiting Purchase Link",
     "summary": """
     Add a smart button to picking, to access a list of the pending delivery quantities of your products""",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "author": "Daniel Dominguez, Manuel Calero",
     "company": "Xtendoo",
     "website": "https://xtendoo.es",

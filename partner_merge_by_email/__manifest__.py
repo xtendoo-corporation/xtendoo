@@ -3,7 +3,7 @@
 {
     'name': 'Partner Merge by Email',
     'summary': """Merge duplicate partners with the same email automatically""",
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0',
     'description': """
         This module allows you to merge all duplicate partners that share the same email address
         automatically without asking one by one. It provides a wizard to execute the merge operation

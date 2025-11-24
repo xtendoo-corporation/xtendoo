@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Xtendoo POS Search Speedup (Indexes)",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "summary": "Acelera carga y búsquedas del POS creando extensiones/índices en PostgreSQL",
     "description": """
 Módulo de Optimización del Rendimiento del POS
@@ -31,7 +31,7 @@ Este módulo optimiza significativamente el rendimiento del Punto de Venta media
 * Mejor rendimiento general en operaciones del POS
     """,
     "category": "Point of Sale",
-    "license": "LGPL-3",
+    "license": "AGPL-3",
     "author": "Xtendoo",
     "website": "https://www.xtendoo.es",
     "depends": ["point_of_sale", "product"],

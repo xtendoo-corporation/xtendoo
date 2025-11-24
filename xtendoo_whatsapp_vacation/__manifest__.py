@@ -1,6 +1,6 @@
 {
     'name': 'Xtendoo WhatsApp Vacation',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0',
     'category': 'WhatsApp',
     'summary': 'Solicitar vacaciones a través de WhatsApp',
     'description': """
@@ -16,7 +16,7 @@
     """,
     'author': 'Xtendoo',
     'website': 'https://www.xtendoo.com',
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'depends': ['base', 'whatsapp', 'hr', 'hr_holidays'],
     'data': [
         'security/ir.model.access.csv',

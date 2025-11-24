@@ -6,7 +6,7 @@
     "description": """
     Report to show products under minimum
     """,
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0",
     "category": "Stock",
     "author": "Xtendoo," "Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/sale-workflow",

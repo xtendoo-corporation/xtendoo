@@ -20,7 +20,7 @@
     "version"           :  "1.0.0",
     "sequence"          :  1,
     "author"            :  "Webkul Software Pvt. Ltd.",
-    "license"           :  "Other proprietary",
+    "license": "AGPL-3",
     "website"           :  "https://store.webkul.com/Odoo-POS-Fast-Loading.html",
     "description"       :  """fast load, fast load data, data fast into pos, data faster loading, fast loading""",
     # "live_test_url"     :  "http://odoodemo.webkul.com/?module=pos_fast_loading&custom_url=/pos/auto",
