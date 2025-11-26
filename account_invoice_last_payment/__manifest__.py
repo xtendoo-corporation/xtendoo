@@ -2,7 +2,7 @@
 
 {
     "name": "Account Invoice Last Payment",
-    "version": "15.0.1.0.1",
+    "version": "17.0.1.0.1",
     "author": "Camilo Prado <Xtendoo>",
     "maintainers": ["Camilx03"],
     "category": "Accounting",
