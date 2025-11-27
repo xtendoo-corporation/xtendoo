@@ -68,31 +68,42 @@ class MailGatewayWhatsappService(models.AbstractModel):
         Returns:
             dict: Variable values {1: 'value1', 2: 'value2', ...}
         """
+        import logging
+        _logger = logging.getLogger(__name__)
+
         variables = {}
 
         # Get the record from context or from channel
         res_model = self.env.context.get("res_model")
         res_id = self.env.context.get("res_id")
 
+        _logger.info(f"Context res_model: {res_model}, res_id: {res_id}")
+
         # If not in context, try to get from active_model/active_id
         if not res_model:
             res_model = self.env.context.get("active_model")
             res_id = self.env.context.get("active_id")
+            _logger.info(f"Active res_model: {res_model}, res_id: {res_id}")
 
         # If still not found and we have a channel, get the partner
         if not res_model and channel:
+            _logger.info(f"Trying to get from channel: {channel}")
             # The channel is related to a partner, use that as record
             if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
                 partner = channel.channel_partner_ids[0]
                 res_model = 'res.partner'
                 res_id = partner.id
+                _logger.info(f"Got partner from channel: {res_model}, {res_id}")
 
         if not res_model or not res_id:
             # Fallback to demo values
+            _logger.warning(f"No record found, using demo values. Variables count: {len(template.variable_ids)}")
             for var in template.variable_ids.filtered(lambda v: v.line_type in ['body', 'header']):
                 var_index = var._extract_variable_index()
+                _logger.info(f"Variable {var.name}: index={var_index}, demo_value={var.demo_value}")
                 if var_index and var.demo_value:
                     variables[var_index] = var.demo_value
+            _logger.info(f"Demo variables: {variables}")
             return variables
 
         try:
