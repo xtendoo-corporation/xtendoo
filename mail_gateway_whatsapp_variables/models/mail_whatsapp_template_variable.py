@@ -39,8 +39,23 @@ class MailWhatsappTemplateVariable(models.Model):
         ('user_mobile', 'User Mobile'),
     ], string="Field Type", default='free_text', required=True)
 
+    field_id = fields.Many2one(
+        'ir.model.fields',
+        string="Field",
+        domain="[('model_id', '=', template_model_id), ('store', '=', True)]",
+        help="Select a field from the template's model"
+    )
+    template_model_id = fields.Many2one(
+        'ir.model',
+        related='template_id.model_id',
+        string="Template Model",
+        store=False
+    )
     field_name = fields.Char(
         string="Field Path",
+        compute="_compute_field_name",
+        store=True,
+        readonly=False,
         help="Field path like partner_id.name, amount_total, etc."
     )
     demo_value = fields.Char(
@@ -54,6 +69,15 @@ class MailWhatsappTemplateVariable(models.Model):
         string="Button",
         help="Button associated with this variable"
     )
+
+    @api.depends('field_id')
+    def _compute_field_name(self):
+        """Compute field_name from selected field_id."""
+        for variable in self:
+            if variable.field_id:
+                variable.field_name = variable.field_id.name
+            elif not variable.field_name:
+                variable.field_name = False
 
     @api.depends('name', 'line_type')
     def _compute_display_name(self):

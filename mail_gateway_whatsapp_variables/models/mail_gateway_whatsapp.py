@@ -86,16 +86,31 @@ class MailGatewayWhatsappService(models.AbstractModel):
         res_model = template.model_id.model
         _logger.info(f"Template model: {res_model}")
 
-        # Get record ID from context
-        res_id = self.env.context.get("active_id")
-        _logger.info(f"Context active_id: {res_id}")
+        res_id = None
 
-        # If no record ID and template is for res.partner, try to get from channel
-        if not res_id and res_model == 'res.partner' and channel:
+        # PRIORITY 1: If template is for res.partner and we have a channel, get partner from channel
+        # This is the CORRECT destinatary of the message
+        if res_model == 'res.partner' and channel:
             if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
-                partner = channel.channel_partner_ids[0]
-                res_id = partner.id
-                _logger.info(f"Got partner ID from channel: {res_id}")
+                # Filter out OdooBot and current user
+                partners = channel.channel_partner_ids.filtered(
+                    lambda p: p.id != self.env.ref('base.partner_root').id and p.id != self.env.user.partner_id.id
+                )
+                if partners:
+                    res_id = partners[0].id
+                    _logger.info(f"Got partner ID from channel (destinatary): {res_id}")
+
+        # PRIORITY 2: Try to get from context active_id
+        if not res_id:
+            res_id = self.env.context.get("active_id")
+            if res_id:
+                _logger.info(f"Got ID from context active_id: {res_id}")
+
+        # PRIORITY 3: Try to get from context default_res_id
+        if not res_id:
+            res_id = self.env.context.get("default_res_id")
+            if res_id:
+                _logger.info(f"Got ID from context default_res_id: {res_id}")
 
         if not res_id:
             # Fallback to demo values

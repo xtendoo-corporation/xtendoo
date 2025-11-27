@@ -18,7 +18,13 @@
                     <separator string="Variables"/>
                     <field name="variable_ids" widget="one2many">
                         <list>
+                            <field name="sequence" widget="handle"/>
                             <field name="name"/>
+                            <field name="variable_index"/>
+                            <field name="line_type"/>
+                            <field name="field_type"/>
+                            <field name="field_id" optional="show"/>
+                            <field name="demo_value"/>
                         </list>
                         <form>
                             <group>
@@ -26,7 +32,14 @@
                                 <field name="variable_index"/>
                                 <field name="line_type"/>
                                 <field name="field_type"/>
-                                <field name="field_name"/>
+                                <field name="template_model_id" invisible="1"/>
+                                <field name="field_id"
+                                    invisible="field_type != 'field'"
+                                    required="field_type == 'field'"
+                                    options="{'no_create': True, 'no_open': True}"/>
+                                <field name="field_name"
+                                    invisible="field_type != 'field'"
+                                    readonly="1"/>
                                 <field name="demo_value"/>
                                 <field name="sequence"/>
                             </group>
