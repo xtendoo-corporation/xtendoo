@@ -8,86 +8,41 @@
         <field name="priority">99</field>
         <field name="arch" type="xml">
             <!-- Agregar notebook con pestañas -->
-            <xpath expr="//field[@name='body']" position="replace">
-                <notebook>
-                    <page string="Body" name="body">
-                        <field name="body" widget="text" placeholder="Hello {{1}}, here is your order with the reference {{2}} ..." required="1"/>
-                    </page>
-                    <page string="Buttons" name="buttons">
-                        <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
-                            <list>
+            <xpath expr="//page[@name='body']" position="after">
+                <page string="Buttons" name="buttons">
+                    <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
+                        <tree>
+                            <field name="name"/>
+                        </tree>
+                        <form>
+                            <group>
                                 <field name="name"/>
-                            </list>
-                            <form>
-                                <group>
-                                    <field name="name"/>
-                                    <field name="button_type"/>
-                                    <field name="call_number"/>
-                                    <field name="website_url"/>
-                                    <field name="url_type"/>
-                                    <field name="sequence"/>
-                                </group>
-                            </form>
-                        </field>
-                    </page>
-                    <page string="Variables" name="variables">
-                        <field name="variable_ids" widget="one2many">
-                            <list>
+                                <field name="button_type"/>
+                                <field name="call_number"/>
+                                <field name="website_url"/>
+                                <field name="url_type"/>
+                                <field name="sequence"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+                <page string="Variables" name="variables">
+                    <field name="variable_ids" widget="one2many">
+                        <tree>
+                            <field name="name"/>
+                        </tree>
+                        <form>
+                            <group>
                                 <field name="name"/>
-                            </list>
-                            <form>
-                                <group>
-                                    <field name="name"/>
-                                    <field name="line_type"/>
-                                    <field name="field_type"/>
-                                    <field name="field_name"/>
-                                    <field name="demo_value"/>
-                                    <field name="sequence"/>
-                                </group>
-                            </form>
-                        </field>
-                    </page>
-                </notebook>
-            </xpath>
-        </field>
-    </record>
-
-    <!-- Vista del composer mejorada -->
-    <record id="whatsapp_composer_form_view_variables_v2" model="ir.ui.view">
-        <field name="name">whatsapp.composer.form.variables.v2</field>
-        <field name="model">whatsapp.composer</field>
-        <field name="inherit_id" ref="mail_gateway_whatsapp.whatsapp_composer_form_view"/>
-        <field name="priority">99</field>
-        <field name="arch" type="xml">
-            <!-- Campos invisibles -->
-            <field name="template_id" position="after">
-                <field name="has_variables" invisible="1"/>
-                <field name="variable_count" invisible="1"/>
-            </field>
-
-            <!-- Reemplazar el campo body con notebook -->
-            <xpath expr="//field[@name='body']" position="replace">
-                <notebook>
-                    <page string="Message" name="message">
-                        <field name="body" readonly="template_id" force_save="1"/>
-                    </page>
-                    <page string="Variables" name="variables" invisible="not has_variables">
-                        <field name="template_variable_ids" nolabel="1">
-                            <list>
-                                <field name="display_name"/>
-                            </list>
-                            <form>
-                                <group>
-                                    <field name="display_name"/>
-                                    <field name="field_value"/>
-                                </group>
-                            </form>
-                        </field>
-                    </page>
-                    <page string="Buttons" name="buttons" invisible="not template_button_ids">
-                        <field name="template_button_ids" nolabel="1"/>
-                    </page>
-                </notebook>
+                                <field name="line_type"/>
+                                <field name="field_type"/>
+                                <field name="field_name"/>
+                                <field name="demo_value"/>
+                                <field name="sequence"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
             </xpath>
         </field>
     </record>
