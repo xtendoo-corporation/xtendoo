@@ -12,6 +12,9 @@ class MailGatewayWhatsappService(models.AbstractModel):
         self, channel, body=False, media_id=False, media_type=False, media_name=False
     ):
         """Override to add template components (variables) support."""
+        import logging
+        _logger = logging.getLogger(__name__)
+
         # Get the base payload from parent
         payload = super()._send_payload(
             channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
@@ -26,6 +29,8 @@ class MailGatewayWhatsappService(models.AbstractModel):
                     whatsapp_template_id
                 )
 
+                _logger.info(f"Template: {whatsapp_template.name}, has variables: {bool(whatsapp_template.variable_ids)}")
+
                 # Check if template has variables configured
                 if whatsapp_template.variable_ids:
                     # Get values from context or from record
@@ -37,14 +42,19 @@ class MailGatewayWhatsappService(models.AbstractModel):
                             whatsapp_template, channel
                         )
 
+                    _logger.info(f"Variables obtained: {template_variables}")
+
                     # Build components array with variables
                     if template_variables:
                         components = self._build_template_components(
                             whatsapp_template, template_variables
                         )
 
+                        _logger.info(f"Components built: {components}")
+
                         if components:
                             payload["template"]["components"] = components
+                            _logger.info(f"Final payload: {payload}")
 
         return payload
 
