@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de plantilla con variables y botones -->
+    <record id="view_mail_whatsapp_template_form_variables" model="ir.ui.view">
+        <field name="name">mail.whatsapp.template.form.variables</field>
+        <field name="model">mail.whatsapp.template</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.view_mail_whatsapp_template_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar notebook con pestañas -->
+            <xpath expr="//field[@name='body']" position="replace">
+                <notebook>
+                    <page string="Body" name="body">
+                        <field name="body" widget="text" placeholder="Hello {{1}}, here is your order with the reference {{2}} ..." required="1"/>
+                    </page>
+                    <page string="Buttons" name="buttons">
+                        <field name="button_ids">
+                            <tree editable="bottom">
+                                <field name="sequence" widget="handle"/>
+                                <field name="button_type"/>
+                                <field name="name" required="1"/>
+                                <field name="call_number"
+                                       invisible="button_type != 'phone_number'"
+                                       required="button_type == 'phone_number'"/>
+                                <field name="website_url"
+                                       invisible="button_type != 'url'"
+                                       required="button_type == 'url'"
+                                       placeholder="e.g. https://www.example.com"/>
+                                <field name="url_type"
+                                       invisible="button_type != 'url'"
+                                       required="button_type == 'url'"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Variables" name="variables">
+                        <field name="variable_ids">
+                            <tree editable="bottom" create="false" delete="false">
+                                <field name="name" string="Variable"/>
+                                <field name="line_type"/>
+                                <field name="demo_value" required="1"/>
+                                <field name="field_type"/>
+                                <field name="field_name"
+                                       invisible="field_type != 'field'"
+                                       required="field_type == 'field'"
+                                       placeholder="e.g. partner_id.name"/>
+                                <field name="model" column_invisible="1"/>
+                                <field name="sequence" column_invisible="1"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista del composer mejorada -->
+    <record id="whatsapp_composer_form_view_improved" model="ir.ui.view">
+        <field name="name">whatsapp.composer.form.improved</field>
+        <field name="model">whatsapp.composer</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.whatsapp_composer_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Campos invisibles -->
+            <field name="template_id" position="after">
+                <field name="has_variables" invisible="1"/>
+                <field name="variable_count" invisible="1"/>
+            </field>
+
+            <!-- Reemplazar el campo body con notebook -->
+            <xpath expr="//field[@name='body']" position="replace">
+                <notebook>
+                    <page string="Message" name="message">
+                        <field name="body" readonly="template_id" force_save="1"/>
+                    </page>
+                    <page string="Variables" name="variables" invisible="not has_variables">
+                        <group>
+                            <field name="template_variable_ids" nolabel="1">
+                                <tree editable="bottom" create="false" delete="false">
+                                    <field name="display_name" string="Variable" readonly="1"/>
+                                    <field name="field_type" readonly="1"/>
+                                    <field name="field_value" required="1" placeholder="Enter value..."/>
+                                    <field name="sequence" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                    <page string="Buttons" name="buttons" invisible="not template_button_ids">
+                        <field name="template_button_ids" nolabel="1">
+                            <tree editable="bottom" create="false" delete="false">
+                                <field name="button_type" readonly="1"/>
+                                <field name="call_number"
+                                       invisible="button_type != 'phone_number'"
+                                       required="button_type == 'phone_number'"/>
+                                <field name="website_url"
+                                       invisible="button_type != 'url'"
+                                       required="button_type == 'url'"/>
+                                <field name="sequence" column_invisible="1"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

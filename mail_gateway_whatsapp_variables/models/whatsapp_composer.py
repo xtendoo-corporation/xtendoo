@@ -1,25 +1,18 @@
 # Copyright 2024 Xtendoo
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-import re
-
 from odoo import _, api, fields, models
 
 
 class WhatsappComposer(models.TransientModel):
     _inherit = "whatsapp.composer"
 
-    # Variables dinámicas para plantillas (similar a Enterprise)
-    variable_1 = fields.Char(string="Variable 1")
-    variable_2 = fields.Char(string="Variable 2")
-    variable_3 = fields.Char(string="Variable 3")
-    variable_4 = fields.Char(string="Variable 4")
-    variable_5 = fields.Char(string="Variable 5")
-    variable_6 = fields.Char(string="Variable 6")
-    variable_7 = fields.Char(string="Variable 7")
-    variable_8 = fields.Char(string="Variable 8")
-    variable_9 = fields.Char(string="Variable 9")
-    variable_10 = fields.Char(string="Variable 10")
+    # Variables dinámicas basadas en la plantilla
+    template_variable_ids = fields.One2many(
+        'whatsapp.composer.variable',
+        'composer_id',
+        string="Template Variables"
+    )
 
     has_variables = fields.Boolean(
         compute="_compute_has_variables",
@@ -30,101 +23,123 @@ class WhatsappComposer(models.TransientModel):
         string="Number of variables"
     )
 
-    @api.depends("template_id", "template_id.body", "template_id.header")
+    # Botones dinámicos
+    template_button_ids = fields.One2many(
+        'whatsapp.composer.button',
+        'composer_id',
+        string="Template Buttons"
+    )
+
+
+    @api.depends("template_id", "template_id.variable_ids")
     def _compute_has_variables(self):
-        """Detectar si la plantilla tiene variables {{1}}, {{2}}, etc."""
+        """Detectar si la plantilla tiene variables."""
         for composer in self:
-            if not composer.template_id:
-                composer.has_variables = False
-                composer.variable_count = 0
-                continue
-
-            # Buscar placeholders {{1}}, {{2}}, etc en body y header
-            text = (composer.template_id.body or "") + (composer.template_id.header or "")
-
-            # Pattern para encontrar {{número}}
-            pattern = r'\{\{(\d+)\}\}'
-            matches = re.findall(pattern, text)
-
-            if matches:
-                composer.has_variables = True
-                # Obtener el número más alto
-                composer.variable_count = max([int(m) for m in matches])
+            if composer.template_id and composer.template_id.variable_ids:
+                body_vars = composer.template_id.variable_ids.filtered(
+                    lambda v: v.line_type in ['body', 'header']
+                )
+                composer.has_variables = bool(body_vars)
+                composer.variable_count = len(body_vars)
             else:
                 composer.has_variables = False
                 composer.variable_count = 0
 
     @api.onchange("template_id")
     def onchange_template_id(self):
-        """Cuando cambia la plantilla, actualizar el body con valores de variables."""
-        # Llamar al método del módulo padre (sin guion bajo)
+        """Cuando cambia la plantilla, crear variables y botones."""
         res = super().onchange_template_id()
 
-        if self.template_id and self.has_variables:
-            # Pre-cargar valores de ejemplo o del registro
-            self._populate_variables_from_record()
+        if self.template_id:
+            # Crear variables desde la plantilla
+            self._create_variables_from_template()
+            # Crear botones desde la plantilla
+            self._create_buttons_from_template()
 
         return res
 
-    def _populate_variables_from_record(self):
-        """Intentar poblar variables automáticamente desde el registro."""
-        if not self.res_model or not self.res_id:
+    def _create_variables_from_template(self):
+        """Crear registros de variables desde la plantilla."""
+        self.template_variable_ids = [(5, 0, 0)]  # Limpiar existentes
+
+        if not self.template_id or not self.template_id.variable_ids:
             return
+
+        # Filtrar solo variables de body y header
+        template_vars = self.template_id.variable_ids.filtered(
+            lambda v: v.line_type in ['body', 'header']
+        ).sorted(lambda v: (v.line_type, v.sequence))
+
+        variable_lines = []
+        for template_var in template_vars:
+            # Intentar obtener valor desde el registro
+            value = self._get_variable_value_from_record(template_var)
+
+            variable_lines.append((0, 0, {
+                'template_variable_id': template_var.id,
+                'field_value': value or template_var.demo_value,
+            }))
+
+        if variable_lines:
+            self.template_variable_ids = variable_lines
+
+    def _create_buttons_from_template(self):
+        """Crear registros de botones desde la plantilla."""
+        self.template_button_ids = [(5, 0, 0)]  # Limpiar existentes
+
+        if not self.template_id or not self.template_id.button_ids:
+            return
+
+        button_lines = []
+        for template_button in self.template_id.button_ids:
+            button_lines.append((0, 0, {
+                'template_button_id': template_button.id,
+                'call_number': template_button.call_number,
+                'website_url': template_button.website_url,
+            }))
+
+        if button_lines:
+            self.template_button_ids = button_lines
+
+    def _get_variable_value_from_record(self, template_variable):
+        """Obtener valor de la variable desde el registro actual."""
+        if not self.res_model or not self.res_id:
+            return False
 
         try:
             record = self.env[self.res_model].browse(self.res_id)
 
-            # Mapeo común de variables para diferentes modelos
-            variable_mapping = {
-                'res.partner': {
-                    1: 'name',
-                    2: 'email',
-                    3: 'phone',
-                    4: 'mobile',
-                    5: 'street',
-                    6: 'city',
-                },
-                'sale.order': {
-                    1: 'partner_id.name',
-                    2: 'name',
-                    3: 'amount_total',
-                    4: 'date_order',
-                },
-                'account.move': {
-                    1: 'partner_id.name',
-                    2: 'name',
-                    3: 'amount_total',
-                    4: 'invoice_date',
-                },
-            }
+            # Si es campo del modelo
+            if template_variable.field_type == 'field' and template_variable.field_name:
+                value = record
+                for field in template_variable.field_name.split('.'):
+                    value = value[field]
+                return str(value) if value else False
 
-            mapping = variable_mapping.get(self.res_model, {})
+            # Si es nombre de usuario
+            elif template_variable.field_type == 'user_name':
+                return self.env.user.name
 
-            for var_num, field_path in mapping.items():
-                if var_num <= 10:  # Solo tenemos 10 variables
-                    try:
-                        # Obtener valor del campo (puede ser campo relacionado)
-                        value = record
-                        for field in field_path.split('.'):
-                            value = value[field]
+            # Si es móvil de usuario
+            elif template_variable.field_type == 'user_mobile':
+                return self.env.user.mobile or self.env.user.phone or False
 
-                        # Convertir a string y asignar
-                        if value:
-                            setattr(self, f'variable_{var_num}', str(value))
-                    except:
-                        pass  # Si falla, dejar vacío
         except:
-            pass  # Si hay error, no hacer nada
+            pass
+
+        return False
+
 
     def _action_send_whatsapp(self):
         """Override para pasar variables en el contexto antes de enviar."""
         # Recopilar las variables en un diccionario
         template_variables = {}
-        if self.has_variables:
-            for i in range(1, 11):
-                variable_value = getattr(self, f'variable_{i}', '')
-                if variable_value:
-                    template_variables[i] = str(variable_value)
+
+        for var_line in self.template_variable_ids:
+            # Extraer el índice de la variable (ej: {{1}} -> 1)
+            var_index = var_line.template_variable_id._extract_variable_index()
+            if var_index and var_line.field_value:
+                template_variables[var_index] = str(var_line.field_value)
 
         # Agregar las variables al contexto
         context = dict(self.env.context)
@@ -133,5 +148,79 @@ class WhatsappComposer(models.TransientModel):
 
         # Llamar al método original con el contexto actualizado
         return super(WhatsappComposer, self.with_context(**context))._action_send_whatsapp()
+
+
+class WhatsappComposerVariable(models.TransientModel):
+    _name = "whatsapp.composer.variable"
+    _description = "WhatsApp Composer Variable"
+    _order = "sequence, id"
+
+    composer_id = fields.Many2one(
+        'whatsapp.composer',
+        string="Composer",
+        required=True,
+        ondelete='cascade'
+    )
+    template_variable_id = fields.Many2one(
+        'mail.whatsapp.template.variable',
+        string="Template Variable",
+        required=True
+    )
+    sequence = fields.Integer(
+        related='template_variable_id.sequence',
+        store=True
+    )
+    field_value = fields.Char(
+        string="Value",
+        required=True
+    )
+    display_name = fields.Char(
+        related='template_variable_id.name',
+        string="Variable"
+    )
+    field_type = fields.Selection(
+        related='template_variable_id.field_type',
+        string="Type"
+    )
+
+
+class WhatsappComposerButton(models.TransientModel):
+    _name = "whatsapp.composer.button"
+    _description = "WhatsApp Composer Button"
+    _order = "sequence, id"
+
+    composer_id = fields.Many2one(
+        'whatsapp.composer',
+        string="Composer",
+        required=True,
+        ondelete='cascade'
+    )
+    template_button_id = fields.Many2one(
+        'mail.whatsapp.template.button',
+        string="Template Button",
+        required=True
+    )
+    sequence = fields.Integer(
+        related='template_button_id.sequence',
+        store=True
+    )
+    button_type = fields.Selection(
+        related='template_button_id.button_type',
+        string="Type"
+    )
+    call_number = fields.Char(string="Phone Number")
+    website_url = fields.Char(string="Website URL")
+
+    sequence = fields.Integer(
+        related='template_button_id.sequence',
+        store=True
+    )
+    button_type = fields.Selection(
+        related='template_button_id.button_type',
+        string="Type"
+    )
+    call_number = fields.Char(string="Phone Number")
+    website_url = fields.Char(string="Website URL")
+
 
 
