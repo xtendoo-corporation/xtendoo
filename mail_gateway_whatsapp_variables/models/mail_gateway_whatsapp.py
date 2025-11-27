@@ -108,12 +108,21 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
         try:
             record = self.env[res_model].browse(res_id)
+            _logger.info(f"Found record: {record}, model: {res_model}, id: {res_id}")
+
+            # Get filtered variables
+            template_vars = template.variable_ids.filtered(lambda v: v.line_type in ['body', 'header'])
+            _logger.info(f"Processing {len(template_vars)} variables")
 
             # Process each variable configured in the template
-            for var in template.variable_ids.filtered(lambda v: v.line_type in ['body', 'header']):
+            for var in template_vars:
+                _logger.info(f"Processing variable: {var.name}, line_type: {var.line_type}, field_type: {var.field_type}, field_name: {var.field_name}")
+
                 var_index = var._extract_variable_index()
+                _logger.info(f"Variable index extracted: {var_index}")
 
                 if not var_index:
+                    _logger.warning(f"No index for variable {var.name}")
                     continue
 
                 # Get value based on field_type
@@ -126,27 +135,35 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         for field in var.field_name.split('.'):
                             value = value[field]
                         value = str(value) if value else ''
-                    except:
+                        _logger.info(f"Got field value: {value}")
+                    except Exception as ex:
                         value = var.demo_value or ''
+                        _logger.warning(f"Error getting field value: {ex}, using demo: {value}")
 
                 elif var.field_type == 'user_name':
                     value = self.env.user.name
+                    _logger.info(f"Got user_name: {value}")
 
                 elif var.field_type == 'user_mobile':
                     value = self.env.user.mobile or self.env.user.phone or ''
+                    _logger.info(f"Got user_mobile: {value}")
 
                 elif var.field_type == 'free_text':
                     # Use demo value as default for free text
                     value = var.demo_value or ''
+                    _logger.info(f"Got free_text: {value}")
 
                 if value:
                     variables[var_index] = value
+                    _logger.info(f"Added variable {var_index}: {value}")
+                else:
+                    _logger.warning(f"No value for variable {var.name} (index {var_index})")
+
+            _logger.info(f"Final variables collected: {variables}")
 
         except Exception as e:
             # Log error but don't fail the send
-            import logging
-            _logger = logging.getLogger(__name__)
-            _logger.warning(f"Error getting variables from template: {e}")
+            _logger.error(f"Exception in _get_variables_from_template: {e}", exc_info=True)
 
         return variables
 
