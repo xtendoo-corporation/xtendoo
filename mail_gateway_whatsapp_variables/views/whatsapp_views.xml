@@ -11,9 +11,9 @@
             <xpath expr="//page[@name='body']" position="after">
                 <page string="Buttons" name="buttons">
                     <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
-                        <tree>
+                        <list>
                             <field name="name"/>
-                        </tree>
+                        </list>
                         <form>
                             <group>
                                 <field name="name"/>
@@ -28,9 +28,9 @@
                 </page>
                 <page string="Variables" name="variables">
                     <field name="variable_ids" widget="one2many">
-                        <tree>
+                        <list>
                             <field name="name"/>
-                        </tree>
+                        </list>
                         <form>
                             <group>
                                 <field name="name"/>
