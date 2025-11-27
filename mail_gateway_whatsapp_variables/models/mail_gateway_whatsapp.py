@@ -192,6 +192,9 @@ class MailGatewayWhatsappService(models.AbstractModel):
         Returns:
             list: Components array for WhatsApp API
         """
+        import logging
+        _logger = logging.getLogger(__name__)
+
         components = []
 
         # Check if header has variables
@@ -202,6 +205,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
                     "type": "header",
                     "parameters": header_params
                 })
+                _logger.info(f"Added header component with {len(header_params)} parameters")
 
         # Check if body has variables
         if template.body:
@@ -211,6 +215,38 @@ class MailGatewayWhatsappService(models.AbstractModel):
                     "type": "body",
                     "parameters": body_params
                 })
+                _logger.info(f"Added body component with {len(body_params)} parameters")
+
+        # Process buttons with dynamic URLs (if any)
+        if hasattr(template, 'button_ids') and template.button_ids:
+            button_components = self._build_button_components(template)
+            if button_components:
+                components.extend(button_components)
+                _logger.info(f"Added {len(button_components)} button components")
+
+        _logger.info(f"Total components: {len(components)}")
+        return components
+
+    def _build_button_components(self, template):
+        """Build button components for WhatsApp template.
+
+        Args:
+            template: mail.whatsapp.template record
+
+        Returns:
+            list: Button components array for WhatsApp API
+        """
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        components = []
+
+        # Only process dynamic URL buttons
+        for idx, button in enumerate(template.button_ids.filtered(lambda b: b.button_type == 'url' and b.url_type == 'dynamic')):
+            # For dynamic URLs, we need to provide the dynamic part
+            # This would require additional context/configuration
+            # For now, we'll log a warning and skip
+            _logger.warning(f"Dynamic URL button '{button.name}' found but not fully implemented. Skipping.")
 
         return components
 
