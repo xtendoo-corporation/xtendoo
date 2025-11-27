@@ -15,9 +15,9 @@
                     </page>
                     <page string="Buttons" name="buttons">
                         <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
-                            <tree>
+                            <list>
                                 <field name="name"/>
-                            </tree>
+                            </list>
                             <form>
                                 <group>
                                     <field name="name"/>
@@ -32,9 +32,9 @@
                     </page>
                     <page string="Variables" name="variables">
                         <field name="variable_ids" widget="one2many">
-                            <tree>
+                            <list>
                                 <field name="name"/>
-                            </tree>
+                            </list>
                             <form>
                                 <group>
                                     <field name="name"/>
@@ -73,9 +73,9 @@
                     </page>
                     <page string="Variables" name="variables" invisible="not has_variables">
                         <field name="template_variable_ids" nolabel="1">
-                            <tree>
+                            <list>
                                 <field name="display_name"/>
-                            </tree>
+                            </list>
                             <form>
                                 <group>
                                     <field name="display_name"/>
