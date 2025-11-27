@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="mail_gateway_whatsapp_chatter.Chatter"
+       t-inherit="mail.Chatter"
+       t-inherit-mode="extension">
+        <xpath expr="//*[contains(@class, 'o-mail-Chatter-activity')]" position="before">
+            <button t-if="state.thread.canSendWhatsapp"
+                class="btn btn-secondary text-nowrap me-1 o_mail_gateway_whatsapp_button"
+                t-att-class="{'my-2': !props.compactHeight}"
+                data-hotkey="shift+w"
+                t-on-click="sendWhatsapp"
+                title="Send WhatsApp message to this contact"
+            >
+                <i class="fa fa-whatsapp me-1"/>
+                <span>WhatsApp</span>
+            </button>
+        </xpath>
+    </t>
+</templates>
+
