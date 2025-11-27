@@ -44,11 +44,6 @@ class MailWhatsappTemplateVariable(models.Model):
         default="Sample",
         help="Sample value for preview"
     )
-    model = fields.Char(
-        related='template_id.model_id.model',
-        string="Model",
-        store=True
-    )
     button_id = fields.Many2one(
         'mail.whatsapp.template.button',
         string="Button",

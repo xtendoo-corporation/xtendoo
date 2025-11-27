@@ -211,16 +211,3 @@ class WhatsappComposerButton(models.TransientModel):
     call_number = fields.Char(string="Phone Number")
     website_url = fields.Char(string="Website URL")
 
-    sequence = fields.Integer(
-        related='template_button_id.sequence',
-        store=True
-    )
-    button_type = fields.Selection(
-        related='template_button_id.button_type',
-        string="Type"
-    )
-    call_number = fields.Char(string="Phone Number")
-    website_url = fields.Char(string="Website URL")
-
-
-
