@@ -55,9 +55,10 @@ class WhatsappComposer(models.TransientModel):
                 composer.variable_count = 0
 
     @api.onchange("template_id")
-    def _onchange_template_id(self):
+    def onchange_template_id(self):
         """Cuando cambia la plantilla, actualizar el body con valores de variables."""
-        res = super()._onchange_template_id()
+        # Llamar al método del módulo padre (sin guion bajo)
+        res = super().onchange_template_id()
 
         if self.template_id and self.has_variables:
             # Pre-cargar valores de ejemplo o del registro
