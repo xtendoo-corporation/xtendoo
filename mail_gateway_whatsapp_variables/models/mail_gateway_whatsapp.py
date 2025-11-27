@@ -20,22 +20,95 @@ class MailGatewayWhatsappService(models.AbstractModel):
         # If it's a template message, check if we need to add components
         if payload and payload.get("type") == "template" and body:
             whatsapp_template_id = self.env.context.get("whatsapp_template_id")
-            template_variables = self.env.context.get("template_variables", {})
 
-            if whatsapp_template_id and template_variables:
+            if whatsapp_template_id:
                 whatsapp_template = self.env["mail.whatsapp.template"].browse(
                     whatsapp_template_id
                 )
 
-                # Build components array with variables
-                components = self._build_template_components(
-                    whatsapp_template, template_variables
-                )
+                # Check if template has variables configured
+                if whatsapp_template.variable_ids:
+                    # Get values from context or from record
+                    template_variables = self.env.context.get("template_variables", {})
 
-                if components:
-                    payload["template"]["components"] = components
+                    # If no variables in context, try to get them from the record
+                    if not template_variables:
+                        template_variables = self._get_variables_from_template(
+                            whatsapp_template
+                        )
+
+                    # Build components array with variables
+                    if template_variables:
+                        components = self._build_template_components(
+                            whatsapp_template, template_variables
+                        )
+
+                        if components:
+                            payload["template"]["components"] = components
 
         return payload
+
+    def _get_variables_from_template(self, template):
+        """Get variable values from the current record based on template configuration.
+
+        Args:
+            template: mail.whatsapp.template record
+
+        Returns:
+            dict: Variable values {1: 'value1', 2: 'value2', ...}
+        """
+        variables = {}
+
+        # Get the record from context
+        res_model = self.env.context.get("res_model")
+        res_id = self.env.context.get("res_id")
+
+        if not res_model or not res_id:
+            return variables
+
+        try:
+            record = self.env[res_model].browse(res_id)
+
+            # Process each variable configured in the template
+            for var in template.variable_ids.filtered(lambda v: v.line_type in ['body', 'header']):
+                var_index = var._extract_variable_index()
+
+                if not var_index:
+                    continue
+
+                # Get value based on field_type
+                value = None
+
+                if var.field_type == 'field' and var.field_name:
+                    # Get value from record field
+                    try:
+                        value = record
+                        for field in var.field_name.split('.'):
+                            value = value[field]
+                        value = str(value) if value else ''
+                    except:
+                        value = var.demo_value or ''
+
+                elif var.field_type == 'user_name':
+                    value = self.env.user.name
+
+                elif var.field_type == 'user_mobile':
+                    value = self.env.user.mobile or self.env.user.phone or ''
+
+                elif var.field_type == 'free_text':
+                    # Use demo value as default for free text
+                    value = var.demo_value or ''
+
+                if value:
+                    variables[var_index] = value
+
+        except Exception as e:
+            # Log error but don't fail the send
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.warning(f"Error getting variables from template: {e}")
+
+        return variables
 
     def _build_template_components(self, template, variables):
         """Build the components array for WhatsApp template with variables.
