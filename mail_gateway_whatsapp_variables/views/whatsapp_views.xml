@@ -72,22 +72,20 @@
                         <field name="body" readonly="template_id" force_save="1"/>
                     </page>
                     <page string="Variables" name="variables" invisible="not has_variables">
-                        <group>
-                            <field name="template_variable_ids" nolabel="1">
-                                <tree editable="bottom" create="0" delete="0">
-                                    <field name="display_name" readonly="1"/>
+                        <field name="template_variable_ids" nolabel="1">
+                            <tree>
+                                <field name="display_name"/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <field name="display_name"/>
                                     <field name="field_value"/>
-                                </tree>
-                            </field>
-                        </group>
+                                </group>
+                            </form>
+                        </field>
                     </page>
                     <page string="Buttons" name="buttons" invisible="not template_button_ids">
-                        <field name="template_button_ids" nolabel="1">
-                            <tree editable="bottom" create="0" delete="0">
-                                <field name="call_number"/>
-                                <field name="website_url"/>
-                            </tree>
-                        </field>
+                        <field name="template_button_ids" nolabel="1"/>
                     </page>
                 </notebook>
             </xpath>
