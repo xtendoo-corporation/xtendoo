@@ -49,15 +49,23 @@
                 <page string="Buttons" name="buttons">
                     <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
                         <list>
+                            <field name="sequence" widget="handle"/>
                             <field name="name"/>
+                            <field name="button_type"/>
                         </list>
                         <form>
                             <group>
                                 <field name="name"/>
                                 <field name="button_type"/>
-                                <field name="call_number"/>
-                                <field name="website_url"/>
-                                <field name="url_type"/>
+                                <field name="call_number"
+                                    invisible="button_type != 'phone_number'"
+                                    required="button_type == 'phone_number'"/>
+                                <field name="website_url"
+                                    invisible="button_type != 'url'"
+                                    required="button_type == 'url'"/>
+                                <field name="url_type"
+                                    invisible="button_type != 'url'"
+                                    required="button_type == 'url'"/>
                                 <field name="sequence"/>
                             </group>
                         </form>

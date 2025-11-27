@@ -241,12 +241,29 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
         components = []
 
-        # Only process dynamic URL buttons
-        for idx, button in enumerate(template.button_ids.filtered(lambda b: b.button_type == 'url' and b.url_type == 'dynamic')):
-            # For dynamic URLs, we need to provide the dynamic part
-            # This would require additional context/configuration
-            # For now, we'll log a warning and skip
-            _logger.warning(f"Dynamic URL button '{button.name}' found but not fully implemented. Skipping.")
+        # Process URL buttons with dynamic type
+        dynamic_url_buttons = template.button_ids.filtered(
+            lambda b: b.button_type == 'url' and b.url_type == 'dynamic'
+        )
+
+        for idx, button in enumerate(dynamic_url_buttons):
+            # For dynamic URLs, we need to provide the dynamic suffix parameter
+            # The base URL is in the template, we only send the dynamic part
+            dynamic_suffix = self.env.context.get(f'button_dynamic_url_{idx}', '')
+
+            if dynamic_suffix:
+                components.append({
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": str(idx),
+                    "parameters": [{
+                        "type": "text",
+                        "text": dynamic_suffix
+                    }]
+                })
+                _logger.info(f"Added dynamic URL button component for '{button.name}' with suffix: {dynamic_suffix}")
+            else:
+                _logger.warning(f"Dynamic URL button '{button.name}' has no dynamic suffix in context")
 
         return components
 
