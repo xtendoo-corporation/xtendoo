@@ -18,6 +18,10 @@ Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar un botón de Wh
 - `mail_gateway_whatsapp` (OCA)
 - `web`
 
+## Módulos complementarios
+
+- `mail_gateway_whatsapp_variables` - Agrega soporte para variables dinámicas en plantillas ({{1}}, {{2}}, etc.) similar al módulo Enterprise. **Altamente recomendado para plantillas con variables.**
+
 ## Instalación
 
 1. Asegúrate de tener instalado `mail_gateway_whatsapp`

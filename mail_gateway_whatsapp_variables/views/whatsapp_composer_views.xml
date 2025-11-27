@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="whatsapp_composer_form_view_variables" model="ir.ui.view">
+        <field name="name">whatsapp.composer.form.variables</field>
+        <field name="model">whatsapp.composer</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.whatsapp_composer_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Agregar campos invisibles para computar variables -->
+            <field name="template_id" position="after">
+                <field name="has_variables" invisible="1"/>
+                <field name="variable_count" invisible="1"/>
+            </field>
+
+            <!-- Agregar campos de variables después del template_id -->
+            <field name="template_id" position="after">
+                <group invisible="not has_variables" string="Template Variables">
+                    <group>
+                        <field name="variable_1"
+                               invisible="variable_count &lt; 1"
+                               required="variable_count &gt;= 1"
+                               placeholder="Enter value for {{1}}"/>
+                        <field name="variable_2"
+                               invisible="variable_count &lt; 2"
+                               required="variable_count &gt;= 2"
+                               placeholder="Enter value for {{2}}"/>
+                        <field name="variable_3"
+                               invisible="variable_count &lt; 3"
+                               required="variable_count &gt;= 3"
+                               placeholder="Enter value for {{3}}"/>
+                        <field name="variable_4"
+                               invisible="variable_count &lt; 4"
+                               required="variable_count &gt;= 4"
+                               placeholder="Enter value for {{4}}"/>
+                        <field name="variable_5"
+                               invisible="variable_count &lt; 5"
+                               required="variable_count &gt;= 5"
+                               placeholder="Enter value for {{5}}"/>
+                    </group>
+                    <group>
+                        <field name="variable_6"
+                               invisible="variable_count &lt; 6"
+                               required="variable_count &gt;= 6"
+                               placeholder="Enter value for {{6}}"/>
+                        <field name="variable_7"
+                               invisible="variable_count &lt; 7"
+                               required="variable_count &gt;= 7"
+                               placeholder="Enter value for {{7}}"/>
+                        <field name="variable_8"
+                               invisible="variable_count &lt; 8"
+                               required="variable_count &gt;= 8"
+                               placeholder="Enter value for {{8}}"/>
+                        <field name="variable_9"
+                               invisible="variable_count &lt; 9"
+                               required="variable_count &gt;= 9"
+                               placeholder="Enter value for {{9}}"/>
+                        <field name="variable_10"
+                               invisible="variable_count &lt; 10"
+                               required="variable_count &gt;= 10"
+                               placeholder="Enter value for {{10}}"/>
+                    </group>
+                </group>
+            </field>
+
+            <!-- Agregar nota informativa -->
+            <field name="body" position="before">
+                <div class="alert alert-info" role="alert" invisible="not has_variables">
+                    <i class="fa fa-info-circle"/> This template contains
+                    <strong><field name="variable_count" class="oe_inline"/> variable(s)</strong>.
+                    Fill in the fields above to replace placeholders like {{1}}, {{2}}, etc.
+                </div>
+            </field>
+        </field>
+    </record>
+</odoo>
+
