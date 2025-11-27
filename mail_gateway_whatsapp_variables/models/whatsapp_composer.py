@@ -116,35 +116,22 @@ class WhatsappComposer(models.TransientModel):
         except:
             pass  # Si hay error, no hacer nada
 
-    def _get_body_with_variables(self):
-        """Reemplazar placeholders {{1}}, {{2}}, etc con valores de variables."""
-        body = self.body
-
-        if not body or not self.has_variables:
-            return body
-
-        # Reemplazar cada {{número}} con su variable correspondiente
-        for i in range(1, 11):
-            variable_value = getattr(self, f'variable_{i}', '')
-            if variable_value:
-                # Reemplazar {{i}} con el valor de la variable
-                body = body.replace(f'{{{{{i}}}}}', str(variable_value))
-
-        return body
-
     def _action_send_whatsapp(self):
-        """Override para reemplazar variables antes de enviar."""
-        # Si hay variables, actualizar el body con los valores
+        """Override para pasar variables en el contexto antes de enviar."""
+        # Recopilar las variables en un diccionario
+        template_variables = {}
         if self.has_variables:
-            original_body = self.body
-            self.body = self._get_body_with_variables()
+            for i in range(1, 11):
+                variable_value = getattr(self, f'variable_{i}', '')
+                if variable_value:
+                    template_variables[i] = str(variable_value)
 
-        # Llamar al método original
-        result = super()._action_send_whatsapp()
+        # Agregar las variables al contexto
+        context = dict(self.env.context)
+        if template_variables:
+            context['template_variables'] = template_variables
 
-        # Restaurar body original (por si se reutiliza el wizard)
-        if self.has_variables:
-            self.body = original_body
+        # Llamar al método original con el contexto actualizado
+        return super(WhatsappComposer, self.with_context(**context))._action_send_whatsapp()
 
-        return result
 
