@@ -18,7 +18,12 @@ class MailWhatsappTemplateVariable(models.Model):
     name = fields.Char(
         string="Name",
         required=True,
-        help="Variable name like {{1}}, {{2}}, etc."
+        help="Variable name like {{1}}, {{2}}, etc. or descriptive name"
+    )
+    variable_index = fields.Integer(
+        string="Variable Index",
+        help="Numeric index of the variable (1, 2, 3, etc.)",
+        default=1
     )
     sequence = fields.Integer(string="Sequence", default=10)
     line_type = fields.Selection([
@@ -61,7 +66,12 @@ class MailWhatsappTemplateVariable(models.Model):
                 variable.display_name = variable.name
 
     def _extract_variable_index(self):
-        """Extract the numeric index from variable name like {{1}} -> 1."""
+        """Extract the numeric index from variable_index field or from name like {{1}} -> 1."""
+        # First, try to use the variable_index field if set
+        if self.variable_index and self.variable_index > 0:
+            return self.variable_index
+
+        # Otherwise, try to extract from name
         import re
         match = re.search(r'\d+', self.name)
         return int(match.group()) if match else 0
