@@ -14,10 +14,11 @@ class ResPartner(models.Model):
     def _compute_whatsapp_channel_count(self):
         """Count WhatsApp channels for this partner."""
         for partner in self:
+            # Buscar canales donde este partner es miembro
             channels = self.env["discuss.channel"].search(
                 [
                     ("gateway_id.gateway_type", "=", "whatsapp"),
-                    ("partner_id", "=", partner.id),
+                    ("channel_partner_ids", "in", partner.ids),
                 ]
             )
             partner.whatsapp_channel_count = len(channels)
@@ -32,7 +33,7 @@ class ResPartner(models.Model):
             "view_mode": "list,form",
             "domain": [
                 ("gateway_id.gateway_type", "=", "whatsapp"),
-                ("partner_id", "=", self.id),
+                ("channel_partner_ids", "in", self.ids),
             ],
         }
 
