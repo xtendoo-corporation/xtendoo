@@ -8,6 +8,18 @@ import re
 class MailWhatsappTemplate(models.Model):
     _inherit = "mail.whatsapp.template"
 
+    model_id = fields.Many2one(
+        'ir.model',
+        string="Model",
+        help="Model this template is designed for (e.g., res.partner, sale.order, account.move)",
+        ondelete='cascade'
+    )
+    model = fields.Char(
+        related='model_id.model',
+        string="Model Technical Name",
+        store=True,
+        readonly=True
+    )
     variable_ids = fields.One2many(
         'mail.whatsapp.template.variable',
         'template_id',

@@ -59,7 +59,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
         return payload
 
     def _get_variables_from_template(self, template, channel=None):
-        """Get variable values from the current record based on template configuration.
+        """Get variable values from the record specified in the template's model.
 
         Args:
             template: mail.whatsapp.template record
@@ -73,56 +73,56 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
         variables = {}
 
-        # Get the record from context or from channel
-        res_model = self.env.context.get("res_model")
-        res_id = self.env.context.get("res_id")
-
-        _logger.info(f"Context res_model: {res_model}, res_id: {res_id}")
-
-        # If not in context, try to get from active_model/active_id
-        if not res_model:
-            res_model = self.env.context.get("active_model")
-            res_id = self.env.context.get("active_id")
-            _logger.info(f"Active res_model: {res_model}, res_id: {res_id}")
-
-        # If still not found and we have a channel, get the partner
-        if not res_model and channel:
-            _logger.info(f"Trying to get from channel: {channel}")
-            # The channel is related to a partner, use that as record
-            if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
-                partner = channel.channel_partner_ids[0]
-                res_model = 'res.partner'
-                res_id = partner.id
-                _logger.info(f"Got partner from channel: {res_model}, {res_id}")
-
-        if not res_model or not res_id:
-            # Fallback to demo values
-            _logger.warning(f"No record found, using demo values. Variables count: {len(template.variable_ids)}")
+        # Check if template has a model configured
+        if not template.model_id:
+            _logger.warning(f"Template {template.name} has no model configured, using demo values")
             for var in template.variable_ids.filtered(lambda v: v.line_type in ['body', 'header']):
                 var_index = var._extract_variable_index()
-                _logger.info(f"Variable {var.name}: index={var_index}, demo_value={var.demo_value}")
                 if var_index and var.demo_value:
                     variables[var_index] = var.demo_value
-            _logger.info(f"Demo variables: {variables}")
+            return variables
+
+        # Get the model from the template
+        res_model = template.model_id.model
+        _logger.info(f"Template model: {res_model}")
+
+        # Get record ID from context
+        res_id = self.env.context.get("active_id")
+        _logger.info(f"Context active_id: {res_id}")
+
+        # If no record ID and template is for res.partner, try to get from channel
+        if not res_id and res_model == 'res.partner' and channel:
+            if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
+                partner = channel.channel_partner_ids[0]
+                res_id = partner.id
+                _logger.info(f"Got partner ID from channel: {res_id}")
+
+        if not res_id:
+            # Fallback to demo values
+            _logger.warning(f"No record ID found for model {res_model}, using demo values")
+            for var in template.variable_ids.filtered(lambda v: v.line_type in ['body', 'header']):
+                var_index = var._extract_variable_index()
+                if var_index and var.demo_value:
+                    variables[var_index] = var.demo_value
             return variables
 
         try:
             record = self.env[res_model].browse(res_id)
-            _logger.info(f"Found record: {record}, model: {res_model}, id: {res_id}")
+            _logger.info(f"Using record: {record.display_name} (Model: {res_model}, ID: {res_id})")
 
             # Get filtered variables
             template_vars = template.variable_ids.filtered(lambda v: v.line_type in ['body', 'header'])
-            _logger.info(f"Processing {len(template_vars)} variables")
+            _logger.info(f"Processing {len(template_vars)} variables from template")
 
             # Process each variable configured in the template
             for var in template_vars:
-                _logger.info(f"Processing variable: {var.name}, line_type: {var.line_type}, field_type: {var.field_type}, field_name: {var.field_name}")
+                _logger.info(f"Processing variable: {var.name}, variable_index: {var.variable_index}, field_type: {var.field_type}, field_name: {var.field_name}")
 
                 var_index = var._extract_variable_index()
                 _logger.info(f"Variable index extracted: {var_index}")
 
                 if not var_index:
-                    _logger.warning(f"No index for variable {var.name}")
+                    _logger.warning(f"No valid index for variable {var.name}")
                     continue
 
                 # Get value based on field_type

@@ -9,24 +9,13 @@
         <field name="arch" type="xml">
             <!-- Agregar notebook con pestañas -->
             <xpath expr="//page[@name='body']" position="after">
-                <page string="Buttons" name="buttons">
-                    <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
-                        <list>
-                            <field name="name"/>
-                        </list>
-                        <form>
-                            <group>
-                                <field name="name"/>
-                                <field name="button_type"/>
-                                <field name="call_number"/>
-                                <field name="website_url"/>
-                                <field name="url_type"/>
-                                <field name="sequence"/>
-                            </group>
-                        </form>
-                    </field>
-                </page>
-                <page string="Variables" name="variables">
+                <page string="Model &amp; Variables" name="model_variables">
+                    <group>
+                        <group>
+                            <field name="model_id" required="1"/>
+                        </group>
+                    </group>
+                    <separator string="Variables"/>
                     <field name="variable_ids" widget="one2many">
                         <list>
                             <field name="name"/>
@@ -39,6 +28,23 @@
                                 <field name="field_type"/>
                                 <field name="field_name"/>
                                 <field name="demo_value"/>
+                                <field name="sequence"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+                <page string="Buttons" name="buttons">
+                    <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
+                        <list>
+                            <field name="name"/>
+                        </list>
+                        <form>
+                            <group>
+                                <field name="name"/>
+                                <field name="button_type"/>
+                                <field name="call_number"/>
+                                <field name="website_url"/>
+                                <field name="url_type"/>
                                 <field name="sequence"/>
                             </group>
                         </form>
