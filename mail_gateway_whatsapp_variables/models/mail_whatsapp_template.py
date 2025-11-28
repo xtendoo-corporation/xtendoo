@@ -76,7 +76,7 @@ class MailWhatsappTemplate(models.Model):
 
     def _prepare_components_to_export(self):
         components = super()._prepare_components_to_export()
-        # Agrupar todos los botones en un solo componente BUTTON
+        # Agrupar todos los botones en un solo componente BUTTONS
         if self.button_ids:
             buttons = []
             for button in self.button_ids:
@@ -90,7 +90,7 @@ class MailWhatsappTemplate(models.Model):
                     btn["url"] = button.website_url
                 buttons.append(btn)
             components.append({
-                "type": "BUTTON",
+                "type": "BUTTONS",
                 "buttons": buttons
             })
         return components
