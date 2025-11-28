@@ -74,3 +74,42 @@ class MailWhatsappTemplate(models.Model):
         if new_vars:
             self.variable_ids = new_vars
 
+    def _prepare_components_to_export(self):
+        components = super()._prepare_components_to_export()
+        # Añadir botones si existen
+        if self.button_ids:
+            for button in self.button_ids:
+                if button.button_type == 'quick_reply':
+                    components.append({
+                        "type": "BUTTON",
+                        "sub_type": "QUICK_REPLY",
+                        "index": str(button.sequence),
+                        "parameters": [{
+                            "type": "payload",
+                            "payload": button.name
+                        }]
+                    })
+                elif button.button_type == 'phone_number':
+                    components.append({
+                        "type": "BUTTON",
+                        "sub_type": "PHONE_NUMBER",
+                        "index": str(button.sequence),
+                        "parameters": [{
+                            "type": "payload",
+                            "payload": button.call_number
+                        }]
+                    })
+                elif button.button_type == 'url':
+                    url_value = button.website_url or ''
+                    if button.url_type == 'dynamic':
+                        url_value = '{{' + str(button.sequence) + '}}'  # O usar variable dinámica según contexto
+                    components.append({
+                        "type": "BUTTON",
+                        "sub_type": "URL",
+                        "index": str(button.sequence),
+                        "parameters": [{
+                            "type": "text",
+                            "text": url_value
+                        }]
+                    })
+        return components
