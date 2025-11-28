@@ -44,12 +44,11 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
                     _logger.info(f"Variables obtained: {template_variables}")
 
-                    # Build components array with variables
-                    if template_variables:
+                    # Build components array with variables or buttons
+                    if whatsapp_template.variable_ids or whatsapp_template.button_ids:
                         components = self._build_template_components(
                             whatsapp_template, template_variables
                         )
-
                         _logger.info(f"Components built: {components}")
 
                         if components:
