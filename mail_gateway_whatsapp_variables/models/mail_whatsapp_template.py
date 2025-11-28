@@ -76,40 +76,21 @@ class MailWhatsappTemplate(models.Model):
 
     def _prepare_components_to_export(self):
         components = super()._prepare_components_to_export()
-        # Añadir botones si existen
+        # Agrupar todos los botones en un solo componente BUTTON
         if self.button_ids:
+            buttons = []
             for button in self.button_ids:
-                if button.button_type == 'quick_reply':
-                    components.append({
-                        "type": "BUTTON",
-                        "sub_type": "QUICK_REPLY",
-                        "index": str(button.sequence),
-                        "parameters": [{
-                            "type": "payload",
-                            "payload": button.name
-                        }]
-                    })
-                elif button.button_type == 'phone_number':
-                    components.append({
-                        "type": "BUTTON",
-                        "sub_type": "PHONE_NUMBER",
-                        "index": str(button.sequence),
-                        "parameters": [{
-                            "type": "payload",
-                            "payload": button.call_number
-                        }]
-                    })
-                elif button.button_type == 'url':
-                    url_value = button.website_url or ''
-                    if button.url_type == 'dynamic':
-                        url_value = '{{' + str(button.sequence) + '}}'  # O usar variable dinámica según contexto
-                    components.append({
-                        "type": "BUTTON",
-                        "sub_type": "URL",
-                        "index": str(button.sequence),
-                        "parameters": [{
-                            "type": "text",
-                            "text": url_value
-                        }]
-                    })
+                btn = {
+                    "type": button.button_type.replace('_', '').upper(),
+                    "text": button.name
+                }
+                if button.button_type == 'phone_number' and button.call_number:
+                    btn["phone_number"] = button.call_number
+                elif button.button_type == 'url' and button.website_url:
+                    btn["url"] = button.website_url
+                buttons.append(btn)
+            components.append({
+                "type": "BUTTON",
+                "buttons": buttons
+            })
         return components
