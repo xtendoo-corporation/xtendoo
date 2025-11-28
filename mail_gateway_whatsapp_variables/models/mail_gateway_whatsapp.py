@@ -332,6 +332,14 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
     def _process_update(self, chat, message, value):
         super()._process_update(chat, message, value)
+        # Identificar el contacto destinatario de la conversación
+        partner = None
+        if hasattr(chat, 'channel_partner_ids') and chat.channel_partner_ids:
+            partners = chat.channel_partner_ids.filtered(
+                lambda p: p.id != self.env.ref('base.partner_root').id and p.id != self.env.user.partner_id.id
+            )
+            if partners:
+                partner = partners[0]
         # Procesar respuestas de botones de WhatsApp (cubriendo todas las variantes conocidas)
         button_text = None
         if message.get("type") == "button":
@@ -340,11 +348,24 @@ class MailGatewayWhatsappService(models.AbstractModel):
             button_text = message.get("button_reply", {}).get("title")
         elif message.get("type") == "interactive":
             button_text = message.get("interactive", {}).get("button_reply", {}).get("title")
-        # Si se detecta texto de botón, lo registramos en el chatter
-        if button_text:
+        # Si se detecta texto de botón, lo registramos SOLO en el chatter del contacto
+        if button_text and partner:
             author = self._get_author(chat.gateway_id, value)
-            chat.sudo().message_post(
+            partner.sudo().message_post(
                 body=f"Respuesta botón: {button_text}",
+                author_id=author and author._name == "res.partner" and author.id,
+                gateway_type="whatsapp",
+                subtype_xmlid="mail.mt_comment",
+                message_type="comment",
+            )
+        # Procesar mensajes normales (texto, etc) y registrarlos SOLO en el contacto
+        body = ""
+        if message.get("text"):
+            body = message.get("text").get("body")
+        if body and partner:
+            author = self._get_author(chat.gateway_id, value)
+            partner.sudo().message_post(
+                body=body,
                 author_id=author and author._name == "res.partner" and author.id,
                 gateway_type="whatsapp",
                 subtype_xmlid="mail.mt_comment",
