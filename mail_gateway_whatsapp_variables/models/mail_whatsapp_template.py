@@ -80,13 +80,20 @@ class MailWhatsappTemplate(models.Model):
         if self.button_ids:
             buttons = []
             for button in self.button_ids:
+                # Mapear el tipo correctamente
+                type_map = {
+                    'quick_reply': 'QUICK_REPLY',
+                    'url': 'URL',
+                    'phone_number': 'PHONE_NUMBER',
+                }
+                btn_type = type_map.get(button.button_type, button.button_type)
                 btn = {
-                    "type": button.button_type.replace('_', '').upper(),
+                    "type": btn_type,
                     "text": button.name
                 }
-                if button.button_type == 'phone_number' and button.call_number:
+                if btn_type == 'PHONE_NUMBER' and button.call_number:
                     btn["phone_number"] = button.call_number
-                elif button.button_type == 'url' and button.website_url:
+                elif btn_type == 'URL' and button.website_url:
                     btn["url"] = button.website_url
                 buttons.append(btn)
             components.append({
