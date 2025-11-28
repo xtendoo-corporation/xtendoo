@@ -101,3 +101,11 @@ class MailWhatsappTemplate(models.Model):
                 "buttons": buttons
             })
         return components
+
+    @api.model
+    def _prepare_values_to_import(self, gateway, json_data):
+        vals = super()._prepare_values_to_import(gateway, json_data)
+        # Si la plantilla está aprobada por Meta, la consideramos soportada
+        if json_data.get("status", "").lower() == "approved":
+            vals["is_supported"] = True
+        return vals
