@@ -329,3 +329,24 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 })
 
         return parameters
+
+    def _process_update(self, chat, message, value):
+        super()._process_update(chat, message, value)
+        # Procesar respuestas de botones de WhatsApp (cubriendo todas las variantes conocidas)
+        button_text = None
+        if message.get("type") == "button":
+            button_text = message.get("button", {}).get("text")
+        elif message.get("type") == "button_reply":
+            button_text = message.get("button_reply", {}).get("title")
+        elif message.get("type") == "interactive":
+            button_text = message.get("interactive", {}).get("button_reply", {}).get("title")
+        # Si se detecta texto de botón, lo registramos en el chatter
+        if button_text:
+            author = self._get_author(chat.gateway_id, value)
+            chat.sudo().message_post(
+                body=f"Respuesta botón: {button_text}",
+                author_id=author and author._name == "res.partner" and author.id,
+                gateway_type="whatsapp",
+                subtype_xmlid="mail.mt_comment",
+                message_type="comment",
+            )
