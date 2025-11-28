@@ -255,6 +255,23 @@ class MailGatewayWhatsappService(models.AbstractModel):
         for button in template.button_ids:
             _logger.info(f"Botón: {button.name}, tipo: {button.button_type}, url_type: {button.url_type}")
 
+        # Procesar botones quick_reply (Sí/No)
+        quick_reply_buttons = template.button_ids.filtered(
+            lambda b: b.button_type == 'quick_reply'
+        )
+        for idx, button in enumerate(quick_reply_buttons):
+            _logger.info(f"Procesando botón quick_reply idx={idx}, nombre={button.name}")
+            components.append({
+                "type": "button",
+                "sub_type": "quick_reply",
+                "index": str(idx),
+                "parameters": [{
+                    "type": "payload",
+                    "payload": button.name
+                }]
+            })
+            _logger.info(f"Añadido componente de botón quick_reply para '{button.name}'")
+
         # Procesar botones de URL dinámico
         dynamic_url_buttons = template.button_ids.filtered(
             lambda b: b.button_type == 'url' and b.url_type == 'dynamic'
