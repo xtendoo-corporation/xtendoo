@@ -131,23 +131,29 @@ class WhatsappComposer(models.TransientModel):
 
 
     def _action_send_whatsapp(self):
-        """Override para pasar variables en el contexto antes de enviar."""
-        # Recopilar las variables en un diccionario
-        template_variables = {}
-
-        for var_line in self.template_variable_ids:
-            # Extraer el índice de la variable (ej: {{1}} -> 1)
-            var_index = var_line.template_variable_id._extract_variable_index()
-            if var_index and var_line.field_value:
-                template_variables[var_index] = str(var_line.field_value)
-
-        # Agregar las variables al contexto
-        context = dict(self.env.context)
-        if template_variables:
-            context['template_variables'] = template_variables
-
-        # Llamar al método original con el contexto actualizado
-        return super(WhatsappComposer, self.with_context(**context))._action_send_whatsapp()
+        record = self.env[self.res_model].browse(self.res_id)
+        if not record:
+            return
+        channel = record._whatsapp_get_channel(self.number_field_name, self.gateway_id)
+        channel.with_context(whatsapp_template_id=self.template_id.id).message_post(
+            body=self.body, subtype_xmlid="mail.mt_comment", message_type="comment"
+        )
+        # Registrar también en el contacto destinatario si existe
+        partner = None
+        if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
+            partners = channel.channel_partner_ids.filtered(
+                lambda p: p.id != self.env.ref('base.partner_root').id and p.id != self.env.user.partner_id.id
+            )
+            if partners:
+                partner = partners[0]
+        if partner:
+            partner.sudo().message_post(
+                body=self.body,
+                author_id=self.env.user.partner_id.id,
+                gateway_type="whatsapp",
+                subtype_xmlid="mail.mt_comment",
+                message_type="comment",
+            )
 
 
 class WhatsappComposerVariable(models.TransientModel):
@@ -210,4 +216,3 @@ class WhatsappComposerButton(models.TransientModel):
     )
     call_number = fields.Char(string="Phone Number")
     website_url = fields.Char(string="Website URL")
-
