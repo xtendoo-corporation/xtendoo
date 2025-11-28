@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import re
-from odoo import models
+from odoo import api, fields, models
 
 
 class MailGatewayWhatsappService(models.AbstractModel):
@@ -238,19 +238,20 @@ class MailGatewayWhatsappService(models.AbstractModel):
         """
         import logging
         _logger = logging.getLogger(__name__)
-
+        _logger.info(f"Procesando botones de la plantilla: {template.button_ids}")
         components = []
 
-        # Process URL buttons with dynamic type
+        # Log todos los botones y sus tipos
+        for button in template.button_ids:
+            _logger.info(f"Botón: {button.name}, tipo: {button.button_type}, url_type: {button.url_type}")
+
+        # Procesar botones de URL dinámico
         dynamic_url_buttons = template.button_ids.filtered(
             lambda b: b.button_type == 'url' and b.url_type == 'dynamic'
         )
-
         for idx, button in enumerate(dynamic_url_buttons):
-            # For dynamic URLs, we need to provide the dynamic suffix parameter
-            # The base URL is in the template, we only send the dynamic part
             dynamic_suffix = self.env.context.get(f'button_dynamic_url_{idx}', '')
-
+            _logger.info(f"Procesando botón URL dinámico idx={idx}, nombre={button.name}, sufijo={dynamic_suffix}")
             if dynamic_suffix:
                 components.append({
                     "type": "button",
@@ -261,10 +262,12 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         "text": dynamic_suffix
                     }]
                 })
-                _logger.info(f"Added dynamic URL button component for '{button.name}' with suffix: {dynamic_suffix}")
+                _logger.info(f"Añadido componente de botón URL dinámico para '{button.name}' con sufijo: {dynamic_suffix}")
             else:
-                _logger.warning(f"Dynamic URL button '{button.name}' has no dynamic suffix in context")
+                _logger.warning(f"Botón URL dinámico '{button.name}' sin sufijo dinámico en contexto")
 
+        # Log cantidad de componentes generados
+        _logger.info(f"Componentes de botón generados: {components}")
         return components
 
     def _extract_variables_from_text(self, text, variables):
@@ -300,4 +303,3 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 })
 
         return parameters
-
