@@ -194,37 +194,47 @@ class MailGatewayWhatsappService(models.AbstractModel):
         """
         import logging
         _logger = logging.getLogger(__name__)
-
         components = []
+
+        _logger.info(f"Entrando en _build_template_components para plantilla: {template.name}")
+        _logger.info(f"Variables recibidas: {variables}")
+        _logger.info(f"Botones en la plantilla: {[{'name': b.name, 'type': b.button_type, 'url_type': b.url_type} for b in template.button_ids]}")
+        _logger.info(f"Header: {template.header}")
+        _logger.info(f"Body: {template.body}")
 
         # Check if header has variables
         if template.header:
             header_params = self._extract_variables_from_text(template.header, variables)
+            _logger.info(f"Header params extraídos: {header_params}")
             if header_params:
                 components.append({
                     "type": "header",
                     "parameters": header_params
                 })
-                _logger.info(f"Added header component with {len(header_params)} parameters")
+                _logger.info(f"Añadido componente de header con {len(header_params)} parámetros")
 
         # Check if body has variables
         if template.body:
             body_params = self._extract_variables_from_text(template.body, variables)
+            _logger.info(f"Body params extraídos: {body_params}")
             if body_params:
                 components.append({
                     "type": "body",
                     "parameters": body_params
                 })
-                _logger.info(f"Added body component with {len(body_params)} parameters")
+                _logger.info(f"Añadido componente de body con {len(body_params)} parámetros")
 
-        # Process buttons with dynamic URLs (if any)
+        # Procesar botones
         if hasattr(template, 'button_ids') and template.button_ids:
+            _logger.info(f"Procesando botones en _build_template_components: {template.button_ids}")
             button_components = self._build_button_components(template)
+            _logger.info(f"Componentes de botón generados: {button_components}")
             if button_components:
                 components.extend(button_components)
-                _logger.info(f"Added {len(button_components)} button components")
+                _logger.info(f"Añadidos {len(button_components)} componentes de botón")
 
-        _logger.info(f"Total components: {len(components)}")
+        _logger.info(f"Total de componentes generados: {len(components)}")
+        _logger.info(f"Componentes finales: {components}")
         return components
 
     def _build_button_components(self, template):
