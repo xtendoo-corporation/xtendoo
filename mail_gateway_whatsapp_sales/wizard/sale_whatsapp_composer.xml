@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_whatsapp_composer_form" model="ir.ui.view">
+        <field name="name">sale.whatsapp.composer.form</field>
+        <field name="model">sale.whatsapp.composer</field>
+        <field name="arch" type="xml">
+            <form string="Enviar WhatsApp">
+                <group>
+                    <field name="sale_order_id"/>
+                    <field name="gateway_id"/>
+                    <field name="template_id"/>
+                    <field name="body"/>
+                </group>
+                <footer>
+                    <button string="Enviar" type="object" name="action_send_whatsapp" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <act_window id="action_sale_whatsapp_composer" name="Enviar WhatsApp" res_model="sale.whatsapp.composer" view_mode="form" target="new"/>
+</odoo>
+

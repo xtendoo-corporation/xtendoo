@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_partner_form_whatsapp" model="ir.ui.view">
-        <field name="name">res.partner.form.whatsapp.chatter</field>
-        <field name="model">res.partner</field>
-        <field name="inherit_id" ref="base.view_partner_form"/>
-        <field name="priority">99</field>
-        <field name="arch" type="xml">
-            <xpath expr="//div[@name='button_box']" position="inside">
-                <button name="action_open_whatsapp_channels"
-                    type="object"
-                    class="oe_stat_button"
-                    icon="fa-whatsapp"
-                    invisible="whatsapp_channel_count == 0">
-                    <field name="whatsapp_channel_count" widget="statinfo"
-                           string="WhatsApp"/>
-                </button>
-            </xpath>
-        </field>
-    </record>
+    <!--    <record id="view_partner_form_whatsapp" model="ir.ui.view">-->
+    <!--        <field name="name">res.partner.form.whatsapp.chatter</field>-->
+    <!--        <field name="model">res.partner</field>-->
+    <!--        <field name="inherit_id" ref="base.view_partner_form"/>-->
+    <!--        <field name="priority">99</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <xpath expr="//div[@name='button_box']" position="inside">-->
+    <!--                <button name="action_open_whatsapp_channels"-->
+    <!--                        type="object"-->
+    <!--                        class="oe_stat_button"-->
+    <!--                        icon="fa-whatsapp"-->
+    <!--                        invisible="whatsapp_channel_count == 0">-->
+    <!--                    <field name="whatsapp_channel_count" widget="statinfo"-->
+    <!--                           string="WhatsApp"/>-->
+    <!--                </button>-->
+    <!--            </xpath>-->
+    <!--        </field>-->
+    <!--    </record>-->
 </odoo>
-

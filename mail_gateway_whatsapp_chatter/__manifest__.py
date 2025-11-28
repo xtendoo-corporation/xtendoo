@@ -18,12 +18,12 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "mail_gateway_whatsapp_chatter/static/src/chatter/*.js",
-            "mail_gateway_whatsapp_chatter/static/src/chatter/*.xml",
+            # "mail_gateway_whatsapp_chatter/static/src/chatter/*.js",
+            # "mail_gateway_whatsapp_chatter/static/src/chatter/*.xml",
+            "mail_gateway_whatsapp_chatter/static/src/components/chatter/*.xml",
             "mail_gateway_whatsapp_chatter/static/src/scss/*.scss",
         ],
     },
     "installable": True,
     "auto_install": False,
 }
-

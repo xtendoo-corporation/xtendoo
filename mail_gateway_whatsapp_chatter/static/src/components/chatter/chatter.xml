@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t
+        t-name="mail_gateway_whatsapp.ChatterTopbar"
+        t-inherit="mail.Chatter"
+        t-inherit-mode="extension"
+    >
+        <xpath expr="//button[hasclass('o-mail-Chatter-logNote')]" position="after">
+            <button
+                class="o-mail-Chatter-whatsapp btn text-nowrap me-1"
+                type="button"
+                t-att-class="{
+                    'btn-success': true,
+                    'my-2': !props.compactHeight
+                }"
+                t-on-click="sendWhatsapp"
+                data-hotkey="shift+w"
+            >
+                <i class="fa fa-whatsapp" role="img" aria-label="whatsapp" />
+                <span> WhatsApp</span>
+            </button>
+        </xpath>
+    </t>
+</templates>
