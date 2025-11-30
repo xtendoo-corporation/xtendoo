@@ -1,64 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="template_facturae_inherit" inherit_id="l10n_es_facturae.template_facturae">
-        <!-- Remove empty OperationDate -->
-        <xpath expr="//Invoices/Invoice/InvoiceIssueData/OperationDate" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty PlaceOfIssue -->
-        <xpath expr="//Invoices/Invoice/InvoiceIssueData/PlaceOfIssue" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty SecondSurname -->
-        <xpath expr="//Parties/*/AdministrativeCentres/AdministrativeCentre/SecondSurname" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty PhysicalGLN -->
-        <xpath expr="//Parties/*/AdministrativeCentres/AdministrativeCentre/PhysicalGLN" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty LogicalOperationalPoint -->
-        <xpath expr="//Parties/*/AdministrativeCentres/AdministrativeCentre/LogicalOperationalPoint" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty CnoCnae -->
-        <xpath expr="//Parties/*//ContactDetails/CnoCnae" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty INETownCode -->
-        <xpath expr="//Parties/*//ContactDetails/INETownCode" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty SpecialTaxableBase in TaxesOutputs -->
-        <xpath expr="//Invoices/Invoice/TaxesOutputs/Tax/SpecialTaxableBase" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty SpecialTaxAmount in TaxesOutputs -->
-        <xpath expr="//Invoices/Invoice/TaxesOutputs/Tax/SpecialTaxAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty EquivalenceSurcharge in TaxesOutputs -->
-        <xpath expr="//Invoices/Invoice/TaxesOutputs/Tax/EquivalenceSurcharge" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty EquivalenceSurchargeAmount in TaxesOutputs -->
-        <xpath expr="//Invoices/Invoice/TaxesOutputs/Tax/EquivalenceSurchargeAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty GeneralDiscounts in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/GeneralDiscounts" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty GeneralSurcharges in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/GeneralSurcharges" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty TotalGeneralDiscounts in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/TotalGeneralDiscounts" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty TotalGeneralSurcharges in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/TotalGeneralSurcharges" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty Subsidies in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/Subsidies" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty PaymentsOnAccount in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/PaymentsOnAccount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty ReimbursableExpenses in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/ReimbursableExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty TotalFinancialExpenses in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/TotalFinancialExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty TotalPaymentsOnAccount in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/TotalPaymentsOnAccount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty TotalReimbursableExpenses in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/TotalReimbursableExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty PaymentInKindAmount in InvoiceTotals -->
-        <xpath expr="//Invoices/Invoice/InvoiceTotals/PaymentInKind/PaymentInKindAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty SequenceNumber in Items -->
-        <xpath expr="//Invoices/Invoice/Items/InvoiceLine/SequenceNumber" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty DeliveryNotesReferences in Items -->
-        <xpath expr="//Invoices/Invoice/Items/InvoiceLine/DeliveryNotesReferences" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty UnitOfMeasure in Items -->
-        <xpath expr="//Invoices/Invoice/Items/InvoiceLine/UnitOfMeasure" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty Charges in Items -->
-        <xpath expr="//Invoices/Invoice/Items/InvoiceLine/Charges" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty SpecialTaxableEvent in Items -->
-        <xpath expr="//Invoices/Invoice/Items/InvoiceLine/SpecialTaxableEvent" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty Extensions (generic) -->
-        <xpath expr="//Invoices/Invoice/Items/InvoiceLine/Extensions" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <xpath expr="//Invoices/Invoice/Extensions" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <!-- Remove empty RegulatoryReportingData in PaymentDetails -->
-        <xpath expr="//Invoices/Invoice/PaymentDetails/Installment/RegulatoryReportingData" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+    <!-- Remove empty fields defined in l10n_es_facturae templates -->
+    <template id="administrative_center_inherit" inherit_id="l10n_es_facturae.administrative_center">
+        <!-- SecondSurname, PhysicalGLN, LogicalOperationalPoint are defined here -->
+        <xpath expr="//SecondSurname" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//PhysicalGLN" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//LogicalOperationalPoint" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+    </template>
+
+    <template id="address_contact_inherit" inherit_id="l10n_es_facturae.address_contact">
+        <!-- CnoCnae, INETownCode defined here -->
+        <xpath expr="//CnoCnae" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//INETownCode" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+    </template>
+
+    <!-- Remove empty fields defined in l10n_es_edi_facturae templates -->
+    <template id="invoice_type_inherit" inherit_id="l10n_es_edi_facturae.invoice_type">
+        <!-- OperationDate and PlaceOfIssue live inside InvoiceIssueData in this template -->
+        <xpath expr="//InvoiceIssueData/OperationDate" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceIssueData/PlaceOfIssue" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- InvoiceTotals subelements -->
+        <xpath expr="//InvoiceTotals/GeneralDiscounts" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/GeneralSurcharges" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/TotalGeneralDiscounts" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/TotalGeneralSurcharges" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/Subsidies" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/PaymentsOnAccount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/ReimbursableExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/TotalFinancialExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/TotalPaymentsOnAccount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/TotalReimbursableExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//InvoiceTotals/PaymentInKind/PaymentInKindAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+    </template>
+
+    <template id="invoice_line_type_inherit" inherit_id="l10n_es_edi_facturae.invoice_line_type">
+        <!-- Remove empty line-level tags declared in invoice_line_type -->
+        <xpath expr="//SequenceNumber" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//DeliveryNotesReferences" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//UnitOfMeasure" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//Charges" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//SpecialTaxableEvent" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//Extensions" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+    </template>
+
+    <template id="tax_type_inherit" inherit_id="l10n_es_edi_facturae.tax_type">
+        <!-- Remove optional tax subelements that are empty -->
+        <xpath expr="//SpecialTaxableBase" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//SpecialTaxAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//EquivalenceSurcharge" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <xpath expr="//EquivalenceSurchargeAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+    </template>
+
+    <!-- Top-level extensions removal if present in the main export template -->
+    <template id="export_root_inherit" inherit_id="l10n_es_edi_facturae.account_invoice_facturae_export">
+        <xpath expr="//Extensions" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
     </template>
 </odoo>
