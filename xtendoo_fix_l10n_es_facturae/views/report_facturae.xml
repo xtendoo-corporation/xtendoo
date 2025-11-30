@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="template_facturae_inherit" inherit_id="l10n_es_edi_facturae.account_invoice_facturae_export">
+    <template id="template_facturae_inherit" inherit_id="l10n_es_facturae.template_facturae">
         <!-- Remove empty OperationDate -->
         <xpath expr="//OperationDate" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <!-- Remove empty PlaceOfIssue -->
         <xpath expr="//PlaceOfIssue" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- Remove empty SecondSurname -->
+        <xpath expr="//SecondSurname" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- Remove empty PhysicalGLN -->
+        <xpath expr="//PhysicalGLN" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- Remove empty LogicalOperationalPoint -->
+        <xpath expr="//LogicalOperationalPoint" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- Remove empty CnoCnae -->
+        <xpath expr="//CnoCnae" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- Remove empty INETownCode -->
+        <xpath expr="//INETownCode" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <!-- Remove empty SpecialTaxableBase in TaxesOutputs -->
         <xpath expr="//TaxesOutputs/Tax/SpecialTaxableBase" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <!-- Remove empty SpecialTaxAmount in TaxesOutputs -->
@@ -45,6 +55,8 @@
         <xpath expr="//Items/InvoiceLine/Charges" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <!-- Remove empty SpecialTaxableEvent in Items -->
         <xpath expr="//Items/InvoiceLine/SpecialTaxableEvent" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- Remove empty Extensions (generic) -->
+        <xpath expr="//Extensions" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <!-- Remove empty RegulatoryReportingData in PaymentDetails -->
         <xpath expr="//PaymentDetails/Installment/RegulatoryReportingData" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
     </template>
