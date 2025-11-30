@@ -40,11 +40,36 @@
         <xpath expr="//InvoiceIssueData/OperationDate" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <xpath expr="//InvoiceIssueData/PlaceOfIssue" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
 
-        <!-- TaxesOutputs - Tax empty elements (in invoice level, not in line level) -->
-        <xpath expr="//Invoice/TaxesOutputs/Tax/SpecialTaxableBase" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <xpath expr="//Invoice/TaxesOutputs/Tax/SpecialTaxAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <xpath expr="//Invoice/TaxesOutputs/Tax/EquivalenceSurcharge" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <xpath expr="//Invoice/TaxesOutputs/Tax/EquivalenceSurchargeAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+        <!-- Replace TaxesOutputs to remove empty elements in Tax -->
+        <xpath expr="//TaxesOutputs" position="replace">
+            <TaxesOutputs>
+                <t t-foreach="output_taxes" t-as="tax">
+                    <Tax>
+                        <t t-set="tax_line" t-value="output_taxes[tax]" />
+                        <TaxTypeCode t-out="tax.facturae_code" />
+                        <TaxRate
+                            t-out="('%.2f' if version == '3_2' else '%.8f') % (tax.amount)"
+                        />
+                        <TaxableBase>
+                            <TotalAmount
+                                t-out="('%.2f' if version == '3_2' else '%.8f') % tax_line['base']"
+                            />
+                            <EquivalentInEuros
+                                t-out="'%.2f' % (tax_line['base'] * euro_rate / currency_rate)"
+                            />
+                        </TaxableBase>
+                        <TaxAmount>
+                            <TotalAmount
+                                t-out="('%.2f' if version == '3_2' else '%.8f') % ( tax_line['amount'] )"
+                            />
+                            <EquivalentInEuros
+                                t-out="'%.2f' % (( tax_line['amount']) * euro_rate / currency_rate)"
+                            />
+                        </TaxAmount>
+                    </Tax>
+                </t>
+            </TaxesOutputs>
+        </xpath>
 
         <!-- InvoiceTotals empty elements -->
         <xpath expr="//InvoiceTotals/GeneralDiscounts" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
@@ -57,8 +82,15 @@
         <xpath expr="//InvoiceTotals/TotalFinancialExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <xpath expr="//InvoiceTotals/TotalPaymentsOnAccount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <xpath expr="//InvoiceTotals/TotalReimbursableExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <xpath expr="//PaymentInKind/PaymentInKindReason" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <xpath expr="//PaymentInKind/PaymentInKindAmount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
+
+        <!-- Replace PaymentInKind to remove empty elements -->
+        <xpath expr="//PaymentInKind" position="replace">
+            <t t-if="version not in ('3_2', '3_2_1')">
+                <PaymentInKind>
+                    <!-- Empty elements removed by xtendoo_fix_l10n_es_facturae -->
+                </PaymentInKind>
+            </t>
+        </xpath>
 
         <!-- Invoice line empty elements -->
         <xpath expr="//InvoiceLine/SequenceNumber" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
