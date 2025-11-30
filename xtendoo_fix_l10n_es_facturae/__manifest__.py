@@ -9,6 +9,7 @@
     'license': 'AGPL-3',
     'depends': [
         'l10n_es_facturae',
+        'l10n_es_edi_facturae',
     ],
     'data': [
         'views/report_facturae.xml',
@@ -16,4 +17,3 @@
     'installable': True,
     'auto_install': False,
 }
-
