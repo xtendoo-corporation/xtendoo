@@ -83,14 +83,8 @@
         <xpath expr="//InvoiceTotals/TotalPaymentsOnAccount" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <xpath expr="//InvoiceTotals/TotalReimbursableExpenses" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
 
-        <!-- Replace PaymentInKind to remove empty elements -->
-        <xpath expr="//PaymentInKind" position="replace">
-            <t t-if="version not in ('3_2', '3_2_1')">
-                <PaymentInKind>
-                    <!-- Empty elements removed by xtendoo_fix_l10n_es_facturae -->
-                </PaymentInKind>
-            </t>
-        </xpath>
+        <!-- Remove PaymentInKind block completely (including the t-if wrapper) -->
+        <xpath expr="//InvoiceTotals/t[@t-if=&quot;version not in ('3_2', '3_2_1')&quot;]" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
 
         <!-- Invoice line empty elements -->
         <xpath expr="//InvoiceLine/SequenceNumber" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
