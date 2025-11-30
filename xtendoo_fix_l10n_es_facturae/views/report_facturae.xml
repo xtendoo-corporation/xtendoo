@@ -112,7 +112,6 @@
         <!-- Other empty elements -->
         <xpath expr="//Invoice/LegalLiterals" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
         <xpath expr="//AdditionalData/RelatedInvoice" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
-        <xpath expr="//Invoices/Extensions" position="replace"><!-- removed by xtendoo_fix_l10n_es_facturae --></xpath>
 
 
     </template>
