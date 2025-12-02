@@ -7,6 +7,21 @@ from odoo import _, api, fields, models
 class WhatsappComposer(models.TransientModel):
     _inherit = "whatsapp.composer"
 
+    # Attachment support
+    attachment_id = fields.Many2one(
+        'ir.attachment',
+        string="Attachment",
+        help="Attach a file to send with the WhatsApp message (PDF, images, etc.)"
+    )
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        'whatsapp_composer_attachment_rel',
+        'composer_id',
+        'attachment_id',
+        string="Attachments",
+        help="Multiple attachments to send with the message"
+    )
+
     # Variables dinámicas basadas en la plantilla
     template_variable_ids = fields.One2many(
         'whatsapp.composer.variable',
@@ -131,13 +146,27 @@ class WhatsappComposer(models.TransientModel):
 
 
     def _action_send_whatsapp(self):
+        """Send WhatsApp message with optional attachments."""
         record = self.env[self.res_model].browse(self.res_id)
         if not record:
             return
+
         channel = record._whatsapp_get_channel(self.number_field_name, self.gateway_id)
+
+        # Prepare attachments list
+        attachment_ids = []
+        if self.attachment_ids:
+            attachment_ids = self.attachment_ids.ids
+
+        # Send message with or without attachments
+        # WhatsApp API typically sends text and attachments together
         channel.with_context(whatsapp_template_id=self.template_id.id).message_post(
-            body=self.body, subtype_xmlid="mail.mt_comment", message_type="comment"
+            body=self.body,
+            attachment_ids=attachment_ids if attachment_ids else False,
+            subtype_xmlid="mail.mt_comment",
+            message_type="comment"
         )
+
         # Registrar también en el contacto destinatario si existe
         partner = None
         if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
@@ -146,11 +175,13 @@ class WhatsappComposer(models.TransientModel):
             )
             if partners:
                 partner = partners[0]
+
         if partner:
             partner.sudo().message_post(
                 body=self.body,
                 author_id=self.env.user.partner_id.id,
                 gateway_type="whatsapp",
+                attachment_ids=attachment_ids if attachment_ids else False,
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
             )

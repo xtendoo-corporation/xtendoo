@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Extend whatsapp.composer to add attachments -->
+    <record id="whatsapp_composer_form_view_attachments" model="ir.ui.view">
+        <field name="name">whatsapp.composer.form.attachments</field>
+        <field name="model">whatsapp.composer</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.whatsapp_composer_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add attachment fields after body -->
+            <xpath expr="//field[@name='body']" position="after">
+                <separator string="Attachments" colspan="2"/>
+                <group>
+                    <field name="attachment_ids"
+                           widget="many2many_binary"
+                           string="Attach Files"
+                           help="You can attach PDF, images (JPG, PNG), documents, videos, etc."
+                           nolabel="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Vista de plantilla con variables y botones -->
     <record id="view_mail_whatsapp_template_form_variables_v2" model="ir.ui.view">
         <field name="name">mail.whatsapp.template.form.variables.v2</field>
