@@ -79,6 +79,17 @@ class MailWhatsappTemplateVariable(models.Model):
             elif not variable.field_name:
                 variable.field_name = False
 
+    @api.onchange('name')
+    def _onchange_name_extract_index(self):
+        """Auto-extract variable index from name when name contains {{N}} pattern."""
+        if self.name:
+            import re
+            match = re.search(r'\{\{(\d+)\}\}', self.name)
+            if match:
+                extracted_index = int(match.group(1))
+                if extracted_index > 0:
+                    self.variable_index = extracted_index
+
     @api.depends('name', 'line_type')
     def _compute_display_name(self):
         for variable in self:
@@ -90,13 +101,24 @@ class MailWhatsappTemplateVariable(models.Model):
                 variable.display_name = variable.name
 
     def _extract_variable_index(self):
-        """Extract the numeric index from variable_index field or from name like {{1}} -> 1."""
-        # First, try to use the variable_index field if set
+        """Extract the numeric index from name like {{1}} -> 1 or from variable_index field."""
+        import re
+
+        # First, try to extract from name pattern {{N}}
+        if self.name:
+            match = re.search(r'\{\{(\d+)\}\}', self.name)
+            if match:
+                return int(match.group(1))
+
+        # If no pattern found, use variable_index field
         if self.variable_index and self.variable_index > 0:
             return self.variable_index
 
-        # Otherwise, try to extract from name
-        import re
-        match = re.search(r'\d+', self.name)
-        return int(match.group()) if match else 0
+        # Last resort: try to extract any number from name
+        if self.name:
+            match = re.search(r'\d+', self.name)
+            if match:
+                return int(match.group())
+
+        return 0
 
