@@ -13,11 +13,30 @@ patch(Chatter.prototype, {
             // Determine the phone field to use based on model
             let numberFieldName = "mobile";
 
-            // Check if the model has specific phone fields
-            if (thread.model === "res.partner") {
-                numberFieldName = "mobile";
-            } else if ("partner_id" in (thread.record || {})) {
-                numberFieldName = "partner_id.mobile";
+            // Get the model fields to check what's available
+            try {
+                const fieldsInfo = await this.env.services.orm.call(
+                    thread.model,
+                    "fields_get",
+                    [],
+                    {
+                        attributes: ["type", "relation"],
+                        fields: ["mobile", "phone", "partner_id"]
+                    }
+                );
+
+                // Priority: mobile > phone > partner_id.mobile
+                if (fieldsInfo.mobile) {
+                    numberFieldName = "mobile";
+                } else if (fieldsInfo.phone) {
+                    numberFieldName = "phone";
+                } else if (fieldsInfo.partner_id) {
+                    numberFieldName = "partner_id.mobile";
+                }
+            } catch (error) {
+                console.warn("Could not determine phone field, using default:", error);
+                // Fallback: if model is res.partner use mobile, else use partner_id.mobile
+                numberFieldName = thread.model === "res.partner" ? "mobile" : "partner_id.mobile";
             }
 
             // Try to get available gateways
