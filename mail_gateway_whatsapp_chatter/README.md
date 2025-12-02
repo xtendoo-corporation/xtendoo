@@ -12,6 +12,7 @@ Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar un botón de Wh
 - ✅ Respeta la lógica de ventana de 24h para requerir plantillas
 - ✅ Contador de conversaciones de WhatsApp en contactos
 - ✅ Botón estadístico para acceder a conversaciones desde el contacto
+- ✅ **Soporte para campos relacionales** (ej: `partner_id.mobile` en sale.order)
 
 ## Dependencias
 
@@ -53,6 +54,15 @@ En la vista de contacto (res.partner), verás un botón estadístico que muestra
 El módulo detecta automáticamente el campo de teléfono basándose en:
 1. Modelos que heredan `mail.thread.phone`
 2. Campos comunes: `mobile`, `phone`, `partner_id.mobile`, `partner_id.phone`
+
+**Soporte para campos relacionales:**
+El módulo soporta notación de punto para campos relacionales. Esto significa que puede trabajar con modelos como:
+- `res.partner` → usa directamente `mobile` o `phone`
+- `sale.order` → usa `partner_id.mobile` (campo relacional)
+- `account.move` → usa `partner_id.mobile` (campo relacional)
+- Cualquier modelo con relación a contacto → usa `partner_id.mobile`
+
+Este soporte permite enviar mensajes de WhatsApp desde cualquier documento que tenga una relación con un contacto, sin necesidad de tener campos de teléfono directos en el modelo.
 
 ### Lógica de plantillas (24h)
 
