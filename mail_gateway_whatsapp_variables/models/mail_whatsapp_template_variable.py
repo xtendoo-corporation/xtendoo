@@ -56,7 +56,12 @@ class MailWhatsappTemplateVariable(models.Model):
         compute="_compute_field_name",
         store=True,
         readonly=False,
-        help="Field path like partner_id.name, amount_total, etc."
+        help="Field path like 'partner_id.name', 'order_line.product_id.name', 'amount_total', etc.\n"
+             "You can use dot notation to access related fields:\n"
+             "- partner_id.name → Customer name\n"
+             "- partner_id.email → Customer email\n"
+             "- order_line.product_id.name → Product names (comma separated)\n"
+             "- user_id.name → Salesperson name"
     )
     demo_value = fields.Char(
         string="Sample Value",
@@ -72,10 +77,17 @@ class MailWhatsappTemplateVariable(models.Model):
 
     @api.depends('field_id')
     def _compute_field_name(self):
-        """Compute field_name from selected field_id."""
+        """Compute field_name from selected field_id.
+
+        Only updates field_name if:
+        - field_id is set and field_name is empty or doesn't contain dots
+        - This allows users to manually extend the path (e.g., partner_id.name)
+        """
         for variable in self:
             if variable.field_id:
-                variable.field_name = variable.field_id.name
+                # Only auto-set if field_name is empty or is just the field_id name
+                if not variable.field_name or variable.field_name == variable.field_id.name:
+                    variable.field_name = variable.field_id.name
             elif not variable.field_name:
                 variable.field_name = False
 

@@ -23,7 +23,8 @@
                             <field name="variable_index"/>
                             <field name="line_type"/>
                             <field name="field_type"/>
-                            <field name="field_id" optional="show"/>
+                            <field name="field_id" optional="hide"/>
+                            <field name="field_name" optional="show"/>
                             <field name="demo_value"/>
                         </list>
                         <form>
@@ -39,7 +40,8 @@
                                     options="{'no_create': True, 'no_open': True}"/>
                                 <field name="field_name"
                                     invisible="field_type != 'field'"
-                                    readonly="1"/>
+                                    placeholder="e.g., partner_id.name, order_line.product_id.name"
+                                    help="You can use dot notation to access related fields"/>
                                 <field name="demo_value"/>
                                 <field name="sequence"/>
                             </group>

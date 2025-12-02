@@ -148,7 +148,36 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         value = record
                         for field in var.field_name.split('.'):
                             value = value[field]
-                        value = str(value) if value else ''
+
+                        # Convert value to string appropriately
+                        if value:
+                            # If it's a recordset (Many2one, One2many, Many2many)
+                            if hasattr(value, '_name'):
+                                # For Many2one or single record, use display_name
+                                if hasattr(value, 'display_name'):
+                                    if len(value) == 1:
+                                        value = value.display_name
+                                    elif len(value) > 1:
+                                        # For multiple records, join their names
+                                        value = ', '.join(value.mapped('display_name'))
+                                    else:
+                                        value = ''
+                                # Fallback to name field
+                                elif hasattr(value, 'name'):
+                                    if len(value) == 1:
+                                        value = value.name
+                                    elif len(value) > 1:
+                                        value = ', '.join(value.mapped('name'))
+                                    else:
+                                        value = ''
+                                else:
+                                    value = str(value)
+                            else:
+                                # For primitive types (char, integer, float, etc.)
+                                value = str(value)
+                        else:
+                            value = ''
+
                         _logger.info(f"Got field value: {value}")
                     except Exception as ex:
                         value = var.demo_value or ''
