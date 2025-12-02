@@ -1,6 +1,7 @@
 # Copyright 2024 Xtendoo
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import base64
 from odoo import _, api, fields, models
 
 
@@ -20,6 +21,11 @@ class WhatsappComposer(models.TransientModel):
         'attachment_id',
         string="Attachments",
         help="Multiple attachments to send with the message"
+    )
+    auto_attach_pdf = fields.Boolean(
+        string="Auto-attach PDF",
+        default=True,
+        help="Automatically attach PDF report when available (Sale Order, Invoice, etc.)"
     )
 
     # Variables dinámicas basadas en la plantilla
@@ -44,6 +50,121 @@ class WhatsappComposer(models.TransientModel):
         'composer_id',
         string="Template Buttons"
     )
+
+    @api.model
+    def default_get(self, fields_list):
+        """Override to auto-attach PDF for sale.order and account.move."""
+        res = super().default_get(fields_list)
+
+        # Get context values
+        res_model = res.get('res_model') or self.env.context.get('default_res_model')
+        res_id = res.get('res_id') or self.env.context.get('default_res_id')
+        auto_attach = res.get('auto_attach_pdf', True)
+
+        if res_model and res_id and auto_attach:
+            attachment_ids = self._get_auto_attachments(res_model, res_id)
+            if attachment_ids:
+                res['attachment_ids'] = [(6, 0, attachment_ids)]
+
+        return res
+
+    def _get_auto_attachments(self, res_model, res_id):
+        """Generate and return attachment IDs for the given record.
+
+        Supports:
+        - sale.order: Quotation/Order PDF
+        - account.move: Invoice PDF
+        """
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        attachment_ids = []
+
+        try:
+            if res_model == 'sale.order':
+                attachment_ids = self._generate_sale_order_pdf(res_id)
+            elif res_model == 'account.move':
+                attachment_ids = self._generate_invoice_pdf(res_id)
+        except Exception as e:
+            _logger.warning(f"Could not auto-attach PDF for {res_model} {res_id}: {e}")
+
+        return attachment_ids
+
+    def _generate_sale_order_pdf(self, order_id):
+        """Generate PDF for sale order and return attachment IDs."""
+        order = self.env['sale.order'].browse(order_id)
+        if not order.exists():
+            return []
+
+        # Get the report action
+        report = self.env.ref('sale.action_report_saleorder', raise_if_not_found=False)
+        if not report:
+            return []
+
+        # Generate PDF
+        pdf_content, content_type = report._render_qweb_pdf(report.report_name, order.ids)
+
+        # Determine filename based on state
+        if order.state in ['draft', 'sent']:
+            filename = f'Quotation_{order.name}.pdf'
+        else:
+            filename = f'Order_{order.name}.pdf'
+
+        # Encode to base64
+        pdf_base64 = base64.b64encode(pdf_content)
+
+        # Create attachment
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': pdf_base64,
+            'res_model': 'sale.order',
+            'res_id': order.id,
+            'mimetype': 'application/pdf',
+        })
+
+        return [attachment.id]
+
+    def _generate_invoice_pdf(self, move_id):
+        """Generate PDF for invoice/bill and return attachment IDs."""
+        move = self.env['account.move'].browse(move_id)
+        if not move.exists() or move.move_type not in ['out_invoice', 'out_refund', 'in_invoice', 'in_refund']:
+            return []
+
+        # Get the report action
+        report = self.env.ref('account.account_invoices', raise_if_not_found=False)
+        if not report:
+            return []
+
+        # Generate PDF
+        pdf_content, content_type = report._render_qweb_pdf(report.report_name, move.ids)
+
+        # Determine filename based on type
+        if move.move_type == 'out_invoice':
+            doc_type = 'Invoice'
+        elif move.move_type == 'out_refund':
+            doc_type = 'Refund'
+        elif move.move_type == 'in_invoice':
+            doc_type = 'Bill'
+        else:
+            doc_type = 'Credit_Note'
+
+        filename = f'{doc_type}_{move.name.replace("/", "_")}.pdf'
+
+        # Encode to base64
+        pdf_base64 = base64.b64encode(pdf_content)
+
+        # Create attachment
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': pdf_base64,
+            'res_model': 'account.move',
+            'res_id': move.id,
+            'mimetype': 'application/pdf',
+        })
+
+        return [attachment.id]
 
 
     @api.depends("template_id", "template_id.variable_ids")

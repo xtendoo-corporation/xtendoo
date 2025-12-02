@@ -8,14 +8,18 @@
         <field name="arch" type="xml">
             <!-- Add attachment fields after body -->
             <xpath expr="//field[@name='body']" position="after">
-                <separator string="Attachments" colspan="2"/>
+                <separator string="Attachments"/>
                 <group>
                     <field name="attachment_ids"
                            widget="many2many_binary"
                            string="Attach Files"
-                           help="You can attach PDF, images (JPG, PNG), documents, videos, etc."
+                           help="PDF, images (JPG, PNG), documents, videos, etc."
                            nolabel="1"/>
                 </group>
+                <div class="text-muted" style="font-size: 90%; padding: 8px 0;">
+                    <i class="fa fa-info-circle"/>
+                    <span>PDFs are automatically generated for Sale Orders and Invoices. You can remove them or add more files.</span>
+                </div>
             </xpath>
         </field>
     </record>
