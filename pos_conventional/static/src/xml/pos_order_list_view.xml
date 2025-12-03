@@ -2,9 +2,10 @@
 <templates xml:space="preserve">
     <!-- Heredar la plantilla ListView para añadir botón en control panel -->
     <t t-name="pos_conventional.ListView" t-inherit="web.ListView" t-inherit-mode="extension">
-        <!-- Añadir botón "Cerrar caja" después del botón "New" -->
+        <!-- Añadir botón "Cerrar caja" después del botón "New" solo cuando hay domain con config_id -->
         <xpath expr="//t[@t-set-slot='control-panel-create-button']/button[@class='btn btn-primary o_list_button_add']" position="after">
-            <button type="button"
+            <button t-if="state.showCloseButton"
+                    type="button"
                     class="btn btn-danger ms-2"
                     t-on-click="onCloseCashRegister">
                 Cerrar caja
