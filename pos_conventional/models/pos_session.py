@@ -8,8 +8,15 @@ class PosSession(models.Model):
     def create(self, vals_list):
         """
         Override del create para interceptar la apertura automática
-        de sesiones en modo no táctil.
+        de sesiones en modo no táctil y asignar una secuencia automática.
         """
+        # Asignar secuencia automática a cada sesión
+        for vals in vals_list:
+            if not vals.get('name') or vals.get('name') == '/':
+                sequence = self.env['ir.sequence'].next_by_code('pos.session')
+                if sequence:
+                    vals['name'] = sequence
+
         # Si estamos en contexto skip_auto_open, solo crear sin abrir wizard
         if self.env.context.get('skip_auto_open'):
             return super(PosSession, self).create(vals_list)
