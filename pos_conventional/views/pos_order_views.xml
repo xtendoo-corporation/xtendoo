@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Heredar la vista tree de pos.order para asignar el controller personalizado -->
+    <record id="view_pos_order_tree_inherit_close_session" model="ir.ui.view">
+        <field name="name">pos.order.list.inherit.conventional</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+        <field name="arch" type="xml">
+            <!-- Asignar el controller personalizado con js_class -->
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">button_in_tree</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

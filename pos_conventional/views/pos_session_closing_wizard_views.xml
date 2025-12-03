@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_session_closing_wizard_form" model="ir.ui.view">
+        <field name="name">pos.session.closing.wizard.form</field>
+        <field name="model">pos.session.closing.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cierre de Sesión POS - Modo no táctil">
+                <sheet>
+                    <div class="alert alert-info mb-3" role="alert">
+                        <p class="mb-0">
+                            <strong>Cierre de caja registradora</strong><br/>
+                            Por favor, cuente el dinero en efectivo y verifique los totales.
+                        </p>
+                    </div>
+
+                    <group>
+                        <field name="session_id" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="cash_control" invisible="1"/>
+                    </group>
+
+                    <group col="2" invisible="not cash_control">
+                        <group string="Información de la sesión">
+                            <field name="cash_register_balance_start"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="cash_register_balance_end"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                        <group string="Cierre de caja">
+                            <label for="cash_register_balance_end_real" string="Dinero contado"/>
+                            <field name="cash_register_balance_end_real"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   nolabel="1"
+                                   class="oe_inline"/>
+                            <field name="cash_register_difference"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   decoration-danger="cash_register_difference != 0"
+                                   decoration-success="cash_register_difference == 0"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-warning" role="alert" invisible="not cash_control">
+                        <p class="mb-0">
+                            <i class="fa fa-info-circle"/>
+                            La diferencia se registrará automáticamente como ganancia o pérdida.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info" role="alert" invisible="cash_control">
+                        <p class="mb-0">Esta caja no requiere control de efectivo.</p>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_close_session"
+                            string="Cerrar Sesión"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
+
