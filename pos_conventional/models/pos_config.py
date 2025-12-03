@@ -43,19 +43,33 @@ class PosConfig(models.Model):
             if session.state == 'opening_control':
                 return session._open_non_touch_wizard()
 
-            # Si la sesión ya está abierta, mostrar una notificación
-            # y retornar a la vista del POS config
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': _('Sesión ya abierta'),
-                    'message': _('La sesión ya está abierta en modo no táctil. Puede gestionarla desde el backend.'),
-                    'type': 'info',
-                    'sticky': False,
-                }
-            }
+            # Si la sesión ya está abierta (Continue Selling),
+            # redirigir a la vista de pedidos POS
+            if session.state in ['opened', 'closing_control']:
+                return self._redirect_to_pos_orders(session)
 
         # Para modo táctil normal, usar el comportamiento estándar
         return super(PosConfig, self).open_ui()
+
+    def _redirect_to_pos_orders(self, session):
+        """
+        Redirige a la vista de pedidos POS para la caja (config_id).
+        Muestra TODOS los pedidos de esta caja, no solo de la sesión actual,
+        para permitir devoluciones de pedidos anteriores.
+        Reutiliza la acción estándar de Odoo.
+        """
+        self.ensure_one()
+
+        # Obtener la acción estándar de pedidos POS de Odoo
+        action = self.env.ref('point_of_sale.action_pos_pos_form').read()[0]
+
+        # Filtrar por config_id para mostrar TODOS los pedidos de esta caja
+        # (no solo de la sesión actual, para permitir devoluciones)
+        action['domain'] = [('config_id', '=', session.config_id.id)]
+        action['context'] = {
+            'default_session_id': session.id,
+            'default_config_id': session.config_id.id,
+        }
+
+        return action
 

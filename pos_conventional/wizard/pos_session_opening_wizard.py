@@ -102,22 +102,23 @@ class PosSessionOpeningWizard(models.TransientModel):
 
     def _return_to_backend(self):
         """
-        Retorna a la vista del backend después de abrir la sesión.
+        Retorna a la vista de pedidos POS después de abrir la sesión.
+        Muestra TODOS los pedidos de esta caja para permitir devoluciones.
+        Reutiliza la acción estándar de Odoo para listar pedidos POS.
         """
         self.ensure_one()
 
-        # Retornar a la vista de sesiones del POS config
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Sesión abierta'),
-                'message': _('La sesión ha sido abierta correctamente en modo no táctil.'),
-                'type': 'success',
-                'sticky': False,
-                'next': {
-                    'type': 'ir.actions.act_window_close',
-                }
-            }
+        # Obtener la acción estándar de pedidos POS de Odoo
+        # Esta es la acción oficial: point_of_sale.action_pos_pos_form
+        action = self.env.ref('point_of_sale.action_pos_pos_form').read()[0]
+
+        # Filtrar por config_id para mostrar TODOS los pedidos de esta caja
+        # (no solo de la sesión actual, para permitir devoluciones)
+        action['domain'] = [('config_id', '=', self.session_id.config_id.id)]
+        action['context'] = {
+            'default_session_id': self.session_id.id,
+            'default_config_id': self.session_id.config_id.id,
         }
+
+        return action
 
