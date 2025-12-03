@@ -8,8 +8,8 @@ _logger = logging.getLogger(__name__)
 class Base(models.AbstractModel):
     _inherit = 'base'  # Indicamos que esta clase modifica la clase 'base'
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         def get_company_id():
             company_id = self.env.context.get('allowed_company_ids')
             if company_id:
@@ -29,10 +29,12 @@ class Base(models.AbstractModel):
                     f"al crear un registro en el modelo {self._name}."
                 )
 
-        if isinstance(vals, dict):
-            assign_company(vals)
-        elif isinstance(vals, list):
-            for val_dict in vals:
-                assign_company(val_dict)
+        # Asegurar que vals_list es una lista
+        if not isinstance(vals_list, list):
+            vals_list = [vals_list]
 
-        return super(Base, self).create(vals)
+        # Procesar cada elemento
+        for val_dict in vals_list:
+            assign_company(val_dict)
+
+        return super(Base, self).create(vals_list)

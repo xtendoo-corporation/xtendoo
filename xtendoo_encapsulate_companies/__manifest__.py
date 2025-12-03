@@ -5,7 +5,7 @@
     'author': "Abraham (Xtendoo)",
     'category': 'Technical',
     'version': '19.0.1.1.2',
-    'depends': ['base', 'product','contacts'],
+    'depends': ['base', 'product','contacts','stock'],
     'installable': True,
     'application': False,
     'post_init_hook': 'post_init_check_company_id',
