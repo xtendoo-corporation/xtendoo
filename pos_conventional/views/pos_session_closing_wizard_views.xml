@@ -53,6 +53,13 @@
                     <div class="alert alert-info" role="alert" invisible="cash_control">
                         <p class="mb-0">Esta caja no requiere control de efectivo.</p>
                     </div>
+
+                    <group>
+                        <field name="closing_note"
+                               string="Motivo del cierre (opcional)"
+                               placeholder="Ej: Cierre de turno, fin de jornada, cambio de empleado..."
+                               colspan="2"/>
+                    </group>
                 </sheet>
                 <footer>
                     <button name="action_close_session"

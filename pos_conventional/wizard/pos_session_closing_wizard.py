@@ -32,6 +32,10 @@ class PosSessionClosingWizard(models.TransientModel):
         store=True,
         help='Diferencia entre dinero contado y dinero teórico'
     )
+    closing_note = fields.Text(
+        string='Motivo del cierre',
+        help='Nota opcional explicando el motivo del cierre de la sesión'
+    )
 
     @api.depends('cash_register_balance_end_real', 'cash_register_balance_end')
     def _compute_difference(self):
@@ -57,6 +61,13 @@ class PosSessionClosingWizard(models.TransientModel):
             result = self.session_id.post_closing_cash_details(self.cash_register_balance_end_real)
             if not result.get('successful'):
                 raise UserError(result.get('message', _('Error al registrar el efectivo.')))
+
+        # Guardar la nota de cierre si existe
+        if self.closing_note:
+            self.session_id.message_post(
+                body=_('Motivo de cierre: %s') % self.closing_note,
+                subject=_('Nota de cierre de sesión')
+            )
 
         # Llamar al método estándar de cierre de sesión
         # Este método hace toda la lógica: asientos contables, validaciones, etc.
@@ -85,4 +96,3 @@ class PosSessionClosingWizard(models.TransientModel):
                 'search_default_group_by_company': True,
             },
         }
-
