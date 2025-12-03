@@ -4,9 +4,11 @@
         <field name="name">Contactos de la compañía del usuario actual</field>
         <field name="model_id" ref="base.model_res_partner"/>
         <field name="domain_force">
-            ['|',
+            ['|', '|', '|',
                 ('company_id', '=', False),
-                ('company_id', 'in', user.company_ids.ids)
+                ('company_id', 'in', user.company_ids.ids),
+                ('id', '=', 2),
+                ('id', '=', 1)
             ]
         </field>
         <field name="global" eval="True"/>
