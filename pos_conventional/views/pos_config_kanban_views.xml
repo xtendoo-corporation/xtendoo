@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_config_kanban_inherit" model="ir.ui.view">
+        <field name="name">pos.config.kanban.view.inherit.conventional</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_config_kanban"/>
+        <field name="arch" type="xml">
+            <!-- Añadir el campo pos_non_touch a los campos disponibles -->
+            <xpath expr="//field[@name='statistics_for_current_session']" position="after">
+                <field name="pos_non_touch"/>
+            </xpath>
+
+            <!-- Añadir un badge visual debajo del nombre -->
+            <xpath expr="//div[@name='card_title']//field[@name='name']" position="after">
+                <div t-if="record.pos_non_touch.raw_value" class="mt-1">
+                    <span class="badge text-bg-warning">
+                        POS No Táctil
+                    </span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
