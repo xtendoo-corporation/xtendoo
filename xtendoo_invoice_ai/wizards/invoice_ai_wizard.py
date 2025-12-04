@@ -110,7 +110,7 @@ Instrucciones:
 - Fechas en formato YYYY-MM-DD
 - Numéricos con punto decimal (no comas)
 - Detecta proveedor (nombre, NIF/CIF, email, teléfono, dirección)
-- Detecta si existe un  producto en odoo igual que el de la línea extraido, por ejemplo Diesel e+, e incorpora el impuesto que tenga en la ficha de producto de odoo 
+- Detecta si existe un  producto en odoo igual que el de la línea extraido, por ejemplo Diesel e+, e incorpora el impuesto que tenga en la ficha de producto de odoo
 - Número de factura del proveedor
 - Fecha de factura y vencimiento
 - Divisa
@@ -1096,3 +1096,4 @@ class XtendooInvoiceAIWizard(models.TransientModel):
                 "default_move_type": "in_invoice",
             },
         }
+

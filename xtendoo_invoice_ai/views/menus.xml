@@ -2,7 +2,7 @@
 <odoo>
     <!-- Acción del wizard - DEBE IR PRIMERO -->
     <record id="action_xtendoo_invoice_ai_wizard" model="ir.actions.act_window">
-        <field name="name">Import Invoice with AI</field>
+        <field name="name">📄 Importar Factura con IA</field>
         <field name="res_model">xtendoo.invoice.ai.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
@@ -32,16 +32,6 @@
         <field name="view_id" ref="view_xtendoo_invoice_ai_job_form"/>
         <field name="act_window_id" ref="action_xtendoo_invoice_ai_job"/>
     </record>
-
-    <!-- Menú principal: Facturación → Proveedores → Importar factura con IA -->
-    <menuitem
-        id="menu_xtendoo_invoice_ai_import"
-        name="Import Invoice with AI"
-        parent="account.menu_finance_payables"
-        action="action_xtendoo_invoice_ai_wizard"
-        sequence="50"
-        groups="account.group_account_invoice"
-    />
 
     <!-- Menú para ver histórico de trabajos -->
     <menuitem
