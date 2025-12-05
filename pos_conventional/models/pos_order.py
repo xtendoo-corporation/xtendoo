@@ -59,6 +59,23 @@ class PosOrder(models.Model):
             if not self.currency_id:
                 self.currency_id = self.session_id.currency_id or self.pricelist_id.currency_id or self.company_id.currency_id
 
+    def write(self, vals):
+        """
+        Override write para asegurar que los impuestos persistan correctamente.
+
+        Cuando se guarda un pedido POS desde el backend, se asegura que tax_ids
+        esté sincronizado con tax_ids_after_fiscal_position antes del guardado.
+        """
+        # Sincronizar tax_ids antes del guardado para líneas que lo necesiten
+        for order in self:
+            for line in order.lines:
+                if line.tax_ids_after_fiscal_position and not line.tax_ids:
+                    line.with_context(skip_inverse=True).write({
+                        'tax_ids': [(6, 0, line.tax_ids_after_fiscal_position.ids)]
+                    })
+
+        return super().write(vals)
+
     def _compute_prices(self):
         """Sobrescribir para asegurar que la moneda esté configurada antes de calcular"""
         for order in self:
