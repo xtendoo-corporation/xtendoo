@@ -12,5 +12,31 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Heredar la vista form de pos.order para asignar el controller de barcode -->
+    <record id="view_pos_order_form_inherit_barcode" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.barcode</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <!-- Asignar el controller personalizado con js_class para escaneo de barcode -->
+            <xpath expr="//form" position="attributes">
+                <attribute name="js_class">pos_order_barcode_form</attribute>
+            </xpath>
+
+            <!-- Ocultar el botón original de Invoice en el header -->
+            <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace"/>
+
+            <!-- Añadir botón de Validar y Facturar después del botón Payment -->
+            <xpath expr="//header/button[@name='%(point_of_sale.action_pos_payment)d']" position="after">
+                <button name="action_validate_and_invoice"
+                        string="Validar y Facturar"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'paid' or is_invoiced"
+                        confirm="¿Desea validar este pedido y crear la factura?"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
 

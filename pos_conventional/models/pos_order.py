@@ -1,9 +1,80 @@
+import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class PosOrder(models.Model):
     _inherit = 'pos.order'
+
+    @api.model
+    def get_product_line_data_by_barcode(self, barcode, pricelist_id=False, fiscal_position_id=False, partner_id=False):
+        """
+        Busca un producto por código de barras y devuelve los datos necesarios
+        para crear una línea de pedido POS.
+
+        Este método es llamado desde JavaScript para obtener todos los datos
+        necesarios antes de crear la línea en el cliente.
+
+        Args:
+            barcode: Código de barras a buscar
+            pricelist_id: ID de la lista de precios del pedido
+            fiscal_position_id: ID de la posición fiscal del pedido
+            partner_id: ID del cliente del pedido
+
+        Returns:
+            dict: Datos del producto y valores para la línea
+        """
+        # Buscar producto por código de barras
+        Product = self.env['product.product']
+        product = Product.search([('barcode', '=', barcode)], limit=1)
+
+        # Fallback: buscar por referencia interna (default_code)
+        if not product:
+            product = Product.search([('default_code', '=', barcode)], limit=1)
+
+        if not product:
+            return {
+                'success': False,
+                'message': _("No se encontró ningún producto con el código: %s") % barcode
+            }
+
+        # Obtener precio desde la lista de precios
+        price_unit = product.lst_price
+        if pricelist_id:
+            pricelist = self.env['product.pricelist'].browse(pricelist_id)
+            partner = self.env['res.partner'].browse(partner_id) if partner_id else False
+            price_unit = pricelist._get_product_price(
+                product,
+                1.0,
+                partner=partner,
+                uom=product.uom_id
+            )
+
+        # Obtener impuestos aplicables
+        taxes = product.taxes_id.filtered(
+            lambda t: t.company_id == self.env.company
+        )
+
+        # Aplicar posición fiscal si existe
+        if fiscal_position_id:
+            fiscal_position = self.env['account.fiscal.position'].browse(fiscal_position_id)
+            taxes = fiscal_position.map_tax(taxes)
+
+        return {
+            'success': True,
+            'product': {
+                'id': product.id,
+                'display_name': product.display_name,
+            },
+            'line_vals': {
+                'full_product_name': product.display_name,
+                'qty': 1.0,
+                'price_unit': price_unit,
+                'tax_ids': taxes.ids,
+            }
+        }
 
     @api.model
     def default_get(self, fields_list):
@@ -102,6 +173,89 @@ class PosOrder(models.Model):
         # Llamar al método padre que hace los cálculos reales
         return super()._compute_prices()
 
+    def action_validate_and_invoice(self):
+
+        self.ensure_one()
+
+        # Validaciones previas
+        if self.state not in ['draft', 'paid']:
+            raise UserError(_('Solo se pueden validar pedidos en estado borrador o pagado.'))
+
+        if not self.lines:
+            raise UserError(_('No se puede validar un pedido sin líneas de producto.'))
+
+        if not self.payment_ids:
+            raise UserError(_('No se puede validar un pedido sin pagos registrados.'))
+
+        if not self.config_id.invoice_journal_id:
+            raise UserError(_('No hay un diario de facturación configurado para este punto de venta.'))
+
+        # Verificar que el pedido esté pagado
+        if not self._is_pos_order_paid():
+            raise UserError(_('El pedido no está completamente pagado. Faltan %.2f %s') % (
+                self.amount_total - self.amount_paid,
+                self.currency_id.symbol
+            ))
+
+        # Si ya tiene factura, no crear otra
+        if self.account_move:
+            raise UserError(_('Este pedido ya tiene una factura asociada: %s') % self.account_move.name)
+
+        # Marcar para facturar
+        self.write({'to_invoice': True})
+
+        # Si el pedido está en draft, marcarlo como pagado
+        if self.state == 'draft':
+            try:
+                self.action_pos_order_paid()
+            except Exception as e:
+                _logger.exception("Error al marcar pedido como pagado: %s", str(e))
+                raise UserError(_('Error al validar el pedido: %s') % str(e))
+
+        # Crear picking si es necesario (para contabilidad anglosajona)
+        if self.company_id.anglo_saxon_accounting and self.session_id.update_stock_at_closing and self.session_id.state != 'closed':
+            self._create_order_picking()
+
+        # Generar la factura usando el método oficial de Odoo POS
+        try:
+            invoice = self._generate_pos_order_invoice()
+            _logger.info(
+                "POS Order %s: Factura %s creada correctamente desde backend",
+                self.name, invoice.name
+            )
+        except Exception as e:
+            _logger.exception("Error al generar factura: %s", str(e))
+            raise UserError(_('Error al generar la factura: %s') % str(e))
+
+        # Retornar acción para imprimir la factura (abre el PDF)
+        return self.env.ref('account.account_invoices').report_action(invoice)
+
+    def action_print_pos_receipt(self):
+        """
+        Imprime el recibo/ticket del pedido POS.
+
+        Utiliza el reporte estándar de Odoo para tickets POS si existe,
+        o genera uno compatible con impresoras de tickets.
+
+        Returns:
+            dict: Acción de reporte para imprimir el ticket
+        """
+        self.ensure_one()
+
+        # Buscar el reporte de ticket POS
+        # En Odoo 19, el ticket se genera normalmente desde el frontend
+        # pero podemos usar un reporte PDF para el backend
+        report = self.env.ref('point_of_sale.pos_order_report', raise_if_not_found=False)
+
+        if report:
+            return report.report_action(self)
+
+        # Si no existe el reporte estándar, intentar con el de factura simplificada
+        if self.account_move:
+            return self.account_move.action_invoice_print()
+
+        raise UserError(_('No se encontró un reporte de ticket disponible.'))
+
 
     def action_close_pos_session_wizard(self):
         """
@@ -139,96 +293,196 @@ class PosOrder(models.Model):
             'context': dict(self.env.context),
         }
 
-    def add_product_by_barcode(self, barcode):
+    def add_product_by_barcode(self, barcode=None, product_id=None, line_vals=None):
         """
-        Añade un producto al pedido POS mediante lectura de código de barras.
+        Añade un producto al pedido POS mediante código de barras o product_id.
 
-        Este método es llamado desde el frontend cuando se escanea un código de barras
-        en el formulario del pedido POS (backend).
+        Este método es llamado desde el controlador JavaScript cuando
+        se detecta un escaneo de código de barras.
 
-        :param barcode: Código de barras escaneado
-        :return: Dict con resultado de la operación
+        Args:
+            barcode: Código de barras escaneado (opcional si se pasa product_id)
+            product_id: ID del producto a añadir (opcional si se pasa barcode)
+            line_vals: Valores precalculados para la línea (opcional)
+
+        Returns:
+            dict: Resultado de la operación con 'success' y 'message'
         """
         self.ensure_one()
 
-        # Validar que el pedido esté en borrador
         if self.state != 'draft':
             return {
                 'success': False,
-                'message': _('Cannot add products to a validated order')
+                'message': _("No se pueden añadir productos a un pedido que no está en borrador.")
             }
 
-        # Buscar producto por código de barras
-        product = self.env['product.product'].search([
-            ('barcode', '=', barcode),
-            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
-        ], limit=1)
+        Product = self.env['product.product']
 
-        # Fallback: buscar por referencia interna
-        if not product:
-            product = self.env['product.product'].search([
-                ('default_code', '=', barcode),
-                '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
-            ], limit=1)
-
-        if not product:
+        # Obtener el producto por ID o por código de barras
+        if product_id:
+            product = Product.browse(product_id)
+            if not product.exists():
+                return {
+                    'success': False,
+                    'message': _("Producto no encontrado con ID: %s") % product_id
+                }
+        elif barcode:
+            # Buscar producto por código de barras
+            product = Product.search([('barcode', '=', barcode)], limit=1)
+            # Fallback: buscar por referencia interna (default_code)
+            if not product:
+                product = Product.search([('default_code', '=', barcode)], limit=1)
+            if not product:
+                return {
+                    'success': False,
+                    'message': _("No se encontró ningún producto con el código: %s") % barcode
+                }
+        else:
             return {
                 'success': False,
-                'message': _('Product not found with barcode: %s', barcode)
+                'message': _("Debe proporcionar un código de barras o ID de producto.")
             }
 
-        # Verificar que el producto pueda venderse
-        if not product.sale_ok:
+
+        # Buscar si ya existe una línea con este producto para incrementar cantidad
+        existing_line = self.lines.filtered(lambda l: l.product_id.id == product.id)
+
+        if existing_line:
+            # Incrementar cantidad en la línea existente
+            line = existing_line[0]
+            new_qty = line.qty + 1
+
+            # Obtener precio con descuento
+            price_unit = line.price_unit
+            discount = line.discount or 0.0
+            price = price_unit * (1 - discount / 100.0)
+
+            # Usar tax_ids_after_fiscal_position si existe, sino tax_ids
+            taxes = line.tax_ids_after_fiscal_position or line.tax_ids
+
+            # Calcular subtotales
+            price_subtotal = price * new_qty
+            price_subtotal_incl = price * new_qty
+
+            if taxes:
+                tax_results = taxes.compute_all(
+                    price,
+                    currency=self.currency_id,
+                    quantity=new_qty,
+                    product=product,
+                    partner=self.partner_id,
+                )
+                price_subtotal = tax_results['total_excluded']
+                price_subtotal_incl = tax_results['total_included']
+
+            line.write({
+                'qty': new_qty,
+                'price_subtotal': price_subtotal,
+                'price_subtotal_incl': price_subtotal_incl,
+            })
+
+            # Forzar recálculo de totales del pedido (ejecuta el compute)
+            self._compute_prices()
+
+            _logger.info(
+                "POS Order %s: Incrementada cantidad del producto %s a %s",
+                self.name, product.display_name, new_qty
+            )
+            return {
+                'success': True,
+                'message': _("Cantidad actualizada: %s x %s") % (new_qty, product.display_name)
+            }
+
+        # Crear nueva línea de pedido
+        try:
+            line_vals = self._prepare_order_line_vals(product)
+            new_line = self.env['pos.order.line'].create(line_vals)
+
+            # Ejecutar onchange de la línea para calcular subtotales
+            new_line._onchange_qty()
+
+            # Forzar recálculo de totales del pedido (ejecuta el compute)
+            self._compute_prices()
+
+            _logger.info(
+                "POS Order %s: Añadido producto %s mediante escaneo de código de barras",
+                self.name, product.display_name
+            )
+
+            return {
+                'success': True,
+                'message': _("Añadido: %s") % product.display_name
+            }
+
+        except Exception as e:
+            _logger.exception("Error al añadir producto por código de barras: %s", str(e))
             return {
                 'success': False,
-                'message': _('Product "%s" cannot be sold', product.name)
+                'message': _("Error al añadir el producto: %s") % str(e)
             }
 
-        # Obtener precio del producto según la tarifa del pedido
-        pricelist = self.pricelist_id
+    def _prepare_order_line_vals(self, product, qty=1.0):
+        """
+        Prepara los valores para crear una línea de pedido POS.
+
+        Reutiliza la lógica de precios y taxes del sistema.
+
+        Args:
+            product: Producto a añadir
+            qty: Cantidad (por defecto 1.0)
+
+        Returns:
+            dict: Valores para crear la línea
+        """
+        self.ensure_one()
+
+        # Obtener precio desde la lista de precios
+        pricelist = self.pricelist_id or self.config_id.pricelist_id
         if pricelist:
-            price = pricelist._get_product_price(
+            price_unit = pricelist._get_product_price(
                 product,
-                1.0,
+                qty,
+                partner=self.partner_id,
                 uom=product.uom_id
             )
         else:
-            price = product.lst_price
+            price_unit = product.lst_price
 
-        # Obtener impuestos del producto
-        taxes = product.taxes_id.filtered(
+        # Obtener impuestos aplicables del producto
+        product_taxes = product.taxes_id.filtered(
             lambda t: t.company_id == self.company_id
         )
 
         # Aplicar posición fiscal si existe
+        taxes_after_fp = product_taxes
         if self.fiscal_position_id:
-            taxes = self.fiscal_position_id.map_tax(taxes)
+            taxes_after_fp = self.fiscal_position_id.map_tax(product_taxes)
 
-        # Buscar si ya existe una línea con este producto
-        existing_line = self.lines.filtered(
-            lambda l: l.product_id == product and not l.refunded_orderline_id
-        )
+        # Calcular subtotales (sin descuento por ahora)
+        price = price_unit  # precio sin descuento
+        price_subtotal = price * qty
+        price_subtotal_incl = price * qty
 
-        if existing_line:
-            # Si existe, incrementar cantidad
-            existing_line = existing_line[0]
-            existing_line.qty += 1
-            action = _('Quantity increased')
-        else:
-            # Si no existe, crear nueva línea
-            self.env['pos.order.line'].create({
-                'order_id': self.id,
-                'product_id': product.id,
-                'qty': 1,
-                'price_unit': price,
-                'tax_ids': [(6, 0, taxes.ids)],
-                'full_product_name': product.display_name,
-            })
-            action = _('Product added')
+        if taxes_after_fp:
+            tax_results = taxes_after_fp.compute_all(
+                price,
+                currency=self.currency_id,
+                quantity=qty,
+                product=product,
+                partner=self.partner_id,
+            )
+            price_subtotal = tax_results['total_excluded']
+            price_subtotal_incl = tax_results['total_included']
 
         return {
-            'success': True,
-            'product_name': product.name,
-            'action': action,
+            'order_id': self.id,
+            'product_id': product.id,
+            'full_product_name': product.display_name,
+            'qty': qty,
+            'price_unit': price_unit,
+            'discount': 0.0,
+            'price_subtotal': price_subtotal,
+            'price_subtotal_incl': price_subtotal_incl,
+            'tax_ids': [(6, 0, product_taxes.ids)],
         }
 
