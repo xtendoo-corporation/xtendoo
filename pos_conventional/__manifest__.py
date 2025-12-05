@@ -18,6 +18,7 @@
         'security/ir.model.access.csv',
         'views/res_config_settings_views.xml',
         'views/pos_config_kanban_views.xml',
+        'views/pos_config_views.xml',
         'views/pos_session_opening_wizard_views.xml',
         'views/pos_session_closing_wizard_views.xml',
         'views/pos_order_views.xml',

@@ -10,6 +10,13 @@ class PosConfig(models.Model):
         help='Activa un modo de punto de venta optimizado para equipos sin pantalla táctil.'
     )
 
+    default_partner_id = fields.Many2one(
+        'res.partner',
+        string='Cliente por Defecto',
+        help='Cliente que se asignará automáticamente a los nuevos pedidos POS creados desde el backend.',
+        domain="[('customer_rank', '>', 0)]",
+    )
+
     def open_ui(self):
         """
         Override del método open_ui para interceptar la apertura

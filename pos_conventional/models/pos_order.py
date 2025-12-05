@@ -18,11 +18,15 @@ class PosOrder(models.Model):
         if 'amount_return' not in res:
             res['amount_return'] = 0.0
 
-        # Buscar sesión abierta del usuario
-        session = self.env['pos.session'].search([
-            ('user_id', '=', self.env.user.id),
-            ('state', '=', 'opened')
-        ], limit=1)
+        # Buscar sesión abierta del usuario o usar la del contexto
+        session_id = self.env.context.get('default_session_id')
+        if session_id:
+            session = self.env['pos.session'].browse(session_id)
+        else:
+            session = self.env['pos.session'].search([
+                ('user_id', '=', self.env.user.id),
+                ('state', '=', 'opened')
+            ], limit=1)
 
         if session:
             if 'session_id' not in res:
@@ -33,6 +37,11 @@ class PosOrder(models.Model):
                 res['pricelist_id'] = session.config_id.pricelist_id.id
             if 'currency_id' not in res:
                 res['currency_id'] = session.currency_id.id
+
+            # Establecer cliente por defecto si está configurado y no hay uno ya establecido
+            if 'partner_id' in fields_list and not res.get('partner_id'):
+                if session.config_id.default_partner_id:
+                    res['partner_id'] = session.config_id.default_partner_id.id
         else:
             # Si no hay sesión, usar valores por defecto de la compañía
             company = self.env.company
