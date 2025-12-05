@@ -139,3 +139,96 @@ class PosOrder(models.Model):
             'context': dict(self.env.context),
         }
 
+    def add_product_by_barcode(self, barcode):
+        """
+        Añade un producto al pedido POS mediante lectura de código de barras.
+
+        Este método es llamado desde el frontend cuando se escanea un código de barras
+        en el formulario del pedido POS (backend).
+
+        :param barcode: Código de barras escaneado
+        :return: Dict con resultado de la operación
+        """
+        self.ensure_one()
+
+        # Validar que el pedido esté en borrador
+        if self.state != 'draft':
+            return {
+                'success': False,
+                'message': _('Cannot add products to a validated order')
+            }
+
+        # Buscar producto por código de barras
+        product = self.env['product.product'].search([
+            ('barcode', '=', barcode),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ], limit=1)
+
+        # Fallback: buscar por referencia interna
+        if not product:
+            product = self.env['product.product'].search([
+                ('default_code', '=', barcode),
+                '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+            ], limit=1)
+
+        if not product:
+            return {
+                'success': False,
+                'message': _('Product not found with barcode: %s', barcode)
+            }
+
+        # Verificar que el producto pueda venderse
+        if not product.sale_ok:
+            return {
+                'success': False,
+                'message': _('Product "%s" cannot be sold', product.name)
+            }
+
+        # Obtener precio del producto según la tarifa del pedido
+        pricelist = self.pricelist_id
+        if pricelist:
+            price = pricelist._get_product_price(
+                product,
+                1.0,
+                uom=product.uom_id
+            )
+        else:
+            price = product.lst_price
+
+        # Obtener impuestos del producto
+        taxes = product.taxes_id.filtered(
+            lambda t: t.company_id == self.company_id
+        )
+
+        # Aplicar posición fiscal si existe
+        if self.fiscal_position_id:
+            taxes = self.fiscal_position_id.map_tax(taxes)
+
+        # Buscar si ya existe una línea con este producto
+        existing_line = self.lines.filtered(
+            lambda l: l.product_id == product and not l.refunded_orderline_id
+        )
+
+        if existing_line:
+            # Si existe, incrementar cantidad
+            existing_line = existing_line[0]
+            existing_line.qty += 1
+            action = _('Quantity increased')
+        else:
+            # Si no existe, crear nueva línea
+            self.env['pos.order.line'].create({
+                'order_id': self.id,
+                'product_id': product.id,
+                'qty': 1,
+                'price_unit': price,
+                'tax_ids': [(6, 0, taxes.ids)],
+                'full_product_name': product.display_name,
+            })
+            action = _('Product added')
+
+        return {
+            'success': True,
+            'product_name': product.name,
+            'action': action,
+        }
+
