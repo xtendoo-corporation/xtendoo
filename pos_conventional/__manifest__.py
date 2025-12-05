@@ -27,6 +27,7 @@
         'web.assets_backend': [
             'pos_conventional/static/src/js/pos_order_list_controller.js',
             'pos_conventional/static/src/js/pos_order_form_barcode_controller.js',
+            'pos_conventional/static/src/js/pos_receipt_print.js',
             'pos_conventional/static/src/xml/pos_order_list_view.xml',
         ],
     },
