@@ -1,4 +1,4 @@
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
 import json
 import logging
@@ -14,19 +14,27 @@ class XtendooAppAssistanceController(http.Controller):
             data = json.loads(raw)
             print(f"Datos recibidos: {data}")
 
-            telefono = data.get('telefono')
-            pin = data.get('pin')
+            telefono = str(data.get('telefono', ''))
+            pin = str(data.get('pin', ''))
             latitud = data.get('latitud')
             longitud = data.get('longitud')
 
-            print(f"Datos recibidos: telefono:{telefono}, pin:{pin}, latitud:{latitud}, longitud:{longitud}")
+            print(f"[DEBUG] Teléfono recibido (como char): '{telefono}' (type: {type(telefono)})")
+            print(f"[DEBUG] PIN recibido (como char): '{pin}' (type: {type(pin)})")
+
+            # Mostrar todos los empleados con su pin y teléfono
+            all_employees = request.env['hr.employee'].sudo().search([])
+            print("[DEBUG] Listado de todos los empleados (pin, teléfono):")
+            for emp in all_employees:
+                print(f"  - Empleado: {emp.name}, PIN: '{emp.pin}', Teléfono: '{emp.mobile_phone}'")
 
             if not pin or not telefono:
                 print("pin o telefono no proporcionados")
                 return request.make_json_response({'status': 'error', 'message': 'pin o telefono no proporcionados'})
 
-            employee = request.env ['hr.employee'].sudo().search([('pin', "=", pin), ('phone', "=", telefono)], limit=1)
+            employee = request.env['hr.employee'].sudo().search([('pin', '=', pin), ('mobile_phone', '=', telefono)], limit=1)
 
+            print(f"[DEBUG] Realizando búsqueda de empleado con PIN='{pin}' y Teléfono='{telefono}'")
             if not employee:
                 print ("Empleado no encontrado")
 
