@@ -1,6 +1,6 @@
 {
-    'name': 'todopintura_pos_receipt',
-    'summary': 'Personalización de recibos POS para TodoPinturas',
+    'name': 'xtendoo_pos_receipt',
+    'summary': 'Personalización de recibos POS ',
     'version': '19.0.0',
     'author': 'Abraham - Xtendoo',
     'category': 'Point of Sale',
