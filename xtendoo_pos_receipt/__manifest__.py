@@ -7,8 +7,8 @@
     'depends': ['point_of_sale', 'l10n_es_pos'],
     'assets': {
         'point_of_sale._assets_pos': [
-            'todopintura_pos_receipt/static/src/xml/receipt_templates.xml',
-            'todopintura_pos_receipt/static/src/js/receipt_order.js',
+            'xtendoo_pos_receipt/static/src/xml/receipt_templates.xml',
+            'xtendoo_pos_receipt/static/src/js/receipt_order.js',
         ],
     },
     'data': [],
