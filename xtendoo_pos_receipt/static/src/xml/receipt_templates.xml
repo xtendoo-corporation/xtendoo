@@ -27,18 +27,13 @@
                         </t>
                         <div t-if="company.vat"><strong>NIF:</strong>
                             <t t-esc="company.vat"/></div>
-                        <div t-if="props.order &amp;&amp; (props.order.user_id || props.order.employee_id)">
-                            <div class="served-by" style="font-size:14px; margin-top:4px;">
-                                Servido por <t
-                                t-esc="(props.order.user_id &amp;&amp; (props.order.user_id.name || props.order.user_id[1])) || (props.order.employee_id &amp;&amp; (props.order.employee_id.name || props.order.employee_id[1])) || ''"/>
-                            </div>
-                        </div>
                     </t>
                     <div class="pt-2"/>
                 </div>
             </t>
         </xpath>
         <xpath expr="//span[hasclass('pos-receipt-vat')]" position="replace"/>
+
     </t>
 
     <t t-name="todopintura_pos_custom.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
@@ -141,6 +136,12 @@
         <xpath expr="//div[contains(., 'Powered by') and hasclass('pos-receipt-order-data')]" position="replace"/>
 
         <xpath expr="//div[hasclass('after-footer')]" position="before">
+            <!-- Servido por -->
+            <div t-if="order?.getCashierName()" class="pos-receipt-center-align pt-3 fw-bolder">
+                <div>Servido por: <t t-esc="order.getCashierName()"/></div>
+            </div>
+
+            <!-- Footer personalizado o por defecto -->
             <div t-if="order.config.receipt_footer" class="pos-receipt-center-align pt-4 fw-bolder text-center" style="white-space:pre-line">
                 <t t-esc="order.config.receipt_footer"/>
             </div>
