@@ -16,11 +16,15 @@
                     <t t-esc="props.order &amp;&amp; props.order.name ? ' Nº ' + props.order.name : ''"/>
                     <t t-if="company &amp;&amp; Object.keys(company).length">
                         <div><t t-esc="company.name || ''"/></div>
-                        <div t-if="company.street || company.zip || company.city">
-                            <t t-esc="company.street || ''"/>
-                            <t t-if="company.zip">, <t t-esc="company.zip"/></t>
-                            <t t-if="company.city"> <t t-esc="company.city"/></t>
-                        </div>
+                        <t t-if="company.street">,
+                            <t t-esc="company.street"/>
+                            <br/>
+                        </t>
+                        <t t-if="company.zip || company.city">
+                            <t t-esc="company.zip"/>,
+                            <t t-esc="company.city"/>
+                            <br/>
+                        </t>
                         <div t-if="company.vat"><strong>NIF:</strong>
                             <t t-esc="company.vat"/></div>
                         <div t-if="props.order &amp;&amp; (props.order.user_id || props.order.employee_id)">
@@ -94,7 +98,8 @@
                                         <span t-esc="formatCurrency(tax_group.base_amount_currency)"/>
                                     </t>
                                 </span>
-                                <span t-out="formatCurrency(tax_group.tax_amount_currency)" class="ms-auto font-monospace"/>
+                                <span t-out="formatCurrency(tax_group.tax_amount_currency)"
+                                      class="ms-auto font-monospace"/>
                             </div>
                         </t>
                     </div>
@@ -102,8 +107,8 @@
 
                 <div class="pos-receipt-amount receipt-total fw-bolder d-flex justify-content-between"
                      style="border-bottom: 1px dashed black; padding-bottom: 5px; margin-bottom: 5px;">
-                    <span class="label-total">TOTAL</span>
-                    <span t-out="order.currencyDisplayPrice" class="font-monospace"/>
+                    <span class="label-total" style="font-weight: bold;">TOTAL</span>
+                    <span t-out="order.currencyDisplayPrice" class="font-monospace" style="font-weight: bold;"/>
                 </div>
 
                 <div class="paymentlines pt-1">
