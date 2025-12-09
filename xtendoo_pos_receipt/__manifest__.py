@@ -1,0 +1,18 @@
+{
+    'name': 'todopintura_pos_receipt',
+    'summary': 'Personalización de recibos POS para TodoPinturas',
+    'version': '19.0.0',
+    'author': 'Abraham - Xtendoo',
+    'category': 'Point of Sale',
+    'depends': ['point_of_sale', 'l10n_es_pos'],
+    'assets': {
+        'point_of_sale._assets_pos': [
+            'todopintura_pos_receipt/static/src/xml/receipt_templates.xml',
+            'todopintura_pos_receipt/static/src/js/receipt_order.js',
+        ],
+    },
+    'data': [],
+    'installable': True,
+    'application': False,
+    'auto_install': False,
+}
