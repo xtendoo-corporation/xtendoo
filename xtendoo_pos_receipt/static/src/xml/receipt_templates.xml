@@ -141,20 +141,13 @@
         <xpath expr="//div[contains(., 'Powered by') and hasclass('pos-receipt-order-data')]" position="replace"/>
 
         <xpath expr="//div[hasclass('after-footer')]" position="before">
-    <t t-set="data" t-value="props.data || (props.order &amp;&amp; (props.order.raw || props.order))"/>
-            <t t-set="company"
-               t-value="props.order.company || data.company || (env &amp;&amp; env.pos &amp;&amp; env.pos.company_printable) || (env &amp;&amp; env.pos &amp;&amp; env.pos.company) || {}"/>
-            <t t-if="(props.order &amp;&amp; props.order.pos_receipt_footer) || (company &amp;&amp; company.pos_receipt_footer)">
-            <div class="pos-receipt-center-align pt-4 fw-bolder">
-            <t t-esc="props.order &amp;&amp; props.order.pos_receipt_footer ? props.order.pos_receipt_footer : company.pos_receipt_footer"/>
-        </div>
-            </t>
-            <t t-else="">
-        <div class="pos-receipt-center-align pt-4 fw-bolder">
-            Gracias por su visita
-        </div>
-    </t>
-</xpath>
+            <div t-if="order.config.receipt_footer" class="pos-receipt-center-align pt-4 fw-bolder text-center" style="white-space:pre-line">
+                <t t-esc="order.config.receipt_footer"/>
+            </div>
+            <div t-else="" class="pos-receipt-center-align pt-4 fw-bolder">
+                Gracias por su visita
+            </div>
+        </xpath>
 
      </t>
  </templates>
