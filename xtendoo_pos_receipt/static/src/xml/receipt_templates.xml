@@ -16,7 +16,7 @@
                     <t t-esc="props.order &amp;&amp; props.order.name ? ' Nº ' + props.order.name : ''"/>
                     <t t-if="company &amp;&amp; Object.keys(company).length">
                         <div><t t-esc="company.name || ''"/></div>
-                        <t t-if="company.street">,
+                        <t t-if="company.street">
                             <t t-esc="company.street"/>
                             <br/>
                         </t>
@@ -141,9 +141,20 @@
         <xpath expr="//div[contains(., 'Powered by') and hasclass('pos-receipt-order-data')]" position="replace"/>
 
         <xpath expr="//div[hasclass('after-footer')]" position="before">
+    <t t-set="data" t-value="props.data || (props.order &amp;&amp; (props.order.raw || props.order))"/>
+            <t t-set="company"
+               t-value="props.order.company || data.company || (env &amp;&amp; env.pos &amp;&amp; env.pos.company_printable) || (env &amp;&amp; env.pos &amp;&amp; env.pos.company) || {}"/>
+            <t t-if="(props.order &amp;&amp; props.order.pos_receipt_footer) || (company &amp;&amp; company.pos_receipt_footer)">
             <div class="pos-receipt-center-align pt-4 fw-bolder">
-                Gracias por su visita
-            </div>
-        </xpath>
+            <t t-esc="props.order &amp;&amp; props.order.pos_receipt_footer ? props.order.pos_receipt_footer : company.pos_receipt_footer"/>
+        </div>
+            </t>
+            <t t-else="">
+        <div class="pos-receipt-center-align pt-4 fw-bolder">
+            Gracias por su visita
+        </div>
+    </t>
+</xpath>
+
      </t>
  </templates>
