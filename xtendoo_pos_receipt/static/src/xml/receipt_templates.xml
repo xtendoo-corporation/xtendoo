@@ -106,9 +106,9 @@
                 </t>
 
                 <div class="pos-receipt-amount receipt-total fw-bolder d-flex justify-content-between"
-                     style="border-bottom: 1px dashed black; padding-bottom: 5px; margin-bottom: 5px;">
-                    <span class="label-total" style="font-weight: bold;">TOTAL</span>
-                    <span t-out="order.currencyDisplayPrice" class="font-monospace" style="font-weight: bold;"/>
+                     style="border-bottom: 1px dashed black; padding-bottom: 5px; margin-bottom: 5px; font-size: 18px;">
+                    <span class="label-total" style="font-weight: 900;">TOTAL</span>
+                    <span t-out="order.currencyDisplayPrice" class="font-monospace" style="font-weight: 900;"/>
                 </div>
 
                 <div class="paymentlines pt-1">
