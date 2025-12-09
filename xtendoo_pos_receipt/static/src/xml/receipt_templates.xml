@@ -140,12 +140,11 @@
             <div t-if="order?.getCashierName()" class="pos-receipt-center-align pt-3 fw-bolder">
                 <div>Servido por: <t t-esc="order.getCashierName()"/></div>
             </div>
-
             <!-- Footer personalizado o por defecto -->
-            <div t-if="order.config.receipt_footer" class="pos-receipt-center-align pt-4 fw-bolder text-center" style="white-space:pre-line">
+            <div t-if="order.config.receipt_footer" class="pos-receipt-center-align pt-2 fw-bolder text-center" style="white-space:pre-line">
                 <t t-esc="order.config.receipt_footer"/>
             </div>
-            <div t-else="" class="pos-receipt-center-align pt-4 fw-bolder">
+            <div t-else="" class="pos-receipt-center-align pt-2 fw-bolder">
                 Gracias por su visita
             </div>
         </xpath>
