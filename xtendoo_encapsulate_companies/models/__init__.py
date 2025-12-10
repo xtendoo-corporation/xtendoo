@@ -7,3 +7,7 @@ from . import partner_industry
 from . import res_bank
 from . import res_partner_bank
 from . import stock_warehouse
+from . import stock_picking_type
+from . import pos_config
+from . import pos_category
+from . import pos_note

@@ -3,7 +3,7 @@
     <record id="product_tag_company_rule" model="ir.rule">
         <field name="name">Etiquetas de producto por compañía</field>
         <field name="model_id" ref="product.model_product_tag"/>
-        <field name="domain_force">[('company_id', '=', user.company_id.id)]</field>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
         <field name="groups" eval="[(4, ref('base.group_user'))]"/>
     </record>
 </odoo>

@@ -3,6 +3,25 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+# Modelos que NO deben tener company_id asignado automáticamente
+EXCLUDED_MODELS = [
+    'ir.sequence',
+    'ir.sequence.date_range',
+    'ir.rule',
+    'ir.model',
+    'ir.model.fields',
+    'ir.model.access',
+    'ir.ui.view',
+    'ir.ui.menu',
+    'ir.actions',
+    'ir.config_parameter',
+    'res.config.settings',
+    'pos.session',
+    'pos.order',
+    'pos.order.line',
+    'pos.payment',
+]
+
 
 # Aplicamos el override directamente al modelo base para evitar el bucle de herencia.
 class Base(models.AbstractModel):
@@ -10,6 +29,10 @@ class Base(models.AbstractModel):
 
     @api.model_create_multi
     def create(self, vals_list):
+        # No asignar company_id a modelos excluidos
+        if self._name in EXCLUDED_MODELS or self._name.startswith('ir.actions.'):
+            return super(Base, self).create(vals_list)
+
         def get_company_id():
             company_id = self.env.context.get('allowed_company_ids')
             if company_id:
@@ -21,8 +44,9 @@ class Base(models.AbstractModel):
             return self.env.company.id
 
         def assign_company(val_dict):
-            # Solo asignar si no existe y no está en vals (None/False también cuenta como asignado)
-            if 'company_id' in self._fields and ('company_id' not in val_dict or not val_dict['company_id']):
+            # Solo asignar si el campo company_id existe en el modelo
+            # Y si company_id NO está presente en vals (ni siquiera como False/None)
+            if 'company_id' in self._fields and 'company_id' not in val_dict:
                 val_dict['company_id'] = get_company_id()
                 _logger.info(
                     f"Asignando company_id={val_dict['company_id']} automáticamente "

@@ -4,8 +4,8 @@
     'description': "Modulo tecnico.",
     'author': "Abraham (Xtendoo)",
     'category': 'Technical',
-    'version': '19.0.1.1.2',
-    'depends': ['base', 'product','contacts','stock'],
+    'version': '19.0.1.2.2',
+    'depends': ['base', 'product', 'contacts', 'stock', 'point_of_sale'],
     'installable': True,
     'application': False,
     'post_init_hook': 'post_init_check_company_id',
@@ -16,5 +16,7 @@
         'security/product_tag_rule.xml',
         'security/partner_rules.xml',
         'security/res_partner_bank.xml',
+        'security/pos_category_rule.xml',
+        'security/pos_note_rule.xml',
     ],
 }
