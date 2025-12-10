@@ -5,24 +5,26 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class XtendooAppAssistanceController(http.Controller):
-    #cambiamos a http pra ver si funciona en vez de json
+
     @http.route('/xtendoo/app/assistance', auth='public', type='http', methods=['POST'], csrf=False)
     def assistance(self, **kwargs):
         try:
             raw = request.httprequest.data.decode('utf-8')
             data = json.loads(raw)
-            print(f"Datos recibidos: {data}")
+            _logger.info(f"Datos recibidos: {data}")
 
             telefono = str(data.get('telefono', ''))
             pin = str(data.get('pin', ''))
             latitud = data.get('latitud')
             longitud = data.get('longitud')
 
-            print(f"[DEBUG] Teléfono: '{telefono}', PIN: '{pin}'")
-
             if not pin or not telefono:
-                return {'status': 'error', 'message': 'PIN o teléfono no proporcionados'}
+                return request.make_json_response({
+                    'status': 'error',
+                    'message': 'PIN o teléfono no proporcionados'
+                })
 
             employee = request.env['hr.employee'].sudo().search([
                 ('pin', '=', pin),
@@ -30,8 +32,11 @@ class XtendooAppAssistanceController(http.Controller):
             ], limit=1)
 
             if not employee:
-                print(f"[ERROR] Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
-                return {'status': 'error', 'message': 'Empleado no encontrado'}
+                _logger.error(f"Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
+                return request.make_json_response({
+                    'status': 'error',
+                    'message': 'Empleado no encontrado'
+                })
 
             last_attendance = request.env['hr.attendance'].sudo().search([
                 ('employee_id', '=', employee.id),
@@ -50,17 +55,17 @@ class XtendooAppAssistanceController(http.Controller):
                 })
                 action = 'Entrada registrada'
 
-            return {
+            return request.make_json_response({
                 'status': 'success',
                 'message': action,
                 'employee': employee.name,
                 'latitud': latitud,
                 'longitud': longitud
-            }
+            })
 
         except Exception as e:
-            _logger.error(f"Error en assistance: {str(e)}")
-            return {
+            _logger.error(f"Error en assistance: {str(e)}", exc_info=True)
+            return request.make_json_response({
                 'status': 'error',
                 'message': f'Error interno del servidor: {str(e)}'
-            }
+            })
