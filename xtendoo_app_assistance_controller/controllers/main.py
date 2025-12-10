@@ -7,7 +7,7 @@ _logger = logging.getLogger(__name__)
 
 class XtendooAppAssistanceController(http.Controller):
     #cambiamos a http pra ver si funciona en vez de json
-    @http.route('/xtendoo/app/assistance', auth='public', type='json', methods=['POST'], csrf=False)
+    @http.route('/xtendoo/app/assistance', auth='public', type='http', methods=['POST'], csrf=False)
     def assistance(self, **kwargs):
         try:
             raw = request.httprequest.data.decode('utf-8')
@@ -29,7 +29,7 @@ class XtendooAppAssistanceController(http.Controller):
                 ('mobile_phone', '=', telefono)
             ], limit=1)
 
-            if not employee:  # ✅ IMPORTANTE: Verificar antes de continuar
+            if not employee:
                 print(f"[ERROR] Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
                 return {'status': 'error', 'message': 'Empleado no encontrado'}
 
