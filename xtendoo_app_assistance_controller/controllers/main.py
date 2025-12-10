@@ -69,3 +69,65 @@ class XtendooAppAssistanceController(http.Controller):
                 'status': 'error',
                 'message': f'Error interno del servidor: {str(e)}'
             })
+
+
+@http.route('/xtendoo/app/get_status', auth='public', type='http', methods=['POST'], csrf=False)
+def get_employee_status(self, **kwargs):
+    """
+    Consulta el estado de asistencia actual del empleado (dentro/fuera).
+    No realiza ninguna acción de fichaje.
+    """
+    try:
+        raw = request.httprequest.data.decode('utf-8')
+        data = json.loads(raw)
+        _logger.info(f"Datos recibidos para consulta de estado: {data}")
+
+        telefono = str(data.get('telefono', ''))
+        pin = str(data.get('pin', ''))
+
+        if not pin or not telefono:
+            return request.make_json_response({
+                'status': 'error',
+                'message': 'PIN o teléfono no proporcionados'
+            })
+
+        employee = request.env['hr.employee'].sudo().search([
+            ('pin', '=', pin),
+            ('mobile_phone', '=', telefono)
+        ], limit=1)
+
+        if not employee:
+            _logger.error(f"Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
+            return request.make_json_response({
+                'status': 'error',
+                'message': 'Empleado no encontrado'
+            })
+
+        # --- Lógica de consulta de estado ---
+
+        # Buscar el registro de asistencia ACTIVO (solo check_in, sin check_out)
+        last_attendance = request.env['hr.attendance'].sudo().search([
+            ('employee_id', '=', employee.id),
+            ('check_out', '=', False)
+        ], limit=1)
+
+        # Si se encuentra un registro sin check_out, significa que el empleado está DENTRO.
+        is_inside = bool(last_attendance)
+
+        # --- Fin Lógica de consulta de estado ---
+
+        message = 'Empleado actualmente fichado dentro.' if is_inside else 'Empleado actualmente fichado fuera.'
+
+        return request.make_json_response({
+            'status': 'success',
+            'is_inside': is_inside,  # <--- La clave para tu app Flutter
+            'message': message,
+            'employee': employee.name,
+        })
+
+    except Exception as e:
+        _logger.error(f"Error en get_employee_status: {str(e)}", exc_info=True)
+        return request.make_json_response({
+            'status': 'error',
+            'message': f'Error interno del servidor: {str(e)}'
+        })
