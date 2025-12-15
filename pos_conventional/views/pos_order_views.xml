@@ -46,16 +46,6 @@
 
             <!-- Ocultar el botón original de Invoice en el header -->
             <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace"/>
-
-            <!-- Añadir botón de Validar y Facturar después del botón Payment -->
-            <xpath expr="//header/button[@name='%(point_of_sale.action_pos_payment)d']" position="after">
-                <button name="action_validate_and_invoice"
-                        string="Validar y Facturar"
-                        type="object"
-                        class="btn-primary"
-                        invisible="state != 'paid' or is_invoiced"
-                        confirm="¿Desea validar este pedido y crear la factura?"/>
-            </xpath>
         </field>
     </record>
 </odoo>
