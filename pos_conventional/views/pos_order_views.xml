@@ -24,6 +24,26 @@
                 <attribute name="js_class">pos_order_barcode_form</attribute>
             </xpath>
 
+            <!-- Ocultar el campo Sesión -->
+            <xpath expr="//field[@name='session_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar el campo Posición Fiscal -->
+            <xpath expr="//field[@name='fiscal_position_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar el campo Ref. del pedido -->
+            <xpath expr="//field[@name='pos_reference']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar el campo Empleado -->
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
             <!-- Ocultar el botón original de Invoice en el header -->
             <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace"/>
 
