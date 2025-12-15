@@ -44,6 +44,11 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
+            <!-- Hacer las líneas del pedido de solo lectura (solo añadir por código de barras) -->
+            <xpath expr="//field[@name='lines']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+
             <!-- Ocultar el botón original de Invoice en el header -->
             <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace"/>
         </field>
