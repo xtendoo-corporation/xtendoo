@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Popup de gestión de balanza serie -->
+    <t t-name="xtd_pos_serial_scale.SerialScalePopup">
+        <Dialog size="'md'">
+            <t t-set-slot="header">
+                <h4 class="modal-title text-center w-100">
+                    <i class="fa fa-balance-scale me-2"/>
+                    Balanza Serie
+                </h4>
+                <button type="button" class="btn-close" aria-label="Close" tabindex="-1" t-on-click="onClose"/>
+            </t>
+
+            <div class="serial-scale-popup-content p-3">
+                <!-- Alerta si no es compatible -->
+                <div t-if="!isSupported" class="alert alert-danger" role="alert">
+                    <i class="fa fa-exclamation-triangle me-2"/>
+                    <strong>Navegador no compatible</strong>
+                    <p class="mb-0 mt-2">
+                        Web Serial API no está disponible en este navegador.
+                        <br/>
+                        <small>Requisitos: Chrome/Edge/Chromium con HTTPS o localhost</small>
+                    </p>
+                </div>
+
+                <!-- Estado de conexión -->
+                <div t-if="isSupported" class="connection-status mb-4">
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded bg-light">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-plug fa-lg me-3"/>
+                            <div>
+                                <div class="fw-bold">Estado de Conexión</div>
+                                <small class="text-muted">Puerto orientativo: <t t-esc="portHint"/></small>
+                            </div>
+                        </div>
+                        <span t-attf-class="badge bg-{{statusColor}} fs-6 px-3 py-2">
+                            <t t-esc="status"/>
+                        </span>
+                    </div>
+
+                    <!-- Mensaje de error -->
+                    <div t-if="errorMessage" class="alert alert-warning mt-3" role="alert">
+                        <i class="fa fa-warning me-2"/>
+                        <t t-esc="errorMessage"/>
+                    </div>
+                </div>
+
+                <!-- Datos de peso (solo si está conectado) -->
+                <div t-if="isConnected" class="weight-data mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <i class="fa fa-balance-scale me-2"/>
+                            Lectura de Peso
+                        </div>
+                        <div class="card-body">
+                            <!-- Peso actual -->
+                            <div class="text-center mb-3">
+                                <div class="display-4 fw-bold text-primary">
+                                    <t t-esc="formatWeight(lastWeight)"/>
+                                </div>
+                                <small class="text-muted">Peso actual</small>
+                            </div>
+
+                            <!-- Línea raw -->
+                            <div class="mt-3 p-2 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Datos raw de balanza:</small>
+                                <code class="text-dark"><t t-esc="lastRawLine"/></code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de conexión -->
+                <div t-if="isSupported" class="connection-buttons d-flex gap-2 justify-content-center">
+                    <button t-if="!isConnected and !isConnecting"
+                            class="btn btn-primary btn-lg px-4"
+                            t-on-click="onConnect">
+                        <i class="fa fa-plug me-2"/>
+                        Conectar
+                    </button>
+
+                    <button t-if="isConnecting"
+                            class="btn btn-warning btn-lg px-4"
+                            disabled="1">
+                        <i class="fa fa-spinner fa-spin me-2"/>
+                        Conectando...
+                    </button>
+
+                    <button t-if="isConnected"
+                            class="btn btn-outline-danger btn-lg px-4"
+                            t-on-click="onDisconnect">
+                        <i class="fa fa-times me-2"/>
+                        Desconectar
+                    </button>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <div class="d-flex gap-2 w-100">
+                    <!-- Botón Aplicar (solo si se puede aplicar a producto) -->
+                    <button t-if="canApply"
+                            class="btn btn-success btn-lg flex-fill"
+                            t-on-click="onApply">
+                        <i class="fa fa-check me-2"/>
+                        Aplicar Peso (<t t-esc="formatWeight(lastWeight)"/>)
+                    </button>
+
+                    <button class="btn btn-secondary btn-lg"
+                            t-att-class="canApply ? '' : 'flex-fill'"
+                            t-on-click="onClose">
+                        Cerrar
+                    </button>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>
+

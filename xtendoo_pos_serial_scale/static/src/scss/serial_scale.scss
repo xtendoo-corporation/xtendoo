@@ -1,0 +1,55 @@
+/* Estilos para el componente de balanza serie */
+
+.serial-scale-button {
+    position: relative;
+
+    &.border-success {
+        border: 2px solid var(--bs-success) !important;
+    }
+
+    .fa-balance-scale {
+        font-size: 1.1em;
+    }
+}
+
+.serial-scale-popup-content {
+    min-height: 200px;
+
+    .weight-data {
+        .display-4 {
+            font-size: 3rem;
+            letter-spacing: -0.02em;
+        }
+    }
+
+    .connection-status {
+        .badge {
+            min-width: 100px;
+            text-align: center;
+        }
+    }
+
+    code {
+        background-color: transparent;
+        font-family: 'Courier New', monospace;
+        word-break: break-all;
+    }
+}
+
+/* Animación para el estado de conexión */
+@keyframes pulse-success {
+    0% {
+        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(25, 135, 84, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+    }
+}
+
+.serial-scale-button.border-success {
+    animation: pulse-success 2s infinite;
+}
+

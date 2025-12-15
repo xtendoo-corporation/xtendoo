@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Template del botón de balanza serie -->
+    <t t-name="xtd_pos_serial_scale.SerialScaleButton">
+        <button t-if="isEnabled"
+                t-att-class="buttonClass"
+                t-on-click="onClick"
+                title="Balanza Serie">
+            <i class="fa fa-balance-scale me-1"/>
+            <i t-attf-class="fa {{statusIcon}} ms-1" style="font-size: 0.7em;"/>
+        </button>
+    </t>
+
+</templates>
+

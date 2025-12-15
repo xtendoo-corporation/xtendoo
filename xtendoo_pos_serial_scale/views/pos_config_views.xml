@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_config_view_form_serial_scale" model="ir.ui.view">
+        <field name="name">pos.config.form.serial.scale</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar sección de configuración de balanza serie -->
+            <xpath expr="//page[@name='connected_devices']" position="inside">
+                <group string="Balanza Serie (Web Serial API)" name="serial_scale_config">
+                    <group>
+                        <field name="xtd_serial_scale_enabled"/>
+                        <field name="xtd_serial_port_hint"
+                               invisible="not xtd_serial_scale_enabled"/>
+                    </group>
+                    <group invisible="not xtd_serial_scale_enabled">
+                        <field name="xtd_serial_baudrate"/>
+                        <field name="xtd_serial_databits"/>
+                        <field name="xtd_serial_stopbits"/>
+                        <field name="xtd_serial_parity"/>
+                        <field name="xtd_serial_flowcontrol"/>
+                    </group>
+                    <group invisible="not xtd_serial_scale_enabled" colspan="2">
+                        <field name="xtd_serial_weight_regex"/>
+                        <div class="alert alert-info" role="alert" colspan="2">
+                            <strong>Requisitos:</strong>
+                            <ul class="mb-0">
+                                <li>Navegador Chrome, Edge o Chromium (Firefox/Safari no soportan Web Serial)</li>
+                                <li>Conexión HTTPS o acceso desde localhost</li>
+                                <li>El usuario debe seleccionar el puerto manualmente la primera vez</li>
+                            </ul>
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
