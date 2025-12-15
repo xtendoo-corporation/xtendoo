@@ -9,19 +9,19 @@
             <xpath expr="//page[@name='connected_devices']" position="inside">
                 <group string="Balanza Serie (Web Serial API)" name="serial_scale_config">
                     <group>
-                        <field name="xtd_serial_scale_enabled"/>
-                        <field name="xtd_serial_port_hint"
-                               invisible="not xtd_serial_scale_enabled"/>
+                        <field name="xtendoo_serial_scale_enabled"/>
+                        <field name="xtendoo_serial_port_hint"
+                               invisible="not xtendoo_serial_scale_enabled"/>
                     </group>
-                    <group invisible="not xtd_serial_scale_enabled">
-                        <field name="xtd_serial_baudrate"/>
-                        <field name="xtd_serial_databits"/>
-                        <field name="xtd_serial_stopbits"/>
-                        <field name="xtd_serial_parity"/>
-                        <field name="xtd_serial_flowcontrol"/>
+                    <group invisible="not xtendoo_serial_scale_enabled">
+                        <field name="xtendoo_serial_baudrate"/>
+                        <field name="xtendoo_serial_databits"/>
+                        <field name="xtendoo_serial_stopbits"/>
+                        <field name="xtendoo_serial_parity"/>
+                        <field name="xtendoo_serial_flowcontrol"/>
                     </group>
-                    <group invisible="not xtd_serial_scale_enabled" colspan="2">
-                        <field name="xtd_serial_weight_regex"/>
+                    <group invisible="not xtendoo_serial_scale_enabled" colspan="2">
+                        <field name="xtendoo_serial_weight_regex"/>
                         <div class="alert alert-info" role="alert" colspan="2">
                             <strong>Requisitos:</strong>
                             <ul class="mb-0">

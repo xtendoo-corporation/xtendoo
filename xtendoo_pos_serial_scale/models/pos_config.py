@@ -7,14 +7,14 @@ class PosConfig(models.Model):
     _inherit = "pos.config"
 
     # Activar/desactivar la integración de balanza serie
-    xtd_serial_scale_enabled = fields.Boolean(
+    xtendoo_serial_scale_enabled = fields.Boolean(
         string="Balanza Serie Habilitada",
         default=False,
         help="Habilitar la integración con balanza por puerto serie (Web Serial API)",
     )
 
     # Puerto orientativo (solo informativo, el usuario selecciona en el navegador)
-    xtd_serial_port_hint = fields.Char(
+    xtendoo_serial_port_hint = fields.Char(
         string="Puerto (orientativo)",
         default="COM7",
         help="Puerto serie orientativo (ej: COM7 en Windows, /dev/ttyUSB0 en Linux). "
@@ -22,13 +22,13 @@ class PosConfig(models.Model):
     )
 
     # Parámetros de conexión serie
-    xtd_serial_baudrate = fields.Integer(
+    xtendoo_serial_baudrate = fields.Integer(
         string="Baud Rate",
         default=9600,
         help="Velocidad de transmisión en baudios (típico: 9600, 19200, 38400, 115200)",
     )
 
-    xtd_serial_databits = fields.Selection(
+    xtendoo_serial_databits = fields.Selection(
         selection=[
             ("7", "7 bits"),
             ("8", "8 bits"),
@@ -38,7 +38,7 @@ class PosConfig(models.Model):
         help="Número de bits de datos por carácter",
     )
 
-    xtd_serial_stopbits = fields.Selection(
+    xtendoo_serial_stopbits = fields.Selection(
         selection=[
             ("1", "1 bit"),
             ("2", "2 bits"),
@@ -48,7 +48,7 @@ class PosConfig(models.Model):
         help="Número de bits de parada",
     )
 
-    xtd_serial_parity = fields.Selection(
+    xtendoo_serial_parity = fields.Selection(
         selection=[
             ("none", "Ninguno"),
             ("even", "Par (Even)"),
@@ -59,7 +59,7 @@ class PosConfig(models.Model):
         help="Tipo de paridad para la verificación de errores",
     )
 
-    xtd_serial_flowcontrol = fields.Selection(
+    xtendoo_serial_flowcontrol = fields.Selection(
         selection=[
             ("none", "Ninguno"),
             ("hardware", "Hardware (RTS/CTS)"),
@@ -70,7 +70,7 @@ class PosConfig(models.Model):
     )
 
     # Regex para extraer el peso del stream de la balanza
-    xtd_serial_weight_regex = fields.Char(
+    xtendoo_serial_weight_regex = fields.Char(
         string="Regex para Peso",
         default=r"(-?\d+(?:[.,]\d+)?)",
         help="Expresión regular para extraer el peso del texto recibido de la balanza. "
@@ -82,14 +82,14 @@ class PosConfig(models.Model):
         """Añadir campos de balanza serie a los datos cargados en el POS."""
         result = super()._load_pos_data_fields(config)
         result += [
-            "xtd_serial_scale_enabled",
-            "xtd_serial_port_hint",
-            "xtd_serial_baudrate",
-            "xtd_serial_databits",
-            "xtd_serial_stopbits",
-            "xtd_serial_parity",
-            "xtd_serial_flowcontrol",
-            "xtd_serial_weight_regex",
+            "xtendoo_serial_scale_enabled",
+            "xtendoo_serial_port_hint",
+            "xtendoo_serial_baudrate",
+            "xtendoo_serial_databits",
+            "xtendoo_serial_stopbits",
+            "xtendoo_serial_parity",
+            "xtendoo_serial_flowcontrol",
+            "xtendoo_serial_weight_regex",
         ]
         return result
 

@@ -96,14 +96,14 @@ export class SerialScaleService extends Reactive {
     loadConfig(posConfig) {
         if (!posConfig) return;
 
-        this.config.enabled = posConfig.xtd_serial_scale_enabled || false;
-        this.config.portHint = posConfig.xtd_serial_port_hint || "COM7";
-        this.config.baudRate = posConfig.xtd_serial_baudrate || 9600;
-        this.config.dataBits = parseInt(posConfig.xtd_serial_databits || "8", 10);
-        this.config.stopBits = parseInt(posConfig.xtd_serial_stopbits || "1", 10);
-        this.config.parity = posConfig.xtd_serial_parity || "none";
-        this.config.flowControl = posConfig.xtd_serial_flowcontrol || "none";
-        this.config.weightRegex = posConfig.xtd_serial_weight_regex || "(-?\\d+(?:[.,]\\d+)?)";
+        this.config.enabled = posConfig.xtendoo_serial_scale_enabled || false;
+        this.config.portHint = posConfig.xtendoo_serial_port_hint || "COM7";
+        this.config.baudRate = posConfig.xtendoo_serial_baudrate || 9600;
+        this.config.dataBits = parseInt(posConfig.xtendoo_serial_databits || "8", 10);
+        this.config.stopBits = parseInt(posConfig.xtendoo_serial_stopbits || "1", 10);
+        this.config.parity = posConfig.xtendoo_serial_parity || "none";
+        this.config.flowControl = posConfig.xtendoo_serial_flowcontrol || "none";
+        this.config.weightRegex = posConfig.xtendoo_serial_weight_regex || "(-?\\d+(?:[.,]\\d+)?)";
 
         console.log("[SerialScaleService] Configuración cargada:", this.config);
     }
