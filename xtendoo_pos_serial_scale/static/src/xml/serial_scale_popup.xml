@@ -2,7 +2,7 @@
 <templates id="template" xml:space="preserve">
 
     <!-- Popup de gestión de balanza serie -->
-    <t t-name="xtd_pos_serial_scale.SerialScalePopup">
+    <t t-name="xtendoo_pos_serial_scale.SerialScalePopup">
         <Dialog size="'md'">
             <t t-set-slot="header">
                 <h4 class="modal-title text-center w-100">

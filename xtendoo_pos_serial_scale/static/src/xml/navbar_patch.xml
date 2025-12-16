@@ -2,7 +2,7 @@
 <templates id="template" xml:space="preserve">
 
     <!-- Patch del Navbar para añadir el botón de balanza serie -->
-    <t t-name="xtd_pos_serial_scale.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+    <t t-name="xtendoo_pos_serial_scale.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
         <!-- Añadir botón de balanza antes del menú hamburguesa -->
         <xpath expr="//div[hasclass('status-buttons')]//Dropdown" position="before">
             <SerialScaleButton/>

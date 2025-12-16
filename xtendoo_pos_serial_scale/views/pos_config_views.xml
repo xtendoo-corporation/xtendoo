@@ -5,24 +5,69 @@
         <field name="model">pos.config</field>
         <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
         <field name="arch" type="xml">
-            <!-- Agregar sección de configuración de balanza serie -->
-            <xpath expr="//page[@name='connected_devices']" position="inside">
-                <group string="Balanza Serie (Web Serial API)" name="serial_scale_config">
-                    <group>
-                        <field name="xtendoo_serial_scale_enabled"/>
-                        <field name="xtendoo_serial_port_hint"
-                               invisible="not xtendoo_serial_scale_enabled"/>
-                    </group>
-                    <group invisible="not xtendoo_serial_scale_enabled">
-                        <field name="xtendoo_serial_baudrate"/>
-                        <field name="xtendoo_serial_databits"/>
-                        <field name="xtendoo_serial_stopbits"/>
-                        <field name="xtendoo_serial_parity"/>
-                        <field name="xtendoo_serial_flowcontrol"/>
-                    </group>
-                    <group invisible="not xtendoo_serial_scale_enabled" colspan="2">
-                        <field name="xtendoo_serial_weight_regex"/>
-                        <div class="alert alert-info" role="alert" colspan="2">
+            <!-- Agregar sección de configuración de balanza serie después de IoT Box -->
+            <xpath expr="//setting[@string='IoT Box']" position="after">
+                <setting string="Balanza Serie (Web Serial API)"
+                         help="Conectar balanza por puerto serie usando Web Serial API del navegador">
+                    <field name="xtendoo_serial_scale_enabled"/>
+                    <div class="content-group" invisible="not xtendoo_serial_scale_enabled">
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Puerto sugerido" for="xtendoo_serial_port_hint"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="xtendoo_serial_port_hint" placeholder="COM7"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Baud Rate" for="xtendoo_serial_baudrate"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="xtendoo_serial_baudrate"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Data Bits" for="xtendoo_serial_databits"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="xtendoo_serial_databits"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Stop Bits" for="xtendoo_serial_stopbits"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="xtendoo_serial_stopbits"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Parity" for="xtendoo_serial_parity"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="xtendoo_serial_parity"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Flow Control" for="xtendoo_serial_flowcontrol"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="xtendoo_serial_flowcontrol"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Regex Peso" for="xtendoo_serial_weight_regex"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="xtendoo_serial_weight_regex" placeholder="(-?\d+(?:[.,]\d+)?)"/>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3" role="alert">
                             <strong>Requisitos:</strong>
                             <ul class="mb-0">
                                 <li>Navegador Chrome, Edge o Chromium (Firefox/Safari no soportan Web Serial)</li>
@@ -30,8 +75,8 @@
                                 <li>El usuario debe seleccionar el puerto manualmente la primera vez</li>
                             </ul>
                         </div>
-                    </group>
-                </group>
+                    </div>
+                </setting>
             </xpath>
         </field>
     </record>

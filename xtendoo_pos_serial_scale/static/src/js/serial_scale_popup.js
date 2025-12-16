@@ -16,7 +16,7 @@ import { _t } from "@web/core/l10n/translation";
 import { CONNECTION_STATUS } from "./serial_scale_service";
 
 export class SerialScalePopup extends Component {
-    static template = "xtd_pos_serial_scale.SerialScalePopup";
+    static template = "xtendoo_pos_serial_scale.SerialScalePopup";
     static components = { Dialog };
     static props = {
         close: Function,

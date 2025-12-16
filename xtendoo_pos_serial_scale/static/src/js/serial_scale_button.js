@@ -10,7 +10,7 @@ import { SerialScalePopup } from "./serial_scale_popup";
 import { CONNECTION_STATUS } from "./serial_scale_service";
 
 export class SerialScaleButton extends Component {
-    static template = "xtd_pos_serial_scale.SerialScaleButton";
+    static template = "xtendoo_pos_serial_scale.SerialScaleButton";
     static props = {};
 
     setup() {

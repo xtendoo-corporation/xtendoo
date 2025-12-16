@@ -2,7 +2,7 @@
 <templates id="template" xml:space="preserve">
 
     <!-- Template del botón de balanza serie -->
-    <t t-name="xtd_pos_serial_scale.SerialScaleButton">
+    <t t-name="xtendoo_pos_serial_scale.SerialScaleButton">
         <button t-if="isEnabled"
                 t-att-class="buttonClass"
                 t-on-click="onClick"

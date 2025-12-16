@@ -1,4 +1,4 @@
-# xtd_pos_serial_scale - Balanza Serie para POS (Web Serial API)
+# xtendoo_pos_serial_scale - Balanza Serie para POS (Web Serial API)
 
 ## Descripción
 
@@ -33,7 +33,7 @@ Módulo para Odoo 19 que permite conectar una balanza electrónica al Punto de V
 
 1. Copiar el módulo a la carpeta de addons de Odoo:
    ```
-   /odoo/custom/src/xtendoo/xtd_pos_serial_scale/
+   /odoo/custom/src/xtendoo/xtendoo_pos_serial_scale/
    ```
 
 2. Actualizar la lista de módulos en Odoo
@@ -105,7 +105,7 @@ La regex por defecto `(-?\d+(?:[.,]\d+)?)` captura:
 ## Estructura del módulo
 
 ```
-xtd_pos_serial_scale/
+xtendoo_pos_serial_scale/
 ├── __init__.py
 ├── __manifest__.py
 ├── README.md
@@ -133,14 +133,14 @@ xtd_pos_serial_scale/
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `xtd_serial_scale_enabled` | Boolean | Activar integración |
-| `xtd_serial_port_hint` | Char | Puerto orientativo (informativo) |
-| `xtd_serial_baudrate` | Integer | Velocidad en baudios |
-| `xtd_serial_databits` | Selection | Bits de datos (7/8) |
-| `xtd_serial_stopbits` | Selection | Bits de parada (1/2) |
-| `xtd_serial_parity` | Selection | Paridad (none/even/odd) |
-| `xtd_serial_flowcontrol` | Selection | Control de flujo (none/hardware) |
-| `xtd_serial_weight_regex` | Char | Regex para extraer peso |
+| `xtendoo_serial_scale_enabled` | Boolean | Activar integración |
+| `xtendoo_serial_port_hint` | Char | Puerto orientativo (informativo) |
+| `xtendoo_serial_baudrate` | Integer | Velocidad en baudios |
+| `xtendoo_serial_databits` | Selection | Bits de datos (7/8) |
+| `xtendoo_serial_stopbits` | Selection | Bits de parada (1/2) |
+| `xtendoo_serial_parity` | Selection | Paridad (none/even/odd) |
+| `xtendoo_serial_flowcontrol` | Selection | Control de flujo (none/hardware) |
+| `xtendoo_serial_weight_regex` | Char | Regex para extraer peso |
 
 ## Licencia
 
