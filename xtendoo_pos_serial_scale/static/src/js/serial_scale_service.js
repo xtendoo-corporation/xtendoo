@@ -269,9 +269,25 @@ export class SerialScaleService extends Reactive {
         console.log("%c   (Coloca un peso en la balanza para ver los datos)", "color: #ffff00; font-style: italic");
         console.log("%c", ""); // Línea en blanco
 
+        let readCount = 0; // Contador de lecturas
+
         try {
             while (this.isReading) {
+                readCount++;
+                console.log(`%c📥 LECTURA #${readCount} - Esperando datos del puerto serie...`, "color: #9966ff; font-weight: bold");
+
                 const { value, done } = await this.reader.read();
+
+                // LOG DETALLADO: Ver qué devuelve reader.read()
+                console.log("%c▼▼▼ READER.READ() DEVOLVIÓ:", "color: #ff6600; font-weight: bold; font-size: 13px");
+                console.log("%c   • done:", "color: #ff6600; font-weight: bold", done, `(${typeof done})`);
+                console.log("%c   • value:", "color: #ff6600; font-weight: bold", value, `(${typeof value})`);
+                if (value) {
+                    console.log("%c   • value.length:", "color: #ff6600; font-weight: bold", value.length, "caracteres");
+                    console.log("%c   • value (preview):", "color: #ff6600; font-weight: bold",
+                        value.length > 100 ? value.substring(0, 100) + "..." : value);
+                }
+                console.log("%c▲▲▲", "color: #ff6600; font-weight: bold");
 
                 if (done) {
                     console.log("[SerialScaleService] Stream cerrado por el dispositivo");
