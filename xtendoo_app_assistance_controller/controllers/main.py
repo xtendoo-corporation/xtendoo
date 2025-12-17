@@ -15,8 +15,8 @@ class XtendooAppAssistanceController(http.Controller):
             data = json.loads(raw)
             _logger.info(f"Datos recibidos: {data}")
 
-            telefono = str(data.get('telefono', ''))
-            telefono_formateado = telefono.replace(" ", "")
+            telefono_formatear = str(data.get('telefono', ''))
+            telefono = telefono_formatear.replace(" ", "")
             pin = str(data.get('pin', ''))
             latitud = data.get('latitud')
             longitud = data.get('longitud')
