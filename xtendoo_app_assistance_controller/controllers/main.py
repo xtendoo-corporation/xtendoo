@@ -26,10 +26,17 @@ class XtendooAppAssistanceController(http.Controller):
                     'message': 'PIN o teléfono no proporcionados'
                 })
 
+            _logger.info("=== LISTADO DE EMPLEADOS PARA DEBUG ===")
+            all_employees = request.env['hr.employee'].sudo().search([])
+            for emp in all_employees:
+                _logger.info(f"Empleado: {emp.name} | PIN: '{emp.pin}' | Teléfono: '{emp.mobile_phone}'")
+            _logger.info("=== FIN LISTADO ===")
+
             employee = request.env['hr.employee'].sudo().search([
                 ('pin', '=', pin),
                 ('mobile_phone', '=', telefono)
             ], limit=1)
+
 
             if not employee:
                 _logger.error(f"Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
