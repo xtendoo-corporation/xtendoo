@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="point_of_sale.CashMovePopup" t-inherit="point_of_sale.CashMovePopup" t-inherit-mode="extension">
+        <!-- Agregar el botón de calculadora después del div que contiene el input de monto -->
+        <xpath expr="//div[@class='input-amount d-flex mb-2 gap-2']" position="inside">
+            <button class="btn btn-secondary" t-on-click="openDetailsPopup" title="Count money">
+                <i class="fa fa-calculator"/> Count
+            </button>
+        </xpath>
+    </t>
+
+</templates>
+
