@@ -33,10 +33,14 @@ class XtendooAppAssistanceController(http.Controller):
                 #_logger.info(f"Empleado: {emp.name} | PIN: '{emp.pin}' | Teléfono: '{emp.mobile_phone}'")
             #_logger.info("=== FIN LISTADO ===")
 
-            employee = request.env['hr.employee'].sudo().search([
-                ('pin', '=', pin),
-                ('mobile_phone', '=', telefono)
-            ], limit=1)
+
+            employees = request.env['hr.employee'].sudo().search([ ('pin', '=', pin) ])
+            employee = None
+            for emp in employees:
+                mobile_db = str(emp.mobile_phone or '').replace(" ", "")
+                if mobile_db == telefono:
+                    employee = emp
+                    break
 
 
             if not employee:
@@ -90,7 +94,8 @@ def get_employee_status(self, **kwargs):
         data = json.loads(raw)
         _logger.info(f"Datos recibidos para consulta de estado: {data}")
 
-        telefono = str(data.get('telefono', ''))
+        telefono_formatear = str(data.get('telefono', ''))
+        telefono = telefono_formatear.replace(" ", "")
         pin = str(data.get('pin', ''))
 
         if not pin or not telefono:
@@ -99,10 +104,16 @@ def get_employee_status(self, **kwargs):
                 'message': 'PIN o teléfono no proporcionados'
             })
 
-        employee = request.env['hr.employee'].sudo().search([
-            ('pin', '=', pin),
-            ('mobile_phone', '=', telefono)
-        ], limit=1)
+        employees = request.env['hr.employee'].sudo().search([
+            ('pin', '=', pin)
+        ])
+
+        employee = None
+        for emp in employees:
+            mobile_db = str(emp.mobile_phone or '').replace(" ", "")
+            if mobile_db == telefono:
+                employee = emp
+                break
 
         if not employee:
             _logger.error(f"Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
@@ -111,18 +122,16 @@ def get_employee_status(self, **kwargs):
                 'message': 'Empleado no encontrado'
             })
 
-        # --- Lógica de consulta de estado ---
 
-        # Buscar el registro de asistencia ACTIVO (solo check_in, sin check_out)
         last_attendance = request.env['hr.attendance'].sudo().search([
             ('employee_id', '=', employee.id),
             ('check_out', '=', False)
         ], limit=1)
 
-        # Si se encuentra un registro sin check_out, significa que el empleado está DENTRO.
+
         is_inside = bool(last_attendance)
 
-        # --- Fin Lógica de consulta de estado ---
+
 
         message = 'Empleado actualmente fichado dentro.' if is_inside else 'Empleado actualmente fichado fuera.'
 
