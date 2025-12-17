@@ -9,6 +9,7 @@
             <!-- Asignar el controller personalizado con js_class -->
             <xpath expr="//list" position="attributes">
                 <attribute name="js_class">button_in_tree</attribute>
+                <attribute name="create">true</attribute>
             </xpath>
         </field>
     </record>
