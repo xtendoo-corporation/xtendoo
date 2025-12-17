@@ -83,68 +83,68 @@ class XtendooAppAssistanceController(http.Controller):
             })
 
 
-@http.route('/xtendoo/app/get_status', auth='public', type='http', methods=['POST'], csrf=False)
-def get_employee_status(self, **kwargs):
-    """
-    Consulta el estado de asistencia actual del empleado (dentro/fuera).
-    No realiza ninguna acción de fichaje.
-    """
-    try:
-        raw = request.httprequest.data.decode('utf-8')
-        data = json.loads(raw)
-        _logger.info(f"Datos recibidos para consulta de estado: {data}")
+    @http.route('/xtendoo/app/get_status', auth='public', type='http', methods=['POST'], csrf=False)
+    def get_employee_status(self, **kwargs):
+        """
+        Consulta el estado de asistencia actual del empleado (dentro/fuera).
+        No realiza ninguna acción de fichaje.
+        """
+        try:
+            raw = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw)
+            _logger.info(f"Datos recibidos para consulta de estado: {data}")
 
-        telefono_formatear = str(data.get('telefono', ''))
-        telefono = telefono_formatear.replace(" ", "")
-        pin = str(data.get('pin', ''))
+            telefono_formatear = str(data.get('telefono', ''))
+            telefono = telefono_formatear.replace(" ", "")
+            pin = str(data.get('pin', ''))
 
-        if not pin or not telefono:
+            if not pin or not telefono:
+                return request.make_json_response({
+                    'status': 'error',
+                    'message': 'PIN o teléfono no proporcionados'
+                })
+
+            employees = request.env['hr.employee'].sudo().search([
+                ('pin', '=', pin)
+            ])
+
+            employee = None
+            for emp in employees:
+                mobile_db = str(emp.mobile_phone or '').replace(" ", "")
+                if mobile_db == telefono:
+                    employee = emp
+                    break
+
+            if not employee:
+                _logger.error(f"Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
+                return request.make_json_response({
+                    'status': 'error',
+                    'message': 'Empleado no encontrado'
+                })
+
+
+            last_attendance = request.env['hr.attendance'].sudo().search([
+                ('employee_id', '=', employee.id),
+                ('check_out', '=', False)
+            ], limit=1)
+
+
+            is_inside = bool(last_attendance)
+
+
+
+            message = 'Empleado actualmente fichado dentro.' if is_inside else 'Empleado actualmente fichado fuera.'
+
             return request.make_json_response({
-                'status': 'error',
-                'message': 'PIN o teléfono no proporcionados'
+                'status': 'success',
+                'is_inside': is_inside,
+                'message': message,
+                'employee': employee.name,
             })
 
-        employees = request.env['hr.employee'].sudo().search([
-            ('pin', '=', pin)
-        ])
-
-        employee = None
-        for emp in employees:
-            mobile_db = str(emp.mobile_phone or '').replace(" ", "")
-            if mobile_db == telefono:
-                employee = emp
-                break
-
-        if not employee:
-            _logger.error(f"Empleado no encontrado con PIN='{pin}' y Teléfono='{telefono}'")
+        except Exception as e:
+            _logger.error(f"Error en get_employee_status: {str(e)}", exc_info=True)
             return request.make_json_response({
                 'status': 'error',
-                'message': 'Empleado no encontrado'
+                'message': f'Error interno del servidor: {str(e)}'
             })
-
-
-        last_attendance = request.env['hr.attendance'].sudo().search([
-            ('employee_id', '=', employee.id),
-            ('check_out', '=', False)
-        ], limit=1)
-
-
-        is_inside = bool(last_attendance)
-
-
-
-        message = 'Empleado actualmente fichado dentro.' if is_inside else 'Empleado actualmente fichado fuera.'
-
-        return request.make_json_response({
-            'status': 'success',
-            'is_inside': is_inside,
-            'message': message,
-            'employee': employee.name,
-        })
-
-    except Exception as e:
-        _logger.error(f"Error en get_employee_status: {str(e)}", exc_info=True)
-        return request.make_json_response({
-            'status': 'error',
-            'message': f'Error interno del servidor: {str(e)}'
-        })
