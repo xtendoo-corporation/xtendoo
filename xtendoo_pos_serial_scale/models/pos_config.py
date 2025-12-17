@@ -77,19 +77,4 @@ class PosConfig(models.Model):
              "Por defecto busca números decimales con punto o coma.",
     )
 
-    @api.model
-    def _load_pos_data_fields(self, config):
-        """Añadir campos de balanza serie a los datos cargados en el POS."""
-        result = super()._load_pos_data_fields(config)
-        result += [
-            "xtendoo_serial_scale_enabled",
-            "xtendoo_serial_port_hint",
-            "xtendoo_serial_baudrate",
-            "xtendoo_serial_databits",
-            "xtendoo_serial_stopbits",
-            "xtendoo_serial_parity",
-            "xtendoo_serial_flowcontrol",
-            "xtendoo_serial_weight_regex",
-        ]
-        return result
 
