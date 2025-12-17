@@ -352,6 +352,13 @@ function generateTicketHtml(data) {
         <div class="thanks">¡Gracias por su compra!</div>
         <div>Conserve este ticket para cualquier reclamación</div>
     </div>
+
+    <script>
+        // Auto-imprimir al cargar
+        window.onload = function() {
+            window.print();
+        };
+    </script>
 </body>
 </html>
     `;
@@ -361,78 +368,36 @@ function generateTicketHtml(data) {
 
 /**
  * Abre una ventana de impresión con el ticket
- * Usa el mismo método que Odoo: renderiza en el DOM y llama a window.print()
  */
 function printTicket(html) {
-    // Crear un contenedor oculto para el ticket
-    const printContainer = document.createElement('div');
-    printContainer.id = 'pos-receipt-print-container';
-    printContainer.innerHTML = html;
+    // Crear una ventana nueva para imprimir
+    const printWindow = window.open('', '_blank', 'width=320,height=600');
 
-    // Estilos para ocultar el contenedor en pantalla pero mostrarlo en impresión
-    const style = document.createElement('style');
-    style.id = 'pos-receipt-print-style';
-    style.textContent = `
-        #pos-receipt-print-container {
-            display: none;
-        }
-        @media print {
-            @page {
-                size: 80mm auto;
-                margin: 0;
-            }
-            html, body {
-                width: 80mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            body > *:not(#pos-receipt-print-container) {
-                display: none !important;
-            }
-            #pos-receipt-print-container {
-                display: block !important;
-                position: relative;
-                width: 80mm !important;
-                margin: 0 auto !important;
-                padding: 5mm !important;
-            }
-            #pos-receipt-print-container * {
-                visibility: visible !important;
-            }
-        }
-    `;
+    if (!printWindow) {
+        // Si el navegador bloquea popups, usar iframe
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
 
-    document.head.appendChild(style);
-    document.body.appendChild(printContainer);
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(html);
+        iframe.contentDocument.close();
 
-    // Esperar a que las imágenes se carguen (si las hay)
-    const images = printContainer.querySelectorAll('img');
-    const imagePromises = Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-        });
-    });
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
 
-    Promise.all(imagePromises).then(() => {
-        // Pequeño delay para asegurar renderizado
+        // Eliminar iframe después de imprimir
         setTimeout(() => {
-            window.print();
+            document.body.removeChild(iframe);
+        }, 1000);
+    } else {
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
 
-            // Limpiar después de imprimir
-            setTimeout(() => {
-                if (printContainer.parentNode) {
-                    printContainer.parentNode.removeChild(printContainer);
-                }
-                if (style.parentNode) {
-                    style.parentNode.removeChild(style);
-                }
-            }, 1000);
-        }, 100);
-    });
+        // La impresión se dispara automáticamente por el script en el HTML
+    }
 }
 
 // Registrar la acción cliente
 registry.category("actions").add("pos_print_receipt", posPrintReceiptAction);
-

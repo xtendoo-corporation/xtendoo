@@ -45,8 +45,6 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
-
-
             <!-- Ocultar el botón original de Invoice en el header -->
             <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace"/>
         </field>
