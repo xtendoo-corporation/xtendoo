@@ -61,6 +61,7 @@ export class SerialScaleService extends Reactive {
             parity: "none",
             flowControl: "none",
             weightRegex: "(-?\\d+(?:[.,]\\d+)?)",
+            weightUnit: "kg",
         };
 
         // Verificar soporte de Web Serial API
@@ -104,6 +105,7 @@ export class SerialScaleService extends Reactive {
         this.config.parity = posConfig.xtendoo_serial_parity || "none";
         this.config.flowControl = posConfig.xtendoo_serial_flowcontrol || "none";
         this.config.weightRegex = posConfig.xtendoo_serial_weight_regex || "(-?\\d+(?:[.,]\\d+)?)";
+        this.config.weightUnit = posConfig.xtendoo_serial_weight_unit || "kg";
 
         console.log("[SerialScaleService] Configuración cargada:", this.config);
     }
@@ -252,7 +254,20 @@ export class SerialScaleService extends Reactive {
         this.readableStreamClosed = this.port.readable.pipeTo(decoder.writable);
         this.reader = decoder.readable.getReader();
 
-        console.log("[SerialScaleService] Iniciando lectura continua...");
+        console.log("%c╔══════════════════════════════════════════════════════════════╗", "color: #00ff00; font-weight: bold; font-size: 14px");
+        console.log("%c║  🚀 BALANZA CONECTADA - INICIANDO LECTURA CONTINUA          ║", "color: #00ff00; font-weight: bold; font-size: 14px");
+        console.log("%c╚══════════════════════════════════════════════════════════════╝", "color: #00ff00; font-weight: bold; font-size: 14px");
+        console.log("%c⚙️  Configuración activa:", "color: #00ffff; font-weight: bold");
+        console.log("%c   • Baud Rate:", "color: #00ffff", this.config.baudRate);
+        console.log("%c   • Data Bits:", "color: #00ffff", this.config.dataBits);
+        console.log("%c   • Stop Bits:", "color: #00ffff", this.config.stopBits);
+        console.log("%c   • Parity:", "color: #00ffff", this.config.parity);
+        console.log("%c   • Regex:", "color: #00ffff", this.config.weightRegex);
+        console.log("%c   • Unidad:", "color: #00ffff", this.config.weightUnit);
+        console.log("%c", ""); // Línea en blanco
+        console.log("%c👀 Esperando datos de la balanza...", "color: #ffff00; font-weight: bold; font-size: 13px");
+        console.log("%c   (Coloca un peso en la balanza para ver los datos)", "color: #ffff00; font-style: italic");
+        console.log("%c", ""); // Línea en blanco
 
         try {
             while (this.isReading) {
@@ -288,6 +303,18 @@ export class SerialScaleService extends Reactive {
      * Procesa los datos entrantes del puerto serie
      */
     _processIncomingData(data) {
+        // LOG DESTACADO: Datos RAW recibidos
+        console.log("%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "color: #00ff00; font-weight: bold");
+        console.log("%c🎯 DATOS RECIBIDOS DE LA BALANZA", "color: #00ff00; font-weight: bold; font-size: 14px");
+        console.log("%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "color: #00ff00; font-weight: bold");
+        console.log("%cDatos RAW (string):", "color: #ffff00; font-weight: bold", data);
+        console.log("%cDatos RAW (JSON):", "color: #ffff00; font-weight: bold", JSON.stringify(data));
+        console.log("%cLongitud:", "color: #ffff00; font-weight: bold", data.length, "caracteres");
+        console.log("%cBytes (hex):", "color: #ffff00; font-weight: bold",
+            Array.from(data).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' '));
+        console.log("%cBytes (decimal):", "color: #ffff00; font-weight: bold",
+            Array.from(data).map(c => c.charCodeAt(0)).join(' '));
+
         // Agregar datos al buffer
         this.inputBuffer += data;
 
@@ -296,6 +323,19 @@ export class SerialScaleService extends Reactive {
 
         // La última parte puede estar incompleta, la guardamos
         this.inputBuffer = lines.pop() || "";
+
+        // LOG: Mostrar cuántas líneas se encontraron
+        if (lines.length > 0) {
+            console.log("%c📋 Líneas completas encontradas:", "color: #00ffff; font-weight: bold", lines.length);
+            lines.forEach((line, index) => {
+                if (line) {
+                    console.log(`%c  Línea ${index + 1}:`, "color: #00ffff", `"${line}"`);
+                }
+            });
+        } else {
+            console.log("%c⏳ Buffer acumulando datos (esperando salto de línea)...", "color: #ff9900; font-style: italic");
+            console.log("%c  Buffer actual:", "color: #ff9900", `"${this.inputBuffer}"`);
+        }
 
         // Procesar cada línea completa
         for (const line of lines) {
@@ -309,30 +349,91 @@ export class SerialScaleService extends Reactive {
      * Procesa una línea completa de la balanza
      */
     _processLine(line) {
-        console.log("[SerialScaleService] Línea recibida:", line);
+        console.log("%c╔════════════════════════════════════════════════════════╗", "color: #ff00ff; font-weight: bold");
+        console.log("%c║  PROCESANDO LÍNEA DE LA BALANZA                       ║", "color: #ff00ff; font-weight: bold");
+        console.log("%c╚════════════════════════════════════════════════════════╝", "color: #ff00ff; font-weight: bold");
+        console.log("%c📝 Línea recibida:", "color: #ff00ff; font-weight: bold; font-size: 13px", `"${line}"`);
+        console.log("%c📏 Longitud:", "color: #ff00ff; font-weight: bold", line.length, "caracteres");
+        console.log("%c🔢 Bytes (hex):", "color: #ff00ff; font-weight: bold",
+            Array.from(line).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' '));
+        console.log("%c🔤 Caracteres:", "color: #ff00ff; font-weight: bold",
+            Array.from(line).map(c => `'${c}'`).join(' '));
+
         this.lastRawLine = line;
 
         try {
             // Aplicar regex para extraer el peso
+            console.log("%c🎯 Regex configurada:", "color: #00ffff; font-weight: bold", this.config.weightRegex);
             const regex = new RegExp(this.config.weightRegex);
             const match = line.match(regex);
 
+            console.log("%c🔍 Resultado del match:", "color: #00ffff; font-weight: bold", match);
+
             if (match && match[1]) {
+                console.log("%c✅ MATCH ENCONTRADO!", "color: #00ff00; font-weight: bold; font-size: 14px");
+
                 // Convertir coma a punto para parseFloat
                 const weightStr = match[1].replace(",", ".");
-                const weight = parseFloat(weightStr);
+                let weight = parseFloat(weightStr);
+
+                console.log("%c  ➜ String extraído:", "color: #00ff00; font-weight: bold", `"${match[1]}"`);
+                console.log("%c  ➜ String normalizado:", "color: #00ff00; font-weight: bold", `"${weightStr}"`);
+                console.log("%c  ➜ Peso parseado (raw):", "color: #00ff00; font-weight: bold", weight);
+                console.log("%c  ➜ Unidad configurada:", "color: #00ff00; font-weight: bold", this.config.weightUnit);
 
                 if (!isNaN(weight)) {
+                    // Convertir a kg si es necesario
+                    if (this.config.weightUnit === "g") {
+                        const originalWeight = weight;
+                        weight = weight / 1000;
+                        console.log("%c  ➜ Conversión:", "color: #00ff00; font-weight: bold",
+                            `${originalWeight} gramos → ${weight} kg`);
+                    } else if (this.config.weightUnit === "lb") {
+                        const originalWeight = weight;
+                        weight = weight * 0.453592;
+                        console.log("%c  ➜ Conversión:", "color: #00ff00; font-weight: bold",
+                            `${originalWeight} libras → ${weight} kg`);
+                    }
+
                     this.lastWeight = weight;
-                    console.log("[SerialScaleService] Peso parseado:", weight);
+                    console.log("%c┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓", "color: #00ff00; font-weight: bold; font-size: 16px");
+                    console.log("%c┃  ✓ PESO ACTUALIZADO:", "color: #00ff00; font-weight: bold; font-size: 16px", weight, "kg", "┃");
+                    console.log("%c┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛", "color: #00ff00; font-weight: bold; font-size: 16px");
                 } else {
-                    console.warn("[SerialScaleService] No se pudo parsear el peso:", match[1]);
+                    console.log("%c❌ ERROR: No se pudo parsear el peso", "color: #ff0000; font-weight: bold; font-size: 14px");
+                    console.log("%c  ➜ String extraído:", "color: #ff0000; font-weight: bold", match[1]);
+                    console.log("%c  ➜ Resultado de parseFloat:", "color: #ff0000; font-weight: bold", weight);
                 }
             } else {
-                console.warn("[SerialScaleService] No se encontró peso en la línea:", line);
+                console.log("%c❌ NO SE ENCONTRÓ PESO EN LA LÍNEA", "color: #ff0000; font-weight: bold; font-size: 14px");
+                console.log("%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "color: #ff0000; font-weight: bold");
+                console.log("%c🔧 SUGERENCIAS PARA SOLUCIONAR:", "color: #ffff00; font-weight: bold; font-size: 13px");
+                console.log("%c  1️⃣  Verifica que la regex sea correcta para tu balanza", "color: #ffff00");
+                console.log("%c  2️⃣  Formato actual de la línea:", "color: #ffff00", `"${line}"`);
+                console.log("%c  3️⃣  Regex actual:", "color: #ffff00", this.config.weightRegex);
+
+                // Intentar extraer cualquier número como ayuda
+                const anyNumber = line.match(/(\d+[.,]?\d*)/);
+                if (anyNumber) {
+                    console.log("%c  4️⃣  Se encontró este número en la línea:", "color: #ffff00; font-weight: bold",
+                        `"${anyNumber[1]}"`);
+                    console.log("%c     💡 ¿Es este el peso? Prueba esta regex:", "color: #00ff00; font-weight: bold",
+                        `(${anyNumber[1].replace(/\d/g, '\\d').replace('.', '[.,]')})`);
+                    console.log("%c     💡 O esta más genérica:", "color: #00ff00; font-weight: bold",
+                        `(\\d+[.,]?\\d*)`);
+                }
+
+                // Sugerencias de regex según el formato detectado
+                console.log("%c  5️⃣  EJEMPLOS DE REGEX COMUNES:", "color: #00ffff; font-weight: bold");
+                console.log("%c     • Para '12.345':", "color: #00ffff", "(\\d+[.,]\\d+)");
+                console.log("%c     • Para 'W: 12.345':", "color: #00ffff", "W:\\s*(\\d+[.,]\\d+)");
+                console.log("%c     • Para 'ST,GS, 12.345 kg':", "color: #00ffff", "(\\d+[.,]\\d+)");
+                console.log("%c     • Para 'NET 12,345':", "color: #00ffff", "NET\\s+(\\d+,\\d+)");
+                console.log("%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "color: #ff0000; font-weight: bold");
             }
         } catch (error) {
-            console.error("[SerialScaleService] Error procesando línea:", error);
+            console.log("%c💥 ERROR PROCESANDO LÍNEA:", "color: #ff0000; font-weight: bold; font-size: 14px", error);
+            console.error(error);
         }
     }
 

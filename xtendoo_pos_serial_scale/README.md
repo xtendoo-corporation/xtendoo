@@ -95,6 +95,83 @@ La regex por defecto `(-?\d+(?:[.,]\d+)?)` captura:
 | No aparece peso | Regex incorrecta | Revisar formato de la balanza y ajustar regex |
 | Datos corruptos | Parámetros incorrectos | Verificar baudRate, dataBits, parity |
 
+### Depuración: "La balanza conecta pero no lee el peso"
+
+Si la balanza se conecta correctamente pero el peso no se actualiza:
+
+#### **Ver los Logs Mejorados en la Consola**
+
+El módulo ahora incluye logs con **colores y formato destacado** para facilitar la depuración:
+
+1. **Abrir la consola del navegador** (F12 → Console)
+2. **Conectar la balanza** en el POS
+3. **Colocar peso en la balanza**
+4. **Buscar los logs con colores**:
+
+**🎯 Cuando la balanza envía datos, verás:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 DATOS RECIBIDOS DE LA BALANZA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Datos RAW (string): "ST,GS, 12.345 kg\r\n"
+Datos RAW (JSON): "ST,GS, 12.345 kg\r\n"
+Longitud: 18 caracteres
+Bytes (hex): 53 54 2c 47 53 2c 20 31 32 2e 33 34 35 20 6b 67 0d 0a
+```
+
+**📋 Líneas procesadas:**
+```
+╔════════════════════════════════════════════════════════╗
+║  PROCESANDO LÍNEA DE LA BALANZA                       ║
+╚════════════════════════════════════════════════════════╝
+📝 Línea recibida: "ST,GS, 12.345 kg"
+🔢 Bytes (hex): 53 54 2c 47 53 2c 20 31 32 2e 33 34 35 20 6b 67
+🎯 Regex configurada: (-?\d+(?:[.,]\d+)?)
+```
+
+**✅ Si encuentra el peso:**
+```
+✅ MATCH ENCONTRADO!
+  ➜ String extraído: "12.345"
+  ➜ Peso parseado (raw): 12.345
+  ➜ Unidad configurada: kg
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ✓ PESO ACTUALIZADO: 12.345 kg         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
+**❌ Si NO encuentra el peso:**
+```
+❌ NO SE ENCONTRÓ PESO EN LA LÍNEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 SUGERENCIAS PARA SOLUCIONAR:
+  1️⃣  Verifica que la regex sea correcta para tu balanza
+  2️⃣  Formato actual de la línea: "ST,GS, 12.345 kg"
+  3️⃣  Regex actual: (-?\d+(?:[.,]\d+)?)
+  4️⃣  Se encontró este número en la línea: "12.345"
+     💡 ¿Es este el peso? Prueba esta regex: (\d+\.\d+)
+```
+
+5. **Si NO se muestra el peso**:
+   - Buscar el mensaje con ❌ en rojo
+   - Ver la línea recibida exacta
+   - El sistema te sugerirá la regex correcta
+   - Ajustar la regex en la configuración del POS
+
+6. **Ejemplos de regex para diferentes formatos**:
+
+| Formato recibido | Regex correcta |
+|------------------|----------------|
+| `12.345` | `(-?\d+(?:[.,]\d+)?)` |
+| `W: 12.345` | `W:\s*(-?\d+(?:[.,]\d+)?)` |
+| `ST,GS, 12.345 kg` | `(\d+\.\d+)\s*kg` |
+| `NET 12,345` | `NET\s+(\d+,\d+)` |
+| `+00012.345kg` | `[+-]?\d+\.(\d+)` o `[+-]?(\d+\.\d+)` |
+
+7. **Revisar unidad de peso**:
+   - Si la balanza envía gramos pero configuraste "kg", el peso se convertirá automáticamente
+   - Verificar en los logs: `"Unidad configurada: g"` → `"Convertido de gramos a kg: 0.012"`
+
 ## Limitaciones (Web Serial API)
 
 1. **Requiere interacción del usuario**: La conexión debe iniciarse por un click (no automática)

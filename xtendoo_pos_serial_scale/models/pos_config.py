@@ -73,8 +73,32 @@ class PosConfig(models.Model):
     xtendoo_serial_weight_regex = fields.Char(
         string="Regex para Peso",
         default=r"(-?\d+(?:[.,]\d+)?)",
-        help="Expresión regular para extraer el peso del texto recibido de la balanza. "
-             "Por defecto busca números decimales con punto o coma.",
+        help="Expresión regular para extraer el peso del texto recibido de la balanza.\n\n"
+             "IMPORTANTE: Usa paréntesis de captura () para el número del peso.\n\n"
+             "Patrones comunes:\n"
+             "• (-?\\d+(?:[.,]\\d+)?) - Cualquier número decimal (defecto)\n"
+             "• ST,([-?\\d.,]+),kg - Formato: ST,12.345,kg\n"
+             "• (\\d+\\.\\d+)\\s*kg - Formato: 12.345 kg\n"
+             "• W\\s+(\\d+\\.\\d+) - Formato: W 12.345\n"
+             "• NET\\s+(\\d+,\\d+) - Formato: NET 12,345\n\n"
+             "DEPURACIÓN:\n"
+             "Si la balanza conecta pero no lee el peso:\n"
+             "1. Abrir la consola del navegador (F12)\n"
+             "2. Conectar la balanza y colocar peso\n"
+             "3. Buscar '[SerialScaleService] Línea recibida:' en los logs\n"
+             "4. Ajustar esta regex según el formato mostrado\n"
+             "5. Consultar TROUBLESHOOTING.md para ejemplos detallados",
+    )
+
+    xtendoo_serial_weight_unit = fields.Selection(
+        selection=[
+            ("kg", "Kilogramos (kg)"),
+            ("g", "Gramos (g)"),
+            ("lb", "Libras (lb)"),
+        ],
+        string="Unidad de Peso",
+        default="kg",
+        help="Unidad de medida del peso recibido de la balanza",
     )
 
 
