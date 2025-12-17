@@ -16,6 +16,7 @@ class XtendooAppAssistanceController(http.Controller):
             _logger.info(f"Datos recibidos: {data}")
 
             telefono = str(data.get('telefono', ''))
+            telefono_formateado = telefono.replace(" ", "")
             pin = str(data.get('pin', ''))
             latitud = data.get('latitud')
             longitud = data.get('longitud')
@@ -26,11 +27,11 @@ class XtendooAppAssistanceController(http.Controller):
                     'message': 'PIN o teléfono no proporcionados'
                 })
 
-            _logger.info("=== LISTADO DE EMPLEADOS PARA DEBUG ===")
-            all_employees = request.env['hr.employee'].sudo().search([])
-            for emp in all_employees:
-                _logger.info(f"Empleado: {emp.name} | PIN: '{emp.pin}' | Teléfono: '{emp.mobile_phone}'")
-            _logger.info("=== FIN LISTADO ===")
+            #_logger.info("=== LISTADO DE EMPLEADOS PARA DEBUG ===")
+            #all_employees = request.env['hr.employee'].sudo().search([])
+            #for emp in all_employees:
+                #_logger.info(f"Empleado: {emp.name} | PIN: '{emp.pin}' | Teléfono: '{emp.mobile_phone}'")
+            #_logger.info("=== FIN LISTADO ===")
 
             employee = request.env['hr.employee'].sudo().search([
                 ('pin', '=', pin),
@@ -127,7 +128,7 @@ def get_employee_status(self, **kwargs):
 
         return request.make_json_response({
             'status': 'success',
-            'is_inside': is_inside,  # <--- La clave para tu app Flutter
+            'is_inside': is_inside,
             'message': message,
             'employee': employee.name,
         })
