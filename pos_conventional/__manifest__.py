@@ -22,12 +22,12 @@
         'views/pos_session_opening_wizard_views.xml',
         'views/pos_session_closing_wizard_views.xml',
         'views/pos_order_views.xml',
+        'views/report_receipt.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'pos_conventional/static/src/js/pos_order_list_controller.js',
             'pos_conventional/static/src/js/pos_order_form_barcode_controller.js',
-            'pos_conventional/static/src/js/pos_receipt_print.js',
             'pos_conventional/static/src/xml/pos_order_list_view.xml',
         ],
     },

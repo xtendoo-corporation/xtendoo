@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- QWEB TEMPLATE (VA FUERA DE <data>) -->
+    <!-- ========================================================= -->
+    <template id="report_factura_simplificada_80mm">
+
+        <t t-call="web.html_container">
+
+            <t t-foreach="docs" t-as="o">
+
+                <main>
+
+                    <style>
+                        @page {
+                         size: 80mm auto;
+                         margin: 5mm;
+                        }
+                        body {
+                        font-family: monospace;
+                        font-size: 10px;
+                        }
+                        .center { text-align: center; }
+                        .right { text-align: right; }
+                        .bold { font-weight: bold; }
+                        .sep { border-top: 1px dashed #000; margin: 6px 0; }
+                        .row { display: flex; justify-content: space-between; }
+                    </style>
+
+                    <!-- CABECERA EMPRESA -->
+                    <div style="display:block; width:35%; margin:0 auto; mb-5">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo"
+                             style="width:100%"/>
+                    </div>
+                    <div class="center bold mt-3" style="font-size:1.1em; margin-top:5px,">
+                        <span t-field="res_company.name"/>
+                    </div>
+
+                    <div class="center">
+                        <span t-field="res_company.street"/>
+                    </div>
+
+                    <div class="center">
+                        <span t-field="res_company.zip"/>
+                        <span t-field="res_company.city"/>
+                    </div>
+
+                    <div class="center">
+                        TLF:
+                        <span t-field="res_company.phone"/>
+                    </div>
+
+                    <div class="center">
+                        NIF:
+                        <span t-field="res_company.vat"/>
+                    </div>
+
+                    <div class="center">
+                        <span t-field="res_company.email"/>
+                    </div>
+
+                    <div class="center">
+                        <span t-field="res_company.website"/>
+                    </div>
+
+
+                    <div class="sep"/>
+
+                    <!-- DATOS FACTURA -->
+                    <div class="center bold">
+                        <t t-if="o.move_type == 'out_invoice'">FACTURA SIMPLIFICADA</t>
+                        <t t-if="o.move_type == 'out_refund'">FACTURA RECTIFICATIVA</t>
+                    </div>
+
+                    <div class="center">
+                        <span t-field="o.name"/>
+                    </div>
+
+                    <div class="center">
+                        Fecha:
+                        <span t-field="o.invoice_date"/>
+                    </div>
+
+                    <div class="sep"/>
+
+                    <!-- LÍNEAS -->
+                    <t t-foreach="o.invoice_line_ids" t-as="line">
+                        <t t-if="line.price_unit != 0.0">
+                            <div>
+                                <span t-field="line.product_id"/>
+                            </div>
+
+                            <div class="row">
+                                <span>
+                                    <t t-esc="'%.0f' % line.quantity"/>
+                                    x
+                                    <t t-esc="'%.2f' % line.price_unit"/>
+                                </span>
+                                <span>
+                                    <t t-esc="'%.2f' % line.price_subtotal"/>
+                                </span>
+                            </div>
+                        </t>
+                    </t>
+
+                    <div class="sep"/>
+
+                    <!-- TOTALES -->
+                    <div class="row">
+                        <span>Base imponible</span>
+                        <span t-esc="'%.2f' % o.amount_untaxed"/>
+                    </div>
+
+                    <div class="row">
+                        <span>IVA</span>
+                        <span t-esc="'%.2f' % o.amount_tax"/>
+                    </div>
+
+                    <div class="sep"/>
+
+                    <div class="row bold" style="font-size:1.1em;">
+                        <span>TOTAL</span>
+                        <span t-esc="'%.2f' % o.amount_total"/>
+                    </div>
+
+                    <div class="sep"/>
+
+                    <!-- PIE -->
+                    <div class="center" style="font-size:0.8em;">
+                        Gracias por su compra
+                    </div>
+
+                </main>
+
+            </t>
+
+        </t>
+
+    </template>
+
+
+    <!-- ========================================================= -->
+    <!-- DATA: RECORDS -->
+    <!-- ========================================================= -->
+    <data>
+
+        <record id="paperformat_factura_simplificada_80mm" model="report.paperformat">
+            <field name="name">Factura Simplificada 80mm</field>
+            <field name="format">custom</field>
+            <field name="page_width">72</field>
+            <field name="page_height">200</field>
+            <field name="margin_top">5</field>
+            <field name="margin_bottom">3</field>
+            <field name="margin_left">2</field>
+            <field name="margin_right">2</field>
+            <field name="dpi">90</field>
+        </record>
+
+
+        <!-- ACCIÓN DEL REPORTE -->
+        <record id="action_factura_simplificada_80mm" model="ir.actions.report">
+            <field name="name">Factura Simplificada 80mm</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">pos_conventional.report_factura_simplificada_80mm</field>
+            <field name="report_file">pos_conventional.report_factura_simplificada_80mm</field>
+            <field name="paperformat_id" ref="paperformat_factura_simplificada_80mm"/>
+        </record>
+
+    </data>
+
+</odoo>

@@ -46,8 +46,16 @@
             </xpath>
 
             <!-- Ocultar el botón original de Invoice en el header -->
-            <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace"/>
+            <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace">
+                <button
+                    name="action_print_factura_simplificada"
+                    type="object"
+                    string="Factura simplificada 80mm"
+                    class="btn-primary"
+                    invisible="state == draft"
+                />
+
+            </xpath>
         </field>
     </record>
 </odoo>
-

@@ -231,118 +231,7 @@ class PosOrder(models.Model):
             raise UserError(_('Error al generar la factura: %s') % str(e))
 
         # Retornar acción especial para que JS imprima el ticket POS
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'pos_print_receipt',
-            'params': {
-                'order_id': self.id,
-                'invoice_id': invoice.id,
-                'invoice_name': invoice.name,
-            }
-        }
-
-    def get_receipt_data(self):
-        """
-        Obtiene los datos necesarios para generar el ticket/recibo POS.
-        Este método es llamado desde JavaScript para obtener todos los datos
-        necesarios para renderizar el ticket.
-        """
-        self.ensure_one()
-
-        company = self.company_id
-
-        # Datos de las líneas
-        lines_data = []
-        for line in self.lines:
-            lines_data.append({
-                'id': line.id,
-                'product_name': line.full_product_name or line.product_id.display_name,
-                'qty': line.qty,
-                'price_unit': line.price_unit,
-                'discount': line.discount,
-                'price_subtotal': line.price_subtotal,
-                'price_subtotal_incl': line.price_subtotal_incl,
-                'tax_ids': line.tax_ids.mapped('name'),
-            })
-
-        # Datos de los pagos
-        payments_data = []
-        for payment in self.payment_ids:
-            payments_data.append({
-                'id': payment.id,
-                'payment_method': payment.payment_method_id.name,
-                'amount': payment.amount,
-            })
-
-        return {
-            'order': {
-                'id': self.id,
-                'name': self.name,
-                'pos_reference': self.pos_reference,
-                'date_order': self.date_order.strftime('%d/%m/%Y %H:%M') if self.date_order else '',
-                'amount_total': self.amount_total,
-                'amount_tax': self.amount_tax,
-                'amount_paid': self.amount_paid,
-                'amount_return': self.amount_return,
-            },
-            'company': {
-                'id': company.id,
-                'name': company.name,
-                'vat': company.vat or '',
-                'street': company.street or '',
-                'street2': company.street2 or '',
-                'zip': company.zip or '',
-                'city': company.city or '',
-                'phone': company.phone or '',
-                'email': company.email or '',
-            },
-            'partner': {
-                'id': self.partner_id.id if self.partner_id else False,
-                'name': self.partner_id.name if self.partner_id else '',
-                'vat': self.partner_id.vat if self.partner_id else '',
-            },
-            'lines': lines_data,
-            'payments': payments_data,
-            'invoice': {
-                'id': self.account_move.id if self.account_move else False,
-                'name': self.account_move.name if self.account_move else '',
-            },
-            'config': {
-                'name': self.config_id.name,
-            },
-            'session': {
-                'name': self.session_id.name,
-            },
-            'user': {
-                'name': self.user_id.name if self.user_id else '',
-            },
-        }
-
-    def action_print_pos_receipt(self):
-        """
-        Imprime el recibo/ticket del pedido POS.
-
-        Utiliza el reporte estándar de Odoo para tickets POS si existe,
-        o genera uno compatible con impresoras de tickets.
-
-        Returns:
-            dict: Acción de reporte para imprimir el ticket
-        """
-        self.ensure_one()
-
-        # Buscar el reporte de ticket POS
-        # En Odoo 19, el ticket se genera normalmente desde el frontend
-        # pero podemos usar un reporte PDF para el backend
-        report = self.env.ref('point_of_sale.pos_order_report', raise_if_not_found=False)
-
-        if report:
-            return report.report_action(self)
-
-        # Si no existe el reporte estándar, intentar con el de factura simplificada
-        if self.account_move:
-            return self.account_move.action_invoice_print()
-
-        raise UserError(_('No se encontró un reporte de ticket disponible.'))
+        return True
 
 
     def action_close_pos_session_wizard(self):
@@ -573,4 +462,14 @@ class PosOrder(models.Model):
             'price_subtotal_incl': price_subtotal_incl,
             'tax_ids': [(6, 0, product_taxes.ids)],
         }
+
+    def action_print_factura_simplificada(self):
+        self.ensure_one()
+        if not self.account_move:
+            return
+
+        return self.env.ref(
+            "pos_conventional.action_factura_simplificada_80mm"
+        ).report_action(self.account_move)
+
 
