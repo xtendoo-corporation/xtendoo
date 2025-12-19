@@ -230,7 +230,16 @@ class PosOrder(models.Model):
             _logger.exception("Error al generar factura: %s", str(e))
             raise UserError(_('Error al generar la factura: %s') % str(e))
 
-        # Retornar acción especial para que JS imprima el ticket POS
+        if self.config_id.iface_print_auto:
+            action = self.env.ref(
+                'pos_conventional.action_factura_simplificada_80mm'
+            ).report_action(invoice)
+            # Forzar modo impresión directa en nueva pestaña y no navegar fuera del pedido
+            action['context'] = action.get('context', {})
+            action['context'].update({'print_mode': True})
+            action['close_on_report_download'] = True
+            return action
+
         return True
 
 
@@ -471,5 +480,3 @@ class PosOrder(models.Model):
         return self.env.ref(
             "pos_conventional.action_factura_simplificada_80mm"
         ).report_action(self.account_move)
-
-

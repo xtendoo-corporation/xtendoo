@@ -52,7 +52,7 @@
                     type="object"
                     string="Factura simplificada 80mm"
                     class="btn-primary"
-                    invisible="state == draft"
+                    invisible="state == 'draft'"
                 />
 
             </xpath>
