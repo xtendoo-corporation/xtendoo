@@ -6,7 +6,6 @@ class HideMenuUser(models.Model):
 
     @api.model
     def create(self, vals):
-        self.clear_caches()
         return super(HideMenuUser, self).create(vals)
 
     def write(self, vals):
@@ -15,7 +14,6 @@ class HideMenuUser(models.Model):
             menu.write({
                 'restrict_user_ids': [(4, self.id)]
             })
-        self.clear_caches()
         return res
 
     # def _get_is_admin(self):
