@@ -71,14 +71,17 @@ class MailGatewayWhatsappService(models.AbstractModel):
                             try:
                                 # Asegurarse de que el xmlid es un string y no una lista
                                 report_xmlid = 'sale.action_report_saleorder'
-                                if isinstance(report_xmlid, list):
-                                    report_xmlid = report_xmlid[0]
                                 report = self.env.ref(report_xmlid)
-                                # Validar la firma del método _render_qweb_pdf
-                                if hasattr(report, '_render_qweb_pdf'):
+                                # Si el método _render_qweb_pdf está sobreescrito, usar la firma correcta
+                                try:
                                     pdf_content, _ = report._render_qweb_pdf([sale_order.id])
-                                else:
-                                    raise Exception('El reporte no tiene método _render_qweb_pdf')
+                                except Exception as e:
+                                    # Si el error es por _get_report, pasar el xmlid correcto
+                                    if hasattr(report, '_get_report'):
+                                        real_report = report._get_report(report_xmlid)
+                                        pdf_content, _ = real_report._render_qweb_pdf([sale_order.id])
+                                    else:
+                                        raise e
                                 # Crear un attachment temporal
                                 attachment = self.env['ir.attachment'].create({
                                     'name': f"Pedido_{sale_order.name}.pdf",
