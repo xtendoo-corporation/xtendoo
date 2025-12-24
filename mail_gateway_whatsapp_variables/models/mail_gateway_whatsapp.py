@@ -57,32 +57,21 @@ class MailGatewayWhatsappService(models.AbstractModel):
                             _logger.info(f"Final payload: {payload}")
 
                 # --- INICIO: Adjuntar PDF si es sale.order ---
-                # Solo si el modelo es sale.order y hay un registro válido
                 if whatsapp_template.model_id and whatsapp_template.model_id.model == 'sale.order':
-                    res_id = None
-                    # Buscar el res_id igual que en _get_variables_from_template
-                    if not res_id:
-                        res_id = self.env.context.get("active_id")
-                    if not res_id:
-                        res_id = self.env.context.get("default_res_id")
+                    res_id = self.env.context.get("active_id") or self.env.context.get("default_res_id")
                     if res_id:
                         sale_order = self.env['sale.order'].browse(res_id)
                         if sale_order.exists():
                             try:
-                                # Asegurarse de que el xmlid es un string y no una lista
                                 report_xmlid = 'sale.action_report_saleorder'
+                                _logger.info(f"Generando PDF para sale.order xmlid={report_xmlid} id={sale_order.id}")
                                 report = self.env.ref(report_xmlid)
-                                # Si el método _render_qweb_pdf está sobreescrito, usar la firma correcta
                                 try:
                                     pdf_content, _ = report._render_qweb_pdf([sale_order.id])
-                                except Exception as e:
-                                    # Si el error es por _get_report, pasar el xmlid correcto
-                                    if hasattr(report, '_get_report'):
-                                        real_report = report._get_report(report_xmlid)
-                                        pdf_content, _ = real_report._render_qweb_pdf([sale_order.id])
-                                    else:
-                                        raise e
-                                # Crear un attachment temporal
+                                    _logger.info("PDF generado con firma estándar.")
+                                except TypeError:
+                                    pdf_content, _ = report._render_qweb_pdf(report_xmlid, [sale_order.id])
+                                    _logger.info("PDF generado con firma extendida.")
                                 attachment = self.env['ir.attachment'].create({
                                     'name': f"Pedido_{sale_order.name}.pdf",
                                     'type': 'binary',
@@ -91,7 +80,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
                                     'res_id': sale_order.id,
                                     'mimetype': 'application/pdf',
                                 })
-                                # Añadir el componente de documento al payload
+                                _logger.info(f"Attachment PDF id={attachment.id} name={attachment.name} añadido al payload.")
                                 if "components" not in payload["template"]:
                                     payload["template"]["components"] = []
                                 payload["template"]["components"].append({
