@@ -58,49 +58,60 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
                 # --- INICIO: Adjuntar PDF si es sale.order ---
                 if whatsapp_template.model_id and whatsapp_template.model_id.model == 'sale.order':
-                    res_id = self.env.context.get("active_id") or self.env.context.get("default_res_id")
-                    if res_id:
-                        sale_order = self.env['sale.order'].browse(res_id)
-                        if sale_order.exists():
-                            try:
-                                report_xmlid = 'sale.action_report_saleorder'
-                                _logger.info(f"Generando PDF para sale.order xmlid={report_xmlid} id={sale_order.id}")
-                                report = self.env.ref(report_xmlid)
+                    # Solo añadir documento si el template tiene header tipo documento
+                    if whatsapp_template.header_type == 'document':
+                        res_id = self.env.context.get("active_id") or self.env.context.get("default_res_id")
+                        if res_id:
+                            sale_order = self.env['sale.order'].browse(res_id)
+                            if sale_order.exists():
                                 try:
-                                    pdf_content, _ = report._render_qweb_pdf([sale_order.id])
-                                    _logger.info("PDF generado con firma estándar.")
-                                except (TypeError, AttributeError):
-                                    pdf_content, _ = report._render_qweb_pdf(report_xmlid, [sale_order.id])
-                                    _logger.info("PDF generado con firma extendida.")
-                                attachment = self.env['ir.attachment'].create({
-                                    'name': f"Pedido_{sale_order.name}.pdf",
-                                    'type': 'binary',
-                                    'datas': base64.b64encode(pdf_content),
-                                    'res_model': 'sale.order',
-                                    'res_id': sale_order.id,
-                                    'mimetype': 'application/pdf',
-                                })
-                                _logger.info(f"Attachment PDF id={attachment.id} name={attachment.name} añadido al payload.")
-                                # Insertar el documento justo después del body
-                                components = payload["template"].setdefault("components", [])
-                                body_index = next((i for i, c in enumerate(components) if c.get("type") == "body"), -1)
-                                doc_component = {
-                                    "type": "document",
-                                    "parameters": [{
-                                        "type": "document",
-                                        "document": {
-                                            "link": f"/web/content/{attachment.id}?download=true",
-                                            "filename": attachment.name
-                                        }
-                                    }]
-                                }
-                                if body_index != -1:
-                                    components.insert(body_index + 1, doc_component)
-                                else:
-                                    components.append(doc_component)
-                            except Exception as e:
-                                _logger.error(f"Error generando o adjuntando el PDF: {e}", exc_info=True)
+                                    report_xmlid = 'sale.action_report_saleorder'
+                                    _logger.info(f"Generando PDF para sale.order xmlid={report_xmlid} id={sale_order.id}")
+                                    report = self.env.ref(report_xmlid)
+                                    try:
+                                        pdf_content, _ = report._render_qweb_pdf([sale_order.id])
+                                        _logger.info("PDF generado con firma estándar.")
+                                    except (TypeError, AttributeError):
+                                        pdf_content, _ = report._render_qweb_pdf(report_xmlid, [sale_order.id])
+                                        _logger.info("PDF generado con firma extendida.")
+                                    attachment = self.env['ir.attachment'].create({
+                                        'name': f"Pedido_{sale_order.name}.pdf",
+                                        'type': 'binary',
+                                        'datas': base64.b64encode(pdf_content),
+                                        'res_model': 'sale.order',
+                                        'res_id': sale_order.id,
+                                        'mimetype': 'application/pdf',
+                                    })
+                                    _logger.info(f"Attachment PDF id={attachment.id} name={attachment.name} añadido al payload.")
+                                    # Estructura correcta para header tipo documento
+                                    components = payload["template"].setdefault("components", [])
+                                    # Buscar el header de tipo documento y añadir el parámetro
+                                    for comp in components:
+                                        if comp.get("type") == "header":
+                                            comp["parameters"] = [{
+                                                "type": "document",
+                                                "document": {
+                                                    "link": f"/web/content/{attachment.id}?download=true",
+                                                    "filename": attachment.name
+                                                }
+                                            }]
+                                            break
+                                    else:
+                                        # Si no hay header, añadirlo
+                                        components.insert(0, {
+                                            "type": "header",
+                                            "parameters": [{
+                                                "type": "document",
+                                                "document": {
+                                                    "link": f"/web/content/{attachment.id}?download=true",
+                                                    "filename": attachment.name
+                                                }
+                                            }]
+                                        })
+                                except Exception as e:
+                                    _logger.error(f"Error generando o adjuntando el PDF: {e}", exc_info=True)
                 # --- FIN: Adjuntar PDF si es sale.order ---
+                _logger.info(f"Payload final a enviar: {payload}")
 
         return payload
 
