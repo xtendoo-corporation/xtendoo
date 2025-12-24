@@ -22,6 +22,8 @@ class MailGatewayWhatsappService(models.AbstractModel):
             channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
         )
 
+        attachments = []
+
         # If it's a template message, check if we need to add components
         if payload and payload.get("type") == "template" and body:
             whatsapp_template_id = self.env.context.get("whatsapp_template_id")
@@ -58,7 +60,6 @@ class MailGatewayWhatsappService(models.AbstractModel):
                             _logger.info(f"Final payload: {payload}")
 
                 # Guardar adjuntos a enviar después
-                self._attachments_to_send = []
                 if payload and payload.get("type") == "template" and body:
                     whatsapp_template_id = self.env.context.get("whatsapp_template_id")
                     if whatsapp_template_id:
@@ -83,20 +84,20 @@ class MailGatewayWhatsappService(models.AbstractModel):
                                             'res_id': sale_order.id,
                                             'mimetype': 'application/pdf',
                                         })
-                                        self._attachments_to_send.append(attachment)
+                                        attachments.append(attachment)
                                     except Exception as e:
                                         import logging
                                         _logger = logging.getLogger(__name__)
                                         _logger.error(f"Error generando PDF para adjunto: {e}", exc_info=True)
-        return payload
+        return payload, attachments
 
-    def send_attachments_after_template(self, channel, to_number):
-        """Enviar los adjuntos guardados como mensajes separados por WhatsApp."""
+    def send_attachments_after_template(self, channel, to_number, attachments):
+        """Enviar los adjuntos recibidos como mensajes separados por WhatsApp."""
         import logging
         _logger = logging.getLogger(__name__)
-        if not hasattr(self, '_attachments_to_send'):
+        if not attachments:
             return
-        for attachment in self._attachments_to_send:
+        for attachment in attachments:
             try:
                 # Construir payload para documento
                 payload = {
@@ -459,3 +460,22 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
             )
+
+    def send_template_and_attachments(self, channel, body, to_number, media_id=False, media_type=False, media_name=False):
+        """
+        Envía el mensaje de plantilla y, si hay adjuntos, los envía después como mensajes separados.
+        """
+        import logging
+        _logger = logging.getLogger(__name__)
+        payload, attachments = self._send_payload(
+            channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
+        )
+        # Aquí deberías llamar al método real de envío del template (API WhatsApp)
+        _logger.info(f"Enviando mensaje de plantilla WhatsApp: {payload}")
+        # Por ejemplo: self._send_whatsapp_api(payload)
+        if attachments:
+            _logger.info(f"Hay {len(attachments)} adjuntos para enviar tras el template.")
+            self.send_attachments_after_template(channel, to_number, attachments)
+        else:
+            _logger.info("No hay adjuntos para enviar tras el template.")
+
