@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_journal_dashboard_kanban_view_inherit" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.inherit.account.balance</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <!-- Usamos un XPath que apunta al contenedor de la derecha de bancos y cajas.
+                 Inyectamos al final de este contenedor para asegurar visibilidad
+                 independientemente de si el balance estandard de Odoo se oculta. -->
+            <xpath expr="//t[@t-name='JournalBodyBankCash']//div[@id='dashboard_bank_cash_right']" position="inside">
+                <div class="row" t-if="dashboard.account_id_balance" name="account_balance_row_accounting">
+                    <div class="col overflow-hidden text-start">
+                        <span t-att-title="dashboard.account_id_name">Saldo Contable</span>
+                    </div>
+                    <div class="col-auto text-end">
+                        <span dir="ltr"><t t-out="dashboard.account_id_balance"/></span>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

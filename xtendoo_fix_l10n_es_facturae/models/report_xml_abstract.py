@@ -25,6 +25,7 @@ class ReportXmlAbstract(models.AbstractModel):
         - Empty elements removed
         - Whitespace cleaned up
         - Proper XML formatting
+        - XML declaration with double quotes
 
         Similar to the approach used in l10n_es_facturae module.
         """
@@ -38,10 +39,19 @@ class ReportXmlAbstract(models.AbstractModel):
         encoding = ir_report.xml_encoding or "UTF-8"
         xml_content = etree.tostring(
             tree,
-            xml_declaration=ir_report.xml_declaration,
+            xml_declaration=False,  # Generate declaration manually to use double quotes
             encoding=encoding,
             pretty_print=True,
         )
+
+        # Add XML declaration with double quotes if needed
+        if ir_report.xml_declaration:
+            declaration = f'<?xml version="1.0" encoding="{encoding}"?>\n'.encode(encoding)
+            xml_content = declaration + xml_content
+
+        print("xml_content:", xml_content)
+        print("XML Report Generated:\n", xml_content.decode(encoding))
+        print("content_type:", content_type)
 
         return xml_content, content_type
 
