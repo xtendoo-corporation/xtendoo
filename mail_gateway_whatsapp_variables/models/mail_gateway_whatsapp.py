@@ -69,30 +69,33 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         sale_order = self.env['sale.order'].browse(res_id)
                         if sale_order.exists():
                             # Generar el PDF usando el reporte estándar de Odoo
-                            report = self.env.ref('sale.action_report_saleorder')
-                            pdf_content, _ = report._render_qweb_pdf([sale_order.id])
-                            # Crear un attachment temporal
-                            attachment = self.env['ir.attachment'].create({
-                                'name': f"Pedido_{sale_order.name}.pdf",
-                                'type': 'binary',
-                                'datas': base64.b64encode(pdf_content),
-                                'res_model': 'sale.order',
-                                'res_id': sale_order.id,
-                                'mimetype': 'application/pdf',
-                            })
-                            # Añadir el componente de documento al payload
-                            if "components" not in payload["template"]:
-                                payload["template"]["components"] = []
-                            payload["template"]["components"].append({
-                                "type": "document",
-                                "parameters": [{
+                            try:
+                                report = self.env.ref('sale.action_report_saleorder')
+                                pdf_content, _ = report._render_qweb_pdf([sale_order.id])
+                                # Crear un attachment temporal
+                                attachment = self.env['ir.attachment'].create({
+                                    'name': f"Pedido_{sale_order.name}.pdf",
+                                    'type': 'binary',
+                                    'datas': base64.b64encode(pdf_content),
+                                    'res_model': 'sale.order',
+                                    'res_id': sale_order.id,
+                                    'mimetype': 'application/pdf',
+                                })
+                                # Añadir el componente de documento al payload
+                                if "components" not in payload["template"]:
+                                    payload["template"]["components"] = []
+                                payload["template"]["components"].append({
                                     "type": "document",
-                                    "document": {
-                                        "link": f"/web/content/{attachment.id}?download=true",
-                                        "filename": attachment.name
-                                    }
-                                }]
-                            })
+                                    "parameters": [{
+                                        "type": "document",
+                                        "document": {
+                                            "link": f"/web/content/{attachment.id}?download=true",
+                                            "filename": attachment.name
+                                        }
+                                    }]
+                                })
+                            except Exception as e:
+                                _logger.error(f"Error generando o adjuntando el PDF: {e}", exc_info=True)
                 # --- FIN: Adjuntar PDF si es sale.order ---
 
         return payload
