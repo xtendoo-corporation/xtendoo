@@ -109,11 +109,11 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         "filename": attachment.name
                     }
                 }
-                _logger.info(f"Enviando adjunto por WhatsApp: {attachment.name} (id={attachment.id})")
+                _logger.info(f"[WHATSAPP] Enviando adjunto: {attachment.name} (id={attachment.id})")
                 # Aquí deberías llamar al método real de envío (API WhatsApp)
                 # Por ejemplo: self._send_whatsapp_api(payload)
             except Exception as e:
-                _logger.error(f"Error enviando adjunto por WhatsApp: {e}", exc_info=True)
+                _logger.error(f"[WHATSAPP] Error enviando adjunto: {e}", exc_info=True)
         # Limpiar adjuntos pendientes
         self._attachments_to_send = []
 
@@ -470,12 +470,12 @@ class MailGatewayWhatsappService(models.AbstractModel):
         payload, attachments = self._send_payload(
             channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
         )
+        # Log relevante: envío de plantilla
+        _logger.info(f"[WHATSAPP] Enviando mensaje de plantilla: {payload}")
         # Aquí deberías llamar al método real de envío del template (API WhatsApp)
-        _logger.info(f"Enviando mensaje de plantilla WhatsApp: {payload}")
         # Por ejemplo: self._send_whatsapp_api(payload)
         if attachments:
-            _logger.info(f"Hay {len(attachments)} adjuntos para enviar tras el template.")
+            _logger.info(f"[WHATSAPP] Adjuntos detectados ({len(attachments)}): {[a.name for a in attachments]}")
             self.send_attachments_after_template(channel, to_number, attachments)
         else:
-            _logger.info("No hay adjuntos para enviar tras el template.")
-
+            _logger.info("[WHATSAPP] No hay adjuntos para enviar tras el template.")
