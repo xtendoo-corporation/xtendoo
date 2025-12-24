@@ -12,102 +12,86 @@ class MailGatewayWhatsappService(models.AbstractModel):
     def _send_payload(
         self, channel, body=False, media_id=False, media_type=False, media_name=False
     ):
-        """Override to add template components (variables) support."""
         import logging
         _logger = logging.getLogger(__name__)
-
-        # Get the base payload from parent
-        # Enviar solo el mensaje de plantilla
-        payload = super()._send_payload(
-            channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
-        )
+        _logger.info(f"[WHATSAPP] Entrando en _send_payload con channel={channel}, body={body}, media_id={media_id}, media_type={media_type}, media_name={media_name}")
+        try:
+            payload = super()._send_payload(
+                channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
+            )
+            _logger.info(f"[WHATSAPP] Payload base generado: {payload}")
+        except Exception as e:
+            _logger.error(f"[WHATSAPP] Error en super()._send_payload: {e}", exc_info=True)
+            return None, []
 
         attachments = []
-
-        # If it's a template message, check if we need to add components
-        if payload and payload.get("type") == "template" and body:
-            whatsapp_template_id = self.env.context.get("whatsapp_template_id")
-
-            if whatsapp_template_id:
-                whatsapp_template = self.env["mail.whatsapp.template"].browse(
-                    whatsapp_template_id
-                )
-
-                _logger.info(f"Template: {whatsapp_template.name}, has variables: {bool(whatsapp_template.variable_ids)}")
-
-                # Check if template has variables configured
-                if whatsapp_template.variable_ids:
-                    # Get values from context or from record
-                    template_variables = self.env.context.get("template_variables", {})
-
-                    # If no variables in context, try to get them from the record
-                    if not template_variables:
-                        template_variables = self._get_variables_from_template(
-                            whatsapp_template, channel
-                        )
-
-                    _logger.info(f"Variables obtained: {template_variables}")
-
-                    # Build components array with variables or buttons
-                    if whatsapp_template.variable_ids or whatsapp_template.button_ids:
-                        components = self._build_template_components(
-                            whatsapp_template, template_variables
-                        )
-                        _logger.info(f"Components built: {components}")
-
-                        if components:
-                            payload["template"]["components"] = components
-                            _logger.info(f"Final payload: {payload}")
-
-                # Guardar adjuntos a enviar después
-                if payload and payload.get("type") == "template" and body:
-                    whatsapp_template_id = self.env.context.get("whatsapp_template_id")
-                    if whatsapp_template_id:
-                        whatsapp_template = self.env["mail.whatsapp.template"].browse(whatsapp_template_id)
-                        if whatsapp_template.model_id and whatsapp_template.model_id.model == 'sale.order':
-                            res_id = self.env.context.get("active_id") or self.env.context.get("default_res_id")
-                            if res_id:
-                                sale_order = self.env['sale.order'].browse(res_id)
-                                if sale_order.exists():
+        try:
+            if payload and payload.get("type") == "template" and body:
+                whatsapp_template_id = self.env.context.get("whatsapp_template_id")
+                _logger.info(f"[WHATSAPP] whatsapp_template_id en contexto: {whatsapp_template_id}")
+                if whatsapp_template_id:
+                    whatsapp_template = self.env["mail.whatsapp.template"].browse(whatsapp_template_id)
+                    _logger.info(f"[WHATSAPP] Template: {whatsapp_template.name}, tiene variables: {bool(whatsapp_template.variable_ids)}")
+                    if whatsapp_template.variable_ids:
+                        template_variables = self.env.context.get("template_variables", {})
+                        if not template_variables:
+                            template_variables = self._get_variables_from_template(
+                                whatsapp_template, channel
+                            )
+                        _logger.info(f"[WHATSAPP] Variables obtenidas: {template_variables}")
+                        if whatsapp_template.variable_ids or whatsapp_template.button_ids:
+                            components = self._build_template_components(
+                                whatsapp_template, template_variables
+                            )
+                            _logger.info(f"[WHATSAPP] Components built: {components}")
+                            if components:
+                                payload["template"]["components"] = components
+                                _logger.info(f"[WHATSAPP] Payload final con components: {payload}")
+                    # Adjuntos PDF para sale.order
+                    if whatsapp_template.model_id and whatsapp_template.model_id.model == 'sale.order':
+                        res_id = self.env.context.get("active_id") or self.env.context.get("default_res_id")
+                        _logger.info(f"[WHATSAPP] res_id para PDF: {res_id}")
+                        if res_id:
+                            sale_order = self.env['sale.order'].browse(res_id)
+                            if sale_order.exists():
+                                try:
+                                    report_xmlid = 'sale.action_report_saleorder'
+                                    report = self.env.ref(report_xmlid)
                                     try:
-                                        report_xmlid = 'sale.action_report_saleorder'
-                                        report = self.env.ref(report_xmlid)
-                                        try:
-                                            pdf_content, _ = report._render_qweb_pdf([sale_order.id])
-                                        except (TypeError, AttributeError):
-                                            pdf_content, _ = report._render_qweb_pdf(report_xmlid, [sale_order.id])
-                                        attachment = self.env['ir.attachment'].create({
-                                            'name': f"Pedido_{sale_order.name}.pdf",
-                                            'type': 'binary',
-                                            'datas': base64.b64encode(pdf_content),
-                                            'res_model': 'sale.order',
-                                            'res_id': sale_order.id,
-                                            'mimetype': 'application/pdf',
-                                        })
-                                        attachments.append(attachment)
-                                    except Exception as e:
-                                        import logging
-                                        _logger = logging.getLogger(__name__)
-                                        _logger.error(f"Error generando PDF para adjunto: {e}", exc_info=True)
+                                        pdf_content, _ = report._render_qweb_pdf([sale_order.id])
+                                    except (TypeError, AttributeError) as e:
+                                        _logger.warning(f"[WHATSAPP] Fallback _render_qweb_pdf: {e}")
+                                        pdf_content, _ = report._render_qweb_pdf(report_xmlid, [sale_order.id])
+                                    attachment = self.env['ir.attachment'].create({
+                                        'name': f"Pedido_{sale_order.name}.pdf",
+                                        'type': 'binary',
+                                        'datas': base64.b64encode(pdf_content),
+                                        'res_model': 'sale.order',
+                                        'res_id': sale_order.id,
+                                        'mimetype': 'application/pdf',
+                                    })
+                                    attachments.append(attachment)
+                                    _logger.info(f"[WHATSAPP] PDF generado y adjuntado: {attachment.id} {attachment.name}")
+                                except Exception as e:
+                                    _logger.error(f"[WHATSAPP] Error generando PDF para adjunto: {e}", exc_info=True)
+        except Exception as e:
+            _logger.error(f"[WHATSAPP] Error en _send_payload: {e}", exc_info=True)
         return payload, attachments
 
     def send_template_and_attachments(self, channel, body, to_number, media_id=False, media_type=False, media_name=False):
-        """
-        Envía el mensaje de plantilla y, si hay adjuntos, los envía después como mensajes separados.
-        """
         import logging
         _logger = logging.getLogger(__name__)
-        payload, attachments = self._send_payload(
-            channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
-        )
-        # Log relevante: envío de plantilla
-        _logger.info(f"[WHATSAPP] Enviando mensaje de plantilla: {payload}")
-        # Enviar mensaje de plantilla a WhatsApp
+        _logger.info(f"[WHATSAPP] Entrando en send_template_and_attachments con channel={channel}, to_number={to_number}, body={body}")
         try:
+            payload, attachments = self._send_payload(
+                channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
+            )
+            _logger.info(f"[WHATSAPP] Enviando mensaje de plantilla: {payload}")
             self._send_whatsapp_api(payload)
             _logger.info("[WHATSAPP] Plantilla enviada correctamente.")
         except Exception as e:
             _logger.error(f"[WHATSAPP] Error enviando plantilla: {e}", exc_info=True)
+            return  # Si falla la plantilla, no seguimos con adjuntos
         if attachments:
             _logger.info(f"[WHATSAPP] Adjuntos detectados ({len(attachments)}): {[a.name for a in attachments]}")
             self.send_attachments_after_template(channel, to_number, attachments)
@@ -115,30 +99,30 @@ class MailGatewayWhatsappService(models.AbstractModel):
             _logger.info("[WHATSAPP] No hay adjuntos para enviar tras el template.")
 
     def send_attachments_after_template(self, channel, to_number, attachments):
-        """Enviar los adjuntos recibidos como mensajes separados por WhatsApp."""
         import logging
         _logger = logging.getLogger(__name__)
+        _logger.info(f"[WHATSAPP] Entrando en send_attachments_after_template con {len(attachments)} adjuntos para {to_number}")
         if not attachments:
+            _logger.info("[WHATSAPP] No hay adjuntos para enviar.")
             return
         for attachment in attachments:
             try:
-                # Construir payload para documento
+                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+                link = f"{base_url}/web/content/{attachment.id}?download=true"
                 payload = {
                     "messaging_product": "whatsapp",
                     "to": to_number,
                     "type": "document",
                     "document": {
-                        "link": f"/web/content/{attachment.id}?download=true",
+                        "link": link,
                         "filename": attachment.name
                     }
                 }
-                _logger.info(f"[WHATSAPP] Enviando adjunto: {attachment.name} (id={attachment.id})")
+                _logger.info(f"[WHATSAPP] Enviando adjunto: {attachment.name} (id={attachment.id}) link={link}")
                 self._send_whatsapp_api(payload)
                 _logger.info(f"[WHATSAPP] Adjunto '{attachment.name}' enviado correctamente.")
             except Exception as e:
                 _logger.error(f"[WHATSAPP] Error enviando adjunto: {e}", exc_info=True)
-        # Limpiar adjuntos pendientes
-        self._attachments_to_send = []
 
     def _get_variables_from_template(self, template, channel=None):
         """Get variable values from the record specified in the template's model.
