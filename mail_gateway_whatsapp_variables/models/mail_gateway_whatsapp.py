@@ -2,7 +2,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import re
-import base64
 from odoo import api, fields, models
 
 
@@ -55,45 +54,6 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         if components:
                             payload["template"]["components"] = components
                             _logger.info(f"Final payload: {payload}")
-
-                # --- INICIO: Adjuntar PDF si es sale.order ---
-                # Solo si el modelo es sale.order y hay un registro válido
-                if whatsapp_template.model_id and whatsapp_template.model_id.model == 'sale.order':
-                    res_id = None
-                    # Buscar el res_id igual que en _get_variables_from_template
-                    if not res_id:
-                        res_id = self.env.context.get("active_id")
-                    if not res_id:
-                        res_id = self.env.context.get("default_res_id")
-                    if res_id:
-                        sale_order = self.env['sale.order'].browse(res_id)
-                        if sale_order.exists():
-                            # Generar el PDF usando el reporte estándar de Odoo
-                            report = self.env.ref('sale.action_report_saleorder')
-                            pdf_content, _ = report._render_qweb_pdf([sale_order.id])
-                            # Crear un attachment temporal
-                            attachment = self.env['ir.attachment'].create({
-                                'name': f"Pedido_{sale_order.name}.pdf",
-                                'type': 'binary',
-                                'datas': base64.b64encode(pdf_content),
-                                'res_model': 'sale.order',
-                                'res_id': sale_order.id,
-                                'mimetype': 'application/pdf',
-                            })
-                            # Añadir el componente de documento al payload
-                            if "components" not in payload["template"]:
-                                payload["template"]["components"] = []
-                            payload["template"]["components"].append({
-                                "type": "document",
-                                "parameters": [{
-                                    "type": "document",
-                                    "document": {
-                                        "link": f"/web/content/{attachment.id}?download=true",
-                                        "filename": attachment.name
-                                    }
-                                }]
-                            })
-                # --- FIN: Adjuntar PDF si es sale.order ---
 
         return payload
 

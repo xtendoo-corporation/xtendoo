@@ -133,4 +133,3 @@ class MailWhatsappTemplateVariable(models.Model):
                 return int(match.group())
 
         return 0
-
