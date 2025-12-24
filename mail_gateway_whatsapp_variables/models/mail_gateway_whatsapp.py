@@ -69,7 +69,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
                                 try:
                                     pdf_content, _ = report._render_qweb_pdf([sale_order.id])
                                     _logger.info("PDF generado con firma estándar.")
-                                except TypeError:
+                                except (TypeError, AttributeError):
                                     pdf_content, _ = report._render_qweb_pdf(report_xmlid, [sale_order.id])
                                     _logger.info("PDF generado con firma extendida.")
                                 attachment = self.env['ir.attachment'].create({
@@ -81,9 +81,10 @@ class MailGatewayWhatsappService(models.AbstractModel):
                                     'mimetype': 'application/pdf',
                                 })
                                 _logger.info(f"Attachment PDF id={attachment.id} name={attachment.name} añadido al payload.")
-                                if "components" not in payload["template"]:
-                                    payload["template"]["components"] = []
-                                payload["template"]["components"].append({
+                                # Insertar el documento justo después del body
+                                components = payload["template"].setdefault("components", [])
+                                body_index = next((i for i, c in enumerate(components) if c.get("type") == "body"), -1)
+                                doc_component = {
                                     "type": "document",
                                     "parameters": [{
                                         "type": "document",
@@ -92,7 +93,11 @@ class MailGatewayWhatsappService(models.AbstractModel):
                                             "filename": attachment.name
                                         }
                                     }]
-                                })
+                                }
+                                if body_index != -1:
+                                    components.insert(body_index + 1, doc_component)
+                                else:
+                                    components.append(doc_component)
                             except Exception as e:
                                 _logger.error(f"Error generando o adjuntando el PDF: {e}", exc_info=True)
                 # --- FIN: Adjuntar PDF si es sale.order ---
