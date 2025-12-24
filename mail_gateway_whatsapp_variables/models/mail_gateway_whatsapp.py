@@ -14,7 +14,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
     ):
         import logging
         _logger = logging.getLogger(__name__)
-        _logger.info(f"[WHATSAPP] Entrando en _send_payload con channel={channel}, body={body}, media_id={media_id}, media_type={media_type}, media_name={media_name}")
+        _logger.info(f"[WHATSAPP] [INICIO] _send_payload channel={channel}, body={body}, media_id={media_id}, media_type={media_type}, media_name={media_name}")
         try:
             payload = super()._send_payload(
                 channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
@@ -76,19 +76,24 @@ class MailGatewayWhatsappService(models.AbstractModel):
                                     _logger.error(f"[WHATSAPP] Error generando PDF para adjunto: {e}", exc_info=True)
         except Exception as e:
             _logger.error(f"[WHATSAPP] Error en _send_payload: {e}", exc_info=True)
+        _logger.info(f"[WHATSAPP] [FIN] _send_payload devuelve payload={payload} attachments={[a.id for a in attachments]}")
         return payload, attachments
 
     def send_template_and_attachments(self, channel, body, to_number, media_id=False, media_type=False, media_name=False):
         import logging
         _logger = logging.getLogger(__name__)
-        _logger.info(f"[WHATSAPP] Entrando en send_template_and_attachments con channel={channel}, to_number={to_number}, body={body}")
+        _logger.info(f"[WHATSAPP] [INICIO] send_template_and_attachments channel={channel}, to_number={to_number}, body={body}")
         try:
             payload, attachments = self._send_payload(
                 channel, body=body, media_id=media_id, media_type=media_type, media_name=media_name
             )
             _logger.info(f"[WHATSAPP] Enviando mensaje de plantilla: {payload}")
-            self._send_whatsapp_api(payload)
-            _logger.info("[WHATSAPP] Plantilla enviada correctamente.")
+            if payload:
+                response = self._send_whatsapp_api(payload)
+                _logger.info(f"[WHATSAPP] Respuesta API plantilla: {response}")
+                _logger.info("[WHATSAPP] Plantilla enviada correctamente.")
+            else:
+                _logger.warning("[WHATSAPP] No se generó payload de plantilla, no se envía nada.")
         except Exception as e:
             _logger.error(f"[WHATSAPP] Error enviando plantilla: {e}", exc_info=True)
             return  # Si falla la plantilla, no seguimos con adjuntos
@@ -97,11 +102,12 @@ class MailGatewayWhatsappService(models.AbstractModel):
             self.send_attachments_after_template(channel, to_number, attachments)
         else:
             _logger.info("[WHATSAPP] No hay adjuntos para enviar tras el template.")
+        _logger.info("[WHATSAPP] [FIN] send_template_and_attachments")
 
     def send_attachments_after_template(self, channel, to_number, attachments):
         import logging
         _logger = logging.getLogger(__name__)
-        _logger.info(f"[WHATSAPP] Entrando en send_attachments_after_template con {len(attachments)} adjuntos para {to_number}")
+        _logger.info(f"[WHATSAPP] [INICIO] send_attachments_after_template {len(attachments)} adjuntos para {to_number}")
         if not attachments:
             _logger.info("[WHATSAPP] No hay adjuntos para enviar.")
             return
@@ -119,10 +125,12 @@ class MailGatewayWhatsappService(models.AbstractModel):
                     }
                 }
                 _logger.info(f"[WHATSAPP] Enviando adjunto: {attachment.name} (id={attachment.id}) link={link}")
-                self._send_whatsapp_api(payload)
+                response = self._send_whatsapp_api(payload)
+                _logger.info(f"[WHATSAPP] Respuesta API adjunto: {response}")
                 _logger.info(f"[WHATSAPP] Adjunto '{attachment.name}' enviado correctamente.")
             except Exception as e:
                 _logger.error(f"[WHATSAPP] Error enviando adjunto: {e}", exc_info=True)
+        _logger.info("[WHATSAPP] [FIN] send_attachments_after_template")
 
     def _get_variables_from_template(self, template, channel=None):
         """Get variable values from the record specified in the template's model.
