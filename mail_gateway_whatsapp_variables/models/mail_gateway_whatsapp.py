@@ -89,9 +89,13 @@ class MailGatewayWhatsappService(models.AbstractModel):
             )
             _logger.info(f"[WHATSAPP] Enviando mensaje de plantilla: {payload}")
             if payload:
-                response = self._send_whatsapp_api(payload)
-                _logger.info(f"[WHATSAPP] Respuesta API plantilla: {response}")
-                _logger.info("[WHATSAPP] Plantilla enviada correctamente.")
+                try:
+                    response = self._send_whatsapp_api(payload)
+                    _logger.info(f"[WHATSAPP] Respuesta API plantilla: {response}")
+                    _logger.info("[WHATSAPP] Plantilla enviada correctamente.")
+                except Exception as e:
+                    _logger.error(f"[WHATSAPP] Error enviando plantilla a la API: {e}", exc_info=True)
+                    return
             else:
                 _logger.warning("[WHATSAPP] No se generó payload de plantilla, no se envía nada.")
         except Exception as e:
@@ -125,11 +129,14 @@ class MailGatewayWhatsappService(models.AbstractModel):
                     }
                 }
                 _logger.info(f"[WHATSAPP] Enviando adjunto: {attachment.name} (id={attachment.id}) link={link}")
-                response = self._send_whatsapp_api(payload)
-                _logger.info(f"[WHATSAPP] Respuesta API adjunto: {response}")
-                _logger.info(f"[WHATSAPP] Adjunto '{attachment.name}' enviado correctamente.")
+                try:
+                    response = self._send_whatsapp_api(payload)
+                    _logger.info(f"[WHATSAPP] Respuesta API adjunto: {response}")
+                    _logger.info(f"[WHATSAPP] Adjunto '{attachment.name}' enviado correctamente.")
+                except Exception as e:
+                    _logger.error(f"[WHATSAPP] Error enviando adjunto a la API: {e}", exc_info=True)
             except Exception as e:
-                _logger.error(f"[WHATSAPP] Error enviando adjunto: {e}", exc_info=True)
+                _logger.error(f"[WHATSAPP] Error preparando adjunto: {e}", exc_info=True)
         _logger.info("[WHATSAPP] [FIN] send_attachments_after_template")
 
     def _get_variables_from_template(self, template, channel=None):
