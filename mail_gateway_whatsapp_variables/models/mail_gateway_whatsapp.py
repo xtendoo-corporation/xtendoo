@@ -68,10 +68,17 @@ class MailGatewayWhatsappService(models.AbstractModel):
                     if res_id:
                         sale_order = self.env['sale.order'].browse(res_id)
                         if sale_order.exists():
-                            # Generar el PDF usando el reporte estándar de Odoo
                             try:
-                                report = self.env.ref('sale.action_report_saleorder')
-                                pdf_content, _ = report._render_qweb_pdf([sale_order.id])
+                                # Asegurarse de que el xmlid es un string y no una lista
+                                report_xmlid = 'sale.action_report_saleorder'
+                                if isinstance(report_xmlid, list):
+                                    report_xmlid = report_xmlid[0]
+                                report = self.env.ref(report_xmlid)
+                                # Validar la firma del método _render_qweb_pdf
+                                if hasattr(report, '_render_qweb_pdf'):
+                                    pdf_content, _ = report._render_qweb_pdf([sale_order.id])
+                                else:
+                                    raise Exception('El reporte no tiene método _render_qweb_pdf')
                                 # Crear un attachment temporal
                                 attachment = self.env['ir.attachment'].create({
                                     'name': f"Pedido_{sale_order.name}.pdf",
