@@ -43,6 +43,22 @@ class AccountMove(models.Model):
         string="AI Filename",
         copy=False
     )
+    ai_extracted_data = fields.Text(
+        string="AI Extracted Data (Original)",
+        help="Original JSON data extracted by AI for comparison and feedback",
+        copy=False,
+    )
+    ai_feedback_sent = fields.Boolean(
+        string="Feedback Sent to AI",
+        default=False,
+        copy=False,
+        help="Indicates if corrections feedback has been sent to improve AI",
+    )
+    ai_import_date = fields.Datetime(
+        string="AI Import Date",
+        copy=False,
+        help="When the AI import was performed",
+    )
 
     @api.model
     def message_new(self, msg_dict, custom_values=None):
@@ -366,15 +382,18 @@ class AccountMove(models.Model):
                 "ai_invoice_filename": False,
             })
 
+            # Retornar acción para recargar la vista actual con notificación
             return {
                 "type": "ir.actions.client",
-                "tag": "display_notification",
+                "tag": "reload",
                 "params": {
-                    "title": _("Success"),
-                    "message": _("Invoice data has been successfully imported from AI."),
-                    "type": "success",
-                    "sticky": False,
-                },
+                    "notification": {
+                        "type": "success",
+                        "title": _("Success"),
+                        "message": _("Invoice data has been successfully imported from AI. The page will reload to show the changes."),
+                        "sticky": False,
+                    }
+                }
             }
 
         except Exception as e:
@@ -543,3 +562,520 @@ class AccountMove(models.Model):
                                self.amount_total,
                            )
             self.narration = current_narration + warning_note
+
+    def action_import_with_ai(self):
+        """
+        Importar factura con IA desde los adjuntos existentes.
+        Busca el último adjunto PDF/imagen y lo procesa con IA.
+        """
+        self.ensure_one()
+
+        if self.state != 'draft':
+            raise UserError(_("Can only import AI data to draft invoices."))
+
+        # Buscar adjuntos válidos (PDF, JPG, PNG) en esta factura
+        attachments = self.env['ir.attachment'].search([
+            ('res_model', '=', 'account.move'),
+            ('res_id', '=', self.id),
+            ('mimetype', 'in', ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']),
+        ], order='create_date desc', limit=1)
+
+        if not attachments:
+            raise UserError(_("No invoice file found. Please attach a PDF or image (JPG/PNG) first using the attachments button (📎)."))
+
+        attachment = attachments[0]
+        _logger.info(f"🚀 Starting AI import for invoice {self.name} using attachment: {attachment.name}")
+
+        try:
+            # Obtener datos del archivo
+            file_data = base64.b64decode(attachment.datas)
+            filename = attachment.name
+
+            # Procesar con IA
+            result = self._process_invoice_with_ai(file_data, filename)
+
+            if not result:
+                raise UserError(_("Failed to extract data from invoice. Please check the OpenAI configuration."))
+
+            # Mensaje de éxito en el chatter
+            self.message_post(
+                body=_("✅ Invoice data successfully imported from AI!<br/>File: %s") % filename,
+                subject=_("AI Import Completed")
+            )
+
+            _logger.info(f"✅ AI import completed successfully for invoice {self.name}")
+
+            # Retornar acción para recargar la vista
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Success'),
+                    'message': _('Invoice data imported successfully!'),
+                    'type': 'success',
+                    'sticky': False,
+                    'next': {
+                        'type': 'ir.actions.client',
+                        'tag': 'reload',
+                    }
+                }
+            }
+
+        except Exception as e:
+            error_msg = str(e)
+            _logger.error(f"❌ Error importing invoice with AI: {error_msg}", exc_info=True)
+
+            # Mensaje de error en el chatter
+            self.message_post(
+                body=_("❌ Error importing invoice: %s") % error_msg,
+                subject=_("AI Import Failed")
+            )
+
+            raise UserError(_("Failed to import invoice: %s") % error_msg)
+
+    def _process_invoice_with_ai(self, file_data, filename):
+        """
+        Procesar archivo de factura con IA y aplicar datos a esta factura.
+        """
+        self.ensure_one()
+
+        # Obtener credenciales de OpenAI
+        icp = self.env["ir.config_parameter"].sudo()
+        api_key = icp.get_param("xtendoo_invoice_ai.openai_api_key") or os.environ.get("OPENAI_API_KEY")
+
+        if not api_key:
+            raise UserError(_("OpenAI API Key not configured. Please go to Settings → General → OpenAI and configure it."))
+
+        model = icp.get_param("xtendoo_invoice_ai.openai_model", default="gpt-4o")
+        max_pages = int(icp.get_param("xtendoo_invoice_ai.max_pages", default=10))
+        temperature = float(icp.get_param("xtendoo_invoice_ai.temperature", default=0.0))
+
+        # Convertir archivo a imágenes
+        images_b64 = self._convert_file_to_images(file_data, filename, max_pages)
+
+        if not images_b64:
+            raise UserError(_("Failed to process the file. Make sure it's a valid PDF or image."))
+
+        # Llamar a OpenAI
+        invoice_data = self._call_openai_for_extraction(images_b64, api_key, model, temperature)
+
+        if not invoice_data:
+            raise UserError(_("Failed to extract data from invoice."))
+
+        # Aplicar datos a la factura
+        self._apply_extracted_data(invoice_data)
+
+        return True
+
+    def _convert_file_to_images(self, file_data, filename, max_pages=10):
+        """Convertir archivo a lista de imágenes en base64."""
+        filename_lower = filename.lower()
+
+        if filename_lower.endswith('.pdf'):
+            if not convert_from_bytes:
+                raise UserError(_("pdf2image library not installed."))
+            try:
+                images = convert_from_bytes(file_data, fmt="jpeg", dpi=150)
+                images_b64 = []
+                for img in images[:max_pages]:
+                    buffer = io.BytesIO()
+                    img.save(buffer, format="JPEG")
+                    img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+                    images_b64.append(img_b64)
+                return images_b64
+            except Exception as e:
+                _logger.error(f"Error converting PDF: {e}")
+                raise UserError(_("Failed to convert PDF: %s") % str(e))
+        elif filename_lower.endswith(('.jpg', '.jpeg', '.png')):
+            return [base64.b64encode(file_data).decode("utf-8")]
+        else:
+            raise UserError(_("Unsupported file format. Use PDF, JPG or PNG."))
+
+    def _call_openai_for_extraction(self, images_b64, api_key, model, temperature):
+        """Llamar a OpenAI para extraer datos de la factura."""
+        if not OpenAI:
+            raise UserError(_("openai library not installed."))
+
+        client = OpenAI(api_key=api_key)
+
+        # Obtener ejemplos de correcciones previas (few-shot learning)
+        few_shot_examples = self._get_few_shot_examples(max_examples=3)
+
+        # Prompt de extracción con few-shot learning
+        extraction_prompt = f"""Extract ALL data from this invoice image and return ONLY valid JSON.
+
+{few_shot_examples}
+
+Required structure:
+{{
+    "supplier": {{
+        "name": "Supplier company name",
+        "vat": "Tax ID/VAT number",
+        "address": "Full address",
+        "email": "email@example.com",
+        "phone": "phone number"
+    }},
+    "invoice": {{
+        "supplier_invoice_number": "Invoice number from supplier",
+        "invoice_date": "YYYY-MM-DD",
+        "due_date": "YYYY-MM-DD or null",
+        "currency": "EUR/USD/etc"
+    }},
+    "lines": [
+        {{
+            "description": "Product/service description",
+            "quantity": 1.0,
+            "unit_price": 100.00,
+            "taxes": ["21% IVA", "10% IVA"]
+        }}
+    ],
+    "totals": {{
+        "untaxed": 100.00,
+        "tax": 21.00,
+        "total": 121.00
+    }}
+}}
+
+IMPORTANT:
+- Extract ALL line items
+- Use correct decimal numbers
+- Identify tax rates correctly (IVA 21%, IVA 10%, IVA 4%, etc.)
+- Return ONLY the JSON, no markdown, no explanation
+- Learn from the past corrections shown above"""
+
+        # ...existing code...
+
+        # Preparar contenido
+        content = [{"type": "text", "text": extraction_prompt}]
+        for img_b64 in images_b64:
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{img_b64}", "detail": "high"}
+            })
+
+        # Detectar si es modelo o1
+        is_o1 = model.lower().startswith("o1")
+
+        if is_o1:
+            messages = [{"role": "user", "content": content}]
+        else:
+            messages = [
+                {"role": "system", "content": "You are a precise invoice data extraction assistant. Always return valid JSON."},
+                {"role": "user", "content": content}
+            ]
+
+        try:
+            api_params = {"model": model, "messages": messages}
+            if not is_o1:
+                api_params["temperature"] = temperature
+                api_params["response_format"] = {"type": "json_object"}
+
+            response = client.chat.completions.create(**api_params)
+            result_text = response.choices[0].message.content
+
+            # Extraer JSON de bloques markdown si es necesario
+            if "```json" in result_text:
+                match = re.search(r'```json\s*\n(.*?)\n```', result_text, re.DOTALL)
+                if match:
+                    result_text = match.group(1)
+            elif "```" in result_text:
+                match = re.search(r'```\s*\n(.*?)\n```', result_text, re.DOTALL)
+                if match:
+                    result_text = match.group(1)
+
+            return json.loads(result_text)
+
+        except Exception as e:
+            _logger.error(f"OpenAI API error: {e}")
+            raise UserError(_("OpenAI API error: %s") % str(e))
+
+    def _apply_extracted_data(self, data):
+        """Aplicar datos extraídos por IA a esta factura."""
+        self.ensure_one()
+
+        # Guardar datos originales de IA para comparación y feedback
+        self.write({
+            'ai_extracted_data': json.dumps(data, indent=2),
+            'ai_import_date': fields.Datetime.now(),
+            'ai_feedback_sent': False,
+        })
+
+        supplier_data = data.get("supplier", {})
+        invoice_data = data.get("invoice", {})
+        lines_data = data.get("lines", [])
+        totals_data = data.get("totals", {})
+
+        # ...existing code...
+
+        # 1. Buscar o crear partner
+        partner = self._find_partner_by_vat(supplier_data.get("vat")) or \
+                  self._find_partner_by_name(supplier_data.get("name"))
+
+        if not partner and supplier_data.get("name"):
+            # Crear partner
+            partner = self.env["res.partner"].create({
+                "name": supplier_data.get("name"),
+                "vat": supplier_data.get("vat"),
+                "street": supplier_data.get("address"),
+                "email": supplier_data.get("email"),
+                "phone": supplier_data.get("phone"),
+                "supplier_rank": 1,
+                "company_id": self.company_id.id,
+            })
+            _logger.info(f"Created new partner: {partner.name}")
+
+        # 2. Actualizar cabecera
+        vals = {}
+        if partner:
+            vals["partner_id"] = partner.id
+        if invoice_data.get("supplier_invoice_number"):
+            vals["ref"] = invoice_data["supplier_invoice_number"]
+        if invoice_data.get("invoice_date"):
+            try:
+                vals["invoice_date"] = invoice_data["invoice_date"]
+            except:
+                pass
+        if invoice_data.get("due_date"):
+            try:
+                vals["invoice_date_due"] = invoice_data["due_date"]
+            except:
+                pass
+
+        if vals:
+            self.write(vals)
+
+        # 3. Eliminar líneas existentes
+        self.invoice_line_ids.unlink()
+
+        # 4. Crear nuevas líneas
+        default_account = self._get_default_expense_account()
+
+        for line_data in lines_data:
+            # Mapear impuestos
+            taxes = self.env["account.tax"]
+            for tax_name in line_data.get("taxes", []):
+                tax = self._find_tax_by_name(tax_name)
+                if tax:
+                    taxes |= tax
+
+            line_vals = {
+                "move_id": self.id,
+                "name": line_data.get("description", ""),
+                "quantity": line_data.get("quantity", 1),
+                "price_unit": line_data.get("unit_price", 0),
+                "account_id": default_account.id if default_account else False,
+                "tax_ids": [(6, 0, taxes.ids)],
+            }
+            self.env["account.move.line"].create(line_vals)
+
+        _logger.info(f"Applied {len(lines_data)} lines to invoice {self.name}")
+
+    def _find_partner_by_vat(self, vat):
+        """Buscar partner por VAT/NIF."""
+        if not vat:
+            return None
+        vat_clean = vat.upper().replace(" ", "").replace("-", "").replace(".", "")
+        return self.env["res.partner"].search([
+            "|", ("vat", "=", vat), ("vat", "=", vat_clean)
+        ], limit=1)
+
+    def _find_partner_by_name(self, name):
+        """Buscar partner por nombre."""
+        if not name:
+            return None
+        return self.env["res.partner"].search([
+            ("name", "ilike", name), ("supplier_rank", ">", 0)
+        ], limit=1)
+
+    def _get_default_expense_account(self):
+        """Obtener cuenta de gastos por defecto."""
+        # En Odoo 18, account.account ya no tiene company_id directo
+        # Usamos el journal de compra para obtener la cuenta por defecto
+        journal = self.journal_id or self.env["account.journal"].search([
+            ("type", "=", "purchase"),
+            ("company_id", "=", self.company_id.id),
+        ], limit=1)
+
+        if journal and journal.default_account_id:
+            return journal.default_account_id
+
+        # Alternativa: buscar cuenta de tipo expense sin filtro de compañía
+        return self.env["account.account"].search([
+            ("account_type", "=", "expense"),
+        ], limit=1)
+
+    def _find_tax_by_name(self, tax_name):
+        """Buscar impuesto por nombre/porcentaje."""
+        if not tax_name:
+            return None
+
+        # Extraer porcentaje del nombre
+        match = re.search(r'(\d+(?:[.,]\d+)?)\s*%', str(tax_name))
+        if match:
+            percentage = float(match.group(1).replace(",", "."))
+            tax = self.env["account.tax"].search([
+                ("company_id", "=", self.company_id.id),
+                ("type_tax_use", "=", "purchase"),
+                ("amount", "=", percentage),
+            ], limit=1)
+            if tax:
+                return tax
+
+        # Buscar por nombre
+        return self.env["account.tax"].search([
+            ("company_id", "=", self.company_id.id),
+            ("type_tax_use", "=", "purchase"),
+            ("name", "ilike", tax_name),
+        ], limit=1)
+
+    def action_send_ai_feedback(self):
+        """
+        Enviar feedback a la IA comparando lo que extrajo vs. lo que quedó finalmente.
+        Esto crea un ejemplo de few-shot learning para mejorar futuras importaciones.
+        """
+        self.ensure_one()
+
+        if not self.ai_extracted_data:
+            raise UserError(_("No AI extracted data found. This invoice was not imported with AI."))
+
+        if self.ai_feedback_sent:
+            raise UserError(_("Feedback already sent for this invoice."))
+
+        try:
+            # Datos originales extraídos por IA
+            ai_data = json.loads(self.ai_extracted_data)
+
+            # Datos actuales (después de correcciones del usuario)
+            current_data = self._extract_current_invoice_data()
+
+            # Crear ejemplo de feedback
+            feedback_example = self.env["xtendoo.ai.feedback.example"].create({
+                "invoice_id": self.id,
+                "supplier_name": self.partner_id.name if self.partner_id else "Unknown",
+                "ai_extracted_json": json.dumps(ai_data, indent=2),
+                "corrected_json": json.dumps(current_data, indent=2),
+                "correction_type": self._determine_correction_type(ai_data, current_data),
+                "quality_score": 7.0,  # Score inicial
+                "notes": _("Auto-generated feedback from invoice %s") % self.name,
+            })
+
+            # Marcar como enviado
+            self.ai_feedback_sent = True
+
+            # Mensaje en el chatter
+            self.message_post(
+                body=_("✅ AI Feedback example created! This will help improve future imports.<br/>"
+                       "Example ID: %s") % feedback_example.id,
+                subject=_("AI Feedback Sent")
+            )
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Feedback Sent'),
+                    'message': _('Thank you! This correction will help improve AI accuracy in future imports.'),
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
+
+        except Exception as e:
+            _logger.error(f"Error sending AI feedback: {e}", exc_info=True)
+            raise UserError(_("Failed to send feedback: %s") % str(e))
+
+    def _extract_current_invoice_data(self):
+        """Extraer datos actuales de la factura en formato similar al JSON de IA."""
+        self.ensure_one()
+
+        return {
+            "supplier": {
+                "name": self.partner_id.name if self.partner_id else "",
+                "vat": self.partner_id.vat if self.partner_id else "",
+                "address": self.partner_id.street if self.partner_id else "",
+                "email": self.partner_id.email if self.partner_id else "",
+                "phone": self.partner_id.phone if self.partner_id else "",
+            },
+            "invoice": {
+                "supplier_invoice_number": self.ref or "",
+                "invoice_date": str(self.invoice_date) if self.invoice_date else "",
+                "due_date": str(self.invoice_date_due) if self.invoice_date_due else "",
+                "currency": self.currency_id.name if self.currency_id else "EUR",
+            },
+            "lines": [
+                {
+                    "description": line.name,
+                    "quantity": line.quantity,
+                    "unit_price": line.price_unit,
+                    "taxes": [tax.name for tax in line.tax_ids],
+                }
+                for line in self.invoice_line_ids if not line.display_type
+            ],
+            "totals": {
+                "untaxed": float(self.amount_untaxed),
+                "tax": float(self.amount_tax),
+                "total": float(self.amount_total),
+            }
+        }
+
+    def _determine_correction_type(self, ai_data, corrected_data):
+        """Determinar qué tipo de corrección se hizo."""
+        # Comparar proveedores
+        if ai_data.get("supplier", {}).get("name") != corrected_data.get("supplier", {}).get("name"):
+            return "supplier"
+
+        # Comparar número de líneas
+        if len(ai_data.get("lines", [])) != len(corrected_data.get("lines", [])):
+            return "lines"
+
+        # Comparar totales
+        ai_total = ai_data.get("totals", {}).get("total", 0)
+        corrected_total = corrected_data.get("totals", {}).get("total", 0)
+        if abs(ai_total - corrected_total) > 1.0:
+            return "totals"
+
+        # Comparar impuestos
+        for ai_line, corr_line in zip(ai_data.get("lines", []), corrected_data.get("lines", [])):
+            if set(ai_line.get("taxes", [])) != set(corr_line.get("taxes", [])):
+                return "taxes"
+
+        return "other"
+
+    def _get_few_shot_examples(self, max_examples=3):
+        """
+        Obtener ejemplos de correcciones previas para incluir en el prompt (few-shot learning).
+        Esto mejora la precisión de la IA mostrándole ejemplos de errores pasados.
+        """
+        # Buscar ejemplos de feedback activos, priorizando por quality_score
+        examples = self.env["xtendoo.ai.feedback.example"].search([
+            ("active", "=", True),
+            ("company_id", "=", self.company_id.id),
+        ], order="quality_score desc, create_date desc", limit=max_examples)
+
+        if not examples:
+            return ""
+
+        few_shot_text = "\n\n--- LEARNING FROM PAST CORRECTIONS ---\n"
+        few_shot_text += "Here are examples of past mistakes to avoid:\n\n"
+
+        for idx, example in enumerate(examples, 1):
+            try:
+                ai_data = json.loads(example.ai_extracted_json)
+                corrected_data = json.loads(example.corrected_json)
+
+                few_shot_text += f"Example {idx} - What I extracted WRONG:\n"
+                few_shot_text += f"Supplier: {ai_data.get('supplier', {}).get('name', 'N/A')}\n"
+                few_shot_text += f"Total: {ai_data.get('totals', {}).get('total', 'N/A')}\n\n"
+
+                few_shot_text += f"What it SHOULD have been:\n"
+                few_shot_text += f"Supplier: {corrected_data.get('supplier', {}).get('name', 'N/A')}\n"
+                few_shot_text += f"Total: {corrected_data.get('totals', {}).get('total', 'N/A')}\n"
+                few_shot_text += f"Lesson: {example.correction_type}\n\n"
+            except:
+                continue
+
+        few_shot_text += "Please learn from these corrections and be more accurate this time.\n"
+        few_shot_text += "--- END OF CORRECTIONS ---\n\n"
+
+        return few_shot_text
+

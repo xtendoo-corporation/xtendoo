@@ -17,10 +17,10 @@
                         </div>
                     </setting>
                     <setting id="openai_model_setting">
-                        <field name="xtendoo_invoice_ai_openai_model" placeholder="gpt-4o"/>
+                        <field name="xtendoo_invoice_ai_openai_model"/>
                         <label for="xtendoo_invoice_ai_openai_model" string="OpenAI Model"/>
                         <div class="text-muted">
-                            OpenAI model to use (must support vision)
+                            Select the OpenAI model to use for invoice extraction. Each model has different capabilities and pricing.
                         </div>
                     </setting>
                     <setting id="openai_base_setting">

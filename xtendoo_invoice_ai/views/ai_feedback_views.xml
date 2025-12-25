@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de lista de ejemplos de feedback -->
+    <record id="view_ai_feedback_example_tree" model="ir.ui.view">
+        <field name="name">xtendoo.ai.feedback.example.tree</field>
+        <field name="model">xtendoo.ai.feedback.example</field>
+        <field name="arch" type="xml">
+            <list string="AI Feedback Examples" decoration-muted="not active">
+                <field name="create_date"/>
+                <field name="supplier_name"/>
+                <field name="correction_type"/>
+                <field name="quality_score"/>
+                <field name="active"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista de formulario de ejemplos de feedback -->
+    <record id="view_ai_feedback_example_form" model="ir.ui.view">
+        <field name="name">xtendoo.ai.feedback.example.form</field>
+        <field name="model">xtendoo.ai.feedback.example</field>
+        <field name="arch" type="xml">
+            <form string="AI Feedback Example">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object"
+                                class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button"
+                                   options='{"terminology": "archive"}'/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="invoice_id"/>
+                            <field name="supplier_name"/>
+                            <field name="correction_type"/>
+                            <field name="quality_score"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                    <group string="AI Extracted (Before Correction)">
+                        <field name="ai_extracted_json" nolabel="1" widget="ace" options="{'mode': 'json'}"/>
+                    </group>
+                    <group string="Corrected Data (After User Fix)">
+                        <field name="corrected_json" nolabel="1" widget="ace" options="{'mode': 'json'}"/>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para ver ejemplos de feedback -->
+    <record id="action_ai_feedback_example" model="ir.actions.act_window">
+        <field name="name">AI Learning Examples</field>
+        <field name="res_model">xtendoo.ai.feedback.example</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No AI learning examples yet
+            </p>
+            <p>
+                Learning examples are created automatically when you send feedback
+                on imported invoices. These examples help improve AI accuracy over time.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú para ver ejemplos de feedback -->
+    <menuitem
+        id="menu_ai_feedback_examples"
+        name="🧠 AI Learning Examples"
+        parent="account.menu_finance_configuration"
+        action="action_ai_feedback_example"
+        sequence="100"
+        groups="account.group_account_manager"
+    />
+</odoo>
+

@@ -96,10 +96,32 @@ patch(ListController.prototype, {
                 );
 
                 if (action) {
-                    this.action.doAction(action);
+                    // Mostrar notificación de éxito antes de la acción
+                    if (action.context && action.context.notification) {
+                        this.notification.add(
+                            action.context.notification.message,
+                            {
+                                type: action.context.notification.type || "success",
+                                sticky: false
+                            }
+                        );
+                        delete action.context.notification;
+                    } else {
+                        this.notification.add(
+                            "✅ Facturas procesadas correctamente",
+                            { type: "success" }
+                        );
+                    }
+
+                    // Ejecutar la acción (abrir facturas creadas)
+                    await this.action.doAction(action);
+
+                    // Recargar la vista en segundo plano
+                    await this.model.root.load();
+                    this.render();
                 } else {
                     this.notification.add(
-                        "Facturas procesadas correctamente",
+                        "✅ Facturas procesadas correctamente",
                         { type: "success" }
                     );
                     // Recargar la vista
@@ -110,6 +132,14 @@ patch(ListController.prototype, {
                 console.error("Error processing invoices:", error);
                 const errorMsg = error.data?.message || error.message || "Error al procesar las facturas con IA";
                 this.notification.add(errorMsg, { type: "danger", sticky: true });
+
+                // Recargar la vista aunque haya error para mostrar estado actualizado
+                try {
+                    await this.model.root.load();
+                    this.render();
+                } catch (reloadError) {
+                    console.error("Error reloading view:", reloadError);
+                }
             }
         } else {
             this.notification.add(

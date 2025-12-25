@@ -1,0 +1,646 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * xtendoo_invoice_ai
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-24 15:00:00\n"
+"PO-Revision-Date: 2025-01-24 15:00:00\n"
+"Last-Translator: Xtendoo <info@xtendoo.es>\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__upload
+msgid "Invoice File"
+msgstr "Archivo de Factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__upload
+msgid "Upload PDF or image (JPG, PNG) of vendor invoice"
+msgstr "Sube un PDF o imagen (JPG, PNG) de la factura de proveedor"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__filename
+msgid "Filename"
+msgstr "Nombre del archivo"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__company_id
+msgid "Company"
+msgstr "Compañía"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__journal_id
+msgid "Purchase Journal"
+msgstr "Diario de Compras"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__journal_id
+msgid "Leave empty to use default purchase journal"
+msgstr "Dejar vacío para usar el diario de compras predeterminado"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__currency_id
+msgid "Force Currency"
+msgstr "Forzar Moneda"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__currency_id
+msgid "Optional: force currency instead of detecting from invoice"
+msgstr "Opcional: forzar moneda en lugar de detectarla de la factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__create_partner_if_missing
+msgid "Create Partner if Missing"
+msgstr "Crear Proveedor si Falta"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__create_partner_if_missing
+msgid "Create supplier automatically if not found"
+msgstr "Crear proveedor automáticamente si no se encuentra"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__attach_original
+msgid "Attach Original File"
+msgstr "Adjuntar Archivo Original"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__attach_original
+msgid "Attach uploaded file to created invoice"
+msgstr "Adjuntar archivo subido a la factura creada"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__multi_invoice
+msgid "Multiple Invoices (One per Page)"
+msgstr "Múltiples Facturas (Una por Página)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__multi_invoice
+msgid "If checked, each page of the PDF will be processed as a separate invoice"
+msgstr "Si se marca, cada página del PDF se procesará como una factura separada"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__xtendoo_invoice_ai_wizard__state__draft
+msgid "Draft"
+msgstr "Borrador"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__xtendoo_invoice_ai_wizard__state__processing
+msgid "Processing"
+msgstr "Procesando"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__xtendoo_invoice_ai_wizard__state__done
+msgid "Done"
+msgstr "Hecho"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__xtendoo_invoice_ai_wizard__state__error
+msgid "Error"
+msgstr "Error"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__auto_process
+msgid "Auto Process on Upload"
+msgstr "Procesar Automáticamente al Subir"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__auto_process
+msgid "If checked, invoice will be processed automatically when file is uploaded"
+msgstr "Si se marca, la factura se procesará automáticamente cuando se suba el archivo"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_wizard__error_message
+msgid "Error Message"
+msgstr "Mensaje de Error"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Import Invoice with AI"
+msgstr "Importar Factura con IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "⚠️ Error during processing:"
+msgstr "⚠️ Error durante el procesamiento:"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "✅ Processing completed successfully!"
+msgstr "✅ ¡Procesamiento completado exitosamente!"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "The invoice has been created and you will be redirected shortly."
+msgstr "La factura ha sido creada y será redirigido en breve."
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "🔄 Processing invoice with AI..."
+msgstr "🔄 Procesando factura con IA..."
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Please wait while we extract the data. This may take a few seconds."
+msgstr "Por favor espere mientras extraemos los datos. Esto puede tomar unos segundos."
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Instructions"
+msgstr "Instrucciones"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "How it works:"
+msgstr "Cómo funciona:"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Upload a PDF or image (JPG/PNG) of a vendor invoice"
+msgstr "Sube un PDF o imagen (JPG/PNG) de una factura de proveedor"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "OpenAI will extract supplier, invoice details, lines and totals"
+msgstr "OpenAI extraerá el proveedor, detalles de la factura, líneas y totales"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "A draft vendor bill will be created automatically"
+msgstr "Se creará automáticamente un borrador de factura de proveedor"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "If supplier is not found, it will be created (if enabled)"
+msgstr "Si el proveedor no se encuentra, se creará (si está habilitado)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Review and validate the bill before posting"
+msgstr "Revisa y valida la factura antes de contabilizarla"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "⚠️ Multiple Invoices Mode:"
+msgstr "⚠️ Modo Múltiples Facturas:"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Each page of the PDF will be processed as a separate invoice"
+msgstr "Cada página del PDF se procesará como una factura separada"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "This is useful when you have multiple invoices in one PDF file"
+msgstr "Esto es útil cuando tienes múltiples facturas en un archivo PDF"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Processing time will be longer (one API call per page)"
+msgstr "El tiempo de procesamiento será mayor (una llamada API por página)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Each invoice will be created independently"
+msgstr "Cada factura se creará independientemente"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "🚀 Analyze and Create Invoice"
+msgstr "🚀 Analizar y Crear Factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Close"
+msgstr "Cerrar"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_wizard_form
+msgid "Processing..."
+msgstr "Procesando..."
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_openai_api_key
+msgid "OpenAI API Key"
+msgstr "Clave API de OpenAI"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_openai_api_key
+msgid "Your OpenAI API Key for ChatGPT integration"
+msgstr "Tu clave API de OpenAI para la integración con ChatGPT"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_openai_base
+msgid "OpenAI Base URL"
+msgstr "URL Base de OpenAI"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_openai_base
+msgid "Optional: Custom OpenAI base URL for enterprise endpoints"
+msgstr "Opcional: URL base personalizada de OpenAI para endpoints empresariales"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_openai_model
+msgid "OpenAI Model"
+msgstr "Modelo OpenAI"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_openai_model
+msgid "OpenAI model to use (must support vision, e.g., gpt-4o, gpt-4-turbo)"
+msgstr "Modelo de OpenAI a utilizar (debe soportar visión, ej: gpt-4o, gpt-4-turbo)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_max_pages
+msgid "Max Pages to Process"
+msgstr "Máximo de Páginas a Procesar"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_max_pages
+msgid "Maximum number of pages to process from a PDF"
+msgstr "Número máximo de páginas a procesar de un PDF"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_temperature
+msgid "Temperature"
+msgstr "Temperatura"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_temperature
+msgid "OpenAI temperature parameter (0.0 = deterministic, 1.0 = creative)"
+msgstr "Parámetro de temperatura de OpenAI (0.0 = determinístico, 1.0 = creativo)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_tolerance
+msgid "Total Tolerance"
+msgstr "Tolerancia de Totales"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_res_config_settings__xtendoo_invoice_ai_tolerance
+msgid "Maximum difference allowed between AI totals and calculated totals"
+msgstr "Diferencia máxima permitida entre los totales de IA y los totales calculados"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "OpenAI (ChatGPT) Integration"
+msgstr "Integración OpenAI (ChatGPT)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Your OpenAI API Key. Get it from https://platform.openai.com/api-keys"
+msgstr "Tu clave API de OpenAI. Consíguela en https://platform.openai.com/api-keys"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "OpenAI model to use (must support vision)"
+msgstr "Modelo de OpenAI a utilizar (debe soportar visión)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Optional: Custom OpenAI base URL for enterprise endpoints"
+msgstr "Opcional: URL base personalizada de OpenAI para endpoints empresariales"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Maximum number of pages to process from PDF"
+msgstr "Número máximo de páginas a procesar del PDF"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Temperature (0.0 = deterministic, 1.0 = creative)"
+msgstr "Temperatura (0.0 = determinístico, 1.0 = creativo)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Maximum difference allowed between AI totals and calculated totals"
+msgstr "Diferencia máxima permitida entre los totales de IA y los totales calculados"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__filename
+msgid "File Name"
+msgstr "Nombre del Archivo"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__state
+msgid "State"
+msgstr "Estado"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__user_id
+msgid "User"
+msgstr "Usuario"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__invoice_id
+msgid "Invoice Created"
+msgstr "Factura Creada"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__tokens_used
+msgid "Tokens Used"
+msgstr "Tokens Utilizados"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__processing_time
+msgid "Processing Time (s)"
+msgstr "Tiempo de Procesamiento (s)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__pages_processed
+msgid "Pages Processed"
+msgstr "Páginas Procesadas"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__detected_language
+msgid "Detected Language"
+msgstr "Idioma Detectado"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__detected_country
+msgid "Detected Country"
+msgstr "País Detectado"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__supplier_name
+msgid "Supplier Name"
+msgstr "Nombre del Proveedor"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__invoice_number
+msgid "Invoice Number"
+msgstr "Número de Factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_xtendoo_invoice_ai_job__invoice_amount
+msgid "Invoice Amount"
+msgstr "Importe de Factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_job_tree
+msgid "AI Import History"
+msgstr "Historial de Importaciones IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_job_form
+msgid "AI Import Job"
+msgstr "Trabajo de Importación IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_job_form
+msgid "View Invoice"
+msgstr "Ver Factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_job_form
+msgid "Extracted Data"
+msgstr "Datos Extraídos"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_job_form
+msgid "Error Details"
+msgstr "Detalles del Error"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_job_search
+msgid "AI Import Jobs"
+msgstr "Trabajos de Importación IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_xtendoo_invoice_ai_job_search
+msgid "Group By"
+msgstr "Agrupar Por"
+#. module: xtendoo_invoice_ai
+#: model:ir.actions.act_window,name:xtendoo_invoice_ai.action_xtendoo_invoice_ai_job
+#: model:ir.ui.menu,name:xtendoo_invoice_ai.menu_xtendoo_invoice_ai_jobs
+msgid "AI Import History"
+msgstr "Historial de Importaciones IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_account_move__ai_invoice_file
+msgid "AI Invoice File"
+msgstr "Archivo de Factura IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_account_move__ai_invoice_file
+msgid "Upload invoice file to analyze with AI"
+msgstr "Sube el archivo de factura para analizar con IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_account_move__ai_invoice_filename
+msgid "AI Filename"
+msgstr "Nombre de Archivo IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_account_journal__ai_invoice_alias_enabled
+msgid "Enable Email Invoice Import"
+msgstr "Habilitar Importación de Facturas por Email"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_account_journal__ai_invoice_alias_enabled
+msgid "Enable automatic invoice import from emails sent to this journal's alias"
+msgstr "Habilitar importación automática de facturas desde emails enviados al alias de este diario"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_account_journal__ai_invoice_alias_id
+msgid "Email Alias"
+msgstr "Alias de Email"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_account_journal__ai_invoice_alias_id
+msgid "Email alias for receiving invoices (e.g., invoices@mycompany.odoo.com)"
+msgstr "Alias de email para recibir facturas (ej: facturas@miempresa.odoo.com)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_account_journal__ai_invoice_alias_name
+msgid "Alias Name"
+msgstr "Nombre del Alias"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_account_journal__ai_invoice_create_partner
+msgid "Auto-create Partners"
+msgstr "Auto-crear Proveedores"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_account_journal__ai_invoice_create_partner
+msgid "Automatically create supplier if not found in the system"
+msgstr "Crear automáticamente el proveedor si no se encuentra en el sistema"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_ai.field_account_journal__ai_invoice_attach_original
+msgid "Attach Original File"
+msgstr "Adjuntar Archivo Original"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields,help:xtendoo_invoice_ai.field_account_journal__ai_invoice_attach_original
+msgid "Attach the original invoice file to the created invoice"
+msgstr "Adjuntar el archivo de factura original a la factura creada"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "Success!"
+msgstr "¡Éxito!"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "Invoice %s created successfully"
+msgstr "Factura %s creada exitosamente"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "Failed to process invoice: %s"
+msgstr "Error al procesar la factura: %s"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "Auto-processing enabled"
+msgstr "Auto-procesamiento habilitado"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "The file will be processed automatically when you click \"Process\""
+msgstr "El archivo se procesará automáticamente cuando haga clic en \"Procesar\""
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "Success"
+msgstr "Éxito"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "Invoice data has been successfully imported from AI. The page will reload to show the changes."
+msgstr "Los datos de la factura se han importado exitosamente desde la IA. La página se recargará para mostrar los cambios."
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "✅ Successfully processed: %d invoice(s)"
+msgstr "✅ Procesado exitosamente: %d factura(s)"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "❌ Failed: %d page(s)"
+msgstr "❌ Falló: %d página(s)"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/wizards/invoice_ai_wizard.py:0
+#, python-format
+msgid "Invoices Created from Multi-Page PDF"
+msgstr "Facturas Creadas desde PDF Multi-página"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_journal.py:0
+#, python-format
+msgid "📧 Invoice received by email\nFrom: %s\nSubject: %s\nProcessed automatically with AI"
+msgstr "📧 Factura recibida por email\nDe: %s\nAsunto: %s\nProcesada automáticamente con IA"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_journal.py:0
+#, python-format
+msgid "Invoice Processing Result - %s"
+msgstr "Resultado del Procesamiento de Facturas - %s"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_journal.py:0
+#, python-format
+msgid "<p>Your invoice(s) have been successfully processed:</p><ul><li>✅ Successfully processed: <strong>%s</strong> invoice(s)</li></ul><p>The draft invoice(s) are now available in the system for review.</p>"
+msgstr "<p>Su(s) factura(s) ha(n) sido procesada(s) exitosamente:</p><ul><li>✅ Procesado exitosamente: <strong>%s</strong> factura(s)</li></ul><p>La(s) factura(s) en borrador ya están disponibles en el sistema para revisión.</p>"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_journal.py:0
+#, python-format
+msgid "<p>Invoice processing completed with some issues:</p><ul><li>✅ Successfully processed: <strong>%s</strong> invoice(s)</li><li>❌ Failed: <strong>%s</strong> invoice(s)</li></ul><p>Please check the system logs or contact support for failed invoices.</p>"
+msgstr "<p>Procesamiento de facturas completado con algunos problemas:</p><ul><li>✅ Procesado exitosamente: <strong>%s</strong> factura(s)</li><li>❌ Falló: <strong>%s</strong> factura(s)</li></ul><p>Por favor revise los registros del sistema o contacte a soporte para las facturas fallidas.</p>"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "Import with AI"
+msgstr "Importar con IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "Import invoice data using AI"
+msgstr "Importar datos de factura usando IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "AI Import"
+msgstr "Importación IA"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "How to use AI import:"
+msgstr "Cómo usar la importación con IA:"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "Upload an invoice file (PDF, JPG or PNG)"
+msgstr "Sube un archivo de factura (PDF, JPG o PNG)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "Click the \"Import with AI\" button"
+msgstr "Haz clic en el botón \"Importar con IA\""
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "AI will extract the data and fill the invoice"
+msgstr "La IA extraerá los datos y rellenará la factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "Review the imported data and adjust if necessary"
+msgstr "Revisa los datos importados y ajusta si es necesario"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "Please upload an invoice file first (PDF, JPG or PNG)."
+msgstr "Por favor sube primero un archivo de factura (PDF, JPG o PNG)."
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "🔄 Processing invoice with AI..."
+msgstr "🔄 Procesando factura con IA..."
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "AI Import Started"
+msgstr "Importación IA Iniciada"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "Failed to extract data from invoice. Please check the OpenAI configuration."
+msgstr "Error al extraer datos de la factura. Por favor revisa la configuración de OpenAI."
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "✅ Invoice data successfully imported from AI!"
+msgstr "✅ ¡Datos de factura importados exitosamente desde IA!"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "AI Import Completed"
+msgstr "Importación IA Completada"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "❌ Error importing invoice: %s"
+msgstr "❌ Error importando factura: %s"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "AI Import Failed"
+msgstr "Importación IA Fallida"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "Failed to import invoice: %s"
+msgstr "Error al importar factura: %s"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "OpenAI model to use (must support vision)"
+msgstr "Modelo de OpenAI a utilizar (debe soportar visión)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Recommended models:"
+msgstr "Modelos recomendados:"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "gpt-4o"
+msgstr "gpt-4o"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Fast and accurate (default)"
+msgstr "Rápido y preciso (predeterminado)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "gpt-4o-mini"
+msgstr "gpt-4o-mini"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Faster and cheaper, good for simple invoices"
+msgstr "Más rápido y económico, bueno para facturas simples"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "o1-preview"
+msgstr "o1-preview"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Advanced reasoning model, slower but more accurate for complex invoices"
+msgstr "Modelo de razonamiento avanzado, más lento pero más preciso para facturas complejas"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "o1-mini"
+msgstr "o1-mini"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Reasoning model, faster than o1-preview"
+msgstr "Modelo de razonamiento, más rápido que o1-preview"
+#. module: xtendoo_invoice_ai
+#: code:addons/xtendoo_invoice_ai/models/account_move.py:0
+#, python-format
+msgid "Please upload an invoice file first (PDF, JPG or PNG). Make sure to save the invoice after uploading the file."
+msgstr "Por favor sube primero un archivo de factura (PDF, JPG o PNG). Asegúrate de guardar la factura después de subir el archivo."
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "Save the invoice"
+msgstr "Guardar la factura"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.view_move_form_inherit_ai
+msgid "Click the \"Import with AI\" button in the header"
+msgstr "Haz clic en el botón \"Importar con IA\" en la cabecera"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "gpt-image-1.5"
+msgstr "gpt-image-1.5"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Latest image understanding model, optimized for visual tasks"
+msgstr "Modelo más reciente de comprensión de imágenes, optimizado para tareas visuales"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "gpt-image-1"
+msgstr "gpt-image-1"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Standard image model for document processing"
+msgstr "Modelo estándar de imágenes para procesamiento de documentos"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "gpt-image-1-mini"
+msgstr "gpt-image-1-mini"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Lightweight image model, faster and more economical"
+msgstr "Modelo ligero de imágenes, más rápido y económico"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__res_config_settings__xtendoo_invoice_ai_openai_model__gpt_4o
+msgid "GPT-4o (Fast and accurate)"
+msgstr "GPT-4o (Rápido y preciso)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__res_config_settings__xtendoo_invoice_ai_openai_model__gpt_4o_mini
+msgid "GPT-4o Mini (Faster and cheaper)"
+msgstr "GPT-4o Mini (Más rápido y económico)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__res_config_settings__xtendoo_invoice_ai_openai_model__gpt_image_1_5
+msgid "GPT-Image 1.5 (Latest image model)"
+msgstr "GPT-Image 1.5 (Modelo de imagen más reciente)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__res_config_settings__xtendoo_invoice_ai_openai_model__gpt_image_1
+msgid "GPT-Image 1 (Standard image model)"
+msgstr "GPT-Image 1 (Modelo de imagen estándar)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__res_config_settings__xtendoo_invoice_ai_openai_model__gpt_image_1_mini
+msgid "GPT-Image 1 Mini (Lightweight)"
+msgstr "GPT-Image 1 Mini (Ligero)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__res_config_settings__xtendoo_invoice_ai_openai_model__o1_preview
+msgid "O1 Preview (Advanced reasoning)"
+msgstr "O1 Preview (Razonamiento avanzado)"
+#. module: xtendoo_invoice_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_ai.selection__res_config_settings__xtendoo_invoice_ai_openai_model__o1_mini
+msgid "O1 Mini (Reasoning, faster)"
+msgstr "O1 Mini (Razonamiento, más rápido)"
+#. module: xtendoo_invoice_ai
+#: model:ir.ui.view,arch_db:xtendoo_invoice_ai.res_config_settings_view_form
+msgid "Select the OpenAI model to use for invoice extraction. Each model has different capabilities and pricing."
+msgstr "Selecciona el modelo de OpenAI para extraer facturas. Cada modelo tiene diferentes capacidades y precios."

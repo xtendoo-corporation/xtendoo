@@ -3,5 +3,5 @@
 
 from . import account_move
 from . import account_journal
-from . import ai_job
 from . import res_config_settings
+from . import ai_feedback

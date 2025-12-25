@@ -62,13 +62,13 @@ class AccountJournal(models.Model):
     def _create_ai_invoice_alias(self):
         """Crear alias de email para recibir facturas"""
         self.ensure_one()
-        
+
         if self.ai_invoice_alias_id:
             return self.ai_invoice_alias_id
-        
+
         # Generar nombre de alias basado en el código del diario
         alias_name = f"invoices-{self.code.lower()}" if self.code else "invoices"
-        
+
         alias_vals = {
             "alias_name": alias_name,
             "alias_model_id": self.env["ir.model"]._get("account.journal").id,
@@ -77,10 +77,10 @@ class AccountJournal(models.Model):
             "alias_defaults": "{}",
             "alias_force_thread_id": self.id,
         }
-        
+
         alias = self.env["mail.alias"].create(alias_vals)
         self.ai_invoice_alias_id = alias.id
-        
+
         _logger.info(f"Created email alias '{alias_name}' for journal {self.name}")
         return alias
 
@@ -90,14 +90,14 @@ class AccountJournal(models.Model):
         Este método se llama cuando llega un email al alias.
         """
         _logger.info(f"Received email for journal alias: {msg_dict.get('subject', 'No subject')}")
-        
+
         # Si no está habilitado, usar comportamiento por defecto
         if not self.ai_invoice_alias_enabled:
             return super().message_new(msg_dict, custom_values=custom_values)
-        
+
         # Procesar adjuntos de facturas
         self._process_invoice_attachments_from_email(msg_dict)
-        
+
         # No crear ningún registro adicional, solo retornar el journal
         return self
 
@@ -106,10 +106,10 @@ class AccountJournal(models.Model):
         Procesar emails de seguimiento (respuestas).
         """
         _logger.info(f"Received follow-up email for journal: {msg_dict.get('subject', 'No subject')}")
-        
+
         if self.ai_invoice_alias_enabled:
             self._process_invoice_attachments_from_email(msg_dict)
-        
+
         return super().message_update(msg_dict, update_vals=update_vals)
 
     def _process_invoice_attachments_from_email(self, msg_dict):
@@ -117,37 +117,37 @@ class AccountJournal(models.Model):
         Extraer y procesar adjuntos de facturas del email.
         """
         self.ensure_one()
-        
+
         attachments = msg_dict.get("attachments", [])
         if not attachments:
             _logger.info("No attachments found in email")
             return
-        
+
         _logger.info(f"Processing {len(attachments)} attachments from email")
-        
+
         processed_count = 0
         error_count = 0
-        
+
         for attachment in attachments:
             try:
                 filename = attachment[0]
                 file_content = attachment[1]
-                
+
                 # Validar tipo de archivo
                 if not self._is_valid_invoice_file(filename):
                     _logger.info(f"Skipping non-invoice file: {filename}")
                     continue
-                
+
                 _logger.info(f"Processing invoice file: {filename}")
-                
+
                 # Crear factura usando el wizard de IA
                 self._create_invoice_from_attachment(filename, file_content, msg_dict)
                 processed_count += 1
-                
+
             except Exception as e:
                 _logger.error(f"Error processing attachment {filename}: {str(e)}", exc_info=True)
                 error_count += 1
-        
+
         # Enviar notificación al remitente
         if processed_count > 0 or error_count > 0:
             self._send_processing_notification(
@@ -161,7 +161,7 @@ class AccountJournal(models.Model):
         """Verificar si el archivo es un tipo válido para facturas"""
         if not filename:
             return False
-        
+
         filename_lower = filename.lower()
         valid_extensions = (".pdf", ".jpg", ".jpeg", ".png")
         return filename_lower.endswith(valid_extensions)
@@ -171,7 +171,7 @@ class AccountJournal(models.Model):
         Crear factura borrador usando el wizard de IA.
         """
         self.ensure_one()
-        
+
         # Crear wizard
         wizard = self.env["xtendoo.invoice.ai.wizard"].create({
             "upload": file_content,
@@ -181,28 +181,28 @@ class AccountJournal(models.Model):
             "create_partner_if_missing": self.ai_invoice_create_partner,
             "attach_original": self.ai_invoice_attach_original,
         })
-        
+
         # Procesar con IA
         result = wizard.action_process_invoice()
-        
+
         # Si se creó una factura, añadir información del email
         if result.get("res_id"):
             invoice = self.env["account.move"].browse(result["res_id"])
-            
+
             # Añadir nota con información del email
             email_from = msg_dict.get("email_from", "Unknown")
             subject = msg_dict.get("subject", "No subject")
-            
+
             note = _(
                 "📧 Invoice received by email\n"
                 "From: %s\n"
                 "Subject: %s\n"
                 "Processed automatically with AI"
             ) % (email_from, subject)
-            
+
             current_narration = invoice.narration or ""
             invoice.narration = current_narration + "\n\n" + note if current_narration else note
-            
+
             _logger.info(f"Created invoice {invoice.name} from email attachment {filename}")
 
     def _send_processing_notification(self, email_to, success_count, error_count, in_reply_to=None):
@@ -211,11 +211,11 @@ class AccountJournal(models.Model):
         """
         if not email_to:
             return
-        
+
         self.ensure_one()
-        
+
         subject = _("Invoice Processing Result - %s") % self.name
-        
+
         if error_count == 0:
             body = _(
                 "<p>Your invoice(s) have been successfully processed:</p>"
@@ -233,7 +233,7 @@ class AccountJournal(models.Model):
                 "</ul>"
                 "<p>Please check the system logs or contact support for failed invoices.</p>"
             ) % (success_count, error_count)
-        
+
         # Crear y enviar email
         mail_values = {
             "subject": subject,
@@ -241,11 +241,11 @@ class AccountJournal(models.Model):
             "email_to": email_to,
             "auto_delete": True,
         }
-        
+
         if in_reply_to:
             mail_values["reply_to"] = self.ai_invoice_alias_id.display_name
             mail_values["headers"] = {"In-Reply-To": in_reply_to}
-        
+
         try:
             mail = self.env["mail.mail"].create(mail_values)
             mail.send()
