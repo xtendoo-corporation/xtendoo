@@ -26,9 +26,6 @@
     "assets": {
         "web.assets_backend": [
             "xtendoo_invoice_ai/static/src/js/notification_handler.js",
-            "xtendoo_invoice_ai/static/src/js/invoice_ai_uploader.js",
-            "xtendoo_invoice_ai/static/src/js/invoice_list_controller.js",
-            "xtendoo_invoice_ai/static/src/xml/invoice_ai_uploader.xml",
         ],
     },
     "external_dependencies": {
