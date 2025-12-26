@@ -231,17 +231,16 @@ class PosOrder(models.Model):
             raise UserError(_('Error al generar la factura: %s') % str(e))
 
         if self.config_id.iface_print_auto:
-            action = self.env.ref(
-                'pos_conventional.action_factura_simplificada_80mm'
-            ).report_action(invoice)
-            # Forzar modo impresión directa en nueva pestaña y no navegar fuera del pedido
-            action['context'] = action.get('context', {})
-            action['context'].update({'print_mode': True})
-            action['close_on_report_download'] = True
-            return action
+            # Construir la URL del informe HTML y devolver una acción cliente
+            report_xmlid = 'pos_conventional.report_factura_simplificada_80mm'
+            url = f"/report/html/{report_xmlid}/{invoice.id}"
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'pos_conventional.print_iframe',
+                'params': {'url': url},
+            }
 
         return True
-
 
     def action_close_pos_session_wizard(self):
         """
@@ -480,3 +479,27 @@ class PosOrder(models.Model):
         return self.env.ref(
             "pos_conventional.action_factura_simplificada_80mm"
         ).report_action(self.account_move)
+
+
+    def get_factura_report_url(self, order_id=None):
+        """
+        Devuelve la URL del informe HTML del account.move asociado para este pedido.
+        Será llamada por JS en el backend para abrir el informe en un iframe y lanzar print().
+        Acepta opcionalmente order_id (por compatibilidad con RPC que pasa posicionamente el id).
+        """
+        # Si nos pasan order_id (llamada desde RPC con [order_id]), usar ese registro
+        if order_id:
+            order = self.browse(order_id)
+        else:
+            order = self
+        if not order or not order.exists():
+            return False
+        order = order.ensure_one()
+        if not order.account_move:
+            return False
+        # Construir URL relativa al endpoint de report HTML
+        base = '/report/html'
+        report_xmlid = 'pos_conventional.report_factura_simplificada_80mm'
+        url = f"{base}/{report_xmlid}/{order.account_move.id}"
+        return url
+

@@ -5,6 +5,7 @@ import { formView } from "@web/views/form/form_view";
 import { FormController } from "@web/views/form/form_controller";
 import { useService } from "@web/core/utils/hooks";
 import { onMounted, onWillUnmount } from "@odoo/owl";
+import { openUrlInHiddenPrintIframe } from "./pos_print_iframe";
 
 /**
  * Controlador de formulario personalizado para órdenes POS
@@ -40,14 +41,21 @@ export class PosOrderBarcodeFormController extends FormController {
         // Bind del handler para poder removerlo después
         this.boundKeydownHandler = this.onKeyDown.bind(this);
 
+        // Bind para el handler del botón de imprimir
+        this.boundPrintHandler = this._onClickPrintFactura.bind(this);
+
         onMounted(() => {
             // Añadir listener global de keydown
             document.addEventListener("keydown", this.boundKeydownHandler, true);
+            // Delegación para capturar el botón de impresión en el header del form view
+            // Usamos event delegation porque el botón puede renderizarse después
+            document.body.addEventListener('click', this.boundPrintHandler, true);
         });
 
         onWillUnmount(() => {
             // Limpiar listener al desmontar
             document.removeEventListener("keydown", this.boundKeydownHandler, true);
+            document.body.removeEventListener('click', this.boundPrintHandler, true);
             if (this.barcodeTimeout) {
                 clearTimeout(this.barcodeTimeout);
             }
@@ -274,6 +282,55 @@ export class PosOrderBarcodeFormController extends FormController {
                 `Error al añadir producto: ${error.message || error}`,
                 { type: "danger", title: "Error" }
             );
+        }
+    }
+
+    /**
+     * Interceptor global para clicks en el body: si detecta el botón que
+     * ejecuta la acción `action_print_factura_simplificada`, cancelamos la
+     * navegación y ejecutamos la impresión via iframe.
+     */
+    async _onClickPrintFactura(ev) {
+        try {
+            const el = ev.target;
+            if (!el) return;
+            // Buscar el botón o el elemento que tenga el atributo name con la acción
+            const btn = el.closest && el.closest('button[name="action_print_factura_simplificada"]');
+            if (!btn) return;
+
+            // Evitar que el click original navegue
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            // Llamar al RPC para obtener la URL del informe
+            const record = this.model.root;
+            if (!record || !record.resId) {
+                this.notification.add('No se pudo obtener el pedido actual para imprimir.', { type: 'warning' });
+                return;
+            }
+            const orderId = record.resId;
+
+            // Llamada al método del modelo pos.order para obtener la URL
+            const url = await this.orm.call('pos.order', 'get_factura_report_url', [orderId], {});
+            if (!url) {
+                this.notification.add('No hay factura asociada o no se pudo obtener la URL del informe.', { type: 'warning' });
+                return;
+            }
+
+            // Construir URL absoluta usando location.origin
+            const absoluteUrl = new URL(url, window.location.origin).toString();
+
+            // Abrir en iframe oculto y lanzar impresión
+            try {
+                await openUrlInHiddenPrintIframe(absoluteUrl + '?download=false');
+                this.notification.add('Enviado a impresora.', { type: 'success' });
+            } catch (err) {
+                console.error('Error al imprimir en iframe:', err);
+                this.notification.add('Error al imprimir: ' + (err.message || err), { type: 'danger' });
+            }
+
+        } catch (err) {
+            console.error('Error en _onClickPrintFactura:', err);
         }
     }
 }

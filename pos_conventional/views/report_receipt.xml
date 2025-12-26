@@ -130,12 +130,7 @@
                     <div class="center" style="font-size:0.8em;">
                         Gracias por su compra
                     </div>
-                    <script type="text/javascript">
-                        window.print();
-                        window.onafterprint = function() {
-                            window.history.back();
-                        };
-                    </script>
+
                 </main>
 
             </t>
@@ -147,26 +142,12 @@
 
     <data>
 
-        <record id="paperformat_factura_simplificada_80mm" model="report.paperformat">
-            <field name="name">Factura Simplificada 80mm</field>
-            <field name="format">custom</field>
-            <field name="page_width">80</field>
-            <field name="page_height">200</field>
-            <field name="margin_top">5</field>
-            <field name="margin_bottom">3</field>
-            <field name="margin_left">1</field>
-            <field name="margin_right">1</field>
-            <field name="dpi">90</field>
-        </record>
-
-
         <record id="action_factura_simplificada_80mm" model="ir.actions.report">
             <field name="name">Factura Simplificada 80mm</field>
             <field name="model">account.move</field>
             <field name="report_type">qweb-html</field>
             <field name="report_name">pos_conventional.report_factura_simplificada_80mm</field>
             <field name="report_file">pos_conventional.report_factura_simplificada_80mm</field>
-            <field name="paperformat_id" ref="paperformat_factura_simplificada_80mm"/>
         </record>
 
     </data>
