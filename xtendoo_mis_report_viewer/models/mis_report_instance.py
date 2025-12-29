@@ -294,7 +294,13 @@ class MisReportInstance(models.Model):
                 "id": f"line_{i}",
                 "name": row.get("label", ""),
                 "level": row.get("level", 0),
-                "class": row.get("style", ""),
+                "class": "; ".join(
+                    [
+                        s.strip()
+                        for s in row.get("style", "").split(";")
+                        if "background-color" not in s
+                    ]
+                ),
                 "unfoldable": True,
                 "unfolded": row.get("id") in options.get("unfolded_lines", [])
                 or options.get("unfold_all"),

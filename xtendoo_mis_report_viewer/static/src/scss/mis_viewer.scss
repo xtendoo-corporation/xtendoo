@@ -62,8 +62,9 @@
     /* Hierarchy styles */
     .o_account_reports_domain_line_0 {
       font-size: 1.1rem;
-      font-weight: bold;
-      background-color: #fafafa;
+      font-weight: 700;
+      background-color: #e9ecef !important;
+      color: #212529;
 
       .o_account_reports_name_cell, .o_account_reports_monetary_cell {
         border-top: 1px solid #dee2e6;
