@@ -1,0 +1,139 @@
+.o_account_reports_page {
+  background-color: #fff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .o_account_reports_body {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+  }
+
+  .o_account_reports_table {
+    font-family: "Inter", sans-serif;
+    min-width: 100%;
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
+
+    .o_account_reports_header_cell {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      padding: 12px 10px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: rgba(248, 249, 250, 0.98);
+
+      &:first-child {
+        left: 0;
+        z-index: 20;
+      }
+    }
+
+    .o_account_reports_name_cell {
+      padding: 10px;
+      font-weight: 500;
+      border-bottom: 1px solid #f0f0f0;
+      position: sticky;
+      left: 0;
+      background-color: #fff;
+      z-index: 5;
+    }
+
+    .o_account_reports_monetary_cell {
+      padding: 10px;
+      font-variant-numeric: tabular-nums;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    tr:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+      .o_account_reports_name_cell {
+        background-color: #fcfcfc;
+      }
+    }
+
+    /* Hierarchy styles */
+    .o_account_reports_domain_line_0 {
+      font-size: 1.1rem;
+      font-weight: bold;
+      background-color: #fafafa;
+
+      .o_account_reports_name_cell, .o_account_reports_monetary_cell {
+        border-top: 1px solid #dee2e6;
+      }
+    }
+
+    .o_account_reports_domain_line_1 {
+      font-weight: 600;
+    }
+  }
+
+  /* Date selector styles */
+  .o_reports_filter_comparison, .o_reports_filter_journals, .o_reports_filter_extra_options {
+     display: flex;
+     align-items: center;
+     gap: 5px;
+     padding: 5px 15px;
+     border-right: 1px solid #dee2e6;
+  }
+
+  .o_reports_filter_search {
+     padding: 5px 15px;
+
+     .o_searchview {
+        min-width: 200px;
+        background-color: #f8f9fa !important;
+        transition: all 0.2s;
+
+        &:focus-within {
+           background-color: #fff !important;
+           border-color: #008784 !important;
+           box-shadow: 0 0 0 0.2rem rgba(0, 135, 132, 0.25);
+        }
+     }
+  }
+
+  .o_reports_filter_date {
+     display: flex;
+     align-items: center;
+     gap: 10px;
+     padding: 5px 15px;
+  }
+
+  .o_reports_filter_date_custom {
+     input[type="date"] {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-size: 0.9rem;
+        height: 31px;
+     }
+  }
+  .o_view_nocontent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 0;
+    color: #666;
+
+    .o_view_nocontent_neutral_face {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      font-family: inherit;
+    }
+
+    .o_nocontent_help p:first-child {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+}
