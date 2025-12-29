@@ -31,6 +31,7 @@ export class MisEnhancedViewer extends Component {
             if (this.state.instanceId) {
                 await this.loadMetadata();
                 await this.loadReportData();
+                this.expandToLevel(3); // Default expand up to Level 3 (Sub-accounts collapsed)
             } else {
                 this.state.loading = false;
             }
@@ -65,16 +66,73 @@ export class MisEnhancedViewer extends Component {
     }
 
     get filteredLines() {
-        if (!this.state.options) {
+        if (!this.state.options || !this.state.reportData.lines) {
             return [];
         }
+
+        const lines = this.state.reportData.lines;
         const search = (this.state.options.search || "").toLowerCase();
-        if (!search) {
-            return this.state.reportData.lines;
+
+        // If searching, show all matching lines regardless of hierarchy
+        if (search) {
+            return lines.filter(l => (l.name || "").toLowerCase().includes(search));
         }
-        return (this.state.reportData.lines || []).filter(l =>
-            (l.name || "").toLowerCase().includes(search)
-        );
+
+        const result = [];
+        let hiddenLevel = -1;
+        const unfoldedLines = new Set(this.state.options.unfolded_lines || []);
+        const unfoldAll = this.state.options.unfold_all;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Determine if this line has children (is unfoldable)
+            // Checks if next line exists and has a deeper level
+            const nextLine = lines[i + 1];
+            line.unfoldable = nextLine && nextLine.level > line.level;
+
+            // Visibility Logic
+            if (hiddenLevel !== -1 && line.level > hiddenLevel) {
+                continue; // Line is hidden by a folded parent
+            }
+
+            // We are visible again (or never were hidden)
+            hiddenLevel = -1;
+            result.push(line);
+
+            // Check if WE are folded
+            // Only strictly unfoldable lines can be folded
+            if (line.unfoldable) {
+                const isUnfolded = unfoldAll || unfoldedLines.has(line.id);
+                // Also update the line object for the view to show correct caret
+                line.unfolded = isUnfolded;
+
+                if (!isUnfolded) {
+                    hiddenLevel = line.level;
+                }
+            }
+        }
+        return result;
+    }
+
+    expandToLevel(level) {
+        if (!this.state.reportData.lines) return;
+
+        // Collect all IDs of lines with level < targetLevel that are unfoldable
+        // Example: Expand to Level 2 means Level 0 and Level 1 must be unfolded.
+        const linesToUnfold = this.state.reportData.lines
+            .filter(l => l.level < level && (this.state.reportData.lines[this.state.reportData.lines.indexOf(l)+1]?.level > l.level))
+            .map(l => l.id);
+
+        this.state.options.unfolded_lines = linesToUnfold;
+        this.state.options.unfold_all = false;
+        this.loadReportData();
+    }
+
+    collapseAll() {
+        this.state.options.unfolded_lines = [];
+        this.state.options.unfold_all = false;
+        this.loadReportData();
     }
 
     toggleOption(option) {

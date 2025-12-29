@@ -7,11 +7,26 @@
                     <button type="button" class="btn btn-primary me-1" t-on-click="() => this.loadReportData()">
                         <i class="fa fa-refresh me-1"/> Update
                     </button>
-                    <button t-if="state.options" type="button" class="btn btn-secondary me-1" t-on-click="toggleUnfoldAll">
-                        <i t-att-class="state.options.unfold_all ? 'fa fa-minus-square-o me-1' : 'fa fa-plus-square-o me-1'"/>
-                        <t t-if="state.options.unfold_all">Fold All</t>
-                        <t t-else="">Unfold All</t>
-                    </button>
+
+                    <div class="btn-group me-1">
+                        <Dropdown>
+                            <button class="btn btn-secondary dropdown-toggle">
+                                <i class="fa fa-eye me-1"/> View
+                            </button>
+                            <t t-set-slot="content">
+                                <DropdownItem onSelected="() => this.toggleUnfoldAll()">
+                                    <t t-if="state.options.unfold_all">Collapse All</t>
+                                    <t t-else="">Expand All</t>
+                                </DropdownItem>
+                                <div class="dropdown-divider"/>
+                                <DropdownItem onSelected="() => this.expandToLevel(1)">Expand to Level 1</DropdownItem>
+                                <DropdownItem onSelected="() => this.expandToLevel(2)">Expand to Level 2</DropdownItem>
+                                <DropdownItem onSelected="() => this.expandToLevel(3)">Expand to Level 3</DropdownItem>
+                                <div class="dropdown-divider"/>
+                                <DropdownItem onSelected="() => this.collapseAll()">Collapse All</DropdownItem>
+                            </t>
+                        </Dropdown>
+                    </div>
                     <div class="btn-group me-1">
                         <Dropdown>
                             <button class="btn btn-secondary dropdown-toggle">
@@ -177,7 +192,10 @@
                                 <t t-foreach="filteredLines" t-as="line" t-key="line.id">
                                     <tr t-att-class="'o_account_reports_domain_line_' + line.level" t-att-style="line.class">
                                         <td t-att-style="'padding-left: ' + (line.level * 20) + 'px;'" class="o_account_reports_name_cell">
-                                            <span t-if="line.unfoldable" class="fa fa-caret-down me-1" t-on-click="() => this.toggleLine(line.id)"/>
+                                            <span t-if="line.unfoldable"
+                                                  t-att-class="line.unfolded ? 'fa fa-caret-down me-1' : 'fa fa-caret-right me-1'"
+                                                  t-on-click="() => this.toggleLine(line.id)"
+                                                  style="cursor: pointer; display: inline-block; width: 15px;"/>
                                             <t t-esc="line.name"/>
                                         </td>
                                         <t t-foreach="line.columns" t-as="column" t-key="column_index">
