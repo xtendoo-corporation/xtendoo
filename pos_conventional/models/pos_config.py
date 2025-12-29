@@ -46,9 +46,18 @@ class PosConfig(models.Model):
                 # Si es un dict, es una acción que debemos retornar
                 return session
 
-            # Si la sesión está en opening_control, abrir el wizard
+            # Si la sesión está en opening_control, abrir el wizard de PIN primero
             if session.state == 'opening_control':
-                return session._open_non_touch_wizard()
+                return {
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'pos.session.pin.wizard',
+                    'view_mode': 'form',
+                    'target': 'new',
+                    'context': {
+                        'default_session_id': session.id,
+                        'default_user_id': self.env.uid,
+                    }
+                }
 
             # Si la sesión ya está abierta (Continue Selling),
             # redirigir a la vista de pedidos POS
@@ -79,4 +88,3 @@ class PosConfig(models.Model):
         }
 
         return action
-

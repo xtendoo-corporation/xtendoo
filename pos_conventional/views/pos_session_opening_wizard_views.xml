@@ -9,30 +9,22 @@
                     <div class="alert alert-info mb-3" role="alert">
                         <p class="mb-0">
                             <strong>Apertura de sesión en modo no táctil</strong><br/>
-                            Por favor, ingrese su PIN para abrir la sesión.
+                            Por favor, ingrese el dinero inicial para abrir la sesión.
                         </p>
                     </div>
-
                     <group>
                         <group>
                             <field name="session_id" invisible="1"/>
                             <field name="user_id" invisible="1"/>
                             <field name="currency_id" invisible="1"/>
                             <field name="cash_control" invisible="1"/>
-
-                            <label for="employee_pin" string="PIN"/>
-                            <field name="employee_pin" password="True"
-                                   placeholder="Ingrese su PIN (ej: 1234)"
-                                   nolabel="1"/>
-                        </group>
-                        <group>
-                            <field name="cash_register_balance_start"
-                                   invisible="not cash_control"
-                                   widget="monetary"
-                                   options="{'currency_field': 'currency_id'}"/>
                         </group>
                     </group>
-
+                    <field name="cash_register_balance_start"
+                           invisible="not cash_control"
+                           widget="monetary"
+                           options="{'currency_field': 'currency_id'}"
+                           class="w-100"/>
                     <div class="alert alert-warning" role="alert" invisible="not cash_control">
                         <p class="mb-0">Por favor, cuente e ingrese el dinero inicial en la caja registradora.</p>
                     </div>
@@ -50,4 +42,3 @@
         </field>
     </record>
 </odoo>
-

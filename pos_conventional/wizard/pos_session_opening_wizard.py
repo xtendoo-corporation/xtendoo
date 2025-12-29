@@ -9,7 +9,6 @@ class PosSessionOpeningWizard(models.TransientModel):
     session_id = fields.Many2one('pos.session', string='Sesión', required=True, readonly=True)
     user_id = fields.Many2one('res.users', string='Usuario', required=True, readonly=True,
                               default=lambda self: self.env.user)
-    employee_pin = fields.Char(string='PIN del empleado')
     cash_register_balance_start = fields.Monetary(
         string='Dinero inicial',
         currency_field='currency_id',
@@ -26,22 +25,27 @@ class PosSessionOpeningWizard(models.TransientModel):
         """
         self.ensure_one()
 
-        # Validar el PIN usando el método estándar de Odoo
-        employee = self._validate_employee_pin()
-
         # Abrir la sesión usando el método estándar de Odoo
         self._open_session_backend()
 
         # Retornar a la vista del POS config o sesión
         return self._return_to_backend()
 
-    def _validate_employee_pin(self):
+    def _validate_employee_pin(self, vals=None):
         """
         Valida el PIN del empleado usando los mecanismos estándar de Odoo.
-        En Odoo, los empleados con PIN están en hr.employee.
-        Si no hay módulo HR instalado, validamos que el usuario actual tenga acceso.
+        Si se llama desde el wizard de PIN, recibe un dict con los datos.
+        Si se llama desde el wizard original, usa self.
         """
-        self.ensure_one()
+        if vals:
+            session_id = vals['session_id']
+            user_id = vals['user_id']
+            employee_pin = vals['employee_pin']
+        else:
+            self.ensure_one()
+            session_id = self.session_id
+            user_id = self.user_id
+            employee_pin = getattr(self, 'employee_pin', None)
 
         # Verificar permisos básicos primero
         if not self.env.user.has_group('point_of_sale.group_pos_user'):
@@ -50,10 +54,10 @@ class PosSessionOpeningWizard(models.TransientModel):
             ))
 
         # Si el módulo pos_hr está instalado y configurado, validar el PIN del empleado
-        if self.session_id.config_id.module_pos_hr and 'hr.employee' in self.env:
+        if session_id.config_id.module_pos_hr and 'hr.employee' in self.env:
             employee = self.env['hr.employee'].search([
-                ('user_id', '=', self.user_id.id),
-                ('pin', '=', self.employee_pin)
+                ('user_id', '=', user_id.id),
+                ('pin', '=', employee_pin)
             ], limit=1)
 
             if not employee:
@@ -65,7 +69,7 @@ class PosSessionOpeningWizard(models.TransientModel):
 
         # Si no hay módulo HR o no está configurado, aceptar cualquier PIN no vacío
         # (esto es para compatibilidad con configuraciones básicas)
-        if not self.employee_pin:
+        if not employee_pin:
             raise ValidationError(_(
                 'Debe ingresar un PIN para abrir la sesión.'
             ))
@@ -121,4 +125,3 @@ class PosSessionOpeningWizard(models.TransientModel):
         }
 
         return action
-
