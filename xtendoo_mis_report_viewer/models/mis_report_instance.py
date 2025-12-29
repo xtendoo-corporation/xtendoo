@@ -36,7 +36,17 @@ class MisReportInstance(models.Model):
         # Handle predefined date filters
         date_options = options.get("date", {})
         date_filter = date_options.get("filter", "custom")
-        if date_filter != "custom":
+        # Priority 1: Date Range ID
+        if date_range_id := date_options.get("date_range_id"):
+            if self.env.get("date.range"):
+                dr = self.env["date.range"].browse(date_range_id)
+                if dr.exists():
+                    date_options["date_from"] = fields.Date.to_string(dr.date_start)
+                    date_options["date_to"] = fields.Date.to_string(dr.date_end)
+                    date_options["string"] = dr.name
+
+        # Priority 2: Standard Filter (if no date range or custom dates set)
+        elif date_filter != "custom":
             date_from, date_to = self._get_dates_from_filter(date_filter)
             if date_from and date_to:
                 date_options["date_from"] = fields.Date.to_string(date_from)
@@ -48,6 +58,10 @@ class MisReportInstance(models.Model):
             "date_to": self.date_to,
             "comparison_mode": self.comparison_mode,
         }
+        if "date_range_id" in self._fields:
+            original_vals["date_range_id"] = (
+                self.date_range_id.id if self.date_range_id else False
+            )
         original_periods = self.period_ids.ids if self.period_ids else []
 
         # Handle Journals filter via context
@@ -192,6 +206,22 @@ class MisReportInstance(models.Model):
                 }
             )
 
+        # Prepare Date Ranges
+        date_ranges = []
+        if self.env.get("date.range"):
+            ranges = self.env["date.range"].search([], order="date_start desc")
+            for r in ranges:
+                date_ranges.append(
+                    {
+                        "id": r.id,
+                        "name": r.name,
+                        "date_start": fields.Date.to_string(r.date_start),
+                        "date_end": fields.Date.to_string(r.date_end),
+                        "type_id": r.type_id.id,
+                        "type_name": r.type_id.name,
+                    }
+                )
+
         return {
             "date": {
                 "date_from": (
@@ -202,7 +232,13 @@ class MisReportInstance(models.Model):
                 ),
                 "filter": "custom" if self.date_from else "this_year",
                 "string": _("Current Period"),
+                "date_range_id": (
+                    self.date_range_id.id
+                    if hasattr(self, "date_range_id") and self.date_range_id
+                    else False
+                ),
             },
+            "date_ranges": date_ranges,
             "comparison": {
                 "filter": "no_comparison",
                 "number_period": 1,

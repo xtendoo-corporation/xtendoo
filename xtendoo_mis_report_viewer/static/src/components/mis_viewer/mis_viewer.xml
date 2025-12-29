@@ -1,198 +1,207 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="xtendoo_mis_report_viewer.MisEnhancedViewer">
-        <Layout className="'o_account_reports_page o_content'" display="{ controlPanel: {} }">
-            <t t-set-slot="control-panel-navigation-buttons">
-                <div class="o_cp_buttons" role="toolbar" aria-label="Control panel buttons">
+        <div class="o_action xtendoo_mis_report_viewer h-100 d-flex flex-column">
+            <ControlPanel>
+                <t t-set-slot="control-panel-create-button">
                     <button type="button" class="btn btn-primary me-1" t-on-click="() => this.loadReportData()">
                         <i class="fa fa-refresh me-1"/> Update
                     </button>
-                    <button type="button" class="btn btn-secondary me-1" t-on-click="toggleUnfoldAll">
+                    <button t-if="state.options" type="button" class="btn btn-secondary me-1" t-on-click="toggleUnfoldAll">
                         <i t-att-class="state.options.unfold_all ? 'fa fa-minus-square-o me-1' : 'fa fa-plus-square-o me-1'"/>
                         <t t-if="state.options.unfold_all">Fold All</t>
                         <t t-else="">Unfold All</t>
                     </button>
-                    <div class="btn-group">
+                    <div class="btn-group me-1">
                         <Dropdown>
-                            <t t-set-slot="toggler">
-                                <button class="btn btn-secondary dropdown-toggle">
-                                    <i class="fa fa-download me-1"/> Export
-                                </button>
+                            <button class="btn btn-secondary dropdown-toggle">
+                                <i class="fa fa-download me-1"/> Export
+                            </button>
+                            <t t-set-slot="content">
+                                <DropdownItem onSelected="() => this.onExport('pdf')">PDF</DropdownItem>
+                                <DropdownItem onSelected="() => this.onExport('xlsx')">XLSX</DropdownItem>
                             </t>
-                            <DropdownItem onSelected="() => this.onExport('pdf')">PDF</DropdownItem>
-                            <DropdownItem onSelected="() => this.onExport('xlsx')">XLSX</DropdownItem>
                         </Dropdown>
                     </div>
-                </div>
-            </t>
+                </t>
 
-            <t t-set-slot="control-panel-filter-menu">
-                <div t-if="state.options" class="o_reports_filter_input_wrapper d-flex align-items-center">
-                    <!-- Date Filter -->
-                    <div class="o_reports_filter_date d-flex align-items-center me-3">
-                        <span class="fw-bold me-2">Date:</span>
-                        <Dropdown>
-                            <t t-set-slot="toggler">
+                <t t-set-slot="layout-actions">
+                    <div t-if="state.options" class="d-flex align-items-center gap-1 flex-wrap">
+                        <!-- Date Filter -->
+                        <div class="btn-group">
+                            <Dropdown>
                                 <button class="btn btn-secondary dropdown-toggle">
-                                    <t t-if="state.options.date.filter == 'custom'">Custom</t>
-                                    <t t-elif="state.options.date.filter == 'today'">Today</t>
-                                    <t t-elif="state.options.date.filter == 'this_month'">This Month</t>
-                                    <t t-elif="state.options.date.filter == 'this_quarter'">This Quarter</t>
-                                    <t t-elif="state.options.date.filter == 'this_year'">This Financial Year</t>
-                                    <t t-elif="state.options.date.filter == 'yesterday'">Yesterday</t>
-                                    <t t-elif="state.options.date.filter == 'last_month'">Last Month</t>
-                                    <t t-elif="state.options.date.filter == 'last_quarter'">Last Quarter</t>
-                                    <t t-elif="state.options.date.filter == 'last_year'">Last Financial Year</t>
+                                    <span class="fw-bold me-1">Date:</span>
+                                    <t t-if="state.options.date.string"><t t-esc="state.options.date.string"/></t>
+                                    <t t-else="">Date</t>
                                 </button>
-                            </t>
-                            <DropdownItem onSelected="() => this.onFilterDate('today')">Today</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterDate('this_month')">This Month</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterDate('this_quarter')">This Quarter</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterDate('this_year')">This Financial Year</DropdownItem>
-                            <div class="dropdown-divider"/>
-                            <DropdownItem onSelected="() => this.onFilterDate('yesterday')">Yesterday</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterDate('last_month')">Last Month</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterDate('last_quarter')">Last Quarter</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterDate('last_year')">Last Financial Year</DropdownItem>
-                            <div class="dropdown-divider"/>
-                            <DropdownItem onSelected="() => this.onFilterDate('custom')">Custom</DropdownItem>
-                        </Dropdown>
-                    </div>
+                                <t t-set-slot="content">
+                                    <!-- Standard Filters -->
+                                    <DropdownItem onSelected="() => this.onFilterDate('today')">Today</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterDate('this_month')">This Month</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterDate('this_quarter')">This Quarter</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterDate('this_year')">This Financial Year</DropdownItem>
+                                    <div class="dropdown-divider"/>
+                                    <DropdownItem onSelected="() => this.onFilterDate('yesterday')">Yesterday</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterDate('last_month')">Last Month</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterDate('last_quarter')">Last Quarter</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterDate('last_year')">Last Financial Year</DropdownItem>
+                                    <div class="dropdown-divider"/>
 
-                    <!-- Comparison Filter -->
-                    <div class="o_reports_filter_comparison d-flex align-items-center me-3">
-                        <span class="fw-bold me-2">Comparison:</span>
-                        <Dropdown>
-                            <t t-set-slot="toggler">
+                                    <!-- Date Ranges -->
+                                    <t t-if="state.options.date_ranges and state.options.date_ranges.length > 0">
+                                        <t t-foreach="state.options.date_ranges" t-as="range" t-key="range.id">
+                                             <DropdownItem onSelected="() => this.onFilterDateRange(range.id)">
+                                                <t t-esc="range.name"/>
+                                             </DropdownItem>
+                                        </t>
+                                        <div class="dropdown-divider"/>
+                                    </t>
+
+                                    <!-- Custom Date Picker -->
+                                    <div class="p-3" style="min-width: 200px;">
+                                        <label class="form-label fw-bold">Custom Dates</label>
+                                        <div class="d-flex flex-column gap-2">
+                                            <input type="date" class="form-control form-control-sm"
+                                                   t-model="state.options.date.date_from"/>
+                                            <input type="date" class="form-control form-control-sm"
+                                                   t-model="state.options.date.date_to"/>
+                                            <button class="btn btn-sm btn-primary w-100" t-on-click="() => this.onApplyCustomDates()">
+                                                Apply
+                                            </button>
+                                        </div>
+                                    </div>
+                                </t>
+                            </Dropdown>
+                        </div>
+
+                        <!-- Comparison Filter -->
+                        <div class="btn-group">
+                            <Dropdown>
                                 <button class="btn btn-secondary dropdown-toggle">
-                                    <t t-if="state.options.comparison.filter == 'no_comparison'">No Comparison</t>
+                                    <span class="fw-bold me-1">Comparison:</span>
+                                    <t t-if="state.options.comparison.filter == 'no_comparison'">None</t>
                                     <t t-elif="state.options.comparison.filter == 'previous_period'">Previous Period</t>
                                     <t t-elif="state.options.comparison.filter == 'same_last_year'">Same Period Last Year</t>
                                 </button>
-                            </t>
-                            <DropdownItem onSelected="() => this.onFilterComparison('no_comparison')">No Comparison</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterComparison('previous_period')">Previous Period</DropdownItem>
-                            <DropdownItem onSelected="() => this.onFilterComparison('same_last_year')">Same Period Last Year</DropdownItem>
-                        </Dropdown>
-                        <input t-if="state.options.comparison.filter != 'no_comparison'"
-                               type="number"
-                               t-model="state.options.comparison.number_period"
-                               t-on-change="() => this.loadReportData()"
-                               class="form-control form-control-sm ms-2"
-                               style="width: 60px;"/>
-                    </div>
+                                <t t-set-slot="content">
+                                    <DropdownItem onSelected="() => this.onFilterComparison('no_comparison')">No Comparison</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterComparison('previous_period')">Previous Period</DropdownItem>
+                                    <DropdownItem onSelected="() => this.onFilterComparison('same_last_year')">Same Period Last Year</DropdownItem>
+                                </t>
+                            </Dropdown>
+                            <input t-if="state.options.comparison.filter != 'no_comparison'"
+                                   type="number"
+                                   t-model="state.options.comparison.number_period"
+                                   t-on-change="() => this.loadReportData()"
+                                   class="form-control form-control-sm ms-1"
+                                   style="width: 50px;"/>
+                        </div>
 
-                    <!-- Journals Filter -->
-                    <div class="o_reports_filter_journals d-flex align-items-center me-3">
-                        <span class="fw-bold me-2">Journals:</span>
-                        <Dropdown>
-                            <t t-set-slot="toggler">
+                        <!-- Journals Filter -->
+                        <div class="btn-group">
+                            <Dropdown>
                                 <button class="btn btn-secondary dropdown-toggle">
+                                    <span class="fw-bold me-1">Journals:</span>
                                     <t t-set="selected_count" t-value="getSelectedJournalsCount()"/>
-                                    <t t-if="selected_count == 0">All Journals</t>
-                                    <t t-else=""><t t-esc="selected_count"/> Selected</t>
+                                    <t t-if="selected_count == 0">All</t>
+                                    <t t-else=""><t t-esc="selected_count"/></t>
                                 </button>
-                            </t>
-                            <t t-foreach="state.options.journals" t-as="journal" t-key="journal.id">
-                                <DropdownItem onSelected="() => this.toggleJournal(journal)" closingMode="'none'">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" t-att-checked="journal.selected"/>
-                                        <label class="form-check-label"><t t-esc="journal.name"/></label>
-                                    </div>
-                                </DropdownItem>
-                            </t>
-                        </Dropdown>
-                    </div>
+                                <t t-set-slot="content">
+                                    <t t-foreach="state.options.journals" t-as="journal" t-key="journal.id">
+                                        <DropdownItem onSelected="() => this.toggleJournal(journal)" closingMode="'none'">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" t-att-checked="journal.selected"/>
+                                                <label class="form-check-label"><t t-esc="journal.name"/></label>
+                                            </div>
+                                        </DropdownItem>
+                                    </t>
+                                </t>
+                            </Dropdown>
+                        </div>
 
-                    <!-- Custom Date Inputs -->
-                    <div t-if="state.options.date.filter == 'custom'" class="o_reports_filter_date_custom d-flex align-items-center">
-                        <input type="date" t-model="state.options.date.date_from" t-on-change="onDateChange" class="form-control form-control-sm me-2"/>
-                        <span class="me-2">to</span>
-                        <input type="date" t-model="state.options.date.date_to" t-on-change="onDateChange" class="form-control form-control-sm"/>
-                    </div>
-
-                    <!-- Extra Options Filter -->
-                    <div class="o_reports_filter_extra_options d-flex align-items-center me-3">
-                        <Dropdown>
-                            <t t-set-slot="toggler">
+                        <!-- Options Filter -->
+                        <div class="btn-group">
+                            <Dropdown>
                                 <button class="btn btn-secondary dropdown-toggle">
                                     Options
                                 </button>
-                            </t>
-                            <DropdownItem onSelected="() => this.toggleOption('hide_zero_lines')" closingMode="'none'">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" t-att-checked="state.options.hide_zero_lines"/>
-                                    <label class="form-check-label">Hide Zero Lines</label>
-                                </div>
-                            </DropdownItem>
-                        </Dropdown>
-                    </div>
+                                <t t-set-slot="content">
+                                    <DropdownItem onSelected="() => this.toggleOption('hide_zero_lines')" closingMode="'none'">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" t-att-checked="state.options.hide_zero_lines"/>
+                                            <label class="form-check-label">Hide Zero Lines</label>
+                                        </div>
+                                    </DropdownItem>
+                                </t>
+                            </Dropdown>
+                        </div>
 
-                    <!-- Search Bar -->
-                    <div class="o_reports_filter_search d-flex align-items-center ms-auto">
-                        <div class="o_searchview d-flex align-items-center bg-white border rounded-pill px-3 py-1">
-                            <i class="fa fa-search text-muted me-2"/>
+                        <!-- Search Bar -->
+                        <div class="o_searchview d-flex align-items-center bg-white border rounded ps-2" style="width: 200px;">
+                            <i class="fa fa-search text-muted"/>
                             <input type="text"
-                                   class="o_searchview_input border-0"
+                                   class="o_searchview_input border-0 form-control form-control-sm shadow-none"
                                    placeholder="Search..."
                                    t-att-value="state.options.search"
-                                   t-on-input="onSearchInput"
-                                   style="outline: none; background: transparent;"/>
+                                   t-on-input="onSearchInput"/>
                         </div>
                     </div>
-                </div>
-            </t>
+                </t>
+            </ControlPanel>
 
-            <div class="o_account_reports_body">
-                <div t-if="state.loading" class="o_loading_indicator text-center p-5">
-                    <i class="fa fa-spinner fa-spin fa-3x text-primary"/>
-                </div>
-                <div t-else="" class="o_account_reports_table container-fluid">
-                    <table class="table table-sm table-hover o_account_reports_table_header">
-                        <thead>
-                            <t t-foreach="state.reportData.header" t-as="header_row" t-key="header_row_index">
-                                <tr>
-                                    <th t-if="header_row_index == 0"
-                                        t-att-rowspan="state.reportData.header.length"
-                                        class="o_account_reports_header_cell o_account_reports_name_cell">
-                                        Description
-                                    </th>
-                                    <t t-foreach="header_row" t-as="col" t-key="col_index">
-                                        <th class="o_account_reports_header_cell text-end" t-att-colspan="col.colspan">
-                                            <t t-esc="col.name"/>
+            <div class="o_content o_account_reports_page">
+                <div class="o_account_reports_body">
+                    <div t-if="state.loading" class="o_loading_indicator text-center p-5">
+                        <i class="fa fa-spinner fa-spin fa-3x text-primary"/>
+                    </div>
+                    <div t-else="" class="o_account_reports_table container-fluid">
+                        <table class="table table-sm table-hover o_account_reports_table_header">
+                            <thead>
+                                <t t-foreach="state.reportData.header" t-as="header_row" t-key="header_row_index">
+                                    <tr>
+                                        <th t-if="header_row_index == 0"
+                                            t-att-rowspan="state.reportData.header.length"
+                                            class="o_account_reports_header_cell o_account_reports_name_cell">
+                                            Description
                                         </th>
-                                    </t>
-                                </tr>
-                            </t>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="filteredLines" t-as="line" t-key="line.id">
-                                <tr t-att-class="'o_account_reports_domain_line_' + line.level" t-att-style="line.class">
-                                    <td t-att-style="'padding-left: ' + (line.level * 20) + 'px;'" class="o_account_reports_name_cell">
-                                        <span t-if="line.unfoldable" class="fa fa-caret-down me-1" t-on-click="() => this.toggleLine(line.id)"/>
-                                        <t t-esc="line.name"/>
-                                    </td>
-                                    <t t-foreach="line.columns" t-as="column" t-key="column_index">
-                                        <td class="text-end o_account_reports_monetary_cell">
-                                            <t t-esc="column.name"/>
-                                            <i t-if="column.drilldown"
-                                               class="fa fa-info-circle ms-1 text-muted o_no_print"
-                                               style="cursor: pointer;"
-                                               t-on-click="() => this.onDrilldown(column.drilldown)"/>
+                                        <t t-foreach="header_row" t-as="col" t-key="col_index">
+                                            <th class="o_account_reports_header_cell text-end" t-att-colspan="col.colspan">
+                                                <t t-esc="col.name"/>
+                                            </th>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="filteredLines" t-as="line" t-key="line.id">
+                                    <tr t-att-class="'o_account_reports_domain_line_' + line.level" t-att-style="line.class">
+                                        <td t-att-style="'padding-left: ' + (line.level * 20) + 'px;'" class="o_account_reports_name_cell">
+                                            <span t-if="line.unfoldable" class="fa fa-caret-down me-1" t-on-click="() => this.toggleLine(line.id)"/>
+                                            <t t-esc="line.name"/>
                                         </td>
-                                    </t>
-                                </tr>
-                            </t>
-                        </tbody>
-                    </table>
-                    <div t-if="!state.loading and state.options and filteredLines.length == 0" class="o_view_nocontent">
-                        <div class="o_nocontent_help">
-                            <p class="o_view_nocontent_neutral_face">No data to display!</p>
-                            <p>There is no data to display for the given filters.</p>
+                                        <t t-foreach="line.columns" t-as="column" t-key="column_index">
+                                            <td class="text-end o_account_reports_monetary_cell">
+                                                <t t-esc="column.name"/>
+                                                <i t-if="column.drilldown"
+                                                   class="fa fa-info-circle ms-1 text-muted o_no_print"
+                                                   style="cursor: pointer;"
+                                                   t-on-click="() => this.onDrilldown(column.drilldown)"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <div t-if="!state.loading and state.options and filteredLines.length == 0" class="o_view_nocontent">
+                            <div class="o_nocontent_help">
+                                <p class="o_view_nocontent_neutral_face">No data to display!</p>
+                                <p>There is no data to display for the given filters.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </Layout>
+        </div>
     </t>
 </templates>

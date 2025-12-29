@@ -5,13 +5,13 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { rpc } from "@web/core/network/rpc";
 import { Component, onWillStart, useState } from "@odoo/owl";
-import { Layout } from "@web/search/layout";
+import { ControlPanel } from "@web/search/control_panel/control_panel";
 import { Dropdown } from "@web/core/dropdown/dropdown";
 import { DropdownItem } from "@web/core/dropdown/dropdown_item";
 
 export class MisEnhancedViewer extends Component {
     static template = "xtendoo_mis_report_viewer.MisEnhancedViewer";
-    static components = { Layout, Dropdown, DropdownItem };
+    static components = { ControlPanel, Dropdown, DropdownItem };
 
     setup() {
         this.actionService = useService("action");
@@ -43,6 +43,19 @@ export class MisEnhancedViewer extends Component {
 
     onFilterDate(filter) {
         this.state.options.date.filter = filter;
+        this.state.options.date.date_range_id = false; // Clear range when picking standard filter
+        this.loadReportData();
+    }
+
+    onFilterDateRange(rangeId) {
+        this.state.options.date.filter = 'custom';
+        this.state.options.date.date_range_id = rangeId;
+        this.loadReportData();
+    }
+
+    onApplyCustomDates() {
+        this.state.options.date.filter = 'custom';
+        this.state.options.date.date_range_id = false;
         this.loadReportData();
     }
 
