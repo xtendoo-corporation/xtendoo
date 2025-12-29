@@ -25,26 +25,6 @@
                 <attribute name="js_class">pos_order_barcode_form</attribute>
             </xpath>
 
-            <!-- Ocultar el campo Sesión -->
-            <xpath expr="//field[@name='session_id']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-
-            <!-- Ocultar el campo Posición Fiscal -->
-            <xpath expr="//field[@name='fiscal_position_id']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-
-            <!-- Ocultar el campo Ref. del pedido -->
-            <xpath expr="//field[@name='pos_reference']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-
-            <!-- Ocultar el campo Empleado -->
-            <xpath expr="//field[@name='user_id']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-
             <!-- Ocultar el botón original de Invoice en el header -->
             <xpath expr="//header/button[@name='action_pos_order_invoice']" position="replace">
                 <button
@@ -56,6 +36,57 @@
                 />
 
             </xpath>
+        </field>
+    </record>
+
+    <!-- Añadir un bloque de totales a la derecha del bloque de cliente/pedido y quitar los bloques originales -->
+    <record id="view_pos_order_form_inherit_totals" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.totals</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <!-- Reemplazar el grupo de campos del pedido por dos columnas: izquierda con campos y derecha con totales -->
+            <xpath expr="//group[@name='order_fields']" position="replace">
+                <group col="4" colspan="4" name="order_fields_rows" class="row">
+                    <group col="3" name="order_fields" class="col-9">
+                        <field name="name" invisible="1"/>
+                        <field name="source" readonly="True"/>
+                        <field name="date_order"/>
+                        <field name="session_id"  readonly="state != 'draft'" invisible="1"/>
+                        <field string="Usuario" name="user_id" readonly="account_move or state == 'done'"/>
+                        <field name="order_edit_tracking" invisible="1"/>
+                        <field name="is_edited" readonly="1" invisible="not order_edit_tracking"/>
+                        <field name="partner_id" context="{'res_partner_search_mode': 'customer'}"/>
+                        <field name="fiscal_position_id" options="{'no_create': True}" readonly="state != 'draft'" invisible="1"/>
+                    </group>
+                    <group col="1" name="order_totals_sidebar" class="oe_subtotal_sidebar col-6 me-4">
+                        <div class="fw-bold fs-3">Totales</div>
+                        <br/>
+                        <div class="row">
+                            <div class="col-5 text-muted py-1">Impuestos:</div>
+                            <div class="col-7 text-end py-1 ps-5">
+                                <field name="amount_tax" force_save="1" widget="monetary"/>
+                            </div>
+                            <div class="col-5 text-muted py-1">Total:</div>
+                            <div class="col-7 fw-bold fs-4 text-end py-1 ps-5">
+                                <field name="amount_total" force_save="1" widget="monetary"/>
+                            </div>
+                            <div class="col-5 text-muted py-1 text-nowrap">Total pagado:</div>
+                            <div class="col-7 fw-bold fs-4 text-end py-1 ps-5">
+                                <field name="amount_paid" nolabel="1" widget="monetary" readonly="state != 'draft'"/>
+                            </div>
+                        </div>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Eliminar totales originales de la página Products -->
+            <xpath expr="//page[@name='products']/group[@name='order_total']" position="replace"/>
+
+            <!-- Eliminar totales originales de la página Payments -->
+            <xpath expr="//page[@name='payments']/group[@name='order_total']" position="replace"/>
+
         </field>
     </record>
 </odoo>
