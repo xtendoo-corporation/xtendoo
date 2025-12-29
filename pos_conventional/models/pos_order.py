@@ -468,6 +468,8 @@ class PosOrder(models.Model):
             'discount': 0.0,
             'price_subtotal': price_subtotal,
             'price_subtotal_incl': price_subtotal_incl,
+            # Guardar los impuestos base del producto; la posición fiscal
+            # calculará tax_ids_after_fiscal_position si aplica
             'tax_ids': [(6, 0, product_taxes.ids)],
         }
 
@@ -503,3 +505,47 @@ class PosOrder(models.Model):
         url = f"{base}/{report_xmlid}/{order.account_move.id}"
         return url
 
+
+class PosOrderLine(models.Model):
+    _inherit = 'pos.order.line'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Soporta creación en lote (vals_list es una lista de dicts).
+        Para cada dict, si viene order_id y product_id, asegura que tax_ids
+        contenga los impuestos del producto (mapeados por posición fiscal si aplica).
+        """
+        normalized = []
+        for vals in vals_list:
+            # Trabajar con una copia para no mutar la entrada original inesperadamente
+            v = dict(vals)
+            order = None
+            if v.get('order_id'):
+                order = self.env['pos.order'].browse(v.get('order_id'))
+            if order and order.exists():
+                if v.get('product_id'):
+                    product = self.env['product.product'].browse(v.get('product_id'))
+                    product_taxes = product.taxes_id.filtered(lambda t: t.company_id == order.company_id)
+                    if order.fiscal_position_id:
+                        taxes_after_fp = order.fiscal_position_id.map_tax(product_taxes)
+                    else:
+                        taxes_after_fp = product_taxes
+                    # Si no vienen taxes en vals, asignarlas
+                    if not v.get('tax_ids'):
+                        v['tax_ids'] = [(6, 0, taxes_after_fp.ids)]
+            normalized.append(v)
+        return super(PosOrderLine, self).create(normalized)
+
+    def write(self, vals):
+        # Si se está guardando y no vienen tax_ids pero existe tax_ids_after_fiscal_position en el registro,
+        # copiar esos impuestos a tax_ids para evitar que se pierdan.
+        res = super(PosOrderLine, self).write(vals)
+        for line in self:
+            try:
+                if not line.tax_ids and line.tax_ids_after_fiscal_position:
+                    line.with_context(skip_inverse=True).write({'tax_ids': [(6, 0, line.tax_ids_after_fiscal_position.ids)]})
+            except Exception:
+                # No queremos romper el flujo de guardado si algo falla aquí
+                _logger.exception('No se pudo sincronizar tax_ids en pos.order.line')
+        return res

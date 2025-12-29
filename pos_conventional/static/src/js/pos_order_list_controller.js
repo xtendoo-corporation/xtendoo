@@ -72,3 +72,5 @@ export const posOrderListView = {
 };
 
 registry.category("views").add("button_in_tree", posOrderListView);
+
+
