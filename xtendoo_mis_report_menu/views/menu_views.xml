@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Balance Abreviado -->
+    <record id="action_open_es_balance_abreviado" model="ir.actions.server">
+        <field name="name">Balance Abreviado</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_balance_abreviado()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_balance_abreviado"
+              name="Balance Abreviado"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_balance_abreviado"
+              sequence="20"/>
+
+    <!-- Balance Normal -->
+    <record id="action_open_es_balance_normal" model="ir.actions.server">
+        <field name="name">Balance Normal</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_balance_normal()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_balance_normal"
+              name="Balance Normal"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_balance_normal"
+              sequence="21"/>
+
+    <!-- PyG Abreviado -->
+    <record id="action_open_es_pyg_abreviado" model="ir.actions.server">
+        <field name="name">PyG Abreviado</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_pyg_abreviado()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_pyg_abreviado"
+              name="PyG Abreviado"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_pyg_abreviado"
+              sequence="22"/>
+
+    <!-- PyG Normal -->
+    <record id="action_open_es_pyg_normal" model="ir.actions.server">
+        <field name="name">PyG Normal</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_pyg_normal()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_pyg_normal"
+              name="PyG Normal"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_pyg_normal"
+              sequence="23"/>
+
+    <!-- Balance PYMES -->
+    <record id="action_open_es_balance_pymes" model="ir.actions.server">
+        <field name="name">Balance PYMES</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_balance_pymes()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_balance_pymes"
+              name="Balance PYMES"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_balance_pymes"
+              sequence="24"/>
+
+    <!-- PyG PYMES -->
+    <record id="action_open_es_pyg_pymes" model="ir.actions.server">
+        <field name="name">PyG PYMES</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_pyg_pymes()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_pyg_pymes"
+              name="PyG PYMES"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_pyg_pymes"
+              sequence="25"/>
+</odoo>
+
