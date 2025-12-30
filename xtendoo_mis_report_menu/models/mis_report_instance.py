@@ -106,7 +106,23 @@ class MisReportInstance(models.Model):
         """Opens Balance Normal reports list"""
         return self._open_report_list(
             "l10n_es_mis_report.mis_report_es_balance_normal",
-            "Balance Normal"
+            "Balance Completo"
+        )
+
+    @api.model
+    def action_open_es_balance_pymes(self):
+        """Opens Balance PYMES reports list"""
+        return self._open_report_list(
+            "l10n_es_mis_report.mis_report_es_balance_pymes",
+            "Balance PYMES"
+        )
+
+    @api.model
+    def action_open_es_balance_pymes_sfl(self):
+        """Opens Balance PYMES SFL reports list"""
+        return self._open_report_list(
+            "l10n_es_mis_report.mis_report_es_balance_pymes_sfl",
+            "Balance PYMESFL"
         )
 
     @api.model
@@ -122,15 +138,7 @@ class MisReportInstance(models.Model):
         """Opens PyG Normal reports list"""
         return self._open_report_list(
             "l10n_es_mis_report.mis_report_es_pyg_normal",
-            "PyG Normal"
-        )
-
-    @api.model
-    def action_open_es_balance_pymes(self):
-        """Opens Balance PYMES reports list"""
-        return self._open_report_list(
-            "l10n_es_mis_report.mis_report_es_balance_pymes",
-            "Balance PYMES"
+            "PyG Completo"
         )
 
     @api.model
@@ -139,5 +147,21 @@ class MisReportInstance(models.Model):
         return self._open_report_list(
             "l10n_es_mis_report.mis_report_es_pyg_pymes",
             "PyG PYMES"
+        )
+
+    @api.model
+    def action_open_es_pyg_pyme_sfl(self):
+        """Opens PyG PYME SFL reports list"""
+        return self._open_report_list(
+            "l10n_es_mis_report.mis_report_es_pyg_pyme_sfl",
+            "PyG PYMESFL"
+        )
+
+    @api.model
+    def action_open_es_eiyg_normal(self):
+        """Opens Estado de Ingresos y Gastos Reconocidos reports list"""
+        return self._open_report_list(
+            "l10n_es_mis_report.mis_report_es_eiyg_normal",
+            "Estado de Ingresos y Gastos Reconocidos"
         )
 

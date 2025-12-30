@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2025 Xtendoo Corporation
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html). -->
+<odoo noupdate="0">
+    <!-- Override l10n_es l1 style: Change orange (#ffa500) to gray (#d3d3d3) -->
+    <record id="l10n_es_mis_report.mis_report_style_l10n_es_l1" model="mis.report.style">
+        <field name="background_color">#d3d3d3</field>
+    </record>
+
+    <!-- Override l10n_es l1i style: Change orange to gray and remove italic -->
+    <record id="l10n_es_mis_report.mis_report_style_l10n_es_l1i" model="mis.report.style">
+        <field name="background_color">#d3d3d3</field>
+        <field name="font_style_inherit" eval="1" />
+    </record>
+
+    <!-- Override l10n_es l2i style: Remove italic -->
+    <record id="l10n_es_mis_report.mis_report_style_l10n_es_l2i" model="mis.report.style">
+        <field name="font_style_inherit" eval="1" />
+    </record>
+
+    <!-- Override l10n_es l3i style: Remove italic -->
+    <record id="l10n_es_mis_report.mis_report_style_l10n_es_l3i" model="mis.report.style">
+        <field name="font_style_inherit" eval="1" />
+    </record>
+
+    <!-- Override l10n_es l4i style: Remove italic -->
+    <record id="l10n_es_mis_report.mis_report_style_l10n_es_l4i" model="mis.report.style">
+        <field name="font_style_inherit" eval="1" />
+    </record>
+
+    <!-- Override l10n_es l5i style: Remove italic -->
+    <record id="l10n_es_mis_report.mis_report_style_l10n_es_l5i" model="mis.report.style">
+        <field name="font_style_inherit" eval="1" />
+    </record>
+
+    <!-- Override l10n_es l6i style: Remove italic -->
+    <record id="l10n_es_mis_report.mis_report_style_l10n_es_l6i" model="mis.report.style">
+        <field name="font_style_inherit" eval="1" />
+    </record>
+</odoo>
+

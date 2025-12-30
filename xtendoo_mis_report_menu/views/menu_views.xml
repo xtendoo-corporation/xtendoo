@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Balance Abreviado -->
+    <!-- 1. Balance Abreviado -->
     <record id="action_open_es_balance_abreviado" model="ir.actions.server">
         <field name="name">Balance Abreviado</field>
         <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
@@ -14,11 +14,11 @@
               name="Balance Abreviado"
               parent="mis_builder.mis_report_finance_menu"
               action="action_open_es_balance_abreviado"
-              sequence="20"/>
+              sequence="10"/>
 
-    <!-- Balance Normal -->
+    <!-- 2. Balance Completo -->
     <record id="action_open_es_balance_normal" model="ir.actions.server">
-        <field name="name">Balance Normal</field>
+        <field name="name">Balance Completo</field>
         <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
         <field name="state">code</field>
         <field name="code">
@@ -27,44 +27,12 @@
     </record>
 
     <menuitem id="menu_xtendoo_es_balance_normal"
-              name="Balance Normal"
+              name="Balance Completo"
               parent="mis_builder.mis_report_finance_menu"
               action="action_open_es_balance_normal"
-              sequence="21"/>
+              sequence="11"/>
 
-    <!-- PyG Abreviado -->
-    <record id="action_open_es_pyg_abreviado" model="ir.actions.server">
-        <field name="name">PyG Abreviado</field>
-        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
-        <field name="state">code</field>
-        <field name="code">
-            action = model.action_open_es_pyg_abreviado()
-        </field>
-    </record>
-
-    <menuitem id="menu_xtendoo_es_pyg_abreviado"
-              name="PyG Abreviado"
-              parent="mis_builder.mis_report_finance_menu"
-              action="action_open_es_pyg_abreviado"
-              sequence="22"/>
-
-    <!-- PyG Normal -->
-    <record id="action_open_es_pyg_normal" model="ir.actions.server">
-        <field name="name">PyG Normal</field>
-        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
-        <field name="state">code</field>
-        <field name="code">
-            action = model.action_open_es_pyg_normal()
-        </field>
-    </record>
-
-    <menuitem id="menu_xtendoo_es_pyg_normal"
-              name="PyG Normal"
-              parent="mis_builder.mis_report_finance_menu"
-              action="action_open_es_pyg_normal"
-              sequence="23"/>
-
-    <!-- Balance PYMES -->
+    <!-- 3. Balance PYMES -->
     <record id="action_open_es_balance_pymes" model="ir.actions.server">
         <field name="name">Balance PYMES</field>
         <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
@@ -78,11 +46,59 @@
               name="Balance PYMES"
               parent="mis_builder.mis_report_finance_menu"
               action="action_open_es_balance_pymes"
-              sequence="24"/>
+              sequence="12"/>
 
-    <!-- PyG PYMES -->
+    <!-- 4. Balance PYMESFL -->
+    <record id="action_open_es_balance_pymes_sfl" model="ir.actions.server">
+        <field name="name">Balance PYMESFL</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_balance_pymes_sfl()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_balance_pymes_sfl"
+              name="Balance PYMESFL"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_balance_pymes_sfl"
+              sequence="13"/>
+
+    <!-- 5. Perdidad y Ganancias Abreviado -->
+    <record id="action_open_es_pyg_abreviado" model="ir.actions.server">
+        <field name="name">Perdidad y Ganancias Abreviado</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_pyg_abreviado()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_pyg_abreviado"
+              name="Perdidad y Ganancias Abreviado"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_pyg_abreviado"
+              sequence="14"/>
+
+    <!-- 6. Perdidad y Ganancias Completo -->
+    <record id="action_open_es_pyg_normal" model="ir.actions.server">
+        <field name="name">Perdidad y Ganancias Completo</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_pyg_normal()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_pyg_normal"
+              name="Perdidad y Ganancias Completo"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_pyg_normal"
+              sequence="15"/>
+
+    <!-- 7. Perdidad y Ganancias PYMES -->
     <record id="action_open_es_pyg_pymes" model="ir.actions.server">
-        <field name="name">PyG PYMES</field>
+        <field name="name">Perdidad y Ganancias PYMES</field>
         <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
         <field name="state">code</field>
         <field name="code">
@@ -91,9 +107,41 @@
     </record>
 
     <menuitem id="menu_xtendoo_es_pyg_pymes"
-              name="PyG PYMES"
+              name="Perdidad y Ganancias PYMES"
               parent="mis_builder.mis_report_finance_menu"
               action="action_open_es_pyg_pymes"
-              sequence="25"/>
+              sequence="16"/>
+
+    <!-- 8. Perdidad y Ganancias PYMESFL -->
+    <record id="action_open_es_pyg_pyme_sfl" model="ir.actions.server">
+        <field name="name">Perdidad y Ganancias PYMESFL</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_pyg_pyme_sfl()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_pyg_pyme_sfl"
+              name="Perdidad y Ganancias PYMESFL"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_pyg_pyme_sfl"
+              sequence="17"/>
+
+    <!-- 9. Estado de Ingresos y Gastos Reconocidos -->
+    <record id="action_open_es_eiyg_normal" model="ir.actions.server">
+        <field name="name">Estado de Ingresos y Gastos Reconocidos</field>
+        <field name="model_id" ref="mis_builder.model_mis_report_instance"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_es_eiyg_normal()
+        </field>
+    </record>
+
+    <menuitem id="menu_xtendoo_es_eiyg_normal"
+              name="Estado de Ingresos y Gastos Reconocidos"
+              parent="mis_builder.mis_report_finance_menu"
+              action="action_open_es_eiyg_normal"
+              sequence="18"/>
 </odoo>
 
