@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action to archive duplicate products -->
+    <record id="action_archive_duplicate_products" model="ir.actions.server">
+        <field name="name">Archive Duplicate Products</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+result = model.archive_duplicate_names()
+
+if result['archived_count'] > 0:
+    message = f"Se han archivado {result['archived_count']} producto(s) con nombres duplicados de {len(result['duplicate_names'])} nombre(s) diferentes."
+    msg_type = 'success'
+elif result['duplicate_names']:
+    message = f"Se encontraron {len(result['duplicate_names'])} nombre(s) duplicado(s) pero no se pudo archivar ninguno. Revisa los logs."
+    msg_type = 'warning'
+else:
+    message = "No se encontraron productos con nombres duplicados."
+    msg_type = 'info'
+
+if result.get('errors'):
+    message += f"\n\nErrores encontrados: {len(result['errors'])}"
+    msg_type = 'warning'
+
+action = {
+    'type': 'ir.actions.client',
+    'tag': 'display_notification',
+    'params': {
+        'title': 'Archivar Duplicados',
+        'message': message,
+        'type': msg_type,
+        'sticky': True if result.get('errors') else False,
+    }
+}
+        </field>
+    </record>
+
+</odoo>
+
