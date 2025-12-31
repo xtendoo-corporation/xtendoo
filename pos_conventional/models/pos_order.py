@@ -528,6 +528,48 @@ class PosOrder(models.Model):
         })
         return wizard.action_pay_card()
 
+    def action_albaran(self):
+        self.ensure_one()
+
+        picking = self.env['stock.picking'].create({
+            'partner_id': self.partner_id.id if self.partner_id else False,
+            'picking_type_id': self.config_id.picking_type_id.id,
+            'location_id': self.config_id.picking_type_id.default_location_src_id.id,
+            'location_dest_id': (
+                self.partner_id.property_stock_customer.id
+                if self.partner_id
+                else self.config_id.picking_type_id.default_location_dest_id.id
+            ),
+            'origin': self.name,
+            'company_id': self.company_id.id,
+        })
+
+        for line in self.lines:
+            if line.product_id.is_storable and line.qty > 0:
+                self.env['stock.move'].create({
+                    'product_id': line.product_id.id,
+                    'product_uom_qty': line.qty,
+                    'product_uom': line.product_id.uom_id.id,
+                    'location_id': picking.location_id.id,
+                    'location_dest_id': picking.location_dest_id.id,
+                    'picking_id': picking.id,
+                    'company_id': self.company_id.id,
+                })
+
+
+        picking.action_confirm()
+        picking.action_assign()
+        picking.button_validate()
+
+        self.write({
+            'picking_ids': [(4, picking.id)],
+        })
+
+        self.write({'state': 'done'})
+
+        return True
+
+
 class PosOrderLine(models.Model):
     _inherit = 'pos.order.line'
 
