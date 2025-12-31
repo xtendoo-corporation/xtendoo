@@ -63,6 +63,41 @@ export class PosOrderListController extends ListController {
             );
         }
     }
+
+    /**
+     * Maneja el click en el botón "Entrada / Salida de efectivo"
+     */
+    async onCashInOut() {
+        try {
+            // Llamar al método del modelo pos.order que abre el wizard de entrada/salida
+            const result = await this.model.orm.call(
+                "pos.order",
+                "action_cash_in_out_wizard",
+                [[]]
+            );
+
+            if (result && result.type) {
+                // Protección: algunos actions pueden no traer `views` y el frontend espera que exista
+                if (!result.views) {
+                    // Añadir una vista por defecto para evitar errores en _preprocessAction
+                    result.views = [[false, 'form']];
+                }
+                await this.env.services.action.doAction(result);
+            } else {
+                // Si no devuelve acción, mostrar notificación
+                this.env.services.notification.add(
+                    "Acción de entrada/salida ejecutada",
+                    { type: "success" }
+                );
+            }
+        } catch (error) {
+            console.error("Error en Entrada/Salida de efectivo:", error);
+            this.env.services.notification.add(
+                error.message || "Error al intentar abrir Entrada/Salida de efectivo",
+                { type: "danger" }
+            );
+        }
+    }
 }
 
 // Registrar el controller en el registry
@@ -72,5 +107,3 @@ export const posOrderListView = {
 };
 
 registry.category("views").add("button_in_tree", posOrderListView);
-
-

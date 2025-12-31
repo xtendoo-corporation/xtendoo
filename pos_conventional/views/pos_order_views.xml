@@ -106,7 +106,7 @@
                         invisible="state != 'draft'"/>
                 <button name="action_albaran" string="Albarán" type="object" class="btn-secondary ms-2"
                         invisible="not show_albaran_button or state != 'draft'"/>
-                
+
             </xpath>
         </field>
     </record>

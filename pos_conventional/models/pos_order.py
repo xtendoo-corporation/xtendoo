@@ -293,6 +293,38 @@ class PosOrder(models.Model):
             'context': dict(self.env.context),
         }
 
+    def action_cash_in_out_wizard(self):
+        """
+        Abre un wizard o formulario para registrar una entrada/salida de efectivo
+        en la sesión POS actual del usuario.
+        """
+        # Buscar la sesión abierta del usuario actual
+        session = self.env['pos.session'].search([
+            ('user_id', '=', self.env.user.id),
+            ('state', '=', 'opened')
+        ], limit=1)
+
+        if not session:
+            raise UserError(_('No tienes ninguna sesión abierta.'))
+
+        # Intentar encontrar un modelo específico de cash in/out del POS
+        # En versiones estándar, los movimientos de caja se almacenan en account.bank.statement.line
+        # Intentaremos abrir la vista de creación para account.bank.statement.line con contexto
+        # Obtener el primer statement (account.bank.statement) asociado a la sesión si existe
+        statements = session.statement_line_ids.mapped('statement_id') if session.statement_line_ids else None
+        default_statement_id = statements[0].id if statements else False
+
+        action = {
+            'name': _('Entrada / Salida de efectivo'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.bank.statement.line',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'new',
+            'context': dict(self.env.context, default_statement_id=default_statement_id, default_amount=0.0, default_name=_('Entrada/Salida')),
+        }
+        return action
+
     def add_product_by_barcode(self, barcode=None, product_id=None, line_vals=None):
         """
         Añade un producto al pedido POS mediante código de barras o product_id.
