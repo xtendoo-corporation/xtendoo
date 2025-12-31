@@ -15,8 +15,11 @@
                            options="{'no_create': True}"
                            domain="[('customer_rank', '>', 0)]"/>
                 </setting>
+                <setting string="Albarán desde el POS"
+                         help="Permite crear albaranes desde el POS">
+                    <field name="pos_enable_albaran"/>
+                </setting>
             </xpath>
         </field>
     </record>
 </odoo>
-

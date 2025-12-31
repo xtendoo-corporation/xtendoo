@@ -17,6 +17,12 @@ class PosConfig(models.Model):
         domain="[('customer_rank', '>', 0)]",
     )
 
+    pos_enable_albaran = fields.Boolean(
+        string='Albarán desde el POS',
+        default=False,
+        help='Permite crear albaranes desde el POS.'
+    )
+
     def open_ui(self):
         """
         Override del método open_ui para interceptar la apertura

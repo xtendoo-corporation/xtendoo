@@ -20,3 +20,9 @@ class ResConfigSettings(models.TransientModel):
         domain="[('customer_rank', '>', 0)]",
     )
 
+    pos_enable_albaran = fields.Boolean(
+        related='pos_config_id.pos_enable_albaran',
+        readonly=False,
+        string='Albarán desde el POS',
+        help='Permite crear albaranes desde el POS.'
+    )

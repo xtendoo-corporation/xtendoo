@@ -8,6 +8,21 @@ _logger = logging.getLogger(__name__)
 class PosOrder(models.Model):
     _inherit = 'pos.order'
 
+    show_albaran_button = fields.Boolean(
+        string="Mostrar botón albarán",
+        compute="_compute_show_albaran_button",
+        store=False
+    )
+
+    @api.depends('session_id', 'session_id.config_id', 'session_id.config_id.pos_enable_albaran')
+    def _compute_show_albaran_button(self):
+        for order in self:
+            order.show_albaran_button = bool(
+                order.session_id
+                and order.session_id.config_id
+                and order.session_id.config_id.pos_enable_albaran
+            )
+
     @api.model
     def get_product_line_data_by_barcode(self, barcode, pricelist_id=False, fiscal_position_id=False, partner_id=False):
         """
@@ -613,3 +628,4 @@ class PosOrderLine(models.Model):
                 # No queremos romper el flujo de guardado si algo falla aquí
                 _logger.exception('No se pudo sincronizar tax_ids en pos.order.line')
         return res
+

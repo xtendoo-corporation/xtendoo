@@ -52,12 +52,14 @@
                         <field name="name" invisible="1"/>
                         <field name="source" readonly="True"/>
                         <field name="date_order"/>
-                        <field name="session_id"  readonly="state != 'draft'" invisible="1"/>
+                        <field name="session_id" readonly="state != 'draft'" invisible="1"/>
+                        <field name="show_albaran_button" invisible="1"/>
                         <field string="Usuario" name="user_id" readonly="account_move or state == 'done'"/>
                         <field name="order_edit_tracking" invisible="1"/>
                         <field name="is_edited" readonly="1" invisible="not order_edit_tracking"/>
                         <field name="partner_id" context="{'res_partner_search_mode': 'customer'}"/>
-                        <field name="fiscal_position_id" options="{'no_create': True}" readonly="state != 'draft'" invisible="1"/>
+                        <field name="fiscal_position_id" options="{'no_create': True}" readonly="state != 'draft'"
+                               invisible="1"/>
                     </group>
                     <group col="1" name="order_totals_sidebar" class="oe_subtotal_sidebar col-6 me-4">
                         <div class="fw-bold fs-3">Totales</div>
@@ -98,9 +100,13 @@
         <field name="arch" type="xml">
             <!-- Eliminar el botón original de Payment -->
             <xpath expr="//header/button[@name='466']" position="replace">
-                <button name="action_pay_cash" string="Pagar en efectivo" type="object" class="btn-primary" invisible="state != 'draft'"/>
-                <button name="action_pay_card" string="Pagar con tarjeta" type="object" class="btn-primary ms-2" invisible="state != 'draft'"/>
-                <button name="action_albaran" string="Albarán" type="object" class="btn-secondary ms-2" invisible="state != 'draft'"/>
+                <button name="action_pay_cash" string="Pagar en efectivo" type="object" class="btn-primary"
+                        invisible="state != 'draft'"/>
+                <button name="action_pay_card" string="Pagar con tarjeta" type="object" class="btn-primary ms-2"
+                        invisible="state != 'draft'"/>
+                <button name="action_albaran" string="Albarán" type="object" class="btn-secondary ms-2"
+                        invisible="not show_albaran_button or state != 'draft'"/>
+                
             </xpath>
         </field>
     </record>
