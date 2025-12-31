@@ -54,6 +54,26 @@ docker-compose run --rm odoo odoo shell -d DATABASE < archive_duplicates_manual.
 - **Categoría**: Product
 - **Dependencias**: product
 
+### Compatibilidad
+
+- ✅ **Odoo 18**: Totalmente compatible
+- ✅ **Campos JSONB**: Maneja correctamente campos traducibles multiidioma
+- ✅ **Nombres traducibles**: Detecta duplicados sin importar el idioma
+- ✅ **Texto simple**: Compatible con nombres no traducibles
+
+### Manejo de campos traducibles
+
+En Odoo 18, el campo `name` de `product.template` puede ser traducible (multiidioma) y se almacena como JSONB:
+
+```json
+{
+  "en_US": "THREADED ROD 8mm",
+  "es_ES": "VARILLA ROSCADA 8mm"
+}
+```
+
+Este módulo **detecta correctamente duplicados** extrayendo el texto real del nombre, independientemente del idioma o formato de almacenamiento. Utiliza búsqueda por IDs para evitar problemas con el contexto de idioma.
+
 ## Seguridad
 
 El módulo solo archiva productos, no los elimina. Los productos archivados pueden ser restaurados manualmente si es necesario.

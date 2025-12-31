@@ -32,21 +32,36 @@ class ProductTemplate(models.Model):
 
         try:
             # Find all duplicate names in active products
-            # Excluir nombres vacíos o None
-            # En Odoo 18, el campo name puede ser JSONB, necesitamos convertir a texto
+            # En Odoo 18, el campo name puede ser JSONB (traducible)
+            # Extraemos el valor de cualquier idioma para comparar
+            # Si es un JSON con traducciones, tomamos el primer valor
+            # Si es texto simple, lo usamos directamente
             self.env.cr.execute("""
+                WITH name_values AS (
+                    SELECT
+                        id,
+                        CASE
+                            WHEN jsonb_typeof(name) = 'object' THEN
+                                -- Es un JSON con traducciones, extraer primer valor
+                                (SELECT value FROM jsonb_each_text(name) LIMIT 1)
+                            ELSE
+                                -- Es texto simple, convertir a texto
+                                COALESCE(name::text, '')
+                        END as name_text
+                    FROM product_template
+                    WHERE active = true
+                      AND name IS NOT NULL
+                )
                 SELECT
-                    COALESCE(name::text, '') as name_text,
+                    name_text,
                     COUNT(*) as count,
                     array_agg(id ORDER BY id) as ids
-                FROM product_template
-                WHERE active = true
-                  AND name IS NOT NULL
-                  AND COALESCE(name::text, '') != ''
-                  AND COALESCE(name::text, '') NOT LIKE '[%%]%%'
-                GROUP BY name
+                FROM name_values
+                WHERE name_text != ''
+                  AND name_text NOT LIKE '[%%]%%'
+                GROUP BY name_text
                 HAVING COUNT(*) > 1
-                ORDER BY count DESC, COALESCE(name::text, '')
+                ORDER BY count DESC, name_text
             """)
 
             duplicate_data = self.env.cr.fetchall()
@@ -71,22 +86,26 @@ class ProductTemplate(models.Model):
                 _logger.info(f"Processing: '{name}' ({count} products, IDs: {ids})")
 
                 try:
-                    # Search for all active products with this name, ordered by ID
-                    products = self.search(
-                        [('name', '=', name), ('active', '=', True)],
-                        order='id asc'
-                    )
+                    # Buscar productos por IDs directamente (evita problemas con campos traducibles)
+                    # Los IDs ya vienen de la consulta SQL que detectó los duplicados
+                    if not ids or len(ids) <= 1:
+                        _logger.warning(f"No IDs or only 1 ID for name '{name}', skipping")
+                        continue
+
+                    # Buscar productos por sus IDs (más confiable que por nombre)
+                    products = self.browse(ids).filtered(lambda p: p.active)
 
                     if not products:
-                        _logger.warning(f"No products found for name '{name}' (unexpected)")
+                        _logger.warning(f"No active products found for IDs {ids}")
                         continue
 
                     if len(products) <= 1:
                         _logger.warning(
-                            f"Only 1 product found for '{name}', skipping (expected {count})"
+                            f"Only {len(products)} active product(s) found for IDs {ids}, skipping"
                         )
                         continue
 
+                    # Los productos ya están ordenados por ID (viene del array_agg ORDER BY id)
                     # Keep the first one active, archive the rest
                     first_product = products[0]
                     products_to_archive = products[1:]
