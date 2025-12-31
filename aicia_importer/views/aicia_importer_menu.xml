@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!-- Copyright 2024 Xtendoo - https://www.xtendoo.es/
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <menuitem
+        id="aicia_menu_root"
+        name="AICIA"
+        parent="purchase.menu_purchase_root"
+        sequence="100"
+    />
+
+    <menuitem
+        id="aicia_importer_menu"
+        name="Importar Proveedores y Clientes"
+        parent="aicia_menu_root"
+        action="aicia_importer_wizard_action"
+        sequence="10"
+    />
+</odoo>
+
