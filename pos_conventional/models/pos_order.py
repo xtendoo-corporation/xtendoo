@@ -482,7 +482,6 @@ class PosOrder(models.Model):
             "pos_conventional.action_factura_simplificada_80mm"
         ).report_action(self.account_move)
 
-
     def get_factura_report_url(self, order_id=None):
         """
         Devuelve la URL del informe HTML del account.move asociado para este pedido.
@@ -505,6 +504,29 @@ class PosOrder(models.Model):
         url = f"{base}/{report_xmlid}/{order.account_move.id}"
         return url
 
+    # --- Nuevas acciones para botones de pago (invocadas desde la vista)
+    def action_pay_cash(self):
+        self.ensure_one()
+        cash_method = self.env['pos.payment.method'].search([('is_cash_count', '=', True)], limit=1)
+        if not cash_method:
+            raise UserError(_('No se encontró método de pago en efectivo.'))
+        wizard = self.env['pos.make.payment'].with_context(active_id=self.id).create({
+            'amount': self.amount_total - self.amount_paid,
+            'payment_method_id': cash_method.id,
+        })
+        return wizard.action_pay_cash()
+
+    def action_pay_card(self):
+        self.ensure_one()
+        # Cambia 'tarjeta' por el nombre exacto si es diferente
+        card_method = self.env['pos.payment.method'].search([('name', 'ilike', 'tarjeta')], limit=1)
+        if not card_method:
+            raise UserError(_('No se encontró método de pago con tarjeta.'))
+        wizard = self.env['pos.make.payment'].with_context(active_id=self.id).create({
+            'amount': self.amount_total - self.amount_paid,
+            'payment_method_id': card_method.id,
+        })
+        return wizard.action_pay_card()
 
 class PosOrderLine(models.Model):
     _inherit = 'pos.order.line'

@@ -10,15 +10,17 @@ _logger = logging.getLogger(__name__)
 class PosMakePaymentConventional(models.TransientModel):
     _inherit = 'pos.make.payment'
 
-    def check(self):
+    def check(self, payment_method_id=None):
         """
-        Override del método check para que después de registrar el pago,
-        automáticamente valide y facture el pedido si está configurado
-        como POS convencional (backend / no táctil).
+        Permite forzar el método de pago si se pasa como argumento.
         """
         self.ensure_one()
 
         order = self.env['pos.order'].browse(self.env.context.get('active_id', False))
+
+        # Si se pasa un payment_method_id, lo asignamos
+        if payment_method_id:
+            self.payment_method_id = payment_method_id
 
         # Validación original de split_transactions
         if self.payment_method_id.split_transactions and not order.partner_id:
@@ -28,10 +30,7 @@ class PosMakePaymentConventional(models.TransientModel):
             ))
 
         currency = order.currency_id
-
-        # Verificar si es un POS convencional (backend / no táctil)
         is_conventional = order.config_id and order.config_id.pos_non_touch
-
         init_data = self.read()[0]
         payment_method = self.env['pos.payment.method'].browse(init_data['payment_method_id'][0])
 
@@ -51,27 +50,32 @@ class PosMakePaymentConventional(models.TransientModel):
             if order.state in {'paid', 'done'}:
                 order._send_order()
                 order.config_id.notify_synchronisation(order.config_id.current_session_id.id, 0)
-
-            # Si es POS convencional, ejecutar automáticamente validar y facturar
             if is_conventional and order.state in {'paid', 'done'} and not order.account_move:
                 _logger.info(
                     "POS Conventional: Ejecutando facturación automática para pedido %s",
                     order.name
                 )
                 try:
-                    # Ejecutar la acción de validar y facturar
                     result = order.action_validate_and_invoice()
-                    # Retornar la acción para que JS imprima el ticket
                     return result
                 except Exception as e:
                     _logger.exception(
                         "Error al facturar automáticamente el pedido %s: %s",
                         order.name, str(e)
                     )
-                    # Si falla la facturación, cerrar el wizard normalmente
                     return {'type': 'ir.actions.act_window_close'}
-
             return {'type': 'ir.actions.act_window_close'}
-
         return self.launch_payment()
 
+    def action_pay_cash(self):
+        cash_method = self.env['pos.payment.method'].search([('is_cash_count', '=', True)], limit=1)
+        if not cash_method:
+            raise UserError(_('No se encontró método de pago en efectivo.'))
+        return self.check(payment_method_id=cash_method.id)
+
+    def action_pay_card(self):
+        # Cambia 'tarjeta' por el nombre exacto si es diferente
+        card_method = self.env['pos.payment.method'].search([('name', 'ilike', 'tarjeta')], limit=1)
+        if not card_method:
+            raise UserError(_('No se encontró método de pago con tarjeta.'))
+        return self.check(payment_method_id=card_method.id)

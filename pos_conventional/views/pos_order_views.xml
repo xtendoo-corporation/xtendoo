@@ -89,4 +89,18 @@
 
         </field>
     </record>
+
+    <!-- Sustituir el botón de Payment por dos botones: Pagar en efectivo y Pagar con tarjeta -->
+    <record id="view_pos_order_form_inherit_payment_buttons" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.payment.buttons</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <!-- Eliminar el botón original de Payment -->
+            <xpath expr="//header/button[@name='466']" position="replace">
+                <button name="action_pay_cash" string="Pagar en efectivo" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                <button name="action_pay_card" string="Pagar con tarjeta" type="object" class="btn-primary ms-2" invisible="state != 'draft'"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
