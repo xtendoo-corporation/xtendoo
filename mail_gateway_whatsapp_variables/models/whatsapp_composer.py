@@ -117,9 +117,11 @@ class WhatsappComposer(models.TransientModel):
                 _logger.warning(f"Report {report_name} not found")
                 return None
 
-            # Generar el PDF
+            # Generar el PDF usando _render directamente para evitar problemas con industry_fsm
             _logger.info(f"Rendering PDF for {record._name} {record.id}")
-            pdf_content, _ = report._render_qweb_pdf(record.ids)
+
+            # Usar _render en lugar de _render_qweb_pdf
+            pdf_content = report._render(record.ids)[0]
 
             # Crear el attachment
             attachment = self.env['ir.attachment'].create({
