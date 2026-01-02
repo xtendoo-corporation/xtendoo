@@ -18,10 +18,9 @@ patch(Chatter.prototype, {
                 const fieldsInfo = await this.env.services.orm.call(
                     thread.model,
                     "fields_get",
-                    [],
+                    [["mobile", "phone", "partner_id"]],
                     {
-                        attributes: ["type", "relation"],
-                        fields: ["mobile", "phone", "partner_id"]
+                        attributes: ["type", "relation"]
                     }
                 );
 

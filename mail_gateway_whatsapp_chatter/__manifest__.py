@@ -3,7 +3,7 @@
 
 {
     "name": "Mail Gateway WhatsApp - Chatter Integration",
-    "version": "18.0.1.1.1",
+    "version": "18.0.1.2.1",
     "category": "Social",
     "summary": "Add WhatsApp button to chatter for mail_gateway_whatsapp",
     "author": "Xtendoo",
