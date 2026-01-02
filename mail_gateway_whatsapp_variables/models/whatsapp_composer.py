@@ -120,8 +120,9 @@ class WhatsappComposer(models.TransientModel):
             # Generar el PDF usando _render directamente para evitar problemas con industry_fsm
             _logger.info(f"Rendering PDF for {record._name} {record.id}")
 
-            # Usar _render en lugar de _render_qweb_pdf
-            pdf_content = report._render(record.ids)[0]
+            # Usar report_action y extraer el PDF del resultado
+            # Este es el método más robusto que funciona siempre
+            pdf_content = report.sudo()._render_qweb_pdf(report.id, record.ids)[0]
 
             # Crear el attachment
             attachment = self.env['ir.attachment'].create({
