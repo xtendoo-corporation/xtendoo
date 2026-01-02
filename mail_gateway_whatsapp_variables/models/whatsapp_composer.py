@@ -147,25 +147,41 @@ class WhatsappComposer(models.TransientModel):
 
     def _action_send_whatsapp(self):
         """Send WhatsApp message with optional attachments."""
+        import logging
+        _logger = logging.getLogger(__name__)
+
         record = self.env[self.res_model].browse(self.res_id)
         if not record:
             return
 
         channel = record._whatsapp_get_channel(self.number_field_name, self.gateway_id)
 
-        # Prepare attachments list
+        # Prepare context with template and variables
+        ctx = {
+            'whatsapp_template_id': self.template_id.id if self.template_id else False,
+        }
+
+        # Prepare attachments - we need to copy them to link to the new message
         attachment_ids = []
         if self.attachment_ids:
-            attachment_ids = self.attachment_ids.ids
+            for attachment in self.attachment_ids:
+                # Create a copy of the attachment linked to the channel
+                new_attachment = attachment.copy({
+                    'res_model': 'discuss.channel',
+                    'res_id': channel.id,
+                })
+                attachment_ids.append(new_attachment.id)
+            _logger.info(f"Prepared {len(attachment_ids)} attachments for WhatsApp message")
 
-        # Send message with or without attachments
-        # WhatsApp API typically sends text and attachments together
-        channel.with_context(whatsapp_template_id=self.template_id.id).message_post(
+        # Send message - message_post will create a mail.message with attachment_ids
+        message = channel.with_context(**ctx).message_post(
             body=self.body,
-            attachment_ids=attachment_ids if attachment_ids else False,
             subtype_xmlid="mail.mt_comment",
-            message_type="comment"
+            message_type="comment",
+            attachment_ids=attachment_ids if attachment_ids else []
         )
+
+        _logger.info(f"Message posted to channel with {len(message.attachment_ids)} attachments")
 
         # Registrar también en el contacto destinatario si existe
         partner = None
@@ -177,13 +193,23 @@ class WhatsappComposer(models.TransientModel):
                 partner = partners[0]
 
         if partner:
+            # Also copy attachments for partner message
+            partner_attachment_ids = []
+            if self.attachment_ids:
+                for attachment in self.attachment_ids:
+                    partner_attachment = attachment.copy({
+                        'res_model': 'res.partner',
+                        'res_id': partner.id,
+                    })
+                    partner_attachment_ids.append(partner_attachment.id)
+
             partner.sudo().message_post(
                 body=self.body,
                 author_id=self.env.user.partner_id.id,
                 gateway_type="whatsapp",
-                attachment_ids=attachment_ids if attachment_ids else False,
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
+                attachment_ids=partner_attachment_ids if partner_attachment_ids else []
             )
 
 

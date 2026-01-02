@@ -112,3 +112,4 @@ class MailThread(models.AbstractModel):
         except (KeyError, AttributeError):
             return False
 
+
