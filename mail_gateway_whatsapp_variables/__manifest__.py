@@ -3,9 +3,9 @@
 
 {
     "name": "Mail Gateway WhatsApp - Template Variables",
-    "version": "18.0.1.3.0",
+    "version": "18.0.1.5.0",
     "category": "Social",
-    "summary": "Add support for template variables and buttons in WhatsApp messages",
+    "summary": "Add support for template variables, buttons and attachments in WhatsApp messages",
     "author": "Xtendoo",
     "website": "https://github.com/xtendoo-corporation",
     "license": "AGPL-3",
