@@ -60,4 +60,3 @@ class MailWhatsappTemplateButton(models.Model):
             self.call_number = False
             if not self.url_type:
                 self.url_type = 'static'
-
