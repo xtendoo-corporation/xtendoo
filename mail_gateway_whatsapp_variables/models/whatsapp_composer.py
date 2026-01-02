@@ -49,63 +49,50 @@ class WhatsappComposer(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         """Override to auto-attach PDF for sales orders and invoices"""
+        import logging
+        _logger = logging.getLogger(__name__)
+
         res = super().default_get(fields_list)
 
         # Solo procesar si tenemos res_model y res_id
-        if 'attachment_ids' in fields_list and res.get('res_model') and res.get('res_id'):
-            res_model = res.get('res_model')
-            res_id = res.get('res_id')
+        res_model = res.get('res_model')
+        res_id = res.get('res_id')
 
+        _logger.info(f"WhatsApp Composer default_get: model={res_model}, id={res_id}")
+
+        if res_model and res_id:
             # Auto-generar PDF para ventas y facturas
             if res_model in ['sale.order', 'account.move']:
                 try:
                     record = self.env[res_model].browse(res_id)
                     if record.exists():
-                        pdf_attachment = self._generate_pdf_attachment(record)
+                        _logger.info(f"Generating PDF for {res_model} {record.id}")
+                        pdf_attachment = self._generate_pdf_for_record(record)
                         if pdf_attachment:
+                            _logger.info(f"PDF generated successfully: {pdf_attachment.name} (ID: {pdf_attachment.id})")
                             res['attachment_ids'] = [(6, 0, [pdf_attachment.id])]
+                        else:
+                            _logger.warning(f"Could not generate PDF for {res_model} {record.id}")
                 except Exception as e:
-                    import logging
-                    _logger = logging.getLogger(__name__)
-                    _logger.warning(f"Could not auto-generate PDF for {res_model}: {e}")
+                    _logger.error(f"Error auto-generating PDF for {res_model}: {e}", exc_info=True)
 
         return res
 
-    def _generate_pdf_attachment(self, record):
+    @api.model
+    def _generate_pdf_for_record(self, record):
         """Generate PDF attachment for sale.order or account.move"""
         import logging
         _logger = logging.getLogger(__name__)
 
         if record._name == 'sale.order':
             # Generar PDF de presupuesto/pedido de venta
-            report = self.env.ref('sale.action_report_saleorder')
-            pdf_content, _ = report._render_qweb_pdf([record.id])
-
-            filename = f"Quotation_{record.name}.pdf"
-            if record.state in ['sale', 'done']:
-                filename = f"Order_{record.name}.pdf"
-
-            attachment = self.env['ir.attachment'].create({
-                'name': filename,
-                'type': 'binary',
-                'datas': pdf_content,
-                'res_model': record._name,
-                'res_id': record.id,
-                'mimetype': 'application/pdf',
-            })
-
-            _logger.info(f"Auto-generated PDF attachment for sale order {record.name}: {attachment.id}")
-            return attachment
-
-        elif record._name == 'account.move':
-            # Generar PDF de factura
-            if record.move_type in ['out_invoice', 'out_refund']:
-                report = self.env.ref('account.account_invoices')
+            try:
+                report = self.env.ref('sale.action_report_saleorder')
                 pdf_content, _ = report._render_qweb_pdf([record.id])
 
-                filename = f"Invoice_{record.name}.pdf"
-                if record.move_type == 'out_refund':
-                    filename = f"Refund_{record.name}.pdf"
+                filename = f"Quotation_{record.name}.pdf"
+                if record.state in ['sale', 'done']:
+                    filename = f"Order_{record.name}.pdf"
 
                 attachment = self.env['ir.attachment'].create({
                     'name': filename,
@@ -116,8 +103,37 @@ class WhatsappComposer(models.TransientModel):
                     'mimetype': 'application/pdf',
                 })
 
-                _logger.info(f"Auto-generated PDF attachment for invoice {record.name}: {attachment.id}")
+                _logger.info(f"✅ Auto-generated PDF for sale order {record.name}: {attachment.name}")
                 return attachment
+            except Exception as e:
+                _logger.error(f"❌ Error generating PDF for sale order: {e}", exc_info=True)
+                return None
+
+        elif record._name == 'account.move':
+            # Generar PDF de factura
+            if record.move_type in ['out_invoice', 'out_refund']:
+                try:
+                    report = self.env.ref('account.account_invoices')
+                    pdf_content, _ = report._render_qweb_pdf([record.id])
+
+                    filename = f"Invoice_{record.name}.pdf"
+                    if record.move_type == 'out_refund':
+                        filename = f"Refund_{record.name}.pdf"
+
+                    attachment = self.env['ir.attachment'].create({
+                        'name': filename,
+                        'type': 'binary',
+                        'datas': pdf_content,
+                        'res_model': record._name,
+                        'res_id': record.id,
+                        'mimetype': 'application/pdf',
+                    })
+
+                    _logger.info(f"✅ Auto-generated PDF for invoice {record.name}: {attachment.name}")
+                    return attachment
+                except Exception as e:
+                    _logger.error(f"❌ Error generating PDF for invoice: {e}", exc_info=True)
+                    return None
 
         return None
 
