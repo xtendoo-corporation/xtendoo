@@ -2,11 +2,128 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import re
+import requests
+import requests_toolbelt
 from odoo import api, fields, models
 
 
 class MailGatewayWhatsappService(models.AbstractModel):
     _inherit = "mail.gateway.whatsapp"
+
+    def _send(
+        self,
+        gateway,
+        record,
+        auto_commit=False,
+        raise_exception=False,
+        parse_mode=False,
+    ):
+        """
+        Override to handle attachments with templates.
+        When using templates, send template first, then attachments separately.
+        """
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        # Check if we have a template with attachments
+        has_template = bool(self.env.context.get("whatsapp_template_id"))
+        has_attachments = bool(record.mail_message_id.attachment_ids)
+
+        if has_template and has_attachments:
+            _logger.info(f"Sending WhatsApp with template and {len(record.mail_message_id.attachment_ids)} attachments")
+
+            # Store attachments temporarily
+            original_attachments = record.mail_message_id.attachment_ids
+
+            # Remove attachments temporarily to send template first
+            record.mail_message_id.attachment_ids = False
+
+            try:
+                # Send template first (calls parent which will handle the template)
+                super()._send(gateway, record, auto_commit=False, raise_exception=raise_exception, parse_mode=parse_mode)
+
+                # Now send attachments separately
+                attachment_mimetype_map = self._get_whatsapp_mimetype_kind()
+                proxies = self._get_proxies()
+                channel = record.gateway_channel_id
+
+                for attachment in original_attachments:
+                    if attachment.mimetype not in attachment_mimetype_map:
+                        _logger.warning(f"Skipping attachment {attachment.name} - unsupported mimetype: {attachment.mimetype}")
+                        continue
+
+                    attachment_type = attachment_mimetype_map[attachment.mimetype]
+                    _logger.info(f"Uploading attachment: {attachment.name} (type: {attachment_type})")
+
+                    try:
+                        # Upload file to WhatsApp
+                        m = requests_toolbelt.multipart.encoder.MultipartEncoder(
+                            fields={
+                                "file": (
+                                    attachment.name,
+                                    attachment.raw,
+                                    attachment.mimetype,
+                                ),
+                                "messaging_product": "whatsapp",
+                            },
+                        )
+
+                        upload_response = requests.post(
+                            f"https://graph.facebook.com/"
+                            f"v{gateway.whatsapp_version}/{gateway.whatsapp_from_phone}/media",
+                            headers={
+                                "Authorization": f"Bearer {gateway.token}",
+                                "content-type": m.content_type,
+                            },
+                            data=m,
+                            timeout=10,
+                            proxies=proxies,
+                        )
+                        upload_response.raise_for_status()
+                        media_id = upload_response.json()["id"]
+
+                        _logger.info(f"Uploaded {attachment.name}, media_id: {media_id}")
+
+                        # Send media message
+                        media_payload = {
+                            "messaging_product": "whatsapp",
+                            "recipient_type": "individual",
+                            "to": channel.gateway_channel_token,
+                            "type": attachment_type,
+                            attachment_type: {"id": media_id}
+                        }
+
+                        if attachment_type == "document":
+                            media_payload[attachment_type]["filename"] = attachment.name
+
+                        send_response = requests.post(
+                            f"https://graph.facebook.com/"
+                            f"v{gateway.whatsapp_version}/{gateway.whatsapp_from_phone}/messages",
+                            headers={"Authorization": f"Bearer {gateway.token}"},
+                            json=media_payload,
+                            timeout=10,
+                            proxies=proxies,
+                        )
+                        send_response.raise_for_status()
+
+                        _logger.info(f"✅ Successfully sent attachment {attachment.name} via WhatsApp")
+
+                    except Exception as att_error:
+                        _logger.error(f"❌ Error sending attachment {attachment.name}: {att_error}", exc_info=True)
+                        # Continue with other attachments
+
+                # Commit if requested
+                if auto_commit:
+                    self.env.cr.commit()
+
+            finally:
+                # Always restore attachments to the message
+                record.mail_message_id.attachment_ids = original_attachments
+
+            return
+
+        # No template or no attachments: use standard flow
+        return super()._send(gateway, record, auto_commit=auto_commit, raise_exception=raise_exception, parse_mode=parse_mode)
 
     def _send_payload(
         self, channel, body=False, media_id=False, media_type=False, media_name=False
