@@ -68,6 +68,19 @@ export class PosOrderBarcodeFormController extends FormController {
      * (caracteres rápidos seguidos de Enter).
      */
     onKeyDown(ev) {
+        // Si el foco está en un input/textarea/select o en un elemento editable, no interceptar
+        try {
+            const target = ev.target || document.activeElement;
+            const tag = target && target.tagName ? target.tagName.toLowerCase() : null;
+            if (tag === 'input' || tag === 'textarea' || tag === 'select' || (target && target.isContentEditable)) {
+                // Dejar que el evento continúe normalmente para no romper la edición de campos (p.ej. qty)
+                return;
+            }
+        } catch (err) {
+            // En caso de error no bloquear el funcionamiento del detector
+            console.error('Error comprobando foco en onKeyDown:', err);
+        }
+
         const now = Date.now();
         const timeDiff = now - this.lastKeyTime;
 
