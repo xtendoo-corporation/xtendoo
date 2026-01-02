@@ -82,13 +82,14 @@ class WhatsappComposer(models.TransientModel):
     def _generate_pdf_for_record(self, record):
         """Generate PDF attachment for sale.order or account.move"""
         import logging
+        import base64
         _logger = logging.getLogger(__name__)
 
         if record._name == 'sale.order':
             # Generar PDF de presupuesto/pedido de venta
             try:
-                report = self.env.ref('sale.action_report_saleorder')
-                pdf_content, _ = report._render_qweb_pdf([record.id])
+                report = self.env['ir.actions.report']._get_report_from_name('sale.report_saleorder')
+                pdf_content, _ = report._render_qweb_pdf(record.ids)
 
                 filename = f"Quotation_{record.name}.pdf"
                 if record.state in ['sale', 'done']:
@@ -97,7 +98,7 @@ class WhatsappComposer(models.TransientModel):
                 attachment = self.env['ir.attachment'].create({
                     'name': filename,
                     'type': 'binary',
-                    'datas': pdf_content,
+                    'datas': base64.b64encode(pdf_content),
                     'res_model': record._name,
                     'res_id': record.id,
                     'mimetype': 'application/pdf',
@@ -113,8 +114,8 @@ class WhatsappComposer(models.TransientModel):
             # Generar PDF de factura
             if record.move_type in ['out_invoice', 'out_refund']:
                 try:
-                    report = self.env.ref('account.account_invoices')
-                    pdf_content, _ = report._render_qweb_pdf([record.id])
+                    report = self.env['ir.actions.report']._get_report_from_name('account.report_invoice')
+                    pdf_content, _ = report._render_qweb_pdf(record.ids)
 
                     filename = f"Invoice_{record.name}.pdf"
                     if record.move_type == 'out_refund':
@@ -123,7 +124,7 @@ class WhatsappComposer(models.TransientModel):
                     attachment = self.env['ir.attachment'].create({
                         'name': filename,
                         'type': 'binary',
-                        'datas': pdf_content,
+                        'datas': base64.b64encode(pdf_content),
                         'res_model': record._name,
                         'res_id': record.id,
                         'mimetype': 'application/pdf',
