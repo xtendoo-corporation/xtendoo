@@ -40,22 +40,37 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
             try:
                 # Send template first (calls parent which will handle the template)
+                _logger.info("📨 STEP 1: Sending template message...")
                 super()._send(gateway, record, auto_commit=False, raise_exception=raise_exception, parse_mode=parse_mode)
+                _logger.info("✅ STEP 1 COMPLETE: Template sent successfully")
+
+                # IMPORTANT: Wait a moment before sending attachment
+                # WhatsApp may throttle consecutive messages
+                import time
+                _logger.info("⏳ Waiting 2 seconds before sending attachment...")
+                time.sleep(2)
 
                 # Now send attachments separately
+                _logger.info("📨 STEP 2: Preparing to send attachments...")
                 attachment_mimetype_map = self._get_whatsapp_mimetype_kind()
                 proxies = self._get_proxies()
                 channel = record.gateway_channel_id
 
                 _logger.info(f"📞 Channel info: ID={channel.id}, Token={channel.gateway_channel_token}, Name={channel.name}")
+                _logger.info(f"📎 Total attachments to send: {len(original_attachments)}")
 
-                for attachment in original_attachments:
+                sent_attachments = 0
+                failed_attachments = 0
+
+                for idx, attachment in enumerate(original_attachments, 1):
+                    _logger.info(f"📎 Processing attachment {idx}/{len(original_attachments)}: {attachment.name}")
+
                     if attachment.mimetype not in attachment_mimetype_map:
-                        _logger.warning(f"Skipping attachment {attachment.name} - unsupported mimetype: {attachment.mimetype}")
+                        _logger.warning(f"⚠️ Skipping attachment {attachment.name} - unsupported mimetype: {attachment.mimetype}")
                         continue
 
                     attachment_type = attachment_mimetype_map[attachment.mimetype]
-                    _logger.info(f"Uploading attachment: {attachment.name} (type: {attachment_type})")
+                    _logger.info(f"📤 STEP 2.{idx}.1: Uploading attachment to WhatsApp: {attachment.name} (type: {attachment_type}, size: {len(attachment.raw)} bytes)")
 
                     try:
                         # Upload file to WhatsApp
@@ -81,10 +96,14 @@ class MailGatewayWhatsappService(models.AbstractModel):
                             timeout=10,
                             proxies=proxies,
                         )
+
+                        _logger.info(f"📤 Upload response status: {upload_response.status_code}")
+
                         upload_response.raise_for_status()
                         media_id = upload_response.json()["id"]
 
-                        _logger.info(f"Uploaded {attachment.name}, media_id: {media_id}")
+                        _logger.info(f"✅ STEP 2.{idx}.1 COMPLETE: Uploaded {attachment.name}, media_id: {media_id}")
+                        _logger.info(f"📤 STEP 2.{idx}.2: Sending media message to recipient...")
 
                         # Send media message
                         media_payload = {
@@ -100,6 +119,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
 
                         _logger.info(f"📤 Sending media payload: {media_payload}")
                         _logger.info(f"📡 API URL: https://graph.facebook.com/v{gateway.whatsapp_version}/{gateway.whatsapp_from_phone}/messages")
+                        _logger.info(f"📡 Recipient: {channel.gateway_channel_token}")
 
                         send_response = requests.post(
                             f"https://graph.facebook.com/"
@@ -130,18 +150,29 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         # Check if messages array exists and has content
                         if not response_data.get("messages"):
                             _logger.warning(f"⚠️ No 'messages' in response: {response_data}")
-
-                        _logger.info(f"✅ Successfully sent attachment {attachment.name} via WhatsApp")
-
-                        message_id = response_data.get('messages', [{}])[0].get('id', 'N/A')
-                        _logger.info(f"✅ WhatsApp Message ID: {message_id}")
-
-                        # Log the recipient info for verification
-                        _logger.info(f"✅ Sent to number: {channel.gateway_channel_token}")
+                            failed_attachments += 1
+                        else:
+                            message_id = response_data.get('messages', [{}])[0].get('id', 'N/A')
+                            _logger.info(f"✅ STEP 2.{idx}.2 COMPLETE: Successfully sent attachment {attachment.name} via WhatsApp")
+                            _logger.info(f"✅ WhatsApp Message ID: {message_id}")
+                            _logger.info(f"✅ Sent to number: {channel.gateway_channel_token}")
+                            sent_attachments += 1
 
                     except Exception as att_error:
                         _logger.error(f"❌ Error sending attachment {attachment.name}: {att_error}", exc_info=True)
+                        failed_attachments += 1
                         # Continue with other attachments
+
+                # Final summary
+                _logger.info("=" * 80)
+                _logger.info(f"📊 FINAL SUMMARY:")
+                _logger.info(f"   ✅ Template message: SENT")
+                _logger.info(f"   📎 Total attachments: {len(original_attachments)}")
+                _logger.info(f"   ✅ Attachments sent successfully: {sent_attachments}")
+                _logger.info(f"   ❌ Attachments failed: {failed_attachments}")
+                if sent_attachments > 0:
+                    _logger.info(f"   🎯 Check WhatsApp on device: {channel.gateway_channel_token}")
+                _logger.info("=" * 80)
 
                 # Commit if requested
                 if auto_commit:
