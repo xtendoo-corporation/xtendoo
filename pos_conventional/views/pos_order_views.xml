@@ -23,6 +23,7 @@
             <!-- Asignar el controller personalizado con js_class para escaneo de barcode -->
             <xpath expr="//form" position="attributes">
                 <attribute name="js_class">pos_order_barcode_form</attribute>
+                <attribute name="disable_autofocus">1</attribute>
             </xpath>
 
             <!-- Ocultar el botón original de Invoice en el header -->
@@ -54,7 +55,7 @@
                         <field name="date_order"/>
                         <field name="session_id" readonly="state != 'draft'" invisible="1"/>
                         <field name="show_albaran_button" invisible="1"/>
-                        <field string="Usuario" name="user_id" readonly="account_move or state == 'done'"/>
+                        <field string="Usuario" name="user_id" readonly="1"/>
                         <field name="order_edit_tracking" invisible="1"/>
                         <field name="is_edited" readonly="1" invisible="not order_edit_tracking"/>
                         <field name="partner_id" context="{'res_partner_search_mode': 'customer'}"/>
