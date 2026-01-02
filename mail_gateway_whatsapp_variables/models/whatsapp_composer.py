@@ -85,56 +85,57 @@ class WhatsappComposer(models.TransientModel):
         import base64
         _logger = logging.getLogger(__name__)
 
-        if record._name == 'sale.order':
-            # Generar PDF de presupuesto/pedido de venta
-            try:
-                report = self.env['ir.actions.report']._get_report_from_name('sale.report_saleorder')
-                pdf_content, _ = report._render_qweb_pdf(record.ids)
+        try:
+            report_name = None
+            filename = None
 
+            if record._name == 'sale.order':
+                # Determinar el nombre del reporte según el estado
+                report_name = 'sale.action_report_saleorder'
                 filename = f"Quotation_{record.name}.pdf"
                 if record.state in ['sale', 'done']:
                     filename = f"Order_{record.name}.pdf"
 
-                attachment = self.env['ir.attachment'].create({
-                    'name': filename,
-                    'type': 'binary',
-                    'datas': base64.b64encode(pdf_content),
-                    'res_model': record._name,
-                    'res_id': record.id,
-                    'mimetype': 'application/pdf',
-                })
-
-                _logger.info(f"✅ Auto-generated PDF for sale order {record.name}: {attachment.name}")
-                return attachment
-            except Exception as e:
-                _logger.error(f"❌ Error generating PDF for sale order: {e}", exc_info=True)
-                return None
-
-        elif record._name == 'account.move':
-            # Generar PDF de factura
-            if record.move_type in ['out_invoice', 'out_refund']:
-                try:
-                    report = self.env['ir.actions.report']._get_report_from_name('account.report_invoice')
-                    pdf_content, _ = report._render_qweb_pdf(record.ids)
-
+            elif record._name == 'account.move':
+                # Solo para facturas de cliente
+                if record.move_type in ['out_invoice', 'out_refund']:
+                    report_name = 'account.account_invoices'
                     filename = f"Invoice_{record.name}.pdf"
                     if record.move_type == 'out_refund':
                         filename = f"Refund_{record.name}.pdf"
-
-                    attachment = self.env['ir.attachment'].create({
-                        'name': filename,
-                        'type': 'binary',
-                        'datas': base64.b64encode(pdf_content),
-                        'res_model': record._name,
-                        'res_id': record.id,
-                        'mimetype': 'application/pdf',
-                    })
-
-                    _logger.info(f"✅ Auto-generated PDF for invoice {record.name}: {attachment.name}")
-                    return attachment
-                except Exception as e:
-                    _logger.error(f"❌ Error generating PDF for invoice: {e}", exc_info=True)
+                else:
                     return None
+
+            if not report_name or not filename:
+                return None
+
+            # Obtener el reporte por su xmlid
+            _logger.info(f"Looking for report: {report_name}")
+            report = self.env.ref(report_name, raise_if_not_found=False)
+
+            if not report:
+                _logger.warning(f"Report {report_name} not found")
+                return None
+
+            # Generar el PDF
+            _logger.info(f"Rendering PDF for {record._name} {record.id}")
+            pdf_content, _ = report._render_qweb_pdf(record.ids)
+
+            # Crear el attachment
+            attachment = self.env['ir.attachment'].create({
+                'name': filename,
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'res_model': record._name,
+                'res_id': record.id,
+                'mimetype': 'application/pdf',
+            })
+
+            _logger.info(f"✅ Auto-generated PDF: {attachment.name} (ID: {attachment.id})")
+            return attachment
+
+        except Exception as e:
+            _logger.error(f"❌ Error generating PDF for {record._name} {record.id}: {e}", exc_info=True)
 
         return None
 
