@@ -47,6 +47,8 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 proxies = self._get_proxies()
                 channel = record.gateway_channel_id
 
+                _logger.info(f"📞 Channel info: ID={channel.id}, Token={channel.gateway_channel_token}, Name={channel.name}")
+
                 for attachment in original_attachments:
                     if attachment.mimetype not in attachment_mimetype_map:
                         _logger.warning(f"Skipping attachment {attachment.name} - unsupported mimetype: {attachment.mimetype}")
@@ -96,6 +98,9 @@ class MailGatewayWhatsappService(models.AbstractModel):
                         if attachment_type == "document":
                             media_payload[attachment_type]["filename"] = attachment.name
 
+                        _logger.info(f"📤 Sending media payload: {media_payload}")
+                        _logger.info(f"📡 API URL: https://graph.facebook.com/v{gateway.whatsapp_version}/{gateway.whatsapp_from_phone}/messages")
+
                         send_response = requests.post(
                             f"https://graph.facebook.com/"
                             f"v{gateway.whatsapp_version}/{gateway.whatsapp_from_phone}/messages",
@@ -104,9 +109,35 @@ class MailGatewayWhatsappService(models.AbstractModel):
                             timeout=10,
                             proxies=proxies,
                         )
+
+                        _logger.info(f"📨 WhatsApp API Response Status: {send_response.status_code}")
+                        _logger.info(f"📨 WhatsApp API Response Body: {send_response.text}")
+
+                        if send_response.status_code != 200:
+                            _logger.error(f"❌ WhatsApp API returned non-200 status: {send_response.status_code}")
+                            _logger.error(f"❌ Response: {send_response.text}")
+                            continue
+
                         send_response.raise_for_status()
 
+                        response_data = send_response.json()
+
+                        # Check if WhatsApp returned an error in the response body
+                        if "error" in response_data:
+                            _logger.error(f"❌ WhatsApp API Error: {response_data['error']}")
+                            continue
+
+                        # Check if messages array exists and has content
+                        if not response_data.get("messages"):
+                            _logger.warning(f"⚠️ No 'messages' in response: {response_data}")
+
                         _logger.info(f"✅ Successfully sent attachment {attachment.name} via WhatsApp")
+
+                        message_id = response_data.get('messages', [{}])[0].get('id', 'N/A')
+                        _logger.info(f"✅ WhatsApp Message ID: {message_id}")
+
+                        # Log the recipient info for verification
+                        _logger.info(f"✅ Sent to number: {channel.gateway_channel_token}")
 
                     except Exception as att_error:
                         _logger.error(f"❌ Error sending attachment {attachment.name}: {att_error}", exc_info=True)
