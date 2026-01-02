@@ -4,7 +4,6 @@
 from . import mail_notification
 from . import whatsapp_composer
 from . import mail_gateway_whatsapp
-from . import mail_whatsapp_template
 from . import mail_whatsapp_template_variable
 from . import mail_whatsapp_template_button
 

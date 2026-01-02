@@ -45,17 +45,6 @@ class WhatsappComposer(models.TransientModel):
         string="Template Buttons"
     )
 
-    # Verificación ventana 24h
-    within_24h_window = fields.Boolean(
-        string="Within 24h Window",
-        compute="_compute_within_24h_window",
-        help="Indicates if we're within the 24-hour customer service window. "
-             "Attachments can only be sent within this window."
-    )
-    attachment_warning = fields.Html(
-        string="Attachment Warning",
-        compute="_compute_attachment_warning"
-    )
 
     @api.depends("template_id", "template_id.variable_ids")
     def _compute_has_variables(self):

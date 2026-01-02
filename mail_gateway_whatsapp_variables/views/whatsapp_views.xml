@@ -10,11 +10,6 @@
             <xpath expr="//field[@name='body']" position="after">
                 <separator string="Attachments"/>
 
-                <!-- Warning about 24h window -->
-                <field name="within_24h_window" invisible="1"/>
-                <field name="attachment_warning" widget="html" nolabel="1"
-                       invisible="not attachment_ids"/>
-
                 <group>
                     <field name="attachment_ids"
                            widget="many2many_binary"
