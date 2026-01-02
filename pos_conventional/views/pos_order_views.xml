@@ -62,20 +62,31 @@
                                invisible="1"/>
                     </group>
                     <group col="1" name="order_totals_sidebar" class="oe_subtotal_sidebar col-6 me-4">
-                        <div class="fw-bold fs-3">Totales</div>
+                        <div class="fw-bold fs-2 border-bottom pb-2">Totales</div>
                         <br/>
                         <div class="row">
-                            <div class="col-5 text-muted py-1">Impuestos:</div>
-                            <div class="col-7 text-end py-1 ps-5">
-                                <field name="amount_tax" force_save="1" widget="monetary"/>
+                            <!-- Importe base (subtotal sin impuestos) -->
+                            <div class="col-5 py-2 text-nowrap">Importe base:</div>
+                            <div class="col-7 py-2 ps-5 text-nowrap">
+                                <field name="amount_untaxed" widget="monetary" class="text-end d-block"/>
                             </div>
-                            <div class="col-5 text-muted py-1">Total:</div>
-                            <div class="col-7 fw-bold fs-4 text-end py-1 ps-5">
-                                <field name="amount_total" force_save="1" widget="monetary"/>
+
+                            <!-- Impuestos -->
+                            <div class="col-5 py-2 text-nowrap border-bottom">Iva:</div>
+                            <div class="col-7 py-2 ps-5 text-nowrap border-bottom">
+                                <field name="amount_tax" force_save="1" widget="monetary" class="text-end d-block"/>
                             </div>
-                            <div class="col-5 text-muted py-1 text-nowrap">Total pagado:</div>
-                            <div class="col-7 fw-bold fs-4 text-end py-1 ps-5">
-                                <field name="amount_paid" nolabel="1" widget="monetary" readonly="state != 'draft'"/>
+
+                            <!-- Total -->
+                            <div class="col-5 py-2 text-nowrap">Total:</div>
+                            <div class="col-7 py-2 ps-5 text-nowrap">
+                                <field name="amount_total" force_save="1" widget="monetary" class="fw-bold fs-3 text-end d-block"/>
+                            </div>
+
+                            <!-- Total pagado -->
+                            <div class="col-5 py-2 text-nowrap" >Total pagado:</div>
+                            <div class="col-7 py-2 ps-5 text-nowrap" invisible="state=='draft'">
+                                <field name="amount_paid" nolabel="1" widget="monetary" readonly="state != 'draft'" class="fw-bold fs-3 text-end d-block" />
                             </div>
                         </div>
                         <field name="currency_id" invisible="1"/>

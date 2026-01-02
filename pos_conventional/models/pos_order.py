@@ -14,6 +14,23 @@ class PosOrder(models.Model):
         store=False
     )
 
+    amount_untaxed = fields.Monetary(
+        string="Importe base",
+        compute="_compute_amount_untaxed",
+        store=False,
+        help="Subtotal sin impuestos calculado desde las líneas del pedido"
+    )
+
+    @api.depends('lines.price_subtotal', 'is_refund')
+    def _compute_amount_untaxed(self):
+        """Calcula el subtotal sin impuestos sumando price_subtotal de todas las líneas"""
+        for order in self:
+            sign = -1 if order.is_refund else 1
+            amount_untaxed = sum(line.price_subtotal for line in order.lines)
+            if order.currency_id:
+                amount_untaxed = order.currency_id.round(amount_untaxed)
+            order.amount_untaxed = amount_untaxed * sign
+
     @api.depends('session_id', 'session_id.config_id', 'session_id.config_id.pos_enable_albaran')
     def _compute_show_albaran_button(self):
         for order in self:
