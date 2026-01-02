@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar soporte de variables dinámicas en las plantillas de WhatsApp, similar a la funcionalidad del módulo enterprise.
+Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar soporte de variables dinámicas, botones y **adjuntos automáticos** en las plantillas de WhatsApp.
 
 ## Características
 
@@ -11,11 +11,28 @@ Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar soporte de vari
 - ✅ Campos dinámicos que aparecen solo si la plantilla tiene variables
 - ✅ Auto-población inteligente de variables desde el registro actual
 - ✅ Reemplazo automático de placeholders antes de enviar
+- ✅ **Generación automática de PDFs** para ventas y facturas 📄
+- ✅ **Auto-adjuntar PDFs** al abrir el composer desde ventas/facturas
+- ✅ Soporte de adjuntos múltiples (PDFs, imágenes, documentos)
+- ✅ Botones interactivos (quick_reply, URL, llamada)
 - ✅ Compatible con plantillas OCA existentes
+
+## Versión
+
+**18.0.1.7.0** - Auto-generación de PDFs implementada
+
+### Cambios en v1.7.0 (2 Enero 2026)
+- ✨ **NUEVO**: Generación automática de PDFs al abrir composer
+- ✨ **NUEVO**: Auto-adjuntar PDF de presupuesto/pedido desde ventas
+- ✨ **NUEVO**: Auto-adjuntar PDF de factura desde facturas
+- 🔧 Los PDFs se generan automáticamente al hacer clic en "WhatsApp"
+- 📝 El usuario puede quitar o añadir más archivos antes de enviar
 
 ## Dependencias
 
 - `mail_gateway_whatsapp` (OCA)
+- `sale` (para auto-generación de PDFs de ventas)
+- `account` (para auto-generación de PDFs de facturas)
 
 ## Instalación
 
@@ -24,6 +41,24 @@ Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar soporte de vari
 3. Las variables se detectarán automáticamente en tus plantillas
 
 ## Uso
+
+### Enviar mensaje con PDF desde Venta
+
+1. Abre un **Presupuesto** o **Pedido de Venta**
+2. Haz clic en el botón **"WhatsApp"** en el chatter
+3. **El PDF se genera y adjunta automáticamente** ✨
+4. Selecciona una plantilla con variables
+5. Las variables se llenan automáticamente
+6. Puedes quitar el PDF o añadir más archivos
+7. Envía el mensaje
+
+### Enviar mensaje con PDF desde Factura
+
+1. Abre una **Factura de Cliente**
+2. Haz clic en el botón **"WhatsApp"** en el chatter
+3. **El PDF de la factura se genera y adjunta automáticamente** ✨
+4. Selecciona una plantilla
+5. Envía el mensaje
 
 ### Crear plantillas con variables
 
@@ -39,15 +74,16 @@ Fecha de entrega: {{4}}
 Gracias por tu compra!
 ```
 
-### Enviar mensaje con variables
+### Comportamiento de PDFs Automáticos
 
-1. Abre cualquier registro (contacto, venta, factura, etc.)
-2. Haz clic en el botón "WhatsApp" en el chatter
-3. Selecciona una plantilla con variables
-4. **Los campos de variables aparecerán automáticamente**
-5. El módulo intentará llenarlos automáticamente desde el registro
-6. Revisa y ajusta los valores si es necesario
-7. Envía el mensaje
+El módulo genera automáticamente PDFs para:
+
+| Modelo | PDF Generado | Nombre del Archivo |
+|--------|--------------|-------------------|
+| **sale.order** (borrador) | Presupuesto | `Quotation_S00001.pdf` |
+| **sale.order** (confirmado) | Pedido de Venta | `Order_SO001.pdf` |
+| **account.move** (factura) | Factura | `Invoice_INV/2024/0001.pdf` |
+| **account.move** (nota crédito) | Nota de Crédito | `Refund_RINV/2024/0001.pdf` |
 
 ### Variables automáticas por modelo
 
@@ -140,7 +176,66 @@ def _populate_variables_from_record(self):
         # ... etc
 ```
 
+## ⚠️ Importante: Limitación de WhatsApp con Adjuntos
+
+### Regla de las 24 Horas
+
+WhatsApp Business API tiene una restricción importante:
+
+**Los adjuntos (PDFs, imágenes, etc.) solo se entregan si estás dentro de la ventana de 24 horas desde el último mensaje del cliente.**
+
+#### Cómo funciona:
+
+```
+Cliente te envía mensaje → Se abre ventana de 24h
+   ↓
+Dentro de 24h: Puedes enviar plantillas + PDFs ✅
+   ↓
+Después de 24h: Solo puedes enviar plantillas (sin PDFs) ❌
+```
+
+#### Escenarios:
+
+| Situación | Plantilla | PDF | Resultado |
+|-----------|-----------|-----|-----------|
+| Cliente escribió hace 10 horas | ✅ Se envía | ✅ Se envía | ✅ Ambos llegan |
+| Cliente escribió hace 3 días | ✅ Se envía | ❌ Se descarta | ⚠️ Solo plantilla llega |
+| Primera vez (sin conversación) | ✅ Se envía | ❌ Se descarta | ⚠️ Solo plantilla llega |
+
+#### Solución Recomendada:
+
+Para **nuevos clientes** sin conversación reciente:
+1. Envía la plantilla primero (sin PDF)
+2. Espera a que el cliente responda
+3. **Ahora** envía el PDF (estarás en ventana de 24h)
+
+Para **clientes activos** (< 24h):
+- ✅ Envía plantilla + PDF juntos
+- Todo funcionará correctamente
+
+#### Notas Técnicas:
+
+- El código **SÍ envía el PDF** (verás status 200 OK en logs)
+- WhatsApp **acepta** el mensaje
+- Pero lo **descarta silenciosamente** si estás fuera de 24h
+- Esta es una **limitación de WhatsApp Business API**, no del módulo
+
 ## Troubleshooting
+
+### El PDF no llega al cliente
+
+**Causa más probable**: Estás fuera de la ventana de 24 horas.
+
+**Solución**:
+1. Verifica cuándo fue el último mensaje del cliente
+2. Si fue hace más de 24h:
+   - Envía solo la plantilla (quita el PDF)
+   - Espera respuesta del cliente
+   - Luego envía el PDF
+3. Si fue hace menos de 24h y aún no llega:
+   - Verifica que el cliente tenga WhatsApp
+   - Confirma el número de teléfono
+   - Revisa los logs de Odoo para errores
 
 ### Las variables no se reemplazan
 
