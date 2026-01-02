@@ -297,6 +297,7 @@ class PosOrder(models.Model):
         """
         Abre un wizard o formulario para registrar una entrada/salida de efectivo
         en la sesión POS actual del usuario.
+        Ahora crea un wizard transient `pos.session.cash_move.wizard` y abre su formulario.
         """
         # Buscar la sesión abierta del usuario actual
         session = self.env['pos.session'].search([
@@ -307,21 +308,26 @@ class PosOrder(models.Model):
         if not session:
             raise UserError(_('No tienes ninguna sesión abierta.'))
 
-        # Intentar encontrar un modelo específico de cash in/out del POS
-        # En versiones estándar, los movimientos de caja se almacenan en account.bank.statement.line
-        # Intentaremos abrir la vista de creación para account.bank.statement.line con contexto
-        # Obtener el primer statement (account.bank.statement) asociado a la sesión si existe
-        statements = session.statement_line_ids.mapped('statement_id') if session.statement_line_ids else None
-        default_statement_id = statements[0].id if statements else False
+        # Crear el wizard transient para la sesión encontrada
+        wizard = self.env['pos.session.cash_move.wizard'].create({
+            'session_id': session.id,
+            'currency_id': session.currency_id.id if session.currency_id else False,
+            'amount': 0.0,
+        })
+
+        # Obtener referencia a la vista del wizard de forma segura
+        view_ref = self.env.ref('pos_conventional.view_pos_session_cash_move_wizard_form', raise_if_not_found=False)
+        view_id = view_ref.id if view_ref else False
 
         action = {
             'name': _('Entrada / Salida de efectivo'),
             'type': 'ir.actions.act_window',
-            'res_model': 'account.bank.statement.line',
+            'res_model': 'pos.session.cash_move.wizard',
+            'res_id': wizard.id,
             'view_mode': 'form',
-            'views': [(False, 'form')],
+            'views': [(view_id, 'form')],
             'target': 'new',
-            'context': dict(self.env.context, default_statement_id=default_statement_id, default_amount=0.0, default_name=_('Entrada/Salida')),
+            'context': dict(self.env.context),
         }
         return action
 

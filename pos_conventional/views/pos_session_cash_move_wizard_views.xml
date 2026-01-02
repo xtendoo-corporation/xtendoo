@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_session_cash_move_wizard_form" model="ir.ui.view">
+        <field name="name">pos.session.cash.move.wizard.form</field>
+        <field name="model">pos.session.cash_move.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Entrada / Salida de efectivo">
+                <group>
+                    <field name="session_id" readonly="1"/>
+                    <field name="type"/>
+                    <field name="amount"/>
+                    <field name="reason"/>
+                    <!-- Mostrar partner oculto según petición: partner invisible -->
+                    <field name="partner_id" invisible="1"/>
+                </group>
+                <footer>
+                    <button string="Confirmar" type="object" name="action_confirm" class="btn-primary"/>
+                    <button string="Descartar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
