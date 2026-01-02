@@ -79,3 +79,13 @@ class PosMakePaymentConventional(models.TransientModel):
         if not card_method:
             raise UserError(_('No se encontró método de pago con tarjeta.'))
         return self.check(payment_method_id=card_method.id)
+
+    def action_pay_account(self):
+        account_method = self.env['pos.payment.method'].search(
+            [('name', 'ilike', 'cuenta')],
+            limit=1
+        )
+        if not account_method:
+            raise UserError(_('No se encontró un método de pago tipo Cuenta.'))
+        return self.check(payment_method_id=account_method.id)
+
