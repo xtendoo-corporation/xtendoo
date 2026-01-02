@@ -10,6 +10,14 @@ _logger = logging.getLogger(__name__)
 class MailWhatsappTemplate(models.Model):
     _inherit = "mail.whatsapp.template"
 
+    model_id = fields.Many2one(
+        'ir.model',
+        string="Model",
+        required=True,
+        default=lambda self: self.env.ref('base.model_res_partner').id,
+        help="Model for which this template will be used (e.g., res.partner, sale.order, account.move)"
+    )
+
     allow_attachments = fields.Boolean(
         string="Allow Attachments",
         default=True,
