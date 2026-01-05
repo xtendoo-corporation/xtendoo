@@ -252,42 +252,51 @@ class WhatsappPendingConfirmation(models.Model):
                 number_field_name = 'partner_id.mobile'
 
             _logger.info(f"📱 Using phone field: {number_field_name}, gateway: {gateway.name}")
+            _logger.info(f"📋 Template: {self.confirmation_template_id.name}")
+            _logger.info(f"📝 Template body: {self.confirmation_template_id.body[:100]}...")
 
-            # Crear el composer para enviar la plantilla
-            composer = self.env['whatsapp.composer'].with_context(
-                active_model=self.res_model,
-                active_id=self.res_id,
-                default_res_model=self.res_model,
-                default_res_id=self.res_id,
-            ).create({
-                'res_model': self.res_model,
-                'res_id': self.res_id,
-                'template_id': self.confirmation_template_id.id,
-                'gateway_id': gateway.id,
-                'number_field_name': number_field_name,
+            # Obtener el canal de WhatsApp para este cliente
+            channel = record._whatsapp_get_channel(number_field_name, gateway)
+            _logger.info(f"📞 Channel: {channel.name} (ID: {channel.id})")
+
+            # Enviar mensaje usando el método del gateway directamente
+            # Crear un mensaje de notificación temporal
+            notification = self.env['mail.notification'].sudo().create({
+                'notification_type': 'whatsapp',
+                'notification_status': 'ready',
             })
 
-            # Ejecutar onchange para que se completen los datos desde la plantilla
-            composer.onchange_template_id()
+            # Crear el mensaje con el contexto correcto
+            message = self.env['mail.message'].with_context(
+                whatsapp_template_id=self.confirmation_template_id.id,
+            ).create({
+                'model': self.res_model,
+                'res_id': self.res_id,
+                'body': self.confirmation_template_id.body,
+                'message_type': 'comment',
+                'subtype_id': self.env.ref('mail.mt_comment').id,
+                'author_id': self.env.user.partner_id.id,
+            })
 
-            # Si aún no hay body, obtenerlo de la plantilla
-            if not composer.body and self.confirmation_template_id.body:
-                composer.body = self.confirmation_template_id.body
+            # Vincular la notificación al mensaje
+            notification.write({
+                'mail_message_id': message.id,
+            })
 
-            _logger.info(f"📋 Composer created:")
-            _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
-            _logger.info(f"   Gateway: {composer.gateway_id.name if composer.gateway_id else 'NONE'}")
-            _logger.info(f"   Phone field: {composer.number_field_name}")
-            _logger.info(f"   Template: {composer.template_id.name if composer.template_id else 'NONE'}")
+            _logger.info(f"📨 Sending via gateway...")
 
-            # Enviar el mensaje directamente con el contexto correcto para que se procese la plantilla
-            _logger.info(f"📤 Sending WhatsApp message...")
+            # Enviar a través del gateway con el contexto correcto
+            gateway_whatsapp = self.env['mail.gateway.whatsapp'].with_context(
+                whatsapp_template_id=self.confirmation_template_id.id,
+            )
 
-            # Añadir el template_id al contexto para que se procese correctamente
-            composer = composer.with_context(whatsapp_template_id=self.confirmation_template_id.id)
+            gateway_whatsapp._send(
+                gateway=gateway,
+                record=notification,
+                auto_commit=False,
+                raise_exception=True,
+            )
 
-            # Llamar al método de envío
-            composer._action_send_whatsapp()
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
