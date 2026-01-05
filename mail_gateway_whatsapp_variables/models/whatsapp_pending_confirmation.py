@@ -304,7 +304,7 @@ class WhatsappPendingConfirmation(models.Model):
 
             # Obtener el canal correcto
             channel = record._whatsapp_get_channel(number_field_name, gateway)
-            _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id}), Token: {channel.whatsapp_channel_token}")
+            _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id})")
 
             # Verificar el número de teléfono del partner
             phone = None
