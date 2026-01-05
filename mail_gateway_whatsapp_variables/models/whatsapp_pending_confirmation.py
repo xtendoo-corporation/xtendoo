@@ -245,6 +245,15 @@ class WhatsappPendingConfirmation(models.Model):
                 'template_id': self.confirmation_template_id.id,
             })
 
+            # Ejecutar onchange para que se completen los datos desde la plantilla
+            composer.onchange_template_id()
+
+            # Si aún no hay body, obtenerlo de la plantilla
+            if not composer.body and self.confirmation_template_id.body:
+                composer.body = self.confirmation_template_id.body
+
+            _logger.info(f"📋 Composer created with body: {composer.body[:50] if composer.body else 'EMPTY'}...")
+
             # Enviar el mensaje
             composer.action_send_whatsapp()
 
