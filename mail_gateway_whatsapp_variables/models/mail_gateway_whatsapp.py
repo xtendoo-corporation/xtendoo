@@ -1,10 +1,13 @@
 # Copyright 2024 Xtendoo
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import logging
 import re
 import requests
 import requests_toolbelt
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class MailGatewayWhatsappService(models.AbstractModel):
@@ -579,3 +582,50 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
             )
+
+        # === NUEVA FUNCIONALIDAD: Procesar confirmaciones pendientes ===
+        # Cuando se recibe un mensaje (botón o texto), verificar si hay confirmaciones pendientes
+        if partner and chat:
+            try:
+                _logger.info(f"🔍 Checking for pending confirmations for partner {partner.name} (ID: {partner.id})")
+
+                # Buscar confirmaciones pendientes para este partner y canal
+                pending_confirmations = self.env['whatsapp.pending.confirmation'].search([
+                    ('partner_id', '=', partner.id),
+                    ('channel_id', '=', chat.id),
+                    ('state', '=', 'waiting')
+                ])
+
+                if pending_confirmations:
+                    _logger.info(f"📋 Found {len(pending_confirmations)} pending confirmation(s)")
+
+                    # Construir message_data según el tipo de mensaje recibido
+                    message_data = {
+                        'type': message.get('type', 'text'),
+                        'text': {'body': body} if body else {},
+                    }
+
+                    # Si es un botón interactivo, marcar el tipo correcto
+                    if button_text:
+                        message_data['type'] = 'interactive'
+                        message_data['interactive'] = {
+                            'button_reply': {
+                                'title': button_text,
+                                'id': button_text  # Usar el texto del botón como ID
+                            }
+                        }
+                        _logger.info(f"📨 Detected interactive button response: {button_text}")
+
+                    # Procesar cada confirmación pendiente
+                    for pending in pending_confirmations:
+                        _logger.info(f"🔄 Processing pending confirmation {pending.id} (template: {pending.template_id.name})")
+                        if pending.process_confirmation_response(message_data):
+                            _logger.info(f"✅ Confirmation {pending.id} processed successfully!")
+                            break  # Solo procesamos una confirmación por mensaje
+                else:
+                    _logger.info(f"ℹ️ No pending confirmations found for partner {partner.name}")
+
+            except Exception as e:
+                _logger.error(f"❌ Error processing pending confirmations: {e}", exc_info=True)
+        # === FIN NUEVA FUNCIONALIDAD ===
+
