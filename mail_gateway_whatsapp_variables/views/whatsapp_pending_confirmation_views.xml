@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario para confirmaciones pendientes -->
+    <record id="view_whatsapp_pending_confirmation_form" model="ir.ui.view">
+        <field name="name">whatsapp.pending.confirmation.form</field>
+        <field name="model">whatsapp.pending.confirmation</field>
+        <field name="arch" type="xml">
+            <form string="Confirmación Pendiente">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="channel_id"/>
+                            <field name="template_id"/>
+                            <field name="confirmation_template_id"/>
+                        </group>
+                        <group>
+                            <field name="res_model"/>
+                            <field name="res_id"/>
+                            <field name="confirmation_type"/>
+                            <field name="sent_date"/>
+                            <field name="response_date"/>
+                            <field name="expiry_date"/>
+                        </group>
+                    </group>
+                    <group string="Notas">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para confirmaciones pendientes -->
+    <record id="view_whatsapp_pending_confirmation_tree" model="ir.ui.view">
+        <field name="name">whatsapp.pending.confirmation.tree</field>
+        <field name="model">whatsapp.pending.confirmation</field>
+        <field name="arch" type="xml">
+            <tree string="Confirmaciones Pendientes" decoration-success="state=='confirmed'" decoration-danger="state=='expired'" decoration-warning="state=='waiting'">
+                <field name="partner_id"/>
+                <field name="template_id"/>
+                <field name="confirmation_template_id"/>
+                <field name="res_model"/>
+                <field name="res_id"/>
+                <field name="sent_date"/>
+                <field name="response_date"/>
+                <field name="expiry_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de búsqueda -->
+    <record id="view_whatsapp_pending_confirmation_search" model="ir.ui.view">
+        <field name="name">whatsapp.pending.confirmation.search</field>
+        <field name="model">whatsapp.pending.confirmation</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Confirmaciones">
+                <field name="partner_id"/>
+                <field name="template_id"/>
+                <field name="res_model"/>
+                <filter string="Esperando" name="waiting" domain="[('state', '=', 'waiting')]"/>
+                <filter string="Confirmadas" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Expiradas" name="expired" domain="[('state', '=', 'expired')]"/>
+                <filter string="Canceladas" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter string="Hoy" name="today" domain="[('sent_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Cliente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Plantilla" name="group_template" context="{'group_by': 'template_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de ventana -->
+    <record id="action_whatsapp_pending_confirmation" model="ir.actions.act_window">
+        <field name="name">Confirmaciones WhatsApp</field>
+        <field name="res_model">whatsapp.pending.confirmation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_waiting': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay confirmaciones pendientes
+            </p>
+            <p>
+                Las confirmaciones pendientes se crean automáticamente cuando se envía una plantilla
+                de WhatsApp que requiere confirmación.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú -->
+    <menuitem
+        id="menu_whatsapp_pending_confirmation"
+        name="Confirmaciones WhatsApp"
+        parent="mail.menu_root_discuss"
+        action="action_whatsapp_pending_confirmation"
+        sequence="50"/>
+
+    <!-- Extender la vista de formulario de plantillas WhatsApp -->
+    <record id="view_mail_whatsapp_template_form_confirmation" model="ir.ui.view">
+        <field name="name">mail.whatsapp.template.form.confirmation</field>
+        <field name="model">mail.whatsapp.template</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.mail_whatsapp_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='main']" position="after">
+                <group string="Confirmación Automática" name="confirmation">
+                    <field name="requires_confirmation"/>
+                    <field name="confirmation_template_id" invisible="requires_confirmation == False" options="{'no_create': True}"/>
+                    <field name="confirmation_type" invisible="requires_confirmation == False"/>
+                    <div colspan="2" invisible="requires_confirmation == False" class="alert alert-info" role="alert">
+                        <strong>ℹ️ Flujo de Confirmación Automática:</strong><br/>
+                        Cuando se envíe esta plantilla, el sistema esperará una respuesta del cliente.
+                        Si el cliente responde según el tipo configurado, se enviará automáticamente
+                        la plantilla de confirmación seleccionada.
+                        <br/><br/>
+                        <strong>Nota:</strong> Las respuestas interactivas (botones) abren una ventana de 24 horas
+                        para enviar mensajes adicionales, incluyendo archivos PDF.
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Cron para expirar confirmaciones pendientes -->
+    <record id="ir_cron_expire_pending_confirmations" model="ir.cron">
+        <field name="name">WhatsApp: Expirar Confirmaciones Pendientes</field>
+        <field name="model_id" ref="model_whatsapp_pending_confirmation"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_expire_pending_confirmations()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+
+</odoo>
+

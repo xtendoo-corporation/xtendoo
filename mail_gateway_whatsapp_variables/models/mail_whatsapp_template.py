@@ -33,6 +33,25 @@ class MailWhatsappTemplate(models.Model):
         help="Action buttons for the template"
     )
 
+    # Campos para flujo de confirmación automática
+    requires_confirmation = fields.Boolean(
+        string="Requiere Confirmación",
+        default=False,
+        help="Si está marcado, esta plantilla espera una respuesta del cliente antes de enviar otra plantilla automáticamente"
+    )
+    confirmation_template_id = fields.Many2one(
+        'mail.whatsapp.template',
+        string="Plantilla tras Confirmación",
+        help="Plantilla que se enviará automáticamente cuando el cliente responda"
+    )
+    confirmation_type = fields.Selection([
+        ('button', 'Botón Interactivo (cualquier botón)'),
+        ('text_si', 'Texto: "Sí" o "Si"'),
+        ('text_ok', 'Texto: "OK" o "ok"'),
+        ('any', 'Cualquier Respuesta')
+    ], string="Tipo de Confirmación", default='button',
+       help="Tipo de respuesta esperada para activar la plantilla de confirmación")
+
     @api.onchange('body', 'header')
     def _onchange_body_header_extract_variables(self):
         """Extract variables from body and header automatically."""

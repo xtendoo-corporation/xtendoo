@@ -279,6 +279,48 @@ class WhatsappComposer(models.TransientModel):
 
         _logger.info(f"Message posted to channel with {len(message.attachment_ids)} attachments")
 
+        # === NUEVA FUNCIONALIDAD: Gestión de confirmaciones pendientes ===
+        # Si la plantilla requiere confirmación, crear un registro pendiente
+        if self.template_id and self.template_id.requires_confirmation and self.template_id.confirmation_template_id:
+            try:
+                # Obtener el partner del canal
+                partner = None
+                if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
+                    partners = channel.channel_partner_ids.filtered(
+                        lambda p: p.id != self.env.ref('base.partner_root').id and p.id != self.env.user.partner_id.id
+                    )
+                    if partners:
+                        partner = partners[0]
+
+                if partner:
+                    # Cancelar confirmaciones pendientes anteriores para este partner y canal
+                    self.env['whatsapp.pending.confirmation'].search([
+                        ('partner_id', '=', partner.id),
+                        ('channel_id', '=', channel.id),
+                        ('state', '=', 'waiting')
+                    ]).write({'state': 'cancelled'})
+
+                    # Crear nuevo registro de confirmación pendiente
+                    pending = self.env['whatsapp.pending.confirmation'].create({
+                        'partner_id': partner.id,
+                        'channel_id': channel.id,
+                        'template_id': self.template_id.id,
+                        'confirmation_template_id': self.template_id.confirmation_template_id.id,
+                        'res_model': self.res_model,
+                        'res_id': self.res_id,
+                        'confirmation_type': self.template_id.confirmation_type,
+                        'state': 'waiting',
+                    })
+
+                    _logger.info(f"✅ Created pending confirmation {pending.id} - waiting for response from {partner.name}")
+                    _logger.info(f"   Will send template '{self.template_id.confirmation_template_id.name}' on confirmation")
+                else:
+                    _logger.warning("⚠️ Could not identify partner for pending confirmation")
+
+            except Exception as e:
+                _logger.error(f"❌ Error creating pending confirmation: {e}", exc_info=True)
+        # === FIN NUEVA FUNCIONALIDAD ===
+
         # Registrar también en el contacto destinatario si existe
         partner = None
         if hasattr(channel, 'channel_partner_ids') and channel.channel_partner_ids:
@@ -307,6 +349,7 @@ class WhatsappComposer(models.TransientModel):
                 message_type="comment",
                 attachment_ids=partner_attachment_ids if partner_attachment_ids else []
             )
+
 
 
 class WhatsappComposerVariable(models.TransientModel):

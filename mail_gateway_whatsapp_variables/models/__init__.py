@@ -7,6 +7,8 @@ from . import mail_gateway_whatsapp
 from . import mail_whatsapp_template_variable
 from . import mail_whatsapp_template_button
 from . import mail_whatsapp_template
+from . import whatsapp_pending_confirmation
+from . import discuss_channel
 
 
 
