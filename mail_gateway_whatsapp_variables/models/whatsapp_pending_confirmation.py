@@ -255,69 +255,44 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"📋 Template: {self.confirmation_template_id.name}")
             _logger.info(f"📝 Template body: {self.confirmation_template_id.body[:100]}...")
 
-            # Obtener el canal de WhatsApp para este cliente
-            channel = record._whatsapp_get_channel(number_field_name, gateway)
-            _logger.info(f"📞 Channel: {channel.name} (ID: {channel.id})")
+            # SOLUCIÓN CORRECTA: Usar el wizard whatsapp.composer para enviar
+            # Esto garantiza que se procese todo correctamente (variables, adjuntos, etc.)
+            _logger.info(f"📨 Creating WhatsApp composer wizard...")
 
-            # IMPORTANTE: Enviar el mensaje desde el REGISTRO ORIGINAL (sale.order, account.move, etc.)
-            # NO desde el canal. Esto automáticamente establecerá model y res_id correctos
-            _logger.info(f"📨 Sending via record.message_post()...")
-
-            message = record.with_context(
-                whatsapp_template_id=self.confirmation_template_id.id,
-            ).message_post(
-                body=self.confirmation_template_id.body,
-                message_type='whatsapp',  # ← Tipo específico para WhatsApp
-                subtype_xmlid='mail.mt_comment',
-                partner_ids=[self.partner_id.id],  # ← Destinatario específico
-            )
-
-            _logger.info(f"📧 Message posted (ID: {message.id})")
-            _logger.info(f"   📋 Message model: {message.model}, res_id: {message.res_id}")
-
-            # IMPORTANTE: Ahora necesitamos forzar el envío por WhatsApp
-            # El message_post solo registra el mensaje, pero no lo envía automáticamente
-            # Necesitamos crear una notificación y procesarla
-            _logger.info(f"📤 Creating notification for WhatsApp sending...")
-
-            # Buscar si ya existe una notificación para este mensaje
-            notifications = self.env['mail.notification'].search([
-                ('mail_message_id', '=', message.id)
-            ])
-
-            if not notifications:
-                # Si no existe, crearla manualmente
-                _logger.info(f"⚠️ No notification found, creating manually...")
-                notification = self.env['mail.notification'].sudo().create({
-                    'mail_message_id': message.id,
-                    'res_partner_id': self.partner_id.id,
-                })
-            else:
-                notification = notifications[0]
-                _logger.info(f"✅ Found existing notification (ID: {notification.id})")
-
-            # Ahora forzar el envío a través del gateway
-            _logger.info(f"📨 Forcing send via gateway...")
-            _logger.info(f"   📋 Record: {self.res_model} #{self.res_id}")
-            _logger.info(f"   📞 Partner: {self.partner_id.name} (mobile: {self.partner_id.mobile})")
-
-            gateway_service = self.env['mail.gateway.whatsapp'].with_context(
-                whatsapp_template_id=self.confirmation_template_id.id,
+            # Crear el composer con el contexto completo
+            composer = self.env['whatsapp.composer'].with_context(
+                active_model=self.res_model,
+                active_id=self.res_id,
                 default_res_model=self.res_model,
                 default_res_id=self.res_id,
-            )
+            ).create({
+                'res_model': self.res_model,
+                'res_id': self.res_id,
+                'template_id': self.confirmation_template_id.id,
+                'gateway_id': gateway.id,
+                'number_field_name': number_field_name,
+            })
 
-            try:
-                gateway_service._send(
-                    gateway=gateway,
-                    record=notification,
-                    auto_commit=False,
-                    raise_exception=True,
-                )
-                _logger.info(f"✅ WhatsApp message sent successfully via gateway!")
-            except Exception as send_error:
-                _logger.error(f"❌ Error sending via gateway: {send_error}", exc_info=True)
-                raise
+            _logger.info(f"📋 Composer created (ID: {composer.id})")
+            _logger.info(f"   Template: {composer.template_id.name if composer.template_id else 'NONE'}")
+            _logger.info(f"   Gateway: {composer.gateway_id.name if composer.gateway_id else 'NONE'}")
+            _logger.info(f"   Phone field: {composer.number_field_name}")
+
+            # Ejecutar onchange para que se completen todos los datos desde la plantilla
+            _logger.info(f"📝 Executing onchange to populate fields from template...")
+            composer.onchange_template_id()
+
+            # Verificar que el body se haya completado
+            if not composer.body:
+                _logger.warning(f"⚠️ Body is empty after onchange, setting manually...")
+                composer.body = self.confirmation_template_id.body
+
+            _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
+            _logger.info(f"   Attachments: {len(composer.attachment_ids)}")
+
+            # Enviar el mensaje usando el método del composer
+            _logger.info(f"📤 Sending WhatsApp message via composer...")
+            composer._action_send_whatsapp()
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
