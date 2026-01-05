@@ -290,40 +290,16 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
             _logger.info(f"   Attachments: {len(composer.attachment_ids)}")
 
-            # EN LUGAR de usar el composer que no envía realmente por WhatsApp,
-            # usar el método send_whatsapp_template del RECORD directamente
-            # Este es el método que usa Odoo internamente y SÍ envía por WhatsApp
-            _logger.info(f"📤 Sending WhatsApp via record.send_whatsapp_template()...")
+            # Usar el método action_send_whatsapp() del composer
+            # Este es exactamente el método que se llama cuando el usuario presiona "Enviar" en la UI
+            _logger.info(f"📤 Sending WhatsApp via composer.action_send_whatsapp()...")
 
-            try:
-                # Este método está en mail_gateway_whatsapp y maneja todo el flujo correctamente
-                record.with_context(
-                    whatsapp_template_id=self.confirmation_template_id.id,
-                ).send_whatsapp_template(
-                    template_id=self.confirmation_template_id.id,
-                    gateway_id=gateway.id,
-                    number_field_name=number_field_name,
-                )
-                _logger.info(f"   ✅ WhatsApp sent successfully via send_whatsapp_template()!")
-            except AttributeError:
-                # Si el método no existe, usar el enfoque alternativo: message_notify
-                _logger.info(f"   ⚠️ send_whatsapp_template not available, using alternative method...")
+            # Llamar al método que realmente envía el mensaje
+            # Este método procesa variables, adjuntos y envía por la API de WhatsApp
+            composer.action_send_whatsapp()
 
-                # Obtener el canal
-                channel = record._whatsapp_get_channel(number_field_name, gateway)
-                _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id})")
+            _logger.info(f"   ✅ WhatsApp sent successfully!")
 
-                # Enviar directamente al canal usando el gateway
-                # Esto sí envía por WhatsApp porque el canal ya tiene el número
-                result = self.env['mail.gateway.whatsapp']._send_whatsapp(
-                    gateway=gateway,
-                    channel=channel,
-                    body=composer.body,
-                    template_id=self.confirmation_template_id,
-                    res_model=self.res_model,
-                    res_id=self.res_id,
-                )
-                _logger.info(f"   ✅ WhatsApp sent via alternative method: {result}")
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
