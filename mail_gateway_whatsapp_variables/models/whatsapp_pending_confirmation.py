@@ -255,74 +255,58 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"📋 Template: {self.confirmation_template_id.name}")
             _logger.info(f"📝 Template body: {self.confirmation_template_id.body[:100]}...")
 
-            # SOLUCIÓN CORRECTA: Usar el wizard whatsapp.composer para enviar
-            # Esto garantiza que se procese todo correctamente (variables, adjuntos, etc.)
-            _logger.info(f"📨 Creating WhatsApp composer wizard...")
+            # SOLUCIÓN: NO usar el wizard porque solo registra mensajes pero NO envía por WhatsApp
+            # En su lugar, usar el MISMO FLUJO que usa nuestro módulo cuando se envía manualmente
+            # que SÍ procesa variables y envía por la API de WhatsApp
 
-            # Crear el composer con el contexto completo
-            composer = self.env['whatsapp.composer'].with_context(
-                active_model=self.res_model,
-                active_id=self.res_id,
-                default_res_model=self.res_model,
-                default_res_id=self.res_id,
-            ).create({
-                'res_model': self.res_model,
-                'res_id': self.res_id,
-                'template_id': self.confirmation_template_id.id,
-                'gateway_id': gateway.id,
-                'number_field_name': number_field_name,
+            _logger.info(f"📤 Sending WhatsApp using direct API call...")
+
+            # Obtener el canal
+            channel = record._whatsapp_get_channel(number_field_name, gateway)
+            _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id})")
+
+            # Crear el mensaje en el canal CON el contexto de la plantilla
+            # Esto hará que nuestro módulo mail_gateway_whatsapp_variables lo procese
+            message = channel.with_context(
+                whatsapp_template_id=self.confirmation_template_id.id,
+            ).message_post(
+                body=self.confirmation_template_id.body,
+                subtype_xmlid="mail.mt_comment",
+                message_type="comment"
+            )
+
+            _logger.info(f"   📧 Message created in channel (ID: {message.id})")
+
+            # CRÍTICO: Ahora forzar que se envíe por WhatsApp
+            # Crear una notificación y procesarla con el gateway
+            _logger.info(f"   📨 Creating and processing notification...")
+
+            notification = self.env['mail.notification'].sudo().create({
+                'mail_message_id': message.id,
+                'res_partner_id': self.partner_id.id,
             })
 
-            _logger.info(f"📋 Composer created (ID: {composer.id})")
-            _logger.info(f"   Template: {composer.template_id.name if composer.template_id else 'NONE'}")
-            _logger.info(f"   Gateway: {composer.gateway_id.name if composer.gateway_id else 'NONE'}")
-            _logger.info(f"   Phone field: {composer.number_field_name}")
+            _logger.info(f"   📤 Forcing WhatsApp send via gateway...")
 
-            # Ejecutar onchange para que se completen todos los datos desde la plantilla
-            _logger.info(f"📝 Executing onchange to populate fields from template...")
-            composer.onchange_template_id()
+            # Llamar al método _send del gateway con todo el contexto necesario
+            # Este SÍ envía por la API de WhatsApp
+            gateway_service = self.env['mail.gateway.whatsapp'].with_context(
+                whatsapp_template_id=self.confirmation_template_id.id,
+                default_res_model=self.res_model,
+                default_res_id=self.res_id,
+            )
 
-            # Verificar que el body se haya completado
-            if not composer.body:
-                _logger.warning(f"⚠️ Body is empty after onchange, setting manually...")
-                composer.body = self.confirmation_template_id.body
-
-            _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
-            _logger.info(f"   Attachments: {len(composer.attachment_ids)}")
-
-            # El problema es que composer._action_send_whatsapp() solo registra en el canal
-            # pero NO envía por WhatsApp. Necesitamos buscar el método del módulo base.
-            _logger.info(f"📤 Sending WhatsApp via base module method...")
-
-            # Buscar si existe el método del módulo base de whatsapp
-            if hasattr(composer, 'action_send_whatsapp'):
-                # Llamar al método del módulo base que SÍ envía por WhatsApp
-                _logger.info(f"   📞 Calling composer.action_send_whatsapp() from base module...")
-                result = composer.action_send_whatsapp()
-                _logger.info(f"   ✅ Result: {result}")
-            else:
-                # Si no existe, intentar con el método heredado
-                _logger.info(f"   ⚠️ action_send_whatsapp not found, trying alternative...")
-
-                # SOLUCIÓN ALTERNATIVA: Llamar directamente al método _send_whatsapp_template
-                # del módulo mail_gateway_whatsapp que SÍ envía por la API
-                channel = record._whatsapp_get_channel(number_field_name, gateway)
-
-                # Enviar usando el método directo del gateway
-                self.env['mail.gateway.whatsapp'].with_context(
-                    whatsapp_template_id=self.confirmation_template_id.id,
-                    default_res_model=self.res_model,
-                    default_res_id=self.res_id,
-                )._send_whatsapp_template(
+            try:
+                gateway_service._send(
                     gateway=gateway,
-                    phone=channel.whatsapp_channel_token if hasattr(channel, 'whatsapp_channel_token') else self.partner_id.mobile,
-                    template=self.confirmation_template_id,
-                    record=record,
-                    channel=channel,
+                    record=notification,
+                    auto_commit=False,
+                    raise_exception=True,
                 )
-
-            _logger.info(f"   ✅ WhatsApp sent successfully!")
-
+                _logger.info(f"   ✅ WhatsApp sent successfully via API!")
+            except Exception as send_error:
+                _logger.error(f"   ❌ Error sending via gateway: {send_error}", exc_info=True)
+                raise
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
