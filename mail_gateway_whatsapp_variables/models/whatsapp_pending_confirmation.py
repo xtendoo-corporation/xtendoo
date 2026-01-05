@@ -263,6 +263,7 @@ class WhatsappPendingConfirmation(models.Model):
             # Este es el método estándar que usa Odoo para enviar mensajes de WhatsApp
             _logger.info(f"📨 Sending via channel.message_post()...")
 
+            # IMPORTANTE: El mensaje debe tener res_model y res_id para que el gateway pueda obtener el registro
             message = channel.with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
                 default_res_model=self.res_model,
@@ -271,9 +272,13 @@ class WhatsappPendingConfirmation(models.Model):
                 body=self.confirmation_template_id.body,
                 message_type='comment',
                 subtype_xmlid='mail.mt_comment',
+                # CRÍTICO: Establecer el modelo y el ID del registro
+                model=self.res_model,
+                res_id=self.res_id,
             )
 
             _logger.info(f"📧 Message posted (ID: {message.id})")
+            _logger.info(f"   📋 Message model: {message.model}, res_id: {message.res_id}")
 
             # IMPORTANTE: Ahora necesitamos forzar el envío por WhatsApp
             # El message_post solo registra el mensaje, pero no lo envía automáticamente
@@ -298,8 +303,13 @@ class WhatsappPendingConfirmation(models.Model):
 
             # Ahora forzar el envío a través del gateway
             _logger.info(f"📨 Forcing send via gateway...")
+            _logger.info(f"   📋 Record: {self.res_model} #{self.res_id}")
+            _logger.info(f"   📞 Partner: {self.partner_id.name} (mobile: {self.partner_id.mobile})")
+
             gateway_service = self.env['mail.gateway.whatsapp'].with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
+                default_res_model=self.res_model,
+                default_res_id=self.res_id,
             )
 
             try:
