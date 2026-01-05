@@ -274,6 +274,46 @@ class WhatsappPendingConfirmation(models.Model):
             )
 
             _logger.info(f"📧 Message posted (ID: {message.id})")
+
+            # IMPORTANTE: Ahora necesitamos forzar el envío por WhatsApp
+            # El message_post solo registra el mensaje, pero no lo envía automáticamente
+            # Necesitamos crear una notificación y procesarla
+            _logger.info(f"📤 Creating notification for WhatsApp sending...")
+
+            # Buscar si ya existe una notificación para este mensaje
+            notifications = self.env['mail.notification'].search([
+                ('mail_message_id', '=', message.id)
+            ])
+
+            if not notifications:
+                # Si no existe, crearla manualmente
+                _logger.info(f"⚠️ No notification found, creating manually...")
+                notification = self.env['mail.notification'].sudo().create({
+                    'mail_message_id': message.id,
+                    'res_partner_id': self.partner_id.id,
+                })
+            else:
+                notification = notifications[0]
+                _logger.info(f"✅ Found existing notification (ID: {notification.id})")
+
+            # Ahora forzar el envío a través del gateway
+            _logger.info(f"📨 Forcing send via gateway...")
+            gateway_service = self.env['mail.gateway.whatsapp'].with_context(
+                whatsapp_template_id=self.confirmation_template_id.id,
+            )
+
+            try:
+                gateway_service._send(
+                    gateway=gateway,
+                    record=notification,
+                    auto_commit=False,
+                    raise_exception=True,
+                )
+                _logger.info(f"✅ WhatsApp message sent successfully via gateway!")
+            except Exception as send_error:
+                _logger.error(f"❌ Error sending via gateway: {send_error}", exc_info=True)
+                raise
+
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
             # Añadir nota al registro
