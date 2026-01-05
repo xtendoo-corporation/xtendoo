@@ -154,25 +154,44 @@ class WhatsappPendingConfirmation(models.Model):
 
         message_type = message_data.get('type', '')
 
+        _logger.info(f"🔍 Checking confirmation for pending {self.id}")
+        _logger.info(f"   📋 Confirmation type expected: {self.confirmation_type}")
+        _logger.info(f"   📨 Message type received: {message_type}")
+        _logger.info(f"   📦 Full message_data: {message_data}")
+
         if self.confirmation_type == 'button':
             # Cualquier respuesta de botón interactivo cuenta como confirmación
             if message_type == 'interactive':
+                _logger.info(f"   ✅ Match! Interactive button detected")
                 return True
+            else:
+                _logger.info(f"   ❌ No match: Expected interactive, got {message_type}")
 
         elif self.confirmation_type == 'text_si':
             # Buscar "si" o "sí" en el texto
             if message_type == 'text':
                 text = message_data.get('text', {}).get('body', '').strip().lower()
-                return text in ['si', 'sí', 's', 'yes', 'y']
+                _logger.info(f"   📝 Text received: '{text}'")
+                if text in ['si', 'sí', 's', 'yes', 'y']:
+                    _logger.info(f"   ✅ Match! Text is a confirmation")
+                    return True
+                else:
+                    _logger.info(f"   ❌ No match: Text not in confirmation list")
 
         elif self.confirmation_type == 'text_ok':
             # Buscar "ok" en el texto
             if message_type == 'text':
                 text = message_data.get('text', {}).get('body', '').strip().lower()
-                return text in ['ok', 'vale', 'okay', 'k']
+                _logger.info(f"   📝 Text received: '{text}'")
+                if text in ['ok', 'vale', 'okay', 'k']:
+                    _logger.info(f"   ✅ Match! Text is a confirmation")
+                    return True
+                else:
+                    _logger.info(f"   ❌ No match: Text not in confirmation list")
 
         elif self.confirmation_type == 'any':
             # Cualquier tipo de respuesta cuenta
+            _logger.info(f"   ✅ Match! 'any' type accepts all responses")
             return True
 
         return False
