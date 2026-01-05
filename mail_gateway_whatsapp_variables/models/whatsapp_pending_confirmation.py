@@ -283,9 +283,9 @@ class WhatsappPendingConfirmation(models.Model):
                     # Buscar el reporte
                     report = self.env.ref(report_name, raise_if_not_found=False)
                     if report:
-                        # Generar el PDF usando _render() que es más robusto
-                        # y maneja correctamente las extensiones de módulos como industry_fsm
-                        pdf_content, format_type = report._render(record.ids)
+                        # Generar el PDF - usar el método correcto con template y res_ids
+                        # _render_qweb_pdf() es el método correcto para generar PDFs
+                        pdf_content = report._render_qweb_pdf(report.report_name, record.ids)[0]
 
                         # Determinar el nombre del archivo
                         if self.res_model == 'sale.order':
