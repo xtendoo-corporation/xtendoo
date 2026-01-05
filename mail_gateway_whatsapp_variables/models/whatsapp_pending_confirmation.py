@@ -326,7 +326,7 @@ class WhatsappPendingConfirmation(models.Model):
 
             # Añadir el adjunto si se generó
             if attachment_id:
-                message_vals['attachment_ids'] = [(4, attachment_id)]
+                message_vals['attachment_ids'] = [attachment_id]
                 _logger.info(f"   📎 Attaching PDF to message")
 
             message = channel.with_context(
