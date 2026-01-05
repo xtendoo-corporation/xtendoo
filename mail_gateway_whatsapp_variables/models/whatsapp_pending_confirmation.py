@@ -259,44 +259,21 @@ class WhatsappPendingConfirmation(models.Model):
             channel = record._whatsapp_get_channel(number_field_name, gateway)
             _logger.info(f"📞 Channel: {channel.name} (ID: {channel.id})")
 
-            # Enviar mensaje usando el método del gateway directamente
-            # Primero crear el mensaje con el contexto correcto
-            message = self.env['mail.message'].with_context(
+            # Enviar mensaje directamente usando message_post del canal con el contexto correcto
+            # Este es el método estándar que usa Odoo para enviar mensajes de WhatsApp
+            _logger.info(f"📨 Sending via channel.message_post()...")
+
+            message = channel.with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
-            ).create({
-                'model': self.res_model,
-                'res_id': self.res_id,
-                'body': self.confirmation_template_id.body,
-                'message_type': 'comment',
-                'subtype_id': self.env.ref('mail.mt_comment').id,
-                'author_id': self.env.user.partner_id.id,
-            })
-
-            _logger.info(f"📧 Message created (ID: {message.id})")
-
-            # Luego crear la notificación vinculada al mensaje
-            notification = self.env['mail.notification'].sudo().create({
-                'mail_message_id': message.id,
-                'notification_type': 'whatsapp',
-                'notification_status': 'ready',
-            })
-
-            _logger.info(f"📨 Notification created (ID: {notification.id})")
-            _logger.info(f"📨 Sending via gateway...")
-
-            # Enviar a través del gateway con el contexto correcto
-            gateway_whatsapp = self.env['mail.gateway.whatsapp'].with_context(
-                whatsapp_template_id=self.confirmation_template_id.id,
+                default_res_model=self.res_model,
+                default_res_id=self.res_id,
+            ).message_post(
+                body=self.confirmation_template_id.body,
+                message_type='comment',
+                subtype_xmlid='mail.mt_comment',
             )
 
-            gateway_whatsapp._send(
-                gateway=gateway,
-                record=notification,
-                auto_commit=False,
-                raise_exception=True,
-            )
-
-
+            _logger.info(f"📧 Message posted (ID: {message.id})")
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
             # Añadir nota al registro
