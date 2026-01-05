@@ -280,8 +280,13 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"   Phone field: {composer.number_field_name}")
             _logger.info(f"   Template: {composer.template_id.name if composer.template_id else 'NONE'}")
 
-            # Enviar el mensaje directamente
+            # Enviar el mensaje directamente con el contexto correcto para que se procese la plantilla
             _logger.info(f"📤 Sending WhatsApp message...")
+
+            # Añadir el template_id al contexto para que se procese correctamente
+            composer = composer.with_context(whatsapp_template_id=self.confirmation_template_id.id)
+
+            # Llamar al método de envío
             composer._action_send_whatsapp()
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
