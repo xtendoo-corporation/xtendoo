@@ -8,14 +8,68 @@
                 <group>
                     <field name="session_id" readonly="1"/>
                     <field name="type"/>
-                    <field name="amount"/>
-                    <field name="reason"/>
-                    <!-- Mostrar partner oculto según petición: partner invisible -->
+                    <field name="use_cashbox" widget="boolean_toggle" string="Usar calculadora"/>
+                </group>
+
+                <!-- Importe manual (cuando no se usa calculadora) -->
+                <group invisible="use_cashbox">
+                    <field name="amount" string="Importe"/>
+                </group>
+
+                <!-- Calculadora de efectivo (cuando se activa) -->
+                <notebook invisible="not use_cashbox">
+                    <page string="Billetes">
+                        <group>
+                            <group string="Billetes grandes">
+                                <field name="qty_500"/>
+                                <field name="qty_200"/>
+                                <field name="qty_100"/>
+                            </group>
+                            <group string="Billetes pequeños">
+                                <field name="qty_50"/>
+                                <field name="qty_20"/>
+                                <field name="qty_10"/>
+                                <field name="qty_5"/>
+                            </group>
+                        </group>
+                    </page>
+                    <page string="Monedas">
+                        <group>
+                            <group string="Monedas grandes">
+                                <field name="qty_2"/>
+                                <field name="qty_1"/>
+                                <field name="qty_050"/>
+                            </group>
+                            <group string="Monedas pequeñas">
+                                <field name="qty_020"/>
+                                <field name="qty_010"/>
+                                <field name="qty_005"/>
+                                <field name="qty_002"/>
+                                <field name="qty_001"/>
+                            </group>
+                        </group>
+                    </page>
+                </notebook>
+
+                <!-- Total calculado (solo cuando se usa calculadora) -->
+                <group invisible="not use_cashbox">
+                    <group/>
+                    <group>
+                        <field name="total_cashbox" string="TOTAL CALCULADO"
+                               widget="monetary" readonly="1"
+                               class="oe_subtotal_footer_separator"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                </group>
+
+                <group>
+                    <field name="reason" placeholder="Motivo (opcional)"/>
                     <field name="partner_id" invisible="1"/>
                 </group>
+
                 <footer>
                     <button string="Confirmar" type="object" name="action_confirm" class="btn-primary"/>
-                    <button string="Descartar" class="btn-secondary" special="cancel"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>

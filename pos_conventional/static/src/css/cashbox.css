@@ -1,0 +1,24 @@
+/* Estilos para la calculadora de efectivo */
+
+.o_cash_move_wizard .oe_subtotal_footer_separator {
+    font-size: 1.2em;
+    font-weight: bold;
+    border-top: 2px solid #dee2e6;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.o_cash_move_wizard .o_list_view .o_data_row:hover {
+    background-color: #f8f9fa;
+}
+
+.o_cash_move_wizard .o_field_monetary {
+    text-align: right;
+}
+
+/* Destacar las líneas con cantidad mayor a 0 */
+.o_cash_move_wizard .o_data_row .o_data_cell:has(.o_field_widget input[value]:not([value="0"])) {
+    font-weight: 600;
+    background-color: #e7f5ff;
+}
+

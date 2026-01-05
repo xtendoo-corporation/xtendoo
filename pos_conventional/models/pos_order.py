@@ -41,6 +41,53 @@ class PosOrder(models.Model):
             )
 
     @api.model
+    def create_new_order_for_conventional_pos(self, session_id, config_id):
+        """
+        Crea un nuevo pedido POS para el modo convencional.
+        Retorna el ID del pedido creado.
+        Este pedido ya tendrá su nombre/secuencia generada.
+
+        Args:
+            session_id: ID de la sesión POS
+            config_id: ID de la configuración POS
+
+        Returns:
+            int: ID del pedido creado
+        """
+        session = self.env['pos.session'].browse(session_id)
+        if not session.exists():
+            raise UserError(_('La sesión especificada no existe.'))
+
+        if session.state != 'opened':
+            raise UserError(_('La sesión no está abierta.'))
+
+        # Crear el pedido con los valores básicos
+        order_vals = {
+            'session_id': session_id,
+            'config_id': config_id,
+            'company_id': session.config_id.company_id.id,
+            'pricelist_id': session.config_id.pricelist_id.id,
+            'state': 'draft',
+            'amount_tax': 0.0,
+            'amount_total': 0.0,
+            'amount_paid': 0.0,
+            'amount_return': 0.0,
+        }
+
+        # Agregar partner por defecto si existe
+        if session.config_id.default_partner_id:
+            order_vals['partner_id'] = session.config_id.default_partner_id.id
+
+        order = self.create(order_vals)
+
+        _logger.info(
+            "POS Conventional: Nuevo pedido %s creado para sesión %s",
+            order.name, session.name
+        )
+
+        return order.id
+
+    @api.model
     def get_product_line_data_by_barcode(self, barcode, pricelist_id=False, fiscal_position_id=False, partner_id=False):
         """
         Busca un producto por código de barras y devuelve los datos necesarios

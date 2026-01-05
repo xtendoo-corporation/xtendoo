@@ -57,15 +57,42 @@ class PosMakePaymentConventional(models.TransientModel):
                 )
                 try:
                     result = order.action_validate_and_invoice()
-                    return result
+                    # Si action_validate_and_invoice retorna una acción de impresión, la procesamos
+                    if result and isinstance(result, dict) and result.get('type') == 'ir.actions.client':
+                        # Modificar la acción de impresión para que después redirija a nuevo pedido
+                        result['params']['next_action'] = {
+                            'type': 'ir.actions.client',
+                            'tag': 'pos_conventional_new_order',
+                            'params': {
+                                'config_id': order.config_id.id,
+                                'session_id': order.config_id.current_session_id.id,
+                            }
+                        }
+                        return result
                 except Exception as e:
                     _logger.exception(
                         "Error al facturar automáticamente el pedido %s: %s",
                         order.name, str(e)
                     )
-                    return {'type': 'ir.actions.act_window_close'}
+
+            # Redirigir automáticamente a un nuevo pedido usando una acción de cliente
+            if is_conventional and order.state in {'paid', 'done'}:
+                _logger.info(
+                    "POS Conventional: Preparando redirección a nuevo pedido después de completar %s",
+                    order.name
+                )
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'pos_conventional_new_order',
+                    'params': {
+                        'config_id': order.config_id.id,
+                        'session_id': order.config_id.current_session_id.id,
+                    }
+                }
+
             return {'type': 'ir.actions.act_window_close'}
         return self.launch_payment()
+
 
     def action_pay_cash(self):
         cash_method = self.env['pos.payment.method'].search([('is_cash_count', '=', True)], limit=1)
@@ -88,4 +115,3 @@ class PosMakePaymentConventional(models.TransientModel):
         if not account_method:
             raise UserError(_('No se encontró un método de pago tipo Cuenta.'))
         return self.check(payment_method_id=account_method.id)
-

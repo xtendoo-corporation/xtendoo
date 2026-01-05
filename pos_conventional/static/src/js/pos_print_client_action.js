@@ -40,7 +40,18 @@ async function printIframeAction(env, action) {
         }
     }
 
-    // Tras la impresión (o fallback) intentamos cerrar/recargar la vista para que el pedido avance.
+    // Tras la impresión (o fallback) ejecutar la siguiente acción si existe
+    if (params.next_action) {
+        try {
+            const actionService = env.services.action;
+            await actionService.doAction(params.next_action);
+            return;
+        } catch (e) {
+            console.error('Error al ejecutar next_action:', e);
+        }
+    }
+
+    // Si no hay next_action, intentamos cerrar/recargar la vista para que el pedido avance.
     try {
         const actionService = env.services.action;
         const controller = actionService.currentController;
