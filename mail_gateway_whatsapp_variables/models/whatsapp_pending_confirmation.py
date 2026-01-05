@@ -270,6 +270,8 @@ class WhatsappPendingConfirmation(models.Model):
             attachment_id = False
 
             try:
+                import base64
+
                 # Determinar qué reporte usar según el modelo
                 report_name = False
                 if self.res_model == 'sale.order':
@@ -285,7 +287,10 @@ class WhatsappPendingConfirmation(models.Model):
                     if report:
                         # Generar el PDF - usar el método correcto con template y res_ids
                         # _render_qweb_pdf() es el método correcto para generar PDFs
-                        pdf_content = report._render_qweb_pdf(report.report_name, record.ids)[0]
+                        pdf_content, _ = report._render_qweb_pdf(report.report_name, record.ids)
+
+                        # IMPORTANTE: Codificar el contenido en base64
+                        pdf_base64 = base64.b64encode(pdf_content)
 
                         # Determinar el nombre del archivo
                         if self.res_model == 'sale.order':
@@ -297,17 +302,17 @@ class WhatsappPendingConfirmation(models.Model):
                         else:
                             filename = f"Document_{record.name}.pdf"
 
-                        # Crear el adjunto
+                        # Crear el adjunto con el contenido codificado en base64
                         attachment = self.env['ir.attachment'].create({
                             'name': filename,
                             'type': 'binary',
-                            'datas': pdf_content,
+                            'datas': pdf_base64,
                             'res_model': 'discuss.channel',
                             'res_id': channel.id,
                             'mimetype': 'application/pdf',
                         })
                         attachment_id = attachment.id
-                        _logger.info(f"   ✅ PDF generated: {filename} (ID: {attachment_id})")
+                        _logger.info(f"   ✅ PDF generated: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
                     else:
                         _logger.warning(f"   ⚠️ Report '{report_name}' not found")
                 else:
