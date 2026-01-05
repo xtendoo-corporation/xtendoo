@@ -233,6 +233,26 @@ class WhatsappPendingConfirmation(models.Model):
 
             _logger.info(f"📨 Sending confirmation template '{self.confirmation_template_id.name}' to {self.partner_id.name}")
 
+            # Obtener el gateway desde el canal
+            gateway = self.channel_id.gateway_id
+            if not gateway:
+                _logger.error(f"❌ No gateway found for channel {self.channel_id.id}")
+                return False
+
+            # Determinar el campo de número de teléfono según el modelo
+            number_field_name = False
+            if self.res_model == 'sale.order':
+                number_field_name = 'partner_id.mobile'
+            elif self.res_model == 'account.move':
+                number_field_name = 'partner_id.mobile'
+            elif self.res_model == 'res.partner':
+                number_field_name = 'mobile'
+            else:
+                # Por defecto, intentar con partner_id.mobile
+                number_field_name = 'partner_id.mobile'
+
+            _logger.info(f"📱 Using phone field: {number_field_name}, gateway: {gateway.name}")
+
             # Crear el composer para enviar la plantilla
             composer = self.env['whatsapp.composer'].with_context(
                 active_model=self.res_model,
@@ -243,6 +263,8 @@ class WhatsappPendingConfirmation(models.Model):
                 'res_model': self.res_model,
                 'res_id': self.res_id,
                 'template_id': self.confirmation_template_id.id,
+                'gateway_id': gateway.id,
+                'number_field_name': number_field_name,
             })
 
             # Ejecutar onchange para que se completen los datos desde la plantilla
@@ -252,7 +274,10 @@ class WhatsappPendingConfirmation(models.Model):
             if not composer.body and self.confirmation_template_id.body:
                 composer.body = self.confirmation_template_id.body
 
-            _logger.info(f"📋 Composer created with body: {composer.body[:50] if composer.body else 'EMPTY'}...")
+            _logger.info(f"📋 Composer created:")
+            _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
+            _logger.info(f"   Gateway: {composer.gateway_id.name if composer.gateway_id else 'NONE'}")
+            _logger.info(f"   Phone field: {composer.number_field_name}")
 
             # Enviar el mensaje
             composer.action_send_whatsapp()
