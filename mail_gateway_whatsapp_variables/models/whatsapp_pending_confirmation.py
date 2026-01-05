@@ -246,7 +246,7 @@ class WhatsappPendingConfirmation(models.Model):
             })
 
             # Enviar el mensaje
-            composer.action_send_whatsapp_template()
+            composer.action_send_whatsapp()
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
