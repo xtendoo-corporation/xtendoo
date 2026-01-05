@@ -278,9 +278,11 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
             _logger.info(f"   Gateway: {composer.gateway_id.name if composer.gateway_id else 'NONE'}")
             _logger.info(f"   Phone field: {composer.number_field_name}")
+            _logger.info(f"   Template: {composer.template_id.name if composer.template_id else 'NONE'}")
 
-            # Enviar el mensaje
-            composer.action_send_whatsapp()
+            # Enviar el mensaje directamente
+            _logger.info(f"📤 Sending WhatsApp message...")
+            composer._action_send_whatsapp()
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
