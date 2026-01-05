@@ -290,88 +290,40 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
             _logger.info(f"   Attachments: {len(composer.attachment_ids)}")
 
-            # Enviar el mensaje usando el método del composer
-            _logger.info(f"📤 Sending WhatsApp message via composer...")
-            composer._action_send_whatsapp()
+            # EN LUGAR de usar el composer que no envía realmente por WhatsApp,
+            # usar el método send_whatsapp_template del RECORD directamente
+            # Este es el método que usa Odoo internamente y SÍ envía por WhatsApp
+            _logger.info(f"📤 Sending WhatsApp via record.send_whatsapp_template()...")
 
-            _logger.info(f"📧 Message created in channel")
-
-            # CRÍTICO: El problema es que el composer crea el mensaje en el CANAL, no en el REGISTRO
-            # Y cuando buscamos el mensaje por (model, res_id), estamos buscando mal
-            # La solución es buscar el mensaje más reciente del CANAL
-
-            _logger.info(f"🔄 Forcing actual WhatsApp sending...")
-
-            # Obtener el canal correcto
-            channel = record._whatsapp_get_channel(number_field_name, gateway)
-            _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id})")
-
-            # Verificar el número de teléfono del partner
-            phone = None
-            if '.' in number_field_name:
-                # Es un campo relacionado como 'partner_id.mobile'
-                parts = number_field_name.split('.')
-                related = record
-                for part in parts:
-                    related = related[part] if related else None
-                phone = related if related else None
-            else:
-                phone = record[number_field_name] if number_field_name in record._fields else None
-
-            _logger.info(f"   📱 Partner phone from {number_field_name}: {phone}")
-
-            if not phone:
-                _logger.error(f"   ❌ No phone number found for field {number_field_name}")
-                raise ValueError(f"No phone number found for field {number_field_name}")
-
-            # Buscar el último mensaje del CANAL (no del registro)
-            last_message = self.env['mail.message'].search([
-                ('model', '=', 'discuss.channel'),
-                ('res_id', '=', channel.id),
-            ], limit=1, order='id desc')
-
-            if last_message:
-                _logger.info(f"   📨 Found channel message (ID: {last_message.id})")
-
-                # Buscar o crear la notificación para este mensaje
-                notification = self.env['mail.notification'].search([
-                    ('mail_message_id', '=', last_message.id)
-                ], limit=1)
-
-                if not notification:
-                    _logger.info(f"   📝 Creating notification for message...")
-                    notification = self.env['mail.notification'].sudo().create({
-                        'mail_message_id': last_message.id,
-                        'res_partner_id': self.partner_id.id,
-                    })
-                    _logger.info(f"   ✅ Notification created (ID: {notification.id})")
-                else:
-                    _logger.info(f"   ✅ Found notification (ID: {notification.id})")
-
-                # Forzar el envío a través del gateway con el contexto correcto
-                _logger.info(f"   📡 Sending via gateway with template context...")
-                _logger.info(f"      Record: {self.res_model} #{self.res_id}")
-                _logger.info(f"      Phone: {phone}")
-
-                gateway_service = self.env['mail.gateway.whatsapp'].with_context(
+            try:
+                # Este método está en mail_gateway_whatsapp y maneja todo el flujo correctamente
+                record.with_context(
                     whatsapp_template_id=self.confirmation_template_id.id,
-                    default_res_model=self.res_model,
-                    default_res_id=self.res_id,
+                ).send_whatsapp_template(
+                    template_id=self.confirmation_template_id.id,
+                    gateway_id=gateway.id,
+                    number_field_name=number_field_name,
                 )
+                _logger.info(f"   ✅ WhatsApp sent successfully via send_whatsapp_template()!")
+            except AttributeError:
+                # Si el método no existe, usar el enfoque alternativo: message_notify
+                _logger.info(f"   ⚠️ send_whatsapp_template not available, using alternative method...")
 
-                try:
-                    gateway_service._send(
-                        gateway=gateway,
-                        record=notification,
-                        auto_commit=False,
-                        raise_exception=True,
-                    )
-                    _logger.info(f"   ✅ WhatsApp API call successful!")
-                except Exception as send_error:
-                    _logger.error(f"   ❌ Error in WhatsApp API call: {send_error}", exc_info=True)
-                    raise
-            else:
-                _logger.warning(f"   ⚠️ Could not find channel message to send")
+                # Obtener el canal
+                channel = record._whatsapp_get_channel(number_field_name, gateway)
+                _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id})")
+
+                # Enviar directamente al canal usando el gateway
+                # Esto sí envía por WhatsApp porque el canal ya tiene el número
+                result = self.env['mail.gateway.whatsapp']._send_whatsapp(
+                    gateway=gateway,
+                    channel=channel,
+                    body=composer.body,
+                    template_id=self.confirmation_template_id,
+                    res_model=self.res_model,
+                    res_id=self.res_id,
+                )
+                _logger.info(f"   ✅ WhatsApp sent via alternative method: {result}")
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
