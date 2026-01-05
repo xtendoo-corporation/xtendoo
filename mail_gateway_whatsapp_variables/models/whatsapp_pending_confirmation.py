@@ -294,6 +294,59 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"📤 Sending WhatsApp message via composer...")
             composer._action_send_whatsapp()
 
+            _logger.info(f"📧 Message created in channel")
+
+            # CRÍTICO: Ahora necesitamos forzar el envío real por WhatsApp
+            # El _action_send_whatsapp solo registra el mensaje, no lo envía
+            _logger.info(f"🔄 Forcing actual WhatsApp sending...")
+
+            # Obtener el último mensaje del canal relacionado con nuestro registro
+            channel = record._whatsapp_get_channel(number_field_name, gateway)
+            last_message = self.env['mail.message'].search([
+                ('model', '=', self.res_model),
+                ('res_id', '=', self.res_id),
+            ], limit=1, order='id desc')
+
+            if last_message:
+                _logger.info(f"   📨 Found message (ID: {last_message.id})")
+
+                # Buscar o crear la notificación para este mensaje
+                notification = self.env['mail.notification'].search([
+                    ('mail_message_id', '=', last_message.id)
+                ], limit=1)
+
+                if not notification:
+                    _logger.info(f"   📝 Creating notification for message...")
+                    notification = self.env['mail.notification'].sudo().create({
+                        'mail_message_id': last_message.id,
+                        'res_partner_id': self.partner_id.id,
+                    })
+                    _logger.info(f"   ✅ Notification created (ID: {notification.id})")
+                else:
+                    _logger.info(f"   ✅ Found notification (ID: {notification.id})")
+
+                # Forzar el envío a través del gateway con el contexto correcto
+                _logger.info(f"   📡 Sending via gateway with template context...")
+                gateway_service = self.env['mail.gateway.whatsapp'].with_context(
+                    whatsapp_template_id=self.confirmation_template_id.id,
+                    default_res_model=self.res_model,
+                    default_res_id=self.res_id,
+                )
+
+                try:
+                    gateway_service._send(
+                        gateway=gateway,
+                        record=notification,
+                        auto_commit=False,
+                        raise_exception=True,
+                    )
+                    _logger.info(f"   ✅ WhatsApp API call successful!")
+                except Exception as send_error:
+                    _logger.error(f"   ❌ Error in WhatsApp API call: {send_error}", exc_info=True)
+                    raise
+            else:
+                _logger.warning(f"   ⚠️ Could not find message to send")
+
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
             # Añadir nota al registro
