@@ -168,7 +168,7 @@ class WhatsappPendingConfirmation(models.Model):
                 _logger.info(f"   ❌ No match: Expected interactive, got {message_type}")
 
         elif self.confirmation_type == 'text_si':
-            # Buscar "si" o "sí" en el texto
+            # Buscar "si" o "sí" en el texto O en botones interactivos
             if message_type == 'text':
                 text = message_data.get('text', {}).get('body', '').strip().lower()
                 _logger.info(f"   📝 Text received: '{text}'")
@@ -177,9 +177,18 @@ class WhatsappPendingConfirmation(models.Model):
                     return True
                 else:
                     _logger.info(f"   ❌ No match: Text not in confirmation list")
+            elif message_type == 'interactive':
+                # También aceptar botones interactivos con texto "Si"
+                button_text = message_data.get('interactive', {}).get('button_reply', {}).get('title', '').strip().lower()
+                _logger.info(f"   🔘 Button text received: '{button_text}'")
+                if button_text in ['si', 'sí', 's', 'yes', 'y']:
+                    _logger.info(f"   ✅ Match! Button text is a confirmation")
+                    return True
+                else:
+                    _logger.info(f"   ❌ No match: Button text not in confirmation list")
 
         elif self.confirmation_type == 'text_ok':
-            # Buscar "ok" en el texto
+            # Buscar "ok" en el texto O en botones interactivos
             if message_type == 'text':
                 text = message_data.get('text', {}).get('body', '').strip().lower()
                 _logger.info(f"   📝 Text received: '{text}'")
@@ -188,6 +197,15 @@ class WhatsappPendingConfirmation(models.Model):
                     return True
                 else:
                     _logger.info(f"   ❌ No match: Text not in confirmation list")
+            elif message_type == 'interactive':
+                # También aceptar botones interactivos con texto "OK"
+                button_text = message_data.get('interactive', {}).get('button_reply', {}).get('title', '').strip().lower()
+                _logger.info(f"   🔘 Button text received: '{button_text}'")
+                if button_text in ['ok', 'vale', 'okay', 'k']:
+                    _logger.info(f"   ✅ Match! Button text is a confirmation")
+                    return True
+                else:
+                    _logger.info(f"   ❌ No match: Button text not in confirmation list")
 
         elif self.confirmation_type == 'any':
             # Cualquier tipo de respuesta cuenta
