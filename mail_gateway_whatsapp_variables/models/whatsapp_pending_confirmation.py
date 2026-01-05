@@ -296,19 +296,42 @@ class WhatsappPendingConfirmation(models.Model):
 
             _logger.info(f"📧 Message created in channel")
 
-            # CRÍTICO: Ahora necesitamos forzar el envío real por WhatsApp
-            # El _action_send_whatsapp solo registra el mensaje, no lo envía
+            # CRÍTICO: El problema es que el composer crea el mensaje en el CANAL, no en el REGISTRO
+            # Y cuando buscamos el mensaje por (model, res_id), estamos buscando mal
+            # La solución es buscar el mensaje más reciente del CANAL
+
             _logger.info(f"🔄 Forcing actual WhatsApp sending...")
 
-            # Obtener el último mensaje del canal relacionado con nuestro registro
+            # Obtener el canal correcto
             channel = record._whatsapp_get_channel(number_field_name, gateway)
+            _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id}), Token: {channel.whatsapp_channel_token}")
+
+            # Verificar el número de teléfono del partner
+            phone = None
+            if '.' in number_field_name:
+                # Es un campo relacionado como 'partner_id.mobile'
+                parts = number_field_name.split('.')
+                related = record
+                for part in parts:
+                    related = related[part] if related else None
+                phone = related if related else None
+            else:
+                phone = record[number_field_name] if number_field_name in record._fields else None
+
+            _logger.info(f"   📱 Partner phone from {number_field_name}: {phone}")
+
+            if not phone:
+                _logger.error(f"   ❌ No phone number found for field {number_field_name}")
+                raise ValueError(f"No phone number found for field {number_field_name}")
+
+            # Buscar el último mensaje del CANAL (no del registro)
             last_message = self.env['mail.message'].search([
-                ('model', '=', self.res_model),
-                ('res_id', '=', self.res_id),
+                ('model', '=', 'discuss.channel'),
+                ('res_id', '=', channel.id),
             ], limit=1, order='id desc')
 
             if last_message:
-                _logger.info(f"   📨 Found message (ID: {last_message.id})")
+                _logger.info(f"   📨 Found channel message (ID: {last_message.id})")
 
                 # Buscar o crear la notificación para este mensaje
                 notification = self.env['mail.notification'].search([
@@ -327,6 +350,9 @@ class WhatsappPendingConfirmation(models.Model):
 
                 # Forzar el envío a través del gateway con el contexto correcto
                 _logger.info(f"   📡 Sending via gateway with template context...")
+                _logger.info(f"      Record: {self.res_model} #{self.res_id}")
+                _logger.info(f"      Phone: {phone}")
+
                 gateway_service = self.env['mail.gateway.whatsapp'].with_context(
                     whatsapp_template_id=self.confirmation_template_id.id,
                     default_res_model=self.res_model,
@@ -345,7 +371,7 @@ class WhatsappPendingConfirmation(models.Model):
                     _logger.error(f"   ❌ Error in WhatsApp API call: {send_error}", exc_info=True)
                     raise
             else:
-                _logger.warning(f"   ⚠️ Could not find message to send")
+                _logger.warning(f"   ⚠️ Could not find channel message to send")
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
