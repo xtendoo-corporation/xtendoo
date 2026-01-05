@@ -108,7 +108,7 @@
         <field name="model">mail.whatsapp.template</field>
         <field name="inherit_id" ref="mail_gateway_whatsapp.view_mail_whatsapp_template_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@name='main']" position="after">
+            <xpath expr="//field[@name='language']" position="after">
                 <group string="Confirmación Automática" name="confirmation">
                     <field name="requires_confirmation"/>
                     <field name="confirmation_template_id" invisible="requires_confirmation == False" options="{'no_create': True}"/>
