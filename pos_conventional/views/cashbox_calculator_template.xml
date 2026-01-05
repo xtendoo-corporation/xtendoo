@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template reutilizable para la calculadora de efectivo -->
+    <template id="cashbox_calculator_template" name="Calculadora de Efectivo">
+        <!-- Calculadora de efectivo -->
+        <group invisible="not use_cashbox or not cash_control" class="o_cash_move_calculator">
+            <group colspan="2">
+                <separator string="💵 Billetes" colspan="2"/>
+                <label for="qty_500" string="500 €"/>
+                <div class="o_row">
+                    <field name="qty_500" class="oe_inline"/>
+                    <span class="oe_inline"> × 500 €</span>
+                </div>
+                <label for="qty_200" string="200 €"/>
+                <div class="o_row">
+                    <field name="qty_200" class="oe_inline"/>
+                    <span class="oe_inline"> × 200 €</span>
+                </div>
+                <label for="qty_100" string="100 €"/>
+                <div class="o_row">
+                    <field name="qty_100" class="oe_inline"/>
+                    <span class="oe_inline"> × 100 €</span>
+                </div>
+                <label for="qty_50" string="50 €"/>
+                <div class="o_row">
+                    <field name="qty_50" class="oe_inline"/>
+                    <span class="oe_inline"> × 50 €</span>
+                </div>
+                <label for="qty_20" string="20 €"/>
+                <div class="o_row">
+                    <field name="qty_20" class="oe_inline"/>
+                    <span class="oe_inline"> × 20 €</span>
+                </div>
+                <label for="qty_10" string="10 €"/>
+                <div class="o_row">
+                    <field name="qty_10" class="oe_inline"/>
+                    <span class="oe_inline"> × 10 €</span>
+                </div>
+                <label for="qty_5" string="5 €"/>
+                <div class="o_row">
+                    <field name="qty_5" class="oe_inline"/>
+                    <span class="oe_inline"> × 5 €</span>
+                </div>
+
+                <separator string="🪙 Monedas" colspan="2"/>
+                <label for="qty_2" string="2 €"/>
+                <div class="o_row">
+                    <field name="qty_2" class="oe_inline"/>
+                    <span class="oe_inline"> × 2 €</span>
+                </div>
+                <label for="qty_1" string="1 €"/>
+                <div class="o_row">
+                    <field name="qty_1" class="oe_inline"/>
+                    <span class="oe_inline"> × 1 €</span>
+                </div>
+                <label for="qty_050" string="0,50 €"/>
+                <div class="o_row">
+                    <field name="qty_050" class="oe_inline"/>
+                    <span class="oe_inline"> × 0,50 €</span>
+                </div>
+                <label for="qty_020" string="0,20 €"/>
+                <div class="o_row">
+                    <field name="qty_020" class="oe_inline"/>
+                    <span class="oe_inline"> × 0,20 €</span>
+                </div>
+                <label for="qty_010" string="0,10 €"/>
+                <div class="o_row">
+                    <field name="qty_010" class="oe_inline"/>
+                    <span class="oe_inline"> × 0,10 €</span>
+                </div>
+                <label for="qty_005" string="0,05 €"/>
+                <div class="o_row">
+                    <field name="qty_005" class="oe_inline"/>
+                    <span class="oe_inline"> × 0,05 €</span>
+                </div>
+                <label for="qty_002" string="0,02 €"/>
+                <div class="o_row">
+                    <field name="qty_002" class="oe_inline"/>
+                    <span class="oe_inline"> × 0,02 €</span>
+                </div>
+                <label for="qty_001" string="0,01 €"/>
+                <div class="o_row">
+                    <field name="qty_001" class="oe_inline"/>
+                    <span class="oe_inline"> × 0,01 €</span>
+                </div>
+            </group>
+        </group>
+    </template>
+</odoo>
+

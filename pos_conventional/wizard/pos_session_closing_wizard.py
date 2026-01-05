@@ -4,6 +4,7 @@ from odoo.exceptions import UserError
 
 class PosSessionClosingWizard(models.TransientModel):
     _name = 'pos.session.closing.wizard'
+    _inherit = 'cashbox.calculator.mixin'
     _description = 'Wizard para cierre de sesión POS no táctil'
 
     session_id = fields.Many2one('pos.session', string='Sesión', required=True, readonly=True)
@@ -11,7 +12,9 @@ class PosSessionClosingWizard(models.TransientModel):
         string='Dinero contado en caja',
         currency_field='currency_id',
         help='Cantidad total de dinero en efectivo contado al cerrar la caja',
-        required=True
+        compute='_compute_cash_balance_end_real',
+        store=True,
+        readonly=False
     )
     currency_id = fields.Many2one('res.currency', related='session_id.currency_id', readonly=True)
     cash_control = fields.Boolean(related='session_id.cash_control', readonly=True)
@@ -36,6 +39,71 @@ class PosSessionClosingWizard(models.TransientModel):
         string='Motivo del cierre',
         help='Nota opcional explicando el motivo del cierre de la sesión'
     )
+
+    # Campos para mostrar resumen de la sesión
+    total_payments = fields.Monetary(
+        string='Total de pagos',
+        compute='_compute_session_totals',
+        readonly=True
+    )
+    cash_payments = fields.Monetary(
+        string='Pagos en efectivo',
+        compute='_compute_session_totals',
+        readonly=True
+    )
+    card_payments = fields.Monetary(
+        string='Pagos con tarjeta',
+        compute='_compute_session_totals',
+        readonly=True
+    )
+    other_payments = fields.Monetary(
+        string='Otros pagos',
+        compute='_compute_session_totals',
+        readonly=True
+    )
+    cash_in_out_total = fields.Monetary(
+        string='Entradas/Salidas de efectivo',
+        compute='_compute_session_totals',
+        readonly=True
+    )
+
+    @api.depends('session_id')
+    def _compute_session_totals(self):
+        for wizard in self:
+            cash_total = 0.0
+            card_total = 0.0
+            other_total = 0.0
+
+            # Agrupar pagos por tipo de método
+            for payment in wizard.session_id.order_ids.mapped('payment_ids'):
+                method = payment.payment_method_id
+                amount = payment.amount
+
+                if method.is_cash_count:
+                    # Método de pago en efectivo
+                    cash_total += amount
+                elif method.type in ['bank', 'pay_later']:
+                    # Método de pago con tarjeta/banco
+                    card_total += amount
+                else:
+                    # Otros métodos de pago
+                    other_total += amount
+
+            wizard.cash_payments = cash_total
+            wizard.card_payments = card_total
+            wizard.other_payments = other_total
+            wizard.total_payments = cash_total + card_total + other_total
+
+            # Total de entradas y salidas de efectivo
+            wizard.cash_in_out_total = wizard.session_id.cash_real_transaction
+
+    @api.depends('qty_500', 'qty_200', 'qty_100', 'qty_50', 'qty_20', 'qty_10', 'qty_5',
+                 'qty_2', 'qty_1', 'qty_050', 'qty_020', 'qty_010', 'qty_005', 'qty_002', 'qty_001',
+                 'use_cashbox')
+    def _compute_cash_balance_end_real(self):
+        for wizard in self:
+            if wizard.use_cashbox:
+                wizard.cash_register_balance_end_real = wizard._calculate_cashbox_total()
 
     @api.depends('cash_register_balance_end_real', 'cash_register_balance_end')
     def _compute_difference(self):
@@ -96,3 +164,6 @@ class PosSessionClosingWizard(models.TransientModel):
                 'search_default_group_by_company': True,
             },
         }
+
+
+
