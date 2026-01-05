@@ -277,19 +277,22 @@ class WhatsappPendingConfirmation(models.Model):
 
             _logger.info(f"   📧 Message created in channel (ID: {message.id})")
 
-            # CRÍTICO: Ahora forzar que se envíe por WhatsApp
-            # Crear una notificación y procesarla con el gateway
-            _logger.info(f"   📨 Creating and processing notification...")
+            # CRÍTICO: El gateway espera un registro con gateway_channel_id
+            # NO una notificación. Necesitamos crear un objeto que simule esto.
+            _logger.info(f"   📨 Preparing record for gateway...")
 
+            # Crear una notificación asociada al mensaje
             notification = self.env['mail.notification'].sudo().create({
                 'mail_message_id': message.id,
                 'res_partner_id': self.partner_id.id,
             })
 
-            _logger.info(f"   📤 Forcing WhatsApp send via gateway...")
+            # SOLUCIÓN: Añadir el canal al notification para que el gateway lo encuentre
+            notification.gateway_channel_id = channel
+
+            _logger.info(f"   📤 Sending via gateway with channel token: {channel.gateway_channel_token}")
 
             # Llamar al método _send del gateway con todo el contexto necesario
-            # Este SÍ envía por la API de WhatsApp
             gateway_service = self.env['mail.gateway.whatsapp'].with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
                 default_res_model=self.res_model,
