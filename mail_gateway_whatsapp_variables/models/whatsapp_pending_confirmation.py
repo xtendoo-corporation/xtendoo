@@ -265,15 +265,72 @@ class WhatsappPendingConfirmation(models.Model):
             channel = record._whatsapp_get_channel(number_field_name, gateway)
             _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id})")
 
-            # Crear el mensaje en el canal CON el contexto de la plantilla
+            # GENERAR EL PDF DEL DOCUMENTO
+            _logger.info(f"📄 Generating PDF for {self.res_model} #{self.res_id}...")
+            attachment_id = False
+
+            try:
+                # Determinar qué reporte usar según el modelo
+                report_name = False
+                if self.res_model == 'sale.order':
+                    report_name = 'sale.action_report_saleorder'
+                elif self.res_model == 'account.move':
+                    report_name = 'account.account_invoices'
+                elif self.res_model == 'stock.picking':
+                    report_name = 'stock.action_report_delivery'
+
+                if report_name:
+                    # Buscar el reporte
+                    report = self.env.ref(report_name, raise_if_not_found=False)
+                    if report:
+                        # Generar el PDF
+                        pdf_content, _ = report._render_qweb_pdf([record.id])
+
+                        # Determinar el nombre del archivo
+                        if self.res_model == 'sale.order':
+                            filename = f"Quotation_{record.name}.pdf"
+                        elif self.res_model == 'account.move':
+                            filename = f"Invoice_{record.name}.pdf"
+                        elif self.res_model == 'stock.picking':
+                            filename = f"Delivery_{record.name}.pdf"
+                        else:
+                            filename = f"Document_{record.name}.pdf"
+
+                        # Crear el adjunto
+                        attachment = self.env['ir.attachment'].create({
+                            'name': filename,
+                            'type': 'binary',
+                            'datas': pdf_content,
+                            'res_model': 'discuss.channel',
+                            'res_id': channel.id,
+                            'mimetype': 'application/pdf',
+                        })
+                        attachment_id = attachment.id
+                        _logger.info(f"   ✅ PDF generated: {filename} (ID: {attachment_id})")
+                    else:
+                        _logger.warning(f"   ⚠️ Report '{report_name}' not found")
+                else:
+                    _logger.warning(f"   ⚠️ No report configured for model {self.res_model}")
+            except Exception as pdf_error:
+                _logger.error(f"   ❌ Error generating PDF: {pdf_error}", exc_info=True)
+                # Continuar sin PDF si hay error
+
+            # Crear el mensaje en el canal CON el contexto de la plantilla y el adjunto
             # Esto hará que nuestro módulo mail_gateway_whatsapp_variables lo procese
+            message_vals = {
+                'body': self.confirmation_template_id.body,
+                'subtype_xmlid': "mail.mt_comment",
+                'message_type': "comment"
+            }
+
+            # Añadir el adjunto si se generó
+            if attachment_id:
+                message_vals['attachment_ids'] = [(4, attachment_id)]
+                _logger.info(f"   📎 Attaching PDF to message")
+
             message = channel.with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
-            ).message_post(
-                body=self.confirmation_template_id.body,
-                subtype_xmlid="mail.mt_comment",
-                message_type="comment"
-            )
+            ).message_post(**message_vals)
 
             _logger.info(f"   📧 Message created in channel (ID: {message.id})")
 
