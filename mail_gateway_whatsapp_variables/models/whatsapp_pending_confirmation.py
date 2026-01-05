@@ -283,8 +283,8 @@ class WhatsappPendingConfirmation(models.Model):
                     # Buscar el reporte
                     report = self.env.ref(report_name, raise_if_not_found=False)
                     if report:
-                        # Generar el PDF
-                        pdf_content, _ = report._render_qweb_pdf([record.id])
+                        # Generar el PDF (usar record.ids que ya es una lista)
+                        pdf_content, _ = report._render_qweb_pdf(record.ids)
 
                         # Determinar el nombre del archivo
                         if self.res_model == 'sale.order':
@@ -370,9 +370,9 @@ class WhatsappPendingConfirmation(models.Model):
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
-            # Añadir nota al registro
+            # Añadir nota al registro (sin usar _() para evitar conflictos)
             record.message_post(
-                body=_("Plantilla de confirmación de WhatsApp enviada automáticamente: %s") % self.confirmation_template_id.name,
+                body="Plantilla de confirmación de WhatsApp enviada automáticamente: %s" % self.confirmation_template_id.name,
                 message_type='notification',
                 subtype_xmlid='mail.mt_note',
             )
