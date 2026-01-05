@@ -290,13 +290,36 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"   Body: {composer.body[:50] if composer.body else 'EMPTY'}...")
             _logger.info(f"   Attachments: {len(composer.attachment_ids)}")
 
-            # Usar el método action_send_whatsapp() del composer
-            # Este es exactamente el método que se llama cuando el usuario presiona "Enviar" en la UI
-            _logger.info(f"📤 Sending WhatsApp via composer.action_send_whatsapp()...")
+            # El problema es que composer._action_send_whatsapp() solo registra en el canal
+            # pero NO envía por WhatsApp. Necesitamos buscar el método del módulo base.
+            _logger.info(f"📤 Sending WhatsApp via base module method...")
 
-            # Llamar al método que realmente envía el mensaje
-            # Este método procesa variables, adjuntos y envía por la API de WhatsApp
-            composer.action_send_whatsapp()
+            # Buscar si existe el método del módulo base de whatsapp
+            if hasattr(composer, 'action_send_whatsapp'):
+                # Llamar al método del módulo base que SÍ envía por WhatsApp
+                _logger.info(f"   📞 Calling composer.action_send_whatsapp() from base module...")
+                result = composer.action_send_whatsapp()
+                _logger.info(f"   ✅ Result: {result}")
+            else:
+                # Si no existe, intentar con el método heredado
+                _logger.info(f"   ⚠️ action_send_whatsapp not found, trying alternative...")
+
+                # SOLUCIÓN ALTERNATIVA: Llamar directamente al método _send_whatsapp_template
+                # del módulo mail_gateway_whatsapp que SÍ envía por la API
+                channel = record._whatsapp_get_channel(number_field_name, gateway)
+
+                # Enviar usando el método directo del gateway
+                self.env['mail.gateway.whatsapp'].with_context(
+                    whatsapp_template_id=self.confirmation_template_id.id,
+                    default_res_model=self.res_model,
+                    default_res_id=self.res_id,
+                )._send_whatsapp_template(
+                    gateway=gateway,
+                    phone=channel.whatsapp_channel_token if hasattr(channel, 'whatsapp_channel_token') else self.partner_id.mobile,
+                    template=self.confirmation_template_id,
+                    record=record,
+                    channel=channel,
+                )
 
             _logger.info(f"   ✅ WhatsApp sent successfully!")
 
