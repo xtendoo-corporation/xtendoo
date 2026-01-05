@@ -165,5 +165,36 @@ class PosSessionClosingWizard(models.TransientModel):
             },
         }
 
+    def action_print_daily_report(self):
+        """
+        Imprime el informe de ventas diarias (X report) de la sesión.
+        Utiliza el mismo informe que genera Odoo en el POS.
+        """
+        self.ensure_one()
+        # Usar el mismo método que el wizard de Odoo (pos.daily.sales.reports.wizard)
+        data = {
+            'date_start': False,
+            'date_stop': False,
+            'config_ids': self.session_id.config_id.ids,
+            'session_ids': self.session_id.ids
+        }
+        return self.env.ref('point_of_sale.sale_details_report').report_action([], data=data)
+
+    def action_open_cash_move_wizard(self):
+        """
+        Abre el wizard de entrada/salida de efectivo sin cerrar el wizard de cierre.
+        """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Entrada/Salida de efectivo'),
+            'res_model': 'pos.session.cash_move.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_session_id': self.session_id.id,
+            },
+        }
+
 
 

@@ -204,12 +204,21 @@
                 </sheet>
                 <footer>
                     <button name="action_close_session"
-                            string="Cerrar Sesión"
+                            string="Cerrar caja registradora"
                             type="object"
                             class="btn-primary"/>
-                    <button string="Cancelar"
+                    <button string="Descartar"
                             class="btn-secondary"
                             special="cancel"/>
+                    <button name="action_open_cash_move_wizard"
+                            string="Entrada/salida de efectivo"
+                            type="object"
+                            class="btn-secondary float-end"
+                            invisible="not cash_control"/>
+                    <button name="action_print_daily_report"
+                            string="Venta diaria 📊"
+                            type="object"
+                            class="btn-secondary float-end"/>
                 </footer>
             </form>
         </field>
