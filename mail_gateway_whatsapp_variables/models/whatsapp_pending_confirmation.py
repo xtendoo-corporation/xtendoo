@@ -260,13 +260,7 @@ class WhatsappPendingConfirmation(models.Model):
             _logger.info(f"📞 Channel: {channel.name} (ID: {channel.id})")
 
             # Enviar mensaje usando el método del gateway directamente
-            # Crear un mensaje de notificación temporal
-            notification = self.env['mail.notification'].sudo().create({
-                'notification_type': 'whatsapp',
-                'notification_status': 'ready',
-            })
-
-            # Crear el mensaje con el contexto correcto
+            # Primero crear el mensaje con el contexto correcto
             message = self.env['mail.message'].with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
             ).create({
@@ -278,11 +272,16 @@ class WhatsappPendingConfirmation(models.Model):
                 'author_id': self.env.user.partner_id.id,
             })
 
-            # Vincular la notificación al mensaje
-            notification.write({
+            _logger.info(f"📧 Message created (ID: {message.id})")
+
+            # Luego crear la notificación vinculada al mensaje
+            notification = self.env['mail.notification'].sudo().create({
                 'mail_message_id': message.id,
+                'notification_type': 'whatsapp',
+                'notification_status': 'ready',
             })
 
+            _logger.info(f"📨 Notification created (ID: {notification.id})")
             _logger.info(f"📨 Sending via gateway...")
 
             # Enviar a través del gateway con el contexto correcto
