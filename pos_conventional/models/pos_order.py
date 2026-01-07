@@ -61,12 +61,19 @@ class PosOrder(models.Model):
         if session.state != 'opened':
             raise UserError(_('La sesión no está abierta.'))
 
+        config = session.config_id
+
+        # Obtener la referencia del pedido usando el método estándar de Odoo
+        pos_reference, tracking_number = config._get_next_order_refs()
+
         # Crear el pedido con los valores básicos
         order_vals = {
+            'pos_reference': pos_reference,
+            'tracking_number': tracking_number,
             'session_id': session_id,
             'config_id': config_id,
-            'company_id': session.config_id.company_id.id,
-            'pricelist_id': session.config_id.pricelist_id.id,
+            'company_id': config.company_id.id,
+            'pricelist_id': config.pricelist_id.id,
             'state': 'draft',
             'amount_tax': 0.0,
             'amount_total': 0.0,
@@ -75,10 +82,13 @@ class PosOrder(models.Model):
         }
 
         # Agregar partner por defecto si existe
-        if session.config_id.default_partner_id:
-            order_vals['partner_id'] = session.config_id.default_partner_id.id
+        if config.default_partner_id:
+            order_vals['partner_id'] = config.default_partner_id.id
 
         order = self.create(order_vals)
+
+        # Generar el nombre usando el método estándar de Odoo
+        order.name = order._compute_order_name(session)
 
         _logger.info(
             "POS Conventional: Nuevo pedido %s creado para sesión %s",

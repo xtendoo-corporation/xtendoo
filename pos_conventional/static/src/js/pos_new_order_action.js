@@ -3,54 +3,73 @@
 import { registry } from "@web/core/registry";
 
 /**
- * Acción de cliente para crear automáticamente un nuevo pedido POS
+ * Acción de cliente para redirigir a la lista de pedidos
  * después de completar el flujo de pago.
- * Crea el pedido en el backend y lo abre automáticamente.
+ * Restaura la acción anterior del breadcrumb para mantener el contexto del POS.
  */
 async function posConventionalNewOrder(env, action) {
     const { config_id, session_id } = action.params;
 
     try {
-        const orm = env.services.orm;
         const actionService = env.services.action;
 
-        // Crear el nuevo pedido en el backend para que tenga nombre real
-        const newOrderId = await orm.call(
-            "pos.order",
-            "create_new_order_for_conventional_pos",
-            [],
-            {
-                session_id: session_id,
-                config_id: config_id,
+        // Obtener el stack de acciones (breadcrumb)
+        const actionStack = actionService.currentController?.action?.jsId
+            ? [...(actionService.actions || [])]
+            : [];
+
+        // Si hay al menos 2 acciones en el stack (la actual y la anterior)
+        // restaurar la acción anterior (la lista de pedidos)
+        if (actionStack.length >= 2) {
+            const previousAction = actionStack[actionStack.length - 2];
+            if (previousAction && previousAction.jsId) {
+                // Restaurar la acción anterior (equivalente a hacer clic en el breadcrumb)
+                await actionService.restore(previousAction.jsId);
+                return;
             }
-        );
+        }
 
-        // Forzar recarga del registro para obtener el nombre actualizado
-        await orm.call("pos.order", "invalidate_model", [[newOrderId]]);
+        // Si no funciona el método anterior, intentar usar switchView para volver a la lista
+        const currentController = actionService.currentController;
+        if (currentController && currentController.action && currentController.action.type === 'ir.actions.act_window') {
+            // Cambiar a la vista de lista
+            try {
+                await actionService.switchView("list");
+                return;
+            } catch (e) {
+                console.warn("No se pudo cambiar a vista de lista:", e);
+            }
+        }
 
-        // Abrir el pedido recién creado
-        return actionService.doAction({
-            type: "ir.actions.act_window",
-            res_model: "pos.order",
-            res_id: newOrderId,
-            views: [[false, "form"]],
-            view_mode: "form",
-            target: "current",
-        });
+        // Fallback final: usar router.back() como último recurso
+        const router = env.services.router;
+        if (window.history.length > 1) {
+            router.back();
+        } else {
+            // Último fallback: crear una nueva acción para ir a la lista
+            return actionService.doAction({
+                type: "ir.actions.act_window",
+                name: "Pedidos",
+                res_model: "pos.order",
+                views: [[false, "list"], [false, "form"]],
+                view_mode: "list,form",
+                target: "current",
+                context: {
+                    default_session_id: session_id,
+                    default_config_id: config_id,
+                },
+                domain: [["session_id", "=", session_id]],
+            });
+        }
     } catch (error) {
-        console.error("Error al crear y abrir nuevo pedido:", error);
-        // Fallback: abrir formulario sin crear primero
-        return env.services.action.doAction({
-            type: "ir.actions.act_window",
-            res_model: "pos.order",
-            views: [[false, "form"]],
-            target: "current",
-            context: {
-                default_session_id: session_id,
-                default_config_id: config_id,
-                default_state: "draft",
-            },
-        });
+        console.error("Error al redirigir a la lista de pedidos:", error);
+        // Fallback: usar router.back()
+        try {
+            const router = env.services.router;
+            router.back();
+        } catch (e) {
+            console.error("Error en fallback:", e);
+        }
     }
 }
 

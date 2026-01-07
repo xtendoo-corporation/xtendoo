@@ -44,7 +44,10 @@ async function printIframeAction(env, action) {
     if (params.next_action) {
         try {
             const actionService = env.services.action;
-            await actionService.doAction(params.next_action);
+            // Ejecutar la siguiente acción con clearBreadcrumbs para limpiar la navegación
+            await actionService.doAction(params.next_action, {
+                clearBreadcrumbs: true,
+            });
             return;
         } catch (e) {
             console.error('Error al ejecutar next_action:', e);
