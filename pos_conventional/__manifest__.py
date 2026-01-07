@@ -34,6 +34,7 @@
             'pos_conventional/static/src/js/pos_print_iframe.js',
             'pos_conventional/static/src/js/pos_print_client_action.js',
             'pos_conventional/static/src/js/pos_new_order_action.js',
+            'pos_conventional/static/src/js/pos_order_list_auto_open.js',
             'pos_conventional/static/src/xml/pos_order_list_view.xml',
         ],
 

@@ -3,72 +3,54 @@
 import { registry } from "@web/core/registry";
 
 /**
- * Acción de cliente para redirigir a la lista de pedidos
+ * Acción de cliente para crear un nuevo pedido y redirigir a la lista
  * después de completar el flujo de pago.
- * Restaura la acción anterior del breadcrumb para mantener el contexto del POS.
  */
 async function posConventionalNewOrder(env, action) {
     const { config_id, session_id } = action.params;
 
     try {
-        const actionService = env.services.action;
+        const orm = env.services.orm;
 
-        // Obtener el stack de acciones (breadcrumb)
-        const actionStack = actionService.currentController?.action?.jsId
-            ? [...(actionService.actions || [])]
-            : [];
+        console.log("POS Conventional: Iniciando flujo de nuevo pedido");
 
-        // Si hay al menos 2 acciones en el stack (la actual y la anterior)
-        // restaurar la acción anterior (la lista de pedidos)
-        if (actionStack.length >= 2) {
-            const previousAction = actionStack[actionStack.length - 2];
-            if (previousAction && previousAction.jsId) {
-                // Restaurar la acción anterior (equivalente a hacer clic en el breadcrumb)
-                await actionService.restore(previousAction.jsId);
-                return;
+        // PRIMERO: Crear el nuevo pedido en el backend
+        console.log("POS Conventional: Creando nuevo pedido...");
+        const newOrderId = await orm.call(
+            "pos.order",
+            "create_new_order_for_conventional_pos",
+            [],
+            {
+                session_id: session_id,
+                config_id: config_id,
             }
-        }
+        );
 
-        // Si no funciona el método anterior, intentar usar switchView para volver a la lista
-        const currentController = actionService.currentController;
-        if (currentController && currentController.action && currentController.action.type === 'ir.actions.act_window') {
-            // Cambiar a la vista de lista
-            try {
-                await actionService.switchView("list");
-                return;
-            } catch (e) {
-                console.warn("No se pudo cambiar a vista de lista:", e);
-            }
-        }
+        console.log("POS Conventional: Pedido creado con ID:", newOrderId);
 
-        // Fallback final: usar router.back() como último recurso
-        const router = env.services.router;
-        if (window.history.length > 1) {
-            router.back();
+        // Guardar el ID en sessionStorage para usarlo después de la navegación
+        sessionStorage.setItem('pos_conventional_new_order_id', newOrderId);
+        sessionStorage.setItem('pos_conventional_session_id', session_id);
+        sessionStorage.setItem('pos_conventional_config_id', config_id);
+
+        // SEGUNDO: Volver a la lista usando window.history.back()
+        console.log("POS Conventional: Volviendo a la lista con router.back()");
+        if (env.services.router && env.services.router.back) {
+            env.services.router.back();
         } else {
-            // Último fallback: crear una nueva acción para ir a la lista
-            return actionService.doAction({
-                type: "ir.actions.act_window",
-                name: "Pedidos",
-                res_model: "pos.order",
-                views: [[false, "list"], [false, "form"]],
-                view_mode: "list,form",
-                target: "current",
-                context: {
-                    default_session_id: session_id,
-                    default_config_id: config_id,
-                },
-                domain: [["session_id", "=", session_id]],
-            });
+            // Fallback: usar window.history.back()
+            window.history.back();
         }
+
+        // El código no continúa aquí porque router.back() cambia el contexto
+
     } catch (error) {
-        console.error("Error al redirigir a la lista de pedidos:", error);
-        // Fallback: usar router.back()
+        console.error("POS Conventional: Error en el flujo:", error);
+        // Fallback: intentar solo volver atrás con window.history
         try {
-            const router = env.services.router;
-            router.back();
+            window.history.back();
         } catch (e) {
-            console.error("Error en fallback:", e);
+            console.error("POS Conventional: Error en fallback:", e);
         }
     }
 }
