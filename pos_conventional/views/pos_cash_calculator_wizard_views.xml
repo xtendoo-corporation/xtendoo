@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_cash_calculator_wizard_form" model="ir.ui.view">
+        <field name="name">pos.cash.calculator.wizard.form</field>
+        <field name="model">pos.cash.calculator.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Monedas/billetes">
+                <field name="currency_id" invisible="1"/>
+                <field name="closing_wizard_id" invisible="1"/>
+
+                <!-- Calculadora de efectivo con diseño moderno -->
+                <div class="container-fluid p-3">
+                    <div class="row">
+                        <!-- Columna izquierda: Billetes y monedas grandes -->
+                        <div class="col-6">
+                            <!-- 200€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_200" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_200" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_200" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">200,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 100€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_100" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_100" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_100" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">100,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 50€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_50" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_50" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_50" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">50,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 20€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_20" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_20" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_20" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">20,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 10€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_10" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_10" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_10" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">10,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 5€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_5" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_5" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_5" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">5,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 2€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_2" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_2" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_2" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">2,00 €</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Columna derecha: Monedas pequeñas -->
+                        <div class="col-6">
+                            <!-- 1€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_1" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_1" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_1" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">1,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,50€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_050" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_050" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_050" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">0,50 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,25€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_025" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_025" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_025" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">0,25 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,20€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_020" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_020" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_020" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">0,20 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,10€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_010" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_010" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_010" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">0,10 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,05€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_005" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_005" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_005" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">0,05 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,02€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-1 text-center p-0">
+                                    <button name="decrement_002" type="object" class="btn btn-light btn-sm">−</button>
+                                </div>
+                                <div class="col-4 text-center p-1">
+                                    <field name="qty_002" class="text-center o_input" nolabel="1"/>
+                                </div>
+                                <div class="col-1 text-center p-0">
+                                    <button name="increment_002" type="object" class="btn btn-light btn-sm">+</button>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2" style="border: 1px solid #ddd;">0,02 €</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total calculado -->
+                    <div class="row border-top pt-3 mt-3">
+                        <div class="col-12 text-end">
+                            <h4>
+                                <span class="text-muted">Total</span>
+                                <field name="total" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       class="text-dark ms-2 fw-bold" nolabel="1" readonly="1"/>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <footer>
+                    <button name="action_confirm"
+                            string="Confirmar"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
+

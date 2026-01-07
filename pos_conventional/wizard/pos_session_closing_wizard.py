@@ -4,7 +4,6 @@ from odoo.exceptions import UserError
 
 class PosSessionClosingWizard(models.TransientModel):
     _name = 'pos.session.closing.wizard'
-    _inherit = 'cashbox.calculator.mixin'
     _description = 'Wizard para cierre de sesión POS no táctil'
 
     session_id = fields.Many2one('pos.session', string='Sesión', required=True, readonly=True)
@@ -12,9 +11,7 @@ class PosSessionClosingWizard(models.TransientModel):
         string='Dinero contado en caja',
         currency_field='currency_id',
         help='Cantidad total de dinero en efectivo contado al cerrar la caja',
-        compute='_compute_cash_balance_end_real',
-        store=True,
-        readonly=False
+        default=0.0
     )
     currency_id = fields.Many2one('res.currency', related='session_id.currency_id', readonly=True)
     cash_control = fields.Boolean(related='session_id.cash_control', readonly=True)
@@ -116,13 +113,6 @@ class PosSessionClosingWizard(models.TransientModel):
             wizard.linked_sale_orders_count = len(linked_orders)
             wizard.linked_sale_orders_total = sum(order.amount_total for order in linked_orders)
 
-    @api.depends('qty_500', 'qty_200', 'qty_100', 'qty_50', 'qty_20', 'qty_10', 'qty_5',
-                 'qty_2', 'qty_1', 'qty_050', 'qty_020', 'qty_010', 'qty_005', 'qty_002', 'qty_001',
-                 'use_cashbox')
-    def _compute_cash_balance_end_real(self):
-        for wizard in self:
-            if wizard.use_cashbox:
-                wizard.cash_register_balance_end_real = wizard._calculate_cashbox_total()
 
     @api.depends('cash_register_balance_end_real', 'cash_register_balance_end')
     def _compute_difference(self):
@@ -198,6 +188,28 @@ class PosSessionClosingWizard(models.TransientModel):
             'session_ids': self.session_id.ids
         }
         return self.env.ref('point_of_sale.sale_details_report').report_action([], data=data)
+
+    def action_open_cash_calculator(self):
+        """
+        Abre un wizard separado con la calculadora de monedas y billetes
+        """
+        self.ensure_one()
+
+        # Crear el wizard de calculadora
+        calculator_wizard = self.env['pos.cash.calculator.wizard'].create({
+            'closing_wizard_id': self.id,
+            'currency_id': self.currency_id.id,
+        })
+
+        return {
+            'name': _('Monedas/billetes'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.cash.calculator.wizard',
+            'view_mode': 'form',
+            'res_id': calculator_wizard.id,
+            'target': 'new',
+            'context': self.env.context,
+        }
 
     def action_open_cash_move_wizard(self):
         """

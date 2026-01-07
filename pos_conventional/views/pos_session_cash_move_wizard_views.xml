@@ -8,61 +8,197 @@
                 <group>
                     <field name="session_id" readonly="1"/>
                     <field name="type"/>
-                    <field name="use_cashbox" widget="boolean_toggle" string="Usar calculadora"/>
+                    <field name="use_cashbox" widget="boolean_toggle" string="Usar calculadora de efectivo"/>
                 </group>
 
                 <!-- Importe manual (cuando no se usa calculadora) -->
                 <group invisible="use_cashbox">
-                    <field name="amount" string="Importe"/>
+                    <field name="amount" string="Importe" widget="monetary"
+                           options="{'currency_field': 'currency_id'}"
+                           class="fs-4 fw-bold"/>
+                    <field name="currency_id" invisible="1"/>
                 </group>
 
-                <!-- Calculadora de efectivo (cuando se activa) -->
-                <notebook invisible="not use_cashbox">
-                    <page string="Billetes">
-                        <group>
-                            <group string="Billetes grandes">
-                                <field name="qty_500"/>
-                                <field name="qty_200"/>
-                                <field name="qty_100"/>
-                            </group>
-                            <group string="Billetes pequeños">
-                                <field name="qty_50"/>
-                                <field name="qty_20"/>
-                                <field name="qty_10"/>
-                                <field name="qty_5"/>
-                            </group>
-                        </group>
-                    </page>
-                    <page string="Monedas">
-                        <group>
-                            <group string="Monedas grandes">
-                                <field name="qty_2"/>
-                                <field name="qty_1"/>
-                                <field name="qty_050"/>
-                            </group>
-                            <group string="Monedas pequeñas">
-                                <field name="qty_020"/>
-                                <field name="qty_010"/>
-                                <field name="qty_005"/>
-                                <field name="qty_002"/>
-                                <field name="qty_001"/>
-                            </group>
-                        </group>
-                    </page>
-                </notebook>
+                <!-- Calculadora de efectivo con diseño moderno -->
+                <div class="container-fluid" invisible="not use_cashbox">
+                    <div class="row mb-3">
+                        <!-- Columna izquierda: Billetes -->
+                        <div class="col-6">
+                            <h5 class="text-muted mb-3">💶 Billetes</h5>
 
-                <!-- Total calculado (solo cuando se usa calculadora) -->
-                <group invisible="not use_cashbox">
-                    <group/>
-                    <group>
-                        <field name="total_cashbox" string="TOTAL CALCULADO"
-                               widget="monetary" readonly="1"
-                               class="oe_subtotal_footer_separator"/>
-                        <field name="currency_id" invisible="1"/>
-                    </group>
-                </group>
+                            <!-- 500€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_500" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">500,00 €</span>
+                                </div>
+                            </div>
 
-                <group>
+                            <!-- 200€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_200" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">200,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 100€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_100" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-success fs-6 px-3 py-2">100,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 50€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_50" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">50,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 20€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_20" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-primary fs-6 px-3 py-2">20,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 10€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_10" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-danger fs-6 px-3 py-2">10,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 5€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_5" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">5,00 €</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Columna derecha: Monedas -->
+                        <div class="col-6">
+                            <h5 class="text-muted mb-3">🪙 Monedas</h5>
+
+                            <!-- 2€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_2" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-info fs-6 px-3 py-2">2,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 1€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_1" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-info fs-6 px-3 py-2">1,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,50€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_050" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-info fs-6 px-3 py-2">0,50 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,20€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_020" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">0,20 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,10€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_010" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">0,10 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,05€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_005" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">0,05 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,02€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_002" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">0,02 €</span>
+                                </div>
+                            </div>
+
+                            <!-- 0,01€ -->
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-5">
+                                    <field name="qty_001" class="text-center" style="width: 70px;"/>
+                                </div>
+                                <div class="col-7">
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">0,01 €</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total calculado -->
+                    <div class="row border-top pt-3 mt-2">
+                        <div class="col-12 text-end">
+                            <h3>
+                                <span class="text-muted">Total:</span>
+                                <field name="total_cashbox" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       class="text-success ms-2 fw-bold" nolabel="1" readonly="1"/>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <field name="currency_id" invisible="1"/>
+
+                <group class="mt-3">
                     <field name="reason" placeholder="Motivo (opcional)"/>
                     <field name="partner_id" invisible="1"/>
                 </group>
