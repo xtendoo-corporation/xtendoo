@@ -67,6 +67,20 @@ class PosSessionClosingWizard(models.TransientModel):
         readonly=True
     )
 
+    # Campos para "Cuenta Cliente" (pedidos vinculados a sale.order)
+    linked_sale_orders_total = fields.Monetary(
+        string='Total Cuenta Cliente',
+        compute='_compute_session_totals',
+        readonly=True,
+        help='Total de pedidos POS vinculados a pedidos de venta tradicionales'
+    )
+    linked_sale_orders_count = fields.Integer(
+        string='Pedidos a Cuenta',
+        compute='_compute_session_totals',
+        readonly=True,
+        help='Número de pedidos POS vinculados a pedidos de venta tradicionales'
+    )
+
     @api.depends('session_id')
     def _compute_session_totals(self):
         for wizard in self:
@@ -96,6 +110,11 @@ class PosSessionClosingWizard(models.TransientModel):
 
             # Total de entradas y salidas de efectivo
             wizard.cash_in_out_total = wizard.session_id.cash_real_transaction
+
+            # Calcular pedidos vinculados a sale.order (Cuenta Cliente)
+            linked_orders = wizard.session_id.order_ids.filtered(lambda o: o.linked_sale_order_id)
+            wizard.linked_sale_orders_count = len(linked_orders)
+            wizard.linked_sale_orders_total = sum(order.amount_total for order in linked_orders)
 
     @api.depends('qty_500', 'qty_200', 'qty_100', 'qty_50', 'qty_20', 'qty_10', 'qty_5',
                  'qty_2', 'qty_1', 'qty_050', 'qty_020', 'qty_010', 'qty_005', 'qty_002', 'qty_001',

@@ -8,6 +8,21 @@ _logger = logging.getLogger(__name__)
 class PosOrder(models.Model):
     _inherit = 'pos.order'
 
+    linked_sale_order_id = fields.Many2one(
+        'sale.order',
+        string="Pedido de venta vinculado",
+        readonly=True,
+        copy=False,
+        help="Pedido de venta tradicional creado desde este pedido POS"
+    )
+
+    is_linked_to_sale = fields.Boolean(
+        string="Vinculado a venta",
+        compute="_compute_is_linked_to_sale",
+        store=True,
+        help="Indica si este pedido POS está vinculado a un pedido de venta tradicional"
+    )
+
     show_albaran_button = fields.Boolean(
         string="Mostrar botón albarán",
         compute="_compute_show_albaran_button",
@@ -36,6 +51,12 @@ class PosOrder(models.Model):
             if order.currency_id:
                 amount_untaxed = order.currency_id.round(amount_untaxed)
             order.amount_untaxed = amount_untaxed * sign
+
+    @api.depends('linked_sale_order_id')
+    def _compute_is_linked_to_sale(self):
+        """Calcula si el pedido está vinculado a un sale.order"""
+        for order in self:
+            order.is_linked_to_sale = bool(order.linked_sale_order_id)
 
     @api.depends('session_id', 'session_id.config_id', 'session_id.config_id.pos_enable_albaran')
     def _compute_show_albaran_button(self):
@@ -677,6 +698,9 @@ class PosOrder(models.Model):
                 self.name, sale_order.name
             )
 
+            # Vincular el pos.order con el sale.order creado
+            self.write({'linked_sale_order_id': sale_order.id})
+
             # Confirmar el pedido de venta automáticamente
             sale_order.action_confirm()
             _logger.info(
@@ -704,16 +728,14 @@ class PosOrder(models.Model):
             _logger.exception("Error al crear sale.order desde POS: %s", str(e))
             raise UserError(_('Error al crear el albarán: %s') % str(e))
 
-        # Mostrar mensaje de éxito y permanecer en el pos.order actual
+        # Recargar la vista del formulario para mostrar el estado vinculado
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Albarán creado'),
-                'message': _('Se ha creado el pedido de venta %s correctamente.') % sale_order.name,
-                'type': 'success',
-                'sticky': False,
-            }
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.order',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'target': 'current',
         }
 
 class PosOrderLine(models.Model):

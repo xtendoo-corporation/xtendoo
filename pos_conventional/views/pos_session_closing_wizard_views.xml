@@ -21,6 +21,8 @@
                         <field name="cash_payments" invisible="1"/>
                         <field name="card_payments" invisible="1"/>
                         <field name="other_payments" invisible="1"/>
+                        <field name="linked_sale_orders_count" invisible="1"/>
+                        <field name="linked_sale_orders_total" invisible="1"/>
                     </group>
 
                     <!-- Resumen de la sesión con estructura simple -->
@@ -82,6 +84,16 @@
                                     </div>
                                     <div class="col-4 text-end">
                                         <field name="other_payments" widget="monetary" nolabel="1"/>
+                                    </div>
+                                </div>
+
+                                <!-- Desglose: Cuenta Cliente (pedidos vinculados a sale.order) -->
+                                <div class="row ps-5 text-muted" invisible="linked_sale_orders_count == 0">
+                                    <div class="col-8">
+                                        <i class="fa fa-user"/> Cuenta Cliente
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <field name="linked_sale_orders_total" widget="monetary" nolabel="1"/>
                                     </div>
                                 </div>
 

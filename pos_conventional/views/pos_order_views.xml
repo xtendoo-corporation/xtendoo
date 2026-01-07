@@ -10,6 +10,13 @@
             <xpath expr="//list" position="attributes">
                 <attribute name="js_class">button_in_tree</attribute>
                 <attribute name="create">true</attribute>
+                <!-- Color naranja/warning para pedidos vinculados a sale.order -->
+                <attribute name="decoration-warning">is_linked_to_sale</attribute>
+            </xpath>
+            <!-- Añadir columna para mostrar si está vinculado a sale.order -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="is_linked_to_sale" invisible="1"/>
+                <field name="linked_sale_order_id" string="Pedido venta" optional="show"/>
             </xpath>
         </field>
     </record>
@@ -48,7 +55,27 @@
         <field name="arch" type="xml">
             <!-- Reemplazar el grupo de campos del pedido por dos columnas: izquierda con campos y derecha con totales -->
             <xpath expr="//group[@name='order_fields']" position="replace">
-                <group col="4" colspan="4" name="order_fields_rows" class="row">
+                <!-- Campo auxiliar para detectar si está vinculado a sale.order -->
+                <field name="is_linked_to_sale" invisible="1"/>
+
+                <!-- Panel especial cuando está vinculado a un sale.order -->
+                <div class="alert alert-info" role="alert" invisible="not is_linked_to_sale">
+                    <h4 class="alert-heading">
+                        <i class="fa fa-link me-2"/>Pedido vinculado a venta tradicional
+                    </h4>
+                    <p>Este pedido POS está vinculado a un pedido de venta tradicional.
+                       La gestión del stock y facturación se realiza desde el pedido de venta asociado.</p>
+                    <hr/>
+                    <div class="mb-0">
+                        <label for="linked_sale_order_id" class="fw-bold">Pedido de venta:</label>
+                        <field name="linked_sale_order_id" widget="many2one"
+                               options="{'no_create': True, 'no_open': False}"
+                               class="ms-2"/>
+                    </div>
+                </div>
+
+                <!-- Grupo normal de campos (oculto si está vinculado) -->
+                <group col="4" colspan="4" name="order_fields_rows" class="row" invisible="is_linked_to_sale">
                     <group col="3" name="order_fields" class="col-9">
                         <field name="name" invisible="1"/>
                         <field name="has_order_lines" invisible="1"/>
@@ -115,19 +142,53 @@
         <field name="arch" type="xml">
             <!-- Eliminar el botón original de Payment -->
             <xpath expr="//header/button[@name='466']" position="attributes">
-                <attribute name="invisible">state != 'draft' or not has_order_lines</attribute>
+                <attribute name="invisible">state != 'draft' or not has_order_lines or is_linked_to_sale</attribute>
                 <attribute name="class">me-2</attribute>
             </xpath>
             <xpath expr="//header/button[@name='466']" position="after">
                 <button name="action_pay_cash" string="Pagar en efectivo" type="object" class="btn-primary"
-                        invisible="state != 'draft' or not has_order_lines"/>
+                        invisible="state != 'draft' or not has_order_lines or is_linked_to_sale"/>
                 <button name="action_pay_card" string="Pagar con tarjeta" type="object" class="btn-primary ms-2"
-                        invisible="state != 'draft' or not has_order_lines"/>
+                        invisible="state != 'draft' or not has_order_lines or is_linked_to_sale"/>
                 <button name="action_pay_account"
                         string="Crear albarán"
                         type="object"
                         class="btn-secondary ms-2"
-                        invisible="not show_albaran_button or state != 'draft' or not has_order_lines"/>
+                        invisible="not show_albaran_button or state != 'draft' or not has_order_lines or is_linked_to_sale"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Hacer readonly las líneas de productos cuando el pedido está vinculado a sale.order -->
+    <record id="view_pos_order_form_inherit_readonly_linked" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.readonly.linked</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- Hacer readonly la página de productos cuando está vinculado -->
+            <xpath expr="//page[@name='products']//field[@name='lines']" position="attributes">
+                <attribute name="readonly">is_linked_to_sale</attribute>
+            </xpath>
+
+            <!-- Hacer readonly la página de pagos cuando está vinculado -->
+            <xpath expr="//page[@name='payments']//field[@name='payment_ids']" position="attributes">
+                <attribute name="readonly">is_linked_to_sale</attribute>
+            </xpath>
+
+            <!-- Ocultar las páginas de productos y pagos cuando está vinculado (opcional, para más limpieza) -->
+            <xpath expr="//page[@name='products']" position="attributes">
+                <attribute name="invisible">is_linked_to_sale</attribute>
+            </xpath>
+            <xpath expr="//page[@name='payments']" position="attributes">
+                <attribute name="invisible">is_linked_to_sale</attribute>
+            </xpath>
+            <!-- Ocultar información adicional y nota de cliente cuando está vinculado -->
+            <xpath expr="//page[@name='extra']" position="attributes">
+                <attribute name="invisible">is_linked_to_sale</attribute>
+            </xpath>
+            <xpath expr="//page[@name='notes']" position="attributes">
+                <attribute name="invisible">is_linked_to_sale</attribute>
             </xpath>
         </field>
     </record>
