@@ -56,6 +56,12 @@
                             <t t-esc="line.qty"/>
                             <t t-esc="' '"/>
                             <t t-esc="line.full_product_name or line.name"/>
+                            <div t-if="line.get_discount &amp;&amp; line.get_discount() > 0" class="discount-info ps-2" style="font-size: 85%; color: #666;">
+                                Dto. <t t-esc="line.get_discount()"/>%
+                            </div>
+                            <div t-elif="line.discount &amp;&amp; line.discount > 0" class="discount-info ps-2" style="font-size: 85%; color: #666;">
+                                Dto. <t t-esc="line.discount"/>%
+                            </div>
                             <div t-if="line.customerNote" class="customer-note fst-italic ps-2" style="font-size: 80%;">
                                 [<t t-esc="line.customerNote"/>]
                             </div>
