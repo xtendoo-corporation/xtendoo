@@ -27,6 +27,9 @@
                 <label for="template_id" string="Selecciona la plantilla"/>
                 <field name="template_id" required="is_required_template" options="{'no_create': True, 'no_open': True}" string="Selecciona la plantilla"/>
             </xpath>
+            <xpath expr="//field[@name='body']" position="before">
+                <label for="body" string="Mensaje de la Plantilla"/>
+            </xpath>
         </field>
     </record>
 

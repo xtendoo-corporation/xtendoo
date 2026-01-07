@@ -16,9 +16,11 @@
                 t-on-click="sendWhatsapp"
                 data-hotkey="shift+w"
             >
-                <i class="fa fa-whatsapp" role="img" aria-label="whatsapp" />
+                <i class="fa fa-whatsapp" role="img" aria-label="whatsapp"/>
                 <span> WhatsApp</span>
             </button>
+        </xpath>
+        <xpath expr="//*[contains(@class, 'o-mail-Chatter-gateway')]" position="replace">
         </xpath>
     </t>
 </templates>
