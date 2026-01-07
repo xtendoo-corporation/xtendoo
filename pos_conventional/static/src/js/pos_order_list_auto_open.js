@@ -1,59 +1,66 @@
 /** @odoo-module **/
 
-import { ListController } from "@web/views/list/list_controller";
-import { patch } from "@web/core/utils/patch";
-import { useService } from "@web/core/utils/hooks";
+import { registry } from "@web/core/registry";
 
 /**
- * Patch del ListController para abrir automáticamente un pedido nuevo
- * cuando se vuelve a la lista después de cerrar un pedido.
+ * Servicio para abrir automáticamente un pedido nuevo cuando se vuelve a la lista
  */
-patch(ListController.prototype, {
-    setup() {
-        super.setup();
-        this.actionService = useService("action");
+const posConventionalAutoOpenService = {
+    dependencies: ["action"],
 
-        // Verificar si hay un pedido pendiente de abrir después de volver a la lista
-        this.checkAndOpenPendingOrder();
+    start(env, { action }) {
+        // Verificar periódicamente si hay un pedido pendiente
+        const checkPendingOrder = () => {
+            const pendingOrderId = sessionStorage.getItem('pos_conventional_new_order_id');
+            const sessionId = sessionStorage.getItem('pos_conventional_session_id');
+            const configId = sessionStorage.getItem('pos_conventional_config_id');
+
+            if (pendingOrderId) {
+                // Verificar que estamos en la URL correcta
+                const currentUrl = window.location.href;
+                if (currentUrl.includes('model=pos.order') && currentUrl.includes('view_type=list')) {
+                    console.log("POS Conventional: Pedido pendiente detectado:", pendingOrderId);
+
+                    // Limpiar sessionStorage
+                    sessionStorage.removeItem('pos_conventional_new_order_id');
+                    sessionStorage.removeItem('pos_conventional_session_id');
+                    sessionStorage.removeItem('pos_conventional_config_id');
+
+                    // Esperar un poco y abrir el pedido
+                    setTimeout(() => {
+                        console.log("POS Conventional: Abriendo pedido nuevo...");
+                        action.doAction({
+                            type: "ir.actions.act_window",
+                            res_model: "pos.order",
+                            res_id: parseInt(pendingOrderId),
+                            views: [[false, "form"]],
+                            view_mode: "form",
+                            target: "current",
+                            context: {
+                                default_session_id: parseInt(sessionId),
+                                default_config_id: parseInt(configId),
+                                form_view_initial_mode: 'edit',
+                            },
+                        });
+                    }, 600);
+                }
+            }
+        };
+
+        // Verificar cada 500ms
+        const interval = setInterval(checkPendingOrder, 500);
+
+        // Limpiar el intervalo después de 5 segundos (10 intentos)
+        setTimeout(() => {
+            clearInterval(interval);
+        }, 5000);
+
+        return {};
     },
+};
 
-    checkAndOpenPendingOrder() {
-        // Solo aplicar esto para pos.order
-        if (this.props.resModel !== "pos.order") {
-            return;
-        }
+registry.category("services").add("pos_conventional_auto_open", posConventionalAutoOpenService);
 
-        // Verificar si hay un pedido guardado en sessionStorage
-        const pendingOrderId = sessionStorage.getItem('pos_conventional_new_order_id');
-        const sessionId = sessionStorage.getItem('pos_conventional_session_id');
-        const configId = sessionStorage.getItem('pos_conventional_config_id');
 
-        if (pendingOrderId) {
-            console.log("POS Conventional: Pedido pendiente detectado:", pendingOrderId);
 
-            // Limpiar sessionStorage
-            sessionStorage.removeItem('pos_conventional_new_order_id');
-            sessionStorage.removeItem('pos_conventional_session_id');
-            sessionStorage.removeItem('pos_conventional_config_id');
-
-            // Esperar un momento para que la lista se cargue completamente
-            setTimeout(() => {
-                console.log("POS Conventional: Abriendo pedido nuevo...");
-                this.actionService.doAction({
-                    type: "ir.actions.act_window",
-                    res_model: "pos.order",
-                    res_id: parseInt(pendingOrderId),
-                    views: [[false, "form"]],
-                    view_mode: "form",
-                    target: "current",
-                    context: {
-                        default_session_id: parseInt(sessionId),
-                        default_config_id: parseInt(configId),
-                        form_view_initial_mode: 'edit',
-                    },
-                });
-            }, 500);
-        }
-    },
-});
 
