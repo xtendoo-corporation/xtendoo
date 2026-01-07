@@ -124,7 +124,7 @@
                 <button name="action_pay_card" string="Pagar con tarjeta" type="object" class="btn-primary ms-2"
                         invisible="state != 'draft' or not has_order_lines"/>
                 <button name="action_pay_account"
-                        string="Albarán"
+                        string="Crear albarán"
                         type="object"
                         class="btn-secondary ms-2"
                         invisible="not show_albaran_button or state != 'draft' or not has_order_lines"/>

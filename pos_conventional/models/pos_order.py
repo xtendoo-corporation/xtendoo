@@ -612,21 +612,109 @@ class PosOrder(models.Model):
         return wizard.action_pay_card()
 
     def action_pay_account(self):
+        """
+        Crea un sale.order tradicional a partir del pos.order actual.
+
+        Este método transforma una venta POS en una venta tradicional de backoffice,
+        copiando toda la información del pedido: cliente, líneas de productos,
+        cantidades, precios, impuestos y descuentos.
+
+        El pos.order original permanece en estado 'draft' sin afectar al flujo
+        de caja ni al stock.
+
+        Returns:
+            dict: Acción para abrir el nuevo sale.order creado
+        """
         self.ensure_one()
 
-        payment_method = self.env['pos.payment.method'].search([
-            ('name', 'ilike', 'cuenta'),
-        ], limit=1)
+        # Validaciones previas
+        if self.state != 'draft':
+            raise UserError(_('Solo se pueden convertir a albarán pedidos en estado borrador.'))
 
-        if not payment_method:
-            raise UserError('No se encontró un método de pago tipo Cuenta.')
+        if not self.lines:
+            raise UserError(_('No se puede crear un albarán de un pedido sin líneas de producto.'))
 
-        wizard = self.env['pos.make.payment'].with_context(active_id=self.id).create({
-            'amount': self.amount_total - self.amount_paid,
-            'payment_method_id': payment_method.id,
-        })
+        if not self.partner_id:
+            raise UserError(_('Debe seleccionar un cliente para crear el albarán.'))
 
-        return wizard.action_pay_account()
+        # Preparar las líneas del sale.order
+        sale_order_lines = []
+        for pos_line in self.lines:
+            # Obtener los impuestos aplicables
+            taxes = pos_line.tax_ids_after_fiscal_position or pos_line.tax_ids
+
+            line_vals = {
+                'product_id': pos_line.product_id.id,
+                'name': pos_line.full_product_name or pos_line.product_id.display_name,
+                'product_uom_qty': pos_line.qty,
+                'product_uom_id': pos_line.product_id.uom_id.id,
+                'price_unit': pos_line.price_unit,
+                'discount': pos_line.discount or 0.0,
+                'tax_ids': [(6, 0, taxes.ids)] if taxes else False,
+            }
+            sale_order_lines.append((0, 0, line_vals))
+
+        # Crear el sale.order
+        sale_order_vals = {
+            'partner_id': self.partner_id.id,
+            'partner_invoice_id': self.partner_id.id,
+            'partner_shipping_id': self.partner_id.id,
+            'pricelist_id': self.pricelist_id.id if self.pricelist_id else False,
+            'fiscal_position_id': self.fiscal_position_id.id if self.fiscal_position_id else False,
+            'order_line': sale_order_lines,
+            'origin': self.name,  # Referencia al pedido POS original
+            'note': _('Creado desde pedido POS: %s') % self.name,
+        }
+
+        # Si hay una compañía específica, asignarla
+        if self.company_id:
+            sale_order_vals['company_id'] = self.company_id.id
+
+        try:
+            sale_order = self.env['sale.order'].create(sale_order_vals)
+            _logger.info(
+                "POS Order %s: Creado sale.order %s desde pedido POS",
+                self.name, sale_order.name
+            )
+
+            # Confirmar el pedido de venta automáticamente
+            sale_order.action_confirm()
+            _logger.info(
+                "POS Order %s: sale.order %s confirmado automáticamente",
+                self.name, sale_order.name
+            )
+
+            # Validar los pickings (entregas) generados
+            for picking in sale_order.picking_ids:
+                if picking.state == 'draft':
+                    picking.action_confirm()
+                if picking.state != 'done':
+                    # Asignar cantidades automáticamente
+                    picking.action_assign()
+                    # Establecer cantidades hechas = cantidades demandadas
+                    for move in picking.move_ids:
+                        move.quantity = move.product_uom_qty
+                    # Validar el picking
+                    picking.button_validate()
+                    _logger.info(
+                        "POS Order %s: Picking %s validado automáticamente",
+                        self.name, picking.name
+                    )
+        except Exception as e:
+            _logger.exception("Error al crear sale.order desde POS: %s", str(e))
+            raise UserError(_('Error al crear el albarán: %s') % str(e))
+
+        # Mostrar mensaje de éxito y permanecer en el pos.order actual
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Albarán creado'),
+                'message': _('Se ha creado el pedido de venta %s correctamente.') % sale_order.name,
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
 class PosOrderLine(models.Model):
     _inherit = 'pos.order.line'

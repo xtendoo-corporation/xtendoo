@@ -12,6 +12,7 @@
     'license': 'AGPL-3',
     'depends': [
         'point_of_sale',
+        'sale',
     ],
     'data': [
         'data/pos_session_sequence.xml',
