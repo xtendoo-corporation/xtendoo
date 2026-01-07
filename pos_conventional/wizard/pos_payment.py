@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from odoo import models, _
+from odoo import api, fields, models, _
 from odoo.tools import float_is_zero
 from odoo.exceptions import UserError
 
@@ -9,6 +9,46 @@ _logger = logging.getLogger(__name__)
 
 class PosMakePaymentConventional(models.TransientModel):
     _inherit = 'pos.make.payment'
+
+    amount_received = fields.Float(
+        string='Importe recibido',
+        digits=0,
+        help='Importe recibido del cliente (solo para efectivo)'
+    )
+    amount_change = fields.Float(
+        string='Cambio',
+        digits=0,
+        compute='_compute_amount_change',
+        store=False,
+        help='Cambio a devolver al cliente'
+    )
+    is_cash_payment = fields.Boolean(
+        string='Es pago en efectivo',
+        compute='_compute_is_cash_payment',
+        store=False
+    )
+
+    @api.depends('payment_method_id')
+    def _compute_is_cash_payment(self):
+        for record in self:
+            record.is_cash_payment = record.payment_method_id.is_cash_count if record.payment_method_id else False
+
+    @api.depends('amount_received', 'amount', 'is_cash_payment')
+    def _compute_amount_change(self):
+        for record in self:
+            if record.is_cash_payment and record.amount_received > 0:
+                record.amount_change = record.amount_received - record.amount
+            else:
+                record.amount_change = 0.0
+
+    @api.onchange('payment_method_id')
+    def _onchange_payment_method_id(self):
+        """Resetear el importe recibido cuando cambia el método de pago"""
+        if not self.is_cash_payment:
+            self.amount_received = 0.0
+        else:
+            # Para efectivo, por defecto poner el importe exacto
+            self.amount_received = self.amount
 
     def check(self, payment_method_id=None):
         """
@@ -46,30 +86,17 @@ class PosMakePaymentConventional(models.TransientModel):
             })
 
         if order.state == 'draft' and order._is_pos_order_paid():
-            print("=" * 80)
-            print(f"DEBUG: Pedido {order.name} está pagado, procesando...")
-            _logger.info("DEBUG: Pedido %s está pagado, procesando...", order.name)
+            _logger.info("Pedido %s está pagado, procesando...", order.name)
             order._process_saved_order(False)
             if order.state in {'paid', 'done'}:
-                print(f"DEBUG: Pedido {order.name} ahora está en estado {order.state}")
-                _logger.info("DEBUG: Pedido %s ahora está en estado %s", order.name, order.state)
+                _logger.info("Pedido %s ahora está en estado %s", order.name, order.state)
                 order._send_order()
                 order.config_id.notify_synchronisation(order.config_id.current_session_id.id, 0)
 
-            print(f"DEBUG: is_conventional={is_conventional}, state={order.state}, account_move={order.account_move}")
-            _logger.info("DEBUG: is_conventional=%s, state=%s, account_move=%s",
-                        is_conventional, order.state, order.account_move)
-
             if is_conventional and order.state in {'paid', 'done'} and not order.account_move:
-                print(f">>> BLOQUE 1 - Ejecutando facturación automática para pedido {order.name}")
-                _logger.info(
-                    "DEBUG: BLOQUE 1 - Ejecutando facturación automática para pedido %s",
-                    order.name
-                )
+                _logger.info("Ejecutando facturación automática para pedido %s", order.name)
                 try:
                     result = order.action_validate_and_invoice()
-                    print(f">>> BLOQUE 1 - Resultado de action_validate_and_invoice: {result}")
-                    _logger.info("DEBUG: BLOQUE 1 - Resultado de action_validate_and_invoice: %s", result)
                     # Si action_validate_and_invoice retorna una acción de impresión, la procesamos
                     if result and isinstance(result, dict) and result.get('type') == 'ir.actions.client':
                         # Modificar la acción de impresión para que después redirija a nuevo pedido
@@ -81,15 +108,8 @@ class PosMakePaymentConventional(models.TransientModel):
                                 'session_id': order.config_id.current_session_id.id,
                             }
                         }
-                        print(">>> BLOQUE 1 - Retornando acción con next_action para crear nuevo pedido")
-                        print("=" * 80)
-                        _logger.info("DEBUG: BLOQUE 1 - Retornando acción con next_action para crear nuevo pedido")
                         return result
-                    else:
-                        print(">>> BLOQUE 1 - No se retornó acción de impresión, continuando...")
-                        _logger.info("DEBUG: BLOQUE 1 - No se retornó acción de impresión, continuando...")
                 except Exception as e:
-                    print(f">>> BLOQUE 1 - ERROR: {str(e)}")
                     _logger.exception(
                         "Error al facturar automáticamente el pedido %s: %s",
                         order.name, str(e)
@@ -99,12 +119,6 @@ class PosMakePaymentConventional(models.TransientModel):
             # Redirigir automáticamente a un nuevo pedido usando una acción de cliente
             # SOLO si no se ejecutó la facturación automática arriba
             elif is_conventional and order.state in {'paid', 'done'}:
-                print(f">>> BLOQUE 2 - Preparando redirección a nuevo pedido después de completar {order.name}")
-                print("=" * 80)
-                _logger.info(
-                    "DEBUG: BLOQUE 2 - Preparando redirección a nuevo pedido después de completar %s",
-                    order.name
-                )
                 return {
                     'type': 'ir.actions.client',
                     'tag': 'pos_conventional_new_order',
@@ -114,13 +128,8 @@ class PosMakePaymentConventional(models.TransientModel):
                     }
                 }
 
-            print("DEBUG: Ningún bloque de redirección ejecutado, cerrando ventana")
-            print("=" * 80)
-            _logger.info("DEBUG: Ningún bloque de redirección ejecutado, cerrando ventana")
             return {'type': 'ir.actions.act_window_close'}
 
-        print(f"DEBUG: Pedido no está pagado o no está en draft, lanzando wizard de pago")
-        _logger.info("DEBUG: Pedido no está pagado o no está en draft, lanzando wizard de pago")
         return self.launch_payment()
 
 

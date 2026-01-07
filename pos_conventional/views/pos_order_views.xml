@@ -68,7 +68,8 @@
                             <!-- Total arriba, grande -->
                             <div class="col-5 py-2 text-nowrap">Total:</div>
                             <div class="col-7 py-2 ps-5 text-nowrap">
-                                <field name="amount_total" force_save="1" widget="monetary" class="fw-bold fs-2 text-end d-block"/>
+                                <field name="amount_total" force_save="1" widget="monetary"
+                                       class="fw-bold fs-2 text-end d-block"/>
                             </div>
 
                             <!-- Importe base (subtotal sin impuestos) -->
@@ -84,9 +85,12 @@
                             </div>
 
                             <!-- Total pagado -->
-                            <div class="col-5 py-2 text-nowrap border-top pt-3" invisible="state=='draft'">Total pagado:</div>
+                            <div class="col-5 py-2 text-nowrap border-top pt-3" invisible="state=='draft'">Total
+                                pagado:
+                            </div>
                             <div class="col-7 py-2 ps-5 text-nowrap border-top pt-3" invisible="state=='draft'">
-                                <field name="amount_paid" nolabel="1" widget="monetary" readonly="state != 'draft'" class="fw-bold text-end d-block" />
+                                <field name="amount_paid" nolabel="1" widget="monetary" readonly="state != 'draft'"
+                                       class="fw-bold text-end d-block"/>
                             </div>
                         </div>
                         <field name="currency_id" invisible="1"/>
@@ -110,7 +114,11 @@
         <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
         <field name="arch" type="xml">
             <!-- Eliminar el botón original de Payment -->
-            <xpath expr="//header/button[@name='466']" position="replace">
+            <xpath expr="//header/button[@name='466']" position="attributes">
+                <attribute name="invisible">state != 'draft' or not has_order_lines</attribute>
+                <attribute name="class">me-2</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='466']" position="after">
                 <button name="action_pay_cash" string="Pagar en efectivo" type="object" class="btn-primary"
                         invisible="state != 'draft' or not has_order_lines"/>
                 <button name="action_pay_card" string="Pagar con tarjeta" type="object" class="btn-primary ms-2"

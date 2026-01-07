@@ -24,6 +24,7 @@
         'views/pos_session_closing_wizard_views.xml',
         'views/pos_session_cash_move_wizard_views.xml',
         'views/pos_order_views.xml',
+        'views/pos_payment_views.xml',
         'views/report_receipt.xml',
     ],
     'assets': {
