@@ -14,6 +14,12 @@ class PosOrder(models.Model):
         store=False
     )
 
+    has_order_lines = fields.Boolean(
+        string="Tiene líneas de pedido",
+        compute="_compute_has_order_lines",
+        store=False
+    )
+
     amount_untaxed = fields.Monetary(
         string="Importe base",
         compute="_compute_amount_untaxed",
@@ -39,6 +45,12 @@ class PosOrder(models.Model):
                 and order.session_id.config_id
                 and order.session_id.config_id.pos_enable_albaran
             )
+
+    @api.depends('lines')
+    def _compute_has_order_lines(self):
+        """Verifica si el pedido tiene líneas"""
+        for order in self:
+            order.has_order_lines = bool(order.lines)
 
 
     @api.model
