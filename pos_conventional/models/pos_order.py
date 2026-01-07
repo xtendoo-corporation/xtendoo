@@ -185,10 +185,12 @@ class PosOrder(models.Model):
         if session_id:
             session = self.env['pos.session'].browse(session_id)
         else:
+            # Buscar sesión de POS no táctil primero
             session = self.env['pos.session'].search([
                 ('user_id', '=', self.env.user.id),
-                ('state', '=', 'opened')
-            ], limit=1)
+                ('state', '=', 'opened'),
+                ('config_id.pos_non_touch', '=', True),
+            ], limit=1, order='id desc')
 
         if session:
             if 'session_id' not in res:
@@ -337,17 +339,39 @@ class PosOrder(models.Model):
         """
         Abre el wizard para cerrar la sesión POS actual del usuario.
         Este método se llama desde el botón en la vista de pedidos.
+
+        La sesión se determina en este orden de prioridad:
+        1. session_id del contexto (pasado desde la vista)
+        2. session_id del pedido actual (si se llama desde un pedido específico)
+        3. Buscar sesión abierta del usuario en un POS no táctil
         """
-        # Buscar la sesión abierta del usuario actual
-        session = self.env['pos.session'].search([
-            ('user_id', '=', self.env.user.id),
-            ('state', 'in', ['opened', 'closing_control'])
-        ], limit=1)
+        session = None
+
+        # 1. Intentar obtener la sesión del contexto
+        session_id = self.env.context.get('default_session_id') or self.env.context.get('session_id')
+        if session_id:
+            session = self.env['pos.session'].browse(session_id)
+            if not session.exists() or session.state not in ['opened', 'closing_control']:
+                session = None
+
+        # 2. Si no hay contexto, intentar obtener del pedido actual
+        if not session and self:
+            order = self[0] if len(self) > 0 else None
+            if order and order.session_id and order.session_id.state in ['opened', 'closing_control']:
+                session = order.session_id
+
+        # 3. Si aún no hay sesión, buscar una sesión de POS no táctil del usuario
+        if not session:
+            session = self.env['pos.session'].search([
+                ('user_id', '=', self.env.user.id),
+                ('state', 'in', ['opened', 'closing_control']),
+                ('config_id.pos_non_touch', '=', True),  # Solo POS no táctil
+            ], limit=1, order='id desc')
 
         if not session:
-            raise UserError(_('No tienes ninguna sesión abierta.'))
+            raise UserError(_('No tienes ninguna sesión abierta en un punto de venta no táctil.'))
 
-        # Validar que sea caja no táctil
+        # Validar que sea caja no táctil (por seguridad)
         if not session.config_id.pos_non_touch:
             raise UserError(_('Esta función solo está disponible para cajas en modo no táctil.'))
 
@@ -373,16 +397,37 @@ class PosOrder(models.Model):
         """
         Abre un wizard o formulario para registrar una entrada/salida de efectivo
         en la sesión POS actual del usuario.
-        Ahora crea un wizard transient `pos.session.cash_move.wizard` y abre su formulario.
+
+        La sesión se determina en este orden de prioridad:
+        1. session_id del contexto (pasado desde la vista)
+        2. session_id del pedido actual (si se llama desde un pedido específico)
+        3. Buscar sesión abierta del usuario en un POS no táctil
         """
-        # Buscar la sesión abierta del usuario actual
-        session = self.env['pos.session'].search([
-            ('user_id', '=', self.env.user.id),
-            ('state', '=', 'opened')
-        ], limit=1)
+        session = None
+
+        # 1. Intentar obtener la sesión del contexto
+        session_id = self.env.context.get('default_session_id') or self.env.context.get('session_id')
+        if session_id:
+            session = self.env['pos.session'].browse(session_id)
+            if not session.exists() or session.state != 'opened':
+                session = None
+
+        # 2. Si no hay contexto, intentar obtener del pedido actual
+        if not session and self:
+            order = self[0] if len(self) > 0 else None
+            if order and order.session_id and order.session_id.state == 'opened':
+                session = order.session_id
+
+        # 3. Si aún no hay sesión, buscar una sesión de POS no táctil del usuario
+        if not session:
+            session = self.env['pos.session'].search([
+                ('user_id', '=', self.env.user.id),
+                ('state', '=', 'opened'),
+                ('config_id.pos_non_touch', '=', True),  # Solo POS no táctil
+            ], limit=1, order='id desc')
 
         if not session:
-            raise UserError(_('No tienes ninguna sesión abierta.'))
+            raise UserError(_('No tienes ninguna sesión abierta en un punto de venta no táctil.'))
 
         # Crear el wizard transient para la sesión encontrada
         wizard = self.env['pos.session.cash_move.wizard'].create({
