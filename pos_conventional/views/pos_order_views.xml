@@ -10,13 +10,19 @@
             <xpath expr="//list" position="attributes">
                 <attribute name="js_class">button_in_tree</attribute>
                 <attribute name="create">true</attribute>
-                <!-- Color naranja/warning para pedidos vinculados a sale.order -->
-                <attribute name="decoration-warning">is_linked_to_sale</attribute>
+                <!-- Sobrescribir decoraciones: azul solo para borradores NO vinculados, gris para vinculados -->
+                <attribute name="decoration-info">state == 'draft' and not is_linked_to_sale</attribute>
+                <attribute name="decoration-muted">is_linked_to_sale or state == 'cancel'</attribute>
             </xpath>
             <!-- Añadir columna para mostrar si está vinculado a sale.order -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="is_linked_to_sale" invisible="1"/>
-                <field name="linked_sale_order_id" string="Pedido venta" optional="show"/>
+                <field name="linked_sale_order_id" string="Pedido venta" optional="show"
+                       widget="many2one" options="{'no_open': False}"/>
+            </xpath>
+            <!-- Hacer el campo state opcional (oculto por defecto) -->
+            <xpath expr="//field[@name='state'][@widget='badge']" position="attributes">
+                <attribute name="optional">hide</attribute>
             </xpath>
         </field>
     </record>
@@ -189,6 +195,14 @@
             </xpath>
             <xpath expr="//page[@name='notes']" position="attributes">
                 <attribute name="invisible">is_linked_to_sale</attribute>
+            </xpath>
+
+            <!-- Ocultar el statusbar (campo de estado) cuando está vinculado -->
+            <xpath expr="//header/field[@name='state'][1]" position="attributes">
+                <attribute name="invisible">is_linked_to_sale or (state != 'cancel' and is_linked_to_sale)</attribute>
+            </xpath>
+            <xpath expr="//header/field[@name='state'][2]" position="attributes">
+                <attribute name="invisible">is_linked_to_sale or (state == 'cancel' and is_linked_to_sale)</attribute>
             </xpath>
         </field>
     </record>

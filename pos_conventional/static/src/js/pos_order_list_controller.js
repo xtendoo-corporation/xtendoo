@@ -21,6 +21,53 @@ export class PosOrderListController extends ListController {
     }
 
     /**
+     * Intercepta la apertura de un registro para redirigir al sale.order vinculado
+     * cuando el pedido está vinculado a un sale.order
+     */
+    async openRecord(record, mode) {
+        // Obtener el campo linked_sale_order_id del registro
+        const linkedSaleOrderField = record.data.linked_sale_order_id;
+
+        // Log para depuración
+        console.log('openRecord - linkedSaleOrderField:', linkedSaleOrderField);
+        console.log('openRecord - record.data:', record.data);
+
+        // Si el pedido está vinculado a un sale.order, abrir ese sale.order
+        if (linkedSaleOrderField) {
+            let saleOrderId = null;
+
+            // El campo Many2one puede venir en diferentes formatos:
+            // - Array [id, name]
+            // - Objeto {id: X, display_name: "..."}
+            // - Número directo
+            if (Array.isArray(linkedSaleOrderField)) {
+                saleOrderId = linkedSaleOrderField[0];
+            } else if (typeof linkedSaleOrderField === 'object' && linkedSaleOrderField.id) {
+                saleOrderId = linkedSaleOrderField.id;
+            } else if (typeof linkedSaleOrderField === 'number') {
+                saleOrderId = linkedSaleOrderField;
+            }
+
+            console.log('openRecord - saleOrderId calculado:', saleOrderId, typeof saleOrderId);
+
+            if (saleOrderId && typeof saleOrderId === 'number') {
+                await this.env.services.action.doAction({
+                    type: 'ir.actions.act_window',
+                    res_model: 'sale.order',
+                    res_id: saleOrderId,
+                    views: [[false, 'form']],
+                    view_mode: 'form',
+                    target: 'current',
+                });
+                return;
+            }
+        }
+
+        // Si no está vinculado, comportamiento normal (abrir pos.order)
+        return super.openRecord(record, mode);
+    }
+
+    /**
      * Verifica si el domain actual incluye filtro por config_id
      * Esto indica que venimos de la redirección de una caja no táctil
      */

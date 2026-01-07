@@ -73,6 +73,31 @@ class PosOrder(models.Model):
         for order in self:
             order.has_order_lines = bool(order.lines)
 
+    def open_linked_sale_order(self):
+        """
+        Abre el sale.order vinculado en lugar del pos.order.
+        Este método se usa cuando se hace clic en una fila de la lista.
+        """
+        self.ensure_one()
+        if self.linked_sale_order_id:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'sale.order',
+                'res_id': self.linked_sale_order_id.id,
+                'view_mode': 'form',
+                'view_type': 'form',
+                'target': 'current',
+            }
+        # Si no tiene sale.order vinculado, abrir el pos.order normalmente
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.order',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'target': 'current',
+        }
+
 
     @api.model
     def get_product_line_data_by_barcode(self, barcode, pricelist_id=False, fiscal_position_id=False, partner_id=False):
@@ -698,8 +723,11 @@ class PosOrder(models.Model):
                 self.name, sale_order.name
             )
 
-            # Vincular el pos.order con el sale.order creado
-            self.write({'linked_sale_order_id': sale_order.id})
+            # Vincular el pos.order con el sale.order creado y actualizar el nombre
+            self.write({
+                'linked_sale_order_id': sale_order.id,
+                'name': sale_order.name,  # Usar el mismo número de referencia
+            })
 
             # Confirmar el pedido de venta automáticamente
             sale_order.action_confirm()
