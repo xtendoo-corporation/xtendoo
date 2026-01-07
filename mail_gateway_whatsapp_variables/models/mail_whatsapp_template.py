@@ -94,8 +94,49 @@ class MailWhatsappTemplate(models.Model):
             self.variable_ids = new_vars
 
     def _prepare_components_to_export(self):
-        components = super()._prepare_components_to_export()
-        # Agrupar todos los botones en un solo componente BUTTONS
+        """Sobrescribir para incluir ejemplos de variables y botones"""
+        components = []
+
+        # HEADER con ejemplos de variables si existen
+        if self.header:
+            header_component = {
+                "type": "HEADER",
+                "format": "TEXT",
+                "text": self.header,
+            }
+            # Buscar variables en el header
+            header_vars = self.variable_ids.filtered(lambda v: '{{' in (self.header or ''))
+            if header_vars:
+                examples = []
+                for var in sorted(header_vars, key=lambda v: v.variable_index):
+                    examples.append(var.demo_value or 'Sample value')
+                if examples:
+                    header_component["example"] = {"header_text": examples}
+            components.append(header_component)
+
+        # BODY con ejemplos de variables
+        body_component = {
+            "type": "BODY",
+            "text": self.body,
+        }
+        # Buscar todas las variables en el body
+        body_vars = self.variable_ids.sorted(key=lambda v: v.variable_index)
+        if body_vars:
+            examples = []
+            for var in body_vars:
+                examples.append(var.demo_value or 'Sample value')
+            if examples:
+                body_component["example"] = {"body_text": [examples]}
+        components.append(body_component)
+
+        # FOOTER
+        if self.footer:
+            components.append({
+                "type": "FOOTER",
+                "text": self.footer,
+            })
+
+        # BUTTONS
         if self.button_ids:
             buttons = []
             for button in self.button_ids:
@@ -119,6 +160,7 @@ class MailWhatsappTemplate(models.Model):
                 "type": "BUTTONS",
                 "buttons": buttons
             })
+
         return components
 
     @api.model
