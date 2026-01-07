@@ -45,6 +45,12 @@ class PosCashCalculatorWizard(models.TransientModel):
         string='Wizard de cierre'
     )
 
+    # ID del wizard de entrada/salida de efectivo para actualizar el valor
+    cash_move_wizard_id = fields.Many2one(
+        'pos.session.cash_move.wizard',
+        string='Wizard de entrada/salida de efectivo'
+    )
+
     @api.depends(
         'qty_200', 'qty_100', 'qty_50', 'qty_20', 'qty_10', 'qty_5', 'qty_2',
         'qty_1', 'qty_050', 'qty_025', 'qty_020', 'qty_010', 'qty_005', 'qty_002'
@@ -71,7 +77,7 @@ class PosCashCalculatorWizard(models.TransientModel):
 
     def action_confirm(self):
         """
-        Confirma el cálculo y actualiza el wizard de cierre con el total calculado
+        Confirma el cálculo y actualiza el wizard padre con el total calculado
         """
         self.ensure_one()
 
@@ -86,6 +92,22 @@ class PosCashCalculatorWizard(models.TransientModel):
                 'type': 'ir.actions.act_window',
                 'res_model': 'pos.session.closing.wizard',
                 'res_id': self.closing_wizard_id.id,
+                'view_mode': 'form',
+                'target': 'new',
+                'context': self.env.context,
+            }
+
+        if self.cash_move_wizard_id:
+            # Actualizar el campo amount del wizard de entrada/salida
+            self.cash_move_wizard_id.write({
+                'amount': self.total,
+            })
+
+            # Cerrar solo este wizard y volver al wizard de entrada/salida
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'pos.session.cash_move.wizard',
+                'res_id': self.cash_move_wizard_id.id,
                 'view_mode': 'form',
                 'target': 'new',
                 'context': self.env.context,

@@ -4,7 +4,6 @@ from odoo.exceptions import UserError
 
 class PosSessionCashMoveWizard(models.TransientModel):
     _name = 'pos.session.cash_move.wizard'
-    _inherit = 'cashbox.calculator.mixin'
     _description = 'Wizard para Entrada/Salida de efectivo (backend)'
 
     session_id = fields.Many2one('pos.session', string='Session', required=True)
@@ -14,41 +13,43 @@ class PosSessionCashMoveWizard(models.TransientModel):
     reason = fields.Text(string='Razón')
     partner_id = fields.Many2one('res.partner', string='Partner')
 
-    # Total calculado (usa el mixin)
-    total_cashbox = fields.Monetary(
-        string='Total calculado',
-        compute='_compute_total_cashbox',
-        store=True,
-    )
-
-    @api.depends('qty_500', 'qty_200', 'qty_100', 'qty_50', 'qty_20', 'qty_10', 'qty_5',
-                 'qty_2', 'qty_1', 'qty_050', 'qty_020', 'qty_010', 'qty_005', 'qty_002', 'qty_001')
-    def _compute_total_cashbox(self):
-        for wizard in self:
-            wizard.total_cashbox = wizard._calculate_cashbox_total()
-
     def action_confirm(self):
         self.ensure_one()
 
-        # Determinar el importe a usar
-        if self.use_cashbox:
-            amount_to_use = self.total_cashbox
-        else:
-            amount_to_use = self.amount
-
-        if not amount_to_use or amount_to_use <= 0:
+        if not self.amount or self.amount <= 0:
             raise UserError(_('El importe debe ser mayor que 0.'))
 
         # Llamar al método existente try_cash_in_out en pos.session
         extras = {'translatedType': _('Entrada') if self.type == 'in' else _('Salida')}
         self.session_id.sudo().try_cash_in_out(
             self.type,
-            amount_to_use,
+            self.amount,
             (self.reason or '').strip(),
             self.partner_id.id if self.partner_id else False,
             extras
         )
         return {'type': 'ir.actions.act_window_close'}
+
+    def action_open_cash_calculator(self):
+        """
+        Abre el wizard de calculadora de efectivo para calcular el importe
+        """
+        self.ensure_one()
+
+        # Crear el wizard de calculadora vinculado a este wizard de entrada/salida
+        calculator_wizard = self.env['pos.cash.calculator.wizard'].create({
+            'cash_move_wizard_id': self.id,
+        })
+
+        return {
+            'name': _('Calculadora de efectivo'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.cash.calculator.wizard',
+            'view_mode': 'form',
+            'res_id': calculator_wizard.id,
+            'target': 'new',
+            'context': self.env.context,
+        }
 
 
 
