@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Acción de servidor para cargar plantillas predefinidas -->
+    <record id="action_server_load_predefined_templates" model="ir.actions.server">
+        <field name="name">Cargar Plantillas Predefinidas</field>
+        <field name="model_id" ref="mail_gateway_whatsapp.model_mail_gateway"/>
+        <field name="state">code</field>
+        <field name="code">
+# Obtener IDs de los modelos
+sale_order_model = env.ref('sale.model_sale_order').id
+stock_picking_model = env.ref('stock.model_stock_picking').id
+account_move_model = env.ref('account.model_account_move').id
+
+# Plantillas predefinidas con sus variables y botones
+templates_data = [
+    {
+        'name': 'Confirmación de Pedido',
+        'body': 'Hola {{1}},\n\nTu pedido *{{2}}* ha sido confirmado exitosamente.\n\n*Detalles del pedido:*\n- Total: {{3}}\n- Fecha: {{4}}\n\nGracias por tu compra. En breve procesaremos tu pedido.',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': sale_order_model,
+        'variables': [
+            {'sequence': 1, 'variable_index': 1, 'name': 'Nombre del Cliente', 'field_name': 'partner_id.name'},
+            {'sequence': 2, 'variable_index': 2, 'name': 'Número de Pedido', 'field_name': 'name'},
+            {'sequence': 3, 'variable_index': 3, 'name': 'Total', 'field_name': 'amount_total'},
+            {'sequence': 4, 'variable_index': 4, 'name': 'Fecha', 'field_name': 'date_order'},
+        ],
+        'buttons': [],
+    },
+    {
+        'name': '¿Quiere recibir PDF del Pedido?',
+        'body': 'Hola {{1}},\n\nTu pedido *{{2}}* ha sido confirmado.\n\n¿Desea recibir un PDF con los detalles completos de su pedido?\n\nResponda *Sí* o *No*',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': sale_order_model,
+        'variables': [
+            {'sequence': 1, 'variable_index': 1, 'name': 'Nombre del Cliente', 'field_name': 'partner_id.name'},
+            {'sequence': 2, 'variable_index': 2, 'name': 'Número de Pedido', 'field_name': 'name'},
+        ],
+        'buttons': [
+            {'sequence': 1, 'button_type': 'quick_reply', 'name': 'Sí'},
+            {'sequence': 2, 'button_type': 'quick_reply', 'name': 'No'},
+        ],
+    },
+    {
+        'name': 'Notificación de Envío',
+        'body': 'Hola {{1}},\n\nTu pedido *{{2}}* ha sido enviado.\n\n*Información de envío:*\n- Nº Albarán: {{3}}\n- Fecha de envío: {{4}}\n- Transportista: {{5}}\n\nRecibirás tu pedido pronto.',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': stock_picking_model,
+        'variables': [
+            {'sequence': 1, 'variable_index': 1, 'name': 'Nombre del Cliente', 'field_name': 'partner_id.name'},
+            {'sequence': 2, 'variable_index': 2, 'name': 'Referencia del Pedido', 'field_name': 'origin'},
+            {'sequence': 3, 'variable_index': 3, 'name': 'Número de Albarán', 'field_name': 'name'},
+            {'sequence': 4, 'variable_index': 4, 'name': 'Fecha de Envío', 'field_name': 'scheduled_date'},
+            {'sequence': 5, 'variable_index': 5, 'name': 'Transportista', 'field_name': 'carrier_id.name'},
+        ],
+        'buttons': [],
+    },
+    {
+        'name': '¿Quiere recibir PDF del Albarán?',
+        'body': 'Hola {{1}},\n\nTu pedido *{{2}}* ha sido enviado (Albarán: {{3}}).\n\n¿Desea recibir un PDF con el albarán de envío?\n\nResponda *Sí* o *No*',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': stock_picking_model,
+        'variables': [
+            {'sequence': 1, 'variable_index': 1, 'name': 'Nombre del Cliente', 'field_name': 'partner_id.name'},
+            {'sequence': 2, 'variable_index': 2, 'name': 'Referencia del Pedido', 'field_name': 'origin'},
+            {'sequence': 3, 'variable_index': 3, 'name': 'Número de Albarán', 'field_name': 'name'},
+        ],
+        'buttons': [
+            {'sequence': 1, 'button_type': 'quick_reply', 'name': 'Sí'},
+            {'sequence': 2, 'button_type': 'quick_reply', 'name': 'No'},
+        ],
+    },
+    {
+        'name': 'Factura Disponible',
+        'body': 'Hola {{1}},\n\nSu factura *{{2}}* ya está disponible.\n\n*Detalles de la factura:*\n- Importe total: {{3}}\n- Fecha de emisión: {{4}}\n- Fecha de vencimiento: {{5}}\n\nPuede realizar el pago en cualquier momento.',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': account_move_model,
+        'variables': [
+            {'sequence': 1, 'variable_index': 1, 'name': 'Nombre del Cliente', 'field_name': 'partner_id.name'},
+            {'sequence': 2, 'variable_index': 2, 'name': 'Número de Factura', 'field_name': 'name'},
+            {'sequence': 3, 'variable_index': 3, 'name': 'Importe Total', 'field_name': 'amount_total'},
+            {'sequence': 4, 'variable_index': 4, 'name': 'Fecha de Emisión', 'field_name': 'invoice_date'},
+            {'sequence': 5, 'variable_index': 5, 'name': 'Fecha de Vencimiento', 'field_name': 'invoice_date_due'},
+        ],
+        'buttons': [],
+    },
+    {
+        'name': '¿Quiere recibir PDF de la Factura?',
+        'body': 'Hola {{1}},\n\nSu factura *{{2}}* está lista (Total: {{3}}).\n\n¿Desea recibir un PDF de su factura?\n\nResponda *Sí* o *No*',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': account_move_model,
+        'variables': [
+            {'sequence': 1, 'variable_index': 1, 'name': 'Nombre del Cliente', 'field_name': 'partner_id.name'},
+            {'sequence': 2, 'variable_index': 2, 'name': 'Número de Factura', 'field_name': 'name'},
+            {'sequence': 3, 'variable_index': 3, 'name': 'Importe Total', 'field_name': 'amount_total'},
+        ],
+        'buttons': [
+            {'sequence': 1, 'button_type': 'quick_reply', 'name': 'Sí'},
+            {'sequence': 2, 'button_type': 'quick_reply', 'name': 'No'},
+        ],
+    },
+]
+
+# Obtener todos los gateways de WhatsApp
+gateways = env['mail.gateway'].search([('gateway_type', '=', 'whatsapp')])
+
+if not gateways:
+    raise UserError('No se encontraron gateways de WhatsApp configurados. Por favor, configure al menos un gateway antes de cargar las plantillas.')
+
+created_count = 0
+updated_count = 0
+
+for gateway in gateways:
+    # Diccionario para guardar las plantillas creadas y poder referenciarlas
+    created_templates = {}
+
+    # Primera pasada: crear todas las plantillas
+    for template_data in templates_data:
+        # Buscar si ya existe
+        existing = env['mail.whatsapp.template'].search([
+            ('name', '=', template_data['name']),
+            ('gateway_id', '=', gateway.id),
+            ('language', '=', template_data['language']),
+        ], limit=1)
+
+        # Preparar datos de la plantilla
+        template_vals = {
+            'name': template_data['name'],
+            'body': template_data['body'],
+            'category': template_data['category'],
+            'language': template_data['language'],
+            'model_id': template_data['model_id'],
+            'gateway_id': gateway.id,
+            'state': 'draft',
+        }
+
+        if existing:
+            # Actualizar plantilla existente
+            existing.write(template_vals)
+            template = existing
+            updated_count += 1
+        else:
+            # Crear nueva plantilla
+            template = env['mail.whatsapp.template'].create(template_vals)
+            created_count += 1
+
+        # Guardar la plantilla en el diccionario
+        created_templates[template_data['name']] = template
+
+    # Segunda pasada: configurar variables, botones y confirmación
+    for template_data in templates_data:
+        template = created_templates[template_data['name']]
+
+        # Eliminar variables y botones antiguos
+        template.variable_ids.unlink()
+        template.button_ids.unlink()
+
+        # Crear variables
+        for var_data in template_data['variables']:
+            env['mail.whatsapp.template.variable'].create({
+                'template_id': template.id,
+                'sequence': var_data['sequence'],
+                'variable_index': var_data['variable_index'],
+                'name': var_data['name'],
+                'field_name': var_data['field_name'],
+            })
+
+        # Crear botones y configurar confirmación si es plantilla interactiva
+        if template_data['buttons']:
+            # Es una plantilla interactiva con botones
+            for button_data in template_data['buttons']:
+                env['mail.whatsapp.template.button'].create({
+                    'template_id': template.id,
+                    'sequence': button_data['sequence'],
+                    'button_type': button_data['button_type'],
+                    'name': button_data['name'],
+                })
+
+            # Configurar campos de confirmación
+            confirmation_template_name = None
+
+            # Determinar qué plantilla usar como confirmación según el nombre
+            if 'Pedido' in template.name:
+                confirmation_template_name = 'Confirmación de Pedido'
+            elif 'Albarán' in template.name:
+                confirmation_template_name = 'Notificación de Envío'
+            elif 'Factura' in template.name:
+                confirmation_template_name = 'Factura Disponible'
+
+            # Actualizar la plantilla con los campos de confirmación
+            if confirmation_template_name and confirmation_template_name in created_templates:
+                template.write({
+                    'requires_confirmation': True,
+                    'confirmation_template_id': created_templates[confirmation_template_name].id,
+                    'confirmation_type': 'text_si',
+                })
+
+# Mostrar resultado
+message = 'Plantillas cargadas correctamente:\n- Creadas: %s\n- Actualizadas: %s' % (created_count, updated_count)
+action = {
+    'type': 'ir.actions.client',
+    'tag': 'display_notification',
+    'params': {
+        'title': 'Plantillas Predefinidas',
+        'message': message,
+        'type': 'success',
+        'sticky': False,
+    }
+}
+        </field>
+    </record>
+
+    <!-- Menú para ejecutar la acción -->
+    <menuitem
+        id="menu_whatsapp_load_templates"
+        name="Cargar Plantillas Predefinidas"
+        parent="menu_whatsapp_root"
+        action="action_server_load_predefined_templates"
+        sequence="20"/>
+
+</odoo>
+

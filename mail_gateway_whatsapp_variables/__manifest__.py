@@ -3,7 +3,7 @@
 
 {
     "name": "Mail Gateway WhatsApp - Template Variables",
-    "version": "18.0.1.8.0",
+    "version": "18.0.1.9.0",
     "category": "Social",
     "summary": "Add support for template variables, buttons, attachments and auto-confirmation flow in WhatsApp messages",
     "author": "Xtendoo",
@@ -14,6 +14,8 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "views/whatsapp_menu.xml",
+        "views/whatsapp_predefined_templates_action.xml",
         "views/whatsapp_views.xml",
         "views/whatsapp_pending_confirmation_views.xml",
     ],

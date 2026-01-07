@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Acción para abrir todas las plantillas de WhatsApp -->
+    <record id="action_mail_whatsapp_template_all" model="ir.actions.act_window">
+        <field name="name">Plantillas de WhatsApp</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">mail.whatsapp.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva plantilla de WhatsApp
+            </p>
+            <p>
+                Las plantillas de WhatsApp permiten enviar mensajes estructurados con variables dinámicas,
+                botones y archivos adjuntos.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú principal: Discuss / WhatsApp -->
+    <menuitem
+        id="menu_whatsapp_root"
+        name="WhatsApp"
+        parent="mail.menu_root_discuss"
+        sequence="15"/>
+
+    <!-- Submenú: Plantillas -->
+    <menuitem
+        id="menu_whatsapp_templates"
+        name="Plantillas"
+        parent="menu_whatsapp_root"
+        action="action_mail_whatsapp_template_all"
+        sequence="10"/>
+
+
+</odoo>
+

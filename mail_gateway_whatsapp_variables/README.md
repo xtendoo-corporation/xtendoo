@@ -15,11 +15,20 @@ Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar soporte de vari
 - ✅ **Auto-adjuntar PDFs** al abrir el composer desde ventas/facturas
 - ✅ Soporte de adjuntos múltiples (PDFs, imágenes, documentos)
 - ✅ Botones interactivos (quick_reply, URL, llamada)
+- ✅ **Plantillas predefinidas** para ventas, albaranes y facturas 🎯
+- ✅ **Wizard de importación** de plantillas con un clic
 - ✅ Compatible con plantillas OCA existentes
 
 ## Versión
 
-**18.0.1.7.0** - Auto-generación de PDFs implementada
+**18.0.1.8.0** - Plantillas predefinidas implementadas
+
+### Cambios en v1.8.0 (7 Enero 2026)
+- ✨ **NUEVO**: 6 plantillas predefinidas listas para usar
+- ✨ **NUEVO**: Wizard de importación de plantillas
+- ✨ **NUEVO**: Menú de WhatsApp en Discuss
+- ✨ **NUEVO**: Plantillas con y sin botones interactivos
+- 📝 Plantillas para: Pedidos, Albaranes y Facturas
 
 ### Cambios en v1.7.0 (2 Enero 2026)
 - ✨ **NUEVO**: Generación automática de PDFs al abrir composer
@@ -41,6 +50,24 @@ Este módulo extiende `mail_gateway_whatsapp` (OCA) para agregar soporte de vari
 3. Las variables se detectarán automáticamente en tus plantillas
 
 ## Uso
+
+### 🎯 Importar Plantillas Predefinidas (NUEVO)
+
+El módulo incluye 6 plantillas listas para usar:
+
+1. Ve a **Discuss → WhatsApp → Obtener Plantillas del Módulo**
+2. Selecciona tu **Gateway de WhatsApp**
+3. Marca las plantillas que deseas importar:
+   - ✅ Confirmación de Pedido (sin botones)
+   - ✅ ¿Quiere recibir PDF del Pedido? (con botones)
+   - ✅ Notificación de Envío (sin botones)
+   - ✅ ¿Quiere recibir PDF del Albarán? (con botones)
+   - ✅ Factura Disponible (sin botones)
+   - ✅ ¿Quiere recibir PDF de la Factura? (con botones)
+4. Haz clic en **"Importar Plantillas"**
+5. ¡Listo! Las plantillas aparecerán en tu lista de plantillas
+
+**Plantillas con botones interactivos:** Incluyen footer "Responda Sí o No" para que el cliente pueda confirmar si desea recibir el PDF del documento.
 
 ### Enviar mensaje con PDF desde Venta
 
