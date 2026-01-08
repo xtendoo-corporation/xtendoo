@@ -60,16 +60,16 @@ patch(Composer.prototype, {
             mail_post_autofollow: this.thread.hasWriteAccess,
             default_wizard_partner_ids: Array.from(
                 new Set(
-                    this.thread.gateway_followers.map((follower) => {
+                    (this.thread.gateway_followers || []).map((follower) => {
                         return follower.id;
                     })
                 )
             ),
             default_wizard_channel_ids: Array.from(
                 new Set(
-                    this.thread.gateway_followers
+                    (this.thread.gateway_followers || [])
                         .map((follower) => {
-                            return follower.gateway_channels.map(
+                            return (follower.gateway_channels || []).map(
                                 (channel) => channel?.id
                             );
                         })

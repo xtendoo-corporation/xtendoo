@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t
+        t-name="xtendoo_mail_gateway_whatsapp.ChatterWhatsappButton"
+        t-inherit="mail.Chatter"
+        t-inherit-mode="extension"
+    >
+        <xpath expr="//button[hasclass('o-mail-Chatter-logNote')]" position="after">
+            <button
+                class="o-mail-Chatter-whatsapp-template btn btn-success text-nowrap me-1"
+                type="button"
+                t-att-class="{
+                    'my-2': !props.compactHeight
+                }"
+                t-on-click="onClickWhatsappTemplate"
+                title="Send WhatsApp Template"
+            >
+                <i class="fa fa-whatsapp" role="img" aria-label="whatsapp" />
+                <span> Template</span>
+            </button>
+        </xpath>
+    </t>
+</templates>
+
