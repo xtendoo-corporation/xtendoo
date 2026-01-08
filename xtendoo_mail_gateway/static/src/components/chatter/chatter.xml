@@ -23,17 +23,14 @@
             </button>
         </xpath>
         <xpath
-            expr="//t[@t-if='state.composerType']/SuggestedRecipientsList"
-            position="before"
+            expr="//t[@t-if='state.composerType']"
+            position="inside"
         >
-            <t
-                t-if="state.composerType === 'gateway' and state.thread.gateway_followers.length"
-            >
+            <t t-if="state.composerType === 'gateway' and state.thread.gateway_followers and state.thread.gateway_followers.length">
                 <div
-                    class="flex-shrink-0 px-3 pt-3 text-truncate small mb-2"
-                    style="margin-left:48px"
+                    class="d-flex py-1 ps-3"
                 >
-                    <span class="fw-bold">To:</span>
+                    <span class="flex-shrink-0 text-end fw-bold px-2" style="width:46px">To: </span>
                     <t
                         t-foreach="state.thread.gateway_followers"
                         t-as="gateway_follower"
@@ -46,15 +43,6 @@
                     </t>
                 </div>
             </t>
-            <t t-set="type" t-value="type === 'gateway' ? 'gateway' : type" />
-        </xpath>
-        <xpath
-            expr="//t[@t-if='state.composerType']/SuggestedRecipientsList"
-            position="attributes"
-        >
-            <attribute
-                name="t-if"
-            >state.composerType !== 'note' and state.thread.recipients.length > 0 and state.composerType !== 'gateway'</attribute>
         </xpath>
     </t>
 </templates>
