@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <!--
+    Template mail.MailComposerSendDropdown does not exist in Odoo 19.
+    This extension has been disabled for compatibility.
+
+    Original code:
+    <t t-inherit="mail.MailComposerSendDropdown" t-inherit-mode="extension">
+        <xpath expr="//Dropdown" position="attributes">
+            <attribute name="t-if">env.model.config.resModel === "mail.compose.message"</attribute>
+        </xpath>
+    </t>
+    -->
+</templates>
