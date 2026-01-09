@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista para mostrar el teléfono del partner en la vista form -->
+    <record id="view_partner_form_whatsapp_pos" model="ir.ui.view">
+        <field name="name">res.partner.form.whatsapp.pos</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='mobile']" position="attributes">
+                <attribute name="string">Móvil (WhatsApp)</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
+

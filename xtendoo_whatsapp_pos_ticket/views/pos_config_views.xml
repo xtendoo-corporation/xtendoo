@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_pos_config_form_whatsapp" model="ir.ui.view">
+        <field name="name">pos.config.form.whatsapp</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Añadir configuración de WhatsApp después del setting de other_devices -->
+            <xpath expr="//setting[@id='other_devices']" position="after">
+                <setting id="whatsapp_ticket_setting" string="WhatsApp Ticket" help="Enviar ticket de venta por WhatsApp al cliente">
+                    <field name="whatsapp_ticket_enabled"/>
+                    <div class="content-group mt16" invisible="not whatsapp_ticket_enabled">
+                        <div class="row">
+                            <label for="whatsapp_gateway_id" class="col-lg-4 o_light_label"/>
+                            <field name="whatsapp_gateway_id" class="col-lg-8"/>
+                        </div>
+                        <div class="row mt-2">
+                            <label for="whatsapp_pos_template_id" class="col-lg-4 o_light_label"/>
+                            <field name="whatsapp_pos_template_id" class="col-lg-8"
+                                   options="{'no_create': True}"/>
+                        </div>
+                        <div class="text-muted mt-2">
+                            <i class="fa fa-whatsapp text-success"/>
+                            Aparecerá un botón en la pantalla de recibo para enviar el ticket por WhatsApp.
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
+

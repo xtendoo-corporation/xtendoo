@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Extensión del ReceiptScreen para añadir el botón de WhatsApp -->
+    <t t-name="xtendoo_whatsapp_pos_ticket.ReceiptScreenWhatsApp" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
+
+        <!-- Añadir botón de WhatsApp después del botón de enviar email -->
+        <xpath expr="//div[hasclass('sending-receipt-management')]" position="inside">
+            <t t-if="isWhatsappEnabled">
+                <button t-if="canSendWhatsapp and !whatsappState.sent"
+                        class="btn btn-success btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                        t-att-disabled="whatsappState.sending"
+                        t-on-click="() => this.sendWhatsappTicket()">
+                    <i t-attf-class="fa {{whatsappState.sending ? 'fa-spin fa-circle-o-notch' : 'fa-whatsapp'}}" />
+                    <span t-if="!whatsappState.sending">Enviar por WhatsApp</span>
+                    <span t-else="">Enviando...</span>
+                </button>
+                <button t-if="canSendWhatsapp and whatsappState.sent"
+                        class="btn btn-outline-success btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                        disabled="true">
+                    <i class="fa fa-check-circle" />
+                    <span>Enviado por WhatsApp</span>
+                </button>
+                <div t-if="isWhatsappEnabled and !canSendWhatsapp and currentOrder.get_partner()"
+                     class="alert alert-warning py-2 px-3 mb-0 d-flex align-items-center gap-2">
+                    <i class="fa fa-exclamation-triangle" />
+                    <span class="small">El cliente no tiene teléfono</span>
+                </div>
+            </t>
+        </xpath>
+
+    </t>
+
+</templates>
+
