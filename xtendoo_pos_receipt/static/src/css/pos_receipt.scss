@@ -1,0 +1,32 @@
+/* CSS de recibo (xtendoo) - logos adaptativos */
+.pos-receipt .pos-receipt-logo {
+    display: block;
+    margin: 0 auto;
+    width: auto;
+    max-width: 90%;
+    height: auto;
+    max-height: 140px; /* límite para logos muy altos */
+    object-fit: contain;
+}
+
+/* Logo panorámico: ocupa más ancho y limita altura */
+.pos-receipt .pos-receipt-logo.logo--wide {
+    width: 90% !important;
+    max-height: 80px !important;
+    height: auto !important;
+}
+
+/* Logo alto: limitar ancho y forzar altura para mantener equilibrio */
+.pos-receipt .pos-receipt-logo.logo--tall {
+    width: auto !important;
+    max-width: 60% !important;
+    height: 120px !important;
+    max-height: 120px !important;
+}
+
+/* Fallback neutro */
+.pos-receipt .pos-receipt-logo:not(.logo--wide):not(.logo--tall) {
+    width: 70%;
+    max-height: 100px;
+}
+

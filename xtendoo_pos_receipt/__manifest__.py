@@ -7,6 +7,7 @@
     'depends': ['point_of_sale', 'l10n_es_pos'],
     'assets': {
         'point_of_sale._assets_pos': [
+            'xtendoo_pos_receipt/static/src/css/pos_receipt.scss',
             'xtendoo_pos_receipt/static/src/xml/receipt_templates.xml',
             'xtendoo_pos_receipt/static/src/js/receipt_order.js',
         ],

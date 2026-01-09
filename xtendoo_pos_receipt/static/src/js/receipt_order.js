@@ -413,6 +413,54 @@ patch(ReceiptHeader.prototype, {
             } catch (e) {
                 console.warn('[POS DEBUG] Error al obtener currentOrder:', e);
             }
+
+            // --- Nuevo: ajustar clase del logo según su relación de aspecto ---
+            try {
+                const applyLogoSizing = () => {
+                    try {
+                        // Buscar logo dentro del render container del receipt
+                        const logo = document.querySelector('.render-container .pos-receipt .pos-receipt-logo');
+                        if (!logo) return;
+                        // Crear función que evalúa la relación de aspecto real de la imagen
+                        const evalAndApply = (img) => {
+                            try {
+                                const naturalW = img.naturalWidth || img.width || 0;
+                                const naturalH = img.naturalHeight || img.height || 0;
+                                if (!naturalW || !naturalH) return;
+                                const ratio = naturalW / naturalH;
+                                img.classList.remove('logo--wide', 'logo--tall');
+                                if (ratio > 1.6) {
+                                    img.classList.add('logo--wide');
+                                } else if (ratio < 0.8) {
+                                    img.classList.add('logo--tall');
+                                } else {
+                                    // roughly square-ish
+                                }
+                            } catch (e) {
+                                console.warn('[POS DEBUG] evalAndApply logo error', e);
+                            }
+                        };
+                        if (logo.complete && logo.naturalWidth) {
+                            evalAndApply(logo);
+                        } else {
+                            logo.addEventListener('load', () => evalAndApply(logo));
+                            // fallback small timeout
+                            setTimeout(() => evalAndApply(logo), 500);
+                        }
+                    } catch (e) {
+                        console.warn('[POS DEBUG] applyLogoSizing error', e);
+                    }
+                };
+                // Ejecutar una vez y también on-demand cada vez que se abre el receipt
+                applyLogoSizing();
+                document.addEventListener('click', (ev) => {
+                    // si se hace click en botones de impresión o en la UI que re-renderizan, re-evaluar
+                    applyLogoSizing();
+                });
+            } catch (e) {
+                console.warn('[POS DEBUG] Logo sizing initialization failed', e);
+            }
+
         });
     },
 });
