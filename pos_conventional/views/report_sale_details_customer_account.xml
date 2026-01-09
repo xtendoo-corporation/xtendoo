@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Heredar el template del reporte de ventas diarias para agregar sección de Cuenta Cliente -->
+        <template id="report_saledetails_customer_account" inherit_id="point_of_sale.pos_session_sales_details">
+
+            <!-- Agregar sección de Cuenta Cliente después de la sección de Pagos -->
+            <xpath expr="//div[@id='payments']" position="after">
+                <div t-if="customer_account and customer_account.get('count', 0) > 0" id="customer_account_section" style="page-break-inside: avoid;">
+                    <div class="oe_structure"></div>
+                    <h6 class="bg-secondary p-1 fw-bold">Cuenta a Cŕedito</h6>
+                    <p class="text-muted mb-2">
+                        <small>
+                            <i class="fa fa-info-circle"/>
+                            Pedidos POS vinculados a pedidos de venta tradicionales (no afectan el efectivo en caja)
+                        </small>
+                    </p>
+                    <table class="table table-sm table-borderless">
+                        <thead>
+                            <tr>
+                                <th class="ps-2 fw-bold">Pedido de Venta</th>
+                                <th class="fw-bold">Cliente</th>
+                                <th class="text-end fw-bold">Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="customer_account.get('orders', [])" t-as="ca_order" class="border-bottom border-secondary">
+                                <td class="ps-2"><span t-out="ca_order['sale_order_name']">SO001</span></td>
+                                <td><span t-out="ca_order['partner_name']">Cliente Demo</span></td>
+                                <td class="text-end">
+                                    <t t-if="currency['position']">
+                                        <span t-out="ca_order['amount_total']" t-options="{'widget': 'float', 'precision': currency['precision']}">100.00</span><span t-out='currency["symbol"]'>€</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-out='currency["symbol"]'>€</span><span t-out="ca_order['amount_total']" t-options="{'widget': 'float', 'precision': currency['precision']}">100.00</span>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="ps-2"><strong>Total Cuenta a Cŕedito (<span t-out="customer_account.get('count', 0)">0</span> pedidos)</strong></td>
+                                <td class="text-end">
+                                    <t t-if="currency['position']">
+                                        <strong><span t-out="customer_account.get('total', 0.0)" t-options="{'widget': 'float', 'precision': currency['precision']}">0.00</span><span t-out='currency["symbol"]'>€</span></strong>
+                                    </t>
+                                    <t t-else="">
+                                        <strong><span t-out='currency["symbol"]'>€</span><span t-out="customer_account.get('total', 0.0)" t-options="{'widget': 'float', 'precision': currency['precision']}">0.00</span></strong>
+                                    </t>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="oe_structure"></div>
+                </div>
+            </xpath>
+
+        </template>
+    </data>
+</odoo>
+
