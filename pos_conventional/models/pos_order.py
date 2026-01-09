@@ -180,34 +180,28 @@ class PosOrder(models.Model):
         if 'amount_return' not in res:
             res['amount_return'] = 0.0
 
-        # Buscar sesión abierta del usuario o usar la del contexto
+        # SOLO usar la sesión si viene explícitamente en el contexto
+        # NO buscar automáticamente sesiones porque puede causar que pedidos
+        # de cajas táctiles se asignen incorrectamente a cajas no táctiles
         session_id = self.env.context.get('default_session_id')
         if session_id:
             session = self.env['pos.session'].browse(session_id)
-        else:
-            # Buscar sesión de POS no táctil primero
-            session = self.env['pos.session'].search([
-                ('user_id', '=', self.env.user.id),
-                ('state', '=', 'opened'),
-                ('config_id.pos_non_touch', '=', True),
-            ], limit=1, order='id desc')
+            if session.exists():
+                if 'session_id' not in res:
+                    res['session_id'] = session.id
+                # NO asignar config_id aquí, dejar que se compute desde session_id
+                if 'pricelist_id' not in res:
+                    res['pricelist_id'] = session.config_id.pricelist_id.id
+                if 'currency_id' not in res:
+                    res['currency_id'] = session.currency_id.id
 
-        if session:
-            if 'session_id' not in res:
-                res['session_id'] = session.id
-            if 'config_id' not in res:
-                res['config_id'] = session.config_id.id
-            if 'pricelist_id' not in res:
-                res['pricelist_id'] = session.config_id.pricelist_id.id
-            if 'currency_id' not in res:
-                res['currency_id'] = session.currency_id.id
-
-            # Establecer cliente por defecto si está configurado y no hay uno ya establecido
-            if 'partner_id' in fields_list and not res.get('partner_id'):
-                if session.config_id.default_partner_id:
-                    res['partner_id'] = session.config_id.default_partner_id.id
+                # Establecer cliente por defecto si está configurado y no hay uno ya establecido
+                if 'partner_id' in fields_list and not res.get('partner_id'):
+                    if session.config_id.default_partner_id:
+                        res['partner_id'] = session.config_id.default_partner_id.id
         else:
-            # Si no hay sesión, usar valores por defecto de la compañía
+            # Si no hay sesión en el contexto, usar valores por defecto de la compañía
+            # pero NO buscar sesiones automáticamente para evitar asignaciones incorrectas
             company = self.env.company
             if 'currency_id' not in res:
                 res['currency_id'] = company.currency_id.id

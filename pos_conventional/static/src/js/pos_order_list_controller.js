@@ -9,14 +9,14 @@ export class PosOrderListController extends ListController {
     setup() {
         super.setup();
 
-        // Estado reactivo para controlar la visibilidad del botón
+        // Estado reactivo para controlar la visibilidad de los botones
         this.state = useState({
             showCloseButton: false
         });
 
         onWillStart(async () => {
-            // Verificar si el domain incluye config_id (viene de nuestra redirección)
-            this.checkDomain();
+            // Verificar si estamos dentro de una caja no táctil abierta
+            await this.checkIfInsideNonTouchSession();
         });
     }
 
@@ -68,21 +68,60 @@ export class PosOrderListController extends ListController {
     }
 
     /**
-     * Verifica si el domain actual incluye filtro por config_id
-     * Esto indica que venimos de la redirección de una caja no táctil
+     * Verifica si estamos dentro de una caja no táctil abierta.
+     * Los botones de cerrar caja, entrada/salida de efectivo solo deben mostrarse
+     * cuando accedemos desde una caja no táctil, no desde el menú general de pedidos.
      */
-    checkDomain() {
-        const domain = this.props.domain || [];
+    async checkIfInsideNonTouchSession() {
+        // Obtener el contexto de la acción
+        const context = this.props.context || {};
 
-        // Buscar si hay un filtro por config_id en el domain
-        const hasConfigFilter = domain.some(clause => {
-            if (Array.isArray(clause) && clause.length === 3) {
-                return clause[0] === 'config_id';
+        // Solo mostrar botones si hay un default_session_id en el contexto
+        // Esto indica que venimos de abrir una caja no táctil específica
+        const sessionId = context.default_session_id;
+
+        if (!sessionId) {
+            this.state.showCloseButton = false;
+            return;
+        }
+
+        try {
+            // Verificar que la sesión existe, está abierta y es de una caja no táctil
+            const sessionData = await this.model.orm.read(
+                "pos.session",
+                [sessionId],
+                ["state", "config_id"]
+            );
+
+            if (sessionData && sessionData.length > 0) {
+                const session = sessionData[0];
+
+                // Verificar si la sesión está abierta
+                if (session.state === 'opened' || session.state === 'opening_control') {
+                    // Verificar si el config es no táctil
+                    if (session.config_id) {
+                        const configId = Array.isArray(session.config_id)
+                            ? session.config_id[0]
+                            : session.config_id;
+
+                        const configData = await this.model.orm.read(
+                            "pos.config",
+                            [configId],
+                            ["pos_non_touch"]
+                        );
+
+                        if (configData && configData.length > 0 && configData[0].pos_non_touch) {
+                            this.state.showCloseButton = true;
+                            return;
+                        }
+                    }
+                }
             }
-            return false;
-        });
+        } catch (error) {
+            console.error("Error verificando sesión no táctil:", error);
+        }
 
-        this.state.showCloseButton = hasConfigFilter;
+        this.state.showCloseButton = false;
     }
 
     /**

@@ -82,15 +82,23 @@ class PosConfig(models.Model):
         """
         self.ensure_one()
 
+        # Obtener todas las sesiones de este config
+        config_sessions = self.env['pos.session'].search([
+            ('config_id', '=', session.config_id.id)
+        ])
+
         # Obtener la acción estándar de pedidos POS de Odoo
         action = self.env.ref('point_of_sale.action_pos_pos_form').read()[0]
 
-        # Filtrar por config_id para mostrar TODOS los pedidos de esta caja
-        # (no solo de la sesión actual, para permitir devoluciones)
-        action['domain'] = [('config_id', '=', session.config_id.id)]
+        # Filtrar por session_id para mostrar solo pedidos de sesiones de esta caja
+        action['domain'] = [('session_id', 'in', config_sessions.ids)]
+
+        # IMPORTANTE: NO incluir default_config_id en el contexto
+        # porque el config_id es un campo computed con readonly=False y store=True
+        # Si se pasa default_config_id, puede sobrescribir el valor calculado
+        # y causar que pedidos de otras cajas (táctiles) se creen con config_id incorrecto
         action['context'] = {
             'default_session_id': session.id,
-            'default_config_id': session.config_id.id,
         }
 
         return action

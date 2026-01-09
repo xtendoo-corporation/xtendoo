@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <!-- Heredar la plantilla ListView para añadir botón en control panel -->
+    <!-- Heredar la plantilla ListView para controlar los botones del panel de control -->
     <t t-name="pos_conventional.ListView" t-inherit="web.ListView" t-inherit-mode="extension">
-        <!-- Añadir botón "Cerrar caja" después del botón "New" solo en pos.order y cuando hay domain con config_id -->
+        <!-- Reemplazar el botón "New" estándar para controlarlo con nuestro estado -->
+        <xpath expr="//t[@t-set-slot='control-panel-create-button']/button[@class='btn btn-primary o_list_button_add']" position="attributes">
+            <!-- Solo mostrar el botón Nuevo si estamos dentro de una caja no táctil -->
+            <attribute name="t-if">state and state.showCloseButton</attribute>
+        </xpath>
+
+        <!-- Añadir botones de Entrada/Salida de efectivo y Cerrar caja -->
         <xpath expr="//t[@t-set-slot='control-panel-create-button']/button[@class='btn btn-primary o_list_button_add']" position="after">
            <button t-if="state and state.showCloseButton"
                     type="button"

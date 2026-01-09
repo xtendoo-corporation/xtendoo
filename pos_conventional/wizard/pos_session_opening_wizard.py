@@ -107,21 +107,27 @@ class PosSessionOpeningWizard(models.TransientModel):
     def _return_to_backend(self):
         """
         Retorna a la vista de pedidos POS después de abrir la sesión.
-        Muestra TODOS los pedidos de esta caja para permitir devoluciones.
-        Reutiliza la acción estándar de Odoo para listar pedidos POS.
+        Muestra todos los pedidos de esta caja para permitir devoluciones de sesiones anteriores.
         """
         self.ensure_one()
 
+        # Obtener todas las sesiones de este config
+        config_sessions = self.env['pos.session'].search([
+            ('config_id', '=', self.session_id.config_id.id)
+        ])
+
         # Obtener la acción estándar de pedidos POS de Odoo
-        # Esta es la acción oficial: point_of_sale.action_pos_pos_form
         action = self.env.ref('point_of_sale.action_pos_pos_form').read()[0]
 
-        # Filtrar por config_id para mostrar TODOS los pedidos de esta caja
-        # (no solo de la sesión actual, para permitir devoluciones)
-        action['domain'] = [('config_id', '=', self.session_id.config_id.id)]
+        # Filtrar por session_id para mostrar solo pedidos de sesiones de esta caja
+        action['domain'] = [('session_id', 'in', config_sessions.ids)]
+
+        # IMPORTANTE: NO incluir default_config_id en el contexto
+        # porque el config_id es un campo computed con readonly=False y store=True
+        # Si se pasa default_config_id, puede sobrescribir el valor calculado
+        # y causar que pedidos de otras cajas (táctiles) se creen con config_id incorrecto
         action['context'] = {
             'default_session_id': self.session_id.id,
-            'default_config_id': self.session_id.config_id.id,
         }
 
         return action

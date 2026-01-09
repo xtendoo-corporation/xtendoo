@@ -37,8 +37,10 @@ const posConventionalAutoOpenService = {
                             view_mode: "form",
                             target: "current",
                             context: {
+                                // IMPORTANTE: NO incluir default_config_id en el contexto
+                                // porque el config_id es un campo computed y puede causar
+                                // que pedidos de otras cajas se creen con config_id incorrecto
                                 default_session_id: parseInt(sessionId),
-                                default_config_id: parseInt(configId),
                                 form_view_initial_mode: 'edit',
                             },
                         });
