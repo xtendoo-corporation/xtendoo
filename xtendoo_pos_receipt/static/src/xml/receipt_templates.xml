@@ -11,24 +11,52 @@
                t-value="props.order.company || data.company || (env &amp;&amp; env.pos &amp;&amp; env.pos.company_printable) || (env &amp;&amp; env.pos &amp;&amp; env.pos.company) || (props.order &amp;&amp; props.order.pos &amp;&amp; props.order.pos.company_printable) || {}"/>
             <t t-if="data">
                 <div class="custom-header"
-                     style="font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 0.5px; text-align: center; font-size: 16px;">
-                    Factura Simplificada<br/>
-                    <t t-esc="props.order &amp;&amp; props.order.name ? ' Nº ' + props.order.name : ''"/>
-                    <t t-if="company &amp;&amp; Object.keys(company).length">
-                        <div><t t-esc="company.name || ''"/></div>
+                     style="font-family: 'Courier New', monospace; font-weight: normal; text-align: center; font-size: 11px; line-height: 1.2; padding: 0; margin: 0;">
+
+                    <!-- Datos de la empresa -->
+                    <div style="margin-top: 5px; margin-bottom: 3px; font-weight: bold;">
+                        <t t-esc="company.name || ''"/>
+                    </div>
+                    <div style="font-size: 10px;">
                         <t t-if="company.street">
                             <t t-esc="company.street"/>
                             <br/>
                         </t>
                         <t t-if="company.zip || company.city">
-                            <t t-esc="company.zip"/>,
-                            <t t-esc="company.city"/>
+                            <t t-esc="company.street2 || ''"/>
+                            <t t-if="company.street2"><br/></t>
+                            <t t-esc="company.zip"/>
+                            <t t-if="company.city">
+                                <t t-esc="' ' + company.city"/>
+                            </t>
                             <br/>
                         </t>
-                        <div t-if="company.vat"><strong>NIF:</strong>
-                            <t t-esc="company.vat"/></div>
-                    </t>
-                    <div class="pt-2"/>
+                        <t t-if="company.phone">
+                            Tlf <t t-esc="company.phone"/>
+                            <br/>
+                        </t>
+                        <t t-if="company.vat">
+                            <t t-esc="company.vat"/>
+                        </t>
+                    </div>
+
+                    <!-- Línea separadora -->
+                    <div style="border-top: 1px dashed black; margin: 4px 0;"/>
+
+                    <!-- Información de la factura -->
+                    <div style="font-size: 10px; text-align: left; padding: 0;">
+                        <div style="margin-bottom: 2px;">
+                            <strong>FACTURA SIMPLIFICADA:</strong>
+                            <t t-esc="props.order.name || ''"/>
+                        </div>
+                        <div style="margin-bottom: 2px;" t-if="props.order.getCashierName">
+                            <strong>ATENDIDO POR:</strong>
+                            <t t-esc="props.order.getCashierName()"/>
+                        </div>
+                    </div>
+
+                    <!-- Línea separadora -->
+                    <div style="border-top: 1px dashed black; margin: 4px 0;"/>
                 </div>
             </t>
         </xpath>
@@ -38,92 +66,105 @@
 
     <t t-name="todopintura_pos_custom.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
 
+
         <xpath expr="//div[hasclass('pos-receipt', 'p-2')]" position="attributes">
-             <attribute name="style">font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 0.5px; text-align: center; font-size: 16px;</attribute>
+             <attribute name="class">pos-receipt</attribute>
+            <attribute name="style">font-family: 'Courier New', monospace; font-weight: normal; letter-spacing: 0.5px; text-align: center; font-size: 12px;</attribute>
          </xpath>
 
         <xpath expr="//OrderDisplay" position="replace">
-            <div class="pos-receipt-container">
-                <div class="d-flex justify-content-between my-2 fw-bolder">
-                    <span class="w-75 text-start">UD DESCRIPCIÓN</span>
-                    <span class="w-25 text-end">IMPORTE</span>
+            <div class="pos-receipt-container"
+                 style="font-family: 'Courier New', monospace; font-size: 10px; text-align: left; padding: 0; margin: 0;">
+                <!-- Encabezado de tabla -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: bold;">
+                    <span style="flex: 3;">Nombre</span>
+                    <span style="flex: 0.5; text-align: center;">UD</span>
+                    <span style="flex: 1; text-align: right;">TOTAL</span>
                 </div>
-                <div style="border-bottom: 1px dashed black; margin-bottom: 5px;"/>
 
+                <!-- Líneas de productos -->
                 <t t-foreach="props.order.orderlines || props.order.lines || []" t-as="line" t-key="line.id">
-                    <div class="d-flex justify-content-between line-item">
-                        <span class="w-75 text-start text-break">
-                            <t t-esc="line.qty"/>
-                            <t t-esc="' '"/>
-                            <t t-esc="line.full_product_name or line.name"/>
-                            <div t-if="line.get_discount &amp;&amp; line.get_discount() > 0" class="discount-info ps-2" style="font-size: 85%; color: #666;">
-                                Dto. <t t-esc="line.get_discount()"/>%
-                            </div>
-                            <div t-elif="line.discount &amp;&amp; line.discount > 0" class="discount-info ps-2" style="font-size: 85%; color: #666;">
-                                Dto. <t t-esc="line.discount"/>%
-                            </div>
-                            <div t-if="line.customerNote" class="customer-note fst-italic ps-2" style="font-size: 80%;">
-                                [<t t-esc="line.customerNote"/>]
-                            </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1px; line-height: 1.2;">
+                        <span style="flex: 3; word-break: break-word; font-weight: normal;">
+                            <t t-esc="line.full_product_name || line.product_id.display_name || line.name"/>
                         </span>
-                        <span class="w-25 text-end font-monospace">
-                            <t t-out="formatCurrency(line.price_subtotal_incl)"/>
+                        <span style="flex: 0.5; text-align: center; font-weight: normal;">
+                            <t t-esc="line.qty"/>
+                        </span>
+                        <span style="flex: 1; text-align: right; font-weight: normal;">
+                      <t t-esc="(formatCurrency(line.price_subtotal_incl || 0) || '').replaceAll('\u00A0','').replaceAll(' ','')"/>
                         </span>
                     </div>
+                    <!-- Líneas adicionales debajo del producto -->
+                    <div t-if="line.discount &amp;&amp; line.discount &gt; 0"
+                         style="font-size: 9px; color: #666; margin-left: 3px; margin-bottom: 1px;">
+                        Dto. <t t-esc="line.discount"/>%
+                    </div>
+                    <div t-if="line.customerNote"
+                         style="font-size: 9px; font-style: italic; margin-left: 3px; margin-bottom: 1px;">
+                        [<t t-esc="line.customerNote"/>]
+                    </div>
                 </t>
-                <div style="border-bottom: 1px dashed black; margin-top: 5px;"/>
+
+                <!-- Línea separadora -->
+                <div style="border-top: 1px dashed black; margin: 4px 0;"/>
             </div>
         </xpath>
 
         <xpath expr="//div[hasclass('before-footer')]" position="before">
             <t t-if="!props.basic_receipt">
-                <t t-set="taxTotals" t-value="order.prices.taxDetails"/>
+                <div
+                    style="font-family: 'Courier New', monospace; font-size: 11px; text-align: center; padding: 0; margin: 0;">
 
-                <div class="pt-3"/>
+                    <!-- TOTAL grande -->
+                    <div
+                        style="display: flex; justify-content: flex-end; align-items: center; font-size: 14px; font-weight: bold; margin: 5px 0;">
+                        <span style="margin-right: 10px;">TOTAL</span>
+                        <span><t t-esc="(formatCurrency(props.order.amount_total || 0) || '').replaceAll('\u00A0','').replaceAll(' ','')"/></span>
+                    </div>
 
-                <t t-if="taxTotals and taxTotals.has_tax_groups">
-                    <div class="custom-receipt-totals">
-                        <t t-foreach="taxTotals.subtotals" t-as="subtotal" t-key="subtotal.name">
-                            <div class="d-flex justify-content-between">
-                                <span>Base Imponible</span>
-                                <span t-out="formatCurrency(order.priceExcl)" class="font-monospace"/>
-                            </div>
-                            <div t-foreach="subtotal.tax_groups" t-as="tax_group" t-key="tax_group.id" class="d-flex">
-                                <span>
-                                    <span t-esc="tax_group.group_name"/>
-                                    <t t-if="showTaxGroupLabels">
-                                        (<span t-if="tax_group.group_label" t-out="tax_group.group_label"/>)
-                                    </t>
-                                    <t id="tax_base" t-if="!taxTotals.same_tax_base">
-                                        on
-                                        <span t-esc="formatCurrency(tax_group.base_amount_currency)"/>
-                                    </t>
-                                </span>
-                                <span t-out="formatCurrency(tax_group.tax_amount_currency)"
-                                      class="ms-auto font-monospace"/>
-                            </div>
+                    <!-- Método de pago -->
+                    <div style="font-size: 10px; text-align: center; margin: 4px 0;">
+                        <t t-if="paymentLines &amp;&amp; paymentLines.length &gt; 0">
+                            <t t-foreach="paymentLines" t-as="line" t-key="line_index">
+                                Pagado: <t t-esc="line.payment_method_id.name.toLowerCase()"/>
+                            </t>
                         </t>
                     </div>
-                </t>
 
-                <div class="pos-receipt-amount receipt-total fw-bolder d-flex justify-content-between"
-                     style="border-bottom: 1px dashed black; padding-bottom: 5px; margin-bottom: 5px; font-size: 18px;">
-                    <span class="label-total" style="font-weight: 900;">TOTAL</span>
-                    <span t-out="order.currencyDisplayPrice" class="font-monospace" style="font-weight: 900;"/>
-                </div>
+                    <!-- Línea separadora -->
+                    <div style="border-top: 1px dashed black; margin: 4px 0;"/>
 
-                <div class="paymentlines pt-1">
-                    <t t-foreach="paymentLines" t-as="line" t-key="line_index">
-                        <div class="d-flex justify-content-between">
-                            <t t-esc="line.payment_method_id.name"/>
-                            <span t-out="formatCurrency(line.getAmount())" class="font-monospace"/>
+                    <!-- Tabla de IVA -->
+                    <t t-set="taxTotals" t-value="order.prices.taxDetails"/>
+                    <t t-if="taxTotals &amp;&amp; taxTotals.has_tax_groups">
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 10px; text-align: right; margin-bottom: 2px;">
+                            <span style="flex: 1;">IVA</span>
+                            <span style="flex: 1;">Base</span>
+                            <span style="flex: 1;">Cuota</span>
                         </div>
+                        <t t-foreach="taxTotals.subtotals" t-as="subtotal" t-key="subtotal.name">
+                            <t t-foreach="subtotal.tax_groups" t-as="tax_group" t-key="tax_group.id">
+                                <div
+                                    style="display: flex; justify-content: space-between; font-size: 10px; text-align: right; margin-bottom: 1px;">
+                                    <span style="flex: 1;">
+                                        <t t-esc="tax_group.tax_group_name || tax_group.group_name"/>
+                                    </span>
+                                    <span style="flex: 1;">
+                                        <t t-esc="(formatCurrency(tax_group.base_amount_currency || tax_group.base_amount || 0) || '').replaceAll('\u00A0','').replaceAll(' ','')"/>
+                                    </span>
+                                    <span style="flex: 1;">
+                                        <t t-esc="(formatCurrency(tax_group.tax_amount_currency || tax_group.tax_amount || 0) || '').replaceAll('\u00A0','').replaceAll(' ','')"/>
+                                    </span>
+                                </div>
+                            </t>
+                        </t>
                     </t>
-                </div>
 
-                <div t-if="order.showChange" class="pos-receipt-amount receipt-change fw-bolder pt-1">
-                    <span class="label-change">Cambio</span>
-                    <span t-out="formatCurrency(order.change)" class="font-monospace"/>
+                    <!-- Línea separadora -->
+                    <div style="border-top: 1px dashed black; margin: 4px 0;"/>
+
                 </div>
             </t>
         </xpath>
@@ -142,16 +183,14 @@
         <xpath expr="//div[contains(., 'Powered by') and hasclass('pos-receipt-order-data')]" position="replace"/>
 
         <xpath expr="//div[hasclass('after-footer')]" position="before">
-            <!-- Servido por -->
-            <div t-if="order?.getCashierName()" class="pos-receipt-center-align pt-3 fw-bolder">
-                <div>Servido por: <t t-esc="order.getCashierName()"/></div>
-            </div>
-            <!-- Footer personalizado o por defecto -->
-            <div t-if="order.config.receipt_footer" class="pos-receipt-center-align pt-2 fw-bolder text-center" style="white-space:pre-line">
-                <t t-esc="order.config.receipt_footer"/>
-            </div>
-            <div t-else="" class="pos-receipt-center-align pt-2 fw-bolder">
-                Gracias por su visita
+            <!-- Footer personalizado -->
+            <div style="font-family: 'Courier New', monospace; font-size: 10px; text-align: center; margin-top: 5px;">
+                <div style="margin-bottom: 3px;">
+                    Gracias por su visita
+                </div>
+
+                <!-- Línea separadora final -->
+                <div style="border-top: 1px dashed black; margin: 4px 0;"/>
             </div>
         </xpath>
 
