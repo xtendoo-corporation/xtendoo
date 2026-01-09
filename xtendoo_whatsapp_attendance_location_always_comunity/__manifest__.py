@@ -7,27 +7,38 @@
     'category': 'Human Resources/Attendance',
     'summary': 'WhatsApp Attendance con solicitud automática de ubicación usando Gateway Community',
     'description': """
-        Este módulo hereda de xtendoo_whatsapp_attendance_comunity para gestionar asistencia
-        con solicitud automática de ubicación usando el Gateway Community.
+        Este módulo gestiona asistencia con solicitud automática de ubicación
+        usando el Gateway Community (xtendoo_mail_gateway_whatsapp).
 
-        A diferencia del módulo base, este módulo SIEMPRE solicita la ubicación
-        sin preguntar al usuario si desea compartirla.
+        A diferencia del módulo base (xtendoo_whatsapp_attendance_comunity),
+        este módulo SIEMPRE solicita la ubicación sin preguntar al usuario
+        si desea compartirla.
 
         Características:
         - Registro automático de entrada/salida mediante comandos de WhatsApp
         - Solicitud automática de ubicación (sin pregunta previa)
         - Palabras clave personalizables
-        - Mensajes de respuesta configurables
-        - Geolocalización obligatoria para todos los empleados con el módulo activado
+        - Mensajes de respuesta configurables (confirmación, solicitud de ubicación, confirmación de ubicación)
+        - Geolocalización obligatoria para todos los empleados
         - Campos separados para ubicación de entrada y salida
+        - Visualización de ubicaciones en Google Maps
+
+        Este módulo es INDEPENDIENTE y no requiere xtendoo_whatsapp_attendance_comunity.
     """,
     'author': 'Xtendoo',
     'website': 'https://www.xtendoo.com',
     'license': 'LGPL-3',
     'depends': [
-        'xtendoo_whatsapp_attendance_comunity',
+        'base',
+        'hr',
+        'hr_attendance',
+        'xtendoo_mail_gateway',
+        'xtendoo_mail_gateway_whatsapp',
     ],
     'data': [
+        'security/ir.model.access.csv',
+        'data/default_keywords.xml',
+        'views/attendance_keyword_config_views.xml',
         'views/hr_employee_geolocation_views.xml',
         'views/hr_attendance_views.xml',
     ],

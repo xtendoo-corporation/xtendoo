@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Configuración por defecto para palabras de ENTRADA -->
+        <record id="default_keywords_check_in_location_always" model="attendance.keyword.config.location.always">
+            <field name="name">Palabras Clave - Entrada (Location Always)</field>
+            <field name="active" eval="True"/>
+            <field name="attendance_type">check_in</field>
+            <field name="keywords">/entrada
+/entrar
+/llegar
+/llego
+/check in
+/fichar entrada
+/inicio
+/comenzar
+/empezar
+entrada
+entrar
+llegar
+llego</field>
+            <field name="custom_message">✅ Hola {employee_name},
+
+Tu *{action}* ha sido registrada correctamente.
+
+🕐 Hora: {time}
+📅 Fecha: {date}
+
+¡Que tengas un buen día!</field>
+            <field name="location_request_message">📍 Tu {action} ya está registrada ✅
+
+Ahora puedes enviar tu ubicación para completar el registro.
+
+*Instrucciones:*
+1️⃣ Toca el botón 📎 (clip)
+2️⃣ Selecciona *Ubicación*
+3️⃣ Elige *Ubicación actual*
+4️⃣ Envía tu ubicación
+
+⏰ Tienes 3 minutos para enviarla.</field>
+            <field name="location_received_message">🎉 *¡Ubicación de entrada añadida!*
+
+📍 Coordenadas: {latitude}, {longitude}
+
+🗺️ Ver en Google Maps: {maps_url}
+
+✅ Registro de entrada completado</field>
+        </record>
+
+        <!-- Configuración por defecto para palabras de SALIDA -->
+        <record id="default_keywords_check_out_location_always" model="attendance.keyword.config.location.always">
+            <field name="name">Palabras Clave - Salida (Location Always)</field>
+            <field name="active" eval="True"/>
+            <field name="attendance_type">check_out</field>
+            <field name="keywords">/salida
+/salir
+/marchar
+/me voy
+/check out
+/fichar salida
+/fin
+/terminar
+/acabar
+/finalizar
+salida
+salir
+me voy
+terminar</field>
+            <field name="custom_message">✅ Hola {employee_name},
+
+Tu *{action}* ha sido registrada correctamente.
+
+🕐 Hora: {time}
+📅 Fecha: {date}
+
+¡Que tengas un excelente día!</field>
+            <field name="location_request_message">📍 Tu {action} ya está registrada ✅
+
+Ahora puedes enviar tu ubicación para completar el registro.
+
+*Instrucciones:*
+1️⃣ Toca el botón 📎 (clip)
+2️⃣ Selecciona *Ubicación*
+3️⃣ Elige *Ubicación actual*
+4️⃣ Envía tu ubicación
+
+⏰ Tienes 3 minutos para enviarla.</field>
+            <field name="location_received_message">🎉 *¡Ubicación de salida añadida!*
+
+📍 Coordenadas: {latitude}, {longitude}
+
+🗺️ Ver en Google Maps: {maps_url}
+
+✅ Registro de salida completado. ¡Hasta pronto!</field>
+        </record>
+
+    </data>
+</odoo>
+

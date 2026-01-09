@@ -1,0 +1,86 @@
+ de wha<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista formulario para asistencia - mostrar geolocalización separada entrada/salida -->
+    <record id="view_attendance_form_geolocation_always" model="ir.ui.view">
+        <field name="name">hr.attendance.form.geolocation.always.community</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='check_out']" position="after">
+                <!-- Campos invisibles para controlar visibilidad -->
+                <field name="whatsapp_check_in_latitude" invisible="1"/>
+                <field name="whatsapp_check_in_longitude" invisible="1"/>
+                <field name="whatsapp_check_out_latitude" invisible="1"/>
+                <field name="whatsapp_check_out_longitude" invisible="1"/>
+
+                <!-- Grupo de Ubicación de Entrada -->
+                <group string="📍 Ubicación Entrada WhatsApp" invisible="not whatsapp_check_in_latitude">
+                    <group>
+                        <label for="whatsapp_check_in_latitude" string="Coordenadas"/>
+                        <div class="o_row">
+                            <span class="fa fa-sign-in text-success me-2"/>
+                            <field name="whatsapp_check_in_latitude" readonly="1" class="o_hr_narrow_field"/>
+                            <span>,</span>
+                            <field name="whatsapp_check_in_longitude" readonly="1" class="o_hr_narrow_field"/>
+                        </div>
+                        <field name="whatsapp_check_in_location_address" string="Dirección" readonly="1"/>
+                        <field name="whatsapp_check_in_location_accuracy" string="Precisión (m)" readonly="1"/>
+                    </group>
+                    <group>
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <button type="object"
+                                    name="action_open_google_maps_check_in"
+                                    string="Ver Entrada en Maps"
+                                    class="btn btn-success"
+                                    icon="fa-map-marker"/>
+                        </div>
+                    </group>
+                </group>
+
+                <!-- Grupo de Ubicación de Salida -->
+                <group string="📍 Ubicación Salida WhatsApp" invisible="not whatsapp_check_out_latitude">
+                    <group>
+                        <label for="whatsapp_check_out_latitude" string="Coordenadas"/>
+                        <div class="o_row">
+                            <span class="fa fa-sign-out text-danger me-2"/>
+                            <field name="whatsapp_check_out_latitude" readonly="1" class="o_hr_narrow_field"/>
+                            <span>,</span>
+                            <field name="whatsapp_check_out_longitude" readonly="1" class="o_hr_narrow_field"/>
+                        </div>
+                        <field name="whatsapp_check_out_location_address" string="Dirección" readonly="1"/>
+                        <field name="whatsapp_check_out_location_accuracy" string="Precisión (m)" readonly="1"/>
+                    </group>
+                    <group>
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <button type="object"
+                                    name="action_open_google_maps_check_out"
+                                    string="Ver Salida en Maps"
+                                    class="btn btn-danger"
+                                    icon="fa-map-marker"/>
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista lista para asistencia - mostrar indicadores de ubicación -->
+    <record id="view_attendance_tree_geolocation_always" model="ir.ui.view">
+        <field name="name">hr.attendance.tree.geolocation.always.community</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_tree"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='worked_hours']" position="after">
+                <field name="whatsapp_check_in_latitude" column_invisible="1"/>
+                <field name="whatsapp_check_out_latitude" column_invisible="1"/>
+                <field name="has_check_in_location" string="📍 In" widget="boolean" optional="show"/>
+                <field name="has_check_out_location" string="📍 Out" widget="boolean" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
+
