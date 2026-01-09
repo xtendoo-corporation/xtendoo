@@ -70,7 +70,7 @@
     <record id="view_attendance_tree_geolocation_always" model="ir.ui.view">
         <field name="name">hr.attendance.tree.geolocation.always.community</field>
         <field name="model">hr.attendance</field>
-        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_tree"/>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
         <field name="priority">20</field>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='worked_hours']" position="after">
