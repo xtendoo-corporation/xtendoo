@@ -648,9 +648,6 @@ class MailGatewayWhatsappAttendanceLocationAlways(models.AbstractModel):
                 worked_mins = int((worked - worked_hours) * 60)
                 worked_str = f"{worked_hours}h{worked_mins}m" if att.check_out else "-"
 
-                # Indicador de ubicación
-                has_location = "📍" if (hasattr(att, 'whatsapp_check_in_latitude') and att.whatsapp_check_in_latitude) else ""
-
                 message += f"• {date_str}: {check_in_str} → {check_out_str} ({worked_str}) {has_location}\n"
 
             if len(attendances) > 7:
@@ -658,9 +655,6 @@ class MailGatewayWhatsappAttendanceLocationAlways(models.AbstractModel):
         else:
             message += "📋 No hay registros de asistencia este mes.\n"
 
-        message += f"\n━━━━━━━━━━━━━━━━━━━━\n"
-        message += f"📍 = Con ubicación registrada\n"
-        message += f"⏳ = Sin salida registrada\n"
 
         return message
 
