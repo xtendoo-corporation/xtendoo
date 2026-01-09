@@ -59,6 +59,22 @@ Tu *{action}* ha sido registrada correctamente.
 ¡Que tengas un excelente día!</field>
         </record>
 
+        <!-- Configuración por defecto para palabras de CONSULTA -->
+        <record id="default_keywords_query" model="attendance.keyword.config">
+            <field name="name">Palabras Clave - Consulta (Community)</field>
+            <field name="active" eval="True"/>
+            <field name="attendance_type">query</field>
+            <field name="keywords">/asistencia
+/asistencias
+/mis asistencias
+/historial
+/horas
+/mis horas
+/consulta
+/resumen</field>
+            <field name="custom_message"></field>
+        </record>
+
     </data>
 </odoo>
 

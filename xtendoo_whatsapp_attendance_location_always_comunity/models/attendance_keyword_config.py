@@ -24,7 +24,8 @@ class AttendanceKeywordConfigLocationAlways(models.Model):
 
     attendance_type = fields.Selection([
         ('check_in', 'Entrada'),
-        ('check_out', 'Salida')
+        ('check_out', 'Salida'),
+        ('query', 'Consulta de Asistencias')
     ], string='Tipo de Asistencia', required=True)
 
     keywords = fields.Text(

@@ -95,6 +95,24 @@ Ahora puedes enviar tu ubicación para completar el registro.
 ✅ Registro de salida completado. ¡Hasta pronto!</field>
         </record>
 
+        <!-- Configuración por defecto para palabras de CONSULTA -->
+        <record id="default_keywords_query_location_always" model="attendance.keyword.config.location.always">
+            <field name="name">Palabras Clave - Consulta (Location Always)</field>
+            <field name="active" eval="True"/>
+            <field name="attendance_type">query</field>
+            <field name="keywords">/asistencia
+/asistencias
+/mis asistencias
+/historial
+/horas
+/mis horas
+/consulta
+/resumen</field>
+            <field name="custom_message"></field>
+            <field name="location_request_message"></field>
+            <field name="location_received_message"></field>
+        </record>
+
     </data>
 </odoo>
 

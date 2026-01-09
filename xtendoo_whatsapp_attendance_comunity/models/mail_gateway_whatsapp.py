@@ -49,9 +49,31 @@ class MailGatewayWhatsappAttendance(models.AbstractModel):
 
         if message.get('type') == 'text':
             text_content = message.get('text', {}).get('body', '').strip().lower()
+            # Verificar si es comando de consulta de asistencias
+            if self._is_attendance_query_command(text_content):
+                return True
             attendance_type = self._detect_attendance_command(text_content)
             return attendance_type is not None
 
+        return False
+
+    def _is_attendance_query_command(self, text):
+        """
+        Verifica si el texto es un comando de consulta de asistencias
+        """
+        normalized_text = re.sub(r'\s+', ' ', text.lower().strip())
+
+        # Obtener palabras clave de consulta desde configuración
+        query_keywords = self.env['attendance.keyword.config'].sudo().get_active_keywords('query')
+
+        # Si no hay configuración, usar palabras clave por defecto
+        if not query_keywords:
+            query_keywords = ['/asistencia', '/asistencias', '/mis asistencias', '/historial', '/horas']
+
+        for keyword in query_keywords:
+            keyword_lower = keyword.lower()
+            if self._keyword_matches(keyword_lower, normalized_text):
+                return True
         return False
 
     def _detect_attendance_command(self, text):
@@ -121,6 +143,11 @@ class MailGatewayWhatsappAttendance(models.AbstractModel):
 
             # Procesar mensaje de texto
             text_content = message.get('text', {}).get('body', '').strip().lower()
+
+            # Verificar si es comando de consulta de asistencias
+            if self._is_attendance_query_command(text_content):
+                return self._handle_attendance_query(chat, phone_number)
+
             attendance_type = self._detect_attendance_command(text_content)
 
             if not attendance_type:
@@ -529,3 +556,108 @@ class MailGatewayWhatsappAttendance(models.AbstractModel):
         except Exception as e:
             _logger.error(f"Error enviando mensaje al canal: {e}")
 
+    def _handle_attendance_query(self, chat, phone_number):
+        """
+        Maneja el comando de consulta de asistencias del empleado
+        """
+        try:
+            # Buscar empleado
+            employee = self._find_employee_by_channel(chat)
+            if not employee:
+                employee = self._find_employee_by_phone(phone_number)
+
+            if not employee:
+                _logger.warning(f"No se encontró empleado para el teléfono: {phone_number}")
+                self._send_error_response(chat, "No se encontró empleado asociado a este número")
+                return True
+
+            # Obtener zona horaria
+            user_tz = self.env.user.tz or 'Europe/Madrid'
+            local_tz = pytz.timezone(user_tz)
+
+            # Obtener asistencias del mes actual
+            now = datetime.now(local_tz)
+            first_day_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+            attendances = self.env['hr.attendance'].sudo().search([
+                ('employee_id', '=', employee.id),
+                ('check_in', '>=', first_day_of_month.strftime('%Y-%m-%d 00:00:00'))
+            ], order='check_in desc', limit=10)
+
+            # Generar mensaje de resumen
+            message = self._generate_attendance_summary(employee, attendances, now, local_tz)
+
+            self._send_message_to_channel(chat, message)
+            return True
+
+        except Exception as e:
+            _logger.error(f"Error manejando consulta de asistencias: {e}")
+            self._send_error_response(chat, "Error al consultar asistencias")
+            return True
+
+    def _generate_attendance_summary(self, employee, attendances, now, local_tz):
+        """
+        Genera el mensaje de resumen de asistencias
+        """
+        month_names = {
+            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+            5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+            9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+        }
+
+        current_month = month_names.get(now.month, '')
+
+        # Calcular horas totales del mes
+        first_day_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        month_attendances = self.env['hr.attendance'].sudo().search([
+            ('employee_id', '=', employee.id),
+            ('check_in', '>=', first_day_of_month.strftime('%Y-%m-%d 00:00:00'))
+        ])
+
+        total_hours = sum(att.worked_hours or 0 for att in month_attendances)
+        total_hours_int = int(total_hours)
+        total_minutes = int((total_hours - total_hours_int) * 60)
+
+        # Estado actual
+        current_state = "🟢 Trabajando" if employee.attendance_state == 'checked_in' else "🔴 Fuera"
+
+        # Construir mensaje
+        message = f"📊 *Resumen de Asistencias*\n"
+        message += f"👤 {employee.name}\n"
+        message += f"📅 {current_month} {now.year}\n"
+        message += f"━━━━━━━━━━━━━━━━━━━━\n\n"
+
+        message += f"*Estado actual:* {current_state}\n"
+        message += f"*Horas trabajadas este mes:* {total_hours_int}h {total_minutes}m\n\n"
+
+        if attendances:
+            message += f"📋 *Últimos registros:*\n\n"
+
+            for att in attendances[:7]:  # Mostrar máximo 7 registros
+                check_in_local = att.check_in.astimezone(local_tz) if att.check_in else None
+                check_out_local = att.check_out.astimezone(local_tz) if att.check_out else None
+
+                date_str = check_in_local.strftime('%d/%m') if check_in_local else '-'
+                check_in_str = check_in_local.strftime('%H:%M') if check_in_local else '-'
+                check_out_str = check_out_local.strftime('%H:%M') if check_out_local else '⏳'
+
+                worked = att.worked_hours or 0
+                worked_hours = int(worked)
+                worked_mins = int((worked - worked_hours) * 60)
+                worked_str = f"{worked_hours}h{worked_mins}m" if att.check_out else "-"
+
+                # Indicador de ubicación
+                has_location = "📍" if (hasattr(att, 'whatsapp_latitude') and att.whatsapp_latitude) else ""
+
+                message += f"• {date_str}: {check_in_str} → {check_out_str} ({worked_str}) {has_location}\n"
+
+            if len(attendances) > 7:
+                message += f"\n_... y {len(month_attendances) - 7} registros más_\n"
+        else:
+            message += "📋 No hay registros de asistencia este mes.\n"
+
+        message += f"\n━━━━━━━━━━━━━━━━━━━━\n"
+        message += f"📍 = Con ubicación registrada\n"
+        message += f"⏳ = Sin salida registrada\n"
+
+        return message
