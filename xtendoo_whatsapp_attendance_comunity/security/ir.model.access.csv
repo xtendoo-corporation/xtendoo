@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_attendance_keyword_config_admin,access_attendance_keyword_config_admin,model_attendance_keyword_config,base.group_system,1,1,1,1
+access_attendance_keyword_config_user,access_attendance_keyword_config_user,model_attendance_keyword_config,base.group_user,1,1,1,0
+access_attendance_keyword_config_portal,access_attendance_keyword_config_portal,model_attendance_keyword_config,,1,0,0,0
+

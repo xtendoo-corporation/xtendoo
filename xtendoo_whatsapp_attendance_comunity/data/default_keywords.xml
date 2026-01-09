@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Configuración por defecto para palabras de ENTRADA -->
+        <record id="default_keywords_check_in" model="attendance.keyword.config">
+            <field name="name">Palabras Clave - Entrada (Community)</field>
+            <field name="active" eval="True"/>
+            <field name="attendance_type">check_in</field>
+            <field name="keywords">/entrada
+/entrar
+/llegar
+/llego
+/check in
+/fichar entrada
+/inicio
+/comenzar
+/empezar
+entrada
+entrar
+llegar
+llego</field>
+            <field name="custom_message">✅ Hola {employee_name},
+
+Tu *{action}* ha sido registrada correctamente.
+
+🕐 Hora: {time}
+📅 Fecha: {date}
+
+¡Que tengas un buen día!</field>
+        </record>
+
+        <!-- Configuración por defecto para palabras de SALIDA -->
+        <record id="default_keywords_check_out" model="attendance.keyword.config">
+            <field name="name">Palabras Clave - Salida (Community)</field>
+            <field name="active" eval="True"/>
+            <field name="attendance_type">check_out</field>
+            <field name="keywords">/salida
+/salir
+/marchar
+/me voy
+/check out
+/fichar salida
+/fin
+/terminar
+/acabar
+/finalizar
+salida
+salir
+me voy
+terminar</field>
+            <field name="custom_message">✅ Hola {employee_name},
+
+Tu *{action}* ha sido registrada correctamente.
+
+🕐 Hora: {time}
+📅 Fecha: {date}
+
+¡Que tengas un excelente día!</field>
+        </record>
+
+    </data>
+</odoo>
+
