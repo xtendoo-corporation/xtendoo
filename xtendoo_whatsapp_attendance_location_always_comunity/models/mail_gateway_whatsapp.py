@@ -648,7 +648,7 @@ class MailGatewayWhatsappAttendanceLocationAlways(models.AbstractModel):
                 worked_mins = int((worked - worked_hours) * 60)
                 worked_str = f"{worked_hours}h{worked_mins}m" if att.check_out else "-"
 
-                message += f"• {date_str}: {check_in_str} → {check_out_str} ({worked_str}) {has_location}\n"
+                message += f"• {date_str}: {check_in_str} → {check_out_str} ({worked_str})\n"
 
             if len(attendances) > 7:
                 message += f"\n_... y {len(month_attendances) - 7} registros más_\n"
