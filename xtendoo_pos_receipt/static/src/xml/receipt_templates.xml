@@ -46,12 +46,14 @@
                     <!-- Información de la factura -->
                     <div style="font-size: 10px; text-align: left; padding: 0;">
                         <div style="margin-bottom: 2px;">
-                            <strong>FACTURA SIMPLIFICADA:</strong>
-                            <t t-esc="props.order.name || ''"/>
+                            <strong>FACTURA SIMPLIFICADA:</strong> <t t-esc="props.order.name || ''"/>
+                        </div>
+                        <div style="margin-bottom: 2px;">
+                            <strong>FECHA:</strong>
+                            <t t-if="props.order &amp;&amp; props.order.date_order" t-out="props.order.formatDateOrTime('date_order')"/>
                         </div>
                         <div style="margin-bottom: 2px;" t-if="props.order.getCashierName">
-                            <strong>ATENDIDO POR:</strong>
-                            <t t-esc="props.order.getCashierName()"/>
+                            <strong>ATENDIDO POR:</strong> <t t-esc="props.order.getCashierName()"/>
                         </div>
                     </div>
 
@@ -61,6 +63,9 @@
             </t>
         </xpath>
         <xpath expr="//span[hasclass('pos-receipt-vat')]" position="replace"/>
+
+        <!-- Remove core order-date (below the logo) so only our custom date remains -->
+        <xpath expr="//div[@id='order-date']" position="replace"/>
 
     </t>
 
