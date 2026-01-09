@@ -514,11 +514,14 @@ class MailGatewayWhatsappAttendance(models.AbstractModel):
 
     def _send_message_to_channel(self, chat, message):
         """
-        Envía un mensaje al canal del gateway
+        Envía un mensaje al canal del gateway.
+        Importante: Quitamos el contexto no_gateway_notification para que el mensaje
+        se envíe realmente a WhatsApp.
         """
         try:
-            # Usar el método message_post del canal
-            chat.sudo().message_post(
+            # Quitar el contexto no_gateway_notification para que el mensaje se envíe a WhatsApp
+            chat_without_context = chat.sudo().with_context(no_gateway_notification=False)
+            chat_without_context.message_post(
                 body=message,
                 message_type='comment',
                 subtype_xmlid='mail.mt_comment',
