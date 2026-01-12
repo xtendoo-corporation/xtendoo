@@ -7,126 +7,120 @@
 
             <t t-foreach="docs" t-as="o">
 
-                <main>
+                <!-- set company variable -->
+                <t t-set="res_company" t-value="o.company_id"/>
 
+                <main>
                     <style>
-                        @page {
-                        size: 80mm auto;
-                        margin: 5mm;
-                        }
-                        body {
-                        font-family: monospace;
-                        font-size: 10px;
-                        }
+                        @page { size: 80mm auto; margin: 5mm; }
+                        body { font-family: 'Courier New', monospace; font-size: 10px; }
                         .center { text-align: center; }
                         .right { text-align: right; }
                         .bold { font-weight: bold; }
                         .sep { border-top: 1px dashed #000; margin: 6px 0; }
-                        .row { display: flex; justify-content: space-between; }
+                        .row { display:flex; justify-content: space-between; }
+                        .small { font-size:0.9em; }
                     </style>
 
-                    <!-- CABECERA EMPRESA -->
-                    <div style="display:block; width:35%; margin:0 auto; mb-5">
-                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo"
-                             style="width:100%"/>
-                    </div>
-                    <div class="center bold mt-3" style="font-size:1.1em; margin-top:5px,">
-                        <span t-field="res_company.name"/>
+                    <!-- Logo -->
+                    <div style="display:block; width:40%; margin:0 auto;">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:100%; height:auto; object-fit:contain;"/>
                     </div>
 
-                    <div class="center">
-                        <span t-field="res_company.street"/>
+                    <!-- Fecha central (si la quieres arriba, descomenta) -->
+                    <div class="center small" style="margin-top:6px">
+                        <t t-if="o.invoice_date"><t t-out="o.invoice_date"/></t>
                     </div>
 
-                    <div class="center">
-                        <span t-field="res_company.zip"/>
-                        <span t-field="res_company.city"/>
+                    <!-- Company info -->
+                    <div class="center bold" style="margin-top:6px">
+                        <span t-esc="res_company.name"/>
                     </div>
-
-                    <div class="center">
-                        TLF:
-                        <span t-field="res_company.phone"/>
+                    <div class="center small">
+                        <t t-if="res_company.street"><t t-esc="res_company.street"/><br/></t>
+                        <t t-if="res_company.zip or res_company.city"><t t-esc="res_company.zip"/> <t t-esc="res_company.city"/></t>
                     </div>
-
-                    <div class="center">
-                        NIF:
-                        <span t-field="res_company.vat"/>
+                    <div class="center small">
+                        <t t-if="res_company.phone">Tlf: <t t-esc="res_company.phone"/></t>
                     </div>
-
-                    <div class="center">
-                        <span t-field="res_company.email"/>
-                    </div>
-
-                    <div class="center">
-                        <span t-field="res_company.website"/>
-                    </div>
-
-
-                    <div class="sep"/>
-
-                    <!-- DATOS FACTURA -->
-                    <div class="center bold">
-                        <t t-if="o.move_type == 'out_invoice'">FACTURA SIMPLIFICADA</t>
-                        <t t-if="o.move_type == 'out_refund'">FACTURA RECTIFICATIVA</t>
-                    </div>
-
-                    <div class="center">
-                        <span t-field="o.name"/>
-                    </div>
-
-                    <div class="center">
-                        Fecha:
-                        <span t-field="o.invoice_date"/>
+                    <div class="center small">
+                        <t t-if="res_company.vat">NIF: <t t-esc="res_company.vat"/></t>
                     </div>
 
                     <div class="sep"/>
 
-                    <!-- LÍNEAS -->
-                    <t t-foreach="o.invoice_line_ids" t-as="line">
-                        <t t-if="line.price_unit != 0.0">
-                            <div>
-                                <span t-field="line.product_id"/>
-                            </div>
+                    <!-- FACTURA / Datos -->
+                    <div style="font-size:10px;">
+                        <div style="font-weight:bold; text-align:left;">
+                            FACTURA SIMPLIFICADA: <t t-esc="o.name"/>
+                        </div>
+                        <div style="text-align:left; margin-top:2px;">
+                            <strong>FECHA:</strong>
+                            <t t-if="o.invoice_date"><t t-out="o.invoice_date"/></t>
+                        </div>
+                        <div style="text-align:left; margin-top:2px;" t-if="o.invoice_user_id">
+                            <strong>ATENDIDO POR:</strong> <t t-esc="o.invoice_user_id.name"/>
+                        </div>
+                    </div>
 
-                            <div class="row">
-                                <span>
-                                    <t t-esc="'%.0f' % line.quantity"/>
-                                    x
-                                    <t t-esc="'%.2f' % line.price_unit"/>
-                                </span>
-                                <span>
-                                    <t t-esc="'%.2f' % line.price_subtotal"/>
-                                </span>
+                    <div class="sep"/>
+
+                    <!-- Líneas -->
+                    <div>
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                            <span style="flex:3">Nombre</span>
+                            <span style="flex:0.6; text-align:center">UD</span>
+                            <span style="flex:1; text-align:right">TOTAL</span>
+                        </div>
+                        <t t-foreach="o.invoice_line_ids" t-as="line">
+                            <t t-if="line.quantity and (line.display_type == false)">
+                                <div style="display:flex; justify-content:space-between; line-height:1; margin-top:2px;">
+                                    <span style="flex:3; word-break:break-word"> <t t-esc="line.name"/> </span>
+                                    <span style="flex:0.6; text-align:center"> <t t-esc="'%.0f' % line.quantity"/> </span>
+                                    <span style="flex:1; text-align:right"> <t t-esc="'%.2f€' % line.price_subtotal"/> </span>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+
+                    <div class="sep"/>
+
+                    <!-- Pagos / método -->
+                    <div class="center small" t-if="o.payment_ids and o.payment_ids | length &gt; 0">
+                        <t t-foreach="o.payment_ids" t-as="p">
+                            Pagado: <t t-esc="p.journal_id.name or p.payment_method_id.name"/><br/>
+                        </t>
+                    </div>
+
+                    <div class="sep"/>
+
+                    <!-- IVA: agrupar por impuesto si existe -->
+                    <t t-if="o.tax_line_ids and o.tax_line_ids | length &gt; 0">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                            <span style="flex:1; text-align:center">IVA</span>
+                            <span style="flex:1; text-align:center">Base</span>
+                            <span style="flex:1; text-align:center">Cuota</span>
+                        </div>
+                        <t t-foreach="o.tax_line_ids" t-as="tax">
+                            <div style="display:flex; justify-content:space-between; font-size:10px; margin-top:2px;">
+                                <span style="flex:1; text-align:left"><t t-esc="tax.tax_id.name"/></span>
+                                <span style="flex:1; text-align:center"><t t-esc="'%.2f€' % (tax.base or 0.0)"/></span>
+                                <span style="flex:1; text-align:center"><t t-esc="'%.2f€' % (tax.amount or 0.0)"/></span>
                             </div>
                         </t>
                     </t>
 
                     <div class="sep"/>
 
-                    <!-- TOTALES -->
-                    <div class="row">
-                        <span>Base imponible</span>
-                        <span t-esc="'%.2f' % o.amount_untaxed"/>
-                    </div>
-
-                    <div class="row">
-                        <span>IVA</span>
-                        <span t-esc="'%.2f' % o.amount_tax"/>
-                    </div>
-
-                    <div class="sep"/>
-
-                    <div class="row bold" style="font-size:1.1em;">
+                    <!-- Totales -->
+                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
                         <span>TOTAL</span>
-                        <span t-esc="'%.2f' % o.amount_total"/>
+                        <span><t t-esc="'%.2f€' % o.amount_total"/></span>
                     </div>
 
                     <div class="sep"/>
 
-                    <!-- PIE -->
-                    <div class="center" style="font-size:0.8em;">
-                        Gracias por su compra
-                    </div>
+                    <div class="center small">Gracias por su visita</div>
 
                 </main>
 

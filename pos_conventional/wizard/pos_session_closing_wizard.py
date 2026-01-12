@@ -1,5 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools import float_is_zero
 
 
 class PosSessionClosingWizard(models.TransientModel):
@@ -85,7 +86,7 @@ class PosSessionClosingWizard(models.TransientModel):
             card_total = 0.0
             other_total = 0.0
 
-            # Agrupar pagos por tipo de método
+
             for payment in wizard.session_id.order_ids.mapped('payment_ids'):
                 method = payment.payment_method_id
                 amount = payment.amount
@@ -97,7 +98,7 @@ class PosSessionClosingWizard(models.TransientModel):
                     # Método de pago con tarjeta/banco
                     card_total += amount
                 else:
-                    # Otros métodos de pago
+
                     other_total += amount
 
             wizard.cash_payments = cash_total
@@ -105,63 +106,57 @@ class PosSessionClosingWizard(models.TransientModel):
             wizard.other_payments = other_total
             wizard.total_payments = cash_total + card_total + other_total
 
-            # Total de entradas y salidas de efectivo
+
             wizard.cash_in_out_total = wizard.session_id.cash_real_transaction
 
-            # Calcular pedidos vinculados a sale.order (Cuenta Cliente)
+
             linked_orders = wizard.session_id.order_ids.filtered(lambda o: o.linked_sale_order_id)
             wizard.linked_sale_orders_count = len(linked_orders)
             wizard.linked_sale_orders_total = sum(order.amount_total for order in linked_orders)
 
-
     @api.depends('cash_register_balance_end_real', 'cash_register_balance_end')
-    def _compute_difference(self):
-        for wizard in self:
-            wizard.cash_register_difference = wizard.cash_register_balance_end_real - wizard.cash_register_balance_end
-
     def action_close_session(self):
-        """
-        Cierra la sesión POS usando los métodos estándares de Odoo.
-        Reutiliza completamente la lógica del core.
-        """
         self.ensure_one()
 
-        # Validar que la sesión esté en estado abierto
         if self.session_id.state not in ['opened', 'closing_control']:
-            raise UserError(_(
-                'Solo puedes cerrar sesiones en estado abierto o en proceso de cierre.'
-            ))
+            raise UserError(_('Solo puedes cerrar sesiones en estado abierto o en proceso de cierre.'))
 
-        # Si hay control de efectivo, guardar el dinero contado
         if self.session_id.cash_control:
-            # Usar el método estándar de Odoo para registrar el efectivo contado
-            result = self.session_id.post_closing_cash_details(self.cash_register_balance_end_real)
-            if not result.get('successful'):
-                raise UserError(result.get('message', _('Error al registrar el efectivo.')))
+            self.session_id.post_closing_cash_details(self.cash_register_balance_end_real)
 
-        # Guardar la nota de cierre si existe
         if self.closing_note:
-            self.session_id.message_post(
-                body=_('Motivo de cierre: %s') % self.closing_note,
-                subject=_('Nota de cierre de sesión')
-            )
+            self.session_id.message_post(body=_('Motivo de cierre: %s') % self.closing_note)
 
-        # Llamar al método estándar de cierre de sesión
-        # Este método hace toda la lógica: asientos contables, validaciones, etc.
-        try:
-            result = self.session_id.action_pos_session_closing_control()
+        difference = self.cash_register_balance_end_real - self.session_id.cash_register_balance_end
+        currency = self.currency_id
 
-            # Si el resultado es un diccionario, puede ser un wizard de desbalance
-            if isinstance(result, dict):
-                # Retornar el wizard de desbalance si es necesario
-                return result
+        balancing_account = False
+        amount_to_balance = 0.0
 
-        except UserError as e:
-            raise UserError(_(
-                'Error al cerrar la sesión: %s'
-            ) % str(e))
+        if not float_is_zero(difference, precision_rounding=currency.rounding):
+            cash_method = self.session_id.payment_method_ids.filtered(lambda pm: pm.is_cash_count)[:1]
+            journal = cash_method.journal_id
 
-        # Retornar a la vista kanban de configuraciones POS
+            if journal:
+                amount_to_balance = difference
+                if difference > 0:
+                    balancing_account = journal.profit_account_id or journal.default_account_id
+                else:
+                    balancing_account = journal.loss_account_id or journal.default_account_id
+
+                if not balancing_account:
+                    raise UserError(
+                        _("El diario %s no tiene cuentas de pérdidas/ganancias configuradas.") % journal.name)
+
+        self.session_id.action_pos_session_validate(
+            balancing_account=balancing_account,
+            amount_to_balance=amount_to_balance,
+            bank_payment_method_diffs={}
+        )
+
+        if self.session_id.state != 'closed':
+            self.session_id.write({'state': 'closed', 'stop_at': fields.Datetime.now()})
+
         return {
             'type': 'ir.actions.act_window',
             'name': _('Punto de Venta'),
@@ -169,9 +164,7 @@ class PosSessionClosingWizard(models.TransientModel):
             'view_mode': 'kanban,form',
             'target': 'main',
             'domain': [],
-            'context': {
-                'search_default_group_by_company': True,
-            },
+            'context': {'search_default_group_by_company': True},
         }
 
     def action_print_daily_report(self):
@@ -226,6 +219,3 @@ class PosSessionClosingWizard(models.TransientModel):
                 'default_session_id': self.session_id.id,
             },
         }
-
-
-

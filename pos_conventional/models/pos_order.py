@@ -8,6 +8,11 @@ _logger = logging.getLogger(__name__)
 class PosOrder(models.Model):
     _inherit = 'pos.order'
 
+    state = fields.Selection(
+        selection_add=[('linked', 'Vinculado a Venta')],
+        ondelete={'linked': 'set default'}
+    )
+
     linked_sale_order_id = fields.Many2one(
         'sale.order',
         string="Pedido de venta vinculado",
@@ -765,7 +770,8 @@ class PosOrder(models.Model):
             # Vincular el pos.order con el sale.order creado y actualizar el nombre
             self.write({
                 'linked_sale_order_id': sale_order.id,
-                'name': sale_order.name,  # Usar el mismo número de referencia
+                'name': sale_order.name,
+                'state': 'linked'  # <--- AQUÍ ESTÁ EL CAMBIO MAESTRO
             })
 
             # Confirmar el pedido de venta automáticamente
@@ -794,6 +800,8 @@ class PosOrder(models.Model):
         except Exception as e:
             _logger.exception("Error al crear sale.order desde POS: %s", str(e))
             raise UserError(_('Error al crear el albarán: %s') % str(e))
+
+
 
         # Recargar la vista del formulario para mostrar el estado vinculado
         return {

@@ -20,6 +20,8 @@ class PosSession(models.Model):
         help="Número de pedidos POS vinculados a pedidos de venta tradicionales"
     )
 
+
+
     @api.depends('order_ids', 'order_ids.linked_sale_order_id', 'order_ids.amount_total')
     def _compute_linked_sale_orders_total(self):
         """Calcula el total y cantidad de pedidos vinculados a sale.order (cuenta cliente)"""
@@ -31,18 +33,16 @@ class PosSession(models.Model):
     def _validate_session(self, balancing_account=False, amount_to_balance=0, bank_payment_method_diffs=None):
         """
         Override para excluir pedidos vinculados a sale.order del proceso de validación normal.
-        Estos pedidos no deben generar movimientos contables desde el POS ya que se gestionan
-        desde el sale.order vinculado.
         """
         # Guardar referencia a los pedidos vinculados antes de la validación
         for session in self:
             linked_orders = session.order_ids.filtered(lambda o: o.linked_sale_order_id and o.state == 'draft')
             # Estos pedidos se mantienen en draft y no afectan al cierre
-            # El cierre de sesión solo procesa los pedidos que sí tienen pagos reales
 
         return super()._validate_session(balancing_account, amount_to_balance, bank_payment_method_diffs)
 
-    def action_pos_session_closing_control(self, balancing_account=False, amount_to_balance=0, bank_payment_method_diffs=None):
+    def action_pos_session_closing_control(self, balancing_account=False, amount_to_balance=0,
+                                           bank_payment_method_diffs=None):
         """
         Override para permitir el cierre de sesión aunque haya pedidos en draft
         que estén vinculados a sale.order.
@@ -77,7 +77,8 @@ class PosSession(models.Model):
                     default_cash_payment_method_id = default_cash_payment_method_id[0]
                     orders = session._get_closed_orders()
                     total_cash = sum(
-                        orders.payment_ids.filtered(lambda p: p.payment_method_id == default_cash_payment_method_id).mapped('amount')
+                        orders.payment_ids.filtered(
+                            lambda p: p.payment_method_id == default_cash_payment_method_id).mapped('amount')
                     ) + session.cash_register_balance_start
                     session.cash_register_balance_end_real = total_cash
 
@@ -138,9 +139,11 @@ class PosSession(models.Model):
                     no_profit_account |= journal
             message = ''
             if no_loss_account:
-                message += _("Please set a Loss Account on the following journals: %s.\n", ', '.join(no_loss_account.mapped('name')))
+                message += _("Please set a Loss Account on the following journals: %s.\n",
+                             ', '.join(no_loss_account.mapped('name')))
             if no_profit_account:
-                message += _("Please set a Profit Account on the following journals: %s.", ', '.join(no_profit_account.mapped('name')))
+                message += _("Please set a Profit Account on the following journals: %s.",
+                             ', '.join(no_profit_account.mapped('name')))
             if message:
                 return {'successful': False, 'message': message, 'redirect': True}
 
@@ -196,28 +199,18 @@ class PosSession(models.Model):
     def action_pos_session_open(self):
         """
         Override del método estándar de apertura de sesión.
-        Si pos_non_touch está activo, NO abre nada automáticamente
-        (el wizard ya se habrá mostrado desde create).
-        De lo contrario, ejecuta el comportamiento estándar.
         """
-        # Si estamos en modo de skip (desde create), no hacer nada
         if self.env.context.get('skip_auto_open'):
             return True
 
-        # Filtrar sesiones que usan modo no táctil
         non_touch_sessions = self.filtered(
             lambda s: s.config_id.pos_non_touch and s.state == 'opening_control'
         )
-
-        # Sesiones normales (modo táctil)
         normal_sessions = self - non_touch_sessions
 
-        # Para sesiones normales, ejecutar el comportamiento estándar
         if normal_sessions:
             super(PosSession, normal_sessions).action_pos_session_open()
 
-        # Para sesiones no táctiles llamadas directamente (no desde create),
-        # abrir el wizard
         if non_touch_sessions and not self.env.context.get('skip_auto_open'):
             return non_touch_sessions._open_non_touch_wizard()
 
@@ -228,14 +221,10 @@ class PosSession(models.Model):
         Abre el wizard de apertura de sesión para modo no táctil.
         """
         self.ensure_one()
-
-        # Crear el wizard
         wizard = self.env['pos.session.opening.wizard'].create({
             'session_id': self.id,
             'user_id': self.env.user.id,
         })
-
-        # Retornar la acción para mostrar el wizard
         return {
             'name': _('Abrir sesión POS - Modo no táctil'),
             'type': 'ir.actions.act_window',
@@ -245,4 +234,3 @@ class PosSession(models.Model):
             'target': 'new',
             'context': self.env.context,
         }
-
