@@ -211,3 +211,56 @@ class PosOrder(models.Model):
             _logger.exception("Error al enviar ticket por WhatsApp")
             return {'success': False, 'error': str(e)}
 
+    @api.model
+    def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html):
+        """Recibe el HTML del ticket generado en frontend, lo convierte a PDF y lo envía por WhatsApp"""
+        if not send_whatsapp:
+            return {'success': True, 'sent': False}
+
+        order = self.browse(order_id)
+        if not order.exists():
+            return {'success': False, 'error': _('Pedido no encontrado')}
+
+        if not order.partner_id:
+            return {'success': False, 'error': _('No hay cliente asociado al pedido')}
+
+        phone = order._get_whatsapp_phone()
+        if not phone:
+            return {
+                'success': False,
+                'error': _('El cliente %s no tiene número de teléfono configurado') % order.partner_id.name
+            }
+
+        try:
+            # Convertir el HTML a PDF usando el motor de reportes de Odoo
+            pdf_content = order.env['ir.actions.report']._run_wkhtmltopdf([
+                ticket_html
+            ], landscape=False)
+            pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
+
+            # Crear el attachment
+            attachment = order.env['ir.attachment'].create({
+                'name': 'Ticket_%s.pdf' % order.name.replace('/', '_'),
+                'type': 'binary',
+                'datas': pdf_base64,
+                'res_model': 'pos.order',
+                'res_id': order.id,
+                'mimetype': 'application/pdf',
+            })
+
+            # Buscar o crear el canal de WhatsApp para este cliente
+            config = order.session_id.config_id
+            gateway = config.whatsapp_gateway_id
+            channel = order._get_or_create_whatsapp_channel(gateway, phone)
+            template = config.whatsapp_pos_template_id
+
+            if template:
+                order._send_whatsapp_with_template(gateway, template, channel, attachment)
+            else:
+                order._send_whatsapp_simple(gateway, channel, attachment)
+
+            order.whatsapp_ticket_sent = True
+            return {'success': True, 'sent': True}
+        except Exception as e:
+            _logger.exception("Error al enviar ticket por WhatsApp (HTML)")
+            return {'success': False, 'error': str(e)}
