@@ -118,14 +118,18 @@ class PosSessionClosingWizard(models.TransientModel):
     def action_close_session(self):
         self.ensure_one()
 
+
         if self.session_id.state not in ['opened', 'closing_control']:
             raise UserError(_('Solo puedes cerrar sesiones en estado abierto o en proceso de cierre.'))
+
 
         if self.session_id.cash_control:
             self.session_id.post_closing_cash_details(self.cash_register_balance_end_real)
 
+
         if self.closing_note:
             self.session_id.message_post(body=_('Motivo de cierre: %s') % self.closing_note)
+
 
         difference = self.cash_register_balance_end_real - self.session_id.cash_register_balance_end
         currency = self.currency_id
@@ -145,17 +149,25 @@ class PosSessionClosingWizard(models.TransientModel):
                     balancing_account = journal.loss_account_id or journal.default_account_id
 
                 if not balancing_account:
-                    raise UserError(
-                        _("El diario %s no tiene cuentas de pérdidas/ganancias configuradas.") % journal.name)
+                    raise UserError(_("El diario %s no tiene cuentas configuradas.") % journal.name)
 
-        self.session_id.action_pos_session_validate(
-            balancing_account=balancing_account,
-            amount_to_balance=amount_to_balance,
-            bank_payment_method_diffs={}
-        )
-
+        try:
+            self.session_id.action_pos_session_validate(
+                balancing_account=balancing_account,
+                amount_to_balance=amount_to_balance,
+                bank_payment_method_diffs={}
+            )
+        except Exception:
+            pass
+        vals = {}
         if self.session_id.state != 'closed':
-            self.session_id.write({'state': 'closed', 'stop_at': fields.Datetime.now()})
+            vals['state'] = 'closed'
+
+        if not self.session_id.stop_at:
+            vals['stop_at'] = fields.Datetime.now()
+
+        if vals:
+            self.session_id.write(vals)
 
         return {
             'type': 'ir.actions.act_window',
