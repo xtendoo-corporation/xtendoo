@@ -18,5 +18,11 @@
         'security/res_partner_bank.xml',
         'security/pos_category_rule.xml',
         'security/pos_note_rule.xml',
+        'views/inherit_sale_account_product_context.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'xtendoo_encapsulate_companies/static/src/js/relational_utils_company_patch.js',
+        ],
+    },
 }
