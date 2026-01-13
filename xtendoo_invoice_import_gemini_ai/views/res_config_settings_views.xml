@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_gemini" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.gemini</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='account_reports']" position="after">
+                <block title="Gemini AI Invoice Import" id="gemini_ai_config">
+                    <setting string="Gemini API Key"
+                        help="Configure Google Gemini AI for invoice processing">
+                        <div class="content-group">
+                            <div class="row">
+                                <label for="gemini_api_key" class="col-lg-3 o_light_label" />
+                                <field name="gemini_api_key" password="True" />
+                            </div>
+                            <div class="row">
+                                <label for="gemini_model" class="col-lg-3 o_light_label" />
+                                <field name="gemini_model" />
+                            </div>
+                            <div class="text-muted"> Get your API key from <a
+                                    href="https://aistudio.google.com/" target="_blank">Google AI
+                                Studio</a>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

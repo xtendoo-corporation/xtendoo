@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_gemini" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.gemini</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_import_gemini_full"
+                    string="AI Scan (Full)"
+                    type="object"
+                    class="oe_highlight"
+                    invisible="move_type != 'in_invoice' or state != 'draft'" />
+                <button name="action_import_gemini_summarized"
+                    string="AI Scan (Summary)"
+                    type="object"
+                    invisible="move_type != 'in_invoice' or state != 'draft'" />
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Gemini AI" name="gemini_ai" invisible="move_type != 'in_invoice'">
+                    <group>
+                        <group string="Instructions">
+                            <p class="text-muted"> 1. Attach a PDF or image of the invoice.<br /> 2.
+                                Click <b>AI Scan (Full)</b> to import all lines.<br /> 3. Click <b>AI
+                                Scan (Summary)</b> to group lines by VAT percentage. </p>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
