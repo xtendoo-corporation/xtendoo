@@ -6,7 +6,7 @@
 
     <!-- Acción de servidor para crear plantilla de POS si no existe -->
     <record id="action_server_create_pos_template" model="ir.actions.server">
-        <field name="name">Crear Plantilla WhatsApp POS</field>
+        <field name="name">Crear Plantillas WhatsApp POS</field>
         <field name="model_id" ref="mail_gateway_whatsapp.model_mail_gateway"/>
         <field name="state">code</field>
         <field name="code">
@@ -19,17 +19,14 @@ if not gateways:
 # Obtener el modelo pos.order
 pos_order_model = env.ref('point_of_sale.model_pos_order').id
 
+# Plantilla normal
 template_name = 'Ticket POS WhatsApp'
-
 for gateway in gateways:
-    # Buscar si ya existe la plantilla
     existing = env['mail.whatsapp.template'].search([
         ('name', '=', template_name),
         ('gateway_id', '=', gateway.id),
     ], limit=1)
-
     if not existing:
-        # Crear la plantilla
         template = env['mail.whatsapp.template'].create({
             'name': template_name,
             'body': '🧾 *Ticket de Compra*\n\nHola {{1}},\n\nGracias por tu compra en {{2}}.\n\n📝 Pedido: {{3}}\n💰 Total: {{4}}\n📅 Fecha: {{5}}\n\n¡Gracias por tu preferencia!',
@@ -39,8 +36,6 @@ for gateway in gateways:
             'gateway_id': gateway.id,
             'state': 'draft',
         })
-
-        # Crear variables
         variables = [
             {'sequence': 1, 'variable_index': 1, 'name': 'Nombre del Cliente', 'field_name': 'partner_id.name', 'demo_value': 'Sample value'},
             {'sequence': 2, 'variable_index': 2, 'name': 'Nombre de la Tienda', 'field_name': 'config_id.name', 'demo_value': 'Sample value'},
@@ -48,24 +43,67 @@ for gateway in gateways:
             {'sequence': 4, 'variable_index': 4, 'name': 'Total', 'field_name': 'amount_total', 'demo_value': 'Sample value'},
             {'sequence': 5, 'variable_index': 5, 'name': 'Fecha', 'field_name': 'date_order', 'demo_value': 'Sample value'},
         ]
-
         for var in variables:
             var['template_id'] = template.id
             var['field_type'] = 'field'
             env['mail.whatsapp.template.variable'].create(var)
 
+# Plantilla interactiva
+interactive_name = 'Ticket POS WhatsApp Interactivo'
+for gateway in gateways:
+    existing = env['mail.whatsapp.template'].search([
+        ('name', '=', interactive_name),
+        ('gateway_id', '=', gateway.id),
+    ], limit=1)
+    if not existing:
+        template = env['mail.whatsapp.template'].create({
+            'name': interactive_name,
+            'body': '¿Desea recibir su ticket de la compra realizada recientemente? Pulse el botón correspondiente.',
+            'category': 'utility',
+            'language': 'es',
+            'model_id': pos_order_model,
+            'gateway_id': gateway.id,
+            'state': 'draft',
+            'interactive': True,
+            'buttons': [
+                {
+                    'type': 'reply',
+                    'reply': {
+                        'id': 'si_ticket',
+                        'title': 'Sí',
+                        'description': 'Recibir ticket de compra',
+                    }
+                },
+                {
+                    'type': 'reply',
+                    'reply': {
+                        'id': 'no_ticket',
+                        'title': 'No',
+                        'description': 'No recibir ticket',
+                    }
+                }
+            ],
+        })
+
 action = {
     'type': 'ir.actions.client',
     'tag': 'display_notification',
     'params': {
-        'title': 'Plantilla POS',
-        'message': 'Plantilla de WhatsApp para POS creada correctamente',
+        'title': 'Plantillas POS',
+        'message': 'Plantillas de WhatsApp para POS creadas correctamente',
         'type': 'success',
         'sticky': False,
     }
 }
         </field>
     </record>
+
+    <menuitem
+        id="menu_whatsapp_load_templates_pos"
+        name="Cargar Plantillas Predefinidas de POS"
+        parent="menu_whatsapp_root"
+        action="action_server_create_pos_template"
+        sequence="30"/>
 
 </odoo>
 

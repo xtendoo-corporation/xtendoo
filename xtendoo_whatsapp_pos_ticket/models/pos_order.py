@@ -18,6 +18,11 @@ class PosOrder(models.Model):
         default=False,
         copy=False,
     )
+    whatsapp_ticket_requested = fields.Boolean(
+        string="Cliente ha solicitado ticket por WhatsApp",
+        default=False,
+        copy=False,
+    )
 
     def _get_whatsapp_phone(self):
         self.ensure_one()
@@ -184,5 +189,33 @@ class PosOrder(models.Model):
             return obj
         except (AttributeError, TypeError):
             return ''
+
+    @api.model
+    def process_whatsapp_interactive_response(self, order_id, response, ticket_html=None):
+        """
+        Procesa la respuesta del cliente al mensaje interactivo de WhatsApp.
+        Si la respuesta es 'si_ticket', envía el ticket PDF por WhatsApp.
+        """
+        order = self.browse(order_id)
+        if not order.exists():
+            _logger.error("[WhatsApp POS] Pedido no encontrado para respuesta interactiva: %s", order_id)
+            return {'success': False, 'error': _('Pedido no encontrado')}
+        order.ensure_one()
+
+        if response == 'si_ticket':
+            order.whatsapp_ticket_requested = True
+            _logger.info("[WhatsApp POS] El cliente ha respondido SÍ, enviando ticket por WhatsApp para el pedido %s", order.name)
+            # Si el HTML no se pasa, se puede regenerar o usar el último
+            if not ticket_html:
+                # Aquí podrías obtener el HTML desde un attachment, campo, o regenerar
+                _logger.warning("[WhatsApp POS] No se proporcionó ticket_html, no se puede enviar el PDF.")
+                return {'success': False, 'error': _('No se proporcionó el HTML del ticket')}
+            return order.send_whatsapp_ticket_html(order.id, True, ticket_html)
+        else:
+            order.whatsapp_ticket_requested = False
+            _logger.info("[WhatsApp POS] El cliente ha respondido NO, no se enviará el ticket por WhatsApp para el pedido %s", order.name)
+            return {'success': True, 'sent': False, 'message': _('El cliente no desea recibir el ticket.')}
+
+
 
 # NOTA: La vista pos_order_receipt_report.xml ya no es necesaria y puede eliminarse del módulo.
