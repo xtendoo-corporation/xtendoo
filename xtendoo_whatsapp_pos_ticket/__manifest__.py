@@ -13,6 +13,7 @@
         "point_of_sale",
         "mail_gateway_whatsapp",
         "mail_gateway_whatsapp_variables",
+        "xtendoo_pos_receipt"
     ],
     "data": [
         "security/ir.model.access.csv",
