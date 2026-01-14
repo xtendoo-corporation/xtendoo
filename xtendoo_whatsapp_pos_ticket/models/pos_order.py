@@ -101,15 +101,12 @@ class PosOrder(models.Model):
                             'confirmation_type': 'button',
                         })
                         _logger.info(f"[WhatsApp POS] Confirmación pendiente creada para el pedido {order.name} y cliente {order.partner_id.name}")
-                        # Enviar el PDF justo después de la plantilla pendiente
-                        if ticket_html:
-                            _logger.info(f"[WhatsApp POS] Enviando PDF tras plantilla interactiva para el pedido {order.name}")
-                            self.send_whatsapp_ticket_html(order.id, True, ticket_html)
                 return {'success': True, 'sent': True}
             else:
                 _logger.warning("[WhatsApp POS] No se encontró la plantilla configurada en POS config")
                 return {'success': False, 'error': _('No se encontró la plantilla configurada en POS config')}
 
+        # Solo se envía el PDF si send_whatsapp=True (tras la confirmación)
         try:
             _logger.info("[WhatsApp POS] Generando PDF del ticket para el pedido %s", order.name)
             pdf_content = order.env['ir.actions.report']._run_wkhtmltopdf([
@@ -235,10 +232,19 @@ class PosOrder(models.Model):
 
         if response == 'si_ticket':
             order.whatsapp_ticket_requested = True
-            _logger.info("[WhatsApp POS] El cliente ha respondido SÍ, enviando ticket por WhatsApp para el pedido %s", order.name)
-            # Si el HTML no se pasa, se puede regenerar o usar el último
+            _logger.info("[WhatsApp POS] El cliente ha respondido SÍ, enviando plantilla de confirmación y PDF para el pedido %s", order.name)
+            # Enviar plantilla de confirmación
+            config = order.session_id.config_id
+            gateway = config.whatsapp_gateway_id
+            channel = order._get_or_create_whatsapp_channel(gateway, order._get_whatsapp_phone())
+            confirmation_template = config.whatsapp_pos_template_id.confirmation_template_id if config.whatsapp_pos_template_id and config.whatsapp_pos_template_id.confirmation_template_id else None
+            if confirmation_template:
+                order._send_whatsapp_with_template(gateway, confirmation_template, channel, None)
+                _logger.info("[WhatsApp POS] Plantilla de confirmación enviada")
+            else:
+                _logger.warning("[WhatsApp POS] No se encontró la plantilla de confirmación en POS config")
+            # Enviar el PDF
             if not ticket_html:
-                # Aquí podrías obtener el HTML desde un attachment, campo, o regenerar
                 _logger.warning("[WhatsApp POS] No se proporcionó ticket_html, no se puede enviar el PDF.")
                 return {'success': False, 'error': _('No se proporcionó el HTML del ticket')}
             return order.send_whatsapp_ticket_html(order.id, True, ticket_html)
