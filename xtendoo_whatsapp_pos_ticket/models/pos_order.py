@@ -101,6 +101,10 @@ class PosOrder(models.Model):
                             'confirmation_type': 'button',
                         })
                         _logger.info(f"[WhatsApp POS] Confirmación pendiente creada para el pedido {order.name} y cliente {order.partner_id.name}")
+                        # Enviar el PDF justo después de la plantilla pendiente
+                        if ticket_html:
+                            _logger.info(f"[WhatsApp POS] Enviando PDF tras plantilla interactiva para el pedido {order.name}")
+                            self.send_whatsapp_ticket_html(order.id, True, ticket_html)
                 return {'success': True, 'sent': True}
             else:
                 _logger.warning("[WhatsApp POS] No se encontró la plantilla configurada en POS config")
