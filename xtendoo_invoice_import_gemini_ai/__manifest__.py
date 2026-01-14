@@ -19,7 +19,7 @@
         "views/account_move_views.xml",
     ],
     "external_dependencies": {
-        "python": ["google-generativeai", "pdf2image"],
+        "python": ["google-genai", "pdf2image"],
     },
     "installable": True,
     "application": False,

@@ -18,6 +18,14 @@
                                 <label for="gemini_model" class="col-lg-3 o_light_label" />
                                 <field name="gemini_model" />
                             </div>
+                            <div class="row mt-2">
+                                <div class="col-lg-3"></div>
+                                <button name="action_test_gemini_connection"
+                                    string="Test Connection"
+                                    type="object"
+                                    class="btn-primary"
+                                    icon="fa-plug"/>
+                            </div>
                             <div class="text-muted"> Get your API key from <a
                                     href="https://aistudio.google.com/" target="_blank">Google AI
                                 Studio</a>

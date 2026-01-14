@@ -2,7 +2,6 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import base64
-import io
 import json
 import logging
 import re
@@ -12,10 +11,11 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 try:
-    import google.generativeai as genai
-    from google.generativeai.types import GenerateContentResponse
+    from google import genai
+    from google.genai import types
 except ImportError:
     genai = None
+    types = None
 
 try:
     from pdf2image import convert_from_bytes
@@ -72,34 +72,36 @@ class AccountMove(models.Model):
             self.env["ir.config_parameter"]
             .sudo()
             .get_param(
-                "xtendoo_invoice_import_gemini_ai.gemini_model", "gemini-1.5-flash"
+                "xtendoo_invoice_import_gemini_ai.gemini_model", "gemini-2.0-flash-exp"
             )
         )
 
-        if not genai:
-            raise UserError(_("google-generativeai library is not installed."))
+        if not genai or not types:
+            raise UserError(_("google-genai library is not installed. Please install it with: pip install google-genai"))
 
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(model_name)
+        # Usar la nueva API con Client
+        client = genai.Client(api_key=api_key)
 
         # 3. Prepare data for Gemini
         file_content = base64.b64decode(attachment.datas)
         mime_type = attachment.mimetype
 
-        # Gemini can handle images and PDF. We'll send it as part of the prompt.
-        # For PDF, we might need to convert to images if the library version is old or for better OCR in some cases.
-        # But let's try direct PDF support first.
-
         prompt = self._get_gemini_prompt(summary_mode=summary_mode)
 
         try:
-            # Prepare parts for generative content
-            parts = [prompt]
-            parts.append({"mime_type": mime_type, "data": file_content})
+            # Preparar el archivo con la nueva API
+            file_part = types.Part.from_bytes(
+                data=file_content,
+                mime_type=mime_type
+            )
 
-            response = model.generate_content(parts)
+            # Generar contenido con la nueva API
+            response = client.models.generate_content(
+                model=model_name,
+                contents=[prompt, file_part]
+            )
 
-            if not response.text:
+            if not response or not response.text:
                 raise UserError(_("Gemini AI returned an empty response."))
 
             # Clean response text (sometimes it includes ```json ... ``` blocks)
