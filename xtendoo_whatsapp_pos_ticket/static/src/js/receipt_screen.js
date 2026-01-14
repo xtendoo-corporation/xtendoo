@@ -69,18 +69,31 @@ patch(ReceiptScreen.prototype, {
         try {
             // Usar el método oficial para obtener el HTML del ticket
             let ticketHtml = "";
+            let logMsg = "";
             if (typeof this.getReceiptHtml === "function") {
                 ticketHtml = this.getReceiptHtml();
+                logMsg = "getReceiptHtml() usado";
             } else if (this.el && this.el.querySelector) {
                 ticketHtml = this.el.querySelector('.pos-receipt')?.outerHTML;
+                logMsg = "this.el.querySelector usado";
+            } else {
+                logMsg = "No se encontró getReceiptHtml ni this.el";
             }
             if (!ticketHtml) {
-                this.notification.add(_t("No se pudo obtener el HTML del ticket para enviar por WhatsApp."), {
+                console.error("[WhatsApp POS] No se pudo obtener el HTML del ticket. Método: ", logMsg, this);
+                if (typeof this.getReceiptHtml !== "function") {
+                    console.warn("[WhatsApp POS] getReceiptHtml no está disponible en ReceiptScreen. Verifica la versión de Odoo o la personalización del POS.");
+                }
+                if (!this.el) {
+                    console.warn("[WhatsApp POS] this.el no está definido en ReceiptScreen. El DOM puede no estar listo.");
+                }
+                this.notification.add(_t("No se pudo obtener el HTML del ticket para enviar por WhatsApp. Intenta imprimir el ticket antes o recarga la pantalla. Consulta la consola para más detalles."), {
                     type: "danger",
                 });
                 this.whatsappState.sending = false;
                 return;
             }
+            console.log("[WhatsApp POS] HTML del ticket obtenido:", ticketHtml);
             const result = await this.orm.call(
                 "pos.order",
                 "send_whatsapp_ticket_html",
