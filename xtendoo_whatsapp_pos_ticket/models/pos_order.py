@@ -45,8 +45,8 @@ class PosOrder(models.Model):
         gateway = config.whatsapp_gateway_id
         template = config.whatsapp_pos_template_id
 
-        # Generar el PDF del ticket
-        report = self.env.ref('point_of_sale.pos_order_report')
+        # Generar el PDF del ticket con el reporte personalizado
+        report = self.env.ref('xtendoo_whatsapp_pos_ticket.action_report_pos_order_receipt')
         pdf_content, content_type = report._render_qweb_pdf(report.id, [self.id])
         pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
 
