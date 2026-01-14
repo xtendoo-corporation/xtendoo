@@ -49,10 +49,6 @@ class PosOrder(models.Model):
     @api.model
     def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html):
         _logger.info("[WhatsApp POS] Iniciando envío de ticket. order_id=%s, send_whatsapp=%s", order_id, send_whatsapp)
-        if not send_whatsapp:
-            _logger.info("[WhatsApp POS] Envío no solicitado (send_whatsapp es False)")
-            return {'success': True, 'sent': False}
-
         order = self.browse(order_id)
         if not order.exists():
             _logger.error("[WhatsApp POS] Pedido no encontrado: %s", order_id)
@@ -71,6 +67,25 @@ class PosOrder(models.Model):
                 'error': _('El cliente %s no tiene número de teléfono configurado') % order.partner_id.name
             }
 
+        config = order.session_id.config_id
+        if not config or not config.whatsapp_gateway_id:
+            _logger.error("[WhatsApp POS] No hay gateway de WhatsApp configurado en el punto de venta para el pedido %s", order.name)
+            return {'success': False, 'error': _('No hay gateway de WhatsApp configurado en el punto de venta.')}
+
+        gateway = config.whatsapp_gateway_id
+        channel = order._get_or_create_whatsapp_channel(gateway, phone)
+        template = config.whatsapp_pos_template_id
+
+        if not send_whatsapp:
+            # Solo enviar la plantilla configurada, sin PDF ni ticket
+            if template:
+                order._send_whatsapp_with_template(gateway, template, channel, None)
+                _logger.info("[WhatsApp POS] Plantilla enviada correctamente por WhatsApp (sin ticket)")
+                return {'success': True, 'sent': True}
+            else:
+                _logger.warning("[WhatsApp POS] No se encontró la plantilla configurada en POS config")
+                return {'success': False, 'error': _('No se encontró la plantilla configurada en POS config')}
+
         try:
             _logger.info("[WhatsApp POS] Generando PDF del ticket para el pedido %s", order.name)
             pdf_content = order.env['ir.actions.report']._run_wkhtmltopdf([
@@ -87,14 +102,6 @@ class PosOrder(models.Model):
                 'res_id': order.id,
                 'mimetype': 'application/pdf',
             })
-
-            config = order.session_id.config_id
-            if not config or not config.whatsapp_gateway_id:
-                _logger.error("[WhatsApp POS] No hay gateway de WhatsApp configurado en el punto de venta para el pedido %s", order.name)
-                return {'success': False, 'error': _('No hay gateway de WhatsApp configurado en el punto de venta.')}
-            gateway = config.whatsapp_gateway_id
-            channel = order._get_or_create_whatsapp_channel(gateway, phone)
-            template = config.whatsapp_pos_template_id
 
             _logger.info("[WhatsApp POS] Enviando ticket por WhatsApp. Pedido: %s, Cliente: %s, Teléfono: %s", order.name, order.partner_id.name, phone)
             if template:
@@ -145,7 +152,7 @@ class PosOrder(models.Model):
             body=message_body,
             message_type='comment',
             subtype_xmlid='mail.mt_comment',
-            attachment_ids=[attachment.id],
+            attachment_ids=[attachment.id] if attachment else [],
             gateway_type='whatsapp',
         )
 
@@ -190,31 +197,31 @@ class PosOrder(models.Model):
         except (AttributeError, TypeError):
             return ''
 
-    # @api.model
-    # def process_whatsapp_interactive_response(self, order_id, response, ticket_html=None):
-    #     """
-    #     Procesa la respuesta del cliente al mensaje interactivo de WhatsApp.
-    #     Si la respuesta es 'si_ticket', envía el ticket PDF por WhatsApp.
-    #     """
-    #     order = self.browse(order_id)
-    #     if not order.exists():
-    #         _logger.error("[WhatsApp POS] Pedido no encontrado para respuesta interactiva: %s", order_id)
-    #         return {'success': False, 'error': _('Pedido no encontrado')}
-    #     order.ensure_one()
-    #
-    #     if response == 'si_ticket':
-    #         order.whatsapp_ticket_requested = True
-    #         _logger.info("[WhatsApp POS] El cliente ha respondido SÍ, enviando ticket por WhatsApp para el pedido %s", order.name)
-    #         # Si el HTML no se pasa, se puede regenerar o usar el último
-    #         if not ticket_html:
-    #             # Aquí podrías obtener el HTML desde un attachment, campo, o regenerar
-    #             _logger.warning("[WhatsApp POS] No se proporcionó ticket_html, no se puede enviar el PDF.")
-    #             return {'success': False, 'error': _('No se proporcionó el HTML del ticket')}
-    #         return order.send_whatsapp_ticket_html(order.id, True, ticket_html)
-    #     else:
-    #         order.whatsapp_ticket_requested = False
-    #         _logger.info("[WhatsApp POS] El cliente ha respondido NO, no se enviará el ticket por WhatsApp para el pedido %s", order.name)
-    #         return {'success': True, 'sent': False, 'message': _('El cliente no desea recibir el ticket.')}
+    @api.model
+    def process_whatsapp_interactive_response(self, order_id, response, ticket_html=None):
+        """
+        Procesa la respuesta del cliente al mensaje interactivo de WhatsApp.
+        Si la respuesta es 'si_ticket', envía el ticket PDF por WhatsApp.
+        """
+        order = self.browse(order_id)
+        if not order.exists():
+            _logger.error("[WhatsApp POS] Pedido no encontrado para respuesta interactiva: %s", order_id)
+            return {'success': False, 'error': _('Pedido no encontrado')}
+        order.ensure_one()
+
+        if response == 'si_ticket':
+            order.whatsapp_ticket_requested = True
+            _logger.info("[WhatsApp POS] El cliente ha respondido SÍ, enviando ticket por WhatsApp para el pedido %s", order.name)
+            # Si el HTML no se pasa, se puede regenerar o usar el último
+            if not ticket_html:
+                # Aquí podrías obtener el HTML desde un attachment, campo, o regenerar
+                _logger.warning("[WhatsApp POS] No se proporcionó ticket_html, no se puede enviar el PDF.")
+                return {'success': False, 'error': _('No se proporcionó el HTML del ticket')}
+            return order.send_whatsapp_ticket_html(order.id, True, ticket_html)
+        else:
+            order.whatsapp_ticket_requested = False
+            _logger.info("[WhatsApp POS] El cliente ha respondido NO, no se enviará el ticket por WhatsApp para el pedido %s", order.name)
+            return {'success': True, 'sent': False, 'message': _('El cliente no desea recibir el ticket.')}
 
 
 
