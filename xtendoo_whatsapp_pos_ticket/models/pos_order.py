@@ -95,7 +95,7 @@ class PosOrder(models.Model):
                             'partner_id': order.partner_id.id,
                             'channel_id': channel.id,
                             'template_id': template.id,
-                            'confirmation_template_id': template.id,
+                            'confirmation_template_id': config.whatsapp_pos_template_id.confirmation_template_id.id if config.whatsapp_pos_template_id else False,
                             'res_model': 'pos.order',
                             'res_id': order.id,
                             'confirmation_type': 'button',
