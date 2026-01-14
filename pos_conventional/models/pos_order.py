@@ -702,22 +702,8 @@ class PosOrder(models.Model):
         return wizard.action_pay_card()
 
     def action_pay_account(self):
-        """
-        Crea un sale.order tradicional a partir del pos.order actual.
-
-        Este método transforma una venta POS en una venta tradicional de backoffice,
-        copiando toda la información del pedido: cliente, líneas de productos,
-        cantidades, precios, impuestos y descuentos.
-
-        El pos.order original permanece en estado 'draft' sin afectar al flujo
-        de caja ni al stock.
-
-        Returns:
-            dict: Acción para abrir el nuevo sale.order creado
-        """
         self.ensure_one()
 
-        # Validaciones previas
         if self.state != 'draft':
             raise UserError(_('Solo se pueden convertir a albarán pedidos en estado borrador.'))
 
@@ -727,12 +713,9 @@ class PosOrder(models.Model):
         if not self.partner_id:
             raise UserError(_('Debe seleccionar un cliente para crear el albarán.'))
 
-        # Preparar las líneas del sale.order
         sale_order_lines = []
         for pos_line in self.lines:
-            # Obtener los impuestos aplicables
             taxes = pos_line.tax_ids_after_fiscal_position or pos_line.tax_ids
-
             line_vals = {
                 'product_id': pos_line.product_id.id,
                 'name': pos_line.full_product_name or pos_line.product_id.display_name,
@@ -744,7 +727,6 @@ class PosOrder(models.Model):
             }
             sale_order_lines.append((0, 0, line_vals))
 
-        # Crear el sale.order
         sale_order_vals = {
             'partner_id': self.partner_id.id,
             'partner_invoice_id': self.partner_id.id,
@@ -752,58 +734,62 @@ class PosOrder(models.Model):
             'pricelist_id': self.pricelist_id.id if self.pricelist_id else False,
             'fiscal_position_id': self.fiscal_position_id.id if self.fiscal_position_id else False,
             'order_line': sale_order_lines,
-            'origin': self.name,  # Referencia al pedido POS original
+            'origin': self.name,
             'note': _('Creado desde pedido POS: %s') % self.name,
         }
 
-        # Si hay una compañía específica, asignarla
         if self.company_id:
             sale_order_vals['company_id'] = self.company_id.id
 
+        created_picking = False
+
         try:
             sale_order = self.env['sale.order'].create(sale_order_vals)
-            _logger.info(
-                "POS Order %s: Creado sale.order %s desde pedido POS",
-                self.name, sale_order.name
-            )
+            _logger.info("POS Order %s: Creado sale.order %s", self.name, sale_order.name)
 
-            # Vincular el pos.order con el sale.order creado y actualizar el nombre
             self.write({
                 'linked_sale_order_id': sale_order.id,
                 'name': sale_order.name,
-                'state': 'linked'  # <--- AQUÍ ESTÁ EL CAMBIO MAESTRO
+                'state': 'linked'
             })
 
-            # Confirmar el pedido de venta automáticamente
             sale_order.action_confirm()
-            _logger.info(
-                "POS Order %s: sale.order %s confirmado automáticamente",
-                self.name, sale_order.name
-            )
 
-            # Validar los pickings (entregas) generados
             for picking in sale_order.picking_ids:
+                created_picking = picking
                 if picking.state == 'draft':
                     picking.action_confirm()
                 if picking.state != 'done':
-                    # Asignar cantidades automáticamente
                     picking.action_assign()
-                    # Establecer cantidades hechas = cantidades demandadas
                     for move in picking.move_ids:
                         move.quantity = move.product_uom_qty
-                    # Validar el picking
                     picking.button_validate()
-                    _logger.info(
-                        "POS Order %s: Picking %s validado automáticamente",
-                        self.name, picking.name
-                    )
+                    _logger.info("POS Order %s: Picking %s validado", self.name, picking.name)
+
         except Exception as e:
             _logger.exception("Error al crear sale.order desde POS: %s", str(e))
             raise UserError(_('Error al crear el albarán: %s') % str(e))
 
+        if created_picking:
+            report_url = '/report/html/pos_conventional.report_albaran_80mm/%s' % created_picking.id
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'pos_conventional_print_iframe',
+                'params': {
+                    'url': report_url,
+                    'next_action': {
+                        'type': 'ir.actions.act_window',
+                        'res_model': 'pos.order',
+                        'res_id': self.id,
+                        'view_mode': 'form',
+                        # --- ESTA ES LA LÍNEA QUE FALTA ---
+                        'views': [[False, 'form']],
+                        # ----------------------------------
+                        'target': 'current',
+                    }
+                }
+            }
 
-
-        # Recargar la vista del formulario para mostrar el estado vinculado
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'pos.order',

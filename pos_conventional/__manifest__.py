@@ -29,6 +29,7 @@
         'views/pos_payment_views.xml',
         'views/report_receipt.xml',
         'views/report_sale_details_customer_account.xml',
+        'views/albaran_receipt.xml'
     ],
     'assets': {
         'web.assets_backend': [

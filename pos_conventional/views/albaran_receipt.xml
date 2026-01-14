@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="report_albaran_80mm">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page">
+                    <style>
+                        @page {
+                            size: 80mm auto;
+                            margin: 0mm;
+                        }
+                        body, .container, .row, .col-12 {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            width: 100% !important;
+                            max-width: 100% !important;
+                        }
+                        .page {
+                            font-family: 'Courier New', monospace;
+                            font-size: 12px;
+                            color: #000;
+                            padding: 2mm 3mm; /* Márgenes internos seguros */
+                            width: 100%;
+                            background-color: white;
+                        }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .text-left { text-align: left; }
+                        .bold { font-weight: bold; }
+
+                        .dashed-line {
+                            border-bottom: 1px dashed #000;
+                            margin: 5px 0;
+                            width: 100%;
+                        }
+
+                        /* Tabla ajustada */
+                        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        th { font-weight: normal; border-bottom: 1px dashed #000; padding-bottom: 2px; }
+                        td { vertical-align: top; padding: 2px 0; }
+
+                        .col-prod { width: 75%; overflow: hidden; }
+                        .col-qty { width: 25%; text-align: right; }
+
+                        img { -webkit-print-color-adjust: exact; }
+                    </style>
+
+                    <div class="text-center">
+                        <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)"
+                             style="max-height: 70px; max-width: 90%; margin-bottom: 5px;"/>
+                    </div>
+
+                    <div class="text-center bold" style="font-size: 1.1em;">
+                        <span t-field="o.company_id.name"/>
+                    </div>
+
+                    <div class="text-center" style="font-size: 0.9em; margin-top: 5px;">
+                        <t t-if="o.state == 'done' and o.date_done">
+                            Fecha: <span t-field="o.date_done" t-options='{"widget": "date"}'/>
+                        </t>
+                        <t t-elif="o.scheduled_date">
+                            Previsto: <span t-field="o.scheduled_date" t-options='{"widget": "date"}'/>
+                        </t>
+                    </div>
+
+                    <div class="dashed-line"/>
+
+                    <div class="text-center bold" style="font-size: 1.1em;">
+                        <span t-field="o.name"/>
+                    </div>
+
+                    <div class="text-center" style="font-size: 0.9em;">
+                        <t t-if="o.origin">
+                            Origen: <span t-field="o.origin"/><br/>
+                        </t>
+                        <span t-field="o.picking_type_id.name"/>
+                    </div>
+
+                    <div class="dashed-line"/>
+
+                    <div t-if="o.partner_id" style="margin-bottom: 5px;">
+                        <strong>Cliente:</strong><br/>
+                        <span t-field="o.partner_id.name"/><br/>
+                        <span t-if="o.partner_id.phone">Tel: <span t-field="o.partner_id.phone"/></span>
+                    </div>
+
+                    <div t-if="o.move_ids and o.move_ids[0].partner_id and o.move_ids[0].partner_id != o.partner_id" style="margin-top:5px; font-size:0.9em;">
+                        <strong>Entregar en:</strong><br/>
+                        <span t-field="o.move_ids[0].partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    </div>
+
+                    <div class="dashed-line"/>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="text-left col-prod">Producto</th>
+                                <th class="text-right col-qty">Ud.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.move_ids" t-as="move">
+                                <tr t-if="move.quantity > 0 or move.state != 'cancel'">
+                                    <td class="text-left" style="padding-right: 2px;">
+                                        <span class="bold" t-field="move.product_id.display_name"/>
+                                        <t t-if="move.description_picking and move.description_picking != move.product_id.name">
+                                            <br/><span style="font-size: 0.8em; font-style:italic;" t-field="move.description_picking"/>
+                                        </t>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="'%g' % move.quantity"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <div class="dashed-line"/>
+
+                    <div class="text-right" style="margin-top: 5px;">
+                        Lineas Totales: <span t-esc="len(o.move_ids)"/>
+                    </div>
+
+                    <t t-if="o.note">
+                        <br/>
+                        <div style="font-size: 0.9em;">
+                            <strong>Nota:</strong> <span t-field="o.note"/>
+                        </div>
+                    </t>
+
+                    <br/><br/>
+
+                    <div class="text-center">
+                        <div style="border-bottom: 1px solid #000; width: 60%; margin: 0 auto 5px auto;"></div>
+                        Firma / Recibí
+                    </div>
+
+                    <br/>
+                    <div class="text-center" style="font-size: 0.8em;">
+                        GRACIAS POR SU CONFIANZA
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_albaran_80mm" model="ir.actions.report">
+        <field name="name">Albarán Ticket 80mm</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">pos_conventional.report_albaran_80mm</field>
+        <field name="report_file">pos_conventional.report_albaran_80mm</field>
+        <field name="print_report_name">'Albaran - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
