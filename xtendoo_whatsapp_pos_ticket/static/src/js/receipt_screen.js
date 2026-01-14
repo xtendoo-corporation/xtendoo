@@ -38,33 +38,33 @@ patch(ReceiptScreen.prototype, {
         return this.isWhatsappEnabled && partner && this.partnerHasPhone;
     },
 
-    async sendWhatsappTicket() {
-        const order = this.currentOrder;
-        const partner = order.get_partner();
-
-        if (!partner) {
-            this.notification.add(_t("Por favor, seleccione un cliente para enviar el ticket por WhatsApp."), {
-                type: "warning",
-            });
-            return;
-        }
-
-        if (!this.partnerHasPhone) {
-            this.notification.add(_t("El cliente %s no tiene número de teléfono configurado.", partner.name), {
-                type: "danger",
-            });
-            return;
-        }
-
-        if (typeof order.id !== "number") {
-            this.notification.add(_t("El pedido no está sincronizado. Por favor, espere e intente de nuevo."), {
-                type: "warning",
-            });
-            return;
-        }
-
-        this.whatsappState.sending = true;
-        this.whatsappState.error = null;
+//    async sendWhatsappTicket() {
+//        const order = this.currentOrder;
+//        const partner = order.get_partner();
+//
+//        if (!partner) {
+//            this.notification.add(_t("Por favor, seleccione un cliente para enviar el ticket por WhatsApp."), {
+//                type: "warning",
+//            });
+//            return;
+//        }
+//
+//        if (!this.partnerHasPhone) {
+//            this.notification.add(_t("El cliente %s no tiene número de teléfono configurado.", partner.name), {
+//                type: "danger",
+//            });
+//            return;
+//        }
+//
+//        if (typeof order.id !== "number") {
+//            this.notification.add(_t("El pedido no está sincronizado. Por favor, espere e intente de nuevo."), {
+//                type: "warning",
+//            });
+//            return;
+//        }
+//
+//        this.whatsappState.sending = true;
+//        this.whatsappState.error = null;
 
 //        try {
 //            let ticketHtml = "";
