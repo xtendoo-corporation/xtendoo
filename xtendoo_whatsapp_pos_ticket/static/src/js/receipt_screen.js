@@ -125,5 +125,5 @@ patch(ReceiptScreen.prototype, {
 //        } finally {
 //            this.whatsappState.sending = false;
 //        }
-    },
+//    },
 });
