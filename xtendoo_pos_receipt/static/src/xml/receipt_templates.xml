@@ -11,7 +11,7 @@
                t-value="props.order.company || data.company || (env &amp;&amp; env.pos &amp;&amp; env.pos.company_printable) || (env &amp;&amp; env.pos &amp;&amp; env.pos.company) || (props.order &amp;&amp; props.order.pos &amp;&amp; props.order.pos.company_printable) || {}"/>
             <t t-if="data">
                 <div class="custom-header"
-                     style="font-family: 'Courier New', monospace; font-weight: normal; text-align: center; font-size: 11px; line-height: 1.2; padding: 0; margin: 0;">
+                     style="font-family: 'Lucida Console', 'DejaVu Sans Mono', 'Liberation Mono', monospace; font-weight: normal; text-align: center; font-size: 13px; line-height: 1.2; padding: 0; margin: 0;">
 
                     <!-- Datos de la empresa -->
                     <div style="margin-top: 5px; margin-bottom: 3px; font-weight: bold;">
