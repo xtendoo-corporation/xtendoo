@@ -81,7 +81,7 @@ class PosOrder(models.Model):
             if template:
                 order._send_whatsapp_with_template(gateway, template, channel, None)
                 _logger.info("[WhatsApp POS] Plantilla enviada correctamente por WhatsApp (sin ticket)")
-                # Si la plantilla es interactiva (tiene botones), crear confirmación pendiente
+                # Si la plantilla es interactiva (tiene botones), crear confirmación pendiente y guardar el HTML
                 if template.button_ids:
                     pending_model = self.env['whatsapp.pending.confirmation']
                     existing = pending_model.search([
@@ -99,8 +99,9 @@ class PosOrder(models.Model):
                             'res_model': 'pos.order',
                             'res_id': order.id,
                             'confirmation_type': 'button',
+                            'ticket_html': ticket_html,
                         })
-                        _logger.info(f"[WhatsApp POS] Confirmación pendiente creada para el pedido {order.name} y cliente {order.partner_id.name}")
+                        _logger.info(f"[WhatsApp POS] Confirmación pendiente creada para el pedido {order.name} y cliente {order.partner_id.name} (HTML guardado)")
                 return {'success': True, 'sent': True}
             else:
                 _logger.warning("[WhatsApp POS] No se encontró la plantilla configurada en POS config")

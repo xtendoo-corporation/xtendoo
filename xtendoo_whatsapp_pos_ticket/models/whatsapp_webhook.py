@@ -11,15 +11,14 @@ class WhatsappPendingConfirmationPos(models.Model):
 
     def process_confirmation_response(self, message_data, ticket_html=None):
         """
-        Extiende el procesamiento de la respuesta para POS: si es POS y confirmado, envía el PDF.
+        Extiende el procesamiento de la respuesta para POS: si es POS y confirmado, envía el PDF usando el HTML guardado.
         """
         self.ensure_one()
-        # Lógica original
         result = super().process_confirmation_response(message_data)
-        # Si es POS y confirmado, enviar el PDF
         if result and self.state == 'confirmed' and self.res_model == 'pos.order':
             order = self.env['pos.order'].browse(self.res_id)
-            if order.exists() and ticket_html:
+            html = self.ticket_html or ticket_html
+            if order.exists() and html:
                 _logger.info(f"[WhatsApp POS] Enviando PDF tras confirmación para pedido {order.name}")
-                order.send_whatsapp_ticket_pdf(ticket_html)
+                order.send_whatsapp_ticket_pdf(html)
         return result

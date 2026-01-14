@@ -1,12 +1,14 @@
 # Copyright 2024 Xtendoo
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import models
+from odoo import models, fields
 import logging
 _logger = logging.getLogger(__name__)
 
 class WhatsappPendingConfirmation(models.Model):
     _inherit = 'whatsapp.pending.confirmation'
+
+    ticket_html = fields.Text(string="HTML del ticket POS")
 
     def process_confirmation_response(self, message_data):
         res = super().process_confirmation_response(message_data)
