@@ -20,7 +20,6 @@
         "data/whatsapp_template_data.xml",
         "views/pos_config_views.xml",
         "views/res_partner_views.xml",
-        "views/pos_order_receipt_report.xml",
     ],
     "assets": {
         "point_of_sale._assets_pos": [
