@@ -67,8 +67,13 @@ patch(ReceiptScreen.prototype, {
         this.whatsappState.error = null;
 
         try {
-            // Obtener el HTML del ticket generado en el frontend
-            const ticketHtml = this.el.querySelector('.pos-receipt')?.outerHTML;
+            // Usar el método oficial para obtener el HTML del ticket
+            let ticketHtml = "";
+            if (typeof this.getReceiptHtml === "function") {
+                ticketHtml = this.getReceiptHtml();
+            } else if (this.el && this.el.querySelector) {
+                ticketHtml = this.el.querySelector('.pos-receipt')?.outerHTML;
+            }
             if (!ticketHtml) {
                 this.notification.add(_t("No se pudo obtener el HTML del ticket para enviar por WhatsApp."), {
                     type: "danger",
