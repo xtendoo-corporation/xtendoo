@@ -74,12 +74,12 @@
 
         <xpath expr="//div[hasclass('pos-receipt', 'p-2')]" position="attributes">
              <attribute name="class">pos-receipt</attribute>
-            <attribute name="style">font-family: 'Courier New', monospace; font-weight: normal; letter-spacing: 0.5px; text-align: center; font-size: 12px;</attribute>
+            <attribute name="style">font-family: 'Lucida Console', 'DejaVu Sans Mono', monospace; font-weight: normal; letter-spacing: 0.5px; text-align: center; font-size: 12px;</attribute>
          </xpath>
 
         <xpath expr="//OrderDisplay" position="replace">
             <div class="pos-receipt-container"
-                 style="font-family: 'Courier New', monospace; font-size: 10px; text-align: left; padding: 0; margin: 0;">
+                 style="font-family: 'Lucida Console', 'DejaVu Sans Mono', monospace; font-size: 10px; text-align: left; padding: 0; margin: 0;">
                 <!-- Encabezado de tabla -->
                 <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: bold;">
                     <span style="flex: 3;">Nombre</span>
@@ -119,7 +119,7 @@
         <xpath expr="//div[hasclass('before-footer')]" position="before">
             <t t-if="!props.basic_receipt">
                 <div
-                    style="font-family: 'Courier New', monospace; font-size: 11px; text-align: center; padding: 0; margin: 0;">
+                    style="font-family: 'Lucida Console', 'DejaVu Sans Mono', monospace; font-size: 11px; text-align: center; padding: 0; margin: 0;">
 
                     <!-- TOTAL grande -->
                     <div
@@ -189,7 +189,7 @@
 
         <xpath expr="//div[hasclass('after-footer')]" position="before">
             <!-- Footer personalizado -->
-            <div style="font-family: 'Courier New', monospace; font-size: 10px; text-align: center; margin-top: 5px;">
+            <div style="font-family: 'Lucida Console', 'DejaVu Sans Mono', monospace; font-size: 10px; text-align: center; margin-top: 5px;">
                 <div style="margin-bottom: 3px;">
                     Gracias por su visita
                 </div>
