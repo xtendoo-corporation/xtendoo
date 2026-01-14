@@ -20,15 +20,29 @@ class PosOrder(models.Model):
     )
 
     def _get_whatsapp_phone(self):
-        """Obtener el número de teléfono del cliente para WhatsApp"""
         self.ensure_one()
         if not self.partner_id:
             return False
         return self.partner_id.mobile or self.partner_id.phone
 
+    def _get_or_create_whatsapp_channel(self, gateway, phone):
+        self.ensure_one()
+        phone_normalized = self._normalize_phone(phone)
+        channel = self.env['discuss.channel'].search([
+            ('gateway_id', '=', gateway.id),
+            ('gateway_channel_token', '=', phone_normalized),
+        ], limit=1)
+        if not channel:
+            channel = self.env['discuss.channel'].create({
+                'name': self.partner_id.name or phone_normalized,
+                'channel_type': 'chat',
+                'gateway_id': gateway.id,
+                'gateway_channel_token': phone_normalized,
+            })
+        return channel
+
     @api.model
     def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html):
-        """Recibe el HTML del ticket generado en frontend, lo convierte a PDF y lo envía por WhatsApp"""
         _logger.info("[WhatsApp POS] Iniciando envío de ticket. order_id=%s, send_whatsapp=%s", order_id, send_whatsapp)
         if not send_whatsapp:
             _logger.info("[WhatsApp POS] Envío no solicitado (send_whatsapp es False)")
@@ -38,6 +52,7 @@ class PosOrder(models.Model):
         if not order.exists():
             _logger.error("[WhatsApp POS] Pedido no encontrado: %s", order_id)
             return {'success': False, 'error': _('Pedido no encontrado')}
+        order.ensure_one()
 
         if not order.partner_id:
             _logger.error("[WhatsApp POS] No hay cliente asociado al pedido: %s", order_id)
@@ -53,13 +68,11 @@ class PosOrder(models.Model):
 
         try:
             _logger.info("[WhatsApp POS] Generando PDF del ticket para el pedido %s", order.name)
-            # Convertir el HTML a PDF usando el motor de reportes de Odoo
             pdf_content = order.env['ir.actions.report']._run_wkhtmltopdf([
                 ticket_html
             ], landscape=False)
             pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
 
-            # Crear el attachment
             _logger.info("[WhatsApp POS] Creando attachment PDF para el pedido %s", order.name)
             attachment = order.env['ir.attachment'].create({
                 'name': 'Ticket_%s.pdf' % order.name.replace('/', '_'),
@@ -70,8 +83,10 @@ class PosOrder(models.Model):
                 'mimetype': 'application/pdf',
             })
 
-            # Buscar o crear el canal de WhatsApp para este cliente
             config = order.session_id.config_id
+            if not config or not config.whatsapp_gateway_id:
+                _logger.error("[WhatsApp POS] No hay gateway de WhatsApp configurado en el punto de venta para el pedido %s", order.name)
+                return {'success': False, 'error': _('No hay gateway de WhatsApp configurado en el punto de venta.')}
             gateway = config.whatsapp_gateway_id
             channel = order._get_or_create_whatsapp_channel(gateway, phone)
             template = config.whatsapp_pos_template_id
@@ -90,28 +105,6 @@ class PosOrder(models.Model):
         except Exception as e:
             _logger.exception("[WhatsApp POS] Error al enviar ticket por WhatsApp (HTML)")
             return {'success': False, 'error': str(e)}
-
-    def _get_or_create_whatsapp_channel(self, gateway, phone):
-        """Buscar o crear el canal de WhatsApp para el cliente"""
-        # Normalizar el número de teléfono
-        phone_normalized = self._normalize_phone(phone)
-
-        # Buscar canal existente
-        channel = self.env['discuss.channel'].search([
-            ('gateway_id', '=', gateway.id),
-            ('gateway_channel_token', '=', phone_normalized),
-        ], limit=1)
-
-        if not channel:
-            # Crear nuevo canal
-            channel = self.env['discuss.channel'].create({
-                'name': self.partner_id.name or phone_normalized,
-                'channel_type': 'chat',
-                'gateway_id': gateway.id,
-                'gateway_channel_token': phone_normalized,
-            })
-
-        return channel
 
     def _normalize_phone(self, phone):
         """Normalizar el número de teléfono para WhatsApp"""

@@ -67,10 +67,19 @@ patch(ReceiptScreen.prototype, {
         this.whatsappState.error = null;
 
         try {
+            // Obtener el HTML del ticket generado en el frontend
+            const ticketHtml = this.el.querySelector('.pos-receipt')?.outerHTML;
+            if (!ticketHtml) {
+                this.notification.add(_t("No se pudo obtener el HTML del ticket para enviar por WhatsApp."), {
+                    type: "danger",
+                });
+                this.whatsappState.sending = false;
+                return;
+            }
             const result = await this.orm.call(
                 "pos.order",
-                "send_whatsapp_ticket_from_ui",
-                [order.id, true]
+                "send_whatsapp_ticket_html",
+                [order.id, true, ticketHtml]
             );
 
             if (result.success) {
@@ -95,4 +104,3 @@ patch(ReceiptScreen.prototype, {
         }
     },
 });
-
