@@ -108,6 +108,7 @@ action = {
 }
         </field>
     </record>
+
     <menuitem
         id="menu_whatsapp_load_pos_templates"
         name="Cargar Plantillas WhatsApp POS"
