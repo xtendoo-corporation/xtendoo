@@ -251,6 +251,51 @@ class PosOrder(models.Model):
             _logger.info("[WhatsApp POS] El cliente ha respondido NO, no se enviará el ticket por WhatsApp para el pedido %s", order.name)
             return {'success': True, 'sent': False, 'message': _('El cliente no desea recibir el ticket.')}
 
+    def send_whatsapp_ticket_pdf(self, ticket_html):
+        """
+        Enviar el PDF del ticket por WhatsApp. Llamar a este método tras la confirmación real del cliente.
+        """
+        self.ensure_one()
+        config = self.session_id.config_id
+        if not config or not config.whatsapp_gateway_id:
+            _logger.error("[WhatsApp POS] No hay gateway de WhatsApp configurado en el punto de venta para el pedido %s", self.name)
+            return {'success': False, 'error': _('No hay gateway de WhatsApp configurado en el punto de venta.')}
+        gateway = config.whatsapp_gateway_id
+        phone = self._get_whatsapp_phone()
+        channel = self._get_or_create_whatsapp_channel(gateway, phone)
+        template = config.whatsapp_pos_template_id
+        if not ticket_html:
+            _logger.warning("[WhatsApp POS] No se proporcionó ticket_html, no se puede enviar el PDF.")
+            return {'success': False, 'error': _('No se proporcionó el HTML del ticket')}
+        try:
+            _logger.info("[WhatsApp POS] Generando PDF del ticket para el pedido %s", self.name)
+            pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
+                ticket_html
+            ], landscape=False)
+            pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
+            _logger.info("[WhatsApp POS] Creando attachment PDF para el pedido %s", self.name)
+            attachment = self.env['ir.attachment'].create({
+                'name': 'Ticket_%s.pdf' % self.name.replace('/', '_'),
+                'type': 'binary',
+                'datas': pdf_base64,
+                'res_model': 'pos.order',
+                'res_id': self.id,
+                'mimetype': 'application/pdf',
+            })
+            _logger.info("[WhatsApp POS] Enviando ticket por WhatsApp. Pedido: %s, Cliente: %s, Teléfono: %s", self.name, self.partner_id.name, phone)
+            if template:
+                self._send_whatsapp_with_template(gateway, template, channel, attachment)
+                _logger.info("[WhatsApp POS] Ticket enviado usando plantilla de WhatsApp")
+            else:
+                self._send_whatsapp_simple(gateway, channel, attachment)
+                _logger.info("[WhatsApp POS] Ticket enviado con mensaje simple de WhatsApp")
+            self.whatsapp_ticket_sent = True
+            _logger.info("[WhatsApp POS] Ticket marcado como enviado para el pedido %s", self.name)
+            return {'success': True, 'sent': True}
+        except Exception as e:
+            _logger.exception("[WhatsApp POS] Error al enviar ticket por WhatsApp (PDF)")
+            return {'success': False, 'error': str(e)}
+
 
 
 # NOTA: La vista pos_order_receipt_report.xml ya no es necesaria y puede eliminarse del módulo.
