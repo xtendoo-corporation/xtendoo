@@ -38,92 +38,62 @@ patch(ReceiptScreen.prototype, {
         return this.isWhatsappEnabled && partner && this.partnerHasPhone;
     },
 
-//    async sendWhatsappTicket() {
-//        const order = this.currentOrder;
-//        const partner = order.get_partner();
-//
-//        if (!partner) {
-//            this.notification.add(_t("Por favor, seleccione un cliente para enviar el ticket por WhatsApp."), {
-//                type: "warning",
-//            });
-//            return;
-//        }
-//
-//        if (!this.partnerHasPhone) {
-//            this.notification.add(_t("El cliente %s no tiene número de teléfono configurado.", partner.name), {
-//                type: "danger",
-//            });
-//            return;
-//        }
-//
-//        if (typeof order.id !== "number") {
-//            this.notification.add(_t("El pedido no está sincronizado. Por favor, espere e intente de nuevo."), {
-//                type: "warning",
-//            });
-//            return;
-//        }
-//
-//        this.whatsappState.sending = true;
-//        this.whatsappState.error = null;
+    async sendWhatsappTicket() {
+        const order = this.currentOrder;
+        const partner = order.get_partner();
 
-//        try {
-//            let ticketHtml = "";
-//            let logMsg = "";
-//            if (typeof this.getReceiptHtml === "function") {
-//                ticketHtml = this.getReceiptHtml();
-//                logMsg = "getReceiptHtml() usado";
-//            } else if (this.el && this.el.querySelector) {
-//                ticketHtml = this.el.querySelector('.pos-receipt')?.outerHTML;
-//                logMsg = "this.el.querySelector usado";
-//            } else if (document && document.querySelector) {
-//                ticketHtml = document.querySelector('.pos-receipt')?.outerHTML;
-//                logMsg = "document.querySelector usado";
-//            } else {
-//                logMsg = "No se encontró getReceiptHtml, this.el ni document";
-//            }
-//            if (!ticketHtml) {
-//                console.error("[WhatsApp POS] No se pudo obtener el HTML del ticket. Método: ", logMsg, this);
-//                if (typeof this.getReceiptHtml !== "function") {
-//                    console.warn("[WhatsApp POS] getReceiptHtml no está disponible en ReceiptScreen. Verifica la versión de Odoo o la personalización del POS.");
-//                }
-//                if (!this.el) {
-//                    console.warn("[WhatsApp POS] this.el no está definido en ReceiptScreen. El DOM puede no estar listo.");
-//                }
-//                if (!document.querySelector('.pos-receipt')) {
-//                    console.warn("[WhatsApp POS] No se encontró ningún elemento .pos-receipt en el DOM global. ¿Está el ticket visible en pantalla?");
-//                }
-//                this.notification.add(_t("No se pudo obtener el HTML del ticket para enviar por WhatsApp. Intenta imprimir el ticket antes, recarga la pantalla, o asegúrate de que el ticket esté visible. Consulta la consola para más detalles."), {
-//                    type: "danger",
-//                });
-//                this.whatsappState.sending = false;
-//                return;
-//            }
-//            console.log("[WhatsApp POS] HTML del ticket obtenido:", ticketHtml);
-//            const result = await this.orm.call(
-//                "pos.order",
-//                "send_whatsapp_ticket_html",
-//                [order.id, true, ticketHtml]
-//            );
-//
-//            if (result.success) {
-//                this.whatsappState.sent = true;
-//                this.notification.add(_t("Ticket enviado correctamente por WhatsApp"), {
-//                    type: "success",
-//                });
-//            } else {
-//                this.whatsappState.error = result.error;
-//                this.notification.add(result.error || _t("Error al enviar el ticket por WhatsApp"), {
-//                    type: "danger",
-//                });
-//            }
-//        } catch (error) {
-//            console.error("Error sending WhatsApp ticket:", error);
-//            this.whatsappState.error = error.message;
-//            this.notification.add(_t("Error al enviar el ticket por WhatsApp: %s", error.message), {
-//                type: "danger",
-//            });
-//        } finally {
-//            this.whatsappState.sending = false;
-//        }
-//    },
+        if (!partner) {
+            this.notification.add(_t("Por favor, seleccione un cliente para enviar el ticket por WhatsApp."), {
+                type: "warning",
+            });
+            return;
+        }
+
+        if (!this.partnerHasPhone) {
+            this.notification.add(_t("El cliente %s no tiene número de teléfono configurado.", partner.name), {
+                type: "danger",
+            });
+            return;
+        }
+
+        if (typeof order.id !== "number") {
+            this.notification.add(_t("El pedido no está sincronizado. Por favor, espere e intente de nuevo."), {
+                type: "warning",
+            });
+            return;
+        }
+
+        this.whatsappState.sending = true;
+        this.whatsappState.error = null;
+
+        try {
+            // Solo enviar la plantilla configurada en POS config, sin ticket ni HTML
+            // El proceso de envío de PDF queda deshabilitado temporalmente
+            const result = await this.orm.call(
+                "pos.order",
+                "send_whatsapp_ticket_html",
+                [order.id, false, ""] // No enviar ticket, solo plantilla
+            );
+
+            if (result.success) {
+                this.whatsappState.sent = true;
+                this.notification.add(_t("Plantilla enviada correctamente por WhatsApp"), {
+                    type: "success",
+                });
+            } else {
+                this.whatsappState.error = result.error;
+                this.notification.add(result.error || _t("Error al enviar la plantilla por WhatsApp"), {
+                    type: "danger",
+                });
+            }
+        } catch (error) {
+            console.error("Error sending WhatsApp template:", error);
+            this.whatsappState.error = error.message;
+            this.notification.add(_t("Error al enviar la plantilla por WhatsApp: %s", error.message), {
+                type: "danger",
+            });
+        } finally {
+            this.whatsappState.sending = false;
+        }
+    },
 });
