@@ -101,7 +101,7 @@ action = {
     <menuitem
         id="menu_whatsapp_load_templates_pos"
         name="Cargar Plantillas Predefinidas de POS"
-        parent="menu_whatsapp_root"
+        parent="mail_gateway_whatsapp_variables.menu_whatsapp_root"
         action="action_server_create_pos_template"
         sequence="30"/>
 
