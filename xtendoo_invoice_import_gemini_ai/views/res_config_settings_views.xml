@@ -5,7 +5,7 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="account.res_config_settings_view_form" />
         <field name="arch" type="xml">
-            <xpath expr="//block[@id='account_reports']" position="after">
+            <xpath expr="//block[@id='invoicing_settings']" position="after">
                 <block title="Gemini AI Invoice Import" id="gemini_ai_config">
                     <setting string="Gemini API Key"
                         help="Configure Google Gemini AI for invoice processing">
