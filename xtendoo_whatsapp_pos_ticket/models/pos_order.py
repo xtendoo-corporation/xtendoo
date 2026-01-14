@@ -222,7 +222,8 @@ class PosOrder(models.Model):
     def process_whatsapp_interactive_response(self, order_id, response, ticket_html=None):
         """
         Procesa la respuesta del cliente al mensaje interactivo de WhatsApp.
-        Si la respuesta es 'si_ticket', envía el ticket PDF por WhatsApp.
+        Si la respuesta es 'si_ticket', envía SOLO la plantilla de confirmación.
+        El PDF se debe enviar desde otro método tras la confirmación real.
         """
         order = self.browse(order_id)
         if not order.exists():
@@ -232,7 +233,7 @@ class PosOrder(models.Model):
 
         if response == 'si_ticket':
             order.whatsapp_ticket_requested = True
-            _logger.info("[WhatsApp POS] El cliente ha respondido SÍ, enviando plantilla de confirmación y PDF para el pedido %s", order.name)
+            _logger.info("[WhatsApp POS] El cliente ha respondido SÍ, enviando plantilla de confirmación para el pedido %s", order.name)
             # Enviar plantilla de confirmación
             config = order.session_id.config_id
             gateway = config.whatsapp_gateway_id
@@ -243,11 +244,8 @@ class PosOrder(models.Model):
                 _logger.info("[WhatsApp POS] Plantilla de confirmación enviada")
             else:
                 _logger.warning("[WhatsApp POS] No se encontró la plantilla de confirmación en POS config")
-            # Enviar el PDF
-            if not ticket_html:
-                _logger.warning("[WhatsApp POS] No se proporcionó ticket_html, no se puede enviar el PDF.")
-                return {'success': False, 'error': _('No se proporcionó el HTML del ticket')}
-            return order.send_whatsapp_ticket_html(order.id, True, ticket_html)
+            # NO enviar el PDF aquí
+            return {'success': True, 'sent': True, 'message': _('Plantilla de confirmación enviada. El PDF se enviará tras la confirmación real.')}
         else:
             order.whatsapp_ticket_requested = False
             _logger.info("[WhatsApp POS] El cliente ha respondido NO, no se enviará el ticket por WhatsApp para el pedido %s", order.name)
