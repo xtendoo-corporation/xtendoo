@@ -19,7 +19,7 @@ in invoice lines), the code properly checks if the parent field exists and has t
 configuration before trying to access its fields.
     """,
     'author': 'Xtendoo',
-    'website': 'https://www.xtendoo.es',
+    'website': 'https://xtendoo.es',
     'depends': [
         'account_invoice_extract',
     ],
