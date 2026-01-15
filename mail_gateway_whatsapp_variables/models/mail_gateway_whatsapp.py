@@ -562,6 +562,8 @@ class MailGatewayWhatsappService(models.AbstractModel):
         # Si se detecta texto de botón, lo registramos SOLO en el chatter del contacto
         if button_text and partner:
             author = self._get_author(chat.gateway_id, value)
+            _logger.info(f"Registrando respuesta de botón '{button_text}' para partner {partner.name} (ID: {partner.id})")
+            _logger.info(f"Author obtenido: {author}")
             partner.sudo().message_post(
                 body=f"Respuesta botón: {button_text}",
                 author_id=author and author._name == "res.partner" and author.id,
