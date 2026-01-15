@@ -67,28 +67,35 @@ patch(ReceiptScreen.prototype, {
         this.whatsappState.error = null;
 
         try {
-            // Solo enviar la plantilla interactiva, sin ticket ni PDF
+            // Obtener el HTML del ticket generado en frontend
+            const receiptElement = document.querySelector('.pos-receipt-container');
+            let ticket_html = '';
+            if (receiptElement) {
+                ticket_html = receiptElement.innerHTML;
+            }
+
+            // Llamada al backend para enviar el ticket HTML por WhatsApp
             const result = await this.orm.call(
                 "pos.order",
                 "send_whatsapp_ticket_html",
-                [order.id, false, ""]
+                [order.id, true, ticket_html]
             );
 
             if (result.success) {
                 this.whatsappState.sent = true;
-                this.notification.add(_t("Plantilla de WhatsApp enviada correctamente. Esperando respuesta del cliente."), {
+                this.notification.add(_t("Ticket enviado correctamente por WhatsApp"), {
                     type: "success",
                 });
             } else {
                 this.whatsappState.error = result.error;
-                this.notification.add(result.error || _t("Error al enviar la plantilla de WhatsApp"), {
+                this.notification.add(result.error || _t("Error al enviar el ticket por WhatsApp"), {
                     type: "danger",
                 });
             }
         } catch (error) {
-            console.error("Error sending WhatsApp template:", error);
+            console.error("Error sending WhatsApp ticket:", error);
             this.whatsappState.error = error.message;
-            this.notification.add(_t("Error al enviar la plantilla de WhatsApp: %s", error.message), {
+            this.notification.add(_t("Error al enviar el ticket por WhatsApp: %s", error.message), {
                 type: "danger",
             });
         } finally {

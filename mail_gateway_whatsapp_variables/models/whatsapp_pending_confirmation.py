@@ -272,37 +272,15 @@ class WhatsappPendingConfirmation(models.Model):
             try:
                 import base64
 
-                # Determinar qué reporte usar según el modelo
-                report_name = False
-                if self.res_model == 'sale.order':
-                    report_name = 'sale.action_report_saleorder'
-                elif self.res_model == 'account.move':
-                    report_name = 'account.account_invoices'
-                elif self.res_model == 'stock.picking':
-                    report_name = 'stock.action_report_delivery'
-
-                if report_name:
-                    # Buscar el reporte
-                    report = self.env.ref(report_name, raise_if_not_found=False)
-                    if report:
-                        # Generar el PDF - usar el método correcto con template y res_ids
-                        # _render_qweb_pdf() es el método correcto para generar PDFs
-                        pdf_content, _ = report._render_qweb_pdf(report.report_name, record.ids)
-
-                        # IMPORTANTE: Codificar el contenido en base64
+                # Si es POS, usar el HTML guardado en el pedido
+                if self.res_model == 'pos.order':
+                    ticket_html = record.whatsapp_ticket_html
+                    if ticket_html:
+                        pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
+                            ticket_html
+                        ], landscape=False)
                         pdf_base64 = base64.b64encode(pdf_content)
-
-                        # Determinar el nombre del archivo
-                        if self.res_model == 'sale.order':
-                            filename = f"Quotation_{record.name}.pdf"
-                        elif self.res_model == 'account.move':
-                            filename = f"Invoice_{record.name}.pdf"
-                        elif self.res_model == 'stock.picking':
-                            filename = f"Delivery_{record.name}.pdf"
-                        else:
-                            filename = f"Document_{record.name}.pdf"
-
-                        # Crear el adjunto con el contenido codificado en base64
+                        filename = f"Ticket_{record.name}.pdf"
                         attachment = self.env['ir.attachment'].create({
                             'name': filename,
                             'type': 'binary',
@@ -312,11 +290,48 @@ class WhatsappPendingConfirmation(models.Model):
                             'mimetype': 'application/pdf',
                         })
                         attachment_id = attachment.id
-                        _logger.info(f"   ✅ PDF generated: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
+                        _logger.info(f"   ✅ PDF POS generated: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
                     else:
-                        _logger.warning(f"   ⚠️ Report '{report_name}' not found")
+                        _logger.warning(f"   ⚠️ No POS ticket HTML found in pos.order {record.id}")
                 else:
-                    _logger.warning(f"   ⚠️ No report configured for model {self.res_model}")
+                    # Determinar qué reporte usar según el modelo
+                    report_name = False
+                    if self.res_model == 'sale.order':
+                        report_name = 'sale.action_report_saleorder'
+                    elif self.res_model == 'account.move':
+                        report_name = 'account.account_invoices'
+                    elif self.res_model == 'stock.picking':
+                        report_name = 'stock.action_report_delivery'
+
+                    if report_name:
+                        # Buscar el reporte
+                        report = self.env.ref(report_name, raise_if_not_found=False)
+                        if report:
+                            # Generar el PDF - usar el método correcto con template y res_ids
+                            pdf_content, _ = report._render_qweb_pdf(report.report_name, record.ids)
+                            pdf_base64 = base64.b64encode(pdf_content)
+                            if self.res_model == 'sale.order':
+                                filename = f"Quotation_{record.name}.pdf"
+                            elif self.res_model == 'account.move':
+                                filename = f"Invoice_{record.name}.pdf"
+                            elif self.res_model == 'stock.picking':
+                                filename = f"Delivery_{record.name}.pdf"
+                            else:
+                                filename = f"Document_{record.name}.pdf"
+                            attachment = self.env['ir.attachment'].create({
+                                'name': filename,
+                                'type': 'binary',
+                                'datas': pdf_base64,
+                                'res_model': 'discuss.channel',
+                                'res_id': channel.id,
+                                'mimetype': 'application/pdf',
+                            })
+                            attachment_id = attachment.id
+                            _logger.info(f"   ✅ PDF generated: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
+                        else:
+                            _logger.warning(f"   ⚠️ Report '{report_name}' not found")
+                    else:
+                        _logger.warning(f"   ⚠️ No report configured for model {self.res_model}")
             except Exception as pdf_error:
                 _logger.error(f"   ❌ Error generating PDF: {pdf_error}", exc_info=True)
                 # Continuar sin PDF si hay error
