@@ -266,6 +266,19 @@ class PosOrder(models.Model):
                     subtype_xmlid='mail.mt_comment',
                     gateway_type='whatsapp',
                 )
+                # Crear pendiente de confirmación si la plantilla requiere confirmación
+                if getattr(template, 'requires_confirmation', False) and template.confirmation_template_id:
+                    confirmation_type = template.button_ids and template.button_ids.filtered(lambda b: b.button_type == 'quick_reply') and 'button' or 'any'
+                    order.env['whatsapp.pending.confirmation'].create({
+                        'partner_id': order.partner_id.id,
+                        'channel_id': channel.id,
+                        'template_id': template.id,
+                        'confirmation_template_id': template.confirmation_template_id.id,
+                        'res_model': 'pos.order',
+                        'res_id': order.id,
+                        'state': 'waiting',
+                        'confirmation_type': confirmation_type,
+                    })
             else:
                 # Enviar mensaje simple sin adjunto
                 message_body = _("""🧾 *Ticket de Compra*\n\n📅 Fecha: %s\n🏪 Tienda: %s\n📝 Pedido: %s\n\n💰 *Total: %s %s*\n\n¡Gracias por su compra!""") % (
