@@ -1,0 +1,272 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * xtendoo_invoice_import_gemini_ai
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-15 08:00:00+0000\n"
+"PO-Revision-Date: 2026-01-15 08:00:00+0000\n"
+"Last-Translator: Xtendoo\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_import_gemini_ai.field_account_move__gemini_attachment_id
+msgid "Gemini Attachment"
+msgstr "Adjunto Gemini"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_import_gemini_ai.field_account_move__gemini_auto_processed
+msgid "Auto Processed by Gemini"
+msgstr "Procesado Automáticamente por Gemini"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,help:xtendoo_invoice_import_gemini_ai.field_account_move__gemini_attachment_id
+msgid "Attachment to be processed by Gemini AI"
+msgstr "Adjunto a procesar por Gemini AI"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,help:xtendoo_invoice_import_gemini_ai.field_account_move__gemini_auto_processed
+msgid "Indicates if this invoice was automatically processed by Gemini AI"
+msgstr "Indica si esta factura fue procesada automáticamente por Gemini AI"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_import_gemini_ai.field_res_config_settings__gemini_api_key
+msgid "Gemini API Key"
+msgstr "Clave API de Gemini"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,help:xtendoo_invoice_import_gemini_ai.field_res_config_settings__gemini_api_key
+msgid "API key for Google Gemini AI. Get it from https://aistudio.google.com/"
+msgstr "Clave API para Google Gemini AI. Consíguela en https://aistudio.google.com/"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_import_gemini_ai.field_res_config_settings__gemini_model
+msgid "Gemini Model"
+msgstr "Modelo Gemini"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,help:xtendoo_invoice_import_gemini_ai.field_res_config_settings__gemini_model
+msgid "Model to use for extraction. Available models:\n"
+"• gemini-2.5-flash (recommended, fast and efficient)\n"
+"• gemini-2.5-pro (high quality, more capable)\n"
+"• gemini-flash-latest (latest stable flash version)\n"
+"• gemini-pro-latest (latest stable pro version)\n"
+"• gemini-2.0-flash-exp (experimental)\n"
+"• gemini-2.5-flash-lite (lighter, faster)\n"
+"\n"
+"Note: Older models like gemini-pro, gemini-1.5-flash, gemini-1.5-pro are deprecated.\n"
+"Test your API key with 'Test Gemini Connection' to see all available models."
+msgstr "Modelo a usar para la extracción. Modelos disponibles:\n"
+"• gemini-2.5-flash (recomendado, rápido y eficiente)\n"
+"• gemini-2.5-pro (alta calidad, más capaz)\n"
+"• gemini-flash-latest (última versión estable flash)\n"
+"• gemini-pro-latest (última versión estable pro)\n"
+"• gemini-2.0-flash-exp (experimental)\n"
+"• gemini-2.5-flash-lite (más ligero, más rápido)\n"
+"\n"
+"Nota: Los modelos antiguos como gemini-pro, gemini-1.5-flash, gemini-1.5-pro están obsoletos.\n"
+"Prueba tu clave API con 'Probar Conexión Gemini' para ver todos los modelos disponibles."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,field_description:xtendoo_invoice_import_gemini_ai.field_res_config_settings__gemini_auto_scan
+msgid "Auto Scan on Upload"
+msgstr "Escaneo Automático al Subir"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields,help:xtendoo_invoice_import_gemini_ai.field_res_config_settings__gemini_auto_scan
+msgid "Automatically scan vendor bills when a PDF/image is attached:\n"
+"• Disabled: Manual scan only (click buttons)\n"
+"• Auto Scan (Full): Extract all individual line items\n"
+"• Auto Scan (Summary): Group lines by VAT percentage"
+msgstr "Escanear automáticamente facturas de proveedor cuando se adjunta un PDF/imagen:\n"
+"• Deshabilitado: Solo escaneo manual (clic en botones)\n"
+"• Escaneo Automático (Completo): Extraer todas las líneas individuales\n"
+"• Escaneo Automático (Resumen): Agrupar líneas por porcentaje de IVA"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_import_gemini_ai.selection__res_config_settings__gemini_auto_scan__disabled
+msgid "Disabled"
+msgstr "Deshabilitado"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_import_gemini_ai.selection__res_config_settings__gemini_auto_scan__full
+msgid "Auto Scan (Full)"
+msgstr "Escaneo Automático (Completo)"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model.fields.selection,name:xtendoo_invoice_import_gemini_ai.selection__res_config_settings__gemini_auto_scan__summary
+msgid "Auto Scan (Summary)"
+msgstr "Escaneo Automático (Resumen)"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model_terms:ir.ui.view,arch_db:xtendoo_invoice_import_gemini_ai.res_config_settings_view_form_gemini
+msgid "Gemini AI Invoice Import"
+msgstr "Importación de Facturas con Gemini AI"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model_terms:ir.ui.view,arch_db:xtendoo_invoice_import_gemini_ai.res_config_settings_view_form_gemini
+msgid "Configure Google Gemini AI for invoice processing"
+msgstr "Configurar Google Gemini AI para procesamiento de facturas"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model_terms:ir.ui.view,arch_db:xtendoo_invoice_import_gemini_ai.res_config_settings_view_form_gemini
+msgid "Test Connection"
+msgstr "Probar Conexión"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model_terms:ir.ui.view,arch_db:xtendoo_invoice_import_gemini_ai.res_config_settings_view_form_gemini
+msgid "Get your API key from"
+msgstr "Obtén tu clave API desde"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model_terms:ir.ui.view,arch_db:xtendoo_invoice_import_gemini_ai.res_config_settings_view_form_gemini
+msgid "Google AI Studio"
+msgstr "Google AI Studio"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model_terms:ir.ui.view,arch_db:xtendoo_invoice_import_gemini_ai.view_move_form_inherit_gemini
+msgid "AI Scan (Full)"
+msgstr "Escaneo IA (Completo)"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model_terms:ir.ui.view,arch_db:xtendoo_invoice_import_gemini_ai.view_move_form_inherit_gemini
+msgid "AI Scan (Summary)"
+msgstr "Escaneo IA (Resumen)"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "You can only import AI data on draft invoices."
+msgstr "Solo puedes importar datos de IA en facturas en borrador."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "AI import is only available for vendor bills."
+msgstr "La importación con IA solo está disponible para facturas de proveedor."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Please attach a PDF or image file to this invoice first."
+msgstr "Por favor, adjunta primero un archivo PDF o imagen a esta factura."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Gemini API Key not configured. Please go to Settings → Accounting → Gemini AI."
+msgstr "Clave API de Gemini no configurada. Por favor, ve a Configuración → Contabilidad → Gemini AI."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "The model '%s' is obsolete or not available. Please update your configuration to use '%s' or another available model. Recommended models: gemini-2.5-flash (fast), gemini-2.5-pro (high quality), gemini-flash-latest, gemini-pro-latest. Go to Settings → Accounting → Gemini AI to update the model and use 'Test Gemini Connection' to see all available models."
+msgstr "El modelo '%s' está obsoleto o no está disponible. Por favor, actualiza tu configuración para usar '%s' u otro modelo disponible. Modelos recomendados: gemini-2.5-flash (rápido), gemini-2.5-pro (alta calidad), gemini-flash-latest, gemini-pro-latest. Ve a Configuración → Contabilidad → Gemini AI para actualizar el modelo y usa 'Probar Conexión Gemini' para ver todos los modelos disponibles."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "google-genai library is not installed. Please install it with: pip install google-genai"
+msgstr "La biblioteca google-genai no está instalada. Por favor, instálala con: pip install google-genai"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Gemini AI returned an empty response."
+msgstr "Gemini AI devolvió una respuesta vacía."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "✅ Invoice data successfully imported from Gemini AI (%s mode)!"
+msgstr "✅ ¡Datos de factura importados exitosamente desde Gemini AI (modo %s)!"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Full"
+msgstr "Completo"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Summarized"
+msgstr "Resumido"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Success"
+msgstr "Éxito"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Invoice data imported successfully!"
+msgstr "¡Datos de factura importados exitosamente!"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Error processing with Gemini AI: %s"
+msgstr "Error al procesar con Gemini AI: %s"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/account_move.py:0
+#, python-format
+msgid "Imported line"
+msgstr "Línea importada"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/res_config_settings.py:0
+#, python-format
+msgid "Please configure the Gemini API Key first."
+msgstr "Por favor, configura primero la Clave API de Gemini."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/res_config_settings.py:0
+#, python-format
+msgid "google-genai library is not installed. Please install it."
+msgstr "La biblioteca google-genai no está instalada. Por favor, instálala."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/res_config_settings.py:0
+#, python-format
+msgid "✅ Connection successful!\n\nAvailable models:\n• %s\n\nUse one of these names in 'Gemini Model' field."
+msgstr "✅ ¡Conexión exitosa!\n\nModelos disponibles:\n• %s\n\nUsa uno de estos nombres en el campo 'Modelo Gemini'."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/res_config_settings.py:0
+#, python-format
+msgid "✅ Connection successful but no models found."
+msgstr "✅ Conexión exitosa pero no se encontraron modelos."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/res_config_settings.py:0
+#, python-format
+msgid "Gemini API Test"
+msgstr "Prueba API Gemini"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: code:addons/xtendoo_invoice_import_gemini_ai/models/res_config_settings.py:0
+#, python-format
+msgid "Connection failed: %s\n\nMake sure your API key is valid and you have internet access."
+msgstr "Conexión fallida: %s\n\nAsegúrate de que tu clave API es válida y tienes acceso a internet."
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model,name:xtendoo_invoice_import_gemini_ai.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento Contable"
+
+#. module: xtendoo_invoice_import_gemini_ai
+#: model:ir.model,name:xtendoo_invoice_import_gemini_ai.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de Configuración"
+

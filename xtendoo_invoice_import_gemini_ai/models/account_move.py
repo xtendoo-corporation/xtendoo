@@ -32,6 +32,71 @@ class AccountMove(models.Model):
         help="Attachment to be processed by Gemini AI",
         copy=False,
     )
+    gemini_auto_processed = fields.Boolean(
+        string="Auto Processed by Gemini",
+        help="Indicates if this invoice was automatically processed by Gemini AI",
+        default=False,
+        copy=False,
+    )
+
+    @api.model
+    def create(self, vals):
+        """Override create to trigger auto scan after creation if attachment is present."""
+        move = super(AccountMove, self).create(vals)
+        if move.move_type == 'in_invoice' and move.state == 'draft':
+            move._auto_scan_if_configured()
+        return move
+
+    def write(self, vals):
+        """Override write to trigger auto scan when attachments change."""
+        res = super(AccountMove, self).write(vals)
+        # Check if we should trigger auto scan
+        # We trigger on message_main_attachment_id changes or when invoices become draft
+        if 'message_main_attachment_id' in vals or 'state' in vals:
+            for move in self:
+                if move.move_type == 'in_invoice' and move.state == 'draft':
+                    move._auto_scan_if_configured()
+        return res
+
+    def _auto_scan_if_configured(self):
+        """Automatically scan invoice if auto scan is enabled and conditions are met."""
+        self.ensure_one()
+
+        # Don't process if already processed or if not a draft vendor bill
+        if self.gemini_auto_processed or self.state != 'draft' or self.move_type != 'in_invoice':
+            return
+
+        # Check if there are any invoice lines already (don't overwrite existing data)
+        if self.invoice_line_ids:
+            return
+
+        # Get auto scan configuration
+        auto_scan_mode = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("xtendoo_invoice_import_gemini_ai.gemini_auto_scan", "disabled")
+        )
+
+        if auto_scan_mode == 'disabled':
+            return
+
+        # Check if there's an attachment to process
+        attachment = self._get_ai_attachment()
+        if not attachment:
+            return
+
+        # Process with Gemini AI
+        try:
+            summary_mode = (auto_scan_mode == 'summary')
+            _logger.info(f"Auto-scanning invoice {self.id} with mode: {auto_scan_mode}")
+            self._process_with_gemini(summary_mode=summary_mode, auto_mode=True)
+            self.gemini_auto_processed = True
+        except Exception as e:
+            # Log error but don't fail the invoice creation/update
+            _logger.warning(
+                f"Auto-scan failed for invoice {self.id}: {str(e)}. "
+                "User can still manually trigger the scan."
+            )
 
     def action_import_gemini_full(self):
         """Import invoice details with Gemini AI including all lines."""
@@ -41,19 +106,25 @@ class AccountMove(models.Model):
         """Import invoice details with Gemini AI summarized by VAT type."""
         return self._process_with_gemini(summary_mode=True)
 
-    def _process_with_gemini(self, summary_mode=False):
+    def _process_with_gemini(self, summary_mode=False, auto_mode=False):
         self.ensure_one()
         if self.state != "draft":
-            raise UserError(_("You can only import AI data on draft invoices."))
+            if not auto_mode:
+                raise UserError(_("You can only import AI data on draft invoices."))
+            return
         if self.move_type != "in_invoice":
-            raise UserError(_("AI import is only available for vendor bills."))
+            if not auto_mode:
+                raise UserError(_("AI import is only available for vendor bills."))
+            return
 
         # 1. Get attachment
         attachment = self._get_ai_attachment()
         if not attachment:
-            raise UserError(
-                _("Please attach a PDF or image file to this invoice first.")
-            )
+            if not auto_mode:
+                raise UserError(
+                    _("Please attach a PDF or image file to this invoice first.")
+                )
+            return
 
         # 2. Setup Gemini
         api_key = (
@@ -72,15 +143,44 @@ class AccountMove(models.Model):
             self.env["ir.config_parameter"]
             .sudo()
             .get_param(
-                "xtendoo_invoice_import_gemini_ai.gemini_model", "gemini-2.0-flash-exp"
+                "xtendoo_invoice_import_gemini_ai.gemini_model", "gemini-2.5-flash"
             )
         )
+
+        # Limpiar el nombre del modelo si viene con prefijo "models/"
+        if model_name and model_name.startswith("models/"):
+            model_name = model_name.replace("models/", "")
+
+        # Validar modelos obsoletos y sugerir alternativas
+        obsolete_models = {
+            "gemini-pro": "gemini-2.5-flash",
+            "gemini-pro-vision": "gemini-2.5-flash",
+            "gemini-1.5-pro": "gemini-2.5-pro",
+            "gemini-1.5-flash": "gemini-2.5-flash",
+            "gemini-1.5-flash-002": "gemini-2.5-flash",
+            "gemini-1.5-pro-002": "gemini-2.5-pro",
+            "gemini-2.0-flash-exp": "gemini-2.5-flash",
+        }
+        if model_name in obsolete_models:
+            suggested_model = obsolete_models[model_name]
+            raise UserError(
+                _(
+                    "The model '%s' is obsolete or not available. "
+                    "Please update your configuration to use '%s' or another available model. "
+                    "Recommended models: gemini-2.5-flash (fast), gemini-2.5-pro (high quality), "
+                    "gemini-flash-latest, gemini-pro-latest. "
+                    "Go to Settings → Accounting → Gemini AI to update the model and use "
+                    "'Test Gemini Connection' to see all available models."
+                ) % (model_name, suggested_model)
+            )
 
         if not genai or not types:
             raise UserError(_("google-genai library is not installed. Please install it with: pip install google-genai"))
 
         # Usar la nueva API con Client
         client = genai.Client(api_key=api_key)
+
+        _logger.info(f"Using Gemini model: {model_name}")
 
         # 3. Prepare data for Gemini
         file_content = base64.b64decode(attachment.datas)
@@ -120,29 +220,43 @@ class AccountMove(models.Model):
             # 4. Apply data
             self._apply_gemini_data(ai_data, summary_mode=summary_mode)
 
-            self.message_post(
-                body=_(
-                    "✅ Invoice data successfully imported from Gemini AI (%s mode)!"
+            # Post message only if not in auto mode
+            if not auto_mode:
+                self.message_post(
+                    body=_(
+                        "✅ Invoice data successfully imported from Gemini AI (%s mode)!"
+                    )
+                    % (_("Full") if not summary_mode else _("Summarized")),
+                    attachments=[(attachment.name, attachment.datas)],
                 )
-                % (_("Full") if not summary_mode else _("Summarized")),
-                attachments=[(attachment.name, attachment.datas)],
-            )
 
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Success"),
-                    "message": _("Invoice data imported successfully!"),
-                    "type": "success",
-                    "sticky": False,
-                    "next": {"type": "ir.actions.client", "tag": "reload"},
-                },
-            }
+                return {
+                    "type": "ir.actions.client",
+                    "tag": "display_notification",
+                    "params": {
+                        "title": _("Success"),
+                        "message": _("Invoice data imported successfully!"),
+                        "type": "success",
+                        "sticky": False,
+                        "next": {"type": "ir.actions.client", "tag": "reload"},
+                    },
+                }
+            else:
+                # In auto mode, just log success
+                _logger.info(
+                    f"Invoice {self.id} automatically processed with Gemini AI "
+                    f"({'Full' if not summary_mode else 'Summarized'} mode)"
+                )
 
         except Exception as e:
             _logger.error(f"Gemini AI error: {str(e)}", exc_info=True)
-            raise UserError(_("Error processing with Gemini AI: %s") % str(e))
+            if not auto_mode:
+                raise UserError(_("Error processing with Gemini AI: %s") % str(e))
+            else:
+                # In auto mode, just log the error and continue
+                _logger.warning(
+                    f"Auto-scan failed for invoice {self.id}: {str(e)}"
+                )
 
     def _get_ai_attachment(self):
         """Find the attachment to process."""
@@ -212,7 +326,14 @@ Required structure:
         partner = self._find_partner(supplier_data)
         if partner:
             self.partner_id = partner
-            self._onchange_partner_id()
+            # Trigger onchange to update fields like payment terms, fiscal position, etc.
+            # In Odoo 19, onchange methods are triggered automatically in form views,
+            # but when setting values programmatically, we may need to trigger them manually
+            if hasattr(self, '_onchange_partner_id'):
+                try:
+                    self._onchange_partner_id()
+                except Exception as e:
+                    _logger.warning(f"Could not trigger partner onchange: {str(e)}")
 
         # 2. Header
         if invoice_data.get("number"):
@@ -251,8 +372,8 @@ Required structure:
 
         self.invoice_line_ids = lines_to_create
 
-        # Trigger recomputation of taxes and totals
-        self._recompute_dynamic_lines()
+        # In Odoo 19, taxes and totals are automatically recomputed through computed fields
+        # when invoice lines are modified, so no manual trigger is needed
 
     def _find_partner(self, supplier_data):
         vat = supplier_data.get("vat")

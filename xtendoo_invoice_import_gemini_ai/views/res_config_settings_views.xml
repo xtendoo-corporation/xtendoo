@@ -18,6 +18,10 @@
                                 <label for="gemini_model" class="col-lg-3 o_light_label" />
                                 <field name="gemini_model" />
                             </div>
+                            <div class="row">
+                                <label for="gemini_auto_scan" class="col-lg-3 o_light_label" />
+                                <field name="gemini_auto_scan" />
+                            </div>
                             <div class="row mt-2">
                                 <div class="col-lg-3"></div>
                                 <button name="action_test_gemini_connection"

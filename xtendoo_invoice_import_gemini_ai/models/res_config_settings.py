@@ -26,8 +26,30 @@ class ResConfigSettings(models.TransientModel):
     gemini_model = fields.Char(
         string="Gemini Model",
         config_parameter="xtendoo_invoice_import_gemini_ai.gemini_model",
-        default="gemini-2.0-flash-exp",
-        help="Model to use for extraction (e.g., gemini-2.0-flash-exp, gemini-1.5-pro, gemini-1.5-flash)",
+        default="gemini-2.5-flash",
+        help="Model to use for extraction. Available models:\n"
+             "• gemini-2.5-flash (recommended, fast and efficient)\n"
+             "• gemini-2.5-pro (high quality, more capable)\n"
+             "• gemini-flash-latest (latest stable flash version)\n"
+             "• gemini-pro-latest (latest stable pro version)\n"
+             "• gemini-2.0-flash-exp (experimental)\n"
+             "• gemini-2.5-flash-lite (lighter, faster)\n\n"
+             "Note: Older models like gemini-pro, gemini-1.5-flash, gemini-1.5-pro are deprecated.\n"
+             "Test your API key with 'Test Gemini Connection' to see all available models.",
+    )
+    gemini_auto_scan = fields.Selection(
+        [
+            ('disabled', 'Disabled'),
+            ('full', 'Auto Scan (Full)'),
+            ('summary', 'Auto Scan (Summary)'),
+        ],
+        string="Auto Scan on Upload",
+        config_parameter="xtendoo_invoice_import_gemini_ai.gemini_auto_scan",
+        default="disabled",
+        help="Automatically scan vendor bills when a PDF/image is attached:\n"
+             "• Disabled: Manual scan only (click buttons)\n"
+             "• Auto Scan (Full): Extract all individual line items\n"
+             "• Auto Scan (Summary): Group lines by VAT percentage",
     )
 
     def action_test_gemini_connection(self):
@@ -60,11 +82,12 @@ class ResConfigSettings(models.TransientModel):
                 _logger.warning(f"Could not list models: {str(list_error)}")
                 # Si no podemos listar, sugerimos los modelos comunes actuales
                 available_models = [
+                    "gemini-2.5-flash",
+                    "gemini-2.5-pro",
+                    "gemini-flash-latest",
+                    "gemini-pro-latest",
                     "gemini-2.0-flash-exp",
-                    "gemini-1.5-pro",
-                    "gemini-1.5-flash",
-                    "gemini-1.5-pro-latest",
-                    "gemini-1.5-flash-latest",
+                    "gemini-2.5-flash-lite",
                 ]
 
             if available_models:
