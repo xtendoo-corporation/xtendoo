@@ -352,9 +352,20 @@ class MailGatewayWhatsappService(models.AbstractModel):
             )
             if gateway_partner:
                 return gateway_partner.partner_id
+            # Primero busca partner vinculado a empleado
             partner = self.env["res.partner"].search(
-                [("phone_sanitized", "=", "+" + str(author_id))]
+                [
+                    ("phone_sanitized", "=", "+" + str(author_id)),
+                    ("employee_ids", "!=", False),
+                ],
+                limit=1,
             )
+            # Si no hay, busca cualquier partner con ese teléfono
+            if not partner:
+                partner = self.env["res.partner"].search(
+                    [("phone_sanitized", "=", "+" + str(author_id))],
+                    limit=1,
+                )
             if partner:
                 self.env["res.partner.gateway.channel"].create(
                     {
