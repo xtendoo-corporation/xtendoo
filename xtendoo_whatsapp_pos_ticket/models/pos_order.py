@@ -218,7 +218,7 @@ class PosOrder(models.Model):
 
     @api.model
     def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html):
-        """Recibe el HTML del ticket generado en frontend, lo guarda y lo envía por WhatsApp si corresponde"""
+        """Recibe el HTML del ticket generado en frontend, lo guarda y envía solo la plantilla interactiva (sin PDF)"""
         if not send_whatsapp:
             return {'success': True, 'sent': False}
 
@@ -240,32 +240,47 @@ class PosOrder(models.Model):
             # Guardar el HTML recibido en el campo del pedido
             order.whatsapp_ticket_html = ticket_html or ''
 
-            # Convertir el HTML a PDF usando el motor de reportes de Odoo
-            pdf_content = order.env['ir.actions.report']._run_wkhtmltopdf([
-                ticket_html
-            ], landscape=False)
-            pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
-
-            # Crear el attachment
-            attachment = order.env['ir.attachment'].create({
-                'name': 'Ticket_%s.pdf' % order.name.replace('/', '_'),
-                'type': 'binary',
-                'datas': pdf_base64,
-                'res_model': 'pos.order',
-                'res_id': order.id,
-                'mimetype': 'application/pdf',
-            })
-
-            # Buscar o crear el canal de WhatsApp para este cliente
+            # NO generar PDF ni adjuntar en el primer envío
             config = order.session_id.config_id
             gateway = config.whatsapp_gateway_id
             channel = order._get_or_create_whatsapp_channel(gateway, phone)
             template = config.whatsapp_pos_template_id
 
             if template:
-                order._send_whatsapp_with_template(gateway, template, channel, attachment)
+                # Enviar solo la plantilla interactiva, sin adjunto
+                variables = {}
+                for var in template.variable_ids:
+                    if var.field_name:
+                        value = order._get_field_value(var.field_name)
+                        variables[var.variable_index] = str(value) if value else ''
+                message_body = template.body
+                for idx, value in variables.items():
+                    message_body = message_body.replace('{{%s}}' % idx, value)
+                channel.with_context(
+                    whatsapp_template_id=template.id,
+                    default_res_id=order.id,
+                    default_res_model='pos.order',
+                ).message_post(
+                    body=message_body,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment',
+                    gateway_type='whatsapp',
+                )
             else:
-                order._send_whatsapp_simple(gateway, channel, attachment)
+                # Enviar mensaje simple sin adjunto
+                message_body = _("""🧾 *Ticket de Compra*\n\n📅 Fecha: %s\n🏪 Tienda: %s\n📝 Pedido: %s\n\n💰 *Total: %s %s*\n\n¡Gracias por su compra!""") % (
+                    order.date_order.strftime('%d/%m/%Y %H:%M') if order.date_order else '',
+                    order.config_id.name if order.config_id else '',
+                    order.name or '',
+                    order.amount_total,
+                    order.currency_id.symbol if order.currency_id else '',
+                )
+                channel.message_post(
+                    body=message_body,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment',
+                    gateway_type='whatsapp',
+                )
 
             order.whatsapp_ticket_sent = True
             return {'success': True, 'sent': True}
