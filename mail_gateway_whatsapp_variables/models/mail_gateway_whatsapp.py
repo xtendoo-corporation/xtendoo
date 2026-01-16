@@ -569,6 +569,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 author = author[0]
             _logger.info(f"Registrando respuesta de botón '{button_text}' para partner {partner.name} (ID: {partner.id})")
             _logger.info(f"Author obtenido: {author}")
+            # Evitar notificaciones por email: message_type='comment', partner_ids=[], notify=False
             partner.sudo().message_post(
                 body=f"Respuesta botón: {button_text}",
                 author_id=author and author._name == "res.partner" and author.id,
@@ -576,6 +577,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
                 partner_ids=[],  # No notificar por email
+                email_to=False,  # No notificar por email
             )
         # Procesar mensajes normales (texto, etc) y registrarlos SOLO en el contacto
         body = ""
@@ -583,7 +585,6 @@ class MailGatewayWhatsappService(models.AbstractModel):
             body = message.get("text").get("body")
         if body and partner:
             author = self._get_author(chat.gateway_id, value)
-            # Si es recordset múltiple, quedarse solo con el primero
             if hasattr(author, '__len__') and len(author) > 1:
                 author = author[0]
             elif isinstance(author, (list, tuple)) and author:
@@ -595,6 +596,7 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
                 partner_ids=[],  # No notificar por email
+                email_to=False,  # No notificar por email
             )
 
         # === NUEVA FUNCIONALIDAD: Procesar confirmaciones pendientes ===
