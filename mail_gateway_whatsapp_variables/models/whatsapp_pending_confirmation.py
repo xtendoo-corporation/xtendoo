@@ -359,47 +359,30 @@ class WhatsappPendingConfirmation(models.Model):
                 _logger.error(f"   ❌ Error generating PDF: {pdf_error}", exc_info=True)
                 # Continuar sin PDF si hay error
 
-            # Crear el mensaje en el canal CON el contexto de la plantilla y el adjunto
-            # Esto hará que nuestro módulo mail_gateway_whatsapp_variables lo procese
+            # Enviar la plantilla de confirmación (sin adjunto PDF)
             message_vals = {
                 'body': self.confirmation_template_id.body,
                 'subtype_xmlid': "mail.mt_comment",
                 'message_type': "comment"
             }
-
-            # Añadir el adjunto si se generó
-            if attachment_id:
-                message_vals['attachment_ids'] = [attachment_id]
-                _logger.info(f"   📎 Attaching PDF to message")
-
             message = channel.with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
             ).message_post(**message_vals)
-
             _logger.info(f"   📧 Message created in channel (ID: {message.id})")
 
             # CRÍTICO: El gateway espera un registro con gateway_channel_id
-            # NO una notificación. Necesitamos crear un objeto que simule esto.
             _logger.info(f"   📨 Preparing record for gateway...")
-
-            # Crear una notificación asociada al mensaje
             notification = self.env['mail.notification'].sudo().create({
                 'mail_message_id': message.id,
                 'res_partner_id': self.partner_id.id,
             })
-
-            # SOLUCIÓN: Añadir el canal al notification para que el gateway lo encuentre
             notification.gateway_channel_id = channel
-
             _logger.info(f"   📤 Sending via gateway with channel token: {channel.gateway_channel_token}")
-
-            # Llamar al método _send del gateway con todo el contexto necesario
             gateway_service = self.env['mail.gateway.whatsapp'].with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
                 default_res_model=self.res_model,
                 default_res_id=self.res_id,
             )
-
             try:
                 gateway_service._send(
                     gateway=gateway,
@@ -411,22 +394,20 @@ class WhatsappPendingConfirmation(models.Model):
             except Exception as send_error:
                 _logger.error(f"   ❌ Error sending via gateway: {send_error}", exc_info=True)
                 raise
-
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
-            # Enviar el PDF como documento por WhatsApp si existe
+            # Enviar el PDF como documento por WhatsApp en mensaje aparte
             if attachment_id:
                 try:
-                    _logger.info(f"   📤 Enviando PDF como documento por WhatsApp...")
-                    gateway_service._send_document(
-                        gateway=gateway,
-                        record=record,
-                        attachment_id=attachment_id,
-                        channel=channel,
-                        auto_commit=False,
-                        raise_exception=True,
+                    _logger.info(f"   📤 Enviando PDF como documento por WhatsApp en mensaje aparte...")
+                    # Crear mensaje de documento
+                    document_message = channel.message_post(
+                        body="Ticket de compra en PDF",
+                        message_type="comment",
+                        subtype_xmlid="mail.mt_comment",
+                        attachment_ids=[attachment_id],
                     )
-                    _logger.info(f"   ✅ PDF enviado como documento por WhatsApp")
+                    _logger.info(f"   ✅ PDF enviado como documento en mensaje aparte (ID mensaje: {document_message.id})")
                 except Exception as send_doc_error:
                     _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
 
