@@ -274,34 +274,48 @@ class WhatsappPendingConfirmation(models.Model):
 
                 # Si es POS, usar el HTML guardado en el pedido
                 if self.res_model == 'pos.order':
-                    # Usar el report QWeb personalizado para el ticket POS
-                    try:
-                        _logger.info(f"   [DEBUG] Intentando obtener el report QWeb: xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp para pos.order {record.id}")
-                        report = self.env.ref('xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp', raise_if_not_found=False)
-                        if not report:
-                            _logger.error(f"   [ERROR] No se encontró el report QWeb con XMLID 'xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp'")
-                        else:
-                            _logger.info(f"   [DEBUG] Report QWeb encontrado: {report}")
-                            # CORREGIDO: Usar report_name y lista de ids
-                            pdf_content, _ = report._render_qweb_pdf(report.report_name, [record.id])
-                            if not pdf_content:
-                                _logger.error(f"   [ERROR] El report QWeb no devolvió contenido PDF para pos.order {record.id}")
+                    # Usar el PDF guardado en el pedido si existe
+                    if hasattr(record, 'whatsapp_ticket_pdf') and record.whatsapp_ticket_pdf:
+                        pdf_base64 = record.whatsapp_ticket_pdf
+                        filename = f"Ticket_{record.name}.pdf"
+                        attachment = self.env['ir.attachment'].create({
+                            'name': filename,
+                            'type': 'binary',
+                            'datas': pdf_base64,
+                            'res_model': 'discuss.channel',
+                            'res_id': channel.id,
+                            'mimetype': 'application/pdf',
+                        })
+                        attachment_id = attachment.id
+                        _logger.info(f"   ✅ PDF POS (frontend) adjuntado: {filename} (ID: {attachment_id}, size: {len(pdf_base64)} bytes)")
+                    else:
+                        # Usar el report QWeb personalizado para el ticket POS (fallback)
+                        try:
+                            _logger.info(f"   [DEBUG] Intentando obtener el report QWeb: xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp para pos.order {record.id}")
+                            report = self.env.ref('xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp', raise_if_not_found=False)
+                            if not report:
+                                _logger.error(f"   [ERROR] No se encontró el report QWeb con XMLID 'xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp'")
                             else:
-                                pdf_base64 = base64.b64encode(pdf_content)
-                                filename = f"Ticket_{record.name}.pdf"
-                                attachment = self.env['ir.attachment'].create({
-                                    'name': filename,
-                                    'type': 'binary',
-                                    'datas': pdf_base64,
-                                    'res_model': 'discuss.channel',
-                                    'res_id': channel.id,
-                                    'mimetype': 'application/pdf',
-                                })
-                                attachment_id = attachment.id
-                                _logger.info(f"   ✅ PDF POS generated with QWeb report: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
-                    except Exception as e:
-                        _logger.error(f"   ❌ Error generating PDF with QWeb report: {e}", exc_info=True)
-                        attachment_id = False
+                                _logger.info(f"   [DEBUG] Report QWeb encontrado: {report}")
+                                pdf_content, _ = report._render_qweb_pdf(report.report_name, [record.id])
+                                if not pdf_content:
+                                    _logger.error(f"   [ERROR] El report QWeb no devolvió contenido PDF para pos.order {record.id}")
+                                else:
+                                    pdf_base64 = base64.b64encode(pdf_content)
+                                    filename = f"Ticket_{record.name}.pdf"
+                                    attachment = self.env['ir.attachment'].create({
+                                        'name': filename,
+                                        'type': 'binary',
+                                        'datas': pdf_base64,
+                                        'res_model': 'discuss.channel',
+                                        'res_id': channel.id,
+                                        'mimetype': 'application/pdf',
+                                    })
+                                    attachment_id = attachment.id
+                                    _logger.info(f"   ✅ PDF POS generated with QWeb report: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
+                        except Exception as e:
+                            _logger.error(f"   ❌ Error generating PDF with QWeb report: {e}", exc_info=True)
+                            attachment_id = False
                 else:
                     # Determinar qué reporte usar según el modelo
                     report_name = False

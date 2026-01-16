@@ -28,6 +28,11 @@ class PosOrder(models.Model):
         help="CSS del ticket generado en frontend para WhatsApp.",
         copy=False,
     )
+    whatsapp_ticket_pdf = fields.Binary(
+        string="Ticket POS PDF (WhatsApp)",
+        help="PDF del ticket generado en frontend para WhatsApp.",
+        copy=False,
+    )
 
     def _get_whatsapp_phone(self):
         """Obtener el número de teléfono del cliente para WhatsApp"""
@@ -222,8 +227,8 @@ class PosOrder(models.Model):
             return {'success': False, 'error': str(e)}
 
     @api.model
-    def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html, ticket_css=None):
-        """Recibe el HTML y CSS del ticket generado en frontend, los guarda y genera el PDF con tamaño de ticket térmico"""
+    def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html, ticket_css=None, ticket_pdf_base64=None):
+        """Recibe el HTML, CSS y PDF del ticket generado en frontend, los guarda y genera el PDF con tamaño de ticket térmico"""
         if not send_whatsapp:
             return {'success': True, 'sent': False}
 
@@ -249,6 +254,9 @@ class PosOrder(models.Model):
             # Guardar el HTML y CSS recibido en el campo del pedido
             order.whatsapp_ticket_html = ticket_html or ''
             order.whatsapp_ticket_css = ticket_css or ''
+            # Guardar el PDF recibido si viene desde el POS
+            if ticket_pdf_base64:
+                order.whatsapp_ticket_pdf = ticket_pdf_base64
 
             config = order.session_id.config_id
             gateway = config.whatsapp_gateway_id
@@ -309,6 +317,11 @@ class PosOrder(models.Model):
         except Exception as e:
             _logger.exception("Error al enviar ticket por WhatsApp")
             return {'success': False, 'error': str(e)}
+
+    def get_whatsapp_ticket_pdf(self):
+        """Devuelve el PDF del ticket POS guardado en el pedido, si existe"""
+        self.ensure_one()
+        return self.whatsapp_ticket_pdf or False
 
     def generate_ticket_pdf(self):
         """Genera el PDF del ticket POS con tamaño térmico (80mm x altura automática) usando el HTML guardado y embebe el logo como base64 si es posible"""
