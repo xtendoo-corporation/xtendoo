@@ -74,11 +74,22 @@ patch(ReceiptScreen.prototype, {
                 ticket_html = receiptElement.innerHTML;
             }
 
-            // Llamada al backend para enviar el ticket HTML por WhatsApp
+            // Obtener los estilos CSS aplicados al ticket
+            let ticket_css = '';
+            // Recoger todos los <style> del documento
+            document.querySelectorAll('style').forEach(style => {
+                ticket_css += style.outerHTML + '\n';
+            });
+            // Recoger todos los <link rel="stylesheet"> del documento
+            document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                ticket_css += link.outerHTML + '\n';
+            });
+
+            // Llamada al backend para enviar el ticket HTML y CSS por WhatsApp
             const result = await this.orm.call(
                 "pos.order",
                 "send_whatsapp_ticket_html",
-                [order.id, true, ticket_html]
+                [order.id, true, ticket_html, ticket_css]
             );
 
             if (result.success) {

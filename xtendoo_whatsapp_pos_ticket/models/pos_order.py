@@ -23,6 +23,11 @@ class PosOrder(models.Model):
         help="HTML del ticket generado en frontend para WhatsApp.",
         copy=False,
     )
+    whatsapp_ticket_css = fields.Text(
+        string="Ticket POS CSS (WhatsApp)",
+        help="CSS del ticket generado en frontend para WhatsApp.",
+        copy=False,
+    )
 
     def _get_whatsapp_phone(self):
         """Obtener el número de teléfono del cliente para WhatsApp"""
@@ -217,8 +222,8 @@ class PosOrder(models.Model):
             return {'success': False, 'error': str(e)}
 
     @api.model
-    def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html):
-        """Recibe el HTML del ticket generado en frontend, lo guarda y envía solo la plantilla interactiva (sin PDF)"""
+    def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html, ticket_css=None):
+        """Recibe el HTML y CSS del ticket generado en frontend, los guarda y envía solo la plantilla interactiva (sin PDF)"""
         if not send_whatsapp:
             return {'success': True, 'sent': False}
 
@@ -238,11 +243,12 @@ class PosOrder(models.Model):
 
         try:
             # Validar que el HTML recibido contiene estilos CSS
-            if ticket_html and '<style' not in ticket_html:
+            if ticket_html and '<style' not in ticket_html and not ticket_css:
                 _logger.warning('[WhatsApp POS] El HTML recibido para el ticket no contiene estilos CSS. El PDF puede verse sin formato.')
 
-            # Guardar el HTML recibido en el campo del pedido
+            # Guardar el HTML y CSS recibido en el campo del pedido
             order.whatsapp_ticket_html = ticket_html or ''
+            order.whatsapp_ticket_css = ticket_css or ''
 
             # NO generar PDF ni adjuntar en el primer envío
             config = order.session_id.config_id
@@ -263,16 +269,15 @@ class PosOrder(models.Model):
                 channel.with_context(
                     whatsapp_template_id=template.id,
                     default_res_id=order.id,
-                    default_res_model='pos.order',
                 ).message_post(
                     body=message_body,
-                    message_type='comment',
-                    subtype_xmlid='mail.mt_comment',
+                    message_type="comment",
+                    subtype_xmlid="mail.mt_comment",
                     gateway_type='whatsapp',
                 )
-                # Crear pendiente de confirmación si la plantilla requiere confirmación
                 if getattr(template, 'requires_confirmation', False) and template.confirmation_template_id:
-                    confirmation_type = template.button_ids and template.button_ids.filtered(lambda b: b.button_type == 'quick_reply') and 'button' or 'any'
+                    confirmation_type = template.button_ids and template.button_ids.filtered(
+                        lambda b: b.button_type == 'quick_reply') and 'button' or 'any'
                     order.env['whatsapp.pending.confirmation'].create({
                         'partner_id': order.partner_id.id,
                         'channel_id': channel.id,
@@ -283,24 +288,25 @@ class PosOrder(models.Model):
                         'state': 'waiting',
                         'confirmation_type': confirmation_type,
                     })
-            else:
-                # Enviar mensaje simple sin adjunto
-                message_body = _("""🧾 *Ticket de Compra*\n\n📅 Fecha: %s\n🏪 Tienda: %s\n📝 Pedido: %s\n\n💰 *Total: %s %s*\n\n¡Gracias por su compra!""") % (
-                    order.date_order.strftime('%d/%m/%Y %H:%M') if order.date_order else '',
-                    order.config_id.name if order.config_id else '',
-                    order.name or '',
-                    order.amount_total,
-                    order.currency_id.symbol if order.currency_id else '',
-                )
-                channel.message_post(
-                    body=message_body,
-                    message_type='comment',
-                    subtype_xmlid='mail.mt_comment',
-                    gateway_type='whatsapp',
-                )
+                else:
+                    # Enviar mensaje simple sin adjunto
+                    message_body = _(
+                        """🧾 *Ticket de Compra*\n\n📅 Fecha: %s\n🏪 Tienda: %s\n📝 Pedido: %s\n\n💰 *Total: %s %s*\n\n¡Gracias por su compra!""") % (
+                                       order.date_order.strftime('%d/%m/%Y %H:%M') if order.date_order else '',
+                                       order.config_id.name if order.config_id else '',
+                                       order.name or '',
+                                       order.amount_total,
+                                       order.currency_id.symbol if order.currency_id else '',
+                                   )
+                    channel.message_post(
+                        body=message_body,
+                        message_type='comment',
+                        subtype_xmlid='mail.mt_comment',
+                        gateway_type='whatsapp',
+                    )
 
-            order.whatsapp_ticket_sent = True
+                order.whatsapp_ticket_sent = True
             return {'success': True, 'sent': True}
         except Exception as e:
-            _logger.exception("Error al enviar ticket por WhatsApp (HTML)")
+            _logger.exception("Error al enviar ticket por WhatsApp")
             return {'success': False, 'error': str(e)}

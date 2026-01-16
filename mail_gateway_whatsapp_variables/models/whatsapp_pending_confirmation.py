@@ -275,9 +275,23 @@ class WhatsappPendingConfirmation(models.Model):
                 # Si es POS, usar el HTML guardado en el pedido
                 if self.res_model == 'pos.order':
                     ticket_html = record.whatsapp_ticket_html
+                    ticket_css = getattr(record, 'whatsapp_ticket_css', '')
                     if ticket_html:
+                        # Combinar CSS y HTML en un solo documento
+                        if ticket_css:
+                            full_html = f"""
+                            <html>
+                                <head>
+                                    <meta charset='utf-8'/>
+                                    {ticket_css}
+                                </head>
+                                <body>{ticket_html}</body>
+                            </html>
+                            """
+                        else:
+                            full_html = ticket_html
                         pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
-                            ticket_html
+                            full_html
                         ], landscape=False)
                         pdf_base64 = base64.b64encode(pdf_content)
                         filename = f"Ticket_{record.name}.pdf"
