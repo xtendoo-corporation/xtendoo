@@ -276,6 +276,15 @@ class WhatsappPendingConfirmation(models.Model):
                 if self.res_model == 'pos.order':
                     ticket_html = record.whatsapp_ticket_html
                     ticket_css = getattr(record, 'whatsapp_ticket_css', '')
+                    # Embeder logo como base64 si existe
+                    company = record.company_id or self.env.company
+                    if company and company.logo:
+                        import base64, re
+                        logo_base64 = base64.b64encode(company.logo).decode('utf-8')
+                        logo_data_url = f"data:image/png;base64,{logo_base64}"
+                        if ticket_html:
+                            ticket_html = re.sub(r'<img([^>]+)src=["\"]([^"\"]+logo[^"\"]+)["\"]',
+                                                 fr'<img\1src="{logo_data_url}"', ticket_html, flags=re.IGNORECASE)
                     if ticket_html:
                         # Combinar CSS y HTML en un solo documento
                         if ticket_css:
@@ -283,7 +292,7 @@ class WhatsappPendingConfirmation(models.Model):
                             <html>
                                 <head>
                                     <meta charset='utf-8'/>
-                                    {ticket_css}
+                                    <style>{ticket_css}</style>
                                 </head>
                                 <body>{ticket_html}</body>
                             </html>
@@ -292,7 +301,15 @@ class WhatsappPendingConfirmation(models.Model):
                             full_html = ticket_html
                         pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
                             full_html
-                        ], landscape=False)
+                        ], landscape=False, specific_paperformat_args={
+                            'data-report-format': 'custom',
+                            'data-report-page-width': '80',  # mm
+                            'data-report-page-height': '200',  # mm, altura estimada
+                            'data-report-margin-top': 0,
+                            'data-report-margin-bottom': 0,
+                            'data-report-margin-left': 0,
+                            'data-report-margin-right': 0,
+                        })
                         pdf_base64 = base64.b64encode(pdf_content)
                         filename = f"Ticket_{record.name}.pdf"
                         attachment = self.env['ir.attachment'].create({
