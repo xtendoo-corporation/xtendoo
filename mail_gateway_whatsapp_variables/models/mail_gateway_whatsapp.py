@@ -560,28 +560,29 @@ class MailGatewayWhatsappService(models.AbstractModel):
         elif message.get("type") == "interactive":
             button_text = message.get("interactive", {}).get("button_reply", {}).get("title")
         # Si se detecta texto de botón, lo registramos SOLO en el chatter del contacto
-        # if button_text and partner:
-        #     author = self._get_author(chat.gateway_id, value)
-        #     # Si es recordset múltiple, quedarse solo con el primero
-        #     if hasattr(author, '__len__') and len(author) > 1:
-        #         author = author[0]
-        #     elif isinstance(author, (list, tuple)) and author:
-        #         author = author[0]
-        #     _logger.info(f"Registrando respuesta de botón '{button_text}' para partner {partner.name} (ID: {partner.id})")
-        #     _logger.info(f"Author obtenido: {author}")
-        #     # Evitar notificaciones por email: message_type='comment', partner_ids=[], notify=False
-        #     partner.sudo().message_post(
-        #         body=f"Respuesta botón: {button_text}",
-        #         author_id=author and author._name == "res.partner" and author.id,
-        #         gateway_type="whatsapp",
-        #         subtype_xmlid="mail.mt_comment",
-        #         message_type="comment",
-        #         partner_ids=[],  # No notificar por email
-        #     )
-        # # Procesar mensajes normales (texto, etc) y registrarlos SOLO en el contacto
-        # body = ""
-        # if message.get("text"):
-        #     body = message.get("text").get("body")
+        if button_text and partner:
+            # author = self._get_author(chat.gateway_id, value)
+            # # Si es recordset múltiple, quedarse solo con el primero
+            # if hasattr(author, '__len__') and len(author) > 1:
+            #     author = author[0]
+            # elif isinstance(author, (list, tuple)) and author:
+            #     author = author[0]
+            # _logger.info(f"Registrando respuesta de botón '{button_text}' para partner {partner.name} (ID: {partner.id})")
+            # _logger.info(f"Author obtenido: {author}")
+            # # Evitar notificaciones por email: message_type='comment', partner_ids=[], notify=False
+            # partner.sudo().message_post(
+            #     body=f"Respuesta botón: {button_text}",
+            #     author_id=author and author._name == "res.partner" and author.id,
+            #     gateway_type="whatsapp",
+            #     subtype_xmlid="mail.mt_comment",
+            #     message_type="comment",
+            #     partner_ids=[],  # No notificar por email
+            # )
+            body=f"Respuesta botón: {button_text}",
+        # Procesar mensajes normales (texto, etc) y registrarlos SOLO en el contacto
+        body = ""
+        if message.get("text"):
+            body = message.get("text").get("body")
         # if body and partner:
         #     author = self._get_author(chat.gateway_id, value)
         #     if hasattr(author, '__len__') and len(author) > 1:
