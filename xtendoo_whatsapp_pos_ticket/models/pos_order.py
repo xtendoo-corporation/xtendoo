@@ -322,20 +322,18 @@ class PosOrder(models.Model):
             logo_base64 = base64.b64encode(company.logo).decode('utf-8')
             logo_data_url = f"data:image/png;base64,{logo_base64}"
             import re
-            # Reemplazar src de logo si existe en el HTML
-            html = re.sub(r'<img([^>]+)src=["\\\']([^"\
-\']+logo[^"\
-\']+)["\
-\']',
+            html = re.sub(r'<img([^>]+)src=["\"]([^"\"]+logo[^"\"]+)["\"]',
                           fr'<img\1src="{logo_data_url}"', html, flags=re.IGNORECASE)
         pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
             html
         ], landscape=False, specific_paperformat_args={
-            'page-width': '80mm',
-            'margin-top': '0mm',
-            'margin-bottom': '0mm',
-            'margin-left': '0mm',
-            'margin-right': '0mm',
+            'data-report-format': 'custom',
+            'data-report-page-width': '80',  # mm
+            'data-report-page-height': '200',  # mm, altura estimada, wkhtmltopdf ajusta si es más largo
+            'data-report-margin-top': 0,
+            'data-report-margin-bottom': 0,
+            'data-report-margin-left': 0,
+            'data-report-margin-right': 0,
         })
         return pdf_content
 
