@@ -292,24 +292,24 @@ class WhatsappPendingConfirmation(models.Model):
                             <html>
                                 <head>
                                     <meta charset='utf-8'/>
-                                    <style>{ticket_css}</style>
+                                    <style>@page {{ size: 80mm auto; margin: 0; }} {ticket_css}</style>
                                 </head>
-                                <body>{ticket_html}</body>
+                                <body style='margin:0'>{ticket_html}</body>
                             </html>
                             """
                         else:
-                            full_html = ticket_html
+                            full_html = f"""
+                            <html>
+                                <head>
+                                    <meta charset='utf-8'/>
+                                    <style>@page {{ size: 80mm auto; margin: 0; }}</style>
+                                </head>
+                                <body style='margin:0'>{ticket_html}</body>
+                            </html>
+                            """
                         pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
                             full_html
-                        ], landscape=False, specific_paperformat_args={
-                            'data-report-format': 'custom',
-                            'data-report-page-width': '80',  # mm
-                            'data-report-page-height': '200',  # mm, altura estimada
-                            'data-report-margin-top': 0,
-                            'data-report-margin-bottom': 0,
-                            'data-report-margin-left': 0,
-                            'data-report-margin-right': 0,
-                        })
+                        ], landscape=False)
                         pdf_base64 = base64.b64encode(pdf_content)
                         filename = f"Ticket_{record.name}.pdf"
                         attachment = self.env['ir.attachment'].create({
