@@ -74,16 +74,29 @@ patch(ReceiptScreen.prototype, {
                 ticket_html = receiptElement.innerHTML;
             }
 
+            // Obtener el logo de la compañía si existe
+            let logo_html = '';
+            const logoImg = document.querySelector('.pos-receipt-logo img, .pos-company-logo img');
+            if (logoImg && logoImg.src) {
+                logo_html = `<div style='text-align:center;margin-bottom:8px;'><img src='${logoImg.src}' style='max-width:120px;max-height:60px;'/></div>`;
+            }
+
             // Obtener los estilos CSS aplicados al ticket
             let ticket_css = '';
             document.querySelectorAll('style').forEach(style => {
                 ticket_css += style.innerHTML + '\n';
             });
-            // Opcional: incluir los CSS de los <link rel="stylesheet"> si es posible acceder a su contenido
-            // Aquí solo se añaden los <link> como referencia, pero wkhtmltopdf no los carga automáticamente
             document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
                 ticket_css += `@import url('${link.href}');\n`;
             });
+
+            // CSS específico para formato de ticket térmico
+            const thermal_css = `
+                body { background: #fff !important; color: #000 !important; }
+                .pos-receipt-container { background: #fff !important; color: #000 !important; max-width: 300px; margin: 0 auto; font-size: 13px; }
+                .pos-receipt-logo, .pos-company-logo { text-align: center; margin-bottom: 8px; }
+                img { display: block; margin: 0 auto; }
+            `;
 
             // Construir el HTML completo para el PDF
             const full_html = `
@@ -91,12 +104,12 @@ patch(ReceiptScreen.prototype, {
                 <head>
                     <meta charset='utf-8'/>
                     <style>
-                        body { background: #fff !important; color: #000 !important; }
-                        .pos-receipt-container { background: #fff !important; color: #000 !important; }
+                        ${thermal_css}
                         ${ticket_css}
                     </style>
                 </head>
                 <body>
+                    ${logo_html}
                     <div class="pos-receipt-container">
                         ${ticket_html}
                     </div>
