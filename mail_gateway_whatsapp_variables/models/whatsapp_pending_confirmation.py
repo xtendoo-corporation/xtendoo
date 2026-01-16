@@ -396,11 +396,22 @@ class WhatsappPendingConfirmation(models.Model):
                 raise
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
-            # Enviar el PDF como documento por WhatsApp en mensaje aparte
-            if attachment_id:
+            # Enviar el PDF como documento por WhatsApp en mensaje aparte SOLO si es POS y existe el PDF guardado
+            if self.res_model == 'pos.order' and hasattr(record, 'whatsapp_ticket_pdf') and record.whatsapp_ticket_pdf:
                 try:
-                    _logger.info(f"   📤 Enviando PDF como documento por WhatsApp en mensaje aparte...")
-                    # Crear mensaje de documento
+                    import base64
+                    _logger.info(f"   📤 Enviando PDF guardado (frontend POS) como documento por WhatsApp en mensaje aparte...")
+                    pdf_base64 = record.whatsapp_ticket_pdf
+                    filename = f"Ticket_{record.name}.pdf"
+                    attachment = self.env['ir.attachment'].create({
+                        'name': filename,
+                        'type': 'binary',
+                        'datas': pdf_base64,
+                        'res_model': 'discuss.channel',
+                        'res_id': channel.id,
+                        'mimetype': 'application/pdf',
+                    })
+                    attachment_id = attachment.id
                     document_message = channel.message_post(
                         body="Ticket de compra en PDF",
                         message_type="comment",
@@ -408,7 +419,32 @@ class WhatsappPendingConfirmation(models.Model):
                         attachment_ids=[attachment_id],
                     )
                     _logger.info(f"   ✅ PDF adjuntado en mensaje aparte (ID mensaje: {document_message.id})")
-                    # Crear notificación asociada y enviar por WhatsApp
+                    document_notification = self.env['mail.notification'].sudo().create({
+                        'mail_message_id': document_message.id,
+                        'res_partner_id': self.partner_id.id,
+                    })
+                    document_notification.gateway_channel_id = channel
+                    _logger.info(f"   📤 Enviando notificación de documento por WhatsApp...")
+                    gateway_service._send(
+                        gateway=gateway,
+                        record=document_notification,
+                        auto_commit=False,
+                        raise_exception=True,
+                    )
+                    _logger.info(f"   ✅ PDF enviado como documento en WhatsApp (ID mensaje: {document_message.id})")
+                except Exception as send_doc_error:
+                    _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
+            # Si no es POS o no hay PDF guardado, usar el fallback QWeb report SOLO si no se ha enviado ya el PDF
+            elif attachment_id:
+                try:
+                    _logger.info(f"   📤 Enviando PDF generado (QWeb) como documento por WhatsApp en mensaje aparte...")
+                    document_message = channel.message_post(
+                        body="Ticket de compra en PDF",
+                        message_type="comment",
+                        subtype_xmlid="mail.mt_comment",
+                        attachment_ids=[attachment_id],
+                    )
+                    _logger.info(f"   ✅ PDF adjuntado en mensaje aparte (ID mensaje: {document_message.id})")
                     document_notification = self.env['mail.notification'].sudo().create({
                         'mail_message_id': document_message.id,
                         'res_partner_id': self.partner_id.id,
