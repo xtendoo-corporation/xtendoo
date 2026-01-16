@@ -274,28 +274,10 @@ class WhatsappPendingConfirmation(models.Model):
 
                 # Si es POS, usar el HTML guardado en el pedido
                 if self.res_model == 'pos.order':
-                    ticket_html = record.whatsapp_ticket_html
-                    ticket_css = getattr(record, 'whatsapp_ticket_css', '')
-                    # Embeder logo como base64 si existe
-                    company = record.company_id or self.env.company
-                    if company and company.logo:
-                        import base64, re
-                        logo_base64 = base64.b64encode(company.logo).decode('utf-8')
-                        logo_data_url = f"data:image/png;base64,{logo_base64}"
-                        if ticket_html:
-                            ticket_html = re.sub(r'<img([^>]+)src=["\"]([^"\"]+logo[^"\"]+)["\"]',
-                                                 fr'<img\1src="{logo_data_url}"', ticket_html, flags=re.IGNORECASE)
-                    if ticket_html:
-                        # Usar el HTML y CSS exactamente como lo genera el POS, sin envolver ni modificar el body
-                        # Solo asegurarse de que el CSS esté en el <head> si no lo está ya
-                        if ticket_css and '<style' not in ticket_html:
-                            # Insertar el CSS justo después de <head>
-                            import re
-                            ticket_html = re.sub(r'(<head[^>]*>)', r'\1<style>' + ticket_css + '</style>', ticket_html, flags=re.IGNORECASE)
-                        full_html = ticket_html
-                        pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
-                            full_html
-                        ], landscape=False)
+                    # Usar el report QWeb personalizado para el ticket POS
+                    try:
+                        report = self.env.ref('xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp')
+                        pdf_content, _ = report._render_qweb_pdf([record.id])
                         pdf_base64 = base64.b64encode(pdf_content)
                         filename = f"Ticket_{record.name}.pdf"
                         attachment = self.env['ir.attachment'].create({
@@ -307,9 +289,10 @@ class WhatsappPendingConfirmation(models.Model):
                             'mimetype': 'application/pdf',
                         })
                         attachment_id = attachment.id
-                        _logger.info(f"   ✅ PDF POS generated: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
-                    else:
-                        _logger.warning(f"   ⚠️ No POS ticket HTML found in pos.order {record.id}")
+                        _logger.info(f"   ✅ PDF POS generated with QWeb report: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
+                    except Exception as e:
+                        _logger.error(f"   ❌ Error generating PDF with QWeb report: {e}", exc_info=True)
+                        attachment_id = False
                 else:
                     # Determinar qué reporte usar según el modelo
                     report_name = False

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_pos_ticket_whatsapp">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+                    <style>
+                        @page {
+                            size: 80mm auto;
+                            margin: 0mm;
+                        }
+                        body, .container, .row, .col-12 {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            width: 100% !important;
+                            max-width: 100% !important;
+                        }
+                        .page {
+                            font-family: 'Courier New', monospace;
+                            font-size: 12px;
+                            color: #000;
+                            padding: 1mm 2mm;
+                            width: 100%;
+                        }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .text-left { text-align: left; }
+                        .bold { font-weight: bold; }
+                        .dashed-line {
+                            border-bottom: 1px dashed #000;
+                            margin: 5px 0;
+                            width: 100%;
+                        }
+                        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        th { font-weight: normal; border-bottom: 1px dashed #000; padding-bottom: 2px; }
+                        td { vertical-align: top; padding: 2px 0; }
+                        .col-name { width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                        .col-ud { width: 15%; text-align: center; }
+                        .col-total { width: 30%; text-align: right; }
+                    </style>
+                    <div class="page">
+                        <div class="text-center" style="margin-bottom: 5px;">
+                            <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 70px; max-width: 95%;"/>
+                        </div>
+                        <div class="text-center" style="font-size: 0.9em; margin-bottom: 5px;">
+                            <span t-esc="o.date_order and o.date_order.strftime('%d/%m/%Y %H:%M')"/>
+                        </div>
+                        <div class="text-center bold" style="font-size: 1.1em; text-transform: uppercase;">
+                            <span t-field="o.company_id.name"/>
+                        </div>
+                        <div class="text-center">
+                            <span t-field="o.company_id.street"/>
+                        </div>
+                        <div class="text-center">
+                            <span t-field="o.company_id.zip"/> <span t-field="o.company_id.city"/>
+                        </div>
+                        <div class="text-center">
+                            <span t-field="o.company_id.vat"/>
+                        </div>
+                        <div class="dashed-line"/>
+                        <div class="text-center" style="text-transform: uppercase; font-size: 0.9em;">
+                            TICKET POS: <br/>
+                            <span t-field="o.name"/>
+                        </div>
+                        <div class="text-center" style="text-transform: uppercase; font-size: 0.9em; margin-top: 2px;">
+                            ATENDIDO POR: <span t-field="o.user_id.name"/>
+                        </div>
+                        <div class="dashed-line"/>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="text-left col-name">Nombre</th>
+                                    <th class="text-center col-ud">UD</th>
+                                    <th class="text-right col-total">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.lines" t-as="line">
+                                    <tr>
+                                        <td class="text-left" style="padding-right: 2px;">
+                                            <t t-if="line.product_id.default_code">
+                                                [<span t-field="line.product_id.default_code"/>]
+                                            </t>
+                                            <span t-field="line.product_id.name"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-esc="'%.0f' % line.qty"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f' % line.price_subtotal_incl"/>€
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <div class="dashed-line"/>
+                        <div class="text-right bold" style="font-size: 1.5em; margin: 10px 0;">
+                            TOTAL <span t-field="o.amount_total"/>
+                        </div>
+                        <div class="text-center" style="margin-bottom: 5px;">
+                            Pagado:
+                            <t t-foreach="o.payment_ids" t-as="payment">
+                                <span t-field="payment.payment_method_id.name"/>
+                            </t>
+                        </div>
+                        <div class="dashed-line"/>
+                        <div class="text-center" style="margin-top: 10px;">
+                            ¡Gracias por su compra!
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    <record id="action_report_pos_ticket_whatsapp" model="ir.actions.report">
+        <field name="name">Ticket POS WhatsApp</field>
+        <field name="model">pos.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">xtendoo_whatsapp_pos_ticket.report_pos_ticket_whatsapp</field>
+        <field name="report_file">xtendoo_whatsapp_pos_ticket.report_pos_ticket_whatsapp</field>
+        <field name="print_report_name">(object.name or 'Ticket POS') + '.pdf'</field>
+    </record>
+</odoo>
+
