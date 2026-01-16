@@ -562,7 +562,10 @@ class MailGatewayWhatsappService(models.AbstractModel):
         # Si se detecta texto de botón, lo registramos SOLO en el chatter del contacto
         if button_text and partner:
             author = self._get_author(chat.gateway_id, value)
-            if isinstance(author, (list, tuple)) and author:
+            # Si es recordset múltiple, quedarse solo con el primero
+            if hasattr(author, '__len__') and len(author) > 1:
+                author = author[0]
+            elif isinstance(author, (list, tuple)) and author:
                 author = author[0]
             _logger.info(f"Registrando respuesta de botón '{button_text}' para partner {partner.name} (ID: {partner.id})")
             _logger.info(f"Author obtenido: {author}")
@@ -579,7 +582,10 @@ class MailGatewayWhatsappService(models.AbstractModel):
             body = message.get("text").get("body")
         if body and partner:
             author = self._get_author(chat.gateway_id, value)
-            if isinstance(author, (list, tuple)) and author:
+            # Si es recordset múltiple, quedarse solo con el primero
+            if hasattr(author, '__len__') and len(author) > 1:
+                author = author[0]
+            elif isinstance(author, (list, tuple)) and author:
                 author = author[0]
             partner.sudo().message_post(
                 body=body,
