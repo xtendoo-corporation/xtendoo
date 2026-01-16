@@ -399,6 +399,22 @@ class WhatsappPendingConfirmation(models.Model):
 
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
+            # Enviar el PDF como documento por WhatsApp si existe
+            if attachment_id:
+                try:
+                    _logger.info(f"   📤 Enviando PDF como documento por WhatsApp...")
+                    gateway_service._send_document(
+                        gateway=gateway,
+                        record=record,
+                        attachment_id=attachment_id,
+                        channel=channel,
+                        auto_commit=False,
+                        raise_exception=True,
+                    )
+                    _logger.info(f"   ✅ PDF enviado como documento por WhatsApp")
+                except Exception as send_doc_error:
+                    _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
+
             # Añadir nota al registro (sin usar _() para evitar conflictos)
             # record.message_post(
             #     body="Plantilla de confirmación de WhatsApp enviada automáticamente: %s" % self.confirmation_template_id.name,
