@@ -223,7 +223,7 @@ class PosOrder(models.Model):
 
     @api.model
     def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html, ticket_css=None):
-        """Recibe el HTML y CSS del ticket generado en frontend, los guarda y envía solo la plantilla interactiva (sin PDF)"""
+        """Recibe el HTML y CSS del ticket generado en frontend, los guarda y genera el PDF con tamaño de ticket térmico"""
         if not send_whatsapp:
             return {'success': True, 'sent': False}
 
@@ -250,7 +250,6 @@ class PosOrder(models.Model):
             order.whatsapp_ticket_html = ticket_html or ''
             order.whatsapp_ticket_css = ticket_css or ''
 
-            # NO generar PDF ni adjuntar en el primer envío
             config = order.session_id.config_id
             gateway = config.whatsapp_gateway_id
             channel = order._get_or_create_whatsapp_channel(gateway, phone)
@@ -310,3 +309,33 @@ class PosOrder(models.Model):
         except Exception as e:
             _logger.exception("Error al enviar ticket por WhatsApp")
             return {'success': False, 'error': str(e)}
+
+    def generate_ticket_pdf(self):
+        """Genera el PDF del ticket POS con tamaño térmico (80mm x altura automática) usando el HTML guardado y embebe el logo como base64 si es posible"""
+        self.ensure_one()
+        if not self.whatsapp_ticket_html:
+            raise UserError(_('No hay HTML de ticket guardado en el pedido.'))
+        html = self.whatsapp_ticket_html
+        # Buscar el logo de la compañía y reemplazar src por base64 si es posible
+        company = self.company_id or self.env.company
+        if company and company.logo:
+            logo_base64 = base64.b64encode(company.logo).decode('utf-8')
+            logo_data_url = f"data:image/png;base64,{logo_base64}"
+            import re
+            # Reemplazar src de logo si existe en el HTML
+            html = re.sub(r'<img([^>]+)src=["\\\']([^"\
+\']+logo[^"\
+\']+)["\
+\']',
+                          fr'<img\1src="{logo_data_url}"', html, flags=re.IGNORECASE)
+        pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
+            html
+        ], landscape=False, specific_paperformat_args={
+            'page-width': '80mm',
+            'margin-top': '0mm',
+            'margin-bottom': '0mm',
+            'margin-left': '0mm',
+            'margin-right': '0mm',
+        })
+        return pdf_content
+
