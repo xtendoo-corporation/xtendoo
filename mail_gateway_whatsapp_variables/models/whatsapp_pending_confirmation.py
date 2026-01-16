@@ -286,27 +286,13 @@ class WhatsappPendingConfirmation(models.Model):
                             ticket_html = re.sub(r'<img([^>]+)src=["\"]([^"\"]+logo[^"\"]+)["\"]',
                                                  fr'<img\1src="{logo_data_url}"', ticket_html, flags=re.IGNORECASE)
                     if ticket_html:
-                        # Combinar CSS y HTML en un solo documento
-                        if ticket_css:
-                            full_html = f"""
-                            <html>
-                                <head>
-                                    <meta charset='utf-8'/>
-                                    <style>@page {{ size: 80mm auto; margin: 0; }} {ticket_css}</style>
-                                </head>
-                                <body style='margin:0'>{ticket_html}</body>
-                            </html>
-                            """
-                        else:
-                            full_html = f"""
-                            <html>
-                                <head>
-                                    <meta charset='utf-8'/>
-                                    <style>@page {{ size: 80mm auto; margin: 0; }}</style>
-                                </head>
-                                <body style='margin:0'>{ticket_html}</body>
-                            </html>
-                            """
+                        # Usar el HTML y CSS exactamente como lo genera el POS, sin envolver ni modificar el body
+                        # Solo asegurarse de que el CSS esté en el <head> si no lo está ya
+                        if ticket_css and '<style' not in ticket_html:
+                            # Insertar el CSS justo después de <head>
+                            import re
+                            ticket_html = re.sub(r'(<head[^>]*>)', r'\1<style>' + ticket_css + '</style>', ticket_html, flags=re.IGNORECASE)
+                        full_html = ticket_html
                         pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
                             full_html
                         ], landscape=False)
