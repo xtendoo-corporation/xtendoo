@@ -407,7 +407,21 @@ class WhatsappPendingConfirmation(models.Model):
                         subtype_xmlid="mail.mt_comment",
                         attachment_ids=[attachment_id],
                     )
-                    _logger.info(f"   ✅ PDF enviado como documento en mensaje aparte (ID mensaje: {document_message.id})")
+                    _logger.info(f"   ✅ PDF adjuntado en mensaje aparte (ID mensaje: {document_message.id})")
+                    # Crear notificación asociada y enviar por WhatsApp
+                    document_notification = self.env['mail.notification'].sudo().create({
+                        'mail_message_id': document_message.id,
+                        'res_partner_id': self.partner_id.id,
+                    })
+                    document_notification.gateway_channel_id = channel
+                    _logger.info(f"   📤 Enviando notificación de documento por WhatsApp...")
+                    gateway_service._send(
+                        gateway=gateway,
+                        record=document_notification,
+                        auto_commit=False,
+                        raise_exception=True,
+                    )
+                    _logger.info(f"   ✅ PDF enviado como documento en WhatsApp (ID mensaje: {document_message.id})")
                 except Exception as send_doc_error:
                     _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
 
