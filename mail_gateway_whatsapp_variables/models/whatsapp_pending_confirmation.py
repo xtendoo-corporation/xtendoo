@@ -282,7 +282,8 @@ class WhatsappPendingConfirmation(models.Model):
                             _logger.error(f"   [ERROR] No se encontró el report QWeb con XMLID 'xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp'")
                         else:
                             _logger.info(f"   [DEBUG] Report QWeb encontrado: {report}")
-                            pdf_content, _ = report._render_qweb_pdf([record.id])
+                            # CORREGIDO: Usar report_name y lista de ids
+                            pdf_content, _ = report._render_qweb_pdf(report.report_name, [record.id])
                             if not pdf_content:
                                 _logger.error(f"   [ERROR] El report QWeb no devolvió contenido PDF para pos.order {record.id}")
                             else:
