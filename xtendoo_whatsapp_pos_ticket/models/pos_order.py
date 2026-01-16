@@ -237,6 +237,10 @@ class PosOrder(models.Model):
             }
 
         try:
+            # Validar que el HTML recibido contiene estilos CSS
+            if ticket_html and '<style' not in ticket_html:
+                _logger.warning('[WhatsApp POS] El HTML recibido para el ticket no contiene estilos CSS. El PDF puede verse sin formato.')
+
             # Guardar el HTML recibido en el campo del pedido
             order.whatsapp_ticket_html = ticket_html or ''
 

@@ -396,6 +396,8 @@ class WhatsappPendingConfirmation(models.Model):
                 body="Plantilla de confirmación de WhatsApp enviada automáticamente: %s" % self.confirmation_template_id.name,
                 message_type='notification',
                 subtype_xmlid='mail.mt_note',
+                partner_ids=[],  # No notificar por email
+                notify=False,
             )
 
             return True
