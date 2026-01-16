@@ -76,20 +76,39 @@ patch(ReceiptScreen.prototype, {
 
             // Obtener los estilos CSS aplicados al ticket
             let ticket_css = '';
-            // Recoger todos los <style> del documento
             document.querySelectorAll('style').forEach(style => {
-                ticket_css += style.outerHTML + '\n';
+                ticket_css += style.innerHTML + '\n';
             });
-            // Recoger todos los <link rel="stylesheet"> del documento
+            // Opcional: incluir los CSS de los <link rel="stylesheet"> si es posible acceder a su contenido
+            // Aquí solo se añaden los <link> como referencia, pero wkhtmltopdf no los carga automáticamente
             document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-                ticket_css += link.outerHTML + '\n';
+                ticket_css += `@import url('${link.href}');\n`;
             });
 
-            // Llamada al backend para enviar el ticket HTML y CSS por WhatsApp
+            // Construir el HTML completo para el PDF
+            const full_html = `
+                <html>
+                <head>
+                    <meta charset='utf-8'/>
+                    <style>
+                        body { background: #fff !important; color: #000 !important; }
+                        .pos-receipt-container { background: #fff !important; color: #000 !important; }
+                        ${ticket_css}
+                    </style>
+                </head>
+                <body>
+                    <div class="pos-receipt-container">
+                        ${ticket_html}
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Llamada al backend para enviar el ticket HTML completo por WhatsApp
             const result = await this.orm.call(
                 "pos.order",
                 "send_whatsapp_ticket_html",
-                [order.id, true, ticket_html, ticket_css]
+                [order.id, true, full_html, '']
             );
 
             if (result.success) {
