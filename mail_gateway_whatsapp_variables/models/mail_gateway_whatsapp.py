@@ -577,7 +577,6 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
                 partner_ids=[],  # No notificar por email
-                email_to=False,  # No notificar por email
             )
         # Procesar mensajes normales (texto, etc) y registrarlos SOLO en el contacto
         body = ""
@@ -596,7 +595,6 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 subtype_xmlid="mail.mt_comment",
                 message_type="comment",
                 partner_ids=[],  # No notificar por email
-                email_to=False,  # No notificar por email
             )
 
         # === NUEVA FUNCIONALIDAD: Procesar confirmaciones pendientes ===
