@@ -60,9 +60,17 @@ class PosOrder(models.Model):
         gateway = config.whatsapp_gateway_id
         template = config.whatsapp_pos_template_id
 
-        # Generar el PDF del ticket
-        report = self.env.ref('point_of_sale.pos_order_report')
-        pdf_content, content_type = report._render_qweb_pdf(report.id, [self.id])
+        # --- CAMBIO: Usar PDF térmico si existe HTML guardado ---
+        pdf_content = None
+        if self.whatsapp_ticket_html:
+            try:
+                pdf_content = self.generate_ticket_pdf()
+            except Exception as e:
+                _logger.warning("No se pudo generar el PDF térmico, se usará QWeb report. Error: %s", e)
+        if not pdf_content:
+            # Fallback: QWeb report estándar (A4)
+            report = self.env.ref('point_of_sale.pos_order_report')
+            pdf_content, content_type = report._render_qweb_pdf(report.id, [self.id])
         pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
 
         # Crear el attachment
@@ -257,14 +265,35 @@ class PosOrder(models.Model):
             # Guardar el PDF recibido si viene desde el POS
             if ticket_pdf_base64:
                 order.whatsapp_ticket_pdf = ticket_pdf_base64
+            else:
+                # Si no viene PDF, generarlo en backend usando el HTML guardado
+                if order.whatsapp_ticket_html:
+                    try:
+                        pdf_content = order.generate_ticket_pdf()
+                        order.whatsapp_ticket_pdf = base64.b64encode(pdf_content).decode('utf-8')
+                    except Exception as e:
+                        _logger.warning("No se pudo generar el PDF térmico en backend: %s", e)
 
             config = order.session_id.config_id
             gateway = config.whatsapp_gateway_id
             channel = order._get_or_create_whatsapp_channel(gateway, phone)
             template = config.whatsapp_pos_template_id
 
+            # --- CAMBIO: Adjuntar el PDF térmico generado como attachment ---
+            pdf_data = order.whatsapp_ticket_pdf
+            attachment = None
+            if pdf_data:
+                attachment = order.env['ir.attachment'].create({
+                    'name': 'Ticket_%s.pdf' % order.name.replace('/', '_'),
+                    'type': 'binary',
+                    'datas': pdf_data,
+                    'res_model': 'pos.order',
+                    'res_id': order.id,
+                    'mimetype': 'application/pdf',
+                })
+
             if template:
-                # Enviar solo la plantilla interactiva, sin adjunto
+                # Enviar solo la plantilla interactiva, y si hay PDF, adjuntarlo
                 variables = {}
                 for var in template.variable_ids:
                     if var.field_name:
@@ -281,6 +310,7 @@ class PosOrder(models.Model):
                     message_type="comment",
                     subtype_xmlid="mail.mt_comment",
                     gateway_type='whatsapp',
+                    attachment_ids=[attachment.id] if attachment else [],
                 )
                 if getattr(template, 'requires_confirmation', False) and template.confirmation_template_id:
                     confirmation_type = template.button_ids and template.button_ids.filtered(
@@ -310,6 +340,7 @@ class PosOrder(models.Model):
                         message_type='comment',
                         subtype_xmlid='mail.mt_comment',
                         gateway_type='whatsapp',
+                        attachment_ids=[attachment.id] if attachment else [],
                     )
 
                 order.whatsapp_ticket_sent = True
