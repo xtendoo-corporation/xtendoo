@@ -80,6 +80,11 @@ class WhatsappPendingConfirmation(models.Model):
     )
 
     notes = fields.Text(string="Notas")
+    ticket_pdf = fields.Binary(
+        string='Ticket POS PDF (Frontend)',
+        help='PDF térmico generado en frontend y asociado a la confirmación pendiente.',
+        copy=False,
+    )
 
     @api.depends('sent_date')
     def _compute_expiry_date(self):
@@ -457,3 +462,19 @@ class WhatsappPendingConfirmation(models.Model):
             self.notes = f"Error al enviar plantilla: {str(e)}"
             return False
 
+    @api.model
+    def set_ticket_pdf_for_order(self, res_model, res_id, pdf_base64):
+        """
+        Asocia el PDF térmico a la confirmación pendiente de un pedido POS si existe.
+        """
+        if res_model != 'pos.order':
+            return False
+        pending = self.search([
+            ('res_model', '=', res_model),
+            ('res_id', '=', res_id),
+            ('state', '=', 'waiting'),
+        ], limit=1)
+        if pending:
+            pending.ticket_pdf = pdf_base64
+            return True
+        return False
