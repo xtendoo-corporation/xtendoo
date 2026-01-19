@@ -117,6 +117,7 @@ class WhatsappPendingConfirmation(models.Model):
         """
         self.ensure_one()
 
+        # --- EVITAR DOBLE PROCESADO ---
         if self.state != 'waiting':
             _logger.info(f"❌ Confirmation {self.id} already processed (state: {self.state})")
             return False
@@ -127,6 +128,19 @@ class WhatsappPendingConfirmation(models.Model):
             self.state = 'expired'
             return False
 
+        # --- EVITAR DOBLES PENDIENTES PARA EL MISMO PEDIDO/CLIENTE ---
+        # Cancelar otros pendientes en estado waiting para el mismo pedido/cliente
+        others = self.search([
+            ('id', '!=', self.id),
+            ('state', '=', 'waiting'),
+            ('partner_id', '=', self.partner_id.id),
+            ('res_model', '=', self.res_model),
+            ('res_id', '=', self.res_id),
+        ])
+        if others:
+            others.write({'state': 'cancelled'})
+            _logger.info(f"🛑 Cancelled {len(others)} other pending confirmations for this record/partner")
+
         confirmed = self._check_if_confirmed(message_data)
 
         if confirmed:
@@ -136,7 +150,6 @@ class WhatsappPendingConfirmation(models.Model):
                 'state': 'confirmed',
                 'response_date': fields.Datetime.now()
             })
-
             # Enviar la plantilla de confirmación
             self._send_confirmation_template()
             return True
@@ -217,7 +230,7 @@ class WhatsappPendingConfirmation(models.Model):
 
     def _send_confirmation_template(self):
         """
-        Envía la plantilla de confirmación configurada.
+        Envía la plantilla de confirmación configurada y el PDF del ticket POS (si existe) como mensaje aparte.
         """
         self.ensure_one()
 
@@ -226,7 +239,6 @@ class WhatsappPendingConfirmation(models.Model):
             return False
 
         try:
-            # Obtener el registro relacionado
             record = self.env[self.res_model].browse(self.res_id)
             if not record.exists():
                 _logger.error(f"❌ Record {self.res_model} #{self.res_id} no longer exists")
@@ -234,7 +246,6 @@ class WhatsappPendingConfirmation(models.Model):
 
             _logger.info(f"📨 Sending confirmation template '{self.confirmation_template_id.name}' to {self.partner_id.name}")
 
-            # Obtener el gateway desde el canal
             gateway = self.channel_id.gateway_id
             if not gateway:
                 _logger.error(f"❌ No gateway found for channel {self.channel_id.id}")
@@ -248,17 +259,15 @@ class WhatsappPendingConfirmation(models.Model):
                 number_field_name = 'partner_id.mobile'
             elif self.res_model == 'res.partner':
                 number_field_name = 'mobile'
+            elif self.res_model == 'pos.order':
+                number_field_name = 'partner_id.mobile'
             else:
-                # Por defecto, intentar con partner_id.mobile
                 number_field_name = 'partner_id.mobile'
 
             _logger.info(f"📱 Using phone field: {number_field_name}, gateway: {gateway.name}")
             _logger.info(f"📋 Template: {self.confirmation_template_id.name}")
             _logger.info(f"📝 Template body: {self.confirmation_template_id.body[:100]}...")
 
-            _logger.info(f"📤 Sending WhatsApp using direct API call...")
-
-            # Obtener el canal
             channel = record._whatsapp_get_channel(number_field_name, gateway)
             _logger.info(f"   📞 Channel: {channel.name} (ID: {channel.id})")
 
@@ -267,11 +276,13 @@ class WhatsappPendingConfirmation(models.Model):
             attachment_id = False
             pdf_sent = False
             pdf_base64 = False
+            pdf_filename = False
+            # 1. Si es POS y existe el PDF guardado en el pedido, usar ese (NUNCA QWeb si existe el guardado)
             if self.res_model == 'pos.order' and hasattr(record, 'whatsapp_ticket_pdf') and record.whatsapp_ticket_pdf:
                 pdf_base64 = record.whatsapp_ticket_pdf
-                filename = f"Ticket_{record.name}.pdf"
+                pdf_filename = f"Ticket_{record.name}.pdf"
                 attachment = self.env['ir.attachment'].create({
-                    'name': filename,
+                    'name': pdf_filename,
                     'type': 'binary',
                     'datas': pdf_base64,
                     'res_model': 'discuss.channel',
@@ -280,8 +291,10 @@ class WhatsappPendingConfirmation(models.Model):
                 })
                 attachment_id = attachment.id
                 pdf_sent = True
-                _logger.info(f"   ✅ PDF POS (frontend) adjuntado: {filename} (ID: {attachment_id}, size: {len(pdf_base64)} bytes)")
+                _logger.info(f"   ✅ PDF POS (frontend) adjuntado: {pdf_filename} (ID: {attachment_id}, size: {len(base64.b64decode(pdf_base64))} bytes)")
+            # 2. Si no existe PDF guardado, usar QWeb report SOLO como fallback
             elif self.res_model == 'pos.order':
+                _logger.warning(f"   ⚠️ No PDF guardado en el pedido POS. Se usará QWeb report SOLO como fallback.")
                 try:
                     _logger.info(f"   [DEBUG] Intentando obtener el report QWeb: xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp para pos.order {record.id}")
                     report = self.env.ref('xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp', raise_if_not_found=False)
@@ -294,9 +307,9 @@ class WhatsappPendingConfirmation(models.Model):
                             _logger.error(f"   [ERROR] El report QWeb no devolvió contenido PDF para pos.order {record.id}")
                         else:
                             pdf_base64 = base64.b64encode(pdf_content)
-                            filename = f"Ticket_{record.name}.pdf"
+                            pdf_filename = f"Ticket_{record.name}.pdf"
                             attachment = self.env['ir.attachment'].create({
-                                'name': filename,
+                                'name': pdf_filename,
                                 'type': 'binary',
                                 'datas': pdf_base64,
                                 'res_model': 'discuss.channel',
@@ -305,12 +318,12 @@ class WhatsappPendingConfirmation(models.Model):
                             })
                             attachment_id = attachment.id
                             pdf_sent = True
-                            _logger.info(f"   ✅ PDF POS generated with QWeb report: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
+                            _logger.info(f"   ✅ PDF POS generated with QWeb report: {pdf_filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
                 except Exception as e:
                     _logger.error(f"   ❌ Error generating PDF with QWeb report: {e}", exc_info=True)
                     attachment_id = False
+            # 3. Otros modelos: usar el QWeb report correspondiente
             else:
-                # Determinar qué reporte usar según el modelo
                 report_name = False
                 if self.res_model == 'sale.order':
                     report_name = 'sale.action_report_saleorder'
@@ -324,15 +337,15 @@ class WhatsappPendingConfirmation(models.Model):
                         pdf_content, _ = report._render_qweb_pdf(report.report_name, record.ids)
                         pdf_base64 = base64.b64encode(pdf_content)
                         if self.res_model == 'sale.order':
-                            filename = f"Quotation_{record.name}.pdf"
+                            pdf_filename = f"Quotation_{record.name}.pdf"
                         elif self.res_model == 'account.move':
-                            filename = f"Invoice_{record.name}.pdf"
+                            pdf_filename = f"Invoice_{record.name}.pdf"
                         elif self.res_model == 'stock.picking':
-                            filename = f"Delivery_{record.name}.pdf"
+                            pdf_filename = f"Delivery_{record.name}.pdf"
                         else:
-                            filename = f"Document_{record.name}.pdf"
+                            pdf_filename = f"Document_{record.name}.pdf"
                         attachment = self.env['ir.attachment'].create({
-                            'name': filename,
+                            'name': pdf_filename,
                             'type': 'binary',
                             'datas': pdf_base64,
                             'res_model': 'discuss.channel',
@@ -341,7 +354,7 @@ class WhatsappPendingConfirmation(models.Model):
                         })
                         attachment_id = attachment.id
                         pdf_sent = True
-                        _logger.info(f"   ✅ PDF generated: {filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
+                        _logger.info(f"   ✅ PDF generated: {pdf_filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
                     else:
                         _logger.warning(f"   ⚠️ Report '{report_name}' not found")
                 else:
@@ -384,7 +397,7 @@ class WhatsappPendingConfirmation(models.Model):
                 raise
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
-            # Enviar el PDF como documento por WhatsApp en mensaje aparte SOLO si hay PDF generado y NO se ha enviado ya
+            # Enviar el PDF como documento por WhatsApp en mensaje aparte SOLO si hay PDF generado
             if pdf_sent and attachment_id:
                 try:
                     _logger.info(f"   📤 Enviando PDF como documento por WhatsApp en mensaje aparte...")
@@ -410,41 +423,6 @@ class WhatsappPendingConfirmation(models.Model):
                     _logger.info(f"   ✅ PDF enviado como documento en WhatsApp (ID mensaje: {document_message.id})")
                 except Exception as send_doc_error:
                     _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
-            # Si no es POS o no hay PDF guardado, usar el fallback QWeb report SOLO si no se ha enviado ya el PDF
-            elif attachment_id:
-                try:
-                    _logger.info(f"   📤 Enviando PDF generado (QWeb) como documento por WhatsApp en mensaje aparte...")
-                    document_message = channel.message_post(
-                        body="Ticket de compra en PDF",
-                        message_type="comment",
-                        subtype_xmlid="mail.mt_comment",
-                        attachment_ids=[attachment_id],
-                    )
-                    _logger.info(f"   ✅ PDF adjuntado en mensaje aparte (ID mensaje: {document_message.id})")
-                    document_notification = self.env['mail.notification'].sudo().create({
-                        'mail_message_id': document_message.id,
-                        'res_partner_id': self.partner_id.id,
-                    })
-                    document_notification.gateway_channel_id = channel
-                    _logger.info(f"   📤 Enviando notificación de documento por WhatsApp...")
-                    gateway_service._send(
-                        gateway=gateway,
-                        record=document_notification,
-                        auto_commit=False,
-                        raise_exception=True,
-                    )
-                    _logger.info(f"   ✅ PDF enviado como documento en WhatsApp (ID mensaje: {document_message.id})")
-                except Exception as send_doc_error:
-                    _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
-
-            # Añadir nota al registro (sin usar _() para evitar conflictos)
-            # record.message_post(
-            #     body="Plantilla de confirmación de WhatsApp enviada automáticamente: %s" % self.confirmation_template_id.name,
-            #     message_type='notification',
-            #     subtype_xmlid='mail.mt_note',
-            #     partner_ids=[],  # No notificar por email
-            #     notify=False,
-            # )
 
             return True
 
