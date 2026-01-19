@@ -128,18 +128,19 @@ class WhatsappPendingConfirmation(models.Model):
             self.state = 'expired'
             return False
 
-        # --- EVITAR DOBLES PENDIENTES PARA EL MISMO PEDIDO/CLIENTE ---
-        # Cancelar otros pendientes en estado waiting para el mismo pedido/cliente
+        # --- EVITAR DOBLES PENDIENTES PARA EL MISMO PEDIDO/CLIENTE/CANAL ---
+        # Cancelar otros pendientes en estado waiting para el mismo pedido/cliente/canal
         others = self.search([
             ('id', '!=', self.id),
             ('state', '=', 'waiting'),
             ('partner_id', '=', self.partner_id.id),
             ('res_model', '=', self.res_model),
             ('res_id', '=', self.res_id),
+            ('channel_id', '=', self.channel_id.id),
         ])
         if others:
             others.write({'state': 'cancelled'})
-            _logger.info(f"🛑 Cancelled {len(others)} other pending confirmations for this record/partner")
+            _logger.info(f"🛑 Cancelled {len(others)} other pending confirmations for this record/partner/channel")
 
         confirmed = self._check_if_confirmed(message_data)
 
@@ -231,6 +232,7 @@ class WhatsappPendingConfirmation(models.Model):
     def _send_confirmation_template(self):
         """
         Envía la plantilla de confirmación configurada y el PDF del ticket POS (si existe) como mensaje aparte.
+        Refuerza la lógica para NUNCA usar QWeb report si existe PDF guardado o generado desde HTML.
         """
         self.ensure_one()
 
@@ -292,9 +294,28 @@ class WhatsappPendingConfirmation(models.Model):
                 attachment_id = attachment.id
                 pdf_sent = True
                 _logger.info(f"   ✅ PDF POS (frontend) adjuntado: {pdf_filename} (ID: {attachment_id}, size: {len(base64.b64decode(pdf_base64))} bytes)")
-            # 2. Si no existe PDF guardado, usar QWeb report SOLO como fallback
+            # 1b. Si es POS y tiene HTML, generar PDF térmico
+            elif self.res_model == 'pos.order' and hasattr(record, 'generate_ticket_pdf') and record.whatsapp_ticket_html:
+                try:
+                    pdf_content = record.generate_ticket_pdf()
+                    pdf_base64 = base64.b64encode(pdf_content)
+                    pdf_filename = f"Ticket_{record.name}.pdf"
+                    attachment = self.env['ir.attachment'].create({
+                        'name': pdf_filename,
+                        'type': 'binary',
+                        'datas': pdf_base64,
+                        'res_model': 'discuss.channel',
+                        'res_id': channel.id,
+                        'mimetype': 'application/pdf',
+                    })
+                    attachment_id = attachment.id
+                    pdf_sent = True
+                    _logger.info(f"   ✅ PDF POS (térmico generado) adjuntado: {pdf_filename} (ID: {attachment_id}, size: {len(pdf_content)} bytes)")
+                except Exception as e:
+                    _logger.error(f"   ❌ Error generando PDF térmico: {e}", exc_info=True)
+            # 2. Si no existe PDF guardado ni HTML, usar QWeb report SOLO como último recurso
             elif self.res_model == 'pos.order':
-                _logger.warning(f"   ⚠️ No PDF guardado en el pedido POS. Se usará QWeb report SOLO como fallback.")
+                _logger.warning(f"   ⚠️ No PDF guardado ni HTML en el pedido POS. Se usará QWeb report SOLO como fallback.")
                 try:
                     _logger.info(f"   [DEBUG] Intentando obtener el report QWeb: xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp para pos.order {record.id}")
                     report = self.env.ref('xtendoo_whatsapp_pos_ticket.action_report_pos_ticket_whatsapp', raise_if_not_found=False)
@@ -364,12 +385,14 @@ class WhatsappPendingConfirmation(models.Model):
             message_vals = {
                 'body': self.confirmation_template_id.body,
                 'subtype_xmlid': "mail.mt_comment",
-                'message_type': "comment"
+                'message_type': "comment",
+                'attachment_ids': [],  # Aseguramos que NO hay adjuntos
             }
+            # NO adjuntar el PDF aquí
             message = channel.with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
             ).message_post(**message_vals)
-            _logger.info(f"   📧 Message created in channel (ID: {message.id})")
+            _logger.info(f"   📧 Message created in channel (ID: {message.id}) (sin adjuntos)")
 
             # CRÍTICO: El gateway espera un registro con gateway_channel_id
             _logger.info(f"   📨 Preparing record for gateway...")
@@ -414,7 +437,11 @@ class WhatsappPendingConfirmation(models.Model):
                     })
                     document_notification.gateway_channel_id = channel
                     _logger.info(f"   📤 Enviando notificación de documento por WhatsApp...")
-                    gateway_service._send(
+                    # Limpiar el contexto de plantilla para que NO se vuelva a enviar la plantilla
+                    self.env['mail.gateway.whatsapp'].with_context(
+                        default_res_model=self.res_model,
+                        default_res_id=self.res_id,
+                    )._send(
                         gateway=gateway,
                         record=document_notification,
                         auto_commit=False,
