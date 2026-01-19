@@ -5,7 +5,7 @@
         <!-- Reemplazar el botón "New" estándar para controlarlo con nuestro estado -->
         <xpath expr="//t[@t-set-slot='control-panel-create-button']/button[@class='btn btn-primary o_list_button_add']" position="attributes">
             <!-- Solo mostrar el botón Nuevo si estamos dentro de una caja no táctil -->
-            <attribute name="t-if">state and state.showCloseButton</attribute>
+            <attribute name="t-if">(props.resModel !== 'pos.order') or (state and state.showCloseButton)</attribute>
         </xpath>
 
         <!-- Añadir botones de Entrada/Salida de efectivo y Cerrar caja -->
