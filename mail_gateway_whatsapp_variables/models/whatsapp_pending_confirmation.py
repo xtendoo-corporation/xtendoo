@@ -420,38 +420,37 @@ class WhatsappPendingConfirmation(models.Model):
                 raise
             _logger.info(f"✅ Confirmation template sent successfully for record {self.res_model} #{self.res_id}")
 
-            # # Enviar el PDF como documento por WhatsApp en mensaje aparte SOLO si hay PDF generado
-            # if pdf_sent and attachment_id:
-            #     try:
-            #         _logger.info(f"   📤 Enviando PDF como documento por WhatsApp en mensaje aparte...")
-            #         document_message = channel.message_post(
-            #             body="Ticket de compra en PDF",
-            #             message_type="comment",
-            #             subtype_xmlid="mail.mt_comment",
-            #             attachment_ids=[attachment_id],
-            #         )
-            #         _logger.info(f"   ✅ PDF adjuntado en mensaje aparte (ID mensaje: {document_message.id})")
-            #         document_notification = self.env['mail.notification'].sudo().create({
-            #             'mail_message_id': document_message.id,
-            #             'res_partner_id': self.partner_id.id,
-            #         })
-            #         document_notification.gateway_channel_id = channel
-            #         _logger.info(f"   📤 Enviando notificación de documento por WhatsApp...")
-            #         # Limpiar el contexto de plantilla para que NO se vuelva a enviar la plantilla
-            #         self.env['mail.gateway.whatsapp'].with_context(
-            #             default_res_model=self.res_model,
-            #             default_res_id=self.res_id,
-            #         )._send(
-            #             gateway=gateway,
-            #             record=document_notification,
-            #             auto_commit=False,
-            #             raise_exception=True,
-            #         )
-            #         _logger.info(f"   ✅ PDF enviado como documento en WhatsApp (ID mensaje: {document_message.id})")
-            #     except Exception as send_doc_error:
-            #         _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
-            #
-            # return True
+            # Enviar el PDF como documento por WhatsApp en mensaje aparte SOLO si hay PDF generado
+            if pdf_sent and attachment_id:
+                try:
+                    _logger.info(f"   📤 Enviando PDF como documento por WhatsApp en mensaje aparte...")
+                    document_message = channel.message_post(
+                        message_type="comment",
+                        subtype_xmlid="mail.mt_comment",
+                        attachment_ids=[attachment_id],
+                    )
+                    _logger.info(f"   ✅ PDF adjuntado en mensaje aparte (ID mensaje: {document_message.id})")
+                    document_notification = self.env['mail.notification'].sudo().create({
+                        'mail_message_id': document_message.id,
+                        'res_partner_id': self.partner_id.id,
+                    })
+                    document_notification.gateway_channel_id = channel
+                    _logger.info(f"   📤 Enviando notificación de documento por WhatsApp...")
+                    # Limpiar el contexto de plantilla para que NO se vuelva a enviar la plantilla
+                    self.env['mail.gateway.whatsapp'].with_context(
+                        default_res_model=self.res_model,
+                        default_res_id=self.res_id,
+                    )._send(
+                        gateway=gateway,
+                        record=document_notification,
+                        auto_commit=False,
+                        raise_exception=True,
+                    )
+                    _logger.info(f"   ✅ PDF enviado como documento en WhatsApp (ID mensaje: {document_message.id})")
+                except Exception as send_doc_error:
+                    _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
+
+            return True
 
         except Exception as e:
             _logger.error(f"❌ Error sending confirmation template: {e}", exc_info=True)
