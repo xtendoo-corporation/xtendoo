@@ -335,8 +335,21 @@ class PosOrder(models.Model):
             logo_base64 = base64.b64encode(company.logo).decode('utf-8')
             logo_data_url = f"data:image/png;base64,{logo_base64}"
             import re
-            html = re.sub(r'<img([^>]+)src=["\"]([^"\"]+logo[^"\"]+)["\"]',
+            html = re.sub(r'<img([^>]+)src=["\']([^"\']+logo[^"\']+)["\']',
                           fr'<img\1src="{logo_data_url}"', html, flags=re.IGNORECASE)
+        # Si el HTML no tiene <style>, añadir CSS térmico por defecto
+        if '<style' not in html:
+            thermal_css = """
+                body { background: #fff !important; color: #000 !important; }
+                .pos-receipt-container { background: #fff !important; color: #000 !important; max-width: 300px; margin: 0 auto; font-size: 13px; }
+                .pos-receipt-logo, .pos-company-logo { text-align: center; margin-bottom: 8px; }
+                img { display: block; margin: 0 auto; }
+            """
+            # Insertar el CSS en el <head> si existe, si no, crear el head
+            if '<head>' in html:
+                html = html.replace('<head>', f'<head><style>{thermal_css}</style>')
+            else:
+                html = f'<html><head><style>{thermal_css}</style></head>{html}'
         pdf_content = self.env['ir.actions.report']._run_wkhtmltopdf([
             html
         ], landscape=False, specific_paperformat_args={
