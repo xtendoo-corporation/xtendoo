@@ -60,17 +60,9 @@ class PosOrder(models.Model):
         gateway = config.whatsapp_gateway_id
         template = config.whatsapp_pos_template_id
 
-        # --- CAMBIO: Usar PDF térmico si existe HTML guardado ---
-        pdf_content = None
-        if self.whatsapp_ticket_html:
-            try:
-                pdf_content = self.generate_ticket_pdf()
-            except Exception as e:
-                _logger.warning("No se pudo generar el PDF térmico, se usará QWeb report. Error: %s", e)
-        if not pdf_content:
-            # Fallback: QWeb report estándar (A4)
-            report = self.env.ref('point_of_sale.pos_order_report')
-            pdf_content, content_type = report._render_qweb_pdf(report.id, [self.id])
+        # --- REVERTIR: Usar solo QWeb report estándar (A4) como antes ---
+        report = self.env.ref('point_of_sale.pos_order_report')
+        pdf_content, content_type = report._render_qweb_pdf(report.id, [self.id])
         pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
 
         # Crear el attachment
