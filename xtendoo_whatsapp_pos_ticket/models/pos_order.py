@@ -60,10 +60,13 @@ class PosOrder(models.Model):
         gateway = config.whatsapp_gateway_id
         template = config.whatsapp_pos_template_id
 
-        # Generar el PDF del ticket
-        report = self.env.ref('point_of_sale.pos_order_report')
-        pdf_content, content_type = report._render_qweb_pdf(report.id, [self.id])
-        pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
+        # Usar el PDF generado por el POS (frontend) si existe, si no, usar QWeb como fallback
+        pdf_base64 = self.whatsapp_ticket_pdf
+        if not pdf_base64:
+            # Fallback: generar el PDF QWeb estándar
+            report = self.env.ref('point_of_sale.pos_order_report')
+            pdf_content, content_type = report._render_qweb_pdf(report.id, [self.id])
+            pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
 
         # Crear el attachment
         attachment = self.env['ir.attachment'].create({
@@ -229,86 +232,87 @@ class PosOrder(models.Model):
     @api.model
     def send_whatsapp_ticket_html(self, order_id, send_whatsapp, ticket_html, ticket_css=None, ticket_pdf_base64=None):
         """Recibe el HTML, CSS y PDF del ticket generado en frontend, los guarda y genera el PDF con tamaño de ticket térmico"""
-        if not send_whatsapp:
-            return {'success': True, 'sent': False}
-        order = self.browse(order_id)
-        if not order.exists():
-            return {'success': False, 'error': _('Pedido no encontrado')}
-        if not order.partner_id:
-            return {'success': False, 'error': _('No hay cliente asociado al pedido')}
-        phone = order._get_whatsapp_phone()
-        if not phone:
-            return {
-                'success': False,
-                'error': _('El cliente %s no tiene número de teléfono configurado') % order.partner_id.name
-            }
-        # Guardar el HTML y CSS recibido en el campo del pedido
-        order.whatsapp_ticket_html = ticket_html or ''
-        order.whatsapp_ticket_css = ticket_css or ''
-        # Guardar el PDF recibido si viene desde el POS (flujo Print Full Receipt)
-        if ticket_pdf_base64:
-            order.whatsapp_ticket_pdf = ticket_pdf_base64
-            # Asociar también a la confirmación pendiente si existe
-            self.env['whatsapp.pending.confirmation'].set_ticket_pdf_for_order('pos.order', order.id, ticket_pdf_base64)
-        config = order.session_id.config_id
-        gateway = config.whatsapp_gateway_id
-        channel = order._get_or_create_whatsapp_channel(gateway, phone)
-        template = config.whatsapp_pos_template_id
+        try:
+            if not send_whatsapp:
+                return {'success': True, 'sent': False}
+            order = self.browse(order_id)
+            if not order.exists():
+                return {'success': False, 'error': _('Pedido no encontrado')}
+            if not order.partner_id:
+                return {'success': False, 'error': _('No hay cliente asociado al pedido')}
+            phone = order._get_whatsapp_phone()
+            if not phone:
+                return {
+                    'success': False,
+                    'error': _('El cliente %s no tiene número de teléfono configurado') % order.partner_id.name
+                }
+            # Guardar el HTML y CSS recibido en el campo del pedido
+            order.whatsapp_ticket_html = ticket_html or ''
+            order.whatsapp_ticket_css = ticket_css or ''
+            # Guardar el PDF recibido si viene desde el POS (flujo Print Full Receipt)
+            if ticket_pdf_base64:
+                order.whatsapp_ticket_pdf = ticket_pdf_base64
+                # Asociar también a la confirmación pendiente si existe
+                self.env['whatsapp.pending.confirmation'].set_ticket_pdf_for_order('pos.order', order.id, ticket_pdf_base64)
+            config = order.session_id.config_id
+            gateway = config.whatsapp_gateway_id
+            channel = order._get_or_create_whatsapp_channel(gateway, phone)
+            template = config.whatsapp_pos_template_id
 
-        if template:
-            # Enviar solo la plantilla interactiva, sin adjunto
-            variables = {}
-            for var in template.variable_ids:
-                if var.field_name:
-                    value = order._get_field_value(var.field_name)
-                    variables[var.variable_index] = str(value) if value else ''
-            message_body = template.body
-            for idx, value in variables.items():
-                message_body = message_body.replace('{{%s}}' % idx, value)
-            channel.with_context(
-                whatsapp_template_id=template.id,
-                default_res_id=order.id,
-            ).message_post(
-                body=message_body,
-                message_type="comment",
-                subtype_xmlid="mail.mt_comment",
-                gateway_type='whatsapp',
-            )
-            if getattr(template, 'requires_confirmation', False) and template.confirmation_template_id:
-                confirmation_type = template.button_ids and template.button_ids.filtered(
-                    lambda b: b.button_type == 'quick_reply') and 'button' or 'any'
-                order.env['whatsapp.pending.confirmation'].create({
-                    'partner_id': order.partner_id.id,
-                    'channel_id': channel.id,
-                    'template_id': template.id,
-                    'confirmation_template_id': template.confirmation_template_id.id,
-                    'res_model': 'pos.order',
-                    'res_id': order.id,
-                    'state': 'waiting',
-                    'confirmation_type': confirmation_type,
-                })
-            else:
-                # Enviar mensaje simple sin adjunto
-                message_body = _(
-                    """🧾 *Ticket de Compra*\n\n📅 Fecha: %s\n🏪 Tienda: %s\n📝 Pedido: %s\n\n💰 *Total: %s %s*\n\n¡Gracias por su compra!""") % (
-                                   order.date_order.strftime('%d/%m/%Y %H:%M') if order.date_order else '',
-                                   order.config_id.name if order.config_id else '',
-                                   order.name or '',
-                                   order.amount_total,
-                                   order.currency_id.symbol if order.currency_id else '',
-                               )
-                channel.message_post(
+            if template:
+                # Enviar solo la plantilla interactiva, sin adjunto
+                variables = {}
+                for var in template.variable_ids:
+                    if var.field_name:
+                        value = order._get_field_value(var.field_name)
+                        variables[var.variable_index] = str(value) if value else ''
+                message_body = template.body
+                for idx, value in variables.items():
+                    message_body = message_body.replace('{{%s}}' % idx, value)
+                channel.with_context(
+                    whatsapp_template_id=template.id,
+                    default_res_id=order.id,
+                ).message_post(
                     body=message_body,
-                    message_type='comment',
-                    subtype_xmlid='mail.mt_comment',
+                    message_type="comment",
+                    subtype_xmlid="mail.mt_comment",
                     gateway_type='whatsapp',
                 )
+                if getattr(template, 'requires_confirmation', False) and template.confirmation_template_id:
+                    confirmation_type = template.button_ids and template.button_ids.filtered(
+                        lambda b: b.button_type == 'quick_reply') and 'button' or 'any'
+                    order.env['whatsapp.pending.confirmation'].create({
+                        'partner_id': order.partner_id.id,
+                        'channel_id': channel.id,
+                        'template_id': template.id,
+                        'confirmation_template_id': template.confirmation_template_id.id,
+                        'res_model': 'pos.order',
+                        'res_id': order.id,
+                        'state': 'waiting',
+                        'confirmation_type': confirmation_type,
+                    })
+                else:
+                    # Enviar mensaje simple sin adjunto
+                    message_body = _(
+                        """🧾 *Ticket de Compra*\n\n📅 Fecha: %s\n🏪 Tienda: %s\n📝 Pedido: %s\n\n💰 *Total: %s %s*\n\n¡Gracias por su compra!""") % (
+                                       order.date_order.strftime('%d/%m/%Y %H:%M') if order.date_order else '',
+                                       order.config_id.name if order.config_id else '',
+                                       order.name or '',
+                                       order.amount_total,
+                                       order.currency_id.symbol if order.currency_id else '',
+                                   )
+                    channel.message_post(
+                        body=message_body,
+                        message_type='comment',
+                        subtype_xmlid='mail.mt_comment',
+                        gateway_type='whatsapp',
+                    )
 
-            order.whatsapp_ticket_sent = True
-        return {'success': True, 'sent': True}
-    except Exception as e:
-        _logger.exception("Error al enviar ticket por WhatsApp")
-        return {'success': False, 'error': str(e)}
+                order.whatsapp_ticket_sent = True
+            return {'success': True, 'sent': True}
+        except Exception as e:
+            _logger.exception("Error al enviar ticket por WhatsApp")
+            return {'success': False, 'error': str(e)}
 
     def get_whatsapp_ticket_pdf(self):
         """Devuelve el PDF del ticket POS guardado en el pedido, si existe"""
