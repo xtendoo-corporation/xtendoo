@@ -1,0 +1,411 @@
+/* ========================================
+   ESTILOS GENERALES DEL KIOSCO
+   ======================================== */
+
+/* Ocultar header completo del kiosco */
+.o_hr_attendance_kiosk_header {
+    display: none !important;
+}
+
+/* Ajustar el body para ocupar toda la pantalla */
+.o_hr_attendance_kiosk {
+    padding-top: 0 !important;
+}
+
+/* Estilos para el botón de asistencia por teléfono */
+.phone-attendance-btn {
+    margin: 10px;
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    border: none !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.phone-attendance-btn:hover {
+    background: linear-gradient(135deg, #138496, #117a8b) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+/* Estilos para tarjetas en el kiosco */
+.o_hr_attendance_kiosk .card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.o_hr_attendance_kiosk .card-header.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    border-bottom: none;
+}
+
+.o_hr_attendance_kiosk .form-control {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.o_hr_attendance_kiosk .form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.o_hr_attendance_kiosk .btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    border: none !important;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+}
+
+.o_hr_attendance_kiosk .btn-outline-secondary {
+    border-radius: 10px;
+    padding: 12px 24px;
+}
+
+/* Estilos para alertas de estado */
+.o_hr_attendance_kiosk .alert {
+    border-radius: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Spinner de carga */
+.o_hr_attendance_kiosk .spinner-border {
+    width: 1rem;
+    height: 1rem;
+}
+
+
+
+/* ========================================
+   ESTILOS PARA PÁGINA MÓVIL
+   ======================================== */
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.mobile-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;
+}
+
+.attendance-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.card-header-custom {
+    background: linear-gradient(135deg, #17b81a, #6dbf97);
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.card-header-custom h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.card-header-custom .icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.card-body-custom {
+    padding: 25px;
+}
+
+.form-group-custom {
+    margin-bottom: 20px;
+}
+
+.form-label-custom {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.form-control-custom {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control-custom:focus {
+    outline: none;
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.2);
+}
+
+.btn-primary-custom {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-primary-custom:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary-custom {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 500;
+    border: 2px solid #6c757d;
+    border-radius: 12px;
+    background: white;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 12px;
+}
+
+.alert-custom {
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.tab-buttons {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    background: #17a2b8;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* ========================================
+   ANIMACIONES
+   ======================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 576px) {
+    .o_hr_attendance_kiosk .card {
+        margin: 10px;
+    }
+
+    .o_hr_attendance_kiosk .form-control-lg {
+        font-size: 18px !important;
+    }
+
+    .o_hr_attendance_kiosk h2 {
+        font-size: 1.5rem;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .o_hr_attendance_kiosk .card-body {
+        padding: 1.5rem !important;
+    }
+
+    .mobile-container {
+        padding: 10px;
+    }
+
+    .form-control-custom {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .btn-primary-custom {
+        padding: 14px;
+        font-size: 16px;
+    }
+}
+
+/* Reducir espacio en h2 del kiosco */
+.o_hr_attendance_kiosk h2 {
+    margin-top: 0 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* ========================================
+   TEXTO DE ESTADO EN ESQUINA SUPERIOR DERECHA
+   ======================================== */
+
+/* Texto de estado base */
+.employee-status-text {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 2px solid;
+    transition: all 0.3s ease;
+    animation: fadeInStatus 0.5s ease-in;
+}
+
+/* Estado: En Línea (dentro) */
+.employee-status-text.status-en-linea {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: #ffffff;
+    border-color: #1e7e34;
+}
+
+/* Estado: Ausente (fuera) */
+.employee-status-text.status-ausente {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #212529;
+    border-color: #e0a800;
+}
+
+/* Animación de aparición */
+@keyframes fadeInStatus {
+    from {
+        opacity: 0;
+        transform: translateX(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Efecto hover para el texto de estado */
+.employee-status-text:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 576px) {
+    .employee-status-text {
+        font-size: 10px !important;
+        padding: 6px 8px !important;
+        top: 10px !important;
+        right: 10px !important;
+    }
+}
+
+/* ========================================
+   AJUSTES PARA EVITAR SUPERPOSICIÓN DEL TEXTO DE ESTADO
+   ======================================== */
+
+/* Padding superior para el header cuando hay texto de estado */
+.card:has(.employee-status-text) .card-header {
+    padding-top: 55px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* Fallback para navegadores que no soportan :has() */
+.card-header-with-status {
+    padding-top: 55px !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+/* Ajuste para móviles */
+@media (max-width: 576px) {
+    .card:has(.employee-status-text) .card-header,
+    .card-header-with-status {
+        padding-top: 45px !important;
+    }
+}
+
