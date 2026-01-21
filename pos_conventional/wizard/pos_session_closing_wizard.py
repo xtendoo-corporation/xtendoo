@@ -1,100 +1,94 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-from odoo.tools import float_is_zero
 
 
 class PosSessionClosingWizard(models.TransientModel):
-    _name = 'pos.session.closing.wizard'
-    _description = 'Wizard para cierre de sesión POS no táctil'
+    _name = "pos.session.closing.wizard"
+    _description = "Wizard para cierre de sesión POS no táctil"
 
-    session_id = fields.Many2one('pos.session', string='Sesión', required=True, readonly=True)
-    cash_register_balance_end_real = fields.Monetary(
-        string='Dinero contado en caja',
-        currency_field='currency_id',
-        help='Cantidad total de dinero en efectivo contado al cerrar la caja',
-        default=0.0
+    session_id = fields.Many2one(
+        "pos.session", string="Sesión", required=True, readonly=True
     )
-    currency_id = fields.Many2one('res.currency', related='session_id.currency_id', readonly=True)
-    cash_control = fields.Boolean(related='session_id.cash_control', readonly=True)
+    cash_register_balance_end_real = fields.Monetary(
+        string="Dinero contado en caja",
+        currency_field="currency_id",
+        help="Cantidad total de dinero en efectivo contado al cerrar la caja",
+        default=0.0,
+    )
+    currency_id = fields.Many2one(
+        "res.currency", related="session_id.currency_id", readonly=True
+    )
+    cash_control = fields.Boolean(related="session_id.cash_control", readonly=True)
     cash_register_balance_start = fields.Monetary(
-        string='Dinero inicial',
-        related='session_id.cash_register_balance_start',
-        readonly=True
+        string="Dinero inicial",
+        related="session_id.cash_register_balance_start",
+        readonly=True,
     )
     cash_register_balance_end = fields.Monetary(
-        string='Dinero teórico',
-        related='session_id.cash_register_balance_end',
+        string="Dinero teórico",
+        related="session_id.cash_register_balance_end",
         readonly=True,
-        help='Dinero inicial + ventas en efectivo - devoluciones'
+        help="Dinero inicial + ventas en efectivo - devoluciones",
     )
     cash_register_difference = fields.Monetary(
-        string='Diferencia',
-        compute='_compute_difference',
+        string="Diferencia",
+        compute="_compute_difference",
         store=True,
-        help='Diferencia entre dinero contado y dinero teórico'
+        help="Diferencia entre dinero contado y dinero teórico",
     )
     closing_note = fields.Text(
-        string='Motivo del cierre',
-        help='Nota opcional explicando el motivo del cierre de la sesión'
+        string="Motivo del cierre",
+        help="Nota opcional explicando el motivo del cierre de la sesión",
     )
 
     # Campos para mostrar resumen de la sesión
     total_payments = fields.Monetary(
-        string='Total de pagos',
-        compute='_compute_session_totals',
-        readonly=True
+        string="Total de pagos", compute="_compute_session_totals", readonly=True
     )
     cash_payments = fields.Monetary(
-        string='Pagos en efectivo',
-        compute='_compute_session_totals',
-        readonly=True
+        string="Pagos en efectivo", compute="_compute_session_totals", readonly=True
     )
     card_payments = fields.Monetary(
-        string='Pagos con tarjeta',
-        compute='_compute_session_totals',
-        readonly=True
+        string="Pagos con tarjeta", compute="_compute_session_totals", readonly=True
     )
     other_payments = fields.Monetary(
-        string='Otros pagos',
-        compute='_compute_session_totals',
-        readonly=True
+        string="Otros pagos", compute="_compute_session_totals", readonly=True
     )
     cash_in_out_total = fields.Monetary(
-        string='Entradas/Salidas de efectivo',
-        compute='_compute_session_totals',
-        readonly=True
+        string="Entradas/Salidas de efectivo",
+        compute="_compute_session_totals",
+        readonly=True,
     )
 
     # Campos para "Cuenta Cliente" (pedidos vinculados a sale.order)
     linked_sale_orders_total = fields.Monetary(
-        string='Total Cuenta Cliente',
-        compute='_compute_session_totals',
+        string="Total Cuenta Cliente",
+        compute="_compute_session_totals",
         readonly=True,
-        help='Total de pedidos POS vinculados a pedidos de venta tradicionales'
+        help="Total de pedidos POS vinculados a pedidos de venta tradicionales",
     )
     linked_sale_orders_count = fields.Integer(
-        string='Pedidos a Cuenta',
-        compute='_compute_session_totals',
+        string="Pedidos a Cuenta",
+        compute="_compute_session_totals",
         readonly=True,
-        help='Número de pedidos POS vinculados a pedidos de venta tradicionales'
+        help="Número de pedidos POS vinculados a pedidos de venta tradicionales",
     )
 
-    @api.depends('session_id')
+    @api.depends("session_id")
     def _compute_session_totals(self):
         for wizard in self:
             cash_total = 0.0
             card_total = 0.0
             other_total = 0.0
 
-
-            for payment in wizard.session_id.order_ids.mapped('payment_ids'):
+            for payment in wizard.session_id.order_ids.mapped("payment_ids"):
                 method = payment.payment_method_id
                 amount = payment.amount
 
                 if method.is_cash_count:
                     # Método de pago en efectivo
                     cash_total += amount
-                elif method.type in ['bank', 'pay_later']:
+                elif method.type in ["bank", "pay_later"]:
                     # Método de pago con tarjeta/banco
                     card_total += amount
                 else:
@@ -106,77 +100,73 @@ class PosSessionClosingWizard(models.TransientModel):
             wizard.other_payments = other_total
             wizard.total_payments = cash_total + card_total + other_total
 
-
             wizard.cash_in_out_total = wizard.session_id.cash_real_transaction
 
-
-            linked_orders = wizard.session_id.order_ids.filtered(lambda o: o.linked_sale_order_id)
+            linked_orders = wizard.session_id.order_ids.filtered(
+                lambda o: o.linked_sale_order_id
+            )
             wizard.linked_sale_orders_count = len(linked_orders)
-            wizard.linked_sale_orders_total = sum(order.amount_total for order in linked_orders)
+            wizard.linked_sale_orders_total = sum(
+                order.amount_total for order in linked_orders
+            )
 
-    @api.depends('cash_register_balance_end_real', 'cash_register_balance_end')
+    @api.depends("cash_register_balance_end_real", "cash_register_balance_end")
+    def _compute_difference(self):
+        for wizard in self:
+            wizard.cash_register_difference = (
+                wizard.cash_register_balance_end_real - wizard.cash_register_balance_end
+            )
+
     def action_close_session(self):
+        """
+        Cierra la sesión POS usando los métodos estándares de Odoo.
+        Reutiliza completamente la lógica del core.
+        """
         self.ensure_one()
 
-
-        if self.session_id.state not in ['opened', 'closing_control']:
-            raise UserError(_('Solo puedes cerrar sesiones en estado abierto o en proceso de cierre.'))
-
-
-        if self.session_id.cash_control:
-            self.session_id.post_closing_cash_details(self.cash_register_balance_end_real)
-
-
-        if self.closing_note:
-            self.session_id.message_post(body=_('Motivo de cierre: %s') % self.closing_note)
-
-
-        difference = self.cash_register_balance_end_real - self.session_id.cash_register_balance_end
-        currency = self.currency_id
-
-        balancing_account = False
-        amount_to_balance = 0.0
-
-        if not float_is_zero(difference, precision_rounding=currency.rounding):
-            cash_method = self.session_id.payment_method_ids.filtered(lambda pm: pm.is_cash_count)[:1]
-            journal = cash_method.journal_id
-
-            if journal:
-                amount_to_balance = difference
-                if difference > 0:
-                    balancing_account = journal.profit_account_id or journal.default_account_id
-                else:
-                    balancing_account = journal.loss_account_id or journal.default_account_id
-
-                if not balancing_account:
-                    raise UserError(_("El diario %s no tiene cuentas configuradas.") % journal.name)
-
-        try:
-            self.session_id.action_pos_session_validate(
-                balancing_account=balancing_account,
-                amount_to_balance=amount_to_balance,
-                bank_payment_method_diffs={}
+        # Validar que la sesión esté en estado abierto
+        if self.session_id.state not in ["opened", "closing_control"]:
+            raise UserError(
+                _(
+                    "Solo puedes cerrar sesiones en estado abierto o en proceso de cierre."
+                )
             )
-        except Exception:
-            pass
-        vals = {}
-        if self.session_id.state != 'closed':
-            vals['state'] = 'closed'
 
-        if not self.session_id.stop_at:
-            vals['stop_at'] = fields.Datetime.now()
+        # Si hay control de efectivo, guardar el dinero contado
+        if self.session_id.cash_control:
+            # Usar el método estándar de Odoo para registrar el efectivo contado
+            result = self.session_id.post_closing_cash_details(
+                self.cash_register_balance_end_real
+            )
+            if not result.get("successful"):
+                raise UserError(
+                    result.get("message", _("Error al registrar el efectivo."))
+                )
 
-        if vals:
-            self.session_id.write(vals)
+        # Llamar al método estándar de cierre de sesión
+        # Este método hace toda la lógica: asientos contables, validaciones, etc.
+        try:
+            result = self.session_id.action_pos_session_closing_control()
 
+            # Si el resultado es un diccionario, puede ser un wizard de desbalance
+            if isinstance(result, dict):
+                # Retornar el wizard de desbalance si es necesario
+                return result
+
+        except UserError as e:
+            raise UserError(_("Error al cerrar la sesión: %s") % str(e))
+
+        # Retornar a la vista kanban de configuraciones POS
         return {
-            'type': 'ir.actions.act_window',
-            'name': _('Punto de Venta'),
-            'res_model': 'pos.config',
-            'view_mode': 'kanban,form',
-            'target': 'main',
-            'domain': [],
-            'context': {'search_default_group_by_company': True},
+            "type": "ir.actions.act_window",
+            "name": _("Punto de Venta"),
+            "res_model": "pos.config",
+            "view_mode": "kanban,form",
+            "target": "main",
+            "domain": [],
+            "context": {
+                "search_default_group_by_company": True,
+            },
         }
 
     def action_print_daily_report(self):
@@ -187,12 +177,14 @@ class PosSessionClosingWizard(models.TransientModel):
         self.ensure_one()
         # Usar el mismo método que el wizard de Odoo (pos.daily.sales.reports.wizard)
         data = {
-            'date_start': False,
-            'date_stop': False,
-            'config_ids': self.session_id.config_id.ids,
-            'session_ids': self.session_id.ids
+            "date_start": False,
+            "date_stop": False,
+            "config_ids": self.session_id.config_id.ids,
+            "session_ids": self.session_id.ids,
         }
-        return self.env.ref('point_of_sale.sale_details_report').report_action([], data=data)
+        return self.env.ref("point_of_sale.sale_details_report").report_action(
+            [], data=data
+        )
 
     def action_open_cash_calculator(self):
         """
@@ -201,19 +193,21 @@ class PosSessionClosingWizard(models.TransientModel):
         self.ensure_one()
 
         # Crear el wizard de calculadora
-        calculator_wizard = self.env['pos.cash.calculator.wizard'].create({
-            'closing_wizard_id': self.id,
-            'currency_id': self.currency_id.id,
-        })
+        calculator_wizard = self.env["pos.cash.calculator.wizard"].create(
+            {
+                "closing_wizard_id": self.id,
+                "currency_id": self.currency_id.id,
+            }
+        )
 
         return {
-            'name': _('Monedas/billetes'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'pos.cash.calculator.wizard',
-            'view_mode': 'form',
-            'res_id': calculator_wizard.id,
-            'target': 'new',
-            'context': self.env.context,
+            "name": _("Monedas/billetes"),
+            "type": "ir.actions.act_window",
+            "res_model": "pos.cash.calculator.wizard",
+            "view_mode": "form",
+            "res_id": calculator_wizard.id,
+            "target": "new",
+            "context": self.env.context,
         }
 
     def action_open_cash_move_wizard(self):
@@ -222,12 +216,12 @@ class PosSessionClosingWizard(models.TransientModel):
         """
         self.ensure_one()
         return {
-            'type': 'ir.actions.act_window',
-            'name': _('Entrada/Salida de efectivo'),
-            'res_model': 'pos.session.cash_move.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_session_id': self.session_id.id,
+            "type": "ir.actions.act_window",
+            "name": _("Entrada/Salida de efectivo"),
+            "res_model": "pos.session.cash_move.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_session_id": self.session_id.id,
             },
         }
