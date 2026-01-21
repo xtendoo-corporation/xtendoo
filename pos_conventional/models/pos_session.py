@@ -34,136 +34,35 @@ class PosSession(models.Model):
 
     # _validate_session override removed as it was only for excluding linked orders
 
-    def action_pos_session_closing_control(
-        self,
-        balancing_account=False,
-        amount_to_balance=0,
-        bank_payment_method_diffs=None,
-    ):
+    def _get_captured_payments_domain(self):
         """
-        Override para permitir el cierre de sesión aunque haya pedidos en draft
-        que estén vinculados a sale.order.
+        Override para excluir pagos de pedidos vinculados a sale.order del cálculo del balance.
+        Estos pedidos se gestionan en cuenta cliente y no afectan al arqueo de caja.
         """
-        bank_payment_method_diffs = bank_payment_method_diffs or {}
+        # Obtener IDs de pedidos vinculados a sale.order
+        linked_order_ids = self.order_ids.filtered(lambda o: o.linked_sale_order_id).ids
 
-        for session in self:
-            # Obtener pedidos en borrador
-            draft_orders = [
-                order for order in session.order_ids if order.state == "draft"
-            ]
-
-            if draft_orders:
-                raise UserError(
-                    _(
-                        "No puede cerrar el TPV si aún hay pedidos en borrador para este día."
-                    )
-                )
-
-            if session.state == "closed":
-                raise UserError(_("Esta sesión ya está cerrada."))
-
-            stop_at = session.stop_at or fields.Datetime.now()
-            session.write({"state": "closing_control", "stop_at": stop_at})
-
-            if not session.config_id.cash_control:
-                return session.action_pos_session_close(
-                    balancing_account, amount_to_balance, bank_payment_method_diffs
-                )
-
-            if session.rescue and session.config_id.cash_control:
-                default_cash_payment_method_id = session.payment_method_ids.filtered(
-                    lambda pm: pm.type == "cash"
-                )
-                if default_cash_payment_method_id:
-                    default_cash_payment_method_id = default_cash_payment_method_id[0]
-                    orders = session._get_closed_orders()
-                    total_cash = (
-                        sum(
-                            orders.payment_ids.filtered(
-                                lambda p: p.payment_method_id
-                                == default_cash_payment_method_id
-                            ).mapped("amount")
-                        )
-                        + session.cash_register_balance_start
-                    )
-                    session.cash_register_balance_end_real = total_cash
-
-            return session.action_pos_session_validate(
-                balancing_account, amount_to_balance, bank_payment_method_diffs
-            )
-
-    def _check_if_no_draft_orders(self):
-        """
-        Override para asegurar que no haya ningún pedido en borrador.
-        """
-        draft_orders = self.get_session_orders().filtered(
-            lambda order: order.state == "draft"
-        )
-        if draft_orders:
-            raise UserError(
-                _(
-                    "Aún hay pedidos en estado borrador en la sesión. "
-                    "Pague o cancele los siguientes pedidos para validar la sesión:\n%s",
-                    ", ".join(draft_orders.mapped("name")),
-                )
-            )
-        return True
-
-    def _cannot_close_session(self, bank_payment_method_diffs=None):
-        """
-        Override para excluir pedidos vinculados a sale.order de la validación de cierre.
-        """
-        bank_payment_method_diffs = bank_payment_method_diffs or {}
-
-        # Considerar todos los pedidos en borrador
-        draft_orders = [
-            order for order in self.get_session_orders() if order.state == "draft"
+        # Dominio base de Odoo
+        domain = [
+            ("session_id", "in", self.ids),
+            ("pos_order_id.state", "in", ["paid", "invoiced", "done"]),
         ]
 
-        if draft_orders:
-            return {
-                "successful": False,
-                "message": _(
-                    "No puede cerrar el TPV si aún hay pedidos en borrador para este día."
-                ),
-                "redirect": False,
-            }
+        # Excluir pagos de pedidos vinculados
+        if linked_order_ids:
+            domain.append(("pos_order_id", "not in", linked_order_ids))
 
-        if self.state == "closed":
-            return {
-                "successful": False,
-                "type": "alert",
-                "title": "Session already closed",
-                "message": _("La sesión ya ha sido cerrada por otro usuario."),
-                "redirect": True,
-            }
+        return domain
 
-        if bank_payment_method_diffs:
-            no_loss_account = self.env["account.journal"]
-            no_profit_account = self.env["account.journal"]
-            for payment_method in self.env["pos.payment.method"].browse(
-                bank_payment_method_diffs.keys()
-            ):
-                journal = payment_method.journal_id
-                if not journal.loss_account_id:
-                    no_loss_account |= journal
-                if not journal.profit_account_id:
-                    no_profit_account |= journal
-            message = ""
-            if no_loss_account:
-                message += _(
-                    "Please set a Loss Account on the following journals: %s.\n",
-                    ", ".join(no_loss_account.mapped("name")),
-                )
-            if no_profit_account:
-                message += _(
-                    "Please set a Profit Account on the following journals: %s.",
-                    ", ".join(no_profit_account.mapped("name")),
-                )
-            if message:
-                return {"successful": False, "message": message, "redirect": True}
-
-        return False
+    def _get_closed_orders(self):
+        """
+        Override para excluir pedidos vinculados a sale.order del proceso de cierre.
+        Al excluirlos aquí, no se tienen en cuenta para la validación de importes
+        ni para la creación de asientos contables de sesión.
+        """
+        return self.order_ids.filtered(
+            lambda o: o.state not in ["draft", "cancel"] and not o.linked_sale_order_id
+        )
 
     def get_closing_control_data(self):
         """

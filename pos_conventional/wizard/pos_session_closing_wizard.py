@@ -1,5 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools import float_is_zero
 
 
 class PosSessionClosingWizard(models.TransientModel):
@@ -39,6 +40,11 @@ class PosSessionClosingWizard(models.TransientModel):
     closing_note = fields.Text(
         string="Motivo del cierre",
         help="Nota opcional explicando el motivo del cierre de la sesión",
+    )
+    state = fields.Selection(
+        [("input", "Entrada"), ("confirmation", "Confirmación")],
+        default="input",
+        string="Estado",
     )
 
     # Campos para mostrar resumen de la sesión
@@ -143,16 +149,34 @@ class PosSessionClosingWizard(models.TransientModel):
                     result.get("message", _("Error al registrar el efectivo."))
                 )
 
+        if not self.session_id.stop_at:
+            self.session_id.write({"stop_at": fields.Datetime.now()})
+
+        difference = (
+            self.cash_register_balance_end_real
+            - self.session_id.cash_register_balance_end
+        )
+        currency = self.currency_id
+
+        if not float_is_zero(difference, precision_rounding=currency.rounding):
+            # Si estamos en estado 'input', pasamos a confirmación y recargamos la vista
+            if self.state == "input":
+                self.write({"state": "confirmation"})
+                return {
+                    "type": "ir.actions.act_window",
+                    "res_model": "pos.session.closing.wizard",
+                    "view_mode": "form",
+                    "res_id": self.id,
+                    "target": "new",
+                }
+
         # Llamar al método estándar de cierre de sesión
-        # Este método hace toda la lógica: asientos contables, validaciones, etc.
         try:
             result = self.session_id.action_pos_session_closing_control()
 
             # Si el resultado es un diccionario, puede ser un wizard de desbalance
             if isinstance(result, dict):
-                # Retornar el wizard de desbalance si es necesario
                 return result
-
         except UserError as e:
             raise UserError(_("Error al cerrar la sesión: %s") % str(e))
 
@@ -164,9 +188,7 @@ class PosSessionClosingWizard(models.TransientModel):
             "view_mode": "kanban,form",
             "target": "main",
             "domain": [],
-            "context": {
-                "search_default_group_by_company": True,
-            },
+            "context": {"search_default_group_by_company": True},
         }
 
     def action_print_daily_report(self):
