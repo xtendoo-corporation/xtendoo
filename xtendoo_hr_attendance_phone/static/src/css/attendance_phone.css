@@ -77,6 +77,66 @@
 }
 
 /* ========================================
+   BANNER DE ESTADO DEL EMPLEADO
+   ======================================== */
+
+.employee-status-banner {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    max-width: 600px;
+    width: 90%;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideDown 0.5s ease-out;
+}
+
+.employee-status-banner.status-dentro {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: 2px solid #1e7e34;
+}
+
+.employee-status-banner.status-fuera {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #212529;
+    border: 2px solid #e0a800;
+}
+
+.employee-status-banner .status-icon {
+    font-size: 1.3rem;
+    margin-right: 10px;
+}
+
+.employee-status-banner .status-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.9rem;
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Ajustar margen superior cuando hay banner */
+.o_hr_attendance_kiosk.has-status-banner {
+    padding-top: 100px;
+}
+
+/* ========================================
    ESTILOS PARA PÁGINA MÓVIL
    ======================================== */
 

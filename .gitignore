@@ -1,0 +1,24 @@
+# IDE files
+.idea/
+.vscode/
+
+# Docker files (si no son parte del proyecto)
+.dockerignore
+Dockerfile
+
+# SSH keys (¡NUNCA subir claves privadas!)
+*/ssh/id_rsa
+*/ssh/id_rsa.pub
+*/ssh/known_hosts
+*/ssh/config
+
+# Dependencies
+*/dependencies/
+
+# Build directories
+*/build. d/
+*/conf.d/
+*/entrypoint.d/
+
+# Copier answers
+. copier-answers.yml

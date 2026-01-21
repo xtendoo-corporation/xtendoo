@@ -200,6 +200,84 @@ class AttendancePhone(http.Controller):
             _logger.error("[ATTENDANCE_PHONE] Error: %s", str(e))
             return {"success": False, "error": f"Error del servidor: {str(e)}"}
 
+    @http.route('/attendance/phone/status', type='json', auth='public', csrf=False)
+    def get_employee_status(self, phone, **kwargs):
+        """
+        Consulta el estado actual del empleado (dentro/fuera) basado en su teléfono
+
+        Args:
+            phone (str): Número de teléfono del empleado
+
+        Returns:
+            dict: Estado del empleado
+        """
+        _logger.info("[ATTENDANCE_PHONE_STATUS] Consultando estado - Teléfono: %s***", phone[:3] if phone else 'N/A')
+
+        try:
+            if not phone:
+                return {"success": False, "error": "Teléfono requerido"}
+
+            # Limpiar el número de teléfono
+            phone_cleaned = ''.join(filter(str.isdigit, phone.replace('+', '')))
+            _logger.info("[ATTENDANCE_PHONE_STATUS] Teléfono limpiado: %s***", phone_cleaned[:3] if len(phone_cleaned) >= 3 else phone_cleaned)
+
+            # Buscar empleado por teléfono
+            all_employees = request.env['hr.employee'].sudo().search([])
+            employee = None
+
+            for emp in all_employees:
+                mobile_clean = ''.join(filter(str.isdigit, (emp.mobile_phone or '').replace('+', '')))
+                work_clean = ''.join(filter(str.isdigit, (emp.work_phone or '').replace('+', '')))
+
+                if mobile_clean == phone_cleaned or work_clean == phone_cleaned:
+                    employee = emp
+                    _logger.info("[ATTENDANCE_PHONE_STATUS] ✅ Empleado encontrado: %s", emp.name)
+                    break
+
+            if not employee:
+                return {"success": False, "error": "Empleado no encontrado"}
+
+            # Verificar si tiene asistencia abierta (está trabajando)
+            current_attendance = request.env['hr.attendance'].sudo().search([
+                ('employee_id', '=', employee.id),
+                ('check_out', '=', False)
+            ], limit=1)
+
+            if current_attendance:
+                status = "DENTRO"
+                status_class = "success"
+                message = f"{employee.name} está trabajando desde las {current_attendance.check_in.strftime('%H:%M')}"
+                _logger.info("[ATTENDANCE_PHONE_STATUS] Empleado DENTRO desde: %s", current_attendance.check_in)
+            else:
+                status = "FUERA"
+                status_class = "warning"
+
+                # Buscar la última salida para mostrar información
+                last_attendance = request.env['hr.attendance'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('check_out', '!=', False)
+                ], order='check_out desc', limit=1)
+
+                if last_attendance:
+                    message = f"{employee.name} salió a las {last_attendance.check_out.strftime('%H:%M')}"
+                else:
+                    message = f"{employee.name} no ha fichado hoy"
+
+                _logger.info("[ATTENDANCE_PHONE_STATUS] Empleado FUERA")
+
+            return {
+                "success": True,
+                "employee_id": employee.id,
+                "name": employee.name,
+                "status": status,
+                "status_class": status_class,
+                "message": message
+            }
+
+        except Exception as e:
+            _logger.error("[ATTENDANCE_PHONE_STATUS] Error: %s", str(e))
+            return {"success": False, "error": f"Error del servidor: {str(e)}"}
+
 
     @http.route('/attendance/phone/register', type='json', auth='public', csrf=False)
     def register_employee_phone(self, employee_pin, phone_number, **kwargs):

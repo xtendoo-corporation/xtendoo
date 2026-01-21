@@ -82,10 +82,53 @@ export class KioskPhoneAttendance extends Component {
             message: "",
             messageType: "",
             showForm: !hasStoredCredentials, // Mostrar formulario solo si no hay credenciales
-            rememberMe: hasStoredCredentials
+            rememberMe: hasStoredCredentials,
+            // Estado del empleado (dentro/fuera)
+            employeeStatus: null,
+            statusMessage: "",
+            statusClass: ""
         });
 
         console.log("[ATTENDANCE_PHONE] Componente configurado. Credenciales guardadas:", hasStoredCredentials);
+
+        // Si hay teléfono guardado, consultar estado del empleado
+        if (phone) {
+            this.checkEmployeeStatus();
+        }
+    }
+
+    /**
+     * Consulta el estado actual del empleado (DENTRO/FUERA)
+     */
+    async checkEmployeeStatus() {
+        const phone = this.state.phone.trim();
+
+        if (!phone) {
+            return;
+        }
+
+        console.log("[ATTENDANCE_PHONE] Consultando estado del empleado...");
+
+        try {
+            const result = await rpc('/attendance/phone/status', {
+                phone: phone
+            });
+
+            if (result.success) {
+                this.state.employeeStatus = result.status;
+                this.state.statusMessage = result.message;
+                this.state.statusClass = result.status_class;
+                console.log("[ATTENDANCE_PHONE] Estado del empleado:", result.status, "-", result.message);
+            } else {
+                console.warn("[ATTENDANCE_PHONE] No se pudo obtener el estado:", result.error);
+                // No mostrar error, simplemente no mostrar banner
+                this.state.employeeStatus = null;
+            }
+
+        } catch (error) {
+            console.warn("[ATTENDANCE_PHONE] Error consultando estado:", error);
+            this.state.employeeStatus = null;
+        }
     }
 
     get companyImageUrl() {
@@ -177,6 +220,10 @@ export class KioskPhoneAttendance extends Component {
                 // Mantenerse en la misma pantalla; opcionalmente ocultar el mensaje tras unos segundos
                 setTimeout(() => {
                     this.state.message = "";
+                    // Actualizar estado del empleado después del fichaje
+                    if (this.state.phone) {
+                        this.checkEmployeeStatus();
+                    }
                 }, 3000);
 
             } else {
@@ -236,6 +283,8 @@ export class KioskPhoneAttendance extends Component {
                 // Permanecer en la misma pantalla; ocultar mensaje tras breve tiempo
                 setTimeout(() => {
                     this.state.message = "";
+                    // Actualizar estado del empleado después del fichaje
+                    this.checkEmployeeStatus();
                 }, 2000);
 
             } else {
@@ -322,10 +371,52 @@ export class KioskPhoneOnlyAttendance extends Component {
             message: "",
             messageType: "",
             showForm: !hasStoredPhone,
-            rememberMe: hasStoredPhone
+            rememberMe: hasStoredPhone,
+            // Estado del empleado (dentro/fuera)
+            employeeStatus: null,
+            statusMessage: "",
+            statusClass: ""
         });
 
         console.log("[ATTENDANCE_PHONE_ONLY] Componente configurado. Teléfono guardado:", hasStoredPhone);
+
+        // Si hay teléfono guardado, consultar estado del empleado
+        if (phone) {
+            this.checkEmployeeStatus();
+        }
+    }
+
+    /**
+     * Consulta el estado actual del empleado (DENTRO/FUERA)
+     */
+    async checkEmployeeStatus() {
+        const phone = this.state.phone.trim();
+
+        if (!phone) {
+            return;
+        }
+
+        console.log("[ATTENDANCE_PHONE_ONLY] Consultando estado del empleado...");
+
+        try {
+            const result = await rpc('/attendance/phone/status', {
+                phone: phone
+            });
+
+            if (result.success) {
+                this.state.employeeStatus = result.status;
+                this.state.statusMessage = result.message;
+                this.state.statusClass = result.status_class;
+                console.log("[ATTENDANCE_PHONE_ONLY] Estado del empleado:", result.status, "-", result.message);
+            } else {
+                console.warn("[ATTENDANCE_PHONE_ONLY] No se pudo obtener el estado:", result.error);
+                this.state.employeeStatus = null;
+            }
+
+        } catch (error) {
+            console.warn("[ATTENDANCE_PHONE_ONLY] Error consultando estado:", error);
+            this.state.employeeStatus = null;
+        }
     }
 
     get companyImageUrl() {
@@ -383,6 +474,10 @@ export class KioskPhoneOnlyAttendance extends Component {
                 // phoneInput.value = '';
                 setTimeout(() => {
                     this.state.message = "";
+                    // Actualizar estado del empleado después del fichaje
+                    if (this.state.phone) {
+                        this.checkEmployeeStatus();
+                    }
                 }, 3000);
 
             } else {
@@ -426,6 +521,8 @@ export class KioskPhoneOnlyAttendance extends Component {
                 // Permanecer y limpiar mensaje al rato
                 setTimeout(() => {
                     this.state.message = "";
+                    // Actualizar estado del empleado después del fichaje
+                    this.checkEmployeeStatus();
                 }, 2000);
 
             } else {

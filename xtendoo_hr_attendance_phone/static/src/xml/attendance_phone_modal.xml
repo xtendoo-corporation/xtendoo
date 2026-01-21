@@ -80,6 +80,20 @@
     <!-- Template para la pantalla de asistencia por teléfono -->
     <t t-name="xtendoo_hr_attendance_phone.kiosk_phone_screen">
         <div class="o_hr_attendance_kiosk d-flex flex-column justify-content-center align-items-center h-100 p-3">
+
+            <!-- Banner de Estado - Solo si hay teléfono guardado -->
+            <t t-if="state.employeeStatus">
+                <div t-attf-class="alert alert-{{state.statusClass}} mb-4 text-center"
+                     style="max-width: 600px; width: 100%; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; font-size: 1.1rem; font-weight: bold;">
+                    <i t-if="state.employeeStatus === 'DENTRO'" class="fa fa-clock-o me-2"></i>
+                    <i t-if="state.employeeStatus === 'FUERA'" class="fa fa-home me-2"></i>
+                    <span t-esc="state.statusMessage"/>
+                    <small class="d-block mt-1" style="font-size: 0.9rem; font-weight: normal;">
+                        Estado actual: <strong t-esc="state.employeeStatus"/>
+                    </small>
+                </div>
+            </t>
+
             <div class="text-center mb-4">
                 <h2 class="mt-3 text-primary">
                     <i class="fa fa-phone me-2"></i>
@@ -184,6 +198,20 @@
     <!-- Template para la pantalla de asistencia SOLO por teléfono (sin PIN) -->
     <t t-name="xtendoo_hr_attendance_phone.kiosk_phone_only_screen">
         <div class="o_hr_attendance_kiosk d-flex flex-column justify-content-center align-items-center h-100 p-3">
+
+            <!-- Banner de Estado - Solo si hay teléfono guardado -->
+            <t t-if="state.employeeStatus">
+                <div t-attf-class="alert alert-{{state.statusClass}} mb-4 text-center"
+                     style="max-width: 600px; width: 100%; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; font-size: 1.1rem; font-weight: bold;">
+                    <i t-if="state.employeeStatus === 'DENTRO'" class="fa fa-clock-o me-2"></i>
+                    <i t-if="state.employeeStatus === 'FUERA'" class="fa fa-home me-2"></i>
+                    <span t-esc="state.statusMessage"/>
+                    <small class="d-block mt-1" style="font-size: 0.9rem; font-weight: normal;">
+                        Estado actual: <strong t-esc="state.employeeStatus"/>
+                    </small>
+                </div>
+            </t>
+
             <!-- Header -->
             <div class="text-center mb-4">
                 <h2 class="mt-3 text-success">
