@@ -1,0 +1,421 @@
+<odoo>
+    <!-- Página web simple para registro de asistencia -->
+    <template id="attendance_phone_page" name="Attendance Phone">
+        <t t-call="web.layout">
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white text-center">
+                                <h3><i class="fa fa-phone me-2"></i>Registro de Asistencia por Teléfono</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="attendance_form">
+                                    <div class="mb-4">
+                                        <label for="phone_number" class="form-label">
+                                            <i class="fa fa-phone me-1"></i>Número de Teléfono
+                                        </label>
+                                        <input type="tel" id="phone_number" class="form-control form-control-lg"
+                                               placeholder="Ingrese su número de teléfono" required="required"/>
+                                        <div class="form-text">Formato: +34123456789 o 123456789</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="pin" class="form-label">
+                                            <i class="fa fa-lock me-1"></i>PIN de Empleado
+                                        </label>
+                                        <input type="password" id="pin" class="form-control form-control-lg"
+                                               placeholder="Ingrese su PIN" required="required" maxlength="6"/>
+                                        <div class="form-text">Ingrese su PIN personal de empleado</div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                            <i class="fa fa-check me-2"></i>Registrar Asistencia
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        Sistema de asistencia por teléfono - Xtendoo
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    console.log("[ATTENDANCE_PHONE] Página de asistencia por teléfono cargada");
+
+                    const form = document.getElementById('attendance_form');
+                    form.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        console.log("[ATTENDANCE_PHONE] Formulario enviado desde página web");
+
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        const spinner = submitBtn.querySelector('.spinner-border');
+                        const phone = document.getElementById('phone_number').value;
+                        const pin = document.getElementById('pin').value;
+
+                        // Mostrar spinner
+                        submitBtn.disabled = true;
+                        spinner.classList.remove('d-none');
+
+                        try {
+                            const response = await fetch('/attendance/phone/validate', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    jsonrpc: '2.0',
+                                    method: 'call',
+                                    params: {
+                                        phone: phone,
+                                        pin: pin
+                                    }
+                                })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.result &amp;&amp; result.result.success) {
+                                alert('¡Asistencia registrada exitosamente para ' + result.result.name + '!');
+                                form.reset();
+                            } else {
+                                alert(result.result?.error || 'PIN o número de teléfono incorrecto');
+                            }
+                        } catch (error) {
+                            console.error('[ATTENDANCE_PHONE] Error:', error);
+                            alert('Error al procesar la solicitud');
+                        } finally {
+                            submitBtn.disabled = false;
+                            spinner.classList.add('d-none');
+                        }
+                    });
+                });
+            </script>
+        </t>
+    </template>
+
+    <!-- Página móvil completa con registro inicial y asistencia -->
+    <template id="attendance_phone_mobile_page" name="Attendance Phone Mobile">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+            </t>
+
+            <div class="mobile-container">
+                <div class="attendance-card">
+                    <div class="card-header-custom">
+                        <h3>Registro de Asistencia</h3>
+                    </div>
+                    <div class="card-body-custom">
+                        <!-- Tabs para cambiar entre modos -->
+                        <div class="tab-buttons">
+                            <button type="button" class="tab-btn active" data-tab="attendance">
+                                🕐 Fichar
+                            </button>
+                            <button type="button" class="tab-btn" data-tab="register">
+                                📝 Primera vez
+                            </button>
+                        </div>
+
+                        <!-- Mensaje de estado -->
+                        <div id="message_container"></div>
+
+                        <!-- Tab: Registrar Asistencia -->
+                        <div id="tab_attendance" class="tab-content active">
+                            <form id="attendance_form_mobile">
+                                <div class="form-group-custom">
+                                    <label class="form-label-custom">
+                                        📞 Número de Teléfono
+                                    </label>
+                                    <input type="tel" id="m_phone" class="form-control-custom"
+                                           placeholder="612345678" required="required"
+                                           autocomplete="tel"/>
+                                    <div class="help-text">Tu número de móvil registrado</div>
+                                </div>
+
+                                <div class="form-group-custom">
+                                    <label class="form-label-custom">
+                                        🔒 PIN
+                                    </label>
+                                    <input type="password" id="m_pin" class="form-control-custom"
+                                           placeholder="••••••" required="required"
+                                           maxlength="6" inputmode="numeric"
+                                           autocomplete="current-password"
+                                           style="text-align: center; letter-spacing: 0.3em; font-size: 24px;"/>
+                                    <div class="help-text">Tu PIN personal</div>
+                                </div>
+
+                                <div class="form-group-custom">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="checkbox" id="remember_credentials"
+                                               style="width: 18px; height: 18px; cursor: pointer;"/>
+                                        <label for="remember_credentials" style="cursor: pointer; margin: 0; font-size: 0.9rem;">
+                                            Recordar mis datos en este dispositivo
+                                        </label>
+                                    </div>
+                                    <div class="help-text">Tus datos estarán seguros en tu dispositivo</div>
+                                </div>
+
+                                <button type="submit" id="btn_attendance" class="btn-primary-custom">
+                                    ✅ Registrar Entrada/Salida
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Tab: Registro Inicial (Primera vez) -->
+                        <div id="tab_register" class="tab-content">
+                            <div class="alert-custom alert-info">
+                                <strong>¿Primera vez?</strong><br/>
+                                Si ya tienes un PIN asignado pero aún no has registrado tu teléfono,
+                                ingresa tu PIN y el número desde el que quieres fichar.
+                            </div>
+
+                            <form id="register_form_mobile">
+                                <div class="form-group-custom">
+                                    <label class="form-label-custom">
+                                        🔒 Tu PIN asignado
+                                    </label>
+                                    <input type="password" id="r_pin" class="form-control-custom"
+                                           placeholder="••••••" required="required"
+                                           maxlength="6" inputmode="numeric"
+                                           style="text-align: center; letter-spacing: 0.3em; font-size: 24px;"/>
+                                    <div class="help-text">El PIN que te proporcionó RRHH</div>
+                                </div>
+
+                                <div class="form-group-custom">
+                                    <label class="form-label-custom">
+                                        📞 Tu Número de Teléfono
+                                    </label>
+                                    <input type="tel" id="r_phone" class="form-control-custom"
+                                           placeholder="612345678" required="required"
+                                           autocomplete="tel"/>
+                                    <div class="help-text">El número desde el que ficharás</div>
+                                </div>
+
+                                <button type="submit" id="btn_register" class="btn-primary-custom">
+                                    📝 Registrar mi Teléfono
+                                </button>
+                            </form>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 20px; color: #999; font-size: 0.85rem;">
+                            Si tienes problemas, contacta a RRHH
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // ============================================
+                // STORAGE MANAGER
+                // ============================================
+                const StorageManager = {
+                    setCredentials(phone, pin) {
+                        try {
+                            localStorage.setItem('attendance_phone', phone);
+                            localStorage.setItem('attendance_pin', pin);
+                            console.log("[STORAGE] ✅ Credenciales guardadas");
+                        } catch (error) {
+                            console.warn("[STORAGE] ⚠️ Error:", error);
+                        }
+                    },
+
+                    getCredentials() {
+                        try {
+                            return {
+                                phone: localStorage.getItem('attendance_phone'),
+                                pin: localStorage.getItem('attendance_pin')
+                            };
+                        } catch (error) {
+                            return { phone: null, pin: null };
+                        }
+                    },
+
+                    clearCredentials() {
+                        try {
+                            localStorage.removeItem('attendance_phone');
+                            localStorage.removeItem('attendance_pin');
+                            console.log("[STORAGE] ✅ Credenciales borradas");
+                        } catch (error) {
+                            console.warn("[STORAGE] ⚠️ Error:", error);
+                        }
+                    },
+
+                    hasCredentials() {
+                        const { phone, pin } = this.getCredentials();
+                        return !!(phone &amp;&amp; pin);
+                    }
+                };
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    console.log("[ATTENDANCE_PHONE_MOBILE] Página móvil cargada");
+
+                    // Manejo de tabs
+                    const tabButtons = document.querySelectorAll('.tab-btn');
+                    const tabContents = document.querySelectorAll('.tab-content');
+
+                    tabButtons.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const tabId = this.getAttribute('data-tab');
+
+                            tabButtons.forEach(b => b.classList.remove('active'));
+                            tabContents.forEach(c => c.classList.remove('active'));
+
+                            this.classList.add('active');
+                            document.getElementById('tab_' + tabId).classList.add('active');
+
+                            hideMessage();
+                        });
+                    });
+
+                    // Función para mostrar mensajes
+                    function showMessage(text, type) {
+                        const container = document.getElementById('message_container');
+                        container.innerHTML = '<div class="alert-custom alert-' + type + '">' + text + '</div>';
+                    }
+
+                    function hideMessage() {
+                        document.getElementById('message_container').innerHTML = '';
+                    }
+
+                    // Función para hacer peticiones JSON-RPC
+                    async function rpcCall(url, params) {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                jsonrpc: '2.0',
+                                method: 'call',
+                                params: params,
+                                id: Date.now()
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.error) {
+                            throw new Error(data.error.message || 'Error del servidor');
+                        }
+                        return data.result;
+                    }
+
+                    // Formulario de asistencia
+                    const attendanceForm = document.getElementById('attendance_form_mobile');
+                    const btnAttendance = document.getElementById('btn_attendance');
+                    const mPhoneInput = document.getElementById('m_phone');
+                    const mPinInput = document.getElementById('m_pin');
+                    const rememberCheckbox = document.getElementById('remember_credentials');
+
+                    // Cargar credenciales guardadas
+                    const { phone: savedPhone, pin: savedPin } = StorageManager.getCredentials();
+                    if (savedPhone) mPhoneInput.value = savedPhone;
+                    if (savedPin) mPinInput.value = savedPin;
+                    if (savedPhone &amp;&amp; savedPin) {
+                        rememberCheckbox.checked = true;
+                    }
+
+                    attendanceForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const phone = mPhoneInput.value.trim();
+                        const pin = mPinInput.value.trim();
+
+                        if (!phone || !pin) {
+                            showMessage('Por favor completa todos los campos', 'danger');
+                            return;
+                        }
+
+                        btnAttendance.disabled = true;
+                        btnAttendance.innerHTML = '<span class="spinner"></span> Procesando...';
+
+                        try {
+                            const result = await rpcCall('/attendance/phone/validate', {
+                                phone: phone,
+                                pin: pin
+                            });
+
+                            if (result.success) {
+                                // Guardar credenciales si el checkbox está marcado
+                                if (rememberCheckbox.checked) {
+                                    StorageManager.setCredentials(phone, pin);
+                                }
+
+                                const actionText = result.action_type === 'check_in' ? 'ENTRADA' : 'SALIDA';
+                                showMessage('✅ ' + actionText + ' registrada para ' + result.name, 'success');
+                                mPinInput.value = '';
+
+                                setTimeout(() => hideMessage(), 3000);
+                            } else {
+                                showMessage('❌ ' + (result.error || 'Datos incorrectos'), 'danger');
+                                mPinInput.value = '';
+                            }
+                        } catch (error) {
+                            console.error('[ATTENDANCE_PHONE_MOBILE] Error:', error);
+                            showMessage('❌ Error de conexión. Inténtalo de nuevo.', 'danger');
+                        } finally {
+                            btnAttendance.disabled = false;
+                            btnAttendance.innerHTML = '✅ Registrar Entrada/Salida';
+                        }
+                    });
+
+                    // Formulario de registro inicial
+                    const registerForm = document.getElementById('register_form_mobile');
+                    const btnRegister = document.getElementById('btn_register');
+
+                    registerForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const pin = document.getElementById('r_pin').value.trim();
+                        const phone = document.getElementById('r_phone').value.trim();
+
+                        if (!pin || !phone) {
+                            showMessage('Por favor completa todos los campos', 'danger');
+                            return;
+                        }
+
+                        btnRegister.disabled = true;
+                        btnRegister.innerHTML = '<span class="spinner"></span> Registrando...';
+
+                        try {
+                            const result = await rpcCall('/attendance/phone/register', {
+                                employee_pin: pin,
+                                phone_number: phone
+                            });
+
+                            if (result.success) {
+                                // Guardar credenciales automáticamente después del registro
+                                StorageManager.setCredentials(phone, pin);
+
+                                showMessage('✅ ¡Teléfono registrado para ' + result.name + '! Ya puedes fichar desde la pestaña "Fichar".', 'success');
+                                registerForm.reset();
+
+                                // Auto-cambiar a tab de asistencia después de 2 segundos
+                                setTimeout(() => {
+                                    document.querySelector('[data-tab="attendance"]').click();
+                                    mPhoneInput.value = phone;
+                                    mPinInput.value = pin;
+                                    rememberCheckbox.checked = true;
+                                }, 2000);
+                            } else {
+                                showMessage('❌ ' + (result.error || 'Error al registrar'), 'danger');
+                            }
+                        } catch (error) {
+                            console.error('[ATTENDANCE_PHONE_MOBILE] Error:', error);
+                            showMessage('❌ Error de conexión. Inténtalo de nuevo.', 'danger');
+                        } finally {
+                            btnRegister.disabled = false;
+                            btnRegister.innerHTML = '📝 Registrar mi Teléfono';
+                        }
+                    });
+                });
+            </script>
+        </t>
+    </template>
+</odoo>

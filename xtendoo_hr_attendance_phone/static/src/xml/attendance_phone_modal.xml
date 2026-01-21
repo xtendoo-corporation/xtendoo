@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Agregar botones de teléfono en la configuración del kiosco -->
+    <t t-name="hr_attendance.PublicKiosksSettingScreen" t-inherit="hr_attendance.PublicKiosksSettingScreen" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_hr_kiosk_mode_main')]" position="inside">
+            <!-- Botón Teléfono + PIN -->
+            <div class="d-flex flex-column align-items-center text-center gap-2" t-att-style="!env.isSmall ? 'max-width: min-content;' : ''">
+                <button
+                    t-on-click="() => this.setSetting('phone')"
+                    class="btn btn-light"
+                    t-att-class="{
+                        'd-flex flex-row rounded-2 ps-2 align-items-center gap-2': env.isSmall,
+                        'btn-lg rounded-3': !env.isSmall
+                    }">
+                    <t t-if="env.isSmall">
+                        <i class="fa fa-phone fa-3x text-info" style="width: 40%;"></i>
+                        <h6 class="m-0">Teléfono + PIN</h6>
+                    </t>
+                    <t t-else="">
+                        <i class="fa fa-phone fa-8x text-info" style="height: 170px; line-height: 170px;"></i>
+                    </t>
+                </button>
+                <t t-if="!env.isSmall">
+                    <h5 class="m-0">Teléfono + PIN</h5>
+                    <em>Con verificación de PIN</em>
+                </t>
+            </div>
+            <!-- Botón Solo Teléfono -->
+            <div class="d-flex flex-column align-items-center text-center gap-2" t-att-style="!env.isSmall ? 'max-width: min-content;' : ''">
+                <button
+                    t-on-click="() => this.setSetting('phone_only')"
+                    class="btn btn-light"
+                    t-att-class="{
+                        'd-flex flex-row rounded-2 ps-2 align-items-center gap-2': env.isSmall,
+                        'btn-lg rounded-3': !env.isSmall
+                    }">
+                    <t t-if="env.isSmall">
+                        <i class="fa fa-mobile fa-3x text-success" style="width: 40%;"></i>
+                        <h6 class="m-0">Solo Teléfono</h6>
+                    </t>
+                    <t t-else="">
+                        <i class="fa fa-mobile fa-8x text-success" style="height: 170px; line-height: 170px;"></i>
+                    </t>
+                </button>
+                <t t-if="!env.isSmall">
+                    <h5 class="m-0">Solo Teléfono</h5>
+                    <em>Acceso rápido sin PIN</em>
+                </t>
+            </div>
+        </xpath>
+    </t>
+
+    <!-- Extender el template principal del kiosco para incluir nuestras pantallas -->
+    <t t-name="hr_attendance.public_kiosk_app" t-inherit="hr_attendance.public_kiosk_app" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if=&quot;this.state.active_display === 'pin'&quot;]" position="after">
+            <t t-if="this.state.active_display === 'phone'">
+                <KioskPhoneAttendance
+                    token="this.props.token"
+                    companyId="this.props.companyId"
+                    companyName="this.props.companyName"
+                    companyImageUrl="this.companyImageUrl"
+                    onClickBack="() => this.kioskReturn()"
+                    onAttendanceRegistered="(result) => this.onPhoneAttendanceRegistered(result)"
+                />
+            </t>
+            <t t-if="this.state.active_display === 'phone_only'">
+                <KioskPhoneOnlyAttendance
+                    token="this.props.token"
+                    companyId="this.props.companyId"
+                    companyName="this.props.companyName"
+                    companyImageUrl="this.companyImageUrl"
+                    onClickBack="() => this.kioskReturn()"
+                    onAttendanceRegistered="(result) => this.onPhoneAttendanceRegistered(result)"
+                />
+            </t>
+        </xpath>
+    </t>
+
+    <!-- Template para la pantalla de asistencia por teléfono -->
+    <t t-name="xtendoo_hr_attendance_phone.kiosk_phone_screen">
+        <div class="o_hr_attendance_kiosk d-flex flex-column justify-content-center align-items-center h-100 p-3">
+            <div class="text-center mb-4">
+                <h2 class="mt-3 text-primary">
+                    <i class="fa fa-phone me-2"></i>
+                    Registro de Asistencia
+                </h2>
+            </div>
+
+            <!-- Mensaje de estado -->
+            <t t-if="state.message">
+                <div t-attf-class="alert alert-{{state.messageType}} mb-4" style="max-width: 450px; width: 100%;">
+                    <t t-esc="state.message"/>
+                </div>
+            </t>
+
+            <!-- Formulario principal -->
+            <div class="card shadow-lg" style="max-width: 450px; width: 100%;">
+                <div class="card-header bg-info text-white text-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fa fa-user me-2"></i>
+                        Ingrese sus datos
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form id="phone_attendance_main_form" t-on-submit="onSubmit">
+                        <div class="mb-4">
+                            <label for="main_phone_number" class="form-label h5">
+                                <i class="fa fa-phone text-info me-2"></i>
+                                Número de Teléfono:
+                            </label>
+                            <input
+                                type="tel"
+                                id="main_phone_number"
+                                class="form-control form-control-lg"
+                                placeholder="Ej: 612345678"
+                                required="required"
+                                pattern="[0-9+\-\s\(\)]+"
+                                autocomplete="tel"
+                                t-att-value="state.phone"
+                            />
+                            <div class="form-text">
+                                <i class="fa fa-info-circle me-1"></i>
+                                Ingrese su número de teléfono móvil
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="main_pin_code" class="form-label h5">
+                                <i class="fa fa-lock text-warning me-2"></i>
+                                PIN:
+                            </label>
+                            <input
+                                type="password"
+                                id="main_pin_code"
+                                class="form-control form-control-lg text-center"
+                                placeholder="••••••"
+                                required="required"
+                                maxlength="6"
+                                autocomplete="current-password"
+                                style="letter-spacing: 0.3em; font-size: 24px;"
+                                t-att-value="state.pin"
+                            />
+                            <div class="form-text">
+                                <i class="fa fa-shield me-1"></i>
+                                Ingrese su PIN personal
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="kiosk_remember_credentials"
+                                       t-att-checked="state.rememberMe"
+                                       t-on-change="(ev) => this.state.rememberMe = ev.target.checked"
+                                       style="width: 18px; height: 18px; cursor: pointer;"/>
+                                <label for="kiosk_remember_credentials" style="cursor: pointer; margin: 0; font-size: 0.9rem;">
+                                    Recordar mis datos en este dispositivo
+                                </label>
+                            </div>
+                            <div class="form-text">Tus datos estarán seguros en tu dispositivo</div>
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-success btn-lg" t-att-disabled="state.isProcessing">
+                                <span t-attf-class="spinner-border spinner-border-sm me-2 {{state.isProcessing ? '' : 'd-none'}}" role="status"></span>
+                                <i t-attf-class="fa fa-check me-2 {{state.isProcessing ? 'd-none' : ''}}"></i>
+                                Registrar Asistencia
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="text-center mt-4 text-muted">
+                <small>
+                    <i class="fa fa-info-circle me-1"></i>
+                    Si no recuerda su PIN, contacte a Recursos Humanos
+                </small>
+            </div>
+        </div>
+    </t>
+
+    <!-- Template para la pantalla de asistencia SOLO por teléfono (sin PIN) -->
+    <t t-name="xtendoo_hr_attendance_phone.kiosk_phone_only_screen">
+        <div class="o_hr_attendance_kiosk d-flex flex-column justify-content-center align-items-center h-100 p-3">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="mt-3 text-success">
+                    <i class="fa fa-mobile me-2"></i>
+                    Registro Rápido
+                </h2>
+                <p class="text-muted">Ficha solo con tu número de teléfono</p>
+            </div>
+
+            <!-- Mensaje de estado -->
+            <t t-if="state.message">
+                <div t-attf-class="alert alert-{{state.messageType}} mb-4" style="max-width: 450px; width: 100%;">
+                    <t t-esc="state.message"/>
+                </div>
+            </t>
+
+            <!-- Formulario -->
+            <div class="card shadow-lg" style="max-width: 450px; width: 100%;">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fa fa-phone me-2"></i>
+                        Ingrese su teléfono
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form id="phone_only_form" t-on-submit="onSubmit">
+                        <div class="mb-4">
+                            <label for="phone_only_number" class="form-label h5">
+                                <i class="fa fa-phone text-success me-2"></i>
+                                Número de Teléfono:
+                            </label>
+                            <input
+                                type="tel"
+                                id="phone_only_number"
+                                class="form-control form-control-lg text-center"
+                                placeholder="612345678"
+                                required="required"
+                                pattern="[0-9+\-\s\(\)]+"
+                                autocomplete="tel"
+                                style="font-size: 28px; letter-spacing: 0.1em;"
+                                t-att-value="state.phone"
+                            />
+                            <div class="form-text">
+                                <i class="fa fa-info-circle me-1"></i>
+                                El número registrado en su perfil de empleado
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="kiosk_remember_phone"
+                                       t-att-checked="state.rememberMe"
+                                       t-on-change="(ev) => this.state.rememberMe = ev.target.checked"
+                                       style="width: 18px; height: 18px; cursor: pointer;"/>
+                                <label for="kiosk_remember_phone" style="cursor: pointer; margin: 0; font-size: 0.9rem;">
+                                    Recordar mi teléfono en este dispositivo
+                                </label>
+                            </div>
+                            <div class="form-text">Acceso más rápido en próximas visitas</div>
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-success btn-lg" t-att-disabled="state.isProcessing">
+                                <span t-attf-class="spinner-border spinner-border-sm me-2 {{state.isProcessing ? '' : 'd-none'}}" role="status"></span>
+                                <i t-attf-class="fa fa-check me-2 {{state.isProcessing ? 'd-none' : ''}}"></i>
+                                Fichar Ahora
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="text-center mt-4 text-muted">
+                <small>
+                    <i class="fa fa-bolt me-1"></i>
+                    Acceso rápido sin necesidad de PIN
+                </small>
+            </div>
+        </div>
+    </t>
+
+</templates>
