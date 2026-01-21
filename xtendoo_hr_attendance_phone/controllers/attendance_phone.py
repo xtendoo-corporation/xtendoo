@@ -246,23 +246,12 @@ class AttendancePhone(http.Controller):
             if current_attendance:
                 status = "DENTRO"
                 status_class = "success"
-                message = f"{employee.name} está trabajando desde las {current_attendance.check_in.strftime('%H:%M')}"
+                message = f"{employee.name}: En línea"
                 _logger.info("[ATTENDANCE_PHONE_STATUS] Empleado DENTRO desde: %s", current_attendance.check_in)
             else:
                 status = "FUERA"
                 status_class = "warning"
-
-                # Buscar la última salida para mostrar información
-                last_attendance = request.env['hr.attendance'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('check_out', '!=', False)
-                ], order='check_out desc', limit=1)
-
-                if last_attendance:
-                    message = f"{employee.name} salió a las {last_attendance.check_out.strftime('%H:%M')}"
-                else:
-                    message = f"{employee.name} no ha fichado hoy"
-
+                message = f"{employee.name}: Ausente"
                 _logger.info("[ATTENDANCE_PHONE_STATUS] Empleado FUERA")
 
             return {

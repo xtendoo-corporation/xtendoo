@@ -81,8 +81,6 @@ export class KioskPhoneAttendance extends Component {
             pin: pin || "",
             message: "",
             messageType: "",
-            showForm: !hasStoredCredentials, // Mostrar formulario solo si no hay credenciales
-            rememberMe: hasStoredCredentials,
             // Estado del empleado (dentro/fuera)
             employeeStatus: null,
             statusMessage: "",
@@ -195,11 +193,8 @@ export class KioskPhoneAttendance extends Component {
             if (result.success) {
                 console.log("[ATTENDANCE_PHONE] ✅ Asistencia registrada exitosamente");
 
-                // Guardar credenciales si el checkbox está marcado
-                if (this.state.rememberMe) {
-                    StorageManager.setCredentials(phone, pin);
-                    this.state.showForm = false;
-                }
+                // Guardar credenciales automáticamente siempre
+                StorageManager.setCredentials(phone, pin);
 
                 // Mostrar mensaje de éxito con tipo de acción (Entrada/Salida)
                 const actionText = result.action_type === 'check_in' ? 'Entrada' : 'Salida';
@@ -288,7 +283,6 @@ export class KioskPhoneAttendance extends Component {
                 }, 2000);
 
             } else {
-                this.state.showForm = true;
                 this.showMessage(_t("Credenciales inválidas. Por favor ingrese nuevamente."), 'danger');
                 StorageManager.clearCredentials();
             }
@@ -302,25 +296,6 @@ export class KioskPhoneAttendance extends Component {
         }
     }
 
-    /**
-     * Cambia a mostrar el formulario
-     */
-    switchToForm() {
-        this.state.showForm = true;
-        this.state.message = "";
-    }
-
-    /**
-     * Limpia credenciales guardadas
-     */
-    forgetCredentials() {
-        StorageManager.clearCredentials();
-        this.state.phone = "";
-        this.state.pin = "";
-        this.state.rememberMe = false;
-        this.state.showForm = true;
-        this.showMessage(_t("Credenciales borradas"), 'info');
-    }
 
     /**
      * Muestra un mensaje en el componente
@@ -370,8 +345,6 @@ export class KioskPhoneOnlyAttendance extends Component {
             phone: phone || "",
             message: "",
             messageType: "",
-            showForm: !hasStoredPhone,
-            rememberMe: hasStoredPhone,
             // Estado del empleado (dentro/fuera)
             employeeStatus: null,
             statusMessage: "",
@@ -454,11 +427,8 @@ export class KioskPhoneOnlyAttendance extends Component {
             if (result.success) {
                 console.log("[ATTENDANCE_PHONE_ONLY] ✅ Asistencia registrada");
 
-                // Guardar teléfono si el checkbox está marcado
-                if (this.state.rememberMe) {
-                    StorageManager.setCredentials(phone, 'phone_only');
-                    this.state.showForm = false;
-                }
+                // Guardar teléfono automáticamente siempre
+                StorageManager.setCredentials(phone, 'phone_only');
 
                 const actionText = result.action_type === 'check_in' ? 'Entrada' : 'Salida';
                 this.showMessage(
@@ -526,7 +496,6 @@ export class KioskPhoneOnlyAttendance extends Component {
                 }, 2000);
 
             } else {
-                this.state.showForm = true;
                 this.showMessage(_t("Teléfono no reconocido. Por favor ingrese nuevamente."), 'danger');
                 StorageManager.clearCredentials();
             }
@@ -541,23 +510,8 @@ export class KioskPhoneOnlyAttendance extends Component {
     }
 
     /**
-     * Cambia a mostrar el formulario
+     * Muestra un mensaje en el componente
      */
-    switchToForm() {
-        this.state.showForm = true;
-        this.state.message = "";
-    }
-
-    /**
-     * Limpia teléfono guardado
-     */
-    forgetCredentials() {
-        StorageManager.clearCredentials();
-        this.state.phone = "";
-        this.state.rememberMe = false;
-        this.state.showForm = true;
-        this.showMessage(_t("Teléfono olvidado"), 'info');
-    }
 
     showMessage(message, type = 'info') {
         this.state.message = message;

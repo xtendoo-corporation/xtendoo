@@ -76,65 +76,7 @@
     height: 1rem;
 }
 
-/* ========================================
-   BANNER DE ESTADO DEL EMPLEADO
-   ======================================== */
 
-.employee-status-banner {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    max-width: 600px;
-    width: 90%;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: slideDown 0.5s ease-out;
-}
-
-.employee-status-banner.status-dentro {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    border: 2px solid #1e7e34;
-}
-
-.employee-status-banner.status-fuera {
-    background: linear-gradient(135deg, #ffc107, #fd7e14);
-    color: #212529;
-    border: 2px solid #e0a800;
-}
-
-.employee-status-banner .status-icon {
-    font-size: 1.3rem;
-    margin-right: 10px;
-}
-
-.employee-status-banner .status-text {
-    display: block;
-    margin-top: 4px;
-    font-size: 0.9rem;
-    font-weight: normal;
-    opacity: 0.9;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateX(-50%) translateY(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Ajustar margen superior cuando hay banner */
-.o_hr_attendance_kiosk.has-status-banner {
-    padding-top: 100px;
-}
 
 /* ========================================
    ESTILOS PARA PÁGINA MÓVIL
@@ -165,7 +107,7 @@ body {
 }
 
 .card-header-custom {
-    background: linear-gradient(135deg, #17a2b8, #138496);
+    background: linear-gradient(135deg, #17b81a, #6dbf97);
     color: white;
     padding: 25px 20px;
     text-align: center;
@@ -357,6 +299,8 @@ body {
 
     .o_hr_attendance_kiosk h2 {
         font-size: 1.5rem;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
     }
 
     .o_hr_attendance_kiosk .card-body {
@@ -375,6 +319,93 @@ body {
     .btn-primary-custom {
         padding: 14px;
         font-size: 16px;
+    }
+}
+
+/* Reducir espacio en h2 del kiosco */
+.o_hr_attendance_kiosk h2 {
+    margin-top: 0 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* ========================================
+   TEXTO DE ESTADO EN ESQUINA SUPERIOR DERECHA
+   ======================================== */
+
+/* Texto de estado base */
+.employee-status-text {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 2px solid;
+    transition: all 0.3s ease;
+    animation: fadeInStatus 0.5s ease-in;
+}
+
+/* Estado: En Línea (dentro) */
+.employee-status-text.status-en-linea {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: #ffffff;
+    border-color: #1e7e34;
+}
+
+/* Estado: Ausente (fuera) */
+.employee-status-text.status-ausente {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #212529;
+    border-color: #e0a800;
+}
+
+/* Animación de aparición */
+@keyframes fadeInStatus {
+    from {
+        opacity: 0;
+        transform: translateX(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Efecto hover para el texto de estado */
+.employee-status-text:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 576px) {
+    .employee-status-text {
+        font-size: 10px !important;
+        padding: 6px 8px !important;
+        top: 10px !important;
+        right: 10px !important;
+    }
+}
+
+/* ========================================
+   AJUSTES PARA EVITAR SUPERPOSICIÓN DEL TEXTO DE ESTADO
+   ======================================== */
+
+/* Padding superior para el header cuando hay texto de estado */
+.card:has(.employee-status-text) .card-header {
+    padding-top: 55px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* Fallback para navegadores que no soportan :has() */
+.card-header-with-status {
+    padding-top: 55px !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+/* Ajuste para móviles */
+@media (max-width: 576px) {
+    .card:has(.employee-status-text) .card-header,
+    .card-header-with-status {
+        padding-top: 45px !important;
     }
 }
 
