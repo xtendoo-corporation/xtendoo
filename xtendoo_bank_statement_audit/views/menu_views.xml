@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         MENÚ PRINCIPAL: AUDITORÍA BANCARIA
+         Ubicado bajo el menú de Contabilidad
+         =================================================================== -->
+
+    <!-- Menú padre: Auditoría Bancaria -->
+    <menuitem id="menu_bank_audit_root"
+              name="Auditoría Bancaria"
+              parent="account.menu_finance"
+              sequence="35"
+              groups="account.group_account_user"/>
+
+    <!-- Submenú: Movimientos de Extracto -->
+    <menuitem id="menu_bank_statement_audit_lines"
+              name="Movimientos de Extracto"
+              parent="menu_bank_audit_root"
+              action="bank_statement_audit_action"
+              sequence="10"
+              groups="account.group_account_user"/>
+
+</odoo>

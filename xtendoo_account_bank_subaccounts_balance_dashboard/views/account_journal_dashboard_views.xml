@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Vista heredada del dashboard kanban de diarios de contabilidad.
+        Vista base: account.account_journal_dashboard_kanban_view
+        XPath: //t[@t-name='JournalBodyBankCash']//div[@id='dashboard_bank_cash_right']
+        Posición: inside (al final del contenedor derecho)
+
+        Solo se muestra para diarios tipo 'bank' que tengan subcuentas.
+    -->
+    <record id="account_journal_dashboard_kanban_view_subaccounts" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.subaccounts.balance</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!-- Insertar el saldo de subcuentas debajo del saldo principal en diarios de banco -->
+            <xpath expr="//t[@t-name='JournalBodyBankCash']//div[@id='dashboard_bank_cash_right']" position="inside">
+                <!-- Solo mostrar si es diario tipo banco y tiene subcuentas -->
+                <div class="row"
+                     t-if="journal_type == 'bank' and dashboard.has_subaccounts and dashboard.subaccounts_balance"
+                     name="subaccounts_balance_row">
+                    <div class="col overflow-hidden text-start">
+                        <span class="text-muted small"
+                              t-att-title="'Saldo total de ' + (dashboard.subaccounts_count or 0) + ' subcuentas'">
+                            Saldo de subcuentas:
+                        </span>
+                    </div>
+                    <div class="col-auto text-end">
+                        <span class="text-muted small" dir="ltr">
+                            <t t-out="dashboard.subaccounts_balance"/>
+                        </span>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

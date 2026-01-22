@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         WIZARD PARA EXPORTAR A XLSX
+         Formulario con opciones de exportación
+         =================================================================== -->
+    <record id="bank_statement_audit_export_xlsx_view_form" model="ir.ui.view">
+        <field name="name">bank.statement.audit.export.xlsx.view.form</field>
+        <field name="model">bank.statement.audit.export.xlsx</field>
+        <field name="arch" type="xml">
+            <form string="Exportar a Excel">
+                <!-- Estado: Configuración -->
+                <sheet invisible="state != 'config'">
+                    <group>
+                        <group string="Opciones de Exportación">
+                            <field name="journal_id"
+                                   string="Filtrar por Diario"
+                                   options="{'no_create': True}"
+                                   domain="[('type', '=', 'bank')]"/>
+                            <field name="date_from" string="Fecha Desde"/>
+                            <field name="date_to" string="Fecha Hasta"/>
+                        </group>
+                    </group>
+                    <group>
+                        <div class="alert alert-info" role="alert">
+                            <strong>Información:</strong>
+                            <ul>
+                                <li>Se exportarán los movimientos seleccionados o todos los que coincidan con los filtros aplicados.</li>
+                                <li>El archivo incluirá el saldo acumulado calculado por diario.</li>
+                                <li>Se generará una hoja de resumen con KPIs por diario.</li>
+                            </ul>
+                        </div>
+                    </group>
+                    <field name="line_ids" invisible="1"/>
+                    <field name="state" invisible="1"/>
+                </sheet>
+
+                <!-- Estado: Completado -->
+                <sheet invisible="state != 'done'">
+                    <group>
+                        <div class="alert alert-success" role="alert">
+                            <strong>¡Exportación completada!</strong>
+                            <p>El archivo Excel se ha generado correctamente.</p>
+                        </div>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="xlsx_filename" string="Nombre del archivo" readonly="1"/>
+                            <field name="xlsx_file" filename="xlsx_filename" string="Archivo" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="state" invisible="1"/>
+                </sheet>
+
+                <footer>
+                    <button string="Exportar a Excel"
+                            name="action_export"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'config'"
+                            icon="fa-file-excel-o"/>
+                    <button string="Volver"
+                            name="action_back"
+                            type="object"
+                            invisible="state != 'done'"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

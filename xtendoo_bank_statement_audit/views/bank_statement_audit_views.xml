@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         VISTA TREE (LISTA) - AUDITORÍA BANCARIA
+         Muestra todas las columnas requeridas incluyendo saldo acumulado
+         =================================================================== -->
+    <record id="bank_statement_audit_view_tree" model="ir.ui.view">
+        <field name="name">bank.statement.audit.view.tree</field>
+        <field name="model">bank.statement.audit</field>
+        <field name="arch" type="xml">
+            <tree string="Auditoría de Extractos Bancarios"
+                  decoration-danger="amount &lt; 0"
+                  decoration-muted="is_reconciled == True"
+                  default_order="date asc, id asc">
+                <!-- Fecha del movimiento -->
+                <field name="date" string="Fecha"/>
+
+                <!-- Descripción del movimiento -->
+                <field name="name" string="Descripción"/>
+
+                <!-- Concepto / Referencia de pago -->
+                <field name="payment_ref" string="Concepto / Referencia"/>
+
+                <!-- Partner (Empresa) -->
+                <field name="partner_id" string="Empresa"/>
+
+                <!-- Diario bancario -->
+                <field name="journal_id" string="Banco / Diario"/>
+
+                <!-- Importe del movimiento -->
+                <field name="amount" string="Importe" sum="Total Importe"/>
+
+                <!-- Moneda (oculto pero necesario para formato) -->
+                <field name="currency_id" column_invisible="1"/>
+
+                <!-- SALDO ACUMULADO - Campo clave calculado con SQL -->
+                <field name="running_balance_audit"
+                       string="Saldo Acumulado"
+                       decoration-danger="running_balance_audit &lt; 0"/>
+
+                <!-- Extracto bancario (opcional para auditoría) -->
+                <field name="statement_id" string="Extracto" optional="show"/>
+
+                <!-- Asiento contable relacionado -->
+                <field name="move_id" string="Asiento" optional="show"/>
+
+                <!-- Estado de conciliación -->
+                <field name="is_reconciled"
+                       string="Conciliado"
+                       widget="boolean"
+                       optional="show"/>
+
+                <!-- Compañía (para multi-company) -->
+                <field name="company_id"
+                       string="Compañía"
+                       optional="hide"
+                       groups="base.group_multi_company"/>
+
+                <!-- Referencia a línea original (oculta) -->
+                <field name="statement_line_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         VISTA FORM - DETALLE DE LÍNEA DE AUDITORÍA
+         Vista de solo lectura para ver detalles del movimiento
+         =================================================================== -->
+    <record id="bank_statement_audit_view_form" model="ir.ui.view">
+        <field name="name">bank.statement.audit.view.form</field>
+        <field name="model">bank.statement.audit</field>
+        <field name="arch" type="xml">
+            <form string="Detalle de Movimiento Bancario" create="0" edit="0" delete="0">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="payment_ref" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Información del Movimiento">
+                            <field name="date"/>
+                            <field name="name"/>
+                            <field name="payment_ref"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group string="Información Bancaria">
+                            <field name="journal_id"/>
+                            <field name="amount"/>
+                            <field name="currency_id"/>
+                            <field name="running_balance_audit"/>
+                            <field name="is_reconciled"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Referencias">
+                            <field name="statement_id"/>
+                            <field name="move_id"/>
+                            <field name="statement_line_id"/>
+                        </group>
+                        <group string="Compañía" groups="base.group_multi_company">
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         VISTA SEARCH - FILTROS Y AGRUPACIONES
+         Permite filtrar por diario, partner, fechas, conciliación, etc.
+         =================================================================== -->
+    <record id="bank_statement_audit_view_search" model="ir.ui.view">
+        <field name="name">bank.statement.audit.view.search</field>
+        <field name="model">bank.statement.audit</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Movimientos Bancarios">
+                <!-- ===============================================
+                     CAMPOS DE BÚSQUEDA
+                     =============================================== -->
+                <field name="name" string="Descripción"
+                       filter_domain="['|', ('name', 'ilike', self), ('payment_ref', 'ilike', self)]"/>
+                <field name="payment_ref" string="Concepto"/>
+                <field name="partner_id" string="Empresa"/>
+                <field name="journal_id" string="Diario Bancario"/>
+                <field name="statement_id" string="Extracto"/>
+                <field name="move_id" string="Asiento"/>
+                <field name="amount" string="Importe"/>
+
+                <!-- ===============================================
+                     FILTROS PREDEFINIDOS
+                     =============================================== -->
+                <separator/>
+
+                <!-- Filtro por diario bancario -->
+                <filter string="Banco" name="filter_journal"
+                        context="{'group_by': 'journal_id'}"/>
+
+                <!-- Filtro solo no conciliados -->
+                <filter string="No Conciliados" name="filter_not_reconciled"
+                        domain="[('is_reconciled', '=', False)]"
+                        help="Mostrar solo movimientos pendientes de conciliar"/>
+
+                <!-- Filtro solo conciliados -->
+                <filter string="Conciliados" name="filter_reconciled"
+                        domain="[('is_reconciled', '=', True)]"
+                        help="Mostrar solo movimientos ya conciliados"/>
+
+                <separator/>
+
+                <!-- Filtro por rango de fechas -->
+                <filter string="Fecha" name="filter_date" date="date"/>
+
+                <separator/>
+
+                <!-- Filtro por importes -->
+                <filter string="Ingresos (Positivos)" name="filter_positive"
+                        domain="[('amount', '&gt;', 0)]"/>
+
+                <filter string="Gastos (Negativos)" name="filter_negative"
+                        domain="[('amount', '&lt;', 0)]"/>
+
+
+                <!-- ===============================================
+                     AGRUPACIONES (GROUP BY)
+                     =============================================== -->
+                <separator/>
+
+                <!-- Agrupar por Diario Bancario -->
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Banco / Diario" name="group_by_journal"
+                            context="{'group_by': 'journal_id'}"/>
+
+                    <filter string="Empresa" name="group_by_partner"
+                            context="{'group_by': 'partner_id'}"/>
+
+                    <filter string="Extracto" name="group_by_statement"
+                            context="{'group_by': 'statement_id'}"/>
+
+                    <filter string="Fecha" name="group_by_date"
+                            context="{'group_by': 'date:day'}"/>
+
+                    <filter string="Mes" name="group_by_month"
+                            context="{'group_by': 'date:month'}"/>
+
+                    <filter string="Año" name="group_by_year"
+                            context="{'group_by': 'date:year'}"/>
+
+                    <filter string="Conciliación" name="group_by_reconciled"
+                            context="{'group_by': 'is_reconciled'}"/>
+
+                    <filter string="Compañía" name="group_by_company"
+                            context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         VISTA PIVOT - ANÁLISIS PIVOTE
+         Para análisis agregado de movimientos bancarios
+         =================================================================== -->
+    <record id="bank_statement_audit_view_pivot" model="ir.ui.view">
+        <field name="name">bank.statement.audit.view.pivot</field>
+        <field name="model">bank.statement.audit</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de Movimientos Bancarios">
+                <field name="journal_id" type="row"/>
+                <field name="date" type="col" interval="month"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         VISTA GRAPH - GRÁFICO
+         Visualización gráfica de movimientos
+         =================================================================== -->
+    <record id="bank_statement_audit_view_graph" model="ir.ui.view">
+        <field name="name">bank.statement.audit.view.graph</field>
+        <field name="model">bank.statement.audit</field>
+        <field name="arch" type="xml">
+            <graph string="Gráfico de Movimientos Bancarios" type="line">
+                <field name="date" type="col" interval="day"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         ACCIÓN PRINCIPAL - MOVIMIENTOS DE EXTRACTO
+         =================================================================== -->
+    <record id="bank_statement_audit_action" model="ir.actions.act_window">
+        <field name="name">Movimientos de Extracto</field>
+        <field name="res_model">bank.statement.audit</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="bank_statement_audit_view_search"/>
+        <field name="context">{
+            'search_default_filter_this_month': 1,
+        }</field>
+        <field name="domain">[('company_id', 'in', allowed_company_ids)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay movimientos bancarios para mostrar
+            </p>
+            <p>
+                Esta vista muestra todos los movimientos de extractos bancarios
+                con el saldo acumulado calculado por cada diario.
+            </p>
+            <p>
+                Puede filtrar por banco, fechas, estado de conciliación y más.
+                También puede exportar los datos a Excel usando el botón "Exportar XLSX".
+            </p>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         ACCIÓN PARA EXPORTAR A XLSX
+         Se llama desde el botón en la vista
+         =================================================================== -->
+    <record id="action_export_xlsx_wizard" model="ir.actions.act_window">
+        <field name="name">Exportar a Excel</field>
+        <field name="res_model">bank.statement.audit.export.xlsx</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_bank_statement_audit"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+</odoo>

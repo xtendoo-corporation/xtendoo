@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bank_statement_audit_accountant,bank.statement.audit.accountant,model_bank_statement_audit,account.group_account_user,1,0,0,0
+access_bank_statement_audit_manager,bank.statement.audit.manager,model_bank_statement_audit,account.group_account_manager,1,1,1,1
+access_bank_statement_audit_export_xlsx_accountant,bank.statement.audit.export.xlsx.accountant,model_bank_statement_audit_export_xlsx,account.group_account_user,1,1,1,1
+access_bank_statement_audit_export_xlsx_manager,bank.statement.audit.export.xlsx.manager,model_bank_statement_audit_export_xlsx,account.group_account_manager,1,1,1,1

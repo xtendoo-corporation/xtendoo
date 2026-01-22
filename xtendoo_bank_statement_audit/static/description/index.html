@@ -1,0 +1,78 @@
+# Bank Statement Audit - Xtendoo
+
+## Descripción
+
+Módulo de auditoría de extractos bancarios para Odoo 18.0 que permite:
+
+- **Visualizar todos los movimientos de extractos bancarios** (account.bank.statement.line)
+- **Ver el saldo acumulado (running balance)** calculado eficientemente con SQL window functions
+- **Filtrar** por diario, partner, fechas, estado de conciliación
+- **Agrupar** por diario, partner o extracto
+- **Exportar a Excel (XLSX)** con todas las columnas visibles
+
+## Características Principales
+
+### 1. Vista de Auditoría Bancaria
+Nuevo menú en Contabilidad > Auditoría Bancaria > Movimientos de Extracto con:
+- Fecha del movimiento
+- Descripción
+- Concepto / Referencia de pago
+- Empresa (partner)
+- Banco / Diario
+- Importe
+- **Saldo Acumulado** (calculado por diario)
+- Extracto
+- Asiento contable
+- Estado de conciliación
+
+### 2. Saldo Acumulado Optimizado
+El saldo acumulado se calcula usando una **SQL VIEW** con window functions de PostgreSQL:
+- Particionado por journal_id (cada diario tiene su propio saldo)
+- Ordenado por fecha e ID
+- Rendimiento óptimo incluso con miles de registros
+
+### 3. Filtros y Agrupaciones
+- Filtro por diario bancario
+- Filtro por partner
+- Filtro por rango de fechas
+- Filtro solo no conciliados / conciliados
+- Filtro por importes (positivos/negativos)
+- Agrupación por diario, partner, extracto, fecha, mes, año
+
+### 4. Exportación a Excel
+Botón de exportación que genera un archivo XLSX con:
+- Todas las columnas visibles incluyendo saldo acumulado
+- Hoja de resumen con KPIs por diario
+- Nombre de archivo descriptivo: `extracto_auditoria_<diario>_<fecha_desde>_<fecha_hasta>.xlsx`
+
+## Requisitos
+
+- Odoo 18.0
+- Módulo `account` instalado
+- Librería Python `xlsxwriter` para exportación Excel
+
+## Instalación
+
+1. Copiar el módulo a la carpeta de addons
+2. Actualizar lista de aplicaciones
+3. Instalar el módulo "Bank Statement Audit"
+
+## Seguridad
+
+Solo usuarios con permisos de contabilidad pueden acceder al menú:
+- `account.group_account_user`: Lectura
+- `account.group_account_manager`: Lectura, escritura, creación
+
+## Multi-compañía
+
+El módulo es compatible con multi-compañía:
+- Solo muestra movimientos de compañías accesibles
+- Filtra automáticamente por company_id
+
+## Autor
+
+- **Xtendoo** - https://xtendoo.es
+
+## Licencia
+
+AGPL-3.0
