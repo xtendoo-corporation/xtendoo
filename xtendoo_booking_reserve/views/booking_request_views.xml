@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="booking_request_view_tree" model="ir.ui.view">
+        <field name="name">booking.request.list</field>
+        <field name="model">booking.request</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state=='approved'"
+                decoration-danger="state=='rejected'"
+                decoration-info="state=='pending'"
+                create="false">
+                <field name="create_date" string="Fecha Solicitud" optional="show" />
+                <field name="name" />
+                <field name="phone" />
+                <field name="email" optional="hide" />
+                <field name="type_id" />
+                <field name="booking_date" />
+                <field name="booking_hour" />
+                <field name="state" widget="badge"
+                    decoration-success="state=='approved'"
+                    decoration-danger="state=='rejected'"
+                    decoration-warning="state=='pending'" />
+                <button name="action_approve" type="object"
+                    string="✓ Aprobar"
+                    class="btn-success"
+                    invisible="state != 'pending'"
+                    confirm="¿Confirmar aprobación de esta solicitud?" />
+                <button name="action_reject" type="object"
+                    string="✗ Rechazar"
+                    class="btn-danger"
+                    invisible="state != 'pending'"
+                    confirm="¿Confirmar rechazo de esta solicitud?" />
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="booking_request_view_form" model="ir.ui.view">
+        <field name="name">booking.request.form</field>
+        <field name="model">booking.request</field>
+        <field name="arch" type="xml">
+            <form string="Solicitud de Reserva">
+                <header>
+                    <button name="action_approve" type="object"
+                        string="Aprobar"
+                        class="btn-primary"
+                        invisible="state != 'pending'"
+                        confirm="¿Confirmar aprobación?" />
+                    <button name="action_reject" type="object"
+                        string="Rechazar"
+                        class="btn-secondary"
+                        invisible="state != 'pending'"
+                        confirm="¿Confirmar rechazo?" />
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="pending,approved,rejected" />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(resource_booking.resource_booking_action)d"
+                            type="action"
+                            class="oe_stat_button"
+                            icon="fa-calendar-check-o"
+                            invisible="not booking_id"
+                            context="{'search_default_id': booking_id}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Ver</span>
+                                <span class="o_stat_text">Reserva</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Información del Solicitante">
+                            <field name="name" />
+                            <field name="phone" widget="phone" />
+                            <field name="email" widget="email" />
+                            <field name="partner_id" readonly="1" />
+                        </group>
+                        <group string="Detalles de la Reserva">
+                            <field name="type_id" readonly="state != 'pending'" />
+                            <field name="booking_date" readonly="state != 'pending'" />
+                            <field name="booking_hour" readonly="state != 'pending'" />
+                            <field name="booking_id" invisible="1" />
+                        </group>
+                    </group>
+                    <group string="Notas">
+                        <field name="notes" nolabel="1" />
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" />
+                    <field name="activity_ids" />
+                    <field name="message_ids" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="booking_request_view_search" model="ir.ui.view">
+        <field name="name">booking.request.search</field>
+        <field name="model">booking.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="phone" />
+                <field name="email" />
+                <field name="type_id" />
+                <separator />
+                <filter string="Pendientes" name="pending"
+                    domain="[('state', '=', 'pending')]" />
+                <filter string="Aprobadas" name="approved"
+                    domain="[('state', '=', 'approved')]" />
+                <filter string="Rechazadas" name="rejected"
+                    domain="[('state', '=', 'rejected')]" />
+                <separator />
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_state"
+                        context="{'group_by': 'state'}" />
+                    <filter string="Tipo" name="group_type"
+                        context="{'group_by': 'type_id'}" />
+                    <filter string="Fecha" name="group_date"
+                        context="{'group_by': 'booking_date'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="booking_request_action" model="ir.actions.act_window">
+        <field name="name">Solicitudes de Reserva</field>
+        <field name="res_model">booking.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay solicitudes de reserva pendientes
+            </p>
+            <p>
+                Las solicitudes desde la página web aparecerán aquí
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item (inheriting resource_booking menus) -->
+    <menuitem id="booking_request_menu"
+        name="Validar Reservas"
+        action="booking_request_action"
+        parent="resource_booking.resource_booking_main_menu"
+        sequence="15"
+        groups="resource_booking.group_user" />
+</odoo>

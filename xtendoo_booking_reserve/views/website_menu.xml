@@ -1,0 +1,8 @@
+<odoo>
+    <record id="menu_booking_reserve" model="website.menu">
+        <field name="name">Reserva</field>
+        <field name="url">/booking/reserve</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="50"/>
+    </record>
+</odoo>
