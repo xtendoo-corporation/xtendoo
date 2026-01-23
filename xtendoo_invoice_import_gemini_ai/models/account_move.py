@@ -334,6 +334,20 @@ Required structure:
                     self._onchange_partner_id()
                 except Exception as e:
                     _logger.warning(f"Could not trigger partner onchange: {str(e)}")
+        else:
+            vals_partner = {
+                "name": supplier_data.get("name", "Unknown Supplier"),
+                "vat": supplier_data.get("vat", False),
+                "street": supplier_data.get("address", False),
+                "supplier_rank": 1,
+            }
+            new_partner = self.env["res.partner"].create(vals_partner)
+            self.partner_id = new_partner
+            if hasattr(self, '_onchange_partner_id'):
+                try:
+                    self._onchange_partner_id()
+                except Exception as e:
+                    _logger.warning(f"Could not trigger partner onchange: {str(e)}")
 
         # 2. Header
         if invoice_data.get("number"):
@@ -378,11 +392,16 @@ Required structure:
     def _find_partner(self, supplier_data):
         vat = supplier_data.get("vat")
         name = supplier_data.get("name")
+        print("*"*50)
+        print("Finding partner with VAT:", vat, "or Name:", name)
+        print("*"*50)
 
         if vat:
             vat_clean = re.sub(r"[^A-Z0-9]", "", vat.upper())
-            partner = self.env["res.partner"].search(
-                ["|", ("vat", "=", vat), ("vat", "=", vat_clean)], limit=1
+            vat_clean = (vat_clean or "").strip().upper()
+            partner = self.env["res.partner"].sudo().search(
+                [("vat", "ilike", vat_clean)],
+                limit=1
             )
             if partner:
                 return partner
