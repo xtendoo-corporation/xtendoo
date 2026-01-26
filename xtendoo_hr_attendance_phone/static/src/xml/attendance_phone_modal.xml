@@ -2,10 +2,12 @@
 <templates xml:space="preserve">
 
     <!-- Agregar botones de teléfono en la configuración del kiosco -->
-    <t t-name="hr_attendance.PublicKiosksSettingScreen" t-inherit="hr_attendance.PublicKiosksSettingScreen" t-inherit-mode="extension">
+    <t t-name="hr_attendance.PublicKiosksSettingScreen" t-inherit="hr_attendance.PublicKiosksSettingScreen"
+       t-inherit-mode="extension">
         <xpath expr="//div[hasclass('o_hr_kiosk_mode_main')]" position="inside">
             <!-- Botón Teléfono + PIN -->
-            <div class="d-flex flex-column align-items-center text-center gap-2" t-att-style="!env.isSmall ? 'max-width: min-content;' : ''">
+            <div class="d-flex flex-column align-items-center text-center gap-2"
+                 t-att-style="!env.isSmall ? 'max-width: min-content;' : ''">
                 <button
                     t-on-click="() => this.setSetting('phone')"
                     class="btn btn-light"
@@ -27,7 +29,8 @@
                 </t>
             </div>
             <!-- Botón Solo Teléfono -->
-            <div class="d-flex flex-column align-items-center text-center gap-2" t-att-style="!env.isSmall ? 'max-width: min-content;' : ''">
+            <div class="d-flex flex-column align-items-center text-center gap-2"
+                 t-att-style="!env.isSmall ? 'max-width: min-content;' : ''">
                 <button
                     t-on-click="() => this.setSetting('phone_only')"
                     class="btn btn-light"
@@ -81,12 +84,14 @@
     <t t-name="xtendoo_hr_attendance_phone.kiosk_phone_screen">
         <div class="o_hr_attendance_kiosk d-flex flex-column justify-content-center align-items-center h-100 p-3">
 
+            <!-- Header -->
             <div class="text-center mb-4">
                 <h2 class="mt-3 text-primary">
                     <i class="fa fa-phone me-2"></i>
                     Registro de Asistencia
                 </h2>
             </div>
+
 
             <!-- Mensaje de estado -->
             <t t-if="state.message">
@@ -96,16 +101,8 @@
             </t>
 
             <!-- Formulario principal -->
-            <div class="card shadow-lg" style="max-width: 450px; width: 100%; position: relative;">
-                <!-- Texto de estado en esquina superior derecha -->
-                <t t-if="state.employeeStatus">
-                    <div t-attf-class="employee-status-text {{state.employeeStatus === 'DENTRO' ? 'status-en-linea' : 'status-ausente'}}"
-                         style="position: absolute; top: 15px; right: 15px; z-index: 10; padding: 8px 12px; border-radius: 15px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                        <span>Estado actual: <strong t-esc="state.employeeStatus === 'DENTRO' ? 'En Línea' : 'Ausente'"/></span>
-                    </div>
-                </t>
-
-                <div t-attf-class="card-header bg-success text-white text-center py-3 {{state.employeeStatus ? 'card-header-with-status' : ''}}">
+            <div class="card shadow-lg" style="max-width: 450px; width: 100%;">
+                <div class="card-header bg-success text-white text-center py-3">
                     <h4 class="mb-1">
                         <i class="fa fa-user me-2"></i>
                         Ingrese sus datos
@@ -113,11 +110,28 @@
                 </div>
                 <div class="card-body p-4">
                     <form id="phone_attendance_main_form" t-on-submit="onSubmit">
-                        <div class="mb-4">
-                            <label for="main_phone_number" class="form-label h5">
-                                <i class="fa fa-phone text-success me-2"></i>
+                        <div class="form-header-with-status" t-if="state.employeeStatus">
+                            <label class="form-header-title">
+                                <i class="fa fa-phone me-2" style="color: #8e8e93;"></i>
                                 Número de Teléfono:
                             </label>
+                            <div class="employee-status-badges">
+                                <div
+                                    t-attf-class="status-badge {{state.employeeStatus === 'DENTRO' ? 'status-dentro' : 'status-fuera'}}">
+                                    <span class="status-indicator"></span>
+                                    <span t-esc="state.employeeStatus === 'DENTRO' ? 'En Línea' : 'Ausente'"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div t-if="!state.employeeStatus" class="mb-4">
+                            <label for="main_phone_number" class="form-label h5">
+                                <i class="fa fa-phone me-2" style="color: #8e8e93;"></i>
+                                Número de Teléfono:
+                            </label>
+                        </div>
+
+                        <div class="mb-4">
                             <input
                                 type="tel"
                                 id="main_phone_number"
@@ -159,7 +173,9 @@
 
                         <div class="d-grid gap-3">
                             <button type="submit" class="btn btn-success btn-lg" t-att-disabled="state.isProcessing">
-                                <span t-attf-class="spinner-border spinner-border-sm me-2 {{state.isProcessing ? '' : 'd-none'}}" role="status"></span>
+                                <span
+                                    t-attf-class="spinner-border spinner-border-sm me-2 {{state.isProcessing ? '' : 'd-none'}}"
+                                    role="status"></span>
                                 <i t-attf-class="fa fa-check me-2 {{state.isProcessing ? 'd-none' : ''}}"></i>
                                 Registrar
                             </button>
@@ -183,14 +199,8 @@
         <div class="o_hr_attendance_kiosk d-flex flex-column justify-content-center align-items-center h-100 p-3">
 
 
-            <!-- Header -->
-            <div class="text-center mb-4">
-                <h2 class="mt-3 text-success">
-                    <i class="fa fa-mobile me-2"></i>
-                    Registro Jornada
-                </h2>
-                <p class="text-muted">Ficha solo con tu número de teléfono</p>
-            </div>
+
+
 
             <!-- Mensaje de estado -->
             <t t-if="state.message">
@@ -199,29 +209,42 @@
                 </div>
             </t>
 
-            <!-- Formulario -->
-            <div class="card shadow-lg" style="max-width: 450px; width: 100%; position: relative;">
-                <!-- Texto de estado en esquina superior derecha -->
-                <t t-if="state.employeeStatus">
-                    <div t-attf-class="employee-status-text {{state.employeeStatus === 'DENTRO' ? 'status-en-linea' : 'status-ausente'}}"
-                         style="position: absolute; top: 15px; right: 15px; z-index: 10; padding: 8px 12px; border-radius: 15px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                        <span>Estado actual: <strong t-esc="state.employeeStatus === 'DENTRO' ? 'En Línea' : 'Ausente'"/></span>
-                    </div>
-                </t>
 
-                <div t-attf-class="card-header bg-success text-white text-center py-3 {{state.employeeStatus ? 'card-header-with-status' : ''}}">
-                    <h4 class="mb-0">
-                        <i class="fa fa-phone me-2"></i>
-                        Ingrese su teléfono
-                    </h4>
+            <!-- Formulario -->
+            <div class="card shadow-lg" style="max-width: 480px; width: 100%; background: #ffffff;">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <div class="kiosk-header-with-status">
+                        <span class="kiosk-title-header">
+                            <i class="fa fa-mobile me-2" style="color: #ffffff;"></i>
+                            Registro Jornada
+                        </span>
+                        <t t-if="state.employeeStatus">
+                            <div
+                                t-attf-class="kiosk-status-badge {{state.employeeStatus === 'DENTRO' ? 'status-dentro' : 'status-fuera'}}">
+                                <span class="kiosk-status-indicator"></span>
+                                <span t-esc="state.employeeStatus === 'DENTRO' ? 'En Línea' : 'Ausente'"/>
+                            </div>
+                        </t>
+                    </div>
                 </div>
                 <div class="card-body p-4">
                     <form id="phone_only_form" t-on-submit="onSubmit">
-                        <div class="mb-4">
-                            <label for="phone_only_number" class="form-label h5">
-                                <i class="fa fa-phone text-success me-2"></i>
-                                Número de Teléfono:
+                        <div class="form-header-with-status" t-if="state.employeeStatus">
+                            <label class="form-header-title">
+                                <i class="fa fa-phone me-2" style="color: #8e8e93;"></i>
+                                Teléfono:
                             </label>
+
+                        </div>
+
+                        <div t-if="!state.employeeStatus" class="mb-4">
+                            <label for="phone_only_number" class="form-label h5">
+                                <i class="fa fa-phone me-2" style="color: #8e8e93;"></i>
+                                Teléfono:
+                            </label>
+                        </div>
+
+                        <div class="mb-4">
                             <input
                                 type="tel"
                                 id="phone_only_number"
@@ -241,7 +264,9 @@
 
                         <div class="d-grid gap-3">
                             <button type="submit" class="btn btn-success btn-lg" t-att-disabled="state.isProcessing">
-                                <span t-attf-class="spinner-border spinner-border-sm me-2 {{state.isProcessing ? '' : 'd-none'}}" role="status"></span>
+                                <span
+                                    t-attf-class="spinner-border spinner-border-sm me-2 {{state.isProcessing ? '' : 'd-none'}}"
+                                    role="status"></span>
                                 <i t-attf-class="fa fa-check me-2 {{state.isProcessing ? 'd-none' : ''}}"></i>
                                 Registrar
                             </button>

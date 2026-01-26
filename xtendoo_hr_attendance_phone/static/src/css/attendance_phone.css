@@ -1,5 +1,6 @@
 /* ========================================
    ESTILOS GENERALES DEL KIOSCO
+   Paleta: Grises modernos con acento amarillo
    ======================================== */
 
 /* Ocultar header completo del kiosco */
@@ -10,80 +11,135 @@
 /* Ajustar el body para ocupar toda la pantalla */
 .o_hr_attendance_kiosk {
     padding-top: 0 !important;
-}
-
-/* Estilos para el botón de asistencia por teléfono */
-.phone-attendance-btn {
-    margin: 10px;
-    background: linear-gradient(135deg, #17a2b8, #138496) !important;
-    border: none !important;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.phone-attendance-btn:hover {
-    background: linear-gradient(135deg, #138496, #117a8b) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    background: #f5f5f7;
 }
 
 /* Estilos para tarjetas en el kiosco */
 .o_hr_attendance_kiosk .card {
-    border-radius: 15px;
+    border-radius: 20px;
     overflow: hidden;
+    background: #ffffff;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.o_hr_attendance_kiosk .card-header.bg-info {
-    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+/* Estilo especial para el título "Registro Jornada" */
+.kiosk-title-header {
+    background: #1c1c1e;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.3px;
+    margin: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 576px) {
+    .o_hr_attendance_kiosk .card {
+        max-height: calc(100vh - 100px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .o_hr_attendance_kiosk .card-header {
+        flex-shrink: 0;
+    }
+
+    .o_hr_attendance_kiosk .card-body {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.o_hr_attendance_kiosk .form-label.h5 {
+    font-size: 0.85rem !important;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.o_hr_attendance_kiosk .card-header.bg-info,
+.o_hr_attendance_kiosk .card-header.bg-success {
+    background: #ffffff !important;
     border-bottom: none;
+    padding: 30px 20px;
 }
 
 .o_hr_attendance_kiosk .form-control {
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1px solid #e5e5ea;
+    padding: 16px 18px;
     font-size: 16px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    background: #fafafa;
+    color: #1c1c1e;
 }
 
 .o_hr_attendance_kiosk .form-control:focus {
-    border-color: #17a2b8;
-    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    border-color: #ffd60a;
+    box-shadow: 0 0 0 3px rgba(255, 214, 10, 0.15);
+    background: #ffffff;
+    outline: none;
 }
 
 .o_hr_attendance_kiosk .btn-success {
-    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    background: #ffd60a !important;
     border: none !important;
-    border-radius: 10px;
-    padding: 12px 24px;
+    border-radius: 12px;
+    padding: 16px 32px;
     font-weight: 600;
+    color: #000000 !important;
+    transition: all 0.2s ease;
+}
+
+.o_hr_attendance_kiosk .btn-success:hover {
+    background: #c3a94d !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
 }
 
 .o_hr_attendance_kiosk .btn-outline-secondary {
-    border-radius: 10px;
-    padding: 12px 24px;
+    border-radius: 12px;
+    padding: 16px 32px;
+    border: 1px solid #d1d1d6;
+    color: #1c1c1e;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.o_hr_attendance_kiosk .btn-outline-secondary:hover {
+    background: #f5f5f7;
+    border-color: #a1a1a6;
 }
 
 /* Estilos para alertas de estado */
 .o_hr_attendance_kiosk .alert {
-    border-radius: 10px;
+    border-radius: 12px;
     animation: fadeIn 0.3s ease;
+    border: none;
 }
 
 /* Spinner de carga */
 .o_hr_attendance_kiosk .spinner-border {
     width: 1rem;
     height: 1rem;
+    border-color: #ffd60a;
+    border-right-color: transparent;
 }
 
 
 
 /* ========================================
    ESTILOS PARA PÁGINA MÓVIL
+   Diseño minimalista con grises y amarillo
    ======================================== */
 
 body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #f5f5f7;
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -97,26 +153,29 @@ body {
 }
 
 .attendance-card {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     overflow: hidden;
-    max-width: 400px;
+    max-width: 420px;
     margin: 0 auto;
     width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .card-header-custom {
-    background: linear-gradient(135deg, #17b81a, #6dbf97);
+    background: #2c2c2e;
     color: white;
-    padding: 25px 20px;
+    padding: 30px 24px;
     text-align: center;
+    position: relative;
 }
 
 .card-header-custom h3 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 600;
+    letter-spacing: -0.5px;
 }
 
 .card-header-custom .icon {
@@ -125,103 +184,108 @@ body {
 }
 
 .card-body-custom {
-    padding: 25px;
+    padding: 32px 24px;
+    background: #ffffff;
 }
 
 .form-group-custom {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .form-label-custom {
     display: block;
     font-weight: 600;
-    color: #333;
-    margin-bottom: 8px;
+    color: #1c1c1e;
+    margin-bottom: 10px;
     font-size: 0.95rem;
+    letter-spacing: -0.2px;
 }
 
 .form-control-custom {
     width: 100%;
-    padding: 15px;
-    font-size: 18px;
-    border: 2px solid #e0e0e0;
+    padding: 16px 18px;
+    font-size: 17px;
+    border: 1px solid #e5e5ea;
     border-radius: 12px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     box-sizing: border-box;
+    background: #fafafa;
+    color: #1c1c1e;
 }
 
 .form-control-custom:focus {
     outline: none;
-    border-color: #17a2b8;
-    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.2);
+    border-color: #ffd60a;
+    box-shadow: 0 0 0 3px rgba(255, 214, 10, 0.15);
+    background: #ffffff;
 }
 
 .btn-primary-custom {
     width: 100%;
-    padding: 16px;
-    font-size: 18px;
+    padding: 18px;
+    font-size: 17px;
     font-weight: 600;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
+    background: #ffd60a;
+    color: #1c1c1e;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    letter-spacing: -0.2px;
 }
 
 .btn-primary-custom:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255, 214, 10, 0.3);
+    background: #ffc300;
+}
+
+.btn-primary-custom:active {
+    transform: translateY(0);
 }
 
 .btn-primary-custom:disabled {
-    opacity: 0.7;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
 }
 
-.btn-secondary-custom {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 500;
-    border: 2px solid #6c757d;
-    border-radius: 12px;
-    background: white;
-    color: #6c757d;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 12px;
-}
 
 .alert-custom {
-    padding: 15px;
+    padding: 16px 18px;
     border-radius: 12px;
     margin-bottom: 20px;
     animation: fadeIn 0.3s ease;
+    border: 1px solid;
+    font-weight: 500;
 }
 
 .alert-success {
-    background: #d4edda;
-    color: #155724;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-color: #a5d6a7;
 }
 
 .alert-danger {
-    background: #f8d7da;
-    color: #721c24;
+    background: #ffebee;
+    color: #c62828;
+    border-color: #ef9a9a;
 }
 
 .alert-info {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: #e3f2fd;
+    color: #1565c0;
+    border-color: #90caf9;
 }
 
 .tab-buttons {
     display: flex;
-    margin-bottom: 20px;
-    border-radius: 10px;
+    margin-bottom: 24px;
+    border-radius: 12px;
     overflow: hidden;
-    background: #f0f0f0;
+    background: #f5f5f7;
+    padding: 4px;
+    gap: 4px;
 }
 
 .tab-btn {
@@ -231,11 +295,13 @@ body {
     background: transparent;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    border-radius: 10px;
+    color: #1c1c1e;
 }
 
 .tab-btn.active {
-    background: #17a2b8;
+    background: #2c2c2e;
     color: white;
 }
 
@@ -251,16 +317,17 @@ body {
     display: inline-block;
     width: 20px;
     height: 20px;
-    border: 3px solid rgba(255,255,255,.3);
+    border: 3px solid rgba(28, 28, 30, 0.2);
     border-radius: 50%;
-    border-top-color: #fff;
+    border-top-color: #1c1c1e;
     animation: spin 1s ease-in-out infinite;
 }
 
 .help-text {
     font-size: 0.85rem;
-    color: #6c757d;
-    margin-top: 5px;
+    color: #8e8e93;
+    margin-top: 6px;
+    letter-spacing: -0.1px;
 }
 
 /* ========================================
@@ -289,8 +356,20 @@ body {
    ======================================== */
 
 @media (max-width: 576px) {
+    .o_hr_attendance_kiosk {
+        overflow-y: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
+        max-height: 100vh;
+    }
+
     .o_hr_attendance_kiosk .card {
         margin: 10px;
+        margin-top: auto;
+        margin-bottom: auto;
     }
 
     .o_hr_attendance_kiosk .form-control-lg {
@@ -305,6 +384,8 @@ body {
 
     .o_hr_attendance_kiosk .card-body {
         padding: 1.5rem !important;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
     }
 
     .mobile-container {
@@ -329,83 +410,173 @@ body {
 }
 
 /* ========================================
-   TEXTO DE ESTADO EN ESQUINA SUPERIOR DERECHA
+   PÍLDORAS DE ESTADO (BADGES) - CENTRADAS
+   Diseño minimalista con fondo blanco
    ======================================== */
 
-/* Texto de estado base */
-.employee-status-text {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border: 2px solid;
-    transition: all 0.3s ease;
-    animation: fadeInStatus 0.5s ease-in;
+/* Contenedor de línea para título + estado */
+.form-header-with-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.form-header-title {
+    flex: 1;
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1c1c1e;
+    letter-spacing: -0.2px;
+}
+
+/* Contenedor de las píldoras */
+.employee-status-badges {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    animation: fadeInStatus 0.4s ease-in;
+    flex-shrink: 0;
+}
+
+/* Estilo base de cada píldora */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e5e5ea;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Indicador de estado (círculo) */
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 /* Estado: En Línea (dentro) */
-.employee-status-text.status-en-linea {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: #ffffff;
-    border-color: #1e7e34;
+.status-badge.status-dentro .status-indicator {
+    background: #34c759;
+    box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.2);
+}
+
+.status-badge.status-dentro {
+    color: #1c1c1e;
 }
 
 /* Estado: Ausente (fuera) */
-.employee-status-text.status-ausente {
-    background: linear-gradient(135deg, #ffc107, #fd7e14);
-    color: #212529;
-    border-color: #e0a800;
+.status-badge.status-fuera .status-indicator {
+    background: #8e8e93;
+    box-shadow: 0 0 0 2px rgba(142, 142, 147, 0.2);
+}
+
+.status-badge.status-fuera {
+    color: #8e8e93;
 }
 
 /* Animación de aparición */
 @keyframes fadeInStatus {
     from {
         opacity: 0;
-        transform: translateX(20px) scale(0.9);
+        transform: translateY(-10px) scale(0.95);
     }
     to {
         opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: translateY(0) scale(1);
     }
 }
 
-/* Efecto hover para el texto de estado */
-.employee-status-text:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+/* Efecto hover para las píldoras */
+.status-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 /* Responsive para dispositivos móviles */
 @media (max-width: 576px) {
-    .employee-status-text {
-        font-size: 10px !important;
-        padding: 6px 8px !important;
-        top: 10px !important;
-        right: 10px !important;
+    .form-header-with-status {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .employee-status-badges {
+        gap: 8px;
+        padding: 0;
+    }
+
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 8px 16px;
+        gap: 6px;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
     }
 }
 
 /* ========================================
-   AJUSTES PARA EVITAR SUPERPOSICIÓN DEL TEXTO DE ESTADO
+   HEADER CON ESTADO A LA DERECHA
    ======================================== */
 
-/* Padding superior para el header cuando hay texto de estado */
-.card:has(.employee-status-text) .card-header {
-    padding-top: 55px;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+.kiosk-header-with-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 16px;
 }
 
-/* Fallback para navegadores que no soportan :has() */
-.card-header-with-status {
-    padding-top: 55px !important;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
+.kiosk-header-title {
+    flex: 1;
+    text-align: left;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.2px;
 }
 
-/* Ajuste para móviles */
-@media (max-width: 576px) {
-    .card:has(.employee-status-text) .card-header,
-    .card-header-with-status {
-        padding-top: 45px !important;
-    }
+.kiosk-status-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #ffffff;
+    color: #1c1c1e;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
 }
 
+.kiosk-status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.kiosk-status-badge.status-dentro .kiosk-status-indicator {
+    background: #34c759;
+}
+
+.kiosk-status-badge.status-fuera .kiosk-status-indicator {
+    background: #8e8e93;
+}
