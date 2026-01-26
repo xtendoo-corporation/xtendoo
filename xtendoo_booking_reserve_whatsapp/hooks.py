@@ -22,6 +22,8 @@ def post_init_hook(env):
         'name': 'Recordatorio Cita WhatsApp',
         'model_id': env.ref('xtendoo_booking_reserve.model_booking_request').id,
         'gateway_id': gateway.id,
+        'category': 'utility',
+        'language': 'es_ES',
         'body': 'Hola {{var_1}}, le recordamos su cita para el {{var_2}} a las {{var_3}}. ¡Gracias!',
         'variable_ids': [v for v in variables] # Copy list logic if needed, but tuples are immutable refs so it's fine as structure source
     }
@@ -34,6 +36,8 @@ def post_init_hook(env):
         'name': 'Cita Aprobada WhatsApp',
         'model_id': env.ref('xtendoo_booking_reserve.model_booking_request').id,
         'gateway_id': gateway.id,
+        'category': 'utility',
+        'language': 'es_ES',
         'body': 'Hola {{var_1}}, su solicitud de cita para el {{var_2}} a las {{var_3}} ha sido APROBADA. Le esperamos.',
         'variable_ids': [(0, 0, v[2]) for v in variables] # Recreate to avoid sharing ORM stack issues if any validation checks ids
     }
@@ -45,6 +49,8 @@ def post_init_hook(env):
         'name': 'Cita Rechazada WhatsApp',
         'model_id': env.ref('xtendoo_booking_reserve.model_booking_request').id,
         'gateway_id': gateway.id,
+        'category': 'utility',
+        'language': 'es_ES',
         'body': 'Hola {{var_1}}, lamentamos informarle que su solicitud de cita para el {{var_2}} a las {{var_3}} ha sido RECHAZADA. Contacte con nosotros.',
         'variable_ids': [(0, 0, v[2]) for v in variables]
     }
