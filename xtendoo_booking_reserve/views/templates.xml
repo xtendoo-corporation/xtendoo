@@ -5,7 +5,7 @@
                 <div class="row justify-content-center">
                     <div class="col-lg-6 col-md-8">
                         <div class="card shadow-lg border-0">
-                            <div class="card-body p-4">
+                            <div class="card-body p-4" id="booking_main_container">
                                 <h2 class="mb-4 text-center text-primary">Reserva tu cita</h2>
                                 <form id="booking_form_step_1">
                                     <div class="mb-3">
@@ -23,21 +23,7 @@
                                             </t>
                                         </select>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Nombre *</label>
-                                        <input type="text" name="name" class="form-control"
-                                            required="required" placeholder="Tu nombre completo" />
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Teléfono *</label>
-                                        <input type="text" name="phone" class="form-control"
-                                            required="required" placeholder="Ej: +34 600 000 000" />
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Email</label>
-                                        <input type="email" name="email" class="form-control"
-                                            placeholder="tucorreo@ejemplo.com" />
-                                    </div>
+                                    <!-- Client data moved to Step 2 -->
                                     <div class="text-end">
                                         <input type="hidden" name="csrf_token"
                                             t-att-value="request.csrf_token()" />
@@ -47,17 +33,83 @@
                                         </button>
                                     </div>
                                 </form>
+                                <!-- Step 2: Calendar & Date -->
                                 <div id="booking_step_2" class="d-none mt-5">
+                                    <!-- Context Summary Step 2 -->
+                                    <div class="alert alert-info mb-4 text-center">
+                                        <strong>Cita para:</strong>
+                                        <span id="type_summary_step_2"></span>
+                                    </div>
+
                                     <h3 class="mb-4 text-center text-success">Selecciona una fecha y
                                         hora</h3>
                                     <div id="booking_calendar"></div>
                                     <input type="hidden" name="date" id="selected_date" />
+
                                     <div class="mb-3 d-none" id="hour_selector">
                                         <label class="form-label fw-bold">Hora *</label>
                                         <select name="hour" id="booking_hour" class="form-select"
                                             disabled="disabled"></select>
                                     </div>
+
                                     <div class="text-end mt-4">
+                                        <button type="button"
+                                            class="btn btn-primary btn-lg px-4 d-none"
+                                            id="booking_to_step_3">
+                                            Siguiente &#8594;
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Client Data (Initially Hidden) -->
+                                <div id="booking_step_3" class="d-none mt-5">
+                                    <h2 class="mb-4 text-center text-primary">Tus datos</h2>
+
+                                    <!-- Context Summary Step 3 -->
+                                    <div class="card bg-light mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary">Resumen de tu
+                                                reserva</h5>
+                                            <p class="card-text mb-1">
+                                                <strong>Tipo:</strong>
+                                                <span id="summary_type_step_3"></span>
+                                            </p>
+                                            <p class="card-text mb-1">
+                                                <strong>Fecha:</strong>
+                                                <span id="summary_date_step_3"></span>
+                                            </p>
+                                            <p class="card-text mb-0">
+                                                <strong>Hora:</strong>
+                                                <span id="summary_hour_step_3"></span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <form id="client_data_form">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Nombre *</label>
+                                            <input type="text" name="name" class="form-control"
+                                                required="required" placeholder="Tu nombre completo" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Teléfono *</label>
+                                            <input type="text" name="phone" class="form-control"
+                                                required="required"
+                                                placeholder="Ej: +34 600 000 000" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Email</label>
+                                            <input type="email" name="email" class="form-control"
+                                                placeholder="tucorreo@ejemplo.com" />
+                                        </div>
+                                    </form>
+
+                                    <div class="text-end mt-4">
+                                        <button type="button"
+                                            class="btn btn-secondary btn-lg px-4 me-2"
+                                            id="booking_back_step_2">
+                                            &#8592; Atrás
+                                        </button>
                                         <button type="button" class="btn btn-success btn-lg px-4"
                                             id="booking_reserve">
                                             Reservar
@@ -65,6 +117,30 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div class="modal fade" id="booking_success_modal" tabindex="-1" role="dialog"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">¡Reserva Completada!</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center py-4">
+                            <div class="mb-3">
+                                <i class="fa fa-check-circle fa-4x text-success"></i>
+                            </div>
+                            <p id="booking_success_message" class="lead mb-0"></p>
+                        </div>
+                        <div class="modal-footer justify-content-center">
+                            <button type="button" class="btn btn-success px-4"
+                                id="btn_success_modal_ok">Aceptar</button>
                         </div>
                     </div>
                 </div>

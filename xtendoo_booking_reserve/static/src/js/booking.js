@@ -12,22 +12,22 @@ publicWidget.registry.BookingReserve = publicWidget.Widget.extend({
             form.reportValidity();
             return;
         }
+        const typeSelect = form.querySelector('[name="booking_type"]');
+        const typeName = typeSelect.options[typeSelect.selectedIndex].text;
+        document.getElementById('type_summary_step_2').textContent = typeName;
+        
         this.$el.addClass('d-none');
         document.getElementById('booking_step_2').classList.remove('d-none');
-        // Inicializar el calendario visual si no está ya
-        if (!window.bookingCalendarInitialized) {
-            window.bookingCalendarInitialized = true;
-            if (publicWidget.registry.BookingCalendar) {
-                new publicWidget.registry.BookingCalendar();
-            }
-        }
     },
 });
 
 publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
-    selector: '#booking_step_2',
+    selector: '#booking_main_container',
     events: {
+        'click #booking_to_step_3': '_onToStep3',
+        'click #booking_back_step_2': '_onBackStep2',
         'click #booking_reserve': '_onReserve',
+        'change #booking_hour': '_onHourChange',
     },
     start: function () {
         this.initCalendar();
@@ -128,6 +128,14 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
                 if (Array.isArray(result) && result.length > 0) {
                     const hourSelect = document.getElementById('booking_hour');
                     hourSelect.innerHTML = '';
+                    // Add default option
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value = "";
+                    defaultOpt.textContent = "Selecciona una hora";
+                    defaultOpt.selected = true;
+                    defaultOpt.disabled = true;
+                    hourSelect.appendChild(defaultOpt);
+
                     result.forEach(hour => {
                         const opt = document.createElement('option');
                         opt.value = hour;
@@ -137,6 +145,9 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
                     hourSelect.disabled = false;
                     hourSelect.parentElement.classList.remove('d-none');
                     document.getElementById('selected_date').value = dateStr;
+                    
+                    // Enable Next button if hour is already valid (though usually user must pick)
+                    document.getElementById('booking_to_step_3').classList.remove('d-none');
                 } else {
                     alert('No hay horas disponibles para esta fecha.');
                 }
@@ -147,14 +158,67 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
             }
         });
     },
-    _onReserve: function () {
-        const form = document.getElementById('booking_form_step_1');
-        const type_id = form.querySelector('[name="booking_type"]').value;
-        const name = form.querySelector('[name="name"]').value;
-        const phone = form.querySelector('[name="phone"]').value;
-        const email = form.querySelector('[name="email"]').value;
+    
+    _onHourChange: function() {
+        const hour = document.getElementById('booking_hour').value;
+        const btn = document.getElementById('booking_to_step_3');
+        if(hour) {
+             btn.classList.remove('d-none'); // Ensure visible
+             // Could also enable if disabled
+        }
+    },
+
+    _onToStep3: function() {
         const date = document.getElementById('selected_date').value;
         const hour = document.getElementById('booking_hour').value;
+        
+        if (!date || !hour) {
+            alert('Por favor selecciona fecha y hora.');
+            return;
+        }
+        
+        // Populate Summary
+        const typeSelect = document.querySelector('[name="booking_type"]');
+        const typeName = typeSelect.options[typeSelect.selectedIndex].text;
+        
+        document.getElementById('summary_type_step_3').textContent = typeName;
+        document.getElementById('summary_date_step_3').textContent = date;
+        document.getElementById('summary_hour_step_3').textContent = hour;
+        
+        // Transition
+        document.getElementById('booking_step_2').classList.add('d-none');
+        document.getElementById('booking_step_3').classList.remove('d-none');
+    },
+
+    _onBackStep2: function() {
+        document.getElementById('booking_step_3').classList.add('d-none');
+        document.getElementById('booking_step_2').classList.remove('d-none');
+        // Triggers resize in case
+         if (this.calendar) {
+            this.calendar.updateSize();
+        }
+    },
+
+    _onReserve: function () {
+        // Validate client form
+        const clientForm = document.getElementById('client_data_form');
+        if (!clientForm.checkValidity()) {
+            clientForm.reportValidity();
+            return;
+        }
+
+        const form = document.getElementById('booking_form_step_1');
+        const type_id = form.querySelector('[name="booking_type"]').value;
+        const name = clientForm.querySelector('[name="name"]').value;
+        const phone = clientForm.querySelector('[name="phone"]').value;
+        const email = clientForm.querySelector('[name="email"]').value;
+        const date = document.getElementById('selected_date').value;
+        const hour = document.getElementById('booking_hour').value;
+        
+        if (!hour) {
+             alert("Por favor, selecciona una hora.");
+             return;
+        }
         
         // AQUI SI enviamos csrf_token porque booking_reserve acepta **data (kwargs)
         // obteniendolo del input hidden inyectado por el servidor
@@ -179,8 +243,22 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
             success: function (response) {
                 const result = response.result || response;
                 if (result && result.success) {
-                    alert(result.message || 'Su solicitud ha sido enviada y será revisada pronto.');
-                    window.location.reload();
+                    // Update modal content
+                    document.getElementById('booking_success_message').textContent = result.message || 'Su solicitud ha sido enviada y será revisada pronto.';
+                    
+                    // Init and Show Modal (jQuery fallback for Odoo)
+                    const $modal = $('#booking_success_modal');
+                    $modal.modal('show');
+                    
+                    // Bind reload events
+                    $modal.on('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
+                    
+                    document.getElementById('btn_success_modal_ok').addEventListener('click', function () {
+                        $modal.modal('hide');
+                    });
+                    
                 } else {
                     alert(result.message || 'Error al enviar la solicitud.');
                 }

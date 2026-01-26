@@ -2,6 +2,7 @@ from odoo import http
 from odoo.http import request
 from datetime import datetime, timedelta
 import logging
+import json
 from pytz import timezone as pytz_timezone
 
 class BookingReserveController(http.Controller):
@@ -113,12 +114,12 @@ class BookingReserveController(http.Controller):
             logger.error(f'Error interno en /booking/availability/hours: {str(e)}', exc_info=True)
             return []
 
-    @http.route('/booking/reserve', type='json', auth='public')
+    @http.route('/booking/reserve/submit', type='http', auth='public', methods=['POST'], website=True)
     def booking_reserve(self, **data):
         """Create booking request instead of direct booking"""
         logger = logging.getLogger(__name__)
         try:
-            logger.info(f"Petición /booking/reserve recibida con data={data}")
+            logger.info(f"Petición /booking/reserve/submit recibida con data={data}")
             type_id = data.get('type_id')
             name = data.get('name')
             phone = data.get('phone')
@@ -128,18 +129,27 @@ class BookingReserveController(http.Controller):
             
             if not type_id or not name or not phone or not date or not hour:
                 logger.warning(f'Datos incompletos en /booking/reserve: {data}')
-                return {'success': False, 'message': 'Datos incompletos'}
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Datos incompletos'}),
+                    headers=[('Content-Type', 'application/json')]
+                )
             
             try:
                 type_id_int = int(type_id)
             except Exception as e:
                 logger.error(f"type_id inválido: {type_id} - {str(e)}")
-                return {'success': False, 'message': 'Tipo de cita inválido'}
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Tipo de cita inválido'}),
+                    headers=[('Content-Type', 'application/json')]
+                )
             
             booking_type = http.request.env['resource.booking.type'].sudo().browse(type_id_int)
             if not booking_type or not booking_type.exists():
                 logger.warning(f'Tipo de cita no existe: {type_id}')
-                return {'success': False, 'message': 'Tipo de cita no encontrado'}
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Tipo de cita no encontrado'}),
+                    headers=[('Content-Type', 'application/json')]
+                )
             
             # Create booking request
             request_vals = {
@@ -155,12 +165,18 @@ class BookingReserveController(http.Controller):
             booking_request = http.request.env['booking.request'].sudo().create(request_vals)
             logger.info(f"Solicitud de reserva creada: {booking_request.id}")
             
-            return {
-                'success': True,
-                'request_id': booking_request.id,
-                'message': 'Su solicitud ha sido enviada y será revisada pronto.'
-            }
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'request_id': booking_request.id,
+                    'message': 'Su solicitud ha sido enviada y será revisada pronto.'
+                }),
+                headers=[('Content-Type', 'application/json')]
+            )
             
         except Exception as e:
             logger.error(f'Error interno en /booking/reserve: {str(e)}', exc_info=True)
-            return {'success': False, 'message': 'Error al procesar la solicitud'}
+            return request.make_response(
+                json.dumps({'success': False, 'message': 'Error al procesar la solicitud'}),
+                headers=[('Content-Type', 'application/json')]
+            )
