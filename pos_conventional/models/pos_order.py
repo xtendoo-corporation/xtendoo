@@ -381,7 +381,15 @@ class PosOrder(models.Model):
                     "switch_user_after_sale": True,  # Clave para indicar cambio de usuario
                 },
             }
-        return False
+
+        # Si no hay login forzado, redirigir siempre a un nuevo pedido usando la acción JS limpia
+        return {
+            "type": "ir.actions.client",
+            "tag": "pos_conventional_new_order",
+            "params": {
+                "default_session_id": self.session_id.id,
+            },
+        }
 
     def action_close_pos_session_wizard(self):
         """

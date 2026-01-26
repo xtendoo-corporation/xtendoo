@@ -43,30 +43,24 @@ class PosSessionPinWizard(models.TransientModel):
         # --- FLOW 1: Cambio de usuario tras venta ---
         if self.env.context.get("switch_user_after_sale"):
             if employee and employee.user_id:
-                # Redirigir a la lista de pedidos POS usando la acción estándar para corregir breadcrumbs
-                action = self.env["ir.actions.actions"]._for_xml_id(
-                    "point_of_sale.action_pos_pos_form"
-                )
-                action["view_mode"] = "list,form"
-                action["views"] = [(False, "list"), (False, "form")]
-                action["target"] = "main"
-                action["context"] = {
-                    "default_session_id": self.session_id.id,
-                    "default_user_id": employee.user_id.id,
+                # Retornar acción cliente para limpiar breadcrumbs via JS
+                return {
+                    "type": "ir.actions.client",
+                    "tag": "pos_conventional_new_order",
+                    "params": {
+                        "default_session_id": self.session_id.id,
+                        "default_user_id": employee.user_id.id,
+                    },
                 }
-                return action
             elif not employee and not self.session_id.config_id.module_pos_hr:
-                # Si no hay módulo HR, asumimos que el usuario actual es válido o no cambia
-                action = self.env["ir.actions.actions"]._for_xml_id(
-                    "point_of_sale.action_pos_pos_form"
-                )
-                action["view_mode"] = "list,form"
-                action["views"] = [(False, "list"), (False, "form")]
-                action["target"] = "main"
-                action["context"] = {
-                    "default_session_id": self.session_id.id,
+                # Retornar acción cliente
+                return {
+                    "type": "ir.actions.client",
+                    "tag": "pos_conventional_new_order",
+                    "params": {
+                        "default_session_id": self.session_id.id,
+                    },
                 }
-                return action
 
         # --- FLOW 2: Apertura de sesión normal ---
         # Si llegamos aquí, es apertura normal.
