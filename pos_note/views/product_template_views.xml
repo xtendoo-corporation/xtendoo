@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_pos_note" model="ir.ui.view">
+        <field name="name">product.template.form.pos_note</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="point_of_sale.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='pos']//group[@name='pos']" position="inside">
+                <field name="pos_require_custom_info"
+                       string="Pedir nombre y precio por línea"
+                       help="Al activar esta opción, al vender este producto en el POS se pedirá un nombre y precio personalizado solo para esa línea."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
