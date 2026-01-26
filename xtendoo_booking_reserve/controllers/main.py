@@ -43,11 +43,33 @@ class BookingReserveController(http.Controller):
                 start_date = today
                 end_date = today + timedelta(days=30)
             days = []
+            
+            # Get resource calendar from booking type
+            calendar = booking_type.resource_calendar_id
+            if not calendar:
+                logger.warning(f'No hay calendario asociado al tipo de cita: {type_id}')
+                return []
+            
+            tz = pytz_timezone(calendar.tz or 'UTC')
+            
             delta = (end_date - start_date).days
-            for i in range(delta):
+            for i in range(delta + 1):
                 d = start_date + timedelta(days=i)
-                available = d.weekday() < 5  # Lunes a viernes
+                # Check directly with calendar for this day
+                date_start = tz.localize(datetime.combine(d, datetime.min.time()))
+                date_end = date_start + timedelta(days=1)
+                
+                intervals = calendar._work_intervals_batch(date_start, date_end)[False]
+                # If there are work intervals, the day is potentially available
+                available = bool(intervals)
+                
+                # Further check: if fully booked? 
+                # For basic day availability, checking if open is enough for now.
+                # Detailed full-day capacity check would be heavier, 
+                # but we can rely on hour selection to show 'No hours available'.
+                
                 days.append({'date': d.strftime('%Y-%m-%d'), 'available': available})
+            
             logger.info(f"Respuesta /booking/availability: {days}")
             return days
         except Exception as e:
@@ -102,9 +124,41 @@ class BookingReserveController(http.Controller):
             for interval_start, interval_end, _ in intervals._items:
                 current = interval_start
                 while current + booking_duration <= interval_end:
-                    hour_str = current.strftime('%H:%M')
-                    if hour_str not in hours:
-                        hours.append(hour_str)
+                    # Check if this slot overlaps with any existing booking
+                    slot_end = current + booking_duration
+                    
+                    # Search for overlapping bookings
+                    # We need to convert slot times to UTC for search as Odoo stores in UTC
+                    slot_start_utc = current.astimezone(pytz_timezone('UTC')).replace(tzinfo=None)
+                    slot_end_utc = slot_end.astimezone(pytz_timezone('UTC')).replace(tzinfo=None)
+                    
+                    domain = [
+                        ('start', '<', slot_end_utc),
+                        ('stop', '>', slot_start_utc),
+                        ('state', '!=', 'rejected'), # Don't count rejected bookings
+                        # If resource specific, add resource check. 
+                        # Assuming pool or single resource for now based on type?
+                        # If resource_booking uses combination, we might need more complex logic.
+                        # For simple case: verify if there is capacity.
+                        # If type has resources composed, we check if ALL are busy?
+                        # Simplest: check if ANY booking overlaps if we assume 1 concurency per type/resource configuration.
+                    ]
+                    
+                    # If the booking type is linked to specific resources, usually combinations handle it.
+                    # But without combination logic exposed easily here, we check resource.booking directly.
+                    # If the system allows multiple bookings at same time (capacity), logic differs.
+                    # Assuming single capacity for now as requested "si un dia tiene muchas horas ocupadas...".
+                    
+                    overlap_count = http.request.env['resource.booking'].sudo().search_count(domain)
+                    
+                    # Logic: is capacity reached?
+                    # If we don't handle capacity, any overlap = taken.
+                    # If we assume 1 slot at a time:
+                    if overlap_count == 0:
+                        hour_str = current.strftime('%H:%M')
+                        if hour_str not in hours:
+                            hours.append(hour_str)
+                    
                     current += slot_duration
             
             logger.info(f"Horas disponibles en calendario: {hours}")

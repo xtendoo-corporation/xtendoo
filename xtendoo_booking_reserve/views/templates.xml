@@ -127,19 +127,19 @@
                 aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
+                        <div class="modal-header bg-info text-white">
                             <h5 class="modal-title">¡Reserva Completada!</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                         </div>
                         <div class="modal-body text-center py-4">
                             <div class="mb-3">
-                                <i class="fa fa-check-circle fa-4x text-success"></i>
+                                <i class="fa fa-check-circle fa-4x text-info"></i>
                             </div>
                             <p id="booking_success_message" class="lead mb-0"></p>
                         </div>
                         <div class="modal-footer justify-content-center">
-                            <button type="button" class="btn btn-success px-4"
+                            <button type="button" class="btn btn-info px-4 text-white"
                                 id="btn_success_modal_ok">Aceptar</button>
                         </div>
                     </div>
