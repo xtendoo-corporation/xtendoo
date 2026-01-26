@@ -96,9 +96,10 @@ class BookingRequest(models.Model):
         })
         
         # Post message in chatter
+        # Post message in chatter (Internal Note)
         self.message_post(
             body=_('Solicitud aprobada. Reserva creada: <a href="#" data-oe-model="resource.booking" data-oe-id="%s">%s</a>') % (booking.id, booking.display_name),
-            message_type='notification'
+            subtype_xmlid='mail.mt_note'
         )
         
         return {
@@ -121,9 +122,10 @@ class BookingRequest(models.Model):
         self.write({'state': 'rejected'})
         
         # Post message in chatter
+        # Post message in chatter (Internal Note)
         self.message_post(
             body=_('Solicitud rechazada'),
-            message_type='notification'
+            subtype_xmlid='mail.mt_note'
         )
         
         return {

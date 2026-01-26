@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reminder Template -->
+    <record id="email_template_booking_whatsapp_reminder" model="mail.whatsapp.template">
+        <field name="name">Recordatorio Cita WhatsApp</field>
+        <field name="model_id" ref="xtendoo_booking_reserve.model_booking_request" />
+        <field name="body">Hola {{var_1}}, le recordamos su cita para el {{var_2}} a las {{var_3}}.
+            ¡Gracias!</field>
+        <!-- Define variables mapping -->
+        <field name="variable_ids"
+            eval="[(0, 0, {
+            'name': '{{var_1}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'name',
+            'demo_value': 'Juan Pérez'
+        }), (0, 0, {
+            'name': '{{var_2}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'booking_date',
+            'demo_value': '2023-10-25'
+        }), (0, 0, {
+            'name': '{{var_3}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'booking_hour',
+            'demo_value': '10:00'
+        })]" />
+    </record>
+
+    <!-- Approved Template -->
+    <record id="email_template_booking_whatsapp_approved" model="mail.whatsapp.template">
+        <field name="name">Cita Aprobada WhatsApp</field>
+        <field name="model_id" ref="xtendoo_booking_reserve.model_booking_request" />
+        <field name="body">Hola {{var_1}}, su solicitud de cita para el {{var_2}} a las {{var_3}} ha
+            sido APROBADA. Le esperamos.</field>
+        <field name="variable_ids"
+            eval="[(0, 0, {
+            'name': '{{var_1}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'name',
+            'demo_value': 'Juan Pérez'
+        }), (0, 0, {
+            'name': '{{var_2}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'booking_date',
+            'demo_value': '2023-10-25'
+        }), (0, 0, {
+            'name': '{{var_3}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'booking_hour',
+            'demo_value': '10:00'
+        })]" />
+    </record>
+
+    <!-- Rejected Template -->
+    <record id="email_template_booking_whatsapp_rejected" model="mail.whatsapp.template">
+        <field name="name">Cita Rechazada WhatsApp</field>
+        <field name="model_id" ref="xtendoo_booking_reserve.model_booking_request" />
+        <field name="body">Hola {{var_1}}, lamentamos informarle que su solicitud de cita para el
+            {{var_2}} a las {{var_3}} ha sido RECHAZADA. Contacte con nosotros.</field>
+        <field name="variable_ids"
+            eval="[(0, 0, {
+            'name': '{{var_1}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'name',
+            'demo_value': 'Juan Pérez'
+        }), (0, 0, {
+            'name': '{{var_2}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'booking_date',
+            'demo_value': '2023-10-25'
+        }), (0, 0, {
+            'name': '{{var_3}}',
+            'line_type': 'body',
+            'field_type': 'field',
+            'field_name': 'booking_hour',
+            'demo_value': '10:00'
+        })]" />
+    </record>
+</odoo>

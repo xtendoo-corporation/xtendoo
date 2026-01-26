@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="booking_step_1_whatsapp" inherit_id="xtendoo_booking_reserve.booking_step_1">
+        <xpath expr="//form[@id='client_data_form']" position="inside">
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="whatsapp_opt_in"
+                    name="whatsapp_opt_in" />
+                <label class="form-check-label" for="whatsapp_opt_in">¿Quieres recibir
+                    notificaciones por WhatsApp?</label>
+            </div>
+        </xpath>
+    </template>
+</odoo>
