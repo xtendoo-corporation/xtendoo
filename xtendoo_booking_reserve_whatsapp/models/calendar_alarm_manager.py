@@ -56,9 +56,9 @@ class AlarmManager(models.AbstractModel):
                     body = template.body
                     # Basic variables common for events
                     replacements = {
-                        '{{name}}': partner.name,
-                        '{{event_name}}': event.name,
-                        '{{start}}': str(event.start),
+                        '{{1}}': partner.name,
+                        '{{2}}': event.name,
+                        '{{3}}': str(event.start),
                     }
                     # Also support the {{var_1}} structure if used in templates
                     if template.variable_ids:
