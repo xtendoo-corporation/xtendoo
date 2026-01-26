@@ -429,6 +429,18 @@ class PosOrder(models.Model):
                 order="id desc",
             )
 
+            # Fallback: Si no encuentro sesión del usuario, busco cualquiera abierta en POS no táctil
+            # Esto es necesario si se cambió el usuario de la sesión mediante Force Login
+            if not session:
+                session = self.env["pos.session"].search(
+                    [
+                        ("state", "in", ["opened", "closing_control"]),
+                        ("config_id.pos_non_touch", "=", True),
+                    ],
+                    limit=1,
+                    order="id desc",
+                )
+
         if not session:
             raise UserError(
                 _("No tienes ninguna sesión abierta en un punto de venta no táctil.")
@@ -498,6 +510,18 @@ class PosOrder(models.Model):
                 limit=1,
                 order="id desc",
             )
+
+            # Fallback: Si no encuentro sesión del usuario, busco cualquiera abierta en POS no táctil
+            # Esto es necesario si se cambió el usuario de la sesión mediante Force Login
+            if not session:
+                session = self.env["pos.session"].search(
+                    [
+                        ("state", "=", "opened"),
+                        ("config_id.pos_non_touch", "=", True),
+                    ],
+                    limit=1,
+                    order="id desc",
+                )
 
         if not session:
             raise UserError(
