@@ -3,20 +3,30 @@
     <record id="res_config_settings_view_form" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.pos.conventional</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form" />
         <field name="arch" type="xml">
             <!-- Ubicar el checkbox junto al campo de "Modo Restaurante" -->
             <xpath expr="//setting[@id='is_restaurant']" position="after">
                 <setting id="pos_non_touch_setting" string="POS no táctil"
-                         help="Activa un modo de punto de venta optimizado para equipos sin pantalla táctil.">
-                    <field name="pos_non_touch" readonly="has_open_pos_sessions"/>
+                    help="Activa un modo de punto de venta optimizado para equipos sin pantalla táctil.">
+                    <field name="pos_non_touch" readonly="has_open_pos_sessions" />
                     <!-- Campo auxiliar para forzar que se cargue el valor computed -->
-                    <field name="has_open_pos_sessions" invisible="1"/>
+                    <field name="has_open_pos_sessions" invisible="1" />
                 </setting>
                 <!-- Mensaje informativo si hay sesiones abiertas (usar attrs para vista XML) -->
                 <div invisible="not has_open_pos_sessions" class="alert alert-warning mt-2">
-                    No se puede cambiar el modo táctil/no táctil mientras existan sesiones POS abiertas.
+                    No se puede cambiar el modo táctil/no táctil mientras existan sesiones POS
+                    abiertas.
                 </div>
+                <setting id="pos_albaran_setting" string="Albarán desde el POS"
+                    help="Permite crear albaranes desde el POS.">
+                    <field name="pos_enable_albaran" />
+                </setting>
+                <setting id="pos_force_employee_login_after_order_setting"
+                    string="Pedir PIN tras venta"
+                    help="Pedir PIN del empleado tras finalizar una venta.">
+                    <field name="pos_force_employee_login_after_order" />
+                </setting>
             </xpath>
         </field>
     </record>

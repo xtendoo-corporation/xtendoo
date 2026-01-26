@@ -6,48 +6,46 @@ _logger = logging.getLogger(__name__)
 
 
 class PosOrder(models.Model):
-    _inherit = 'pos.order'
+    _inherit = "pos.order"
 
     state = fields.Selection(
-        selection_add=[('linked', 'Vinculado a Venta')],
-        ondelete={'linked': 'set default'}
+        selection_add=[("linked", "Vinculado a Venta")],
+        ondelete={"linked": "set default"},
     )
 
     linked_sale_order_id = fields.Many2one(
-        'sale.order',
+        "sale.order",
         string="Pedido de venta vinculado",
         readonly=True,
         copy=False,
-        help="Pedido de venta tradicional creado desde este pedido POS"
+        help="Pedido de venta tradicional creado desde este pedido POS",
     )
 
     is_linked_to_sale = fields.Boolean(
         string="Vinculado a venta",
         compute="_compute_is_linked_to_sale",
         store=True,
-        help="Indica si este pedido POS está vinculado a un pedido de venta tradicional"
+        help="Indica si este pedido POS está vinculado a un pedido de venta tradicional",
     )
 
     show_albaran_button = fields.Boolean(
         string="Mostrar botón albarán",
         compute="_compute_show_albaran_button",
-        store=False
+        store=False,
     )
 
     has_order_lines = fields.Boolean(
-        string="Tiene líneas de pedido",
-        compute="_compute_has_order_lines",
-        store=False
+        string="Tiene líneas de pedido", compute="_compute_has_order_lines", store=False
     )
 
     amount_untaxed = fields.Monetary(
         string="Importe base",
         compute="_compute_amount_untaxed",
         store=False,
-        help="Subtotal sin impuestos calculado desde las líneas del pedido"
+        help="Subtotal sin impuestos calculado desde las líneas del pedido",
     )
 
-    @api.depends('lines.price_subtotal', 'is_refund')
+    @api.depends("lines.price_subtotal", "is_refund")
     def _compute_amount_untaxed(self):
         """Calcula el subtotal sin impuestos sumando price_subtotal de todas las líneas"""
         for order in self:
@@ -57,13 +55,15 @@ class PosOrder(models.Model):
                 amount_untaxed = order.currency_id.round(amount_untaxed)
             order.amount_untaxed = amount_untaxed * sign
 
-    @api.depends('linked_sale_order_id')
+    @api.depends("linked_sale_order_id")
     def _compute_is_linked_to_sale(self):
         """Calcula si el pedido está vinculado a un sale.order"""
         for order in self:
             order.is_linked_to_sale = bool(order.linked_sale_order_id)
 
-    @api.depends('session_id', 'session_id.config_id', 'session_id.config_id.pos_enable_albaran')
+    @api.depends(
+        "session_id", "session_id.config_id", "session_id.config_id.pos_enable_albaran"
+    )
     def _compute_show_albaran_button(self):
         for order in self:
             order.show_albaran_button = bool(
@@ -72,7 +72,7 @@ class PosOrder(models.Model):
                 and order.session_id.config_id.pos_enable_albaran
             )
 
-    @api.depends('lines')
+    @api.depends("lines")
     def _compute_has_order_lines(self):
         """Verifica si el pedido tiene líneas"""
         for order in self:
@@ -86,26 +86,27 @@ class PosOrder(models.Model):
         self.ensure_one()
         if self.linked_sale_order_id:
             return {
-                'type': 'ir.actions.act_window',
-                'res_model': 'sale.order',
-                'res_id': self.linked_sale_order_id.id,
-                'view_mode': 'form',
-                'view_type': 'form',
-                'target': 'current',
+                "type": "ir.actions.act_window",
+                "res_model": "sale.order",
+                "res_id": self.linked_sale_order_id.id,
+                "view_mode": "form",
+                "view_type": "form",
+                "target": "current",
             }
         # Si no tiene sale.order vinculado, abrir el pos.order normalmente
         return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'pos.order',
-            'res_id': self.id,
-            'view_mode': 'form',
-            'view_type': 'form',
-            'target': 'current',
+            "type": "ir.actions.act_window",
+            "res_model": "pos.order",
+            "res_id": self.id,
+            "view_mode": "form",
+            "view_type": "form",
+            "target": "current",
         }
 
-
     @api.model
-    def get_product_line_data_by_barcode(self, barcode, pricelist_id=False, fiscal_position_id=False, partner_id=False):
+    def get_product_line_data_by_barcode(
+        self, barcode, pricelist_id=False, fiscal_position_id=False, partner_id=False
+    ):
         """
         Busca un producto por código de barras y devuelve los datos necesarios
         para crear una línea de pedido POS.
@@ -123,53 +124,53 @@ class PosOrder(models.Model):
             dict: Datos del producto y valores para la línea
         """
         # Buscar producto por código de barras
-        Product = self.env['product.product']
-        product = Product.search([('barcode', '=', barcode)], limit=1)
+        Product = self.env["product.product"]
+        product = Product.search([("barcode", "=", barcode)], limit=1)
 
         # Fallback: buscar por referencia interna (default_code)
         if not product:
-            product = Product.search([('default_code', '=', barcode)], limit=1)
+            product = Product.search([("default_code", "=", barcode)], limit=1)
 
         if not product:
             return {
-                'success': False,
-                'message': _("No se encontró ningún producto con el código: %s") % barcode
+                "success": False,
+                "message": _("No se encontró ningún producto con el código: %s")
+                % barcode,
             }
 
         # Obtener precio desde la lista de precios
         price_unit = product.lst_price
         if pricelist_id:
-            pricelist = self.env['product.pricelist'].browse(pricelist_id)
-            partner = self.env['res.partner'].browse(partner_id) if partner_id else False
+            pricelist = self.env["product.pricelist"].browse(pricelist_id)
+            partner = (
+                self.env["res.partner"].browse(partner_id) if partner_id else False
+            )
             price_unit = pricelist._get_product_price(
-                product,
-                1.0,
-                partner=partner,
-                uom=product.uom_id
+                product, 1.0, partner=partner, uom=product.uom_id
             )
 
         # Obtener impuestos aplicables
-        taxes = product.taxes_id.filtered(
-            lambda t: t.company_id == self.env.company
-        )
+        taxes = product.taxes_id.filtered(lambda t: t.company_id == self.env.company)
 
         # Aplicar posición fiscal si existe
         if fiscal_position_id:
-            fiscal_position = self.env['account.fiscal.position'].browse(fiscal_position_id)
+            fiscal_position = self.env["account.fiscal.position"].browse(
+                fiscal_position_id
+            )
             taxes = fiscal_position.map_tax(taxes)
 
         return {
-            'success': True,
-            'product': {
-                'id': product.id,
-                'display_name': product.display_name,
+            "success": True,
+            "product": {
+                "id": product.id,
+                "display_name": product.display_name,
             },
-            'line_vals': {
-                'full_product_name': product.display_name,
-                'qty': 1.0,
-                'price_unit': price_unit,
-                'tax_ids': taxes.ids,
-            }
+            "line_vals": {
+                "full_product_name": product.display_name,
+                "qty": 1.0,
+                "price_unit": price_unit,
+                "tax_ids": taxes.ids,
+            },
         }
 
     @api.model
@@ -178,58 +179,64 @@ class PosOrder(models.Model):
         res = super().default_get(fields_list)
 
         # Si no hay compañía, usar la del usuario actual
-        if 'company_id' not in res or not res.get('company_id'):
-            res['company_id'] = self.env.company.id
+        if "company_id" not in res or not res.get("company_id"):
+            res["company_id"] = self.env.company.id
 
         # Inicializar amount_return si no está presente
-        if 'amount_return' not in res:
-            res['amount_return'] = 0.0
+        if "amount_return" not in res:
+            res["amount_return"] = 0.0
 
         # SOLO usar la sesión si viene explícitamente en el contexto
         # NO buscar automáticamente sesiones porque puede causar que pedidos
         # de cajas táctiles se asignen incorrectamente a cajas no táctiles
-        session_id = self.env.context.get('default_session_id')
+        session_id = self.env.context.get("default_session_id")
         if session_id:
-            session = self.env['pos.session'].browse(session_id)
+            session = self.env["pos.session"].browse(session_id)
             if session.exists():
-                if 'session_id' not in res:
-                    res['session_id'] = session.id
+                if "session_id" not in res:
+                    res["session_id"] = session.id
                 # NO asignar config_id aquí, dejar que se compute desde session_id
-                if 'pricelist_id' not in res:
-                    res['pricelist_id'] = session.config_id.pricelist_id.id
-                if 'currency_id' not in res:
-                    res['currency_id'] = session.currency_id.id
+                if "pricelist_id" not in res:
+                    res["pricelist_id"] = session.config_id.pricelist_id.id
+                if "currency_id" not in res:
+                    res["currency_id"] = session.currency_id.id
 
                 # Establecer cliente por defecto si está configurado y no hay uno ya establecido
-                if 'partner_id' in fields_list and not res.get('partner_id'):
+                if "partner_id" in fields_list and not res.get("partner_id"):
                     if session.config_id.default_partner_id:
-                        res['partner_id'] = session.config_id.default_partner_id.id
+                        res["partner_id"] = session.config_id.default_partner_id.id
         else:
             # Si no hay sesión en el contexto, usar valores por defecto de la compañía
             # pero NO buscar sesiones automáticamente para evitar asignaciones incorrectas
             company = self.env.company
-            if 'currency_id' not in res:
-                res['currency_id'] = company.currency_id.id
-            if 'pricelist_id' not in res:
+            if "currency_id" not in res:
+                res["currency_id"] = company.currency_id.id
+            if "pricelist_id" not in res:
                 # Buscar la lista de precios por defecto
-                pricelist = self.env['product.pricelist'].search([
-                    ('company_id', '=', company.id)
-                ], limit=1)
+                pricelist = self.env["product.pricelist"].search(
+                    [("company_id", "=", company.id)], limit=1
+                )
                 if pricelist:
-                    res['pricelist_id'] = pricelist.id
+                    res["pricelist_id"] = pricelist.id
 
         return res
 
-    @api.onchange('session_id')
+    @api.onchange("session_id")
     def _onchange_session_id(self):
         """Establece datos básicos cuando se selecciona una sesión"""
         if self.session_id:
             if not self.company_id:
-                self.company_id = self.session_id.config_id.company_id or self.env.company
+                self.company_id = (
+                    self.session_id.config_id.company_id or self.env.company
+                )
             if not self.pricelist_id:
                 self.pricelist_id = self.session_id.config_id.pricelist_id
             if not self.currency_id:
-                self.currency_id = self.session_id.currency_id or self.pricelist_id.currency_id or self.company_id.currency_id
+                self.currency_id = (
+                    self.session_id.currency_id
+                    or self.pricelist_id.currency_id
+                    or self.company_id.currency_id
+                )
 
     def write(self, vals):
         """
@@ -242,9 +249,9 @@ class PosOrder(models.Model):
         for order in self:
             for line in order.lines:
                 if line.tax_ids_after_fiscal_position and not line.tax_ids:
-                    line.with_context(skip_inverse=True).write({
-                        'tax_ids': [(6, 0, line.tax_ids_after_fiscal_position.ids)]
-                    })
+                    line.with_context(skip_inverse=True).write(
+                        {"tax_ids": [(6, 0, line.tax_ids_after_fiscal_position.ids)]}
+                    )
 
         return super().write(vals)
 
@@ -271,44 +278,58 @@ class PosOrder(models.Model):
         Retorna una acción especial que el JavaScript interceptará para imprimir el ticket.
         """
         self.ensure_one()
+        print(f"POS DEBUG: Entering action_validate_and_invoice for {self.name}")
 
         # Validaciones previas
-        if self.state not in ['draft', 'paid']:
-            raise UserError(_('Solo se pueden validar pedidos en estado borrador o pagado.'))
+        if self.state not in ["draft", "paid"]:
+            raise UserError(
+                _("Solo se pueden validar pedidos en estado borrador o pagado.")
+            )
 
         if not self.lines:
-            raise UserError(_('No se puede validar un pedido sin líneas de producto.'))
+            raise UserError(_("No se puede validar un pedido sin líneas de producto."))
 
         if not self.payment_ids:
-            raise UserError(_('No se puede validar un pedido sin pagos registrados.'))
+            raise UserError(_("No se puede validar un pedido sin pagos registrados."))
 
         if not self.config_id.invoice_journal_id:
-            raise UserError(_('No hay un diario de facturación configurado para este punto de venta.'))
+            raise UserError(
+                _(
+                    "No hay un diario de facturación configurado para este punto de venta."
+                )
+            )
 
         # Verificar que el pedido esté pagado
         if not self._is_pos_order_paid():
-            raise UserError(_('El pedido no está completamente pagado. Faltan %.2f %s') % (
-                self.amount_total - self.amount_paid,
-                self.currency_id.symbol
-            ))
+            raise UserError(
+                _("El pedido no está completamente pagado. Faltan %.2f %s")
+                % (self.amount_total - self.amount_paid, self.currency_id.symbol)
+            )
 
         # Si ya tiene factura, no crear otra
         if self.account_move:
-            raise UserError(_('Este pedido ya tiene una factura asociada: %s') % self.account_move.name)
+            raise UserError(
+                _("Este pedido ya tiene una factura asociada: %s")
+                % self.account_move.name
+            )
 
         # Marcar para facturar
-        self.write({'to_invoice': True})
+        self.write({"to_invoice": True})
 
         # Si el pedido está en draft, marcarlo como pagado
-        if self.state == 'draft':
+        if self.state == "draft":
             try:
                 self.action_pos_order_paid()
             except Exception as e:
                 _logger.exception("Error al marcar pedido como pagado: %s", str(e))
-                raise UserError(_('Error al validar el pedido: %s') % str(e))
+                raise UserError(_("Error al validar el pedido: %s") % str(e))
 
         # Crear picking si es necesario (para contabilidad anglosajona)
-        if self.company_id.anglo_saxon_accounting and self.session_id.update_stock_at_closing and self.session_id.state != 'closed':
+        if (
+            self.company_id.anglo_saxon_accounting
+            and self.session_id.update_stock_at_closing
+            and self.session_id.state != "closed"
+        ):
             self._create_order_picking()
 
         # Generar la factura usando el método oficial de Odoo POS
@@ -316,23 +337,51 @@ class PosOrder(models.Model):
             invoice = self._generate_pos_order_invoice()
             _logger.info(
                 "POS Order %s: Factura %s creada correctamente desde backend",
-                self.name, invoice.name
+                self.name,
+                invoice.name,
             )
         except Exception as e:
             _logger.exception("Error al generar factura: %s", str(e))
-            raise UserError(_('Error al generar la factura: %s') % str(e))
+            raise UserError(_("Error al generar la factura: %s") % str(e))
 
         if self.config_id.iface_print_auto:
             # Construir la URL del informe HTML y devolver una acción cliente
-            report_xmlid = 'pos_conventional.report_factura_simplificada_80mm'
+            report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
             url = f"/report/html/{report_xmlid}/{invoice.id}"
             return {
-                'type': 'ir.actions.client',
-                'tag': 'pos_conventional.print_iframe',
-                'params': {'url': url},
+                "type": "ir.actions.client",
+                "tag": "pos_conventional.print_iframe",
+                "params": {
+                    "url": url,
+                    "next_action": self._get_post_validation_action(),
+                },
             }
 
+        post_action = self._get_post_validation_action()
+        if post_action:
+            return post_action
+
         return True
+
+    def _get_post_validation_action(self):
+        print(
+            f"POS DEBUG: Calling _get_post_validation_action. Config Force Login: {self.config_id.pos_force_employee_login_after_order}"
+        )
+
+        if self.config_id.pos_force_employee_login_after_order:
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": "pos.session.pin.wizard",
+                "view_mode": "form",
+                "target": "new",
+                "views": [(False, "form")],
+                "context": {
+                    "default_session_id": self.session_id.id,
+                    "default_user_id": self.env.user.id,
+                    "switch_user_after_sale": True,  # Clave para indicar cambio de usuario
+                },
+            }
+        return False
 
     def action_close_pos_session_wizard(self):
         """
@@ -347,49 +396,68 @@ class PosOrder(models.Model):
         session = None
 
         # 1. Intentar obtener la sesión del contexto
-        session_id = self.env.context.get('default_session_id') or self.env.context.get('session_id')
+        session_id = self.env.context.get("default_session_id") or self.env.context.get(
+            "session_id"
+        )
         if session_id:
-            session = self.env['pos.session'].browse(session_id)
-            if not session.exists() or session.state not in ['opened', 'closing_control']:
+            session = self.env["pos.session"].browse(session_id)
+            if not session.exists() or session.state not in [
+                "opened",
+                "closing_control",
+            ]:
                 session = None
 
         # 2. Si no hay contexto, intentar obtener del pedido actual
         if not session and self:
             order = self[0] if len(self) > 0 else None
-            if order and order.session_id and order.session_id.state in ['opened', 'closing_control']:
+            if (
+                order
+                and order.session_id
+                and order.session_id.state in ["opened", "closing_control"]
+            ):
                 session = order.session_id
 
         # 3. Si aún no hay sesión, buscar una sesión de POS no táctil del usuario
         if not session:
-            session = self.env['pos.session'].search([
-                ('user_id', '=', self.env.user.id),
-                ('state', 'in', ['opened', 'closing_control']),
-                ('config_id.pos_non_touch', '=', True),  # Solo POS no táctil
-            ], limit=1, order='id desc')
+            session = self.env["pos.session"].search(
+                [
+                    ("user_id", "=", self.env.user.id),
+                    ("state", "in", ["opened", "closing_control"]),
+                    ("config_id.pos_non_touch", "=", True),  # Solo POS no táctil
+                ],
+                limit=1,
+                order="id desc",
+            )
 
         if not session:
-            raise UserError(_('No tienes ninguna sesión abierta en un punto de venta no táctil.'))
+            raise UserError(
+                _("No tienes ninguna sesión abierta en un punto de venta no táctil.")
+            )
 
         # Validar que sea caja no táctil (por seguridad)
         if not session.config_id.pos_non_touch:
-            raise UserError(_('Esta función solo está disponible para cajas en modo no táctil.'))
+            raise UserError(
+                _("Esta función solo está disponible para cajas en modo no táctil.")
+            )
 
         # Crear el wizard de cierre
-        wizard = self.env['pos.session.closing.wizard'].create({
-            'session_id': session.id,
-            'cash_register_balance_end_real': session.cash_register_balance_end,
-        })
+        wizard = self.env["pos.session.closing.wizard"].create(
+            {
+                "session_id": session.id,
+                "cash_register_balance_end_real": session.cash_register_balance_end,
+            }
+        )
 
         # Retornar la acción para mostrar el wizard
         return {
-            'name': _('Cerrar caja - Modo no táctil'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'pos.session.closing.wizard',
-            'res_id': wizard.id,
-            'view_mode': 'form',
-            'target': 'new',
-            'views': [(False, 'form')],
-            'context': dict(self.env.context),
+            "name": _("Cerrar caja - Modo no táctil"),
+            "type": "ir.actions.act_window",
+            "res_model": "pos.session.closing.wizard",
+            "res_id": wizard.id,
+            "view_mode": "form",
+            "target": "new",
+            "views": [(False, "form")],
+            "context": dict(self.env.context),
         }
 
     def action_cash_in_out_wizard(self):
@@ -405,49 +473,62 @@ class PosOrder(models.Model):
         session = None
 
         # 1. Intentar obtener la sesión del contexto
-        session_id = self.env.context.get('default_session_id') or self.env.context.get('session_id')
+        session_id = self.env.context.get("default_session_id") or self.env.context.get(
+            "session_id"
+        )
         if session_id:
-            session = self.env['pos.session'].browse(session_id)
-            if not session.exists() or session.state != 'opened':
+            session = self.env["pos.session"].browse(session_id)
+            if not session.exists() or session.state != "opened":
                 session = None
 
         # 2. Si no hay contexto, intentar obtener del pedido actual
         if not session and self:
             order = self[0] if len(self) > 0 else None
-            if order and order.session_id and order.session_id.state == 'opened':
+            if order and order.session_id and order.session_id.state == "opened":
                 session = order.session_id
 
         # 3. Si aún no hay sesión, buscar una sesión de POS no táctil del usuario
         if not session:
-            session = self.env['pos.session'].search([
-                ('user_id', '=', self.env.user.id),
-                ('state', '=', 'opened'),
-                ('config_id.pos_non_touch', '=', True),  # Solo POS no táctil
-            ], limit=1, order='id desc')
+            session = self.env["pos.session"].search(
+                [
+                    ("user_id", "=", self.env.user.id),
+                    ("state", "=", "opened"),
+                    ("config_id.pos_non_touch", "=", True),  # Solo POS no táctil
+                ],
+                limit=1,
+                order="id desc",
+            )
 
         if not session:
-            raise UserError(_('No tienes ninguna sesión abierta en un punto de venta no táctil.'))
+            raise UserError(
+                _("No tienes ninguna sesión abierta en un punto de venta no táctil.")
+            )
 
         # Crear el wizard transient para la sesión encontrada
-        wizard = self.env['pos.session.cash_move.wizard'].create({
-            'session_id': session.id,
-            'currency_id': session.currency_id.id if session.currency_id else False,
-            'amount': 0.0,
-        })
+        wizard = self.env["pos.session.cash_move.wizard"].create(
+            {
+                "session_id": session.id,
+                "currency_id": session.currency_id.id if session.currency_id else False,
+                "amount": 0.0,
+            }
+        )
 
         # Obtener referencia a la vista del wizard de forma segura
-        view_ref = self.env.ref('pos_conventional.view_pos_session_cash_move_wizard_form', raise_if_not_found=False)
+        view_ref = self.env.ref(
+            "pos_conventional.view_pos_session_cash_move_wizard_form",
+            raise_if_not_found=False,
+        )
         view_id = view_ref.id if view_ref else False
 
         action = {
-            'name': _('Entrada / Salida de efectivo'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'pos.session.cash_move.wizard',
-            'res_id': wizard.id,
-            'view_mode': 'form',
-            'views': [(view_id, 'form')],
-            'target': 'new',
-            'context': dict(self.env.context),
+            "name": _("Entrada / Salida de efectivo"),
+            "type": "ir.actions.act_window",
+            "res_model": "pos.session.cash_move.wizard",
+            "res_id": wizard.id,
+            "view_mode": "form",
+            "views": [(view_id, "form")],
+            "target": "new",
+            "context": dict(self.env.context),
         }
         return action
 
@@ -468,39 +549,41 @@ class PosOrder(models.Model):
         """
         self.ensure_one()
 
-        if self.state != 'draft':
+        if self.state != "draft":
             return {
-                'success': False,
-                'message': _("No se pueden añadir productos a un pedido que no está en borrador.")
+                "success": False,
+                "message": _(
+                    "No se pueden añadir productos a un pedido que no está en borrador."
+                ),
             }
 
-        Product = self.env['product.product']
+        Product = self.env["product.product"]
 
         # Obtener el producto por ID o por código de barras
         if product_id:
             product = Product.browse(product_id)
             if not product.exists():
                 return {
-                    'success': False,
-                    'message': _("Producto no encontrado con ID: %s") % product_id
+                    "success": False,
+                    "message": _("Producto no encontrado con ID: %s") % product_id,
                 }
         elif barcode:
             # Buscar producto por código de barras
-            product = Product.search([('barcode', '=', barcode)], limit=1)
+            product = Product.search([("barcode", "=", barcode)], limit=1)
             # Fallback: buscar por referencia interna (default_code)
             if not product:
-                product = Product.search([('default_code', '=', barcode)], limit=1)
+                product = Product.search([("default_code", "=", barcode)], limit=1)
             if not product:
                 return {
-                    'success': False,
-                    'message': _("No se encontró ningún producto con el código: %s") % barcode
+                    "success": False,
+                    "message": _("No se encontró ningún producto con el código: %s")
+                    % barcode,
                 }
         else:
             return {
-                'success': False,
-                'message': _("Debe proporcionar un código de barras o ID de producto.")
+                "success": False,
+                "message": _("Debe proporcionar un código de barras o ID de producto."),
             }
-
 
         # Buscar si ya existe una línea con este producto para incrementar cantidad
         existing_line = self.lines.filtered(lambda l: l.product_id.id == product.id)
@@ -530,31 +613,36 @@ class PosOrder(models.Model):
                     product=product,
                     partner=self.partner_id,
                 )
-                price_subtotal = tax_results['total_excluded']
-                price_subtotal_incl = tax_results['total_included']
+                price_subtotal = tax_results["total_excluded"]
+                price_subtotal_incl = tax_results["total_included"]
 
-            line.write({
-                'qty': new_qty,
-                'price_subtotal': price_subtotal,
-                'price_subtotal_incl': price_subtotal_incl,
-            })
+            line.write(
+                {
+                    "qty": new_qty,
+                    "price_subtotal": price_subtotal,
+                    "price_subtotal_incl": price_subtotal_incl,
+                }
+            )
 
             # Forzar recálculo de totales del pedido (ejecuta el compute)
             self._compute_prices()
 
             _logger.info(
                 "POS Order %s: Incrementada cantidad del producto %s a %s",
-                self.name, product.display_name, new_qty
+                self.name,
+                product.display_name,
+                new_qty,
             )
             return {
-                'success': True,
-                'message': _("Cantidad actualizada: %s x %s") % (new_qty, product.display_name)
+                "success": True,
+                "message": _("Cantidad actualizada: %s x %s")
+                % (new_qty, product.display_name),
             }
 
         # Crear nueva línea de pedido
         try:
             line_vals = self._prepare_order_line_vals(product)
-            new_line = self.env['pos.order.line'].create(line_vals)
+            new_line = self.env["pos.order.line"].create(line_vals)
 
             # Ejecutar onchange de la línea para calcular subtotales
             new_line._onchange_qty()
@@ -564,19 +652,19 @@ class PosOrder(models.Model):
 
             _logger.info(
                 "POS Order %s: Añadido producto %s mediante escaneo de código de barras",
-                self.name, product.display_name
+                self.name,
+                product.display_name,
             )
 
-            return {
-                'success': True,
-                'message': _("Añadido: %s") % product.display_name
-            }
+            return {"success": True, "message": _("Añadido: %s") % product.display_name}
 
         except Exception as e:
-            _logger.exception("Error al añadir producto por código de barras: %s", str(e))
+            _logger.exception(
+                "Error al añadir producto por código de barras: %s", str(e)
+            )
             return {
-                'success': False,
-                'message': _("Error al añadir el producto: %s") % str(e)
+                "success": False,
+                "message": _("Error al añadir el producto: %s") % str(e),
             }
 
     def _prepare_order_line_vals(self, product, qty=1.0):
@@ -598,10 +686,7 @@ class PosOrder(models.Model):
         pricelist = self.pricelist_id or self.config_id.pricelist_id
         if pricelist:
             price_unit = pricelist._get_product_price(
-                product,
-                qty,
-                partner=self.partner_id,
-                uom=product.uom_id
+                product, qty, partner=self.partner_id, uom=product.uom_id
             )
         else:
             price_unit = product.lst_price
@@ -629,21 +714,21 @@ class PosOrder(models.Model):
                 product=product,
                 partner=self.partner_id,
             )
-            price_subtotal = tax_results['total_excluded']
-            price_subtotal_incl = tax_results['total_included']
+            price_subtotal = tax_results["total_excluded"]
+            price_subtotal_incl = tax_results["total_included"]
 
         return {
-            'order_id': self.id,
-            'product_id': product.id,
-            'full_product_name': product.display_name,
-            'qty': qty,
-            'price_unit': price_unit,
-            'discount': 0.0,
-            'price_subtotal': price_subtotal,
-            'price_subtotal_incl': price_subtotal_incl,
+            "order_id": self.id,
+            "product_id": product.id,
+            "full_product_name": product.display_name,
+            "qty": qty,
+            "price_unit": price_unit,
+            "discount": 0.0,
+            "price_subtotal": price_subtotal,
+            "price_subtotal_incl": price_subtotal_incl,
             # Guardar los impuestos base del producto; la posición fiscal
             # calculará tax_ids_after_fiscal_position si aplica
-            'tax_ids': [(6, 0, product_taxes.ids)],
+            "tax_ids": [(6, 0, product_taxes.ids)],
         }
 
     def action_print_factura_simplificada(self):
@@ -656,12 +741,7 @@ class PosOrder(models.Model):
         ).report_action(self.account_move)
 
     def get_factura_report_url(self, order_id=None):
-        """
-        Devuelve la URL del informe HTML del account.move asociado para este pedido.
-        Será llamada por JS en el backend para abrir el informe en un iframe y lanzar print().
-        Acepta opcionalmente order_id (por compatibilidad con RPC que pasa posicionamente el id).
-        """
-        # Si nos pasan order_id (llamada desde RPC con [order_id]), usar ese registro
+
         if order_id:
             order = self.browse(order_id)
         else:
@@ -672,161 +752,193 @@ class PosOrder(models.Model):
         if not order.account_move:
             return False
         # Construir URL relativa al endpoint de report HTML
-        base = '/report/html'
-        report_xmlid = 'pos_conventional.report_factura_simplificada_80mm'
+        base = "/report/html"
+        report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
         url = f"{base}/{report_xmlid}/{order.account_move.id}"
         return url
 
     # --- Nuevas acciones para botones de pago (invocadas desde la vista)
     def action_pay_cash(self):
         self.ensure_one()
-        cash_method = self.env['pos.payment.method'].search([('is_cash_count', '=', True)], limit=1)
+        cash_method = self.env["pos.payment.method"].search(
+            [("is_cash_count", "=", True)], limit=1
+        )
         if not cash_method:
-            raise UserError(_('No se encontró método de pago en efectivo.'))
-        wizard = self.env['pos.make.payment'].with_context(active_id=self.id).create({
-            'amount': self.amount_total - self.amount_paid,
-            'payment_method_id': cash_method.id,
-        })
+            raise UserError(_("No se encontró método de pago en efectivo."))
+        wizard = (
+            self.env["pos.make.payment"]
+            .with_context(active_id=self.id)
+            .create(
+                {
+                    "amount": self.amount_total - self.amount_paid,
+                    "payment_method_id": cash_method.id,
+                }
+            )
+        )
         return wizard.action_pay_cash()
 
     def action_pay_card(self):
         self.ensure_one()
         # Cambia 'tarjeta' por el nombre exacto si es diferente
-        card_method = self.env['pos.payment.method'].search([('name', 'ilike', 'tarjeta')], limit=1)
+        card_method = self.env["pos.payment.method"].search(
+            [("name", "ilike", "tarjeta")], limit=1
+        )
         if not card_method:
-            raise UserError(_('No se encontró método de pago con tarjeta.'))
-        wizard = self.env['pos.make.payment'].with_context(active_id=self.id).create({
-            'amount': self.amount_total - self.amount_paid,
-            'payment_method_id': card_method.id,
-        })
+            raise UserError(_("No se encontró método de pago con tarjeta."))
+        wizard = (
+            self.env["pos.make.payment"]
+            .with_context(active_id=self.id)
+            .create(
+                {
+                    "amount": self.amount_total - self.amount_paid,
+                    "payment_method_id": card_method.id,
+                }
+            )
+        )
         return wizard.action_pay_card()
 
     def action_pay_account(self):
         self.ensure_one()
-
-        if self.state != 'draft':
-            raise UserError(_('Solo se pueden convertir a albarán pedidos en estado borrador.'))
+        print(f"POS DEBUG: Entering action_pay_account for {self.name}")
+        if self.state != "draft":
+            raise UserError(
+                _("Solo se pueden convertir a albarán pedidos en estado borrador.")
+            )
 
         if not self.lines:
-            raise UserError(_('No se puede crear un albarán de un pedido sin líneas de producto.'))
+            raise UserError(
+                _("No se puede crear un albarán de un pedido sin líneas de producto.")
+            )
 
         if not self.partner_id:
-            raise UserError(_('Debe seleccionar un cliente para crear el albarán.'))
+            raise UserError(_("Debe seleccionar un cliente para crear el albarán."))
 
         sale_order_lines = []
         for pos_line in self.lines:
             taxes = pos_line.tax_ids_after_fiscal_position or pos_line.tax_ids
             line_vals = {
-                'product_id': pos_line.product_id.id,
-                'name': pos_line.full_product_name or pos_line.product_id.display_name,
-                'product_uom_qty': pos_line.qty,
-                'product_uom_id': pos_line.product_id.uom_id.id,
-                'price_unit': pos_line.price_unit,
-                'discount': pos_line.discount or 0.0,
-                'tax_ids': [(6, 0, taxes.ids)] if taxes else False,
+                "product_id": pos_line.product_id.id,
+                "name": pos_line.full_product_name or pos_line.product_id.display_name,
+                "product_uom_qty": pos_line.qty,
+                "product_uom_id": pos_line.product_id.uom_id.id,
+                "price_unit": pos_line.price_unit,
+                "discount": pos_line.discount or 0.0,
+                "tax_ids": [(6, 0, taxes.ids)] if taxes else False,
             }
             sale_order_lines.append((0, 0, line_vals))
 
         sale_order_vals = {
-            'partner_id': self.partner_id.id,
-            'partner_invoice_id': self.partner_id.id,
-            'partner_shipping_id': self.partner_id.id,
-            'pricelist_id': self.pricelist_id.id if self.pricelist_id else False,
-            'fiscal_position_id': self.fiscal_position_id.id if self.fiscal_position_id else False,
-            'order_line': sale_order_lines,
-            'origin': self.name,
-            'note': _('Creado desde pedido POS: %s') % self.name,
+            "partner_id": self.partner_id.id,
+            "partner_invoice_id": self.partner_id.id,
+            "partner_shipping_id": self.partner_id.id,
+            "pricelist_id": self.pricelist_id.id if self.pricelist_id else False,
+            "fiscal_position_id": (
+                self.fiscal_position_id.id if self.fiscal_position_id else False
+            ),
+            "order_line": sale_order_lines,
+            "origin": self.name,
+            "note": _("Creado desde pedido POS: %s") % self.name,
         }
 
         if self.company_id:
-            sale_order_vals['company_id'] = self.company_id.id
+            sale_order_vals["company_id"] = self.company_id.id
 
         created_picking = False
 
         try:
-            sale_order = self.env['sale.order'].create(sale_order_vals)
-            _logger.info("POS Order %s: Creado sale.order %s", self.name, sale_order.name)
+            sale_order = self.env["sale.order"].create(sale_order_vals)
+            _logger.info(
+                "POS Order %s: Creado sale.order %s", self.name, sale_order.name
+            )
 
-            self.write({
-                'linked_sale_order_id': sale_order.id,
-                'name': sale_order.name,
-                'state': 'linked'
-            })
+            self.write(
+                {
+                    "linked_sale_order_id": sale_order.id,
+                    "name": sale_order.name,
+                    "state": "linked",
+                }
+            )
 
             sale_order.action_confirm()
 
             for picking in sale_order.picking_ids:
                 created_picking = picking
-                if picking.state == 'draft':
+                if picking.state == "draft":
                     picking.action_confirm()
-                if picking.state != 'done':
+                if picking.state != "done":
                     picking.action_assign()
                     for move in picking.move_ids:
                         move.quantity = move.product_uom_qty
                     picking.button_validate()
-                    _logger.info("POS Order %s: Picking %s validado", self.name, picking.name)
+                    _logger.info(
+                        "POS Order %s: Picking %s validado", self.name, picking.name
+                    )
 
         except Exception as e:
             _logger.exception("Error al crear sale.order desde POS: %s", str(e))
-            raise UserError(_('Error al crear el albarán: %s') % str(e))
+            raise UserError(_("Error al crear el albarán: %s") % str(e))
 
         if created_picking:
-            report_url = '/report/html/pos_conventional.report_albaran_80mm/%s' % created_picking.id
+            report_url = (
+                "/report/html/pos_conventional.report_albaran_80mm/%s"
+                % created_picking.id
+            )
             return {
-                'type': 'ir.actions.client',
-                'tag': 'pos_conventional_print_iframe',
-                'params': {
-                    'url': report_url,
-                    'next_action': {
-                        'type': 'ir.actions.act_window',
-                        'res_model': 'pos.order',
-                        'res_id': self.id,
-                        'view_mode': 'form',
-                        # --- ESTA ES LA LÍNEA QUE FALTA ---
-                        'views': [[False, 'form']],
-                        # ----------------------------------
-                        'target': 'current',
-                    }
-                }
+                "type": "ir.actions.client",
+                "tag": "pos_conventional_print_iframe",
+                "params": {
+                    "url": report_url,
+                    "next_action": self._get_post_validation_action()
+                    or {
+                        "type": "ir.actions.act_window",
+                        "res_model": "pos.order",
+                        "res_id": self.id,
+                        "view_mode": "form",
+                        "views": [[False, "form"]],
+                        "target": "current",
+                    },
+                },
             }
 
+        next_action = self._get_post_validation_action()
+        if next_action:
+            return next_action
+
         return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'pos.order',
-            'res_id': self.id,
-            'view_mode': 'form',
-            'view_type': 'form',
-            'target': 'current',
+            "type": "ir.actions.act_window",
+            "res_model": "pos.order",
+            "res_id": self.id,
+            "view_mode": "form",
+            "view_type": "form",
+            "target": "current",
         }
 
+
 class PosOrderLine(models.Model):
-    _inherit = 'pos.order.line'
+    _inherit = "pos.order.line"
 
     @api.model_create_multi
     def create(self, vals_list):
-        """
-        Soporta creación en lote (vals_list es una lista de dicts).
-        Para cada dict, si viene order_id y product_id, asegura que tax_ids
-        contenga los impuestos del producto (mapeados por posición fiscal si aplica).
-        """
         normalized = []
         for vals in vals_list:
             # Trabajar con una copia para no mutar la entrada original inesperadamente
             v = dict(vals)
             order = None
-            if v.get('order_id'):
-                order = self.env['pos.order'].browse(v.get('order_id'))
+            if v.get("order_id"):
+                order = self.env["pos.order"].browse(v.get("order_id"))
             if order and order.exists():
-                if v.get('product_id'):
-                    product = self.env['product.product'].browse(v.get('product_id'))
-                    product_taxes = product.taxes_id.filtered(lambda t: t.company_id == order.company_id)
+                if v.get("product_id"):
+                    product = self.env["product.product"].browse(v.get("product_id"))
+                    product_taxes = product.taxes_id.filtered(
+                        lambda t: t.company_id == order.company_id
+                    )
                     if order.fiscal_position_id:
                         taxes_after_fp = order.fiscal_position_id.map_tax(product_taxes)
                     else:
                         taxes_after_fp = product_taxes
                     # Si no vienen taxes en vals, asignarlas
-                    if not v.get('tax_ids'):
-                        v['tax_ids'] = [(6, 0, taxes_after_fp.ids)]
+                    if not v.get("tax_ids"):
+                        v["tax_ids"] = [(6, 0, taxes_after_fp.ids)]
             normalized.append(v)
         return super(PosOrderLine, self).create(normalized)
 
@@ -837,9 +949,10 @@ class PosOrderLine(models.Model):
         for line in self:
             try:
                 if not line.tax_ids and line.tax_ids_after_fiscal_position:
-                    line.with_context(skip_inverse=True).write({'tax_ids': [(6, 0, line.tax_ids_after_fiscal_position.ids)]})
+                    line.with_context(skip_inverse=True).write(
+                        {"tax_ids": [(6, 0, line.tax_ids_after_fiscal_position.ids)]}
+                    )
             except Exception:
                 # No queremos romper el flujo de guardado si algo falla aquí
-                _logger.exception('No se pudo sincronizar tax_ids en pos.order.line')
+                _logger.exception("No se pudo sincronizar tax_ids en pos.order.line")
         return res
-

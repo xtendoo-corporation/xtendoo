@@ -4,20 +4,24 @@
     <record id="res_config_settings_view_form_inherit_default_partner" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.default.partner</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form" />
         <field name="arch" type="xml">
             <!-- Añadir el campo en la sección de Payment, después de Payment Methods -->
             <xpath expr="//setting[@id='payment_methods_new']" position="after">
                 <setting string="Cliente por Defecto"
-                         help="Cliente que se asignará automáticamente a los nuevos pedidos POS creados desde el backend">
+                    help="Cliente que se asignará automáticamente a los nuevos pedidos POS creados desde el backend">
                     <field name="pos_default_partner_id"
-                           placeholder="Seleccionar cliente por defecto..."
-                           options="{'no_create': True}"
-                           domain="[('customer_rank', '>', 0)]"/>
+                        placeholder="Seleccionar cliente por defecto..."
+                        options="{'no_create': True}"
+                        domain="[('customer_rank', '>', 0)]" />
                 </setting>
                 <setting string="Albarán desde el POS"
-                         help="Permite crear albaranes desde el POS">
-                    <field name="pos_enable_albaran"/>
+                    help="Permite crear albaranes desde el POS">
+                    <field name="pos_enable_albaran" />
+                </setting>
+                <setting string="Pedir PIN tras venta"
+                    help="Pedir PIN del empleado tras finalizar una venta.">
+                    <field name="pos_force_employee_login_after_order" />
                 </setting>
             </xpath>
         </field>
