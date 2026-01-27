@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//page[@name='pos']//group[@name='pos']" position="inside">
                 <field name="pos_require_custom_info"
-                       string="Pedir nombre y precio por línea"
+                       string="Pedir nombre y precio"
                        help="Al activar esta opción, al vender este producto en el POS se pedirá un nombre y precio personalizado solo para esa línea."/>
             </xpath>
         </field>
