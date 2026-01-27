@@ -24,8 +24,8 @@
     ],
     "assets": {
         "point_of_sale._assets_pos": [
-            "pos_note/static/src/js/**/*.js",
-            "pos_note/static/src/xml/**/*.xml",
+            "pos_product_select_name_price/static/src/js/**/*.js",
+            "pos_product_select_name_price/static/src/xml/**/*.xml",
         ],
     },
     "installable": True,
