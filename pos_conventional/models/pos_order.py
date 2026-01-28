@@ -4,6 +4,7 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+
 class PosOrder(models.Model):
     _inherit = "pos.order"
 
@@ -73,7 +74,12 @@ class PosOrder(models.Model):
 
     @api.depends("lines")
     def _compute_has_order_lines(self):
-        """Verifica si el pedido tiene líneas
+        """Verifica si el pedido tiene líneas"""
+        for order in self:
+            order.has_order_lines = bool(order.lines)
+
+    def open_linked_sale_order(self):
+        """
         Abre el sale.order vinculado en lugar del pos.order.
         Este método se usa cuando se hace clic en una fila de la lista.
         """
@@ -101,7 +107,22 @@ class PosOrder(models.Model):
     def get_product_line_data_by_barcode(
         self, barcode, pricelist_id=False, fiscal_position_id=False, partner_id=False
     ):
+        """
+        Busca un producto por código de barras y devuelve los datos necesarios
+        para crear una línea de pedido POS.
 
+        Este método es llamado desde JavaScript para obtener todos los datos
+        necesarios antes de crear la línea en el cliente.
+
+        Args:
+            barcode: Código de barras a buscar
+            pricelist_id: ID de la lista de precios del pedido
+            fiscal_position_id: ID de la posición fiscal del pedido
+            partner_id: ID del cliente del pedido
+
+        Returns:
+            dict: Datos del producto y valores para la línea
+        """
         # Buscar producto por código de barras
         Product = self.env["product.product"]
         product = Product.search([("barcode", "=", barcode)], limit=1)
@@ -202,7 +223,23 @@ class PosOrder(models.Model):
 
     @api.onchange("session_id")
     def _onchange_session_id(self):
-        """Establece datos básicos cuando se selecciona una sesión
+        """Establece datos básicos cuando se selecciona una sesión"""
+        if self.session_id:
+            if not self.company_id:
+                self.company_id = (
+                    self.session_id.config_id.company_id or self.env.company
+                )
+            if not self.pricelist_id:
+                self.pricelist_id = self.session_id.config_id.pricelist_id
+            if not self.currency_id:
+                self.currency_id = (
+                    self.session_id.currency_id
+                    or self.pricelist_id.currency_id
+                    or self.company_id.currency_id
+                )
+
+    def write(self, vals):
+        """
         Override write para asegurar que los impuestos persistan correctamente.
 
         Cuando se guarda un pedido POS desde el backend, se asegura que tax_ids
@@ -219,7 +256,24 @@ class PosOrder(models.Model):
         return super().write(vals)
 
     def _compute_prices(self):
-        """Sobrescribir para asegurar que la moneda esté configurada antes de calcular
+        """Sobrescribir para asegurar que la moneda esté configurada antes de calcular"""
+        for order in self:
+            # Asegurar que la moneda esté configurada antes de cualquier cálculo
+            if not order.currency_id:
+                if order.session_id and order.session_id.currency_id:
+                    order.currency_id = order.session_id.currency_id
+                elif order.pricelist_id and order.pricelist_id.currency_id:
+                    order.currency_id = order.pricelist_id.currency_id
+                elif order.company_id and order.company_id.currency_id:
+                    order.currency_id = order.company_id.currency_id
+                else:
+                    order.currency_id = self.env.company.currency_id
+
+        # Llamar al método padre que hace los cálculos reales
+        return super()._compute_prices()
+
+    def action_validate_and_invoice(self):
+        """
         Valida el pedido POS y crea la factura desde el backend (no táctil).
         Retorna una acción especial que el JavaScript interceptará para imprimir el ticket.
         """
@@ -324,7 +378,15 @@ class PosOrder(models.Model):
         }
 
     def action_close_pos_session_wizard(self):
+        """
+        Abre el wizard para cerrar la sesión POS actual del usuario.
+        Este método se llama desde el botón en la vista de pedidos.
 
+        La sesión se determina en este orden de prioridad:
+        1. session_id del contexto (pasado desde la vista)
+        2. session_id del pedido actual (si se llama desde un pedido específico)
+        3. Buscar sesión abierta del usuario en un POS no táctil
+        """
         session = None
 
         # 1. Intentar obtener la sesión del contexto
@@ -405,7 +467,15 @@ class PosOrder(models.Model):
         }
 
     def action_cash_in_out_wizard(self):
+        """
+        Abre un wizard o formulario para registrar una entrada/salida de efectivo
+        en la sesión POS actual del usuario.
 
+        La sesión se determina en este orden de prioridad:
+        1. session_id del contexto (pasado desde la vista)
+        2. session_id del pedido actual (si se llama desde un pedido específico)
+        3. Buscar sesión abierta del usuario en un POS no táctil
+        """
         session = None
 
         # 1. Intentar obtener la sesión del contexto
@@ -481,7 +551,20 @@ class PosOrder(models.Model):
         return action
 
     def add_product_by_barcode(self, barcode=None, product_id=None, line_vals=None):
+        """
+        Añade un producto al pedido POS mediante código de barras o product_id.
 
+        Este método es llamado desde el controlador JavaScript cuando
+        se detecta un escaneo de código de barras.
+
+        Args:
+            barcode: Código de barras escaneado (opcional si se pasa product_id)
+            product_id: ID del producto a añadir (opcional si se pasa barcode)
+            line_vals: Valores precalculados para la línea (opcional)
+
+        Returns:
+            dict: Resultado de la operación con 'success' y 'message'
+        """
         self.ensure_one()
 
         if self.state != "draft":
@@ -603,7 +686,18 @@ class PosOrder(models.Model):
             }
 
     def _prepare_order_line_vals(self, product, qty=1.0):
+        """
+        Prepara los valores para crear una línea de pedido POS.
 
+        Reutiliza la lógica de precios y taxes del sistema.
+
+        Args:
+            product: Producto a añadir
+            qty: Cantidad (por defecto 1.0)
+
+        Returns:
+            dict: Valores para crear la línea
+        """
         self.ensure_one()
 
         # Obtener precio desde la lista de precios
@@ -665,7 +759,10 @@ class PosOrder(models.Model):
         ).report_action(self.account_move)
 
     def action_send_email(self):
-
+        """
+        Envía el ticket de compra por correo electrónico al cliente.
+        Abre el wizard de composición de email con la plantilla precargada.
+        """
         self.ensure_one()
         if not self.account_move:
             raise UserError(_("Este pedido no tiene una factura asociada para enviar."))
@@ -875,6 +972,7 @@ class PosOrder(models.Model):
             "view_type": "form",
             "target": "current",
         }
+
 
 class PosOrderLine(models.Model):
     _inherit = "pos.order.line"
