@@ -2,7 +2,6 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools import float_is_zero
 
-
 class PosSessionClosingWizard(models.TransientModel):
     _name = "pos.session.closing.wizard"
     _description = "Wizard para cierre de sesión POS no táctil"
@@ -124,10 +123,7 @@ class PosSessionClosingWizard(models.TransientModel):
             )
 
     def action_close_session(self):
-        """
-        Cierra la sesión POS usando los métodos estándares de Odoo.
-        Reutiliza completamente la lógica del core.
-        """
+
         self.ensure_one()
 
         # Validar que la sesión esté en estado abierto
@@ -192,10 +188,7 @@ class PosSessionClosingWizard(models.TransientModel):
         }
 
     def action_print_daily_report(self):
-        """
-        Imprime el informe de ventas diarias (X report) de la sesión.
-        Utiliza el mismo informe que genera Odoo en el POS.
-        """
+
         self.ensure_one()
         # Usar el mismo método que el wizard de Odoo (pos.daily.sales.reports.wizard)
         data = {
@@ -209,9 +202,7 @@ class PosSessionClosingWizard(models.TransientModel):
         )
 
     def action_open_cash_calculator(self):
-        """
-        Abre un wizard separado con la calculadora de monedas y billetes
-        """
+
         self.ensure_one()
 
         # Crear el wizard de calculadora
@@ -233,9 +224,7 @@ class PosSessionClosingWizard(models.TransientModel):
         }
 
     def action_open_cash_move_wizard(self):
-        """
-        Abre el wizard de entrada/salida de efectivo sin cerrar el wizard de cierre.
-        """
+
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",

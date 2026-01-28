@@ -1,11 +1,7 @@
 from odoo import api, fields, models
 
-
 class CashboxCalculatorMixin(models.AbstractModel):
-    """
-    Mixin para añadir calculadora de efectivo a cualquier wizard.
-    Proporciona campos para contar billetes y monedas, y calcula el total automáticamente.
-    """
+
     _name = 'cashbox.calculator.mixin'
     _description = 'Calculadora de efectivo (billetes y monedas)'
 
@@ -36,12 +32,7 @@ class CashboxCalculatorMixin(models.AbstractModel):
     qty_001 = fields.Integer(string='0,01 €', default=0)
 
     def _calculate_cashbox_total(self):
-        """
-        Calcula el total de efectivo basado en las cantidades de billetes y monedas.
 
-        Returns:
-            float: Total calculado en euros
-        """
         self.ensure_one()
         return (
             self.qty_500 * 500 +

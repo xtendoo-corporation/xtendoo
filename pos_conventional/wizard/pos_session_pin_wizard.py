@@ -1,7 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
-
 class PosSessionPinWizard(models.TransientModel):
     _name = "pos.session.pin.wizard"
     _description = "Wizard para validar PIN de apertura POS"

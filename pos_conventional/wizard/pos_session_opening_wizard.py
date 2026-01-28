@@ -1,7 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
-
 class PosSessionOpeningWizard(models.TransientModel):
     _name = 'pos.session.opening.wizard'
     _description = 'Wizard para apertura de sesión POS no táctil'
@@ -19,10 +18,7 @@ class PosSessionOpeningWizard(models.TransientModel):
     cash_control = fields.Boolean(related='session_id.cash_control', readonly=True)
 
     def action_validate_and_open(self):
-        """
-        Valida el PIN del empleado y abre la sesión sin lanzar el frontend.
-        Reutiliza completamente la lógica estándar de Odoo para validación y apertura.
-        """
+
         self.ensure_one()
 
         # Abrir la sesión usando el método estándar de Odoo
@@ -32,11 +28,7 @@ class PosSessionOpeningWizard(models.TransientModel):
         return self._return_to_backend()
 
     def _validate_employee_pin(self, vals=None):
-        """
-        Valida el PIN del empleado usando los mecanismos estándar de Odoo.
-        Si se llama desde el wizard de PIN, recibe un dict con los datos.
-        Si se llama desde el wizard original, usa self.
-        """
+
         if vals:
             session_id = vals['session_id']
             user_id = vals['user_id']
@@ -77,10 +69,7 @@ class PosSessionOpeningWizard(models.TransientModel):
         return None
 
     def _open_session_backend(self):
-        """
-        Abre la sesión POS sin lanzar el frontend, reutilizando el método estándar.
-        Establece el dinero inicial si el control de efectivo está activo.
-        """
+
         self.ensure_one()
         session = self.session_id
 
@@ -105,10 +94,7 @@ class PosSessionOpeningWizard(models.TransientModel):
         return True
 
     def _return_to_backend(self):
-        """
-        Retorna a la vista de pedidos POS después de abrir la sesión.
-        Muestra todos los pedidos de esta caja para permitir devoluciones de sesiones anteriores.
-        """
+
         self.ensure_one()
 
         # Obtener todas las sesiones de este config

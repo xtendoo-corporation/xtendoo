@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
 
-
 class PosCashCalculatorWizard(models.TransientModel):
     _name = "pos.cash.calculator.wizard"
     _description = "Calculadora de Monedas y Billetes"
@@ -86,9 +85,7 @@ class PosCashCalculatorWizard(models.TransientModel):
             wizard.total = total
 
     def action_confirm(self):
-        """
-        Confirma el cálculo y actualiza el wizard padre con el total calculado
-        """
+
         self.ensure_one()
 
         if self.closing_wizard_id:
@@ -130,9 +127,7 @@ class PosCashCalculatorWizard(models.TransientModel):
         return {"type": "ir.actions.act_window_close"}
 
     def action_cancel(self):
-        """
-        Cancela la calculadora y vuelve al wizard padre sin cerrar todos los modales.
-        """
+
         self.ensure_one()
 
         if self.closing_wizard_id:

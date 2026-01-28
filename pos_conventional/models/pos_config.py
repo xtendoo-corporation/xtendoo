@@ -1,6 +1,5 @@
 from odoo import fields, models, _
 
-
 class PosConfig(models.Model):
     _inherit = "pos.config"
 
@@ -30,10 +29,7 @@ class PosConfig(models.Model):
     )
 
     def open_ui(self):
-        """
-        Override del método open_ui para interceptar la apertura
-        cuando pos_non_touch está activo.
-        """
+
         self.ensure_one()
 
         # Si es modo no táctil, abrir wizard en lugar de la UI

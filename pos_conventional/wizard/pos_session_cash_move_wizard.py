@@ -1,7 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-
 class PosSessionCashMoveWizard(models.TransientModel):
     _name = 'pos.session.cash_move.wizard'
     _description = 'Wizard para Entrada/Salida de efectivo (backend)'
@@ -31,9 +30,7 @@ class PosSessionCashMoveWizard(models.TransientModel):
         return {'type': 'ir.actions.act_window_close'}
 
     def action_open_cash_calculator(self):
-        """
-        Abre el wizard de calculadora de efectivo para calcular el importe
-        """
+
         self.ensure_one()
 
         # Crear el wizard de calculadora vinculado a este wizard de entrada/salida
@@ -50,6 +47,4 @@ class PosSessionCashMoveWizard(models.TransientModel):
             'target': 'new',
             'context': self.env.context,
         }
-
-
 

@@ -1,7 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-
 class PosSession(models.Model):
     _inherit = "pos.session"
 
@@ -24,18 +23,7 @@ class PosSession(models.Model):
         "order_ids", "order_ids.linked_sale_order_id", "order_ids.amount_total"
     )
     def _compute_linked_sale_orders_total(self):
-        """Calcula el total y cantidad de pedidos vinculados a sale.order (cuenta cliente)"""
-        for session in self:
-            linked_orders = session.order_ids.filtered(lambda o: o.linked_sale_order_id)
-            session.linked_sale_orders_count = len(linked_orders)
-            session.linked_sale_orders_total = sum(
-                order.amount_total for order in linked_orders
-            )
-
-    # _validate_session override removed as it was only for excluding linked orders
-
-    def _get_captured_payments_domain(self):
-        """
+        """Calcula el total y cantidad de pedidos vinculados a sale.order (cuenta cliente)
         Override para excluir pagos de pedidos vinculados a sale.order del cálculo del balance.
         Estos pedidos se gestionan en cuenta cliente y no afectan al arqueo de caja.
         """
@@ -55,19 +43,13 @@ class PosSession(models.Model):
         return domain
 
     def _get_closed_orders(self):
-        """
-        Override para excluir pedidos vinculados a sale.order del proceso de cierre.
-        Al excluirlos aquí, no se tienen en cuenta para la validación de importes
-        ni para la creación de asientos contables de sesión.
-        """
+
         return self.order_ids.filtered(
             lambda o: o.state not in ["draft", "cancel"] and not o.linked_sale_order_id
         )
 
     def get_closing_control_data(self):
-        """
-        Override para incluir información de pedidos a cuenta cliente en los datos de cierre.
-        """
+
         result = super().get_closing_control_data()
 
         # Añadir información de pedidos vinculados a sale.order
@@ -97,10 +79,7 @@ class PosSession(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """
-        Override del create para interceptar la apertura automática
-        de sesiones en modo no táctil y asignar una secuencia automática.
-        """
+
         # Asignar secuencia automática a cada sesión
         for vals in vals_list:
             if not vals.get("name") or vals.get("name") == "/":
@@ -117,9 +96,7 @@ class PosSession(models.Model):
         return super(PosSession, self).create(vals_list)
 
     def action_pos_session_open(self):
-        """
-        Override del método estándar de apertura de sesión.
-        """
+
         if self.env.context.get("skip_auto_open"):
             return True
 
@@ -137,9 +114,7 @@ class PosSession(models.Model):
         return True
 
     def _open_non_touch_wizard(self):
-        """
-        Abre el wizard de apertura de sesión para modo no táctil.
-        """
+
         self.ensure_one()
         wizard = self.env["pos.session.opening.wizard"].create(
             {

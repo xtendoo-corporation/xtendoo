@@ -4,39 +4,62 @@
         <field name="name">pos.session.opening.wizard.form</field>
         <field name="model">pos.session.opening.wizard</field>
         <field name="arch" type="xml">
-            <form string="Apertura de Sesión POS - Modo no táctil">
+            <form string="Apertura de Sesión POS" class="o_pos_wizard_base o_pos_opening_wizard">
+                <field name="session_id" invisible="1" />
+                <field name="user_id" invisible="1" />
+                <field name="currency_id" invisible="1" />
+                <field name="cash_control" invisible="1" />
+
                 <sheet>
-                    <div class="alert alert-info mb-3" role="alert">
-                        <p class="mb-0">
-                            <strong>Apertura de sesión en modo no táctil</strong><br/>
-                            Por favor, ingrese el dinero inicial para abrir la sesión.
-                        </p>
+                    <!-- Header -->
+                    <div class="o_pos_wizard_header">
+                        <div class="o_wizard_icon">
+                            <i class="fa fa-unlock-alt" />
+                        </div>
+                        <h2 class="o_wizard_title">Apertura de Caja</h2>
+                        <p class="o_wizard_subtitle">Ingrese el dinero inicial para abrir la sesión</p>
                     </div>
-                    <group>
-                        <group>
-                            <field name="session_id" invisible="1"/>
-                            <field name="user_id" invisible="1"/>
-                            <field name="currency_id" invisible="1"/>
-                            <field name="cash_control" invisible="1"/>
-                        </group>
-                    </group>
-                    <field name="cash_register_balance_start"
-                           invisible="not cash_control"
-                           widget="monetary"
-                           options="{'currency_field': 'currency_id'}"
-                           class="w-100"/>
-                    <div class="alert alert-warning" role="alert" invisible="not cash_control">
-                        <p class="mb-0">Por favor, cuente e ingrese el dinero inicial en la caja registradora.</p>
+
+                    <!-- Content -->
+                    <div class="o_pos_wizard_content">
+                        <!-- Campo de importe inicial -->
+                        <div class="o_pos_wizard_section" invisible="not cash_control">
+                            <div class="o_pos_section_title">
+                                <i class="fa fa-money" /> Efectivo inicial en caja </div>
+                            <div class="o_pos_input_group large">
+                                <div class="o_input_label">Importe</div>
+                                <field name="cash_register_balance_start"
+                                    widget="monetary"
+                                    options="{'currency_field': 'currency_id'}"
+                                    nolabel="1"
+                                    placeholder="0,00" />
+                            </div>
+                        </div>
+
+                        <!-- Alerta informativa -->
+                        <div class="o_pos_alert info" invisible="not cash_control">
+                            <i class="fa fa-info-circle" />
+                            <span>Cuente e ingrese el dinero que hay actualmente en la caja
+                                registradora.</span>
+                        </div>
+
+                        <!-- Sin control de efectivo -->
+                        <div class="o_pos_alert info" invisible="cash_control">
+                            <i class="fa fa-check-circle" />
+                            <span>Esta caja no requiere control de efectivo. Puede proceder
+                                directamente.</span>
+                        </div>
                     </div>
                 </sheet>
+
                 <footer>
                     <button name="action_validate_and_open"
-                            string="Abrir Sesión"
-                            type="object"
-                            class="btn-primary"/>
+                        string="Abrir Sesión"
+                        type="object"
+                        class="btn-primary" />
                     <button string="Cancelar"
-                            class="btn-secondary"
-                            special="cancel"/>
+                        class="btn-secondary"
+                        special="cancel" />
                 </footer>
             </form>
         </field>

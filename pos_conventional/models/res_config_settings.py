@@ -2,7 +2,6 @@
 from odoo import fields, models, api
 from odoo.exceptions import UserError
 
-
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
@@ -60,9 +59,7 @@ class ResConfigSettings(models.TransientModel):
             settings.has_open_pos_sessions = open_sessions_count > 0
 
     def set_values(self):
-        """Antes de guardar la configuración, impedir el cambio de pos_non_touch
-        si existen sesiones POS abiertas.
-        """
+
         for record in self:
             # Si pos_config_id no está establecido, saltamos la validación
             if not record.pos_config_id:
