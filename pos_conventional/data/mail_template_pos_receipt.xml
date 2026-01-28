@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- PDF version of the report for email attachment - must be defined BEFORE the template that
-    references it -->
+    <!-- Paper format for 80mm thermal receipts -->
+    <record id="paperformat_receipt_80mm" model="report.paperformat">
+        <field name="name">Ticket 80mm</field>
+        <field name="default" eval="False" />
+        <field name="format">custom</field>
+        <field name="page_width">80</field>
+        <field name="page_height">297</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- PDF version of the existing report for email attachment -->
     <record id="action_factura_simplificada_80mm_pdf" model="ir.actions.report">
         <field name="name">Factura Simplificada 80mm (PDF)</field>
         <field name="model">account.move</field>
@@ -9,6 +25,7 @@
         <field name="report_name">pos_conventional.report_factura_simplificada_80mm</field>
         <field name="report_file">pos_conventional.report_factura_simplificada_80mm</field>
         <field name="print_report_name">'Ticket_%s' % object.name.replace('/', '_')</field>
+        <field name="paperformat_id" ref="paperformat_receipt_80mm" />
     </record>
 
     <!-- Email template for sending POS receipt -->
@@ -19,19 +36,14 @@
         <field name="email_from">{{ (object.company_id.email or user.email_formatted) }}</field>
         <field name="email_to">{{ object.partner_id.email }}</field>
         <field name="body_html"><![CDATA[
-<div style="font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 14px; color: #555; margin: 0px; padding: 0px;">
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #555; padding: 20px;">
     <p>Estimado/a <t t-out="object.partner_id.name or 'Cliente'">Cliente</t>,</p>
 
     <p>Adjunto encontrará el ticket correspondiente a su compra realizada en <strong><t t-out="object.company_id.name">Empresa</t></strong>.</p>
 
-    <p><strong>Detalles del ticket:</strong></p>
-    <ul>
-        <li><strong>Número:</strong> <t t-out="object.name">INV/2024/0001</t></li>
-        <li><strong>Fecha:</strong> <t t-out="object.invoice_date">01/01/2024</t></li>
-        <li><strong>Total:</strong> <t t-out="object.amount_total">0.00</t> <t t-out="object.currency_id.symbol">€</t></li>
-    </ul>
-
-    <p>Este ticket es un justificante de su compra. Si tiene alguna consulta, no dude en contactarnos.</p>
+    <p><strong>Referencia:</strong> <t t-out="object.name">INV/2024/0001</t><br/>
+    <strong>Fecha:</strong> <t t-out="object.invoice_date">01/01/2024</t><br/>
+    <strong>Total:</strong> <t t-out="object.amount_total">0.00</t> <t t-out="object.currency_id.symbol">€</t></p>
 
     <p>Gracias por su confianza.</p>
 
