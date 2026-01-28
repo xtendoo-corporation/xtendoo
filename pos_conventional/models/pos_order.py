@@ -758,6 +758,48 @@ class PosOrder(models.Model):
             "pos_conventional.action_factura_simplificada_80mm"
         ).report_action(self.account_move)
 
+    def action_send_email(self):
+        """
+        Envía el ticket de compra por correo electrónico al cliente.
+        Abre el wizard de composición de email con la plantilla precargada.
+        """
+        self.ensure_one()
+        if not self.account_move:
+            raise UserError(_("Este pedido no tiene una factura asociada para enviar."))
+
+        if not self.partner_id:
+            raise UserError(_("Debe seleccionar un cliente para enviar el correo."))
+
+        if not self.partner_id.email:
+            raise UserError(
+                _("El cliente '%s' no tiene email configurado.") % self.partner_id.name
+            )
+
+        # Obtener la plantilla de email
+        template = self.env.ref(
+            "pos_conventional.email_template_pos_receipt", raise_if_not_found=False
+        )
+
+        if not template:
+            raise UserError(
+                _("No se encontró la plantilla de email para el ticket POS.")
+            )
+
+        # Abrir el wizard de composición de email con la plantilla
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "mail.compose.message",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_model": "account.move",
+                "default_res_ids": [self.account_move.id],
+                "default_template_id": template.id,
+                "default_composition_mode": "comment",
+                "force_email": True,
+            },
+        }
+
     def get_factura_report_url(self, order_id=None):
 
         if order_id:

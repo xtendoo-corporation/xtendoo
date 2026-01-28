@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- PDF version of the report for email attachment - must be defined BEFORE the template that
+    references it -->
+    <record id="action_factura_simplificada_80mm_pdf" model="ir.actions.report">
+        <field name="name">Factura Simplificada 80mm (PDF)</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pos_conventional.report_factura_simplificada_80mm</field>
+        <field name="report_file">pos_conventional.report_factura_simplificada_80mm</field>
+        <field name="print_report_name">'Ticket_%s' % object.name.replace('/', '_')</field>
+    </record>
+
+    <!-- Email template for sending POS receipt -->
+    <record id="email_template_pos_receipt" model="mail.template">
+        <field name="name">POS: Envío de Ticket</field>
+        <field name="model_id" ref="account.model_account_move" />
+        <field name="subject">Su ticket de compra - {{ object.name }}</field>
+        <field name="email_from">{{ (object.company_id.email or user.email_formatted) }}</field>
+        <field name="email_to">{{ object.partner_id.email }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 14px; color: #555; margin: 0px; padding: 0px;">
+    <p>Estimado/a <t t-out="object.partner_id.name or 'Cliente'">Cliente</t>,</p>
+
+    <p>Adjunto encontrará el ticket correspondiente a su compra realizada en <strong><t t-out="object.company_id.name">Empresa</t></strong>.</p>
+
+    <p><strong>Detalles del ticket:</strong></p>
+    <ul>
+        <li><strong>Número:</strong> <t t-out="object.name">INV/2024/0001</t></li>
+        <li><strong>Fecha:</strong> <t t-out="object.invoice_date">01/01/2024</t></li>
+        <li><strong>Total:</strong> <t t-out="object.amount_total">0.00</t> <t t-out="object.currency_id.symbol">€</t></li>
+    </ul>
+
+    <p>Este ticket es un justificante de su compra. Si tiene alguna consulta, no dude en contactarnos.</p>
+
+    <p>Gracias por su confianza.</p>
+
+    <p>Atentamente,<br/>
+    <strong><t t-out="object.company_id.name">Empresa</t></strong></p>
+</div>
+]]></field>
+        <field name="report_template_ids"
+            eval="[(4, ref('pos_conventional.action_factura_simplificada_80mm_pdf'))]" />
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="auto_delete" eval="True" />
+    </record>
+</odoo>

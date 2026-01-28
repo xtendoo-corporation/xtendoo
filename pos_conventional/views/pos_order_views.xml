@@ -49,6 +49,13 @@
                     class="btn-primary"
                     invisible="state == 'draft'"
                 />
+                <button
+                    name="action_send_email"
+                    type="object"
+                    string="Envío por correo electrónico"
+                    class="btn-primary"
+                    invisible="state == 'draft'"
+                />
 
             </xpath>
         </field>
