@@ -1,94 +1,100 @@
 /* Estilos para la calculadora de efectivo */
 
 .o_cash_move_wizard .oe_subtotal_footer_separator {
-    font-size: 1.2em;
-    font-weight: bold;
-    border-top: 2px solid #dee2e6;
-    padding-top: 10px;
-    margin-top: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+  border-top: 2px solid #dee2e6;
+  padding-top: 10px;
+  margin-top: 10px;
 }
 
 .o_cash_move_wizard .o_list_view .o_data_row:hover {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 
 .o_cash_move_wizard .o_field_monetary {
-    text-align: right;
+  text-align: right;
 }
 
 /* Destacar las líneas con cantidad mayor a 0 */
-.o_cash_move_wizard .o_data_row .o_data_cell:has(.o_field_widget input[value]:not([value="0"])) {
-    font-weight: 600;
-    background-color: #e7f5ff;
+.o_cash_move_wizard
+  .o_data_row
+  .o_data_cell:has(.o_field_widget input[value]:not([value="0"])) {
+  font-weight: 600;
+  background-color: #e7f5ff;
 }
 
 /* Estilos para el resumen de sesión tipo árbol */
 .o_group_session_total {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 4px;
-    border: 1px solid #dee2e6;
-    font-size: 0.95em;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  font-size: 0.95em;
 }
 
 .o_group_session_total .row {
-    padding: 6px 0;
-    margin: 0;
+  padding: 6px 0;
+  margin: 0;
 }
 
 .o_group_session_total .row:not(:last-child) {
-    border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .o_group_session_total .ps-3 {
-    padding-left: 1.5rem !important;
+  padding-left: 1.5rem !important;
 }
 
 .o_group_session_total .ps-4 {
-    padding-left: 2.5rem !important;
+  padding-left: 2.5rem !important;
 }
 
 .o_group_session_total .ps-5 {
-    padding-left: 3.5rem !important;
+  padding-left: 3.5rem !important;
 }
 
 .o_group_session_total .fa-caret-down {
-    color: #6c757d;
+  color: #6c757d;
 }
 
 .o_group_session_total .text-success {
-    color: #28a745 !important;
+  color: #28a745 !important;
 }
 
 .o_group_session_total .text-danger {
-    color: #dc3545 !important;
+  color: #dc3545 !important;
 }
 
 .o_group_session_total .text-muted {
-    color: #6c757d !important;
+  color: #6c757d !important;
 }
 
 /* Estilo para las tablas de desglose dentro del resumen */
 .o_group_session_total .o_list_view {
-    font-size: 0.9em;
-    margin-top: 5px;
+  font-size: 0.9em;
+  margin-top: 5px;
 }
 
 .o_group_session_total .o_list_view .o_list_table {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 .o_group_session_total .o_list_view thead {
-    display: none;
+  display: none;
 }
 
 .o_group_session_total .o_list_view tbody tr {
-    background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 .o_group_session_total .o_list_view tbody tr td {
-    border: none;
-    padding: 2px 5px;
+  border: none;
+  padding: 2px 5px;
 }
 
-
+/* Ocultar el botón X en el modal de la calculadora de efectivo */
+/* para forzar el uso del botón Cancelar que vuelve al wizard padre */
+.modal:has(.o_pos_cash_calculator_wizard) .btn-close {
+  display: none !important;
+}
