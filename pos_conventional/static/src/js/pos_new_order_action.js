@@ -17,12 +17,29 @@ async function posConventionalNewOrder(env, action) {
         additionalContext: context
     });
 
-    // 2. Abrir el formulario de nuevo pedido encima.
-    await actionService.doAction("point_of_sale.action_pos_pos_form", {
-        viewType: 'form',
-        props: { resId: false },
-        additionalContext: context
-    });
+    // 2. Comprobar si debemos forzar login (PIN) para el nuevo pedido
+    // Esto viene del backend tras confirmar un pago con la opción activada
+    if (context.force_login_after_order) {
+        await actionService.doAction({
+            type: 'ir.actions.act_window',
+            res_model: 'pos.session.pin.wizard',
+            view_mode: 'form',
+            views: [[false, 'form']],
+            target: 'new',
+            context: {
+                default_session_id: context.default_session_id,
+                force_new_order_flow: true,
+                no_cancel: true,
+            }
+        });
+    } else {
+        // 3. Abrir el formulario de nuevo pedido directamente (flujo normal)
+        await actionService.doAction("point_of_sale.action_pos_pos_form", {
+            viewType: 'form',
+            props: { resId: false },
+            additionalContext: context
+        });
+    }
 }
 
 registry.category("actions").add("pos_conventional_new_order", posConventionalNewOrder);

@@ -129,7 +129,7 @@ export class PosOrderListController extends ListController {
 
                 // Verificar si la sesión está abierta
                 if (session.state === 'opened' || session.state === 'opening_control') {
-                    // Verificar si el config es no táctil
+                    // Verificar config
                     if (session.config_id) {
                         const configId = Array.isArray(session.config_id)
                             ? session.config_id[0]
@@ -138,12 +138,20 @@ export class PosOrderListController extends ListController {
                         const configData = await this.model.orm.read(
                             "pos.config",
                             [configId],
-                            ["pos_non_touch"]
+                            ["pos_non_touch", "pos_force_employee_login_after_order"]
                         );
 
-                        if (configData && configData.length > 0 && configData[0].pos_non_touch) {
-                            this.state.showCloseButton = true;
-                            return;
+                        if (configData && configData.length > 0) {
+                            const config = configData[0];
+
+                            // 1. Botones para modo no táctil
+                            if (config.pos_non_touch) {
+                                this.state.showCloseButton = true;
+                            }
+
+                            // 2. Guardar configuración de PIN forzado para usar en createRecord
+                            this.forceLogin = config.pos_force_employee_login_after_order;
+                            this.currentSessionId = sessionId; // Guardar ID para usarlo después
                         }
                     }
                 }
@@ -151,8 +159,31 @@ export class PosOrderListController extends ListController {
         } catch (error) {
             console.error("Error verificando sesión no táctil:", error);
         }
+    }
 
-        this.state.showCloseButton = false;
+    /**
+     * Sobrescribimos createRecord para interceptar el botón "Nuevo"
+     */
+    async createRecord() {
+        if (this.forceLogin && this.currentSessionId) {
+            // Si está activada la opción, abrir wizard de PIN en lugar del form directo
+            const action = {
+                type: 'ir.actions.act_window',
+                res_model: 'pos.session.pin.wizard',
+                view_mode: 'form',
+                views: [[false, 'form']],
+                target: 'new',
+                context: {
+                    default_session_id: this.currentSessionId,
+                    force_new_order_flow: true, // Flag para indicar flujo de nuevo pedido
+                    no_cancel: true,            // Flag para ocultar cancelar (hacerlo obligatorio)
+                }
+            };
+            await this.env.services.action.doAction(action);
+        } else {
+            // Comportamiento normal
+            super.createRecord();
+        }
     }
 
     /**

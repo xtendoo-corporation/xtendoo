@@ -62,6 +62,27 @@ class PosSessionPinWizard(models.TransientModel):
                     },
                 }
 
+        # --- FLOW 2 (NUEVO): Apertura de nuevo pedido con PIN obligatorio ---
+        if self.env.context.get("force_new_order_flow"):
+            target_user_id = (
+                employee.user_id.id
+                if (employee and employee.user_id)
+                else self.user_id.id
+            )
+            # Abrir formulario de nuevo pedido
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": "pos.order",
+                "view_mode": "form",
+                "target": "current",
+                "context": {
+                    "default_session_id": self.session_id.id,
+                    "default_user_id": target_user_id,
+                    # Importante: asegurar que el controller sepa que venimos validados
+                    "pos_conventional_pin_validated": True,
+                },
+            }
+
         target_user_id = (
             employee.user_id.id if (employee and employee.user_id) else self.user_id.id
         )

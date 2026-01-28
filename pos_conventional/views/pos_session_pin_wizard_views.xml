@@ -21,10 +21,9 @@
                 </sheet>
                 <footer>
                     <button name="action_validate_pin" string="Validar PIN" type="object" class="btn-primary"/>
-                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel" invisible="context.get('no_cancel')"/>
                 </footer>
             </form>
         </field>
     </record>
 </odoo>
-

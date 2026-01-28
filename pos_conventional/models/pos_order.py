@@ -368,26 +368,12 @@ class PosOrder(models.Model):
             f"POS DEBUG: Calling _get_post_validation_action. Config Force Login: {self.config_id.pos_force_employee_login_after_order}"
         )
 
-        if self.config_id.pos_force_employee_login_after_order:
-            return {
-                "type": "ir.actions.act_window",
-                "res_model": "pos.session.pin.wizard",
-                "view_mode": "form",
-                "target": "new",
-                "views": [(False, "form")],
-                "context": {
-                    "default_session_id": self.session_id.id,
-                    "default_user_id": self.env.user.id,
-                    "switch_user_after_sale": True,  # Clave para indicar cambio de usuario
-                },
-            }
-
-        # Si no hay login forzado, redirigir siempre a un nuevo pedido usando la acción JS limpia
         return {
             "type": "ir.actions.client",
             "tag": "pos_conventional_new_order",
             "params": {
                 "default_session_id": self.session_id.id,
+                "force_login_after_order": self.config_id.pos_force_employee_login_after_order,
             },
         }
 
