@@ -3,7 +3,7 @@
 import { ListController } from "@web/views/list/list_controller";
 import { registry } from "@web/core/registry";
 import { listView } from "@web/views/list/list_view";
-import { useState, onWillStart } from "@odoo/owl";
+import { useState, onWillStart, onWillUnmount } from "@odoo/owl";
 
 export class PosOrderListController extends ListController {
     setup() {
@@ -14,9 +14,29 @@ export class PosOrderListController extends ListController {
             showCloseButton: false
         });
 
+        // Variable interna para trackear la sesión activa actual
+        this.activeSessionId = null;
+
+        // Handler para guardar la sesión antes de un reload
+        this.handleBeforeUnload = () => {
+            if (this.activeSessionId) {
+                // Solo guardamos si tenemos un ID activo.
+                // Si estamos en una vista "limpia" (sin ID), no guardamos nada,
+                // asegurando que el storage quede limpio.
+                sessionStorage.setItem('pos_conventional_active_session_id', this.activeSessionId);
+            }
+        };
+
+        // Registrar el listener para sobrevivir a reloads (F5)
+        window.addEventListener('beforeunload', this.handleBeforeUnload);
+
         onWillStart(async () => {
             // Verificar si estamos dentro de una caja no táctil abierta
             await this.checkIfInsideNonTouchSession();
+        });
+
+        onWillUnmount(() => {
+            window.removeEventListener('beforeunload', this.handleBeforeUnload);
         });
     }
 
@@ -73,12 +93,23 @@ export class PosOrderListController extends ListController {
      * cuando accedemos desde una caja no táctil, no desde el menú general de pedidos.
      */
     async checkIfInsideNonTouchSession() {
-        // Obtener el contexto de la acción
+        // 1. Recuperar contexto original
         const context = this.props.context || {};
+        let sessionId = context.default_session_id;
 
-        // Solo mostrar botones si hay un default_session_id en el contexto
-        // Esto indica que venimos de abrir una caja no táctil específica
-        const sessionId = context.default_session_id;
+        // 2. Comprobar recuperación de emergencia (Reload)
+        // Leemos e INMEDIATAMENTE borramos para evitar que una navegación SPA posterior lo lea.
+        // Esto soluciona el problema de que 'performance.navigation.type' no es fiable en SPA.
+        const storedSessionId = sessionStorage.getItem('pos_conventional_active_session_id');
+        sessionStorage.removeItem('pos_conventional_active_session_id');
+
+        if (!sessionId && storedSessionId) {
+            sessionId = parseInt(storedSessionId);
+            console.log('checkIfInsideNonTouchSession - Session ID recuperado (Restore):', sessionId);
+        }
+
+        // Guardamos en la variable de instancia para el beforeunload (para reloads futuros)
+        this.activeSessionId = sessionId;
 
         if (!sessionId) {
             this.state.showCloseButton = false;

@@ -62,17 +62,6 @@ class PosSessionPinWizard(models.TransientModel):
                     },
                 }
 
-        # --- FLOW 2: Apertura de sesión normal ---
-        # Si llegamos aquí, es apertura normal.
-        # Si ya validamos el empleado arriba (y actualizamos el user_id),
-        # no necesitamos llamar a _validate_employee_pin del otro wizard porque fallaría
-        # si comparara el user_id antiguo con el PIN nuevo.
-        # Pero ese método hace validaciones extra? Revisemos.
-        # PosSessionOpeningWizard._validate_employee_pin chequea permisos y match user-pin.
-
-        # Como ya validamos el PIN y actualizamos el usuario:
-        # Pasamos el NUEVO usuario al wizard de apertura para que su validación interna pase.
-
         target_user_id = (
             employee.user_id.id if (employee and employee.user_id) else self.user_id.id
         )
