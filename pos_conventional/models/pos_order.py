@@ -45,6 +45,67 @@ class PosOrder(models.Model):
         help="Subtotal sin impuestos calculado desde las líneas del pedido",
     )
 
+    barcode_scan = fields.Char(
+        string="Barcode Scan",
+        store=False,
+        help="Campo técnico para recibir escaneos desde el frontend",
+    )
+
+    @api.onchange("barcode_scan")
+    def _onchange_barcode_scan(self):
+        """Maneja el escaneo de códigos de barras mediante onchange.
+        Esto permite trabajar con el registro virtual (self) que contiene
+        los cambios no guardados en la UI via JS.
+        """
+        if not self.barcode_scan:
+            return
+
+        barcode = self.barcode_scan
+        # Limpiar campo inmediatamente para permitir escaneos repetidos del mismo código
+        self.barcode_scan = False
+
+        Product = self.env["product.product"]
+        # Buscar producto
+        product = Product.search([("barcode", "=", barcode)], limit=1)
+        if not product:
+            product = Product.search([("default_code", "=", barcode)], limit=1)
+
+        if not product:
+            return {
+                "warning": {
+                    "title": _("Producto no encontrado"),
+                    "message": _("No se encontró ningún producto con el código: %s")
+                    % barcode,
+                }
+            }
+
+        # Buscar en las líneas ACTUALES (virtuales)
+        existing_line = self.lines.filtered(lambda l: l.product_id.id == product.id)
+
+        if existing_line:
+            # Si hay múltiples, cogemos la primera
+            line = existing_line[0]
+            line.qty += 1
+            # El onchange de la línea debería recalcular precios automáticamente
+            # pero a veces es necesario forzarlo si se edita qty directamente
+            line._onchange_qty()
+        else:
+            # Crear nueva línea
+            vals = self._prepare_order_line_vals(product)
+            # Como estamos en un onchange de Order, self.lines es un RecordSet virtual.
+            # Podemos añadir usando el comando new() o simplemente +=
+            # Sin embargo, en un onchange de One2many, lo mejor es usar `new()` wrapper
+            # o crear un objeto con `new(vals)` y añadirlo.
+            # Odoo magic: self.update({'lines': [(0, 0, vals)]}) funciona bien en onchanges.
+
+            # Opción más segura en onchange: append de un new record
+            self.lines += self.env["pos.order.line"].new(vals)
+            # Trigger onchange de la nueva línea para asegurar cálculos
+            self.lines[-1]._onchange_qty()
+
+        # Recalcular totales del pedido
+        self._compute_amount_untaxed()
+
     @api.depends("lines.price_subtotal", "is_refund")
     def _compute_amount_untaxed(self):
         """Calcula el subtotal sin impuestos sumando price_subtotal de todas las líneas"""
@@ -113,17 +174,7 @@ class PosOrder(models.Model):
 
         Este método es llamado desde JavaScript para obtener todos los datos
         necesarios antes de crear la línea en el cliente.
-
-        Args:
-            barcode: Código de barras a buscar
-            pricelist_id: ID de la lista de precios del pedido
-            fiscal_position_id: ID de la posición fiscal del pedido
-            partner_id: ID del cliente del pedido
-
-        Returns:
-            dict: Datos del producto y valores para la línea
         """
-        # Buscar producto por código de barras
         Product = self.env["product.product"]
         product = Product.search([("barcode", "=", barcode)], limit=1)
 
@@ -660,6 +711,8 @@ class PosOrder(models.Model):
         # Crear nueva línea de pedido
         try:
             line_vals = self._prepare_order_line_vals(product)
+            # Asignar explícitamente order_id porque _prepare_order_line_vals ya no lo incluye
+            line_vals["order_id"] = self.id
             new_line = self.env["pos.order.line"].create(line_vals)
 
             # Ejecutar onchange de la línea para calcular subtotales
@@ -688,31 +741,33 @@ class PosOrder(models.Model):
     def _prepare_order_line_vals(self, product, qty=1.0):
         """
         Prepara los valores para crear una línea de pedido POS.
-
         Reutiliza la lógica de precios y taxes del sistema.
-
         Args:
             product: Producto a añadir
             qty: Cantidad (por defecto 1.0)
-
         Returns:
             dict: Valores para crear la línea
         """
-        self.ensure_one()
+        # En contexto de onchange, self puede no tener ID real, pero tiene los valores
+        # self.ensure_one() puede fallar si es un recordset virtual vacío, pero aquí self es el pedido
 
         # Obtener precio desde la lista de precios
         pricelist = self.pricelist_id or self.config_id.pricelist_id
+
+        # Necesitamos el partner_id, pero en onchange puede ser un record virtual
+        partner = self.partner_id
+
         if pricelist:
             price_unit = pricelist._get_product_price(
-                product, qty, partner=self.partner_id, uom=product.uom_id
+                product, qty, partner=partner, uom=product.uom_id
             )
         else:
             price_unit = product.lst_price
 
         # Obtener impuestos aplicables del producto
-        product_taxes = product.taxes_id.filtered(
-            lambda t: t.company_id == self.company_id
-        )
+        # self.company_id puede estar vacío en creación temprana
+        company = self.company_id or self.env.company
+        product_taxes = product.taxes_id.filtered(lambda t: t.company_id == company)
 
         # Aplicar posición fiscal si existe
         taxes_after_fp = product_taxes
@@ -724,19 +779,22 @@ class PosOrder(models.Model):
         price_subtotal = price * qty
         price_subtotal_incl = price * qty
 
+        # Moneda
+        currency = self.currency_id or company.currency_id
+
         if taxes_after_fp:
             tax_results = taxes_after_fp.compute_all(
                 price,
-                currency=self.currency_id,
+                currency=currency,
                 quantity=qty,
                 product=product,
-                partner=self.partner_id,
+                partner=partner,
             )
             price_subtotal = tax_results["total_excluded"]
             price_subtotal_incl = tax_results["total_included"]
 
         return {
-            "order_id": self.id,
+            # "order_id": self.id, # No asignamos order_id en onchange, se asigna al guardar
             "product_id": product.id,
             "full_product_name": product.display_name,
             "qty": qty,
@@ -744,8 +802,6 @@ class PosOrder(models.Model):
             "discount": 0.0,
             "price_subtotal": price_subtotal,
             "price_subtotal_incl": price_subtotal_incl,
-            # Guardar los impuestos base del producto; la posición fiscal
-            # calculará tax_ids_after_fiscal_position si aplica
             "tax_ids": [(6, 0, product_taxes.ids)],
         }
 
