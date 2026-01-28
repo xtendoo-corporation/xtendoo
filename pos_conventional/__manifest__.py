@@ -3,7 +3,7 @@
     "version": "19.0.1.0.0",
     "category": "Point of Sale",
     "summary": "Modo de punto de venta optimizado para equipos sin pantalla táctil",
-    "description":,
+    "description": "Modo de punto de venta optimizado para equipos sin pantalla táctil",
     "author": "Guillermo Bárcena López",
     "website": "https://www.xtendoo.es",
     "license": "AGPL-3",
