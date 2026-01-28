@@ -1,0 +1,21 @@
+/* ========================================
+   POS Opening Wizard Styles
+   ======================================== */
+
+.o_pos_opening_wizard .o_pos_wizard_header {
+    background: linear-gradient(135deg, var(--pos-secondary) 0%, var(--pos-secondary-dark) 100%);
+}
+
+.o_pos_opening_wizard .o_amount_display {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.o_pos_opening_wizard .o_amount_display input {
+    font-size: 36px !important;
+    font-weight: 700;
+    text-align: center;
+    border: none !important;
+    background: transparent !important;
+    color: var(--pos-text);
+}

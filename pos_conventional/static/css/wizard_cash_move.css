@@ -1,0 +1,47 @@
+/* ========================================
+   POS Cash Move Wizard Styles
+   ======================================== */
+
+.o_pos_cash_move_wizard .o_type_selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.o_pos_cash_move_wizard .o_type_option {
+    padding: 20px;
+    border: 2px solid var(--pos-border);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.o_pos_cash_move_wizard .o_type_option:hover {
+    border-color: var(--pos-primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.o_pos_cash_move_wizard .o_type_option.selected {
+    border-color: var(--pos-primary);
+    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
+    color: white;
+}
+
+.o_pos_cash_move_wizard .o_type_option .o_type_icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.o_pos_cash_move_wizard .o_type_option .o_type_label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+@media (max-width: 576px) {
+    .o_pos_cash_move_wizard .o_type_selector {
+        grid-template-columns: 1fr;
+    }
+}

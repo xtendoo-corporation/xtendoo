@@ -1,0 +1,338 @@
+/* ========================================
+   POS Conventional - Base Wizard Styles
+   Variables y estilos comunes para wizards
+   ======================================== */
+
+/* ----------------------------------------
+   VARIABLES DE DISEÑO (colores consistentes)
+   ---------------------------------------- */
+:root {
+    --pos-primary: #6366f1;          /* Indigo */
+    --pos-primary-dark: #4f46e5;
+    --pos-secondary: #10b981;         /* Emerald */
+    --pos-secondary-dark: #059669;
+    --pos-warning: #f59e0b;           /* Amber */
+    --pos-danger: #ef4444;            /* Red */
+    --pos-bg-light: #f8fafc;
+    --pos-border: #e2e8f0;
+    --pos-text: #1e293b;
+    --pos-text-muted: #64748b;
+    --pos-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --pos-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ----------------------------------------
+   BASE STYLES - Estilos comunes
+   ---------------------------------------- */
+.o_pos_wizard_base {
+    padding: 0 !important;
+}
+
+.o_pos_wizard_base .o_form_sheet {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Header gradiente común */
+.o_pos_wizard_header {
+    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
+    padding: 25px 30px;
+    text-align: center;
+    border-radius: 0;
+    margin: -1px -1px 0 -1px;
+}
+
+.o_pos_wizard_header.secondary {
+    background: linear-gradient(135deg, var(--pos-secondary) 0%, var(--pos-secondary-dark) 100%);
+}
+
+.o_pos_wizard_header.warning {
+    background: linear-gradient(135deg, var(--pos-warning) 0%, #d97706 100%);
+}
+
+.o_pos_wizard_header .o_wizard_icon {
+    font-size: 42px;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 12px;
+}
+
+.o_pos_wizard_header .o_wizard_title {
+    color: white;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+}
+
+.o_pos_wizard_header .o_wizard_subtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    margin: 0;
+}
+
+.o_pos_wizard_header .o_wizard_badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: white;
+    margin-top: 10px;
+}
+
+/* Contenido del wizard */
+.o_pos_wizard_content {
+    padding: 25px 30px;
+    background: white;
+}
+
+/* Secciones */
+.o_pos_wizard_section {
+    margin-bottom: 24px;
+}
+
+.o_pos_wizard_section:last-child {
+    margin-bottom: 0;
+}
+
+.o_pos_section_title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--pos-text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.o_pos_section_title i {
+    font-size: 14px;
+    color: var(--pos-primary);
+}
+
+/* Campos de entrada modernos */
+.o_pos_input_group {
+    background: var(--pos-bg-light);
+    border: 1px solid var(--pos-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: all 0.2s ease;
+}
+
+.o_pos_input_group:focus-within {
+    border-color: var(--pos-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.o_pos_input_group .o_input_label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--pos-text-muted);
+    margin-bottom: 8px;
+}
+
+.o_pos_input_group input,
+.o_pos_input_group textarea {
+    border: none !important;
+    background: transparent !important;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--pos-text);
+    padding: 0 !important;
+    width: 100%;
+}
+
+.o_pos_input_group input:focus,
+.o_pos_input_group textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.o_pos_input_group.large input {
+    font-size: 28px;
+}
+
+/* Botón de calculadora */
+.o_pos_calc_btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.o_pos_calc_btn:hover {
+    transform: scale(1.08);
+    box-shadow: var(--pos-shadow-lg);
+}
+
+/* Tarjetas de resumen */
+.o_pos_summary_card {
+    background: var(--pos-bg-light);
+    border: 1px solid var(--pos-border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.o_pos_summary_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--pos-border);
+}
+
+.o_pos_summary_row:last-child {
+    border-bottom: none;
+}
+
+.o_pos_summary_row.total {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--pos-text);
+    padding-top: 15px;
+    margin-top: 5px;
+    border-top: 2px solid var(--pos-border);
+    border-bottom: none;
+}
+
+.o_pos_summary_row.indent {
+    padding-left: 20px;
+    font-size: 13px;
+    color: var(--pos-text-muted);
+}
+
+.o_pos_summary_row .o_label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.o_pos_summary_row .o_label i {
+    width: 18px;
+    text-align: center;
+    color: var(--pos-text-muted);
+}
+
+.o_pos_summary_row .o_value {
+    font-weight: 600;
+}
+
+.o_pos_summary_row .o_value.positive {
+    color: var(--pos-secondary);
+}
+
+.o_pos_summary_row .o_value.negative {
+    color: var(--pos-danger);
+}
+
+/* Alertas personalizadas */
+.o_pos_alert {
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.o_pos_alert i {
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+.o_pos_alert.info {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.o_pos_alert.warning {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.o_pos_alert.danger {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* ----------------------------------------
+   MODAL FOOTERS - Pies de modal unificados
+   ---------------------------------------- */
+.modal:has(.o_pos_wizard_base) .modal-header {
+    display: none !important;
+}
+
+.modal:has(.o_pos_wizard_base) .modal-footer {
+    background: var(--pos-bg-light);
+    border-top: 1px solid var(--pos-border);
+    padding: 16px 24px;
+    gap: 12px;
+}
+
+.modal:has(.o_pos_wizard_base) .modal-footer .btn {
+    padding: 10px 24px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.modal:has(.o_pos_wizard_base) .modal-footer .btn-primary {
+    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
+    border: none;
+}
+
+.modal:has(.o_pos_wizard_base) .modal-footer .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--pos-shadow);
+}
+
+.modal:has(.o_pos_wizard_base) .modal-footer .btn-secondary {
+    background: white;
+    color: var(--pos-text-muted);
+    border: 1px solid var(--pos-border);
+}
+
+.modal:has(.o_pos_wizard_base) .modal-footer .btn-secondary:hover {
+    background: var(--pos-bg-light);
+    color: var(--pos-text);
+}
+
+/* ----------------------------------------
+   RESPONSIVE
+   ---------------------------------------- */
+@media (max-width: 576px) {
+    .o_pos_wizard_header {
+        padding: 20px;
+    }
+
+    .o_pos_wizard_header .o_wizard_icon {
+        font-size: 32px;
+    }
+
+    .o_pos_wizard_header .o_wizard_title {
+        font-size: 18px;
+    }
+
+    .o_pos_wizard_content {
+        padding: 20px;
+    }
+}

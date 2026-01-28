@@ -1,0 +1,36 @@
+/* ========================================
+   POS PIN Wizard Styles
+   ======================================== */
+
+.o_pos_pin_wizard .o_pos_wizard_header {
+    padding: 40px 30px;
+}
+
+.o_pos_pin_wizard .o_pin_input_container {
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
+}
+
+.o_pos_pin_wizard .o_pin_input_container input {
+    width: 180px !important;
+    height: 56px;
+    font-size: 28px !important;
+    text-align: center;
+    letter-spacing: 12px;
+    border: 2px solid var(--pos-border) !important;
+    border-radius: 12px;
+    background: white !important;
+    transition: all 0.2s ease;
+}
+
+.o_pos_pin_wizard .o_pin_input_container input:focus {
+    border-color: var(--pos-primary) !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+}
+
+.o_pos_pin_wizard .o_pin_input_container input::placeholder {
+    letter-spacing: 4px;
+    font-size: 16px;
+    color: var(--pos-text-muted);
+}
