@@ -1,0 +1,599 @@
+[33mcommit dbe26a26dab32ca4b590d40e344d427d7a3a7946[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32m19.0[m[33m, [m[1;31morigin/19.0[m[33m)[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 30 11:11:16 2026 +0100
+
+    font
+
+[33mcommit 6a41c022846d40acf9ca0cb9463e4d1fd04f5383[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Thu Jan 29 20:33:58 2026 +0100
+
+    Update module
+
+[33mcommit 3e35a178f73cb143dbd55a89b449583c0aed5ab6[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 14:57:21 2026 +0100
+
+    barcode fixed
+
+[33mcommit 8c31bc0322dd834efd9dacd824684639b76ebc2f[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 14:34:07 2026 +0100
+
+    sync
+
+[33mcommit 4af7b7085d9fc7e8f657aa0507100d575e3f827a[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 14:03:14 2026 +0100
+
+    sync
+
+[33mcommit 6157ce63fd19ebf970e6064d58f1ee0eed5efb37[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 13:44:33 2026 +0100
+
+    css added
+
+[33mcommit ca9a5fc00d891a6c37a0cbd5888c6c34246c1428[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 13:24:14 2026 +0100
+
+    redesign view UI
+
+[33mcommit 1f61681ce877c52a3aa154009caaf5d56b945025[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 12:49:29 2026 +0100
+
+    minor fix
+
+[33mcommit 3c73a053935a272a5380411429ce35d4eeeec1ec[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 12:36:53 2026 +0100
+
+    ticket format
+
+[33mcommit 03965701a7de2ee3bc2bd11eae3cc5950a3107cf[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 12:26:26 2026 +0100
+
+    ticket send by email
+
+[33mcommit f36bb2a57061c7942281580fb461ce9c836d01b8[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 11:58:20 2026 +0100
+
+    minor view fix
+
+[33mcommit a0693265eb8ad3f2c9254cf46f0b4c0596895241[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 08:39:14 2026 +0100
+
+    pn fixed
+
+[33mcommit b8a0b65e9c95d2c40b0b9016386acdb444beef8c[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 28 08:02:46 2026 +0100
+
+    fixed contextttt
+
+[33mcommit 8189afb4174d283971d686c32c12777eb66e9524[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Tue Jan 27 08:56:31 2026 +0100
+
+    Update module
+
+[33mcommit 922121ff15be9587b44d9e72e483e0399fc373f0[m
+Author: EndikaPM <endika.perez.mas@gmail.com>
+Date:   Tue Jan 27 08:00:15 2026 +0100
+
+    change name checkbox
+
+[33mcommit 9f20b4652bd187466df766dde1593006fe533e5a[m
+Author: EndikaPM <endika.perez.mas@gmail.com>
+Date:   Tue Jan 27 07:55:50 2026 +0100
+
+    fix manifest
+
+[33mcommit db323156c3e035dc2329566e475ec48f959ef1e0[m
+Author: EndikaPM <endika.perez.mas@gmail.com>
+Date:   Mon Jan 26 13:59:19 2026 +0100
+
+    Python module to change the name and price of products
+
+[33mcommit fab57d0a92198f3420777f94993997236c2b1703[m
+Author: EndikaPM <endika.perez.mas@gmail.com>
+Date:   Mon Jan 26 13:48:39 2026 +0100
+
+    add pos_note module
+
+[33mcommit 37a9002ef1b3639e5766a3f8ed6a392bf599417e[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 26 10:43:43 2026 +0100
+
+    redirect ixed
+
+[33mcommit b68439d7f7fe4904cc70c57be1213dfd9491fe21[m
+Author: dani <dani.xtendoo@gmail.com>
+Date:   Mon Jan 26 10:30:01 2026 +0100
+
+    sync
+
+[33mcommit c13ee8c0f6bcf815fe65d7d76f9d67d4ea60b43d[m
+Author: EndikaPM <endika.perez.mas@gmail.com>
+Date:   Mon Jan 26 09:54:12 2026 +0100
+
+    change desing xtendoo_hr_attendance_phone
+
+[33mcommit b800e89ed757d4ef8152cbc43b5529b12f5fb63c[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 26 09:48:25 2026 +0100
+
+    closed fixed
+
+[33mcommit ecc3ebc923b4ec2bc1da9684d39f79c1cf3b5610[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 26 09:33:12 2026 +0100
+
+    change pin for sale and dynamic redirection
+
+[33mcommit 396d4396977d646ee44de2f9a87930b65ecec388[m
+Author: dani <dani.xtendoo@gmail.com>
+Date:   Fri Jan 23 09:15:39 2026 +0100
+
+    sync
+
+[33mcommit 5d04d646089c00d3910c415b0178a16f097b072e[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 23 08:08:41 2026 +0100
+
+    fix creations contacts
+
+[33mcommit 89b4eb8922e2545ec507580134b85d72016f85a0[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 21 15:00:49 2026 +0100
+
+    closed fixed
+
+[33mcommit cfbe1264159a3ac3ebb3a1cf4646bafbdc359996[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 21 14:36:21 2026 +0100
+
+    sync
+
+[33mcommit 4acd4dac42ff5eea25fc1d31c0ceb0262697251f[m
+Author: EndikaPM <endika.perez.mas@gmail.com>
+Date:   Wed Jan 21 14:15:02 2026 +0100
+
+     add xtendoo_hr_attendance_phone module
+
+[33mcommit ddb708a26ea110cd578546fd59d4e65d29477b8c[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 19 13:26:18 2026 +0100
+
+    state new button fixed
+
+[33mcommit f2a97f6aa03068fb920f9a4b69a42e0e1e980ac1[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 19 12:30:31 2026 +0100
+
+    buttton xpath changed
+
+[33mcommit 1af8764d36122a3480ae220328e18766d5cd13cf[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Thu Jan 15 10:55:37 2026 +0100
+
+    traslate to spanish
+
+[33mcommit e3abff2094ad5a2f6a81b8a794618a7279e469ad[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Thu Jan 15 09:32:11 2026 +0100
+
+    update search partner
+
+[33mcommit 721e3e590e3e29bae229957205f9a7c37336c39d[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Wed Jan 14 23:22:10 2026 +0100
+
+    change google lib
+
+[33mcommit 142eb531b0764cee806be64846511fc3092c9c09[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Wed Jan 14 14:45:25 2026 +0100
+
+    acount move line changes
+
+[33mcommit 3fa2d1d07543544172bb246c05f8396898d27d53[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Wed Jan 14 14:35:07 2026 +0100
+
+    acount move line changes
+
+[33mcommit 99a7df2aad1854c491ed7be58d864f10f2ce3cc5[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 14 14:09:06 2026 +0100
+
+    sync
+
+[33mcommit 17544656afb8d1d986da4e31d5198404b8f4418e[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 14 13:54:42 2026 +0100
+
+    sync
+
+[33mcommit e80aef6c70c381aab32b18c3100c2907407d67b5[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 14 13:18:20 2026 +0100
+
+    albaran ticket
+
+[33mcommit 9def2d4374b08a0b017ad58e67253f5b26ca15ab[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Wed Jan 14 13:13:24 2026 +0100
+
+    sync
+
+[33mcommit 3673efb4fcb6ab3d84c12d7d63298d0304a84967[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Tue Jan 13 11:57:18 2026 +0100
+
+    sync fix product company when create and edit from sales or invoices
+
+[33mcommit d0a8e10a5f4f42a456c4fd843723446f0a46b78e[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Tue Jan 13 10:27:03 2026 +0100
+
+    Update module
+
+[33mcommit 5ed715deca122d519c385d4ca80b4014df6e2d84[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 12 10:47:18 2026 +0100
+
+    report improved
+
+[33mcommit 6c15ba3da28d455989afd899fd4a88d6b41f95b9[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 12 09:53:57 2026 +0100
+
+    improved security
+
+[33mcommit b55103fd2c1ed7b28cf3d22e3cbd156b57d560d6[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 12 09:25:12 2026 +0100
+
+    new state
+
+[33mcommit d6a179e6f929fa357c406e540bd650310b8b9a3e[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 9 14:31:29 2026 +0100
+
+    duplicate date
+
+[33mcommit fc3ee6f694cb899d6f7f2520ce30688f562d28f6[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 9 14:10:47 2026 +0100
+
+    log reactive class
+
+[33mcommit 127cead9e802a4d95e4bd065fbb3fe2fe138eeb6[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 9 13:53:52 2026 +0100
+
+    format
+
+[33mcommit 688ec00c9dab449317f49e502a0d23eb6cdd2e8a[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 9 09:11:30 2026 +0100
+
+    config.id fixed and context improved
+
+[33mcommit 8944c4300b6bc867365009f07d7e7096a37bd4cf[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 09:02:08 2026 +0100
+
+    update modules whatsapp attendance for comunity v2
+
+[33mcommit 42298af314d738756b4dfe651527e9eebeb2f327[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 08:36:09 2026 +0100
+
+    update modules whatsapp attendance for comunity v2
+
+[33mcommit ab79a647fd75600bedb90dbdff59bdda8b2b43d6[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 08:31:26 2026 +0100
+
+    update modules whatsapp attendance for comunity v2
+
+[33mcommit 81dfc36e2a939949b7ee6449c2dbb83a934958c5[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 9 08:18:26 2026 +0100
+
+    albaran daily report
+
+[33mcommit c3875400dbe9cd67490d07c1ae06e0803b72c666[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 08:09:45 2026 +0100
+
+    update modules whatsapp attendance for comunity
+
+[33mcommit 9ea80f9cf496e3573549149b87774a9ccd616399[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 08:00:37 2026 +0100
+
+    update modules whatsapp attendance for comunity
+
+[33mcommit e56d35c3128a6da0b9e62bb4b5063b7d7dc7be02[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 07:58:08 2026 +0100
+
+    add modules whatsapp attendance for comunity
+
+[33mcommit 1285ca0822eebbd25ea0522c852f5a08ce3a392a[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 07:56:04 2026 +0100
+
+    add modules whatsapp attendance for comunity
+
+[33mcommit 1e8d773f26723148b7f6f4bb3decc96be873e97b[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Fri Jan 9 07:38:45 2026 +0100
+
+    add modules whatsapp attendance for comunity
+
+[33mcommit e085cec80cb34cdd6f6a46b848f7f916f7aace6b[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Thu Jan 8 14:52:38 2026 +0100
+
+    update code v2
+
+[33mcommit 6c3e1eb5af82608a5fbee8481ce1856ee2b50c72[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Thu Jan 8 14:48:45 2026 +0100
+
+    update code
+
+[33mcommit 6e6ff20571adcb54e71acb7c8501eb9d50eb1fca[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Thu Jan 8 14:40:44 2026 +0100
+
+    update code
+
+[33mcommit fad40e3364c0eb7da251a3ff2f8351f2e76585aa[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Thu Jan 8 14:37:04 2026 +0100
+
+    update code
+
+[33mcommit f360862ae099f4f158636617859ce73f05ebd1c0[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Thu Jan 8 14:23:23 2026 +0100
+
+    add modules oca gateway for odoo 19 with some changes
+
+[33mcommit fd9ca57a370ea9711e1f080df68dc561fbaf33fc[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 14:59:33 2026 +0100
+
+    cash calculator for cash moves
+
+[33mcommit 17b892953bf15f67e12f2342b021598af52452fc[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 14:49:47 2026 +0100
+
+    cash calculator improved
+
+[33mcommit 7b43fe2cc09197f8ad97168d886b5423caa745fa[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 14:14:04 2026 +0100
+
+    minor fix
+
+[33mcommit 8314db24158d518a7d10e1bfe58fb4181e82d103[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 13:39:50 2026 +0100
+
+    From list to sale_order
+
+[33mcommit c0b4164f1cbaba191deaaa815eef71b25c869366[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 12:43:53 2026 +0100
+
+    workflow to sale order completed
+
+[33mcommit 22524bfa29c625eea1f1873507eae70bebeecbd0[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 11:15:31 2026 +0100
+
+    sale_order created and picking validate
+
+[33mcommit 4ce61d1f54c84dd699c135bed38cda4b57ccf384[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 11:01:06 2026 +0100
+
+    odoo payment copied
+
+[33mcommit 7af9df9807d2ed6e42749c0c5346b808556faa0a[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 10:36:22 2026 +0100
+
+    pay buttons fixed
+
+[33mcommit 0cfc4ceb403769269fee1fd0a00e43a03281bd9d[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 10:27:02 2026 +0100
+
+    minor fix
+
+[33mcommit c6c1f9dbfdad75107d3fad270d51a0bb9b4aa432[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 10:18:00 2026 +0100
+
+    redirect to new order fixed
+
+[33mcommit 0412a03685353209a96710cd5d36b7621be8a038[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 09:13:37 2026 +0100
+
+    redirect to new order
+
+[33mcommit cebc283834a32607bd17bc169e4250e9f651a340[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Wed Jan 7 08:56:22 2026 +0100
+
+    update see discounts in pos ticket lines
+
+[33mcommit 6d86d492faf26bce9f9d2fa92e48532f842b9e7d[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Jan 7 08:01:04 2026 +0100
+
+    redirect to list
+
+[33mcommit 108be6a66cc3a50d1eff1136fe694f7e1a7569e6[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 5 09:44:05 2026 +0100
+
+    minor changes
+
+[33mcommit 88d8817acfa524c974648c53784d6723b93ec2c4[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 5 09:42:06 2026 +0100
+
+    report daily sale
+
+[33mcommit cdc364445009a0d2370171fd7620dad8d590a186[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 5 09:31:30 2026 +0100
+
+    close session wizard improved
+
+[33mcommit 599d6176ef047ffffc416d503b05732a1b485f99[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Jan 5 08:18:34 2026 +0100
+
+    cash calculator
+
+[33mcommit 0a6d0e2007ce2ddcb9bc760f9b09a82cb3b10e4e[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 2 13:43:12 2026 +0100
+
+    autofocus arreglado
+
+[33mcommit 280770a67d2a58bf9fe4ff86d78f67a90974100d[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 2 13:23:36 2026 +0100
+
+    totals view improved
+
+[33mcommit 9859bce75ddeadf7b1508892fa001b3b14554627[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 2 09:15:01 2026 +0100
+
+    lines editable qty
+
+[33mcommit ac7ca8b4b26c8bd51a800d91f7c3264556332eb2[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 2 08:58:19 2026 +0100
+
+    albaran improved albaran
+
+[33mcommit 51648896baf749266bef63416c92494eb8758154[m
+Author: dani <dani.xtendoo@gmail.com>
+Date:   Fri Jan 2 08:40:04 2026 +0100
+
+    sync
+
+[33mcommit e911b133c8e8ca37d3f56dab23fa53ebf5046750[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Jan 2 07:31:24 2026 +0100
+
+    cash in/out
+
+[33mcommit 82f574b3eb50b2394defef85671dc49437096a72[m
+Author: manuelcalerosolis <manuelcalerosolis@gmail.com>
+Date:   Wed Dec 31 13:57:36 2025 +0100
+
+    sync
+
+[33mcommit 49e7ba1a66c61a2cbcf1108774a3a990ef6e5a6b[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Dec 31 13:25:21 2025 +0100
+
+    button working but bad wizard
+
+[33mcommit 09e63f4655a2146060aa06a56b568e21b2547092[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Dec 31 12:10:10 2025 +0100
+
+    config to allow albaran
+
+[33mcommit 0b4aaff00e2fd6da15cd3248dc3e29dc423bf775[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Dec 31 11:20:06 2025 +0100
+
+    albaran created a validate
+
+[33mcommit 760014f3452996ae4d85f7f7f550f4c69e40cad0[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Dec 31 08:33:17 2025 +0100
+
+    2 buttons to pay
+
+[33mcommit ae23046e21cec262a1c5113bffee7dd3e461494e[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Dec 29 09:02:27 2025 +0100
+
+    2 wizard opening
+
+[33mcommit 58f1b84853c9ba2dc3b35ff5353088d734b8ef29[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Dec 29 08:24:48 2025 +0100
+
+    POS totals block moved
+
+[33mcommit 0111dbf85a3aacb9ee7b755d79306866b06d4d88[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Mon Dec 29 07:24:24 2025 +0100
+
+    tax fixed
+
+[33mcommit a23144eda67f11d749e73bc29e4e5af8de1684ed[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Dec 26 13:50:13 2025 +0100
+
+    iframe and javascript action
+
+[33mcommit 221a667cd119d94a82c57b74015a4a11b3bb0a7c[m
+Author: Gokac9 <theabraham9@gmail.com>
+Date:   Mon Dec 22 14:15:06 2025 +0100
+
+    update module to odoo 19.0
+
+[33mcommit bb57d5b9ab4446542a35198c770b20952e7e191b[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Dec 19 14:11:46 2025 +0100
+
+    impresion automatica
+
+[33mcommit be2cbacf83b2a0e3a30d7b977369e99728980b57[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Fri Dec 19 12:52:09 2025 +0100
+
+    paperformat creado e imprimiendo
+
+[33mcommit 32c4a146bc645dc600d94b2f6a03b17bb2ff4475[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Dec 17 13:51:50 2025 +0100
+
+    sync
+
+[33mcommit 426309a8772616e770f7354276e1065ec7628592[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Dec 17 12:55:52 2025 +0100
+
+    editable lines
+
+[33mcommit aace404a1ae31c45305ab4c89c4cb53481b44715[m[33m ([m[1;34mgrafted[m[33m)[m
+Author: Guillermo Bárcena López <barcenalopezguillermo@gmail.com>
+Date:   Wed Dec 17 12:48:01 2025 +0100
+
+    sync
