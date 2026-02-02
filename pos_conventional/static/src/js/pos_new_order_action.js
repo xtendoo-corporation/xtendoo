@@ -1,6 +1,7 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
+import { _t } from "@web/core/l10n/translation";
 
 /**
  * Acción de cliente para nuevo pedido en POS Conventional
@@ -21,6 +22,7 @@ async function posConventionalNewOrder(env, action) {
     // Esto viene del backend tras confirmar un pago con la opción activada
     if (context.force_login_after_order) {
         await actionService.doAction({
+            name: _t("Introducir PIN"),
             type: 'ir.actions.act_window',
             res_model: 'pos.session.pin.wizard',
             view_mode: 'form',

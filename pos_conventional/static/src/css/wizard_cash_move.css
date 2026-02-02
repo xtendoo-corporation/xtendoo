@@ -10,23 +10,23 @@
 }
 
 .o_pos_cash_move_wizard .o_type_option {
-    padding: 20px;
+    padding: 16px;
     border: 2px solid var(--pos-border);
-    border-radius: 12px;
+    border-radius: 3px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     background: white;
 }
 
 .o_pos_cash_move_wizard .o_type_option:hover {
-    border-color: var(--pos-primary);
-    background: rgba(99, 102, 241, 0.05);
+    border-color: var(--pos-primary-light);
+    background: rgba(113, 99, 158, 0.05);
 }
 
 .o_pos_cash_move_wizard .o_type_option.selected {
     border-color: var(--pos-primary);
-    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
+    background: var(--pos-primary);
     color: white;
 }
 

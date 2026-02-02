@@ -507,7 +507,7 @@ class PosOrder(models.Model):
 
         # Retornar la acción para mostrar el wizard
         return {
-            "name": _("Cerrar caja - Modo no táctil"),
+            "name": _("Cierre de Caja"),
             "type": "ir.actions.act_window",
             "res_model": "pos.session.closing.wizard",
             "res_id": wizard.id,
@@ -590,7 +590,7 @@ class PosOrder(models.Model):
         view_id = view_ref.id if view_ref else False
 
         action = {
-            "name": _("Entrada / Salida de efectivo"),
+            "name": _("Movimiento de Efectivo"),
             "type": "ir.actions.act_window",
             "res_model": "pos.session.cash_move.wizard",
             "res_id": wizard.id,

@@ -6,6 +6,7 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+
 class PosMakePaymentConventional(models.TransientModel):
     _inherit = "pos.make.payment"
 
@@ -44,7 +45,15 @@ class PosMakePaymentConventional(models.TransientModel):
 
     @api.onchange("payment_method_id")
     def _onchange_payment_method_id(self):
-        """Resetear el importe recibido cuando cambia el método de pago
+        """Resetear el importe recibido cuando cambia el método de pago"""
+        if not self.is_cash_payment:
+            self.amount_received = 0.0
+        else:
+            # Para efectivo, por defecto poner el importe exacto
+            self.amount_received = self.amount
+
+    def check(self, payment_method_id=None):
+        """
         Permite forzar el método de pago si se pasa como argumento.
         """
         self.ensure_one()

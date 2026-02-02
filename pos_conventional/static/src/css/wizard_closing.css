@@ -4,9 +4,10 @@
 
 .o_pos_closing_wizard .o_session_summary {
     background: var(--pos-bg-light);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
+    border: 1px solid var(--pos-border);
+    border-radius: 3px;
+    padding: 16px;
+    margin-bottom: 16px;
 }
 
 .o_pos_closing_wizard .o_counted_input {
@@ -24,9 +25,9 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 3px;
+    font-size: 12px;
     font-weight: 600;
 }
 

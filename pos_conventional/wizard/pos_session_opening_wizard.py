@@ -16,6 +16,7 @@ class PosSessionOpeningWizard(models.TransientModel):
     )
     currency_id = fields.Many2one('res.currency', related='session_id.currency_id', readonly=True)
     cash_control = fields.Boolean(related='session_id.cash_control', readonly=True)
+    opening_notes = fields.Text(string="Nota de apertura")
 
     def action_validate_and_open(self):
 
@@ -26,6 +27,27 @@ class PosSessionOpeningWizard(models.TransientModel):
 
         # Retornar a la vista del POS config o sesión
         return self._return_to_backend()
+
+    def action_open_cash_calculator(self):
+        self.ensure_one()
+
+        # Crear el wizard de calculadora
+        calculator_wizard = self.env["pos.cash.calculator.wizard"].create(
+            {
+                "opening_wizard_id": self.id,
+                "currency_id": self.currency_id.id,
+            }
+        )
+
+        return {
+            "name": _("Calculadora de Efectivo"),
+            "type": "ir.actions.act_window",
+            "res_model": "pos.cash.calculator.wizard",
+            "view_mode": "form",
+            "res_id": calculator_wizard.id,
+            "target": "new",
+            "context": self.env.context,
+        }
 
     def _validate_employee_pin(self, vals=None):
 
@@ -83,6 +105,10 @@ class PosSessionOpeningWizard(models.TransientModel):
         values = {}
         if session.cash_control:
             values['cash_register_balance_start'] = self.cash_register_balance_start
+        
+        # Guardar notas de apertura si las hay
+        if self.opening_notes:
+            values['opening_notes'] = self.opening_notes
 
         # Cambiar el estado a 'opened' directamente
         # Esto es lo que hace action_pos_session_open pero sin lanzar el frontend

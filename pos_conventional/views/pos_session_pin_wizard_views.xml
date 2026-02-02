@@ -4,34 +4,20 @@
         <field name="name">pos.session.pin.wizard.form</field>
         <field name="model">pos.session.pin.wizard</field>
         <field name="arch" type="xml">
-            <form string="Validar PIN" class="o_pos_wizard_base o_pos_pin_wizard">
+            <form string="Introduzca su PIN" class="o_pos_conventional_wizard">
                 <field name="session_id" invisible="1" />
                 <field name="user_id" invisible="1" />
 
                 <sheet>
-                    <!-- Header -->
-                    <div class="o_pos_wizard_header">
-                        <div class="o_wizard_icon">
-                            <i class="fa fa-lock" />
-                        </div>
-                        <h2 class="o_wizard_title">Validación de PIN</h2>
-                        <p class="o_wizard_subtitle">Ingrese su PIN para continuar con la apertura
-                            de sesión</p>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="o_pos_wizard_content">
-                        <div class="o_pin_input_container">
-                            <field name="employee_pin" password="True" placeholder="••••"
-                                nolabel="1" />
-                        </div>
-                    </div>
+                    <group>
+                        <field name="employee_pin" password="True" string="PIN del Empleado" />
+                    </group>
                 </sheet>
 
                 <footer>
                     <button name="action_validate_pin" string="Validar PIN" type="object"
-                        class="btn-primary" />
-                    <button string="Cancelar" class="btn-secondary" special="cancel"
+                        class="btn-primary btn-lg" />
+                    <button string="Cancelar" class="btn-secondary btn-lg" special="cancel"
                         invisible="context.get('no_cancel')" />
                 </footer>
             </form>

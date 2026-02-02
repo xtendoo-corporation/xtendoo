@@ -25,8 +25,8 @@
 }
 
 .o_pos_pin_wizard .o_pin_input_container input:focus {
-    border-color: var(--pos-primary) !important;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+    border-color: var(--pos-primary-light) !important;
+    box-shadow: 0 0 0 2px rgba(113, 99, 158, 0.1) !important;
 }
 
 .o_pos_pin_wizard .o_pin_input_container input::placeholder {

@@ -58,6 +58,7 @@ class PosConfig(models.Model):
             # Si la sesión está en opening_control, abrir el wizard de PIN primero
             if session.state == "opening_control":
                 return {
+                    "name": _("Introducir PIN"),
                     "type": "ir.actions.act_window",
                     "res_model": "pos.session.pin.wizard",
                     "view_mode": "form",

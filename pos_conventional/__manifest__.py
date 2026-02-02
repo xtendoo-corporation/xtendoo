@@ -32,13 +32,7 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "pos_conventional/static/src/css/cashbox.css",
-            "pos_conventional/static/src/css/wizard_base.css",
-            "pos_conventional/static/src/css/wizard_pin.css",
-            "pos_conventional/static/src/css/wizard_opening.css",
-            "pos_conventional/static/src/css/wizard_closing.css",
-            "pos_conventional/static/src/css/wizard_cash_move.css",
-            "pos_conventional/static/src/css/wizard_calculator.css",
+            "pos_conventional/static/src/css/pos_conventional_wizards.css",
             "pos_conventional/static/src/js/pos_order_list_controller.js",
             "pos_conventional/static/src/js/pos_order_form_barcode_controller.js",
             "pos_conventional/static/src/js/pos_print_iframe.js",

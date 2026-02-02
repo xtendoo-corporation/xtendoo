@@ -64,12 +64,12 @@
 }
 
 .o_pos_cash_calculator_wizard .o_total_display {
-    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
+    background: var(--pos-primary);
     color: white;
-    padding: 20px;
-    border-radius: 12px;
+    padding: 16px;
+    border-radius: 3px;
     text-align: right;
-    margin-top: 20px;
+    margin-top: 16px;
 }
 
 .o_pos_cash_calculator_wizard .o_total_display .o_total_label {

@@ -3,7 +3,7 @@
    ======================================== */
 
 .o_pos_opening_wizard .o_pos_wizard_header {
-    background: linear-gradient(135deg, var(--pos-secondary) 0%, var(--pos-secondary-dark) 100%);
+    background: var(--pos-primary);
 }
 
 .o_pos_opening_wizard .o_amount_display {

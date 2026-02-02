@@ -4,71 +4,34 @@
         <field name="name">pos.session.cash.move.wizard.form</field>
         <field name="model">pos.session.cash_move.wizard</field>
         <field name="arch" type="xml">
-            <form string="Entrada / Salida de efectivo"
-                class="o_pos_wizard_base o_pos_cash_move_wizard">
+            <form string="Movimiento de Efectivo" class="o_pos_conventional_wizard">
                 <field name="currency_id" invisible="1" />
                 <field name="partner_id" invisible="1" />
 
                 <sheet>
-                    <!-- Header -->
-                    <div class="o_pos_wizard_header secondary">
-                        <div class="o_wizard_icon">
-                            <i class="fa fa-exchange" />
-                        </div>
-                        <h2 class="o_wizard_title">Movimiento de Efectivo</h2>
-                        <p class="o_wizard_subtitle">Registrar entrada o salida de dinero</p>
-                        <div class="o_wizard_badge">
-                            <i class="fa fa-desktop me-1" />
-                            <field name="session_id" readonly="1" nolabel="1" class="d-inline" />
-                        </div>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="o_pos_wizard_content">
-                        <!-- Tipo de operación -->
-                        <div class="o_pos_wizard_section">
-                            <div class="o_pos_section_title">
-                                <i class="fa fa-arrows-v" /> Tipo de operación </div>
-                            <field name="type" widget="radio" options="{'horizontal': true}" />
-                        </div>
-
-                        <!-- Campo de importe -->
-                        <div class="o_pos_wizard_section">
-                            <div class="o_pos_section_title">
-                                <i class="fa fa-money" /> Importe </div>
-                            <div class="o_pos_input_group large">
-                                <div class="d-flex align-items-center">
-                                    <field name="amount" widget="monetary"
-                                        options="{'currency_field': 'currency_id'}"
-                                        nolabel="1"
-                                        class="flex-grow-1" />
-                                    <button name="action_open_cash_calculator"
-                                        type="object"
-                                        class="o_pos_calc_btn ms-3"
-                                        title="Abrir calculadora">
-                                        <i class="fa fa-calculator" />
-                                    </button>
-                                </div>
+                    <group>
+                        <group>
+                            <field name="type" widget="radio" options="{'horizontal': true}"
+                                string="Tipo" />
+                            <label for="amount" string="Importe" />
+                            <div class="o_row">
+                                <field name="amount" widget="monetary"
+                                    options="{'currency_field': 'currency_id'}" />
+                                <button name="action_open_cash_calculator" type="object"
+                                    icon="fa-calculator" class="btn-link" title="Calculadora" />
                             </div>
-                        </div>
-
-                        <!-- Razón -->
-                        <div class="o_pos_wizard_section">
-                            <div class="o_pos_section_title">
-                                <i class="fa fa-comment" /> Motivo (opcional) </div>
-                            <div class="o_pos_input_group">
-                                <field name="reason"
-                                    placeholder="Ej: Cambio para caja, Pago a proveedor..."
-                                    nolabel="1" />
-                            </div>
-                        </div>
-                    </div>
+                        </group>
+                        <group>
+                            <field name="reason" string="Motivo" placeholder="Ej: Cambio incial..." />
+                            <field name="session_id" readonly="1" string="Sesión" />
+                        </group>
+                    </group>
                 </sheet>
 
                 <footer>
                     <button string="Confirmar" type="object" name="action_confirm"
-                        class="btn-primary" />
-                    <button string="Cancelar" class="btn-secondary" special="cancel" />
+                        class="btn-primary btn-lg" />
+                    <button string="Cancelar" class="btn-secondary btn-lg" special="cancel" />
                 </footer>
             </form>
         </field>

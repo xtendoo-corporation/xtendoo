@@ -96,6 +96,7 @@ class PosSessionPinWizard(models.TransientModel):
 
         # Al validar, abrir el segundo wizard de control de efectivo
         return {
+            "name": _("Control de apertura"),
             "type": "ir.actions.act_window",
             "res_model": "pos.session.opening.wizard",
             "view_mode": "form",

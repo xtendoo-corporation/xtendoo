@@ -4,7 +4,7 @@
         <field name="name">pos.session.closing.wizard.form</field>
         <field name="model">pos.session.closing.wizard</field>
         <field name="arch" type="xml">
-            <form string="Cierre de Sesión POS" class="o_pos_wizard_base o_pos_closing_wizard">
+            <form string="Cerrando la caja registradora" class="o_pos_conventional_wizard">
                 <field name="state" invisible="1" />
                 <field name="currency_id" invisible="1" />
                 <field name="cash_control" invisible="1" />
@@ -15,220 +15,144 @@
                 <field name="linked_sale_orders_total" invisible="1" />
 
                 <sheet>
-                    <!-- Header - Estado normal -->
-                    <div class="o_pos_wizard_header" invisible="state != 'input'">
-                        <div class="o_wizard_icon">
-                            <i class="fa fa-cash-register" />
-                        </div>
-                        <h2 class="o_wizard_title">Cierre de Caja</h2>
-                        <p class="o_wizard_subtitle">Cuente el dinero y cierre la sesión</p>
-                        <div class="o_wizard_badge">
-                            <i class="fa fa-desktop me-1" />
-                            <field name="session_id" readonly="1" nolabel="1" class="d-inline" />
-                        </div>
+                    <div class="alert alert-warning text-center" invisible="state != 'confirmation'"
+                        role="alert">
+                        <div class="fw-bold"><i class="fa fa-exclamation-triangle" /> Diferencia
+                            Detectada</div>
+                        <div>El dinero contado no coincide con el esperado. ¿Desea registrar esta
+                            diferencia y continuar?</div>
                     </div>
 
-                    <!-- Header - Estado confirmación -->
-                    <div class="o_pos_wizard_header warning" invisible="state != 'confirmation'">
-                        <div class="o_wizard_icon">
-                            <i class="fa fa-exclamation-triangle" />
-                        </div>
-                        <h2 class="o_wizard_title">Diferencia Detectada</h2>
-                        <p class="o_wizard_subtitle">El dinero contado no coincide con el esperado</p>
-                    </div>
+                    <!-- Layout limpio por secciones -->
+                    <div invisible="state != 'input'">
 
-                    <!-- Content -->
-                    <div class="o_pos_wizard_content">
-                        <!-- Estado Input -->
-                        <div invisible="state != 'input'">
-                            <!-- Resumen de la sesión -->
-                            <div class="o_pos_wizard_section" invisible="not cash_control">
-                                <div class="o_pos_section_title">
-                                    <i class="fa fa-chart-bar" /> Resumen de la sesión </div>
-                                <div class="o_pos_summary_card">
-                                    <!-- Total teórico -->
-                                    <div class="o_pos_summary_row total">
-                                        <span class="o_label">
-                                            <i class="fa fa-calculator" /> Total teórico </span>
-                                        <span class="o_value">
-                                            <field name="cash_register_balance_end"
-                                                widget="monetary" nolabel="1" />
-                                        </span>
-                                    </div>
+                        <!-- Sección Efectivo -->
+                        <div class="mb-3" invisible="not cash_control">
+                            <h5 class="border-bottom pb-1 mb-2">Efectivo</h5>
 
-                                    <!-- Apertura -->
-                                    <div class="o_pos_summary_row indent">
-                                        <span class="o_label">Apertura</span>
-                                        <span class="o_value">
-                                            <field name="cash_register_balance_start"
-                                                widget="monetary" nolabel="1" />
-                                        </span>
-                                    </div>
-
-                                    <!-- Pagos -->
-                                    <div class="o_pos_summary_row indent">
-                                        <span class="o_label">
-                                            <i class="fa fa-plus-circle" /> Pagos </span>
-                                        <span class="o_value positive"> +<field
-                                                name="total_payments" widget="monetary" nolabel="1" />
-                                        </span>
-                                    </div>
-
-                                    <!-- Desglose Efectivo -->
-                                    <div class="o_pos_summary_row indent"
-                                        style="padding-left: 40px;" invisible="cash_payments == 0">
-                                        <span class="o_label">
-                                            <i class="fa fa-money" /> Efectivo </span>
-                                        <span class="o_value">
-                                            <field name="cash_payments" widget="monetary"
-                                                nolabel="1" />
-                                        </span>
-                                    </div>
-
-                                    <!-- Desglose Tarjeta -->
-                                    <div class="o_pos_summary_row indent"
-                                        style="padding-left: 40px;" invisible="card_payments == 0">
-                                        <span class="o_label">
-                                            <i class="fa fa-credit-card" /> Tarjeta </span>
-                                        <span class="o_value">
-                                            <field name="card_payments" widget="monetary"
-                                                nolabel="1" />
-                                        </span>
-                                    </div>
-
-                                    <!-- Desglose Otros -->
-                                    <div class="o_pos_summary_row indent"
-                                        style="padding-left: 40px;" invisible="other_payments == 0">
-                                        <span class="o_label">
-                                            <i class="fa fa-ellipsis-h" /> Otros </span>
-                                        <span class="o_value">
-                                            <field name="other_payments" widget="monetary"
-                                                nolabel="1" />
-                                        </span>
-                                    </div>
-
-                                    <!-- Cuenta Cliente -->
-                                    <div class="o_pos_summary_row indent"
-                                        style="padding-left: 40px;"
-                                        invisible="linked_sale_orders_count == 0">
-                                        <span class="o_label">
-                                            <i class="fa fa-user" /> Cuenta Cliente </span>
-                                        <span class="o_value">
-                                            <field name="linked_sale_orders_total" widget="monetary"
-                                                nolabel="1" />
-                                        </span>
-                                    </div>
-
-                                    <!-- Entrada/Salida efectivo -->
-                                    <div class="o_pos_summary_row indent"
-                                        invisible="cash_in_out_total == 0">
-                                        <span class="o_label">
-                                            <i class="fa fa-exchange" /> Entrada/Salida </span>
-                                        <span class="o_value">
-                                            <field name="cash_in_out_total" widget="monetary"
-                                                nolabel="1" />
-                                        </span>
-                                    </div>
+                            <div class="row ps-2">
+                                <div class="col-8 text-muted">Apertura</div>
+                                <div class="col-4 text-end">
+                                    <field name="cash_register_balance_start" widget="monetary"
+                                        nolabel="1" />
                                 </div>
                             </div>
 
-                            <!-- Recuento de efectivo -->
-                            <div class="o_pos_wizard_section" invisible="not cash_control">
-                                <div class="o_pos_section_title">
-                                    <i class="fa fa-hand-holding-usd" /> Recuento de efectivo </div>
-                                <div class="o_pos_input_group large">
-                                    <div class="o_input_label">Dinero contado</div>
-                                    <div class="o_counted_input d-flex align-items-center">
-                                        <field name="cash_register_balance_end_real"
-                                            widget="monetary"
-                                            options="{'currency_field': 'currency_id'}"
+                            <div class="row ps-2">
+                                <div class="col-8 text-muted">Pagos</div>
+                                <div class="col-4 text-end">
+                                    <field name="cash_payments" widget="monetary" nolabel="1" />
+                                </div>
+                            </div>
+
+                            <div class="row ps-2">
+                                <div class="col-8 text-muted">Variables (Entrada/Salida)</div>
+                                <div class="col-4 text-end">
+                                    <field name="cash_in_out_total" widget="monetary" nolabel="1" />
+                                </div>
+                            </div>
+
+                            <!-- Recuento y Diferencia -->
+                            <div class="mt-2 pt-2 border-top">
+                                <div class="row align-items-center mb-1">
+                                    <div class="col-6 fw-bold">Dinero contado</div>
+                                    <div class="col-6">
+                                        <div class="o_row d-flex justify-content-end">
+                                            <field name="cash_register_balance_end_real"
+                                                widget="monetary"
+                                                options="{'currency_field': 'currency_id'}"
+                                                nolabel="1"
+                                                class="text-end" />
+                                            <button name="action_open_cash_calculator"
+                                                type="object"
+                                                icon="fa-calculator"
+                                                class="btn-link ps-2"
+                                                title="Calculadora" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row" invisible="cash_register_difference == 0">
+                                    <div class="col-8 text-danger"
+                                        invisible="cash_register_difference &gt;= 0">Diferencia</div>
+                                    <div class="col-8 text-success"
+                                        invisible="cash_register_difference &lt; 0">Diferencia</div>
+                                    <div class="col-4 text-end">
+                                        <field name="cash_register_difference" widget="monetary"
                                             nolabel="1"
-                                            placeholder="0,00"
-                                            class="flex-grow-1" />
-                                        <button name="action_open_cash_calculator"
-                                            type="object"
-                                            class="o_pos_calc_btn ms-3"
-                                            title="Abrir calculadora">
-                                            <i class="fa fa-calculator" />
-                                        </button>
+                                            decoration-danger="cash_register_difference &lt; 0"
+                                            decoration-success="cash_register_difference &gt; 0" />
                                     </div>
                                 </div>
+                            </div>
+                        </div>
 
-                                <!-- Diferencia -->
-                                <div class="mt-3 text-center"
-                                    invisible="cash_register_difference == 0">
-                                    <span class="o_difference_badge negative"
-                                        invisible="cash_register_difference &gt;= 0">
-                                        <i class="fa fa-arrow-down" /> Diferencia: <field
-                                            name="cash_register_difference" widget="monetary"
-                                            nolabel="1" />
-                                    </span>
-                                    <span class="o_difference_badge positive"
-                                        invisible="cash_register_difference &lt; 0">
-                                        <i class="fa fa-arrow-up" /> Diferencia: <field
-                                            name="cash_register_difference" widget="monetary"
-                                            nolabel="1" />
-                                    </span>
+                        <!-- Sección Tarjeta -->
+                        <div class="mb-3" invisible="card_payments == 0">
+                            <h5 class="border-bottom pb-1 mb-2">Tarjeta</h5>
+                            <div class="row ps-2">
+                                <div class="col-8 text-muted">Pagos</div>
+                                <div class="col-4 text-end">
+                                    <field name="card_payments" widget="monetary" nolabel="1" />
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Alerta info -->
-                            <div class="o_pos_alert info" invisible="not cash_control">
-                                <i class="fa fa-info-circle" />
-                                <span>La diferencia se registrará automáticamente como ganancia o
-                                    pérdida.</span>
+                        <!-- Sección Otros -->
+                        <div class="mb-3" invisible="other_payments == 0">
+                            <h5 class="border-bottom pb-1 mb-2">Otros</h5>
+                            <div class="row ps-2">
+                                <div class="col-8 text-muted">Pagos</div>
+                                <div class="col-4 text-end">
+                                    <field name="other_payments" widget="monetary" nolabel="1" />
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="o_pos_alert info" invisible="cash_control">
-                                <i class="fa fa-check-circle" />
-                                <span>Esta caja no requiere control de efectivo.</span>
-                            </div>
-
-                            <!-- Nota de cierre -->
-                            <div class="o_pos_wizard_section">
-                                <div class="o_pos_section_title">
-                                    <i class="fa fa-sticky-note" /> Nota de cierre (opcional) </div>
-                                <div class="o_pos_input_group">
-                                    <field name="closing_note"
-                                        placeholder="Ej: Cierre de turno, fin de jornada, cambio de empleado..."
+                        <!-- Sección Cuenta Cliente -->
+                        <div class="mb-3" invisible="linked_sale_orders_count == 0">
+                            <h5 class="border-bottom pb-1 mb-2">Cuenta de cliente</h5>
+                            <div class="row ps-2">
+                                <div class="col-8 text-muted">Pedidos</div>
+                                <div class="col-4 text-end">
+                                    <field name="linked_sale_orders_total" widget="monetary"
                                         nolabel="1" />
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Estado Confirmación -->
-                        <div invisible="state != 'confirmation'" class="text-center py-4">
-                            <div class="o_pos_alert warning">
-                                <i class="fa fa-exclamation-triangle" />
-                                <span>¿Desea registrar esta diferencia en los libros y continuar con
-                                    el cierre?</span>
-                            </div>
+                        <!-- Nota -->
+                        <div class="mt-4">
+                            <field name="closing_note" placeholder="Añadir una nota de cierre..." />
                         </div>
+
                     </div>
                 </sheet>
 
                 <footer>
-                    <!-- Botones estado input -->
+                    <!-- Boton Principal -->
                     <button name="action_close_session"
-                        string="Cerrar Caja"
+                        string="Cerrar caja registradora"
                         type="object"
-                        class="btn-primary"
-                        invisible="state != 'input'" />
+                        class="btn-primary btn-lg" />
 
-                    <!-- Botones estado confirmación -->
-                    <button name="action_close_session"
-                        string="Continuar de todos modos"
-                        type="object"
-                        class="btn-primary"
-                        invisible="state != 'confirmation'" />
+                    <!-- Descartar -->
+                    <button string="Descartar" class="btn-secondary btn-lg" special="cancel" />
 
-                    <button string="Cancelar" class="btn-secondary" special="cancel" />
+                    <!-- Botones Secundarios -->
+                    <div class="float-end">
+                        <button name="action_open_cash_move_wizard"
+                            string="Entrada/salida de efectivo"
+                            type="object"
+                            class="btn-secondary btn-lg me-1"
+                            invisible="state != 'input'" />
 
-                    <button name="action_print_daily_report"
-                        string="Ver Venta Diaria"
-                        type="object"
-                        class="btn-secondary float-end"
-                        invisible="state != 'input'" />
+                        <button name="action_print_daily_report"
+                            string="Venta diaria"
+                            type="object"
+                            class="btn-secondary btn-lg"
+                            invisible="state != 'input'" />
+                    </div>
                 </footer>
             </form>
         </field>

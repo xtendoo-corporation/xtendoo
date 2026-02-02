@@ -4,61 +4,38 @@
         <field name="name">pos.session.opening.wizard.form</field>
         <field name="model">pos.session.opening.wizard</field>
         <field name="arch" type="xml">
-            <form string="Apertura de Sesión POS" class="o_pos_wizard_base o_pos_opening_wizard">
+            <form string="Control de apertura" class="o_pos_conventional_wizard">
                 <field name="session_id" invisible="1" />
                 <field name="user_id" invisible="1" />
                 <field name="currency_id" invisible="1" />
                 <field name="cash_control" invisible="1" />
 
                 <sheet>
-                    <!-- Header -->
-                    <div class="o_pos_wizard_header">
-                        <div class="o_wizard_icon">
-                            <i class="fa fa-unlock-alt" />
+                    <group>
+                        <label for="cash_register_balance_start" string="Caja de apertura"
+                            invisible="not cash_control" />
+                        <div class="o_row" invisible="not cash_control">
+                            <field name="cash_register_balance_start"
+                                widget="monetary"
+                                options="{'currency_field': 'currency_id'}"
+                                nolabel="1" />
+                            <button name="action_open_cash_calculator"
+                                type="object"
+                                icon="fa-calculator"
+                                class="btn-link"
+                                title="Calculadora" />
                         </div>
-                        <h2 class="o_wizard_title">Apertura de Caja</h2>
-                        <p class="o_wizard_subtitle">Ingrese el dinero inicial para abrir la sesión</p>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="o_pos_wizard_content">
-                        <!-- Campo de importe inicial -->
-                        <div class="o_pos_wizard_section" invisible="not cash_control">
-                            <div class="o_pos_section_title">
-                                <i class="fa fa-money" /> Efectivo inicial en caja </div>
-                            <div class="o_pos_input_group large">
-                                <div class="o_input_label">Importe</div>
-                                <field name="cash_register_balance_start"
-                                    widget="monetary"
-                                    options="{'currency_field': 'currency_id'}"
-                                    nolabel="1"
-                                    placeholder="0,00" />
-                            </div>
-                        </div>
-
-                        <!-- Alerta informativa -->
-                        <div class="o_pos_alert info" invisible="not cash_control">
-                            <i class="fa fa-info-circle" />
-                            <span>Cuente e ingrese el dinero que hay actualmente en la caja
-                                registradora.</span>
-                        </div>
-
-                        <!-- Sin control de efectivo -->
-                        <div class="o_pos_alert info" invisible="cash_control">
-                            <i class="fa fa-check-circle" />
-                            <span>Esta caja no requiere control de efectivo. Puede proceder
-                                directamente.</span>
-                        </div>
-                    </div>
+                        <field name="opening_notes" placeholder="Añadir una nota de apertura..." />
+                    </group>
                 </sheet>
 
                 <footer>
                     <button name="action_validate_and_open"
-                        string="Abrir Sesión"
+                        string="Abrir caja registradora"
                         type="object"
-                        class="btn-primary" />
-                    <button string="Cancelar"
-                        class="btn-secondary"
+                        class="btn-primary btn-lg" />
+                    <button string="Descartar"
+                        class="btn-secondary btn-lg"
                         special="cancel" />
                 </footer>
             </form>

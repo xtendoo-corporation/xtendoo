@@ -7,18 +7,22 @@
    VARIABLES DE DISEÑO (colores consistentes)
    ---------------------------------------- */
 :root {
-    --pos-primary: #6366f1;          /* Indigo */
-    --pos-primary-dark: #4f46e5;
-    --pos-secondary: #10b981;         /* Emerald */
-    --pos-secondary-dark: #059669;
-    --pos-warning: #f59e0b;           /* Amber */
-    --pos-danger: #ef4444;            /* Red */
-    --pos-bg-light: #f8fafc;
-    --pos-border: #e2e8f0;
-    --pos-text: #1e293b;
-    --pos-text-muted: #64748b;
-    --pos-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --pos-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --pos-primary: #71639e;           /* Odoo Purple */
+    --pos-primary-dark: #5a4d7e;
+    --pos-primary-light: #8875af;
+    --pos-secondary: #00A09D;         /* Odoo Teal */
+    --pos-secondary-dark: #017E84;
+    --pos-success: #28A745;           /* Green */
+    --pos-warning: #F0AD4E;           /* Amber */
+    --pos-danger: #DC3545;            /* Red */
+    --pos-bg-light: #F9F9F9;
+    --pos-bg-gray: #F0EEEE;
+    --pos-border: #DDDDDD;
+    --pos-border-light: #E7E7E7;
+    --pos-text: #212529;
+    --pos-text-muted: #6C757D;
+    --pos-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --pos-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* ----------------------------------------
@@ -115,16 +119,16 @@
 
 /* Campos de entrada modernos */
 .o_pos_input_group {
-    background: var(--pos-bg-light);
+    background: white;
     border: 1px solid var(--pos-border);
-    border-radius: 12px;
-    padding: 16px 20px;
+    border-radius: 4px;
+    padding: 12px 16px;
     transition: all 0.2s ease;
 }
 
 .o_pos_input_group:focus-within {
-    border-color: var(--pos-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--pos-primary-light);
+    box-shadow: 0 0 0 2px rgba(113, 99, 158, 0.1);
 }
 
 .o_pos_input_group .o_input_label {
@@ -159,15 +163,15 @@
 
 /* Botón de calculadora */
 .o_pos_calc_btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    background: var(--pos-primary);
     border: none;
     color: white;
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,17 +179,17 @@
 }
 
 .o_pos_calc_btn:hover {
-    transform: scale(1.08);
-    box-shadow: var(--pos-shadow-lg);
+    background: var(--pos-primary-dark);
+    box-shadow: var(--pos-shadow);
 }
 
 /* Tarjetas de resumen */
 .o_pos_summary_card {
     background: var(--pos-bg-light);
     border: 1px solid var(--pos-border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    border-radius: 3px;
+    padding: 16px;
+    margin-bottom: 12px;
 }
 
 .o_pos_summary_row {
@@ -242,13 +246,13 @@
 
 /* Alertas personalizadas */
 .o_pos_alert {
-    padding: 14px 18px;
-    border-radius: 10px;
+    padding: 12px 16px;
+    border-radius: 3px;
     font-size: 13px;
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
 .o_pos_alert i {
@@ -296,8 +300,8 @@
 }
 
 .modal:has(.o_pos_wizard_base) .modal-footer .btn-primary {
-    background: linear-gradient(135deg, var(--pos-primary) 0%, var(--pos-primary-dark) 100%);
-    border: none;
+    background: var(--pos-primary);
+    border: 1px solid var(--pos-primary);
 }
 
 .modal:has(.o_pos_wizard_base) .modal-footer .btn-primary:hover {

@@ -43,6 +43,11 @@ class PosCashCalculatorWizard(models.TransientModel):
         "pos.session.closing.wizard", string="Wizard de cierre"
     )
 
+    # ID del wizard de apertura para actualizar el valor
+    opening_wizard_id = fields.Many2one(
+        "pos.session.opening.wizard", string="Wizard de apertura"
+    )
+
     # ID del wizard de entrada/salida de efectivo para actualizar el valor
     cash_move_wizard_id = fields.Many2one(
         "pos.session.cash_move.wizard", string="Wizard de entrada/salida de efectivo"
@@ -98,9 +103,29 @@ class PosCashCalculatorWizard(models.TransientModel):
 
             # Cerrar solo este wizard y volver al wizard de cierre
             return {
+                "name": _("Cierre de Caja"),
                 "type": "ir.actions.act_window",
                 "res_model": "pos.session.closing.wizard",
                 "res_id": self.closing_wizard_id.id,
+                "view_mode": "form",
+                "target": "new",
+                "context": self.env.context,
+            }
+
+        if self.opening_wizard_id:
+            # Actualizar solo el campo cash_register_balance_start del wizard de apertura
+            self.opening_wizard_id.write(
+                {
+                    "cash_register_balance_start": self.total,
+                }
+            )
+
+            # Cerrar solo este wizard y volver al wizard de apertura
+            return {
+                "name": _("Control de apertura"),
+                "type": "ir.actions.act_window",
+                "res_model": "pos.session.opening.wizard",
+                "res_id": self.opening_wizard_id.id,
                 "view_mode": "form",
                 "target": "new",
                 "context": self.env.context,
@@ -116,6 +141,7 @@ class PosCashCalculatorWizard(models.TransientModel):
 
             # Cerrar solo este wizard y volver al wizard de entrada/salida
             return {
+                "name": _("Movimiento de Efectivo"),
                 "type": "ir.actions.act_window",
                 "res_model": "pos.session.cash_move.wizard",
                 "res_id": self.cash_move_wizard_id.id,
@@ -133,6 +159,7 @@ class PosCashCalculatorWizard(models.TransientModel):
         if self.closing_wizard_id:
             # Volver al wizard de cierre sin modificar el valor
             return {
+                "name": _("Cierre de Caja"),
                 "type": "ir.actions.act_window",
                 "res_model": "pos.session.closing.wizard",
                 "res_id": self.closing_wizard_id.id,
@@ -141,9 +168,22 @@ class PosCashCalculatorWizard(models.TransientModel):
                 "context": self.env.context,
             }
 
+        if self.opening_wizard_id:
+            # Volver al wizard de apertura sin modificar el valor
+            return {
+                "name": _("Control de apertura"),
+                "type": "ir.actions.act_window",
+                "res_model": "pos.session.opening.wizard",
+                "res_id": self.opening_wizard_id.id,
+                "view_mode": "form",
+                "target": "new",
+                "context": self.env.context,
+            }
+
         if self.cash_move_wizard_id:
             # Volver al wizard de entrada/salida sin modificar el valor
             return {
+                "name": _("Movimiento de Efectivo"),
                 "type": "ir.actions.act_window",
                 "res_model": "pos.session.cash_move.wizard",
                 "res_id": self.cash_move_wizard_id.id,
@@ -285,6 +325,7 @@ class PosCashCalculatorWizard(models.TransientModel):
     def _reload_view(self):
         """Método auxiliar para recargar la vista actual sin cerrarla"""
         return {
+            "name": _("Calculadora de Efectivo"),
             "type": "ir.actions.act_window",
             "res_model": self._name,
             "res_id": self.id,

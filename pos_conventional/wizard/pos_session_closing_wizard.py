@@ -159,6 +159,7 @@ class PosSessionClosingWizard(models.TransientModel):
             if self.state == "input":
                 self.write({"state": "confirmation"})
                 return {
+                    "name": _("Cierre de Caja"),
                     "type": "ir.actions.act_window",
                     "res_model": "pos.session.closing.wizard",
                     "view_mode": "form",
@@ -214,7 +215,7 @@ class PosSessionClosingWizard(models.TransientModel):
         )
 
         return {
-            "name": _("Monedas/billetes"),
+            "name": _("Calculadora de Efectivo"),
             "type": "ir.actions.act_window",
             "res_model": "pos.cash.calculator.wizard",
             "view_mode": "form",
@@ -228,7 +229,7 @@ class PosSessionClosingWizard(models.TransientModel):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": _("Entrada/Salida de efectivo"),
+            "name": _("Movimiento de Efectivo"),
             "res_model": "pos.session.cash_move.wizard",
             "view_mode": "form",
             "target": "new",

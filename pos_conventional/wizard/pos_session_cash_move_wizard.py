@@ -39,7 +39,7 @@ class PosSessionCashMoveWizard(models.TransientModel):
         })
 
         return {
-            'name': _('Calculadora de efectivo'),
+            'name': _('Calculadora de Efectivo'),
             'type': 'ir.actions.act_window',
             'res_model': 'pos.cash.calculator.wizard',
             'view_mode': 'form',
