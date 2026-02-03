@@ -17,14 +17,23 @@ patch(BarcodeReader.prototype, {
     },
     async _scan(code) {
         // Expresión regular mejorada para detectar números con punto O coma decimal
-        // Acepta: 123, 1.5, 1,5, 0.385, 0,385, etc.
-        const isNumericOnly = /^\d+([.,]\d+)?$/.test(code);
+        // Acepta SOLO de 1 a 3 decimales: 123, 1.5, 1,5, 0.385, 0,385, 1,234
+        // Rechaza más de 3 decimales: 0.3804, 1.23456 (se procesarán como código de barras)
+        const isNumericOnly = /^\d+([.,]\d{1,3})?$/.test(code);
+
+        // Validar que no tenga más de 5 dígitos en la parte entera
+        const parts = code.split(/[.,]/);
+        const integerPart = parts[0];
+        const hasMoreThan5Digits = integerPart.length > 5;
 
         console.log('[Xtendoo Scales] 📊 _scan interceptado:', {
             code: code,
             type: typeof code,
             isNumeric: isNumericOnly,
-            regex_test: /^\d+([.,]\d+)?$/.test(code)
+            regex_test: /^\d+([.,]\d{1,3})?$/.test(code),
+            decimals: code.includes(',') || code.includes('.') ? code.split(/[.,]/)[1]?.length || 0 : 0,
+            integerDigits: integerPart.length,
+            hasMoreThan5Digits: hasMoreThan5Digits
         });
 
         if (!code) {
@@ -33,9 +42,17 @@ patch(BarcodeReader.prototype, {
         }
 
         // Verificar si es solo un número (posiblemente peso de báscula)
-        // Ya calculado arriba para incluirlo en el log
+        // Debe cumplir: ser numérico Y tener máximo 5 dígitos enteros
+        const isValidScale = isNumericOnly && !hasMoreThan5Digits;
 
-        if (isNumericOnly) {
+        if (isNumericOnly && hasMoreThan5Digits) {
+            console.log('%c[Xtendoo Scales] 📦 Número con más de 5 dígitos detectado', 'background: #9B59B6; color: white; font-weight: bold; padding: 2px 5px;');
+            console.log('[Xtendoo Scales] 📏 Dígitos enteros:', integerPart.length);
+            console.log('[Xtendoo Scales] ➡️ Procesando como código de barras (no como cantidad)');
+            // Continuar al flujo normal de código de barras
+        }
+
+        if (isValidScale) {
             const hasComma = code.includes(',');
             const hasDot = code.includes('.');
             console.log('%c[Xtendoo Scales] 🔢 Entrada numérica detectada', 'background: #3498DB; color: white; font-weight: bold; padding: 2px 5px;');
