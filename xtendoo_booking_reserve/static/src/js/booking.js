@@ -15,7 +15,7 @@ publicWidget.registry.BookingReserve = publicWidget.Widget.extend({
         const typeSelect = form.querySelector('[name="booking_type"]');
         const typeName = typeSelect.options[typeSelect.selectedIndex].text;
         document.getElementById('type_summary_step_2').textContent = typeName;
-        
+
         this.$el.addClass('d-none');
         document.getElementById('booking_step_2').classList.remove('d-none');
     },
@@ -27,7 +27,7 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
         'click #booking_to_step_3': '_onToStep3',
         'click #booking_back_step_2': '_onBackStep2',
         'click #booking_reserve': '_onReserve',
-        'change #booking_hour': '_onHourChange',
+        'click .hour-btn': '_onHourButtonClick',
     },
     start: function () {
         this.initCalendar();
@@ -59,7 +59,7 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
             events: function (fetchInfo, successCallback, failureCallback) {
                 const start = fetchInfo.startStr.slice(0, 10);
                 const end = fetchInfo.endStr.slice(0, 10);
-                
+
                 // NO enviamos csrf_token aqui porque el controlador no tiene **kwargs y da warning
                 $.ajax({
                     url: '/booking/availability',
@@ -126,28 +126,25 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
             success: function (response) {
                 const result = response.result || response;
                 if (Array.isArray(result) && result.length > 0) {
-                    const hourSelect = document.getElementById('booking_hour');
-                    hourSelect.innerHTML = '';
-                    // Add default option
-                    const defaultOpt = document.createElement('option');
-                    defaultOpt.value = "";
-                    defaultOpt.textContent = "Selecciona una hora";
-                    defaultOpt.selected = true;
-                    defaultOpt.disabled = true;
-                    hourSelect.appendChild(defaultOpt);
+                    const hoursContainer = document.getElementById('booking_hours_container');
+                    const hourInput = document.getElementById('booking_hour');
+                    hoursContainer.innerHTML = '';
+                    hourInput.value = '';
 
                     result.forEach(hour => {
-                        const opt = document.createElement('option');
-                        opt.value = hour;
-                        opt.textContent = hour;
-                        hourSelect.appendChild(opt);
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'btn btn-outline-primary hour-btn';
+                        btn.dataset.hour = hour;
+                        btn.textContent = hour;
+                        hoursContainer.appendChild(btn);
                     });
-                    hourSelect.disabled = false;
-                    hourSelect.parentElement.classList.remove('d-none');
+
+                    document.getElementById('hour_selector').classList.remove('d-none');
                     document.getElementById('selected_date').value = dateStr;
-                    
-                    // Enable Next button if hour is already valid (though usually user must pick)
-                    document.getElementById('booking_to_step_3').classList.remove('d-none');
+
+                    // Hide next button until hour is selected
+                    document.getElementById('booking_to_step_3').classList.add('d-none');
                 } else {
                     alert('No hay horas disponibles para esta fecha.');
                 }
@@ -158,33 +155,45 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
             }
         });
     },
-    
-    _onHourChange: function() {
-        const hour = document.getElementById('booking_hour').value;
-        const btn = document.getElementById('booking_to_step_3');
-        if(hour) {
-             btn.classList.remove('d-none'); // Ensure visible
-             // Could also enable if disabled
-        }
+
+    _onHourButtonClick: function(ev) {
+        const clickedBtn = ev.currentTarget;
+        const hour = clickedBtn.dataset.hour;
+
+        // Remove active state from all hour buttons
+        document.querySelectorAll('.hour-btn').forEach(btn => {
+            btn.classList.remove('btn-primary', 'active');
+            btn.classList.add('btn-outline-primary');
+        });
+
+        // Add active state to clicked button
+        clickedBtn.classList.remove('btn-outline-primary');
+        clickedBtn.classList.add('btn-primary', 'active');
+
+        // Set hidden input value
+        document.getElementById('booking_hour').value = hour;
+
+        // Show next button
+        document.getElementById('booking_to_step_3').classList.remove('d-none');
     },
 
     _onToStep3: function() {
         const date = document.getElementById('selected_date').value;
         const hour = document.getElementById('booking_hour').value;
-        
+
         if (!date || !hour) {
             alert('Por favor selecciona fecha y hora.');
             return;
         }
-        
+
         // Populate Summary
         const typeSelect = document.querySelector('[name="booking_type"]');
         const typeName = typeSelect.options[typeSelect.selectedIndex].text;
-        
+
         document.getElementById('summary_type_step_3').textContent = typeName;
         document.getElementById('summary_date_step_3').textContent = date;
         document.getElementById('summary_hour_step_3').textContent = hour;
-        
+
         // Transition
         document.getElementById('booking_step_2').classList.add('d-none');
         document.getElementById('booking_step_3').classList.remove('d-none');
@@ -214,17 +223,17 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
         const email = clientForm.querySelector('[name="email"]').value;
         const date = document.getElementById('selected_date').value;
         const hour = document.getElementById('booking_hour').value;
-        
+
         if (!hour) {
              alert("Por favor, selecciona una hora.");
              return;
         }
-        
+
         // AQUI SI enviamos csrf_token porque booking_reserve acepta **data (kwargs)
         // obteniendolo del input hidden inyectado por el servidor
         const csrfTokenInput = document.querySelector('input[name="csrf_token"]');
         const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
-        
+
         // Enviamos como form-data normal (type='http' en backend)
         $.ajax({
             url: '/booking/reserve/submit',
@@ -245,20 +254,20 @@ publicWidget.registry.BookingCalendar = publicWidget.Widget.extend({
                 if (result && result.success) {
                     // Update modal content
                     document.getElementById('booking_success_message').textContent = result.message || 'Su solicitud ha sido enviada y será revisada pronto.';
-                    
+
                     // Init and Show Modal (jQuery fallback for Odoo)
                     const $modal = $('#booking_success_modal');
                     $modal.modal('show');
-                    
+
                     // Bind reload events
                     $modal.on('hidden.bs.modal', function () {
                         window.location.reload();
                     });
-                    
+
                     document.getElementById('btn_success_modal_ok').addEventListener('click', function () {
                         $modal.modal('hide');
                     });
-                    
+
                 } else {
                     alert(result.message || 'Error al enviar la solicitud.');
                 }

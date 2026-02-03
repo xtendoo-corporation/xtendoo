@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_booking_request_user,booking.request.user,model_booking_request,base.group_user,1,1,1,1
 access_booking_request_public,booking.request.public,model_booking_request,,1,0,1,0
+access_xtendoo_booking_reserve,access_xtendoo_booking_reserve,xtendoo_booking_reserve.model_xtendoo_booking_reserve,base.group_user,1,1,1,1

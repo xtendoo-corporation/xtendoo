@@ -48,8 +48,8 @@
 
                                     <div class="mb-3 d-none" id="hour_selector">
                                         <label class="form-label fw-bold">Hora *</label>
-                                        <select name="hour" id="booking_hour" class="form-select"
-                                            disabled="disabled"></select>
+                                        <div id="booking_hours_container" class="d-flex flex-wrap gap-2"></div>
+                                        <input type="hidden" name="hour" id="booking_hour" />
                                     </div>
 
                                     <div class="text-end mt-4">
