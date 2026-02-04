@@ -155,6 +155,9 @@ class ResourceBooking(models.Model):
             return
 
         try:
+            _logger.info("   │  → Actualizando calendar.event ID %s desde booking ID %s",
+                        self.calendar_event_id.id, self.id)
+
             event_vals = {
                 'name': self.name or _('Reserva: %s') % self.display_name,
                 'start': self.start,
@@ -162,15 +165,20 @@ class ResourceBooking(models.Model):
                 'partner_ids': [(6, 0, self.partner_ids.ids)] if self.partner_ids else [],
             }
 
-            self.calendar_event_id.sudo().write(event_vals)
+            _logger.info("   │     Nuevos valores: start=%s, stop=%s", event_vals['start'], event_vals['stop'])
+            _logger.info("   │     Usando contexto: no_mail_to_attendees=True (para evitar emails)")
 
-            _logger.info(
-                "Evento de calendario ID %s actualizado desde booking ID %s",
-                self.calendar_event_id.id, self.id
-            )
+            # Actualizar CON contexto para evitar emails
+            self.calendar_event_id.with_context(
+                no_mail_to_attendees=True,
+                mail_notrack=True,
+                mail_create_nolog=True,
+                tracking_disable=True,
+            ).sudo().write(event_vals)
+
+            _logger.info("   │  ✓ Evento de calendario ID %s actualizado desde booking ID %s",
+                        self.calendar_event_id.id, self.id)
 
         except Exception as e:
-            _logger.error(
-                "Error al actualizar evento de calendario para booking ID %s: %s",
-                self.id, str(e), exc_info=True
-            )
+            _logger.error("   │  ❌ Error al actualizar evento de calendario para booking ID %s: %s",
+                        self.id, str(e), exc_info=True)

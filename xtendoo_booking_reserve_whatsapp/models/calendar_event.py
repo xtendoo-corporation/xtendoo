@@ -33,11 +33,14 @@ class CalendarEvent(models.Model):
         # Si el contexto indica que no se deben enviar emails, desactivar notificaciones
         if self.env.context.get('no_mail_to_attendees'):
             _logger.info("   │     🔒 Desactivando envío de emails en calendar.event.write()")
+            _logger.info("   │        Campos modificados: %s", list(vals.keys()))
             return super(CalendarEvent, self.with_context(
                 mail_notrack=True,
                 mail_create_nolog=True,
                 tracking_disable=True,
                 no_mail_to_attendees=True,
+                # Contexto adicional para bloquear completamente
+                mail_auto_delete=True,
             )).write(vals)
 
         return super().write(vals)
