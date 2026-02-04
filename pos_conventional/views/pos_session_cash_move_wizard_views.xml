@@ -5,29 +5,69 @@
         <field name="model">pos.session.cash_move.wizard</field>
         <field name="arch" type="xml">
             <form string="Entrada / Salida de efectivo">
-                <field name="currency_id" invisible="1"/>
+                <field name="currency_id" invisible="1" />
+                <field name="session_id" invisible="1" />
+                <field name="partner_id" invisible="1" />
 
-                <group>
-                    <field name="session_id" readonly="1"/>
-                    <field name="type"/>
-                    <label for="amount" string="Importe"/>
-                    <div class="d-flex align-items-center">
-                        <field name="amount" string="Importe" widget="monetary"
-                               options="{'currency_field': 'currency_id'}"
-                               class="fs-4 fw-bold flex-grow-1" nolabel="1"/>
-                        <button name="action_open_cash_calculator"
-                                string="🧮"
-                                type="object"
-                                class="btn-primary oe_highlight ms-2"
-                                help="Abrir calculadora de monedas y billetes"/>
+                <div class="container-fluid p-0">
+                    <div class="row align-items-center mb-4 g-3">
+                        <div class="col-7">
+                            <!-- Intentamos usar decoradores nativos.
+                                 Sin CSS, el color de fondo activo suele ser el del tema (Morado). -->
+                            <field name="type"
+                                widget="selection_badge"
+                                decoration-success="type == 'in'"
+                                decoration-danger="type == 'out'"
+                                nolabel="1"
+                                class="text-uppercase fw-bold w-100 fs-6 d-flex justify-content-between gap-1" />
+                        </div>
+
+                        <div class="col-5">
+                            <div
+                                class="d-flex align-items-baseline border rounded bg-white px-3 py-2">
+                                <field name="amount"
+                                    widget="float"
+                                    class="form-control text-end fs-3 fw-bold shadow-none p-0 me-1"
+                                    style="border: none !important; background: transparent;"
+                                    nolabel="1"
+                                    placeholder="0,00" />
+                                <span class="fs-3 fw-bold text-dark">€</span>
+                            </div>
+                        </div>
                     </div>
-                    <field name="reason" placeholder="Motivo (opcional)"/>
-                    <field name="partner_id" invisible="1"/>
-                </group>
 
-                <footer>
-                    <button string="Confirmar" type="object" name="action_confirm" class="btn-primary"/>
-                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <field name="reason"
+                                required="1"
+                                placeholder="Razón"
+                                class="form-control p-3 shadow-sm border"
+                                style="height: 120px; resize: none;"
+                                nolabel="1" />
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="bg-white border-top-0 pt-2">
+                    <div class="d-flex justify-content-between w-100 align-items-center">
+                        <div>
+                            <button string="Confirmar"
+                                type="object"
+                                name="action_confirm"
+                                class="btn btn-primary btn-lg px-4" />
+
+                            <button string="Descartar"
+                                class="btn btn-light btn-lg border ms-2 px-4"
+                                special="cancel" />
+                        </div>
+                        <div>
+                            <button name="action_open_cash_calculator"
+                                icon="fa-money"
+                                type="object"
+                                class="btn btn-light btn-lg border px-3"
+                                title="Abrir calculadora de efectivo" />
+                        </div>
+                    </div>
                 </footer>
             </form>
         </field>
