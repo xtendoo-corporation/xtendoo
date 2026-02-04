@@ -24,48 +24,30 @@ class ResourceBooking(models.Model):
         _logger.info("   │  ⚙️ resource.booking.create() llamado")
         _logger.info("   │     Cantidad de bookings a crear: %d", len(vals_list))
 
-        # Dejar que el módulo base cree el booking normalmente (con meeting_id)
-        # pero con el contexto correcto para evitar emails
+        # Crear bookings - El módulo base creará meeting_id automáticamente
         bookings = super(ResourceBooking, self.with_context(
-            no_mail_to_attendees=True,  # CRÍTICO: Prevenir emails en calendar.event
             mail_create_nosubscribe=True,
             mail_create_nolog=True,
             mail_notrack=True,
-            tracking_disable=True,
         )).create(vals_list)
 
         _logger.info("   │  ✓ Bookings creados: IDs %s", bookings.ids)
 
-        # Añadir alarmas WhatsApp a los meetings creados
-        whatsapp_alarms = self.env['calendar.alarm'].search([
-            ('alarm_type', '=', 'whatsapp'),
-            ('whatsapp_template_id', '!=', False)
-        ])
+        for booking in bookings:
+            # Si el módulo base creó un meeting_id automáticamente, eliminarlo
+            if hasattr(booking, 'meeting_id') and booking.meeting_id:
+                _logger.info("   │  ⚠️ Booking ID %s tiene meeting_id auto-creado (ID: %s) - Eliminando...",
+                           booking.id, booking.meeting_id.id)
+                old_meeting = booking.meeting_id
+                booking.with_context(no_mail_to_attendees=True).write({'meeting_id': False})
+                old_meeting.with_context(no_mail_to_attendees=True).sudo().unlink()
+                _logger.info("   │  ✓ meeting_id eliminado")
 
-        if whatsapp_alarms:
-            for booking in bookings:
-                if hasattr(booking, 'meeting_id') and booking.meeting_id:
-                    _logger.info("   │  → Añadiendo %d alarmas WhatsApp al meeting ID %s",
-                               len(whatsapp_alarms), booking.meeting_id.id)
+            # Crear nuestro evento de calendario personalizado con alarmas WhatsApp
+            _logger.info("   │  → Creando calendar.event personalizado con alarmas WhatsApp...")
+            booking._create_calendar_event()
 
-                    # Añadir las alarmas WhatsApp al meeting existente SIN enviar emails
-                    booking.meeting_id.with_context(
-                        no_mail_to_attendees=True,
-                        mail_notrack=True,
-                        tracking_disable=True,
-                    ).sudo().write({
-                        'alarm_ids': [(4, alarm.id) for alarm in whatsapp_alarms]
-                    })
-
-                    _logger.info("   │  ✓ Alarmas WhatsApp añadidas al meeting ID %s", booking.meeting_id.id)
-
-                    # Actualizar el campo calendar_event_id para tracking
-                    booking.calendar_event_id = booking.meeting_id.id
-        else:
-            _logger.warning("   │  ⚠ No hay alarmas WhatsApp configuradas")
-
-
-        _logger.info("   │  ✓ Todos los calendar.event procesados con alarmas WhatsApp")
+        _logger.info("   │  ✓ Todos los calendar.event personalizados creados")
         return bookings
 
     def write(self, vals):
@@ -116,34 +98,10 @@ class ResourceBooking(models.Model):
 
         _logger.info("   ┌─ _create_calendar_event() INICIO para booking ID: %s", self.id)
 
-        # Si ya tiene un calendar_event_id, no crear otro
         if self.calendar_event_id:
             _logger.info("   │  ⚠ Booking ID %s ya tiene un evento de calendario asociado (ID: %s)",
                         self.id, self.calendar_event_id.id)
             _logger.info("   └─ _create_calendar_event() FIN (ya existe)")
-            return
-
-        # Si ya tiene un meeting_id, usarlo en lugar de crear uno nuevo
-        if hasattr(self, 'meeting_id') and self.meeting_id:
-            _logger.info("   │  ℹ️ Booking ID %s ya tiene meeting_id (ID: %s) - Añadiendo alarmas WhatsApp",
-                        self.id, self.meeting_id.id)
-
-            whatsapp_alarms = self.env['calendar.alarm'].search([
-                ('alarm_type', '=', 'whatsapp'),
-                ('whatsapp_template_id', '!=', False)
-            ])
-
-            if whatsapp_alarms:
-                self.meeting_id.with_context(
-                    no_mail_to_attendees=True,
-                    mail_notrack=True,
-                ).sudo().write({
-                    'alarm_ids': [(4, alarm.id) for alarm in whatsapp_alarms]
-                })
-                _logger.info("   │  ✓ Alarmas WhatsApp añadidas al meeting existente ID %s", self.meeting_id.id)
-
-            self.calendar_event_id = self.meeting_id.id
-            _logger.info("   └─ _create_calendar_event() FIN (meeting ya existía)")
             return
 
         _logger.info("   │  → Buscando template 'Recordatorio Cita Whatsapp' para calendar.event...")
