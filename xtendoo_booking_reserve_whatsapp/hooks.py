@@ -5,57 +5,42 @@ _logger = logging.getLogger(__name__)
 
 def post_init_hook(env):
     """Create default WhatsApp templates if a gateway exists."""
-    gateway = env['mail.gateway'].search([('gateway_type', '=', 'whatsapp')], limit=1)
+    gateway = env['mail.gateway'].search([('gateway_type', '=', 'whatsapp'), ('active', '=', True)], limit=1)
     if not gateway:
         _logger.warning("No WhatsApp gateway found. Skipping creation of default WhatsApp templates.")
         return
 
-    # Common variable structure
-    variables = [
-        (0, 0, {'name': '{{1}}', 'line_type': 'body', 'field_type': 'field', 'field_name': 'name', 'demo_value': 'Juan Pérez'}),
-        (0, 0, {'name': '{{2}}', 'line_type': 'body', 'field_type': 'field', 'field_name': 'booking_date', 'demo_value': '2023-10-25'}),
-        (0, 0, {'name': '{{3}}', 'line_type': 'body', 'field_type': 'field', 'field_name': 'booking_hour', 'demo_value': '10:00'}),
-    ]
-
-    # Reminder Template
-    values_reminder = {
-        'name': 'Recordatorio Cita WhatsApp',
-        'model_id': env.ref('xtendoo_booking_reserve.model_booking_request').id,
-        'gateway_id': gateway.id,
-        'category': 'utility',
-        'language': 'es_ES',
-        'body': 'Hola {{1}}, le recordamos su cita para el {{2}} a las {{3}}. ¡Gracias!',
-        'variable_ids': [v for v in variables] # Copy list logic if needed, but tuples are immutable refs so it's fine as structure source
-    }
-    # Check if exists
-    if not env['mail.whatsapp.template'].search([('name', '=', values_reminder['name']), ('model_id', '=', values_reminder['model_id'])]):
-        env['mail.whatsapp.template'].create(values_reminder)
+    booking_model = env.ref('xtendoo_booking_reserve.model_booking_request')
 
     # Approved Template
     values_approved = {
-        'name': 'Cita Aprobada WhatsApp',
-        'model_id': env.ref('xtendoo_booking_reserve.model_booking_request').id,
+        'name': 'cita_aprobada_whatsapp',  # Minúsculas con guiones bajos
+        'model_id': booking_model.id,
         'gateway_id': gateway.id,
         'category': 'utility',
         'language': 'es_ES',
-        'body': 'Hola {{1}}, su solicitud de cita para el {{2}} a las {{3}} ha sido APROBADA. Le esperamos.',
-        'variable_ids': [(0, 0, v[2]) for v in variables] # Recreate to avoid sharing ORM stack issues if any validation checks ids
+        'status': 'approved',
+        'body': 'Hola, su solicitud de cita ha sido APROBADA. Le esperamos.',
+        'variable_ids': []
     }
     if not env['mail.whatsapp.template'].search([('name', '=', values_approved['name']), ('model_id', '=', values_approved['model_id'])]):
         env['mail.whatsapp.template'].create(values_approved)
+        _logger.info("Template 'cita_aprobada_whatsapp' creado")
 
     # Rejected Template
     values_rejected = {
-        'name': 'Cita Rechazada WhatsApp',
+        'name': 'cita_rechazada_whatsapp',  # Minúsculas con guiones bajos
         'model_id': env.ref('xtendoo_booking_reserve.model_booking_request').id,
         'gateway_id': gateway.id,
         'category': 'utility',
         'language': 'es_ES',
-        'body': 'Hola {{1}}, lamentamos informarle que su solicitud de cita para el {{2}} a las {{3}} ha sido RECHAZADA. Contacte con nosotros.',
-        'variable_ids': [(0, 0, v[2]) for v in variables]
+        'status': 'approved',
+        'body': 'Lamentamos informarle que su solicitud de cita ha sido RECHAZADA. Contacte con nosotros.',
+        'variable_ids': []
     }
     if not env['mail.whatsapp.template'].search([('name', '=', values_rejected['name']), ('model_id', '=', values_rejected['model_id'])]):
         env['mail.whatsapp.template'].create(values_rejected)
+        _logger.info("Template 'cita_rechazada_whatsapp' creado")
 
     # Template de Recordatorio para Calendar Event
     calendar_event_model = env['ir.model'].search([('model', '=', 'calendar.event')], limit=1)

@@ -174,8 +174,13 @@ class BookingRequest(models.Model):
             'combination_auto_assign': True,
         }
 
-        # Create booking
-        booking = self.env['resource.booking'].sudo().create(booking_vals)
+        # Create booking - Desactivar TODAS las notificaciones automáticas
+        booking = self.env['resource.booking'].with_context(
+            mail_create_nosubscribe=True,  # No suscribir partners automáticamente
+            mail_create_nolog=True,  # No crear logs
+            mail_notrack=True,  # No enviar tracking
+            tracking_disable=True,  # Desactivar tracking completamente
+        ).sudo().create(booking_vals)
 
         return booking
 

@@ -96,7 +96,13 @@ class ResourceBooking(models.Model):
                 'description': _('Evento creado automáticamente desde reserva ID: %s') % self.id,
             }
 
-            event = self.env['calendar.event'].sudo().create(event_vals)
+            # Crear evento SIN enviar invitaciones por email
+            event = self.env['calendar.event'].with_context(
+                no_mail_to_attendees=True,  # No enviar invitaciones a asistentes
+                mail_create_nosubscribe=True,  # No suscribir automáticamente
+                mail_create_nolog=True,  # No crear logs
+                mail_notrack=True,  # No tracking
+            ).sudo().create(event_vals)
             self.calendar_event_id = event.id
 
             _logger.info(
