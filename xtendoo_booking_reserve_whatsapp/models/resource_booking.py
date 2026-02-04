@@ -20,12 +20,34 @@ class ResourceBooking(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         """Override create to automatically create calendar.event with alarms."""
-        bookings = super().create(vals_list)
+        _logger.info("   │")
+        _logger.info("   │  ⚙️ resource.booking.create() llamado")
+        _logger.info("   │     Cantidad de bookings a crear: %d", len(vals_list))
+
+        # Crear bookings - El módulo base creará meeting_id automáticamente
+        bookings = super(ResourceBooking, self.with_context(
+            mail_create_nosubscribe=True,
+            mail_create_nolog=True,
+            mail_notrack=True,
+        )).create(vals_list)
+
+        _logger.info("   │  ✓ Bookings creados: IDs %s", bookings.ids)
 
         for booking in bookings:
-            # Crear evento de calendario con alarmas
+            # Si el módulo base creó un meeting_id automáticamente, eliminarlo
+            if hasattr(booking, 'meeting_id') and booking.meeting_id:
+                _logger.info("   │  ⚠️ Booking ID %s tiene meeting_id auto-creado (ID: %s) - Eliminando...",
+                           booking.id, booking.meeting_id.id)
+                old_meeting = booking.meeting_id
+                booking.with_context(no_mail_to_attendees=True).write({'meeting_id': False})
+                old_meeting.with_context(no_mail_to_attendees=True).sudo().unlink()
+                _logger.info("   │  ✓ meeting_id eliminado")
+
+            # Crear nuestro evento de calendario personalizado con alarmas WhatsApp
+            _logger.info("   │  → Creando calendar.event personalizado con alarmas WhatsApp...")
             booking._create_calendar_event()
 
+        _logger.info("   │  ✓ Todos los calendar.event personalizados creados")
         return bookings
 
     def write(self, vals):
