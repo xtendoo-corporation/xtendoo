@@ -74,14 +74,12 @@ class AlarmManager(models.AbstractModel):
             return
 
         try:
-            gateway = self.env['mail.gateway'].search([
-                ('gateway_type', '=', 'whatsapp'),
-                ('active', '=', True)
-            ], limit=1)
+            # Obtener gateway desde el template de la alarma
+            gateway = alarm.whatsapp_template_id.gateway_id if alarm.whatsapp_template_id else None
 
             if not gateway:
                 _logger.error(
-                    "No active WhatsApp gateway found. Cannot send reminder for event '%s' (ID: %s).",
+                    "No WhatsApp gateway found in template. Cannot send reminder for event '%s' (ID: %s).",
                     event.name, event.id
                 )
                 return

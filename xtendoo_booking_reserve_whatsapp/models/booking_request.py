@@ -128,12 +128,16 @@ class BookingRequest(models.Model):
         _logger.info("Template WhatsApp encontrado: %s (ID: %s)", template.name, template.id)
 
         try:
-            gateway = self.env['mail.gateway'].search([
-                ('gateway_type', '=', 'whatsapp')
-            ], limit=1)
+            # Buscar gateway directamente desde el template
+            gateway = template.gateway_id
 
             if not gateway:
-                _logger.error("No hay gateway WhatsApp configurado")
+                _logger.error("Template sin gateway asignado")
+                return
+
+
+            if gateway.gateway_type != 'whatsapp':
+                _logger.error("El gateway del template no es de tipo WhatsApp")
                 return
 
             _logger.info("Gateway WhatsApp encontrado: %s (ID: %s)", gateway.name, gateway.id)

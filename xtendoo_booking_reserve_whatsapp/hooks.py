@@ -5,7 +5,7 @@ _logger = logging.getLogger(__name__)
 
 def post_init_hook(env):
     """Create default WhatsApp templates if a gateway exists."""
-    gateway = env['mail.gateway'].search([('gateway_type', '=', 'whatsapp'), ('active', '=', True)], limit=1)
+    gateway = env['mail.gateway'].search([('gateway_type', '=', 'whatsapp')], limit=1)
     if not gateway:
         _logger.warning("No WhatsApp gateway found. Skipping creation of default WhatsApp templates.")
         return
