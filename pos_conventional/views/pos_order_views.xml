@@ -4,7 +4,7 @@
     <record id="view_pos_order_tree_inherit_close_session" model="ir.ui.view">
         <field name="name">pos.order.list.inherit.conventional</field>
         <field name="model">pos.order</field>
-        <field name="inherit_id" ref="point_of_sale.view_pos_order_tree" />
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
         <field name="arch" type="xml">
             <!-- Asignar el controller personalizado con js_class -->
             <xpath expr="//list" position="attributes">
@@ -17,9 +17,9 @@
             </xpath>
             <!-- Añadir columna para mostrar si está vinculado a sale.order -->
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="is_linked_to_sale" invisible="1" />
+                <field name="is_linked_to_sale" invisible="1"/>
                 <field name="linked_sale_order_id" string="Pedido venta" optional="show"
-                    widget="many2one" options="{'no_open': False}" />
+                       widget="many2one" options="{'no_open': False}"/>
             </xpath>
             <!-- Hacer el campo state opcional (oculto por defecto) -->
             <xpath expr="//field[@name='state'][@widget='badge']" position="attributes">
@@ -32,7 +32,7 @@
     <record id="view_pos_order_form_inherit_barcode" model="ir.ui.view">
         <field name="name">pos.order.form.inherit.barcode</field>
         <field name="model">pos.order</field>
-        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
         <field name="arch" type="xml">
             <!-- Asignar el controller personalizado con js_class para escaneo de barcode -->
             <xpath expr="//form" position="attributes">
@@ -66,94 +66,98 @@
     <record id="view_pos_order_form_inherit_totals" model="ir.ui.view">
         <field name="name">pos.order.form.inherit.totals</field>
         <field name="model">pos.order</field>
-        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
         <field name="arch" type="xml">
             <!-- Reemplazar el grupo de campos del pedido por dos columnas: izquierda con campos y
             derecha con totales -->
             <xpath expr="//group[@name='order_fields']" position="replace">
                 <!-- Campo auxiliar para detectar si está vinculado a sale.order -->
-                <field name="is_linked_to_sale" invisible="1" />
+                <field name="is_linked_to_sale" invisible="1"/>
 
                 <!-- Panel especial cuando está vinculado a un sale.order -->
                 <div class="alert alert-info" role="alert" invisible="not is_linked_to_sale">
                     <h4 class="alert-heading">
-                        <i class="fa fa-link me-2" />Pedido vinculado a venta tradicional </h4>
+                        <i class="fa fa-link me-2"/>Pedido vinculado a venta tradicional
+                    </h4>
                     <p>Este pedido POS está vinculado a un pedido de venta tradicional.
                         La gestión del stock y facturación se realiza desde el pedido de venta
-                        asociado.</p>
-                    <hr />
+                        asociado.
+                    </p>
+                    <hr/>
                     <div class="mb-0">
                         <label for="linked_sale_order_id" class="fw-bold">Pedido de venta:</label>
                         <field name="linked_sale_order_id" widget="many2one"
-                            options="{'no_create': True, 'no_open': False}"
-                            class="ms-2" />
+                               options="{'no_create': True, 'no_open': False}"
+                               class="ms-2"/>
                     </div>
                 </div>
 
                 <!-- Grupo normal de campos (oculto si está vinculado) -->
                 <group col="4" colspan="4" name="order_fields_rows" class="row"
-                    invisible="is_linked_to_sale">
+                       invisible="is_linked_to_sale">
                     <group col="3" name="order_fields" class="col-9">
-                        <field name="name" invisible="1" />
-                        <field name="has_order_lines" invisible="1" />
-                        <field name="partner_id" context="{'res_partner_search_mode': 'customer'}" />
-                        <field name="source" readonly="True" />
-                        <field name="date_order" />
-                        <field name="session_id" readonly="state != 'draft'" invisible="1" />
-                        <field name="show_albaran_button" invisible="1" />
-                        <field string="Usuario" name="user_id" readonly="1" />
-                        <field name="order_edit_tracking" invisible="1" />
-                        <field name="is_edited" readonly="1" invisible="not order_edit_tracking" />
+                        <field name="name" invisible="1"/>
+                        <field name="has_order_lines" invisible="1"/>
+                        <field name="partner_id" context="{'res_partner_search_mode': 'customer'}"/>
+                        <field name="source" readonly="True"/>
+                        <field name="date_order"/>
+                        <field name="session_id" readonly="state != 'draft'" invisible="1"/>
+                        <field name="show_albaran_button" invisible="1"/>
+                        <field string="Usuario" name="user_id" readonly="1"/>
+                        <field name="order_edit_tracking" invisible="1"/>
+                        <field name="is_edited" readonly="1" invisible="not order_edit_tracking"/>
                         <field name="fiscal_position_id" options="{'no_create': True}"
-                            readonly="state != 'draft'"
-                            invisible="1" />
+                               readonly="state != 'draft'"
+                               invisible="1"/>
                     </group>
                     <group col="1" name="order_totals_sidebar"
-                        class="oe_subtotal_sidebar col-6 me-4">
+                           class="oe_subtotal_sidebar col-6 me-4">
                         <div class="row">
                             <!-- Total arriba, grande -->
-                            <div class="col-5 py-2 text-nowrap">Total:</div>
-                            <div class="col-7 py-2 ps-5 text-nowrap">
-                                <field name="amount_total" force_save="1" widget="monetary"
-                                    class="fw-bold fs-2 text-end d-block" />
-                            </div>
+
 
                             <!-- Importe base (subtotal sin impuestos) -->
                             <div class="col-5 py-2 text-nowrap">Importe base:</div>
                             <div class="col-7 py-2 ps-5 text-nowrap">
                                 <field name="amount_untaxed" widget="monetary"
-                                    class="text-end d-block" />
+                                       class="text-end d-block"/>
                             </div>
 
                             <!-- Impuestos -->
-                            <div class="col-5 py-2 text-nowrap">Iva:</div>
+                            <div class="col-5 py-2 text-nowrap">Impuesto:</div>
                             <div class="col-7 py-2 ps-5 text-nowrap">
                                 <field name="amount_tax" force_save="1" widget="monetary"
-                                    class="text-end d-block" />
+                                       class="text-end d-block"/>
+                            </div>
+
+                            <div class="col-5 py-2 fs-2 text-nowrap fw-bold">Total:</div>
+                            <div class="col-7 py-2 ps-5 text-nowrap">
+                                <field name="amount_total" force_save="1" widget="monetary"
+                                       class="fw-bold fs-2 text-end d-block"/>
                             </div>
 
                             <!-- Total pagado -->
                             <div class="col-5 py-2 text-nowrap border-top pt-3"
-                                invisible="state=='draft'">Total
+                                 invisible="state=='draft'">Total
                                 pagado:
                             </div>
                             <div class="col-7 py-2 ps-5 text-nowrap border-top pt-3"
-                                invisible="state=='draft'">
+                                 invisible="state=='draft'">
                                 <field name="amount_paid" nolabel="1" widget="monetary"
-                                    readonly="state != 'draft'"
-                                    class="fw-bold text-end d-block" />
+                                       readonly="state != 'draft'"
+                                       class="fw-bold text-end d-block"/>
                             </div>
                         </div>
-                        <field name="currency_id" invisible="1" />
+                        <field name="currency_id" invisible="1"/>
                     </group>
                 </group>
             </xpath>
 
             <!-- Eliminar totales originales de la página Products -->
-            <xpath expr="//page[@name='products']/group[@name='order_total']" position="replace" />
+            <xpath expr="//page[@name='products']/group[@name='order_total']" position="replace"/>
 
             <!-- Eliminar totales originales de la página Payments -->
-            <xpath expr="//page[@name='payments']/group[@name='order_total']" position="replace" />
+            <xpath expr="//page[@name='payments']/group[@name='order_total']" position="replace"/>
 
         </field>
     </record>
@@ -162,7 +166,7 @@
     <record id="view_pos_order_form_inherit_payment_buttons" model="ir.ui.view">
         <field name="name">pos.order.form.inherit.payment.buttons</field>
         <field name="model">pos.order</field>
-        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
         <field name="arch" type="xml">
             <!-- Eliminar el botón original de Payment -->
             <xpath expr="//header/button[1]" position="attributes">
@@ -173,16 +177,16 @@
             </xpath>
             <xpath expr="//header/button[1]" position="after">
                 <button name="action_pay_cash" string="Pagar en efectivo" type="object"
-                    class="btn-primary"
-                    invisible="state != 'draft' or not has_order_lines or is_linked_to_sale" />
+                        class="btn-primary"
+                        invisible="state != 'draft' or not has_order_lines or is_linked_to_sale"/>
                 <button name="action_pay_card" string="Pagar con tarjeta" type="object"
-                    class="btn-primary ms-2"
-                    invisible="state != 'draft' or not has_order_lines or is_linked_to_sale" />
+                        class="btn-primary ms-2"
+                        invisible="state != 'draft' or not has_order_lines or is_linked_to_sale"/>
                 <button name="action_pay_account"
-                    string="Crear albarán"
-                    type="object"
-                    class="btn-secondary ms-2"
-                    invisible="not show_albaran_button or state != 'draft' or not has_order_lines or is_linked_to_sale" />
+                        string="Crear albarán"
+                        type="object"
+                        class="btn-secondary ms-2"
+                        invisible="not show_albaran_button or state != 'draft' or not has_order_lines or is_linked_to_sale"/>
             </xpath>
         </field>
     </record>
@@ -191,7 +195,7 @@
     <record id="view_pos_order_form_inherit_readonly_linked" model="ir.ui.view">
         <field name="name">pos.order.form.inherit.readonly.linked</field>
         <field name="model">pos.order</field>
-        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
         <field name="priority">100</field>
         <field name="arch" type="xml">
             <!-- Hacer readonly la página de productos cuando está vinculado -->
@@ -223,11 +227,13 @@
             <!-- Ocultar el statusbar (campo de estado) cuando está vinculado -->
             <xpath expr="//header/field[@name='state'][1]" position="attributes">
                 <attribute name="invisible">is_linked_to_sale or (state != 'cancel' and
-                    is_linked_to_sale)</attribute>
+                    is_linked_to_sale)
+                </attribute>
             </xpath>
             <xpath expr="//header/field[@name='state'][2]" position="attributes">
                 <attribute name="invisible">is_linked_to_sale or (state == 'cancel' and
-                    is_linked_to_sale)</attribute>
+                    is_linked_to_sale)
+                </attribute>
             </xpath>
         </field>
     </record>
