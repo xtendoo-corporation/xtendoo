@@ -13,3 +13,5 @@ class CalendarAlarm(models.Model):
         domain=[('model_id', '=', 'calendar.alarm')],
         help="Template used to send the WhatsApp reminder."
     )
+
+
