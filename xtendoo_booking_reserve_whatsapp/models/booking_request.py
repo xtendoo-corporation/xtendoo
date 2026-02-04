@@ -90,50 +90,77 @@ class BookingRequest(models.Model):
 
     def _send_whatsapp_notification(self, template_xmlid):
         """Send WhatsApp notification using the given template."""
+        _logger.info("Intentando enviar WhatsApp con template: %s para solicitud ID: %s", template_xmlid, self.id)
+
         template = self.env.ref(template_xmlid, raise_if_not_found=False)
         if not template:
+            _logger.warning("Template WhatsApp no encontrado: %s", template_xmlid)
             return
 
         try:
-            gateway = self.env['mail.gateway'].search([('gateway_type', '=', 'whatsapp')], limit=1)
-            if gateway:
-                # Ensure channel exists using method from mail_gateway_whatsapp_chatter inheritance
-                if hasattr(self, '_whatsapp_get_channel'):
-                    channel = self._whatsapp_get_channel('phone', gateway)
+            gateway = self.env['mail.gateway'].search([
+                ('gateway_type', '=', 'whatsapp'),
+                ('active', '=', True)
+            ], limit=1)
 
-                    # Render body manually (simple variable substitution)
-                    body = template.body
-                    if template.variable_ids:
-                        for var in template.variable_ids:
-                            value = ''
-                            if var.field_type == 'field' and var.field_name:
-                                # Start with self
-                                record_val = self
-                                try:
-                                    for field_part in var.field_name.split('.'):
-                                        if record_val:
-                                            record_val = record_val[field_part]
-                                    value = str(record_val) if record_val else ''
-                                except Exception:
-                                    value = ''
-                            elif var.field_type == 'user_name':
-                                value = self.env.user.name
-                            elif var.field_type == 'user_mobile':
-                                value = self.env.user.mobile or self.env.user.phone or ''
+            if not gateway:
+                _logger.error("No hay gateway WhatsApp activo configurado")
+                return
 
-                            # Replace {{var_X}}
-                            body = body.replace(var.name, value)
+            _logger.info("Gateway WhatsApp encontrado: %s (ID: %s)", gateway.name, gateway.id)
 
-                    # Send message
-                    # Pass whatsapp_template_id in context so gateway knows it's a template
-                    channel.with_context(whatsapp_template_id=template.id).message_post(
-                        body=body,
-                        message_type='comment',
-                        subtype_xmlid="mail.mt_comment",
-                        author_id=self.env.user.partner_id.id
-                    )
+            # Ensure channel exists using method from mail_gateway_whatsapp_chatter inheritance
+            if not hasattr(self, '_whatsapp_get_channel'):
+                _logger.error("Método _whatsapp_get_channel no disponible en booking.request")
+                return
+
+            try:
+                channel = self._whatsapp_get_channel('phone', gateway)
+                if not channel:
+                    _logger.error("No se pudo crear canal WhatsApp para solicitud ID: %s", self.id)
+                    return
+
+                _logger.info("Canal WhatsApp creado correctamente para: %s", self.phone)
+
+                # Render body manually (simple variable substitution)
+                body = template.body
+                if template.variable_ids:
+                    for var in template.variable_ids:
+                        value = ''
+                        if var.field_type == 'field' and var.field_name:
+                            # Start with self
+                            record_val = self
+                            try:
+                                for field_part in var.field_name.split('.'):
+                                    if record_val:
+                                        record_val = record_val[field_part]
+                                value = str(record_val) if record_val else ''
+                            except Exception as e_var:
+                                _logger.warning("Error al obtener variable %s: %s", var.name, str(e_var))
+                                value = ''
+                        elif var.field_type == 'user_name':
+                            value = self.env.user.name
+                        elif var.field_type == 'user_mobile':
+                            value = self.env.user.mobile or self.env.user.phone or ''
+
+                        # Replace {{var_X}}
+                        body = body.replace(var.name, value)
+
+                _logger.info("Mensaje WhatsApp renderizado, enviando...")
+
+                # Send message
+                # Pass whatsapp_template_id in context so gateway knows it's a template
+                channel.with_context(whatsapp_template_id=template.id).message_post(
+                    body=body,
+                    message_type='comment',
+                    subtype_xmlid="mail.mt_comment",
+                    author_id=self.env.user.partner_id.id
+                )
+
+                _logger.info("WhatsApp enviado correctamente a %s para solicitud ID: %s", self.phone, self.id)
+
+            except Exception as e_channel:
+                _logger.error("Error al crear/enviar por canal WhatsApp: %s", str(e_channel), exc_info=True)
+
         except Exception as e:
-            # Log error but don't crash the checking flow
-            import logging
-            _logger = logging.getLogger(__name__)
-            _logger.error(f"Error sending WhatsApp: {e}")
+            _logger.error("Error general al enviar WhatsApp para solicitud ID %s: %s", self.id, str(e), exc_info=True)
