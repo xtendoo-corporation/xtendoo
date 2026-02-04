@@ -1,4 +1,8 @@
-from odoo import models,fields
+from odoo import api, models, fields
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 class BookingRequest(models.Model):
     _inherit = 'booking.request'
@@ -8,6 +12,62 @@ class BookingRequest(models.Model):
         return ['phone']
 
     whatsapp_opt_in = fields.Boolean(string="WhatsApp Opt-In", default=False)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to update partner's whatsapp_opt_in immediately."""
+        records = super().create(vals_list)
+
+        for record in records:
+            # Actualizar partner inmediatamente al crear la solicitud
+            if record.phone or record.email:
+                partner = self._find_partner_for_request(record)
+                if partner and partner.whatsapp_opt_in != record.whatsapp_opt_in:
+                    partner.sudo().write({'whatsapp_opt_in': record.whatsapp_opt_in})
+                    _logger.info(
+                        "Partner '%s' (ID: %s) whatsapp_opt_in actualizado a %s desde solicitud ID: %s (create)",
+                        partner.name, partner.id, record.whatsapp_opt_in, record.id
+                    )
+
+        return records
+
+    def write(self, vals):
+        """Override write to update partner's whatsapp_opt_in when modified."""
+        res = super().write(vals)
+
+        # Si se modificó whatsapp_opt_in, actualizar el partner
+        if 'whatsapp_opt_in' in vals:
+            for record in self:
+                if record.phone or record.email:
+                    partner = self._find_partner_for_request(record)
+                    if partner and partner.whatsapp_opt_in != record.whatsapp_opt_in:
+                        partner.sudo().write({'whatsapp_opt_in': record.whatsapp_opt_in})
+                        _logger.info(
+                            "Partner '%s' (ID: %s) whatsapp_opt_in actualizado a %s desde solicitud ID: %s (write)",
+                            partner.name, partner.id, record.whatsapp_opt_in, record.id
+                        )
+
+        return res
+
+    def _find_partner_for_request(self, record):
+        """Buscar partner existente por email o teléfono."""
+        Partner = self.env['res.partner'].sudo()
+        partner = False
+
+        # Buscar por email
+        if record.email:
+            partner = Partner.search([('email', '=', record.email)], limit=1)
+
+        # Si no se encontró por email, buscar por teléfono
+        if not partner and record.phone:
+            # Limpiar formato del teléfono para búsqueda
+            phone_clean = record.phone.replace(' ', '').replace('+', '')
+            partner = Partner.search([
+                '|', ('phone', 'ilike', phone_clean),
+                ('mobile', 'ilike', phone_clean)
+            ], limit=1)
+
+        return partner
 
     def _get_or_create_partner(self):
         partner = super()._get_or_create_partner()
