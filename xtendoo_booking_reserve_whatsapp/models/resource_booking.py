@@ -30,14 +30,30 @@ class ResourceBooking(models.Model):
 
     def write(self, vals):
         """Override write to update calendar.event if booking changes."""
+        _logger.info("   │")
+        _logger.info("   │  ⚙️ resource.booking.write() llamado para booking IDs: %s", self.ids)
+        _logger.info("   │     Campos a modificar: %s", list(vals.keys()))
+        _logger.info("   │     Valores: %s", vals)
+
         res = super().write(vals)
 
         # Si se modificaron campos relevantes, actualizar el evento
         relevant_fields = ['start', 'stop', 'name', 'partner_ids']
-        if any(field in vals for field in relevant_fields):
+        modified_relevant = [f for f in relevant_fields if f in vals]
+
+        if modified_relevant:
+            _logger.info("   │  ⚠️ Se modificaron campos relevantes: %s", modified_relevant)
+            _logger.info("   │     Se llamará a _update_calendar_event() para cada booking")
+
             for booking in self:
                 if booking.calendar_event_id:
+                    _logger.info("   │  → Booking ID %s tiene calendar.event ID %s - Actualizando...",
+                               booking.id, booking.calendar_event_id.id)
                     booking._update_calendar_event()
+                else:
+                    _logger.info("   │  ℹ️ Booking ID %s NO tiene calendar.event asociado", booking.id)
+        else:
+            _logger.info("   │  ✓ No se modificaron campos relevantes - No se actualiza calendar.event")
 
         return res
 

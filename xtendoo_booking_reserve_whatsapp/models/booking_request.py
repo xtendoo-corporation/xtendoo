@@ -90,9 +90,32 @@ class BookingRequest(models.Model):
 
     def _send_whatsapp_notification(self, template_name):
         """Send WhatsApp notification using the given template."""
-        _logger.info("Intentando enviar WhatsApp con template nombre: %s para solicitud ID: %s", template_name, self.id)
+        _logger.info("=" * 80)
+        _logger.info("INICIO _send_whatsapp_notification() para solicitud ID: %s", self.id)
+        _logger.info("Template buscado: '%s'", template_name)
 
-        # Buscar template por nombre en lugar de xmlid
+        # LISTAR TODAS LAS PLANTILLAS WHATSAPP EXISTENTES
+        _logger.info("→ Listando TODAS las plantillas WhatsApp en el sistema:")
+        all_templates = self.env['mail.whatsapp.template'].search([])
+        _logger.info("   Total de plantillas encontradas: %d", len(all_templates))
+
+        for tmpl in all_templates:
+            _logger.info("   - ID: %s | Name: '%s' | Model: %s | Gateway: %s | Status: %s",
+                        tmpl.id, tmpl.name, tmpl.model_id.model if tmpl.model_id else 'N/A',
+                        tmpl.gateway_id.name if tmpl.gateway_id else 'N/A',
+                        tmpl.status if hasattr(tmpl, 'status') else 'N/A')
+
+        # Buscar plantillas específicas para booking.request
+        _logger.info("→ Listando plantillas WhatsApp para modelo 'booking.request':")
+        booking_templates = self.env['mail.whatsapp.template'].search([
+            ('model_id.model', '=', 'booking.request')
+        ])
+        _logger.info("   Total encontradas: %d", len(booking_templates))
+        for tmpl in booking_templates:
+            _logger.info("   - ID: %s | Name: '%s'", tmpl.id, tmpl.name)
+
+        # Ahora buscar el template específico
+        _logger.info("→ Buscando template específico: '%s' para modelo 'booking.request'", template_name)
         template = self.env['mail.whatsapp.template'].search([
             ('name', '=', template_name),
             ('model_id.model', '=', 'booking.request')
