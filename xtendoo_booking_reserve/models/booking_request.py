@@ -81,27 +81,26 @@ class BookingRequest(models.Model):
         self.ensure_one()
         if self.state != 'pending':
             raise UserError(_('Solo se pueden aprobar solicitudes pendientes.'))
-        
+
         # Create or find partner
         partner = self._get_or_create_partner()
-        
+
         # Create resource.booking
         booking = self._create_booking(partner)
-        
-        # Update request state
-        self.write({
+
+        # Update request state - Desactivar tracking para evitar emails automáticos
+        self.with_context(mail_notrack=True, mail_create_nolog=True).write({
             'state': 'approved',
             'booking_id': booking.id,
             'partner_id': partner.id,
         })
-        
-        # Post message in chatter
-        # Post message in chatter (Internal Note)
-        self.message_post(
+
+        # Post message in chatter (Internal Note) - Sin notificar
+        self.with_context(mail_notrack=True).message_post(
             body=_('Solicitud aprobada. Reserva creada: <a href="#" data-oe-model="resource.booking" data-oe-id="%s">%s</a>') % (booking.id, booking.display_name),
             subtype_xmlid='mail.mt_note'
         )
-        
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -118,16 +117,16 @@ class BookingRequest(models.Model):
         self.ensure_one()
         if self.state != 'pending':
             raise UserError(_('Solo se pueden rechazar solicitudes pendientes.'))
-        
-        self.write({'state': 'rejected'})
-        
-        # Post message in chatter
-        # Post message in chatter (Internal Note)
-        self.message_post(
+
+        # Desactivar tracking para evitar emails automáticos
+        self.with_context(mail_notrack=True, mail_create_nolog=True).write({'state': 'rejected'})
+
+        # Post message in chatter (Internal Note) - Sin notificar
+        self.with_context(mail_notrack=True).message_post(
             body=_('Solicitud rechazada'),
             subtype_xmlid='mail.mt_note'
         )
-        
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -142,13 +141,13 @@ class BookingRequest(models.Model):
     def _get_or_create_partner(self):
         """Get or create partner from request data"""
         Partner = self.env['res.partner'].sudo()
-        
+
         # Try to find existing partner by email
         if self.email:
             partner = Partner.search([('email', '=', self.email)], limit=1)
             if partner:
                 return partner
-        
+
         # Create new partner
         partner_vals = {
             'name': self.name,
@@ -161,10 +160,10 @@ class BookingRequest(models.Model):
         """Create resource.booking from request"""
         # Parse booking datetime
         booking_datetime = self._parse_booking_datetime()
-        
+
         # Calculate duration from type
         duration = self.type_id.duration or 0.5
-        
+
         # Prepare booking values
         booking_vals = {
             'type_id': self.type_id.id,
@@ -174,14 +173,16 @@ class BookingRequest(models.Model):
             'duration': duration,
             'combination_auto_assign': True,
         }
-        
+
         # Create booking
         booking = self.env['resource.booking'].sudo().create(booking_vals)
-        
+
         return booking
 
     def _parse_booking_datetime(self):
-        """Convert booking_date and booking_hour to datetime"""
+        """Convert booking_date and booking_hour to datetime with timezone handling"""
+        from pytz import timezone as pytz_timezone
+
         # Parse hour (format: "HH:MM")
         try:
             hour_parts = self.booking_hour.split(':')
@@ -189,23 +190,32 @@ class BookingRequest(models.Model):
             minute = int(hour_parts[1]) if len(hour_parts) > 1 else 0
         except (ValueError, IndexError):
             raise UserError(_('Formato de hora inválido: %s') % self.booking_hour)
-        
-        # Combine date and time
-        booking_datetime = datetime.combine(
+
+        # Get user timezone or company timezone
+        user_tz = self.env.user.tz or self.env.company.partner_id.tz or 'UTC'
+        tz = pytz_timezone(user_tz)
+
+        # Combine date and time in user's timezone
+        local_dt = datetime.combine(
             self.booking_date,
             datetime.min.time().replace(hour=hour, minute=minute)
         )
-        
-        return booking_datetime
+
+        # Localize to user timezone and convert to UTC (Odoo stores in UTC)
+        local_dt = tz.localize(local_dt)
+        booking_datetime_utc = local_dt.astimezone(pytz_timezone('UTC'))
+
+        # Return naive datetime in UTC (as Odoo expects)
+        return booking_datetime_utc.replace(tzinfo=None)
 
     @api.model
     def create(self, vals):
         """Override create to send notification"""
         result = super().create(vals)
-        
+
         # Notify admins about new request
         result._notify_new_request()
-        
+
         return result
 
     def _notify_new_request(self):
@@ -214,7 +224,7 @@ class BookingRequest(models.Model):
         group = self.env.ref('resource_booking.group_manager', raise_if_not_found=False)
         if not group:
             return
-        
+
         # Create activity for managers
         for user in group.users:
             self.activity_schedule(
