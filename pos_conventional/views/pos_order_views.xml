@@ -94,7 +94,6 @@
                 <group col="4" colspan="4" name="order_fields_rows" class="row"
                     invisible="is_linked_to_sale">
                     <group col="3" name="order_fields" class="col-9">
-                        <field name="barcode_scan" invisible="1" />
                         <field name="name" invisible="1" />
                         <field name="has_order_lines" invisible="1" />
                         <field name="partner_id" context="{'res_partner_search_mode': 'customer'}" />

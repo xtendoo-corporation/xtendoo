@@ -3,7 +3,10 @@
     "version": "19.0.1.0.0",
     "category": "Point of Sale",
     "summary": "Modo de punto de venta optimizado para equipos sin pantalla táctil",
-    "description": "Modo de punto de venta optimizado para equipos sin pantalla táctil",
+    "description": """
+        Añade una opción en la configuración del Punto de Venta para activar
+        un modo optimizado para equipos sin pantalla táctil.
+    """,
     "author": "Guillermo Bárcena López",
     "website": "https://www.xtendoo.es",
     "license": "AGPL-3",
@@ -32,7 +35,7 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "pos_conventional/static/src/css/pos_conventional_wizards.css",
+            "pos_conventional/static/src/css/cashbox.css",
             "pos_conventional/static/src/js/pos_order_list_controller.js",
             "pos_conventional/static/src/js/pos_order_form_barcode_controller.js",
             "pos_conventional/static/src/js/pos_print_iframe.js",

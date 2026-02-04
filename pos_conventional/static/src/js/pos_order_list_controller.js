@@ -4,7 +4,6 @@ import { ListController } from "@web/views/list/list_controller";
 import { registry } from "@web/core/registry";
 import { listView } from "@web/views/list/list_view";
 import { useState, onWillStart, onWillUnmount } from "@odoo/owl";
-import { _t } from "@web/core/l10n/translation";
 
 export class PosOrderListController extends ListController {
     setup() {
@@ -169,7 +168,6 @@ export class PosOrderListController extends ListController {
         if (this.forceLogin && this.currentSessionId) {
             // Si está activada la opción, abrir wizard de PIN en lugar del form directo
             const action = {
-                name: _t("Introducir PIN"),
                 type: 'ir.actions.act_window',
                 res_model: 'pos.session.pin.wizard',
                 view_mode: 'form',

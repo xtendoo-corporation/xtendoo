@@ -4,7 +4,7 @@
         <field name="name">pos.cash.calculator.wizard.form</field>
         <field name="model">pos.cash.calculator.wizard</field>
         <field name="arch" type="xml">
-            <form string="Calculadora de Efectivo">
+            <form string="Monedas/billetes" class="o_pos_cash_calculator_wizard">
                 <field name="currency_id" invisible="1" />
                 <field name="closing_wizard_id" invisible="1" />
 

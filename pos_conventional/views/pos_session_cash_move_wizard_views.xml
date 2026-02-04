@@ -4,34 +4,30 @@
         <field name="name">pos.session.cash.move.wizard.form</field>
         <field name="model">pos.session.cash_move.wizard</field>
         <field name="arch" type="xml">
-            <form string="Movimiento de Efectivo" class="o_pos_conventional_wizard">
-                <field name="currency_id" invisible="1" />
-                <field name="partner_id" invisible="1" />
+            <form string="Entrada / Salida de efectivo">
+                <field name="currency_id" invisible="1"/>
 
-                <sheet>
-                    <group>
-                        <group>
-                            <field name="type" widget="radio" options="{'horizontal': true}"
-                                string="Tipo" />
-                            <label for="amount" string="Importe" />
-                            <div class="o_row">
-                                <field name="amount" widget="monetary"
-                                    options="{'currency_field': 'currency_id'}" />
-                                <button name="action_open_cash_calculator" type="object"
-                                    icon="fa-calculator" class="btn-link" title="Calculadora" />
-                            </div>
-                        </group>
-                        <group>
-                            <field name="reason" string="Motivo" placeholder="Ej: Cambio incial..." />
-                            <field name="session_id" readonly="1" string="Sesión" />
-                        </group>
-                    </group>
-                </sheet>
+                <group>
+                    <field name="session_id" readonly="1"/>
+                    <field name="type"/>
+                    <label for="amount" string="Importe"/>
+                    <div class="d-flex align-items-center">
+                        <field name="amount" string="Importe" widget="monetary"
+                               options="{'currency_field': 'currency_id'}"
+                               class="fs-4 fw-bold flex-grow-1" nolabel="1"/>
+                        <button name="action_open_cash_calculator"
+                                string="🧮"
+                                type="object"
+                                class="btn-primary oe_highlight ms-2"
+                                help="Abrir calculadora de monedas y billetes"/>
+                    </div>
+                    <field name="reason" placeholder="Motivo (opcional)"/>
+                    <field name="partner_id" invisible="1"/>
+                </group>
 
                 <footer>
-                    <button string="Confirmar" type="object" name="action_confirm"
-                        class="btn-primary btn-lg" />
-                    <button string="Cancelar" class="btn-secondary btn-lg" special="cancel" />
+                    <button string="Confirmar" type="object" name="action_confirm" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>

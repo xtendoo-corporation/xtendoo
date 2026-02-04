@@ -1,5 +1,6 @@
 from odoo import fields, models, _
 
+
 class PosConfig(models.Model):
     _inherit = "pos.config"
 
@@ -29,7 +30,10 @@ class PosConfig(models.Model):
     )
 
     def open_ui(self):
-
+        """
+        Override del método open_ui para interceptar la apertura
+        cuando pos_non_touch está activo.
+        """
         self.ensure_one()
 
         # Si es modo no táctil, abrir wizard en lugar de la UI
@@ -57,10 +61,20 @@ class PosConfig(models.Model):
 
             # Si la sesión está en opening_control, abrir el wizard de PIN primero
             if session.state == "opening_control":
-                return {
-                    "name": _("Introducir PIN"),
+                if self.pos_force_employee_login_after_order:
+                    return {
                     "type": "ir.actions.act_window",
                     "res_model": "pos.session.pin.wizard",
+                    "view_mode": "form",
+                    "target": "new",
+                    "context": {
+                        "default_session_id": session.id,
+                        "default_user_id": self.env.uid,
+                    },
+                }
+                return {
+                    "type": "ir.actions.act_window",
+                    "res_model": "pos.session.opening.wizard",
                     "view_mode": "form",
                     "target": "new",
                     "context": {

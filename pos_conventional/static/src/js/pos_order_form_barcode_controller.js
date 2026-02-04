@@ -168,10 +168,6 @@ export class PosOrderBarcodeFormController extends FormController {
      * Procesa el código de barras escaneado.
      * Busca el producto y lo añade directamente a las líneas del formulario.
      */
-    /**
-     * Procesa el código de barras escaneado.
-     * Escribe el código en el campo 'barcode_scan' para disparar el onchange.
-     */
     async processBarcode(barcode) {
         if (this.isProcessing) {
             return;
@@ -189,10 +185,35 @@ export class PosOrderBarcodeFormController extends FormController {
         try {
             const record = this.model.root;
 
-            // Escribir en el campo barcode_scan para disparar el onchange
-            await record.update({ barcode_scan: barcode });
+            // Obtener datos del pedido actual para contexto
+            const orderId = record.resId;
+            const pricelistId = record.data.pricelist_id ? record.data.pricelist_id[0] : false;
+            const fiscalPositionId = record.data.fiscal_position_id ? record.data.fiscal_position_id[0] : false;
+            const partnerId = record.data.partner_id ? record.data.partner_id[0] : false;
 
-            console.log("Barcode enviado al campo barcode_scan:", barcode);
+            // Llamar a Python para obtener los datos completos de la línea
+            const result = await this.orm.call(
+                "pos.order",
+                "get_product_line_data_by_barcode",
+                [],
+                {
+                    barcode: barcode,
+                    pricelist_id: pricelistId,
+                    fiscal_position_id: fiscalPositionId,
+                    partner_id: partnerId,
+                }
+            );
+
+            if (!result.success) {
+                this.notification.add(
+                    result.message,
+                    { type: "warning", title: "Producto no encontrado" }
+                );
+                return;
+            }
+
+            // Añadir el producto a las líneas del pedido
+            await this.addProductToLines(result.product, result.line_vals);
 
         } catch (error) {
             console.error("Error al procesar código de barras:", error);
@@ -206,12 +227,38 @@ export class PosOrderBarcodeFormController extends FormController {
     }
 
     /**
-     * @deprecated
-     * Ya no se usa, el onchange de backend maneja la adición de líneas.
-     * Mantenido vacío por compatibilidad si es llamado desde otro sitio.
+     * Añade un producto a las líneas del pedido actual.
+     * Si el pedido es nuevo, lo guarda primero.
      */
     async addProductToLines(product, lineVals) {
-        console.warn("addProductToLines is deprecated. Logic moved to backend onchange.");
+        const record = this.model.root;
+
+        // Si el pedido es nuevo, guardarlo primero
+        if (record.isNew) {
+            try {
+                // Guardar el pedido
+                await record.save();
+            } catch (error) {
+                console.error("Error al guardar el pedido:", error);
+                this.notification.add(
+                    "Debe guardar el pedido antes de escanear productos.",
+                    { type: "warning", title: "Pedido no guardado" }
+                );
+                return;
+            }
+        }
+
+        // Ahora el pedido está guardado, añadir línea vía RPC
+        const orderId = record.resId;
+        if (!orderId) {
+            this.notification.add(
+                "No se puede identificar el pedido actual.",
+                { type: "warning", title: "Error" }
+            );
+            return;
+        }
+
+        await this.addLineViaRPC(orderId, product, lineVals);
     }
 
     /**

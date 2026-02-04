@@ -1,6 +1,7 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
+
 class PosSessionPinWizard(models.TransientModel):
     _name = "pos.session.pin.wizard"
     _description = "Wizard para validar PIN de apertura POS"
@@ -96,7 +97,6 @@ class PosSessionPinWizard(models.TransientModel):
 
         # Al validar, abrir el segundo wizard de control de efectivo
         return {
-            "name": _("Control de apertura"),
             "type": "ir.actions.act_window",
             "res_model": "pos.session.opening.wizard",
             "view_mode": "form",
