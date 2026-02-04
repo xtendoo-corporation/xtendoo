@@ -11,8 +11,9 @@ class BookingRequest(models.Model):
 
     def _get_or_create_partner(self):
         partner = super()._get_or_create_partner()
-        if self.whatsapp_opt_in and not partner.whatsapp_opt_in:
-            partner.sudo().write({'whatsapp_opt_in': True})
+        # Siempre actualizar el whatsapp_opt_in del partner según la solicitud
+        if partner.whatsapp_opt_in != self.whatsapp_opt_in:
+            partner.sudo().write({'whatsapp_opt_in': self.whatsapp_opt_in})
         return partner
 
     def action_approve(self):

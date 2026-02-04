@@ -43,33 +43,33 @@ class BookingReserveController(http.Controller):
                 start_date = today
                 end_date = today + timedelta(days=30)
             days = []
-            
+
             # Get resource calendar from booking type
             calendar = booking_type.resource_calendar_id
             if not calendar:
                 logger.warning(f'No hay calendario asociado al tipo de cita: {type_id}')
                 return []
-            
+
             tz = pytz_timezone(calendar.tz or 'UTC')
-            
+
             delta = (end_date - start_date).days
             for i in range(delta + 1):
                 d = start_date + timedelta(days=i)
                 # Check directly with calendar for this day
                 date_start = tz.localize(datetime.combine(d, datetime.min.time()))
                 date_end = date_start + timedelta(days=1)
-                
+
                 intervals = calendar._work_intervals_batch(date_start, date_end)[False]
                 # If there are work intervals, the day is potentially available
                 available = bool(intervals)
-                
-                # Further check: if fully booked? 
+
+                # Further check: if fully booked?
                 # For basic day availability, checking if open is enough for now.
-                # Detailed full-day capacity check would be heavier, 
+                # Detailed full-day capacity check would be heavier,
                 # but we can rely on hour selection to show 'No hours available'.
-                
+
                 days.append({'date': d.strftime('%Y-%m-%d'), 'available': available})
-            
+
             logger.info(f"Respuesta /booking/availability: {days}")
             return days
         except Exception as e:
@@ -87,70 +87,70 @@ class BookingReserveController(http.Controller):
             except Exception as e:
                 logger.error(f"type_id inválido: {type_id} - {str(e)}")
                 return []
-            
+
             booking_type = http.request.env['resource.booking.type'].sudo().browse(type_id_int)
             if not booking_type or not booking_type.exists():
                 logger.warning(f'Tipo de cita no existe: {type_id}')
                 return []
-            
+
             # Get resource calendar from booking type
             calendar = booking_type.resource_calendar_id
             if not calendar:
                 logger.warning(f'No hay calendario asociado al tipo de cita: {type_id}')
                 return []
-            
+
             # Parse date
             try:
                 date_obj = datetime.strptime(date, '%Y-%m-%d')
             except Exception as e:
                 logger.error(f"Fecha inválida: {date} - {str(e)}")
                 return []
-            
+
             # Get calendar timezone
             tz = pytz_timezone(calendar.tz or 'UTC')
-            
+
             # Create datetime range for the day in calendar timezone
             date_start = tz.localize(date_obj.replace(hour=0, minute=0, second=0, microsecond=0))
             date_end = date_start + timedelta(days=1)
-            
+
             # Get work intervals for this date
             intervals = calendar._work_intervals_batch(date_start, date_end)[False]
-            
+
             hours = []
             slot_duration = timedelta(hours=booking_type.slot_duration or 0.5)
             booking_duration = timedelta(hours=booking_type.duration or 0.5)
-            
+
             # Extract hours from intervals
             for interval_start, interval_end, _ in intervals._items:
                 current = interval_start
                 while current + booking_duration <= interval_end:
                     # Check if this slot overlaps with any existing booking
                     slot_end = current + booking_duration
-                    
+
                     # Search for overlapping bookings
                     # We need to convert slot times to UTC for search as Odoo stores in UTC
                     slot_start_utc = current.astimezone(pytz_timezone('UTC')).replace(tzinfo=None)
                     slot_end_utc = slot_end.astimezone(pytz_timezone('UTC')).replace(tzinfo=None)
-                    
+
                     domain = [
                         ('start', '<', slot_end_utc),
                         ('stop', '>', slot_start_utc),
                         ('state', '!=', 'rejected'), # Don't count rejected bookings
-                        # If resource specific, add resource check. 
+                        # If resource specific, add resource check.
                         # Assuming pool or single resource for now based on type?
                         # If resource_booking uses combination, we might need more complex logic.
                         # For simple case: verify if there is capacity.
                         # If type has resources composed, we check if ALL are busy?
                         # Simplest: check if ANY booking overlaps if we assume 1 concurency per type/resource configuration.
                     ]
-                    
+
                     # If the booking type is linked to specific resources, usually combinations handle it.
                     # But without combination logic exposed easily here, we check resource.booking directly.
                     # If the system allows multiple bookings at same time (capacity), logic differs.
                     # Assuming single capacity for now as requested "si un dia tiene muchas horas ocupadas...".
-                    
+
                     overlap_count = http.request.env['resource.booking'].sudo().search_count(domain)
-                    
+
                     # Logic: is capacity reached?
                     # If we don't handle capacity, any overlap = taken.
                     # If we assume 1 slot at a time:
@@ -158,12 +158,12 @@ class BookingReserveController(http.Controller):
                         hour_str = current.strftime('%H:%M')
                         if hour_str not in hours:
                             hours.append(hour_str)
-                    
+
                     current += slot_duration
-            
+
             logger.info(f"Horas disponibles en calendario: {hours}")
             return hours
-            
+
         except Exception as e:
             logger.error(f'Error interno en /booking/availability/hours: {str(e)}', exc_info=True)
             return []
@@ -180,14 +180,15 @@ class BookingReserveController(http.Controller):
             email = data.get('email')
             date = data.get('date')
             hour = data.get('hour')
-            
+            whatsapp_opt_in = data.get('whatsapp_opt_in') == 'true'  # Capturar el checkbox
+
             if not type_id or not name or not phone or not date or not hour:
                 logger.warning(f'Datos incompletos en /booking/reserve: {data}')
                 return request.make_response(
                     json.dumps({'success': False, 'message': 'Datos incompletos'}),
                     headers=[('Content-Type', 'application/json')]
                 )
-            
+
             try:
                 type_id_int = int(type_id)
             except Exception as e:
@@ -196,7 +197,7 @@ class BookingReserveController(http.Controller):
                     json.dumps({'success': False, 'message': 'Tipo de cita inválido'}),
                     headers=[('Content-Type', 'application/json')]
                 )
-            
+
             booking_type = http.request.env['resource.booking.type'].sudo().browse(type_id_int)
             if not booking_type or not booking_type.exists():
                 logger.warning(f'Tipo de cita no existe: {type_id}')
@@ -204,8 +205,8 @@ class BookingReserveController(http.Controller):
                     json.dumps({'success': False, 'message': 'Tipo de cita no encontrado'}),
                     headers=[('Content-Type', 'application/json')]
                 )
-            
-            # Create booking request
+
+            # Create booking request with whatsapp_opt_in
             request_vals = {
                 'name': name,
                 'phone': phone,
@@ -214,11 +215,12 @@ class BookingReserveController(http.Controller):
                 'booking_date': date,
                 'booking_hour': hour,
                 'state': 'pending',
+                'whatsapp_opt_in': whatsapp_opt_in,  # Añadir el campo
             }
-            
+
             booking_request = http.request.env['booking.request'].sudo().create(request_vals)
-            logger.info(f"Solicitud de reserva creada: {booking_request.id}")
-            
+            logger.info(f"Solicitud de reserva creada: {booking_request.id} con whatsapp_opt_in={whatsapp_opt_in}")
+
             return request.make_response(
                 json.dumps({
                     'success': True,
@@ -227,7 +229,7 @@ class BookingReserveController(http.Controller):
                 }),
                 headers=[('Content-Type', 'application/json')]
             )
-            
+
         except Exception as e:
             logger.error(f'Error interno en /booking/reserve: {str(e)}', exc_info=True)
             return request.make_response(
