@@ -38,10 +38,26 @@ class ResourceBooking(models.Model):
             if hasattr(booking, 'meeting_id') and booking.meeting_id:
                 _logger.info("   │  ⚠️ Booking ID %s tiene meeting_id auto-creado (ID: %s) - Eliminando...",
                            booking.id, booking.meeting_id.id)
+
+                # ⚠️ GUARDAR start/stop ANTES de eliminar meeting_id (se pierden al eliminarlo)
+                saved_start = booking.start
+                saved_stop = booking.stop
+                _logger.info("   │     Guardando start=%s, stop=%s antes de eliminar meeting_id", saved_start, saved_stop)
+
                 old_meeting = booking.meeting_id
                 booking.with_context(no_mail_to_attendees=True).write({'meeting_id': False})
                 old_meeting.with_context(no_mail_to_attendees=True).sudo().unlink()
                 _logger.info("   │  ✓ meeting_id eliminado")
+
+                # ⚠️ RESTAURAR start/stop después de eliminar meeting_id
+                if not booking.start or not booking.stop:
+                    _logger.info("   │  ⚠️ start/stop se perdieron al eliminar meeting_id - Restaurando...")
+                    _logger.info("   │     Restaurando start=%s, stop=%s", saved_start, saved_stop)
+                    booking.with_context(no_mail_to_attendees=True).write({
+                        'start': saved_start,
+                        'stop': saved_stop,
+                    })
+                    _logger.info("   │  ✓ start/stop restaurados: start=%s, stop=%s", booking.start, booking.stop)
 
             # Crear nuestro evento de calendario personalizado con alarmas WhatsApp
             _logger.info("   │  → Creando calendar.event personalizado con alarmas WhatsApp...")
