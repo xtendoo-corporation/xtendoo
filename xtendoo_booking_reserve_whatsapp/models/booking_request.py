@@ -79,13 +79,13 @@ class BookingRequest(models.Model):
     def action_approve(self):
         res = super().action_approve()
         if self.whatsapp_opt_in:
-            self._send_whatsapp_notification('cita_aprobada_whatsapp')
+            self._send_whatsapp_notification('Cita Aprobada Whatsapp')  # Con mayúsculas y espacios
         return res
 
     def action_reject(self):
         res = super().action_reject()
         if self.whatsapp_opt_in:
-            self._send_whatsapp_notification('cita_rechazada_whatsapp')
+            self._send_whatsapp_notification('Cita Rechazada Whatsapp')  # Con mayúsculas y espacios
         return res
 
     def _send_whatsapp_notification(self, template_name):

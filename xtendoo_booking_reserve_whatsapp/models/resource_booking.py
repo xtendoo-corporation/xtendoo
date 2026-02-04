@@ -66,18 +66,17 @@ class ResourceBooking(models.Model):
             _logger.info("   └─ _create_calendar_event() FIN (ya existe)")
             return
 
-        _logger.info("   │  → Buscando template 'recordatorio_cita_whatsapp' para calendar.event...")
-        # Buscar alarmas WhatsApp por defecto
+        _logger.info("   │  → Buscando template 'Recordatorio Cita Whatsapp' para calendar.event...")
         # Buscar el template de recordatorio por nombre
         reminder_template = self.env['mail.whatsapp.template'].search([
-            ('name', '=', 'recordatorio_cita_whatsapp'),
+            ('name', '=', 'Recordatorio Cita Whatsapp'),  # Con mayúsculas y espacios
             ('model_id.model', '=', 'calendar.event')
         ], limit=1)
 
         if not reminder_template:
-            _logger.warning("   │  ⚠ No se encontró el template 'recordatorio_cita_whatsapp' para calendar.event")
+            _logger.warning("   │  ⚠ No se encontró el template 'Recordatorio Cita Whatsapp' para calendar.event")
         else:
-            _logger.info("   │  ✓ Template 'recordatorio_cita_whatsapp' encontrado (ID: %s)", reminder_template.id)
+            _logger.info("   │  ✓ Template 'Recordatorio Cita Whatsapp' encontrado (ID: %s)", reminder_template.id)
 
         _logger.info("   │  → Buscando alarmas WhatsApp configuradas...")
         # Buscar alarmas WhatsApp configuradas
@@ -117,12 +116,17 @@ class ResourceBooking(models.Model):
             _logger.info("   │     mail_create_nosubscribe=True")
             _logger.info("   │     mail_create_nolog=True")
             _logger.info("   │     mail_notrack=True")
+            _logger.info("   │     tracking_disable=True")
 
             event = self.env['calendar.event'].with_context(
                 no_mail_to_attendees=True,  # No enviar invitaciones a asistentes
                 mail_create_nosubscribe=True,  # No suscribir automáticamente
                 mail_create_nolog=True,  # No crear logs
                 mail_notrack=True,  # No tracking
+                tracking_disable=True,  # Desactivar tracking completamente
+                # Contexto adicional para bloquear completamente los emails
+                mail_create_nothread=True,
+                mail_auto_delete=True,
             ).sudo().create(event_vals)
             self.calendar_event_id = event.id
 
