@@ -66,12 +66,14 @@ class ResourceBooking(models.Model):
         # Buscar alarmas WhatsApp por defecto
         # Buscar el template de recordatorio por nombre
         reminder_template = self.env['mail.whatsapp.template'].search([
-            ('name', '=', 'Recordatorio Cita WhatsApp'),
+            ('name', '=', 'recordatorio_cita_whatsapp'),
             ('model_id.model', '=', 'calendar.event')
         ], limit=1)
 
         if not reminder_template:
-            _logger.warning("No se encontró el template 'Recordatorio Cita WhatsApp' para calendar.event")
+            _logger.warning("No se encontró el template 'recordatorio_cita_whatsapp' para calendar.event")
+        else:
+            _logger.info("Template 'recordatorio_cita_whatsapp' encontrado (ID: %s)", reminder_template.id)
 
         # Buscar alarmas WhatsApp configuradas
         whatsapp_alarms = self.env['calendar.alarm'].search([

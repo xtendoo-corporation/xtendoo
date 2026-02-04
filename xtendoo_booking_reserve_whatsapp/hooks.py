@@ -61,7 +61,7 @@ def post_init_hook(env):
     calendar_event_model = env['ir.model'].search([('model', '=', 'calendar.event')], limit=1)
     if calendar_event_model:
         values_calendar_reminder = {
-            'name': 'Recordatorio Cita WhatsApp',
+            'name': 'recordatorio_cita_whatsapp',
             'model_id': calendar_event_model.id,
             'gateway_id': gateway.id,
             'category': 'utility',
@@ -78,7 +78,9 @@ def post_init_hook(env):
         ])
         if not calendar_template:
             calendar_template = env['mail.whatsapp.template'].create(values_calendar_reminder)
-            _logger.info("Template 'Recordatorio Cita WhatsApp' creado para calendar.event (ID: %s)", calendar_template.id)
+            _logger.info("Template 'recordatorio_cita_whatsapp' creado para calendar.event (ID: %s)", calendar_template.id)
+        else:
+            _logger.info("Template 'recordatorio_cita_whatsapp' ya existe para calendar.event (ID: %s)", calendar_template.id)
 
         # Crear alarma WhatsApp por defecto
         alarm = env['calendar.alarm'].search([
