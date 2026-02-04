@@ -223,14 +223,14 @@ class BookingRequest(models.Model):
         _logger.info("   │     mail_create_nolog=True")
         _logger.info("   │     mail_notrack=True")
         _logger.info("   │     tracking_disable=True")
-        _logger.info("   │     no_sync_meeting=True")
+        _logger.info("   │     no_mail_to_attendees=True")
 
         booking = self.env['resource.booking'].with_context(
             mail_create_nosubscribe=True,  # No suscribir partners automáticamente
             mail_create_nolog=True,  # No crear logs
             mail_notrack=True,  # No enviar tracking
             tracking_disable=True,  # Desactivar tracking completamente
-            no_sync_meeting=True,  # No sincronizar meeting automáticamente
+            no_mail_to_attendees=True,  # No enviar emails a asistentes
         ).sudo().create(booking_vals)
 
         _logger.info("   │  ✓ Booking creado: ID %s", booking.id)

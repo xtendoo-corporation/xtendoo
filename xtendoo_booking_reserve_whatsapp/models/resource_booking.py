@@ -24,8 +24,8 @@ class ResourceBooking(models.Model):
         _logger.info("   │  ⚙️ resource.booking.create() llamado")
         _logger.info("   │     Cantidad de bookings a crear: %d", len(vals_list))
 
-        # NUEVA ESTRATEGIA: Dejar que se cree el meeting normalmente (para que combination_id funcione)
-        # pero PREVENIR los emails usando el contexto correcto
+        # Dejar que el módulo base cree el booking normalmente (con meeting_id)
+        # pero con el contexto correcto para evitar emails
         bookings = super(ResourceBooking, self.with_context(
             no_mail_to_attendees=True,  # CRÍTICO: Prevenir emails en calendar.event
             mail_create_nosubscribe=True,
@@ -36,27 +36,20 @@ class ResourceBooking(models.Model):
 
         _logger.info("   │  ✓ Bookings creados: IDs %s", bookings.ids)
 
-        for booking in bookings:
-            # Si el módulo base creó un meeting_id automáticamente, reemplazarlo con uno personalizado
-            if hasattr(booking, 'meeting_id') and booking.meeting_id:
-                _logger.info("   │  ⚠️ Booking ID %s tiene meeting_id auto-creado (ID: %s) - Reemplazando con alarmas WhatsApp...",
-                           booking.id, booking.meeting_id.id)
+        # Añadir alarmas WhatsApp a los meetings creados
+        whatsapp_alarms = self.env['calendar.alarm'].search([
+            ('alarm_type', '=', 'whatsapp'),
+            ('whatsapp_template_id', '!=', False)
+        ])
 
-                old_meeting = booking.meeting_id
-                old_meeting_id = old_meeting.id
-
-                # Obtener alarmas WhatsApp configuradas
-                whatsapp_alarms = self.env['calendar.alarm'].search([
-                    ('alarm_type', '=', 'whatsapp'),
-                    ('whatsapp_template_id', '!=', False)
-                ])
-
-                if whatsapp_alarms:
-                    _logger.info("   │     → Añadiendo %d alarmas WhatsApp al meeting existente ID %s",
-                               len(whatsapp_alarms), old_meeting_id)
+        if whatsapp_alarms:
+            for booking in bookings:
+                if hasattr(booking, 'meeting_id') and booking.meeting_id:
+                    _logger.info("   │  → Añadiendo %d alarmas WhatsApp al meeting ID %s",
+                               len(whatsapp_alarms), booking.meeting_id.id)
 
                     # Añadir las alarmas WhatsApp al meeting existente SIN enviar emails
-                    old_meeting.with_context(
+                    booking.meeting_id.with_context(
                         no_mail_to_attendees=True,
                         mail_notrack=True,
                         tracking_disable=True,
@@ -64,21 +57,13 @@ class ResourceBooking(models.Model):
                         'alarm_ids': [(4, alarm.id) for alarm in whatsapp_alarms]
                     })
 
-                    _logger.info("   │     ✓ Alarmas WhatsApp añadidas al meeting ID %s", old_meeting_id)
-                else:
-                    _logger.warning("   │     ⚠ No hay alarmas WhatsApp configuradas")
+                    _logger.info("   │  ✓ Alarmas WhatsApp añadidas al meeting ID %s", booking.meeting_id.id)
 
-                # Actualizar el campo calendar_event_id para tracking
-                booking.with_context(no_mail_to_attendees=True).write({
-                    'calendar_event_id': old_meeting_id
-                })
+                    # Actualizar el campo calendar_event_id para tracking
+                    booking.calendar_event_id = booking.meeting_id.id
+        else:
+            _logger.warning("   │  ⚠ No hay alarmas WhatsApp configuradas")
 
-                _logger.info("   │  ✓ Meeting ID %s actualizado con alarmas WhatsApp para booking ID %s",
-                           old_meeting_id, booking.id)
-            else:
-                # Si por alguna razón no se creó meeting_id, crear uno manualmente
-                _logger.info("   │  ℹ️ Booking ID %s NO tiene meeting_id - Creando uno...", booking.id)
-                booking._create_calendar_event()
 
         _logger.info("   │  ✓ Todos los calendar.event procesados con alarmas WhatsApp")
         return bookings
