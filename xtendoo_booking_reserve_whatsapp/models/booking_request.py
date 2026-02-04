@@ -79,23 +79,30 @@ class BookingRequest(models.Model):
     def action_approve(self):
         res = super().action_approve()
         if self.whatsapp_opt_in:
-            self._send_whatsapp_notification('xtendoo_booking_reserve_whatsapp.email_template_booking_whatsapp_approved')
+            self._send_whatsapp_notification('Cita Aprobada WhatsApp')
         return res
 
     def action_reject(self):
         res = super().action_reject()
         if self.whatsapp_opt_in:
-            self._send_whatsapp_notification('xtendoo_booking_reserve_whatsapp.email_template_booking_whatsapp_rejected')
+            self._send_whatsapp_notification('Cita Rechazada WhatsApp')
         return res
 
-    def _send_whatsapp_notification(self, template_xmlid):
+    def _send_whatsapp_notification(self, template_name):
         """Send WhatsApp notification using the given template."""
-        _logger.info("Intentando enviar WhatsApp con template: %s para solicitud ID: %s", template_xmlid, self.id)
+        _logger.info("Intentando enviar WhatsApp con template nombre: %s para solicitud ID: %s", template_name, self.id)
 
-        template = self.env.ref(template_xmlid, raise_if_not_found=False)
+        # Buscar template por nombre en lugar de xmlid
+        template = self.env['mail.whatsapp.template'].search([
+            ('name', '=', template_name),
+            ('model_id.model', '=', 'booking.request')
+        ], limit=1)
+
         if not template:
-            _logger.warning("Template WhatsApp no encontrado: %s", template_xmlid)
+            _logger.warning("Template WhatsApp no encontrado con nombre: %s", template_name)
             return
+
+        _logger.info("Template WhatsApp encontrado: %s (ID: %s)", template.name, template.id)
 
         try:
             gateway = self.env['mail.gateway'].search([

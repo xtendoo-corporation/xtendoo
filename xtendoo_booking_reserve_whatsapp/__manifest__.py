@@ -12,6 +12,7 @@
         "calendar",
     ],
     "data": [
+        "data/whatsapp_template.xml",
         "views/templates.xml",
         "views/res_partner_views.xml",
         "views/calendar_alarm_views.xml",
