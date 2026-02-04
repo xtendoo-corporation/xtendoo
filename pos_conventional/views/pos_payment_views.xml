@@ -3,24 +3,65 @@
     <record id="view_pos_payment_form_inherit" model="ir.ui.view">
         <field name="name">pos.make.payment.form.inherit</field>
         <field name="model">pos.make.payment</field>
-        <field name="inherit_id" ref="point_of_sale.view_pos_payment"/>
+        <field name="inherit_id" ref="point_of_sale.view_pos_payment" />
         <field name="arch" type="xml">
-            <!-- Agregar campos invisibles para cálculos -->
-            <xpath expr="//field[@name='config_id']" position="after">
-                <field name="is_cash_payment" invisible="1"/>
-            </xpath>
-
-            <!-- Agregar el campo de importe recibido después del campo amount -->
-            <xpath expr="//field[@name='amount']" position="after">
-                <field name="amount_received"
-                       invisible="not is_cash_payment"
-                       required="is_cash_payment"/>
-                <field name="amount_change"
-                       invisible="not is_cash_payment"
-                       readonly="1"
-                       class="fw-bold"/>
+            <xpath expr="//group" position="replace">
+                <field name="is_cash_payment" invisible="1" />
+                <field name="config_id" invisible="1" />
+                <field name="payment_name" invisible="1" />
+                <div class="container-fluid p-0">
+                    <div class="mb-3">
+                        <div
+                            class="fs-5 mb-2 text-primary fw-bold text-uppercase border-bottom pb-1">
+                            Método de Pago
+                        </div>
+                        <div class="py-1">
+                            <field name="payment_method_id"
+                                widget="selection_badge"
+                                nolabel="1"
+                                class="fw-bold fs-6 w-100"
+                                domain="[('config_ids', 'in', config_id)]" />
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <div
+                                class="d-flex align-items-center justify-content-between px-3 py-2 bg-white border rounded shadow-sm">
+                                <span class="h4 mb-0 text-muted">TOTAL</span>
+                                <field name="amount" readonly="1" force_save="1"
+                                    class="display-4 fw-bold text-dark mb-0" nolabel="1" />
+                            </div>
+                        </div>
+                        <div class="col-12" invisible="not is_cash_payment">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div
+                                        class="d-flex align-items-center justify-content-between px-3 py-2 bg-white border rounded shadow-sm">
+                                        <span class="h4 mb-0 text-muted text-uppercase">Entregado</span>
+                                        <div class="d-flex justify-content-end flex-grow-1">
+                                            <field name="amount_received"
+                                                required="is_cash_payment"
+                                                class="form-control border-0 shadow-none fw-bold text-dark px-0 text-end"
+                                                style="font-size: 2.5rem; background: transparent;"
+                                                nolabel="1" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div
+                                        class="alert alert-success d-flex align-items-center justify-content-between px-3 py-2 m-0 shadow-sm border-success-subtle bg-success-subtle">
+                                        <span class="h4 mb-0 fw-bold text-success-emphasis">CAMBIO</span>
+                                        <field name="amount_change"
+                                            readonly="1"
+                                            class="display-4 fw-bold text-success mb-0"
+                                            nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </xpath>
         </field>
     </record>
 </odoo>
-

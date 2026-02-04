@@ -8,7 +8,6 @@
                 <field name="currency_id" invisible="1" />
                 <field name="closing_wizard_id" invisible="1" />
 
-                <!-- Calculadora de efectivo con diseño moderno -->
                 <div class="container-fluid p-3">
                     <div class="row">
                         <!-- Columna izquierda: Billetes y monedas grandes -->
