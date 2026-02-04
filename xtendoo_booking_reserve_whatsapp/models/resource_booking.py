@@ -24,11 +24,15 @@ class ResourceBooking(models.Model):
         _logger.info("   │  ⚙️ resource.booking.create() llamado")
         _logger.info("   │     Cantidad de bookings a crear: %d", len(vals_list))
 
-        # Crear bookings - El módulo base creará meeting_id automáticamente
+        # IMPORTANTE: Deshabilitar la sincronización automática del meeting
+        # para evitar el error "Expected singleton: resource.calendar()"
+        # que ocurre cuando combination_id intenta calcular intervalos sin calendar
         bookings = super(ResourceBooking, self.with_context(
             mail_create_nosubscribe=True,
             mail_create_nolog=True,
             mail_notrack=True,
+            skip_meeting_sync=True,  # Evitar _sync_meeting() automático
+            no_sync_meeting=True,  # Alternativa para evitar sincronización
         )).create(vals_list)
 
         _logger.info("   │  ✓ Bookings creados: IDs %s", bookings.ids)

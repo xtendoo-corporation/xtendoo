@@ -206,7 +206,9 @@ class BookingRequest(models.Model):
             'name': _('Reserva web: %s') % self.name,
             'start': booking_datetime,
             'duration': duration,
-            'combination_auto_assign': True,
+            # IMPORTANTE: Desactivar combination_auto_assign para evitar error
+            # "Expected singleton: resource.calendar()" durante el cálculo de combination_id
+            'combination_auto_assign': False,
         }
         _logger.info("   │  ✓ Valores de booking preparados:")
         _logger.info("   │     - type_id: %s", booking_vals['type_id'])
@@ -221,12 +223,14 @@ class BookingRequest(models.Model):
         _logger.info("   │     mail_create_nolog=True")
         _logger.info("   │     mail_notrack=True")
         _logger.info("   │     tracking_disable=True")
+        _logger.info("   │     no_sync_meeting=True")
 
         booking = self.env['resource.booking'].with_context(
             mail_create_nosubscribe=True,  # No suscribir partners automáticamente
             mail_create_nolog=True,  # No crear logs
             mail_notrack=True,  # No enviar tracking
             tracking_disable=True,  # Desactivar tracking completamente
+            no_sync_meeting=True,  # No sincronizar meeting automáticamente
         ).sudo().create(booking_vals)
 
         _logger.info("   │  ✓ Booking creado: ID %s", booking.id)
