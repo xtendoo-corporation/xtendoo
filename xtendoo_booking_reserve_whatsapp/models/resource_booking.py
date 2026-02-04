@@ -55,11 +55,19 @@ class ResourceBooking(models.Model):
                 if not booking.start or not booking.stop:
                     _logger.info("   │  ⚠️ start/stop se perdieron al eliminar meeting_id - Restaurando...")
                     _logger.info("   │     Restaurando start=%s, stop=%s", saved_start, saved_stop)
-                    booking.with_context(no_mail_to_attendees=True).write({
-                        'start': saved_start,
-                        'stop': saved_stop,
-                    })
-                    _logger.info("   │  ✓ start/stop restaurados: start=%s, stop=%s", booking.start, booking.stop)
+
+                    # IMPORTANTE: Usar SQL directo para evitar triggers que crean meeting_id
+                    self.env.cr.execute("""
+                        UPDATE resource_booking
+                        SET start = %s, stop = %s
+                        WHERE id = %s
+                    """, (saved_start, saved_stop, booking.id))
+
+                    # Invalidar cache para reflejar los cambios
+                    booking.invalidate_recordset(['start', 'stop'])
+
+                    _logger.info("   │  ✓ start/stop restaurados directamente: start=%s, stop=%s",
+                               booking.start, booking.stop)
 
             # Crear nuestro evento de calendario personalizado con alarmas WhatsApp
             _logger.info("   │  → Creando calendar.event personalizado con alarmas WhatsApp...")

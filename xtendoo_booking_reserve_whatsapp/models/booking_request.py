@@ -129,12 +129,11 @@ class BookingRequest(models.Model):
 
         try:
             gateway = self.env['mail.gateway'].search([
-                ('gateway_type', '=', 'whatsapp'),
-                ('active', '=', True)
+                ('gateway_type', '=', 'whatsapp')
             ], limit=1)
 
             if not gateway:
-                _logger.error("No hay gateway WhatsApp activo configurado")
+                _logger.error("No hay gateway WhatsApp configurado")
                 return
 
             _logger.info("Gateway WhatsApp encontrado: %s (ID: %s)", gateway.name, gateway.id)
