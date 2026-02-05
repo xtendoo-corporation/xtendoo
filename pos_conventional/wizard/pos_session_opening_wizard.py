@@ -2,32 +2,10 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
 
-<<<<<<< HEAD
 class PosSessionOpeningWizard(models.TransientModel):
-    _name = "pos.session.opening.wizard"
-    _description = "Wizard para apertura de sesión POS no táctil"
+    _name = 'pos.session.opening.wizard'
+    _description = 'Wizard para apertura de sesión POS no táctil'
 
-    session_id = fields.Many2one(
-        "pos.session", string="Sesión", required=True, readonly=True
-    )
-    user_id = fields.Many2one(
-        "res.users",
-        string="Usuario",
-        required=True,
-        readonly=True,
-        default=lambda self: self.env.user,
-    )
-    cash_register_balance_start = fields.Monetary(
-        string="Dinero inicial",
-        currency_field="currency_id",
-        help="Cantidad de dinero en efectivo al abrir la caja",
-        default=0.0,
-    )
-    currency_id = fields.Many2one(
-        "res.currency", related="session_id.currency_id", readonly=True
-    )
-    cash_control = fields.Boolean(related="session_id.cash_control", readonly=True)
-=======
     session_id = fields.Many2one('pos.session', string='Sesión', required=True, readonly=True)
     user_id = fields.Many2one('res.users', string='Usuario', required=True, readonly=True,
                               default=lambda self: self.env.user)
@@ -62,7 +40,6 @@ class PosSessionOpeningWizard(models.TransientModel):
                 wizard.pending_order_count = len(orders.filtered(lambda o: o.lines))
             else:
                 wizard.pending_order_count = 0
->>>>>>> fcf85b9b (changes in pos session open)
 
     def action_validate_and_open(self):
         """
@@ -148,18 +125,11 @@ class PosSessionOpeningWizard(models.TransientModel):
 
         # Si hay control de efectivo, establecer el balance inicial
         if session.cash_control:
-            values["cash_register_balance_start"] = self.cash_register_balance_start
+            values['cash_register_balance_start'] = self.cash_register_balance_start
 
-<<<<<<< HEAD
-        # Cambiar el estado a 'opened' directamente
-        # Esto es lo que hace action_pos_session_open pero sin lanzar el frontend
-        values["state"] = "opened"
-        values["start_at"] = fields.Datetime.now()
-=======
         # Guardar notas de apertura si las hay
         if self.opening_notes:
             values['opening_notes'] = self.opening_notes
->>>>>>> fcf85b9b (changes in pos session open)
 
         session.write(values)
 
