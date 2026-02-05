@@ -7,6 +7,68 @@ _logger = logging.getLogger(__name__)
 class AlarmManager(models.AbstractModel):
     _inherit = 'calendar.alarm_manager'
 
+    def _get_events_by_alarm_to_notify(self, alarm_type='whatsapp'):
+        """Get events that need WhatsApp alarm notification.
+
+        Returns a dict: {alarm_id: [event_ids]}
+        """
+        result = {}
+
+        # Get all alarms of the specified type
+        alarms = self.env['calendar.alarm'].search([('alarm_type', '=', alarm_type)])
+
+        if not alarms:
+            return result
+
+        now = fields.Datetime.now()
+
+        for alarm in alarms:
+            # Calculate the notification time
+            # alarm.duration is a number (1, 2, etc)
+            # alarm.interval is the unit ('days', 'hours', 'minutes')
+            from datetime import timedelta
+
+            if alarm.interval == 'minutes':
+                delta = timedelta(minutes=alarm.duration)
+            elif alarm.interval == 'hours':
+                delta = timedelta(hours=alarm.duration)
+            elif alarm.interval == 'days':
+                delta = timedelta(days=alarm.duration)
+            else:
+                continue  # Unknown interval
+
+            # Find events that:
+            # 1. Have this alarm assigned
+            # 2. Start time - alarm duration <= now < start time
+            # 3. Haven't been notified yet (we'll check this later)
+
+            # Calculate the notification window
+            # Events starting between now and now + 1 day should trigger alarms
+            notification_start = now
+            notification_end = now + timedelta(days=2)  # Check 2 days ahead
+
+            events = self.env['calendar.event'].search([
+                ('alarm_ids', 'in', alarm.id),
+                ('start', '>=', notification_start),
+                ('start', '<=', notification_end),
+                ('stop', '>', now),  # Event not ended yet
+            ])
+
+            # Filter events where the alarm should trigger
+            events_to_notify = []
+            for event in events:
+                # Calculate when the alarm should fire
+                alarm_time = event.start - delta
+
+                # If alarm_time is in the past or now, it should trigger
+                if alarm_time <= now:
+                    events_to_notify.append(event.id)
+
+            if events_to_notify:
+                result[alarm.id] = events_to_notify
+
+        return result
+
     @api.model
     def _send_reminder(self):
         """Handle WhatsApp alarms in addition to standard ones."""
@@ -19,6 +81,24 @@ class AlarmManager(models.AbstractModel):
 
         # Handle WhatsApp reminders
         _logger.info("→ Buscando eventos con alarmas WhatsApp pendientes...")
+
+        # Debug: ver todas las alarmas WhatsApp
+        all_whatsapp_alarms = self.env['calendar.alarm'].search([('alarm_type', '=', 'whatsapp')])
+        _logger.info("  Total de alarmas WhatsApp en el sistema: %d", len(all_whatsapp_alarms))
+        for alarm in all_whatsapp_alarms:
+            _logger.info("    - Alarma ID %s: '%s' (Duración: %s %s)",
+                        alarm.id, alarm.name, alarm.duration, alarm.interval)
+
+        # Debug: ver todos los eventos con alarmas WhatsApp
+        events_with_whatsapp_alarms = self.env['calendar.event'].search([
+            ('alarm_ids.alarm_type', '=', 'whatsapp'),
+            ('stop', '>', fields.Datetime.now())
+        ])
+        _logger.info("  Total de eventos activos con alarmas WhatsApp: %d", len(events_with_whatsapp_alarms))
+        for event in events_with_whatsapp_alarms:
+            _logger.info("    - Evento ID %s: '%s' (Start: %s, Alarmas: %s)",
+                        event.id, event.name, event.start, event.alarm_ids.mapped('name'))
+
         events_by_alarm = self._get_events_by_alarm_to_notify('whatsapp')
 
         if not events_by_alarm:
