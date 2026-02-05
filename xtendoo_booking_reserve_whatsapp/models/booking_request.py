@@ -69,6 +69,15 @@ class BookingRequest(models.Model):
 
         return partner
 
+    def _whatsapp_get_partner(self):
+        """Get or create partner for WhatsApp channel creation."""
+        # If partner_id already exists, return it
+        if self.partner_id:
+            return self.partner_id
+
+        # Otherwise, find or create partner
+        return self._get_or_create_partner()
+
     def _get_or_create_partner(self):
         partner = super()._get_or_create_partner()
         # Siempre actualizar el whatsapp_opt_in del partner según la solicitud
@@ -90,9 +99,21 @@ class BookingRequest(models.Model):
         return res
 
     def action_reject(self):
-        res = super().action_reject()
+        # Call parent first
+        super().action_reject()
+
+        # Try to send WhatsApp notification
         if self.whatsapp_opt_in:
             try:
+                # Ensure partner exists before sending WhatsApp
+                if not self.partner_id:
+                    _logger.info(
+                        "Creando partner para solicitud rechazada ID %s antes de enviar WhatsApp",
+                        self.id
+                    )
+                    partner = self._get_or_create_partner()
+                    self.with_context(mail_notrack=True).write({'partner_id': partner.id})
+
                 self._send_whatsapp_notification('Cita Rechazada Whatsapp')
             except Exception as e:
                 _logger.error(
