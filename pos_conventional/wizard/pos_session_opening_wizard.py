@@ -2,6 +2,7 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
 
+<<<<<<< HEAD
 class PosSessionOpeningWizard(models.TransientModel):
     _name = "pos.session.opening.wizard"
     _description = "Wizard para apertura de sesión POS no táctil"
@@ -26,6 +27,42 @@ class PosSessionOpeningWizard(models.TransientModel):
         "res.currency", related="session_id.currency_id", readonly=True
     )
     cash_control = fields.Boolean(related="session_id.cash_control", readonly=True)
+=======
+    session_id = fields.Many2one('pos.session', string='Sesión', required=True, readonly=True)
+    user_id = fields.Many2one('res.users', string='Usuario', required=True, readonly=True,
+                              default=lambda self: self.env.user)
+    cash_register_balance_start = fields.Monetary(
+        string='Caja de apertura',
+        currency_field='currency_id',
+        help='Cantidad de dinero en efectivo al abrir la caja',
+        default=0.0
+    )
+    opening_notes = fields.Text(
+        string='Nota de apertura',
+        help='Notas adicionales sobre la apertura de caja'
+    )
+    currency_id = fields.Many2one('res.currency', related='session_id.currency_id', readonly=True)
+    cash_control = fields.Boolean(related='session_id.cash_control', readonly=True)
+    pending_order_count = fields.Integer(
+        string='Pedidos pendientes',
+        compute='_compute_pending_order_count'
+    )
+
+    @api.depends('session_id')
+    def _compute_pending_order_count(self):
+        """Calcula el número de pedidos en borrador con líneas para los próximos días."""
+        for wizard in self:
+            if wizard.session_id and wizard.session_id.config_id:
+                # Contar pedidos en borrador con líneas (similar al POS táctil)
+                orders = self.env['pos.order'].search([
+                    ('config_id', '=', wizard.session_id.config_id.id),
+                    ('state', '=', 'draft'),
+                ])
+                # Filtrar solo los que tienen líneas
+                wizard.pending_order_count = len(orders.filtered(lambda o: o.lines))
+            else:
+                wizard.pending_order_count = 0
+>>>>>>> fcf85b9b (changes in pos session open)
 
     def action_validate_and_open(self):
         """
@@ -103,15 +140,26 @@ class PosSessionOpeningWizard(models.TransientModel):
         if session.state != "opening_control":
             raise UserError(_("Esta sesión ya no está en estado de apertura."))
 
+        # Preparar valores para la sesión
+        values = {
+            'state': 'opened',
+            'start_at': fields.Datetime.now(),
+        }
+
         # Si hay control de efectivo, establecer el balance inicial
-        values = {}
         if session.cash_control:
             values["cash_register_balance_start"] = self.cash_register_balance_start
 
+<<<<<<< HEAD
         # Cambiar el estado a 'opened' directamente
         # Esto es lo que hace action_pos_session_open pero sin lanzar el frontend
         values["state"] = "opened"
         values["start_at"] = fields.Datetime.now()
+=======
+        # Guardar notas de apertura si las hay
+        if self.opening_notes:
+            values['opening_notes'] = self.opening_notes
+>>>>>>> fcf85b9b (changes in pos session open)
 
         session.write(values)
 

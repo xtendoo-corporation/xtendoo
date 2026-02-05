@@ -4,6 +4,7 @@
         <field name="name">pos.session.opening.wizard.form</field>
         <field name="model">pos.session.opening.wizard</field>
         <field name="arch" type="xml">
+<<<<<<< HEAD
             <form string="Apertura de Sesión POS - Modo no táctil">
                 <sheet>
                     <div class="alert alert-info mb-3" role="alert">
@@ -27,16 +28,67 @@
                            class="w-100"/>
                     <div class="alert alert-warning" role="alert" invisible="not cash_control">
                         <p class="mb-0">Por favor, cuente e ingrese el dinero inicial en la caja registradora.</p>
+=======
+            <form string="Control de apertura" class="o_pos_opening_wizard">
+                <field name="session_id" invisible="1" />
+                <field name="user_id" invisible="1" />
+                <field name="currency_id" invisible="1" />
+                <field name="cash_control" invisible="1" />
+                <field name="pending_order_count" invisible="1" />
+
+                <sheet>
+                    <!-- Estado de pedidos (Orders status) -->
+                    <div class="mb-3" invisible="pending_order_count == 0">
+                        <span class="o_form_label">Estado de los pedidos</span>
+                        <div class="alert alert-info" role="alert">
+                            <span>Aún tiene </span>
+                            <field name="pending_order_count" widget="integer" nolabel="1" readonly="1" class="d-inline fw-bold"/>
+                            <span> pedidos abiertos para los próximos días.</span>
+                        </div>
+                    </div>
+
+                    <!-- Caja de apertura (Opening cash) -->
+                    <div class="mb-3" invisible="not cash_control">
+                        <label for="cash_register_balance_start" class="o_form_label">Caja de apertura</label>
+                        <div class="d-flex gap-1" style="max-width: 300px;">
+                            <field name="cash_register_balance_start"
+                                widget="monetary"
+                                options="{'currency_field': 'currency_id'}"
+                                nolabel="1"
+                                class="form-control"
+                                placeholder="Saldo inicial Ej: 123" />
+                        </div>
+                    </div>
+
+                    <!-- Nota de apertura (Opening note) -->
+                    <div class="d-flex flex-column align-items-start">
+                        <label for="opening_notes" class="o_form_label">Nota de apertura</label>
+                        <field name="opening_notes"
+                            widget="text"
+                            nolabel="1"
+                            class="form-control w-100"
+                            placeholder="Añadir una nota de apertura..."
+                            options="{'rows': 4}" />
+>>>>>>> fcf85b9b (changes in pos session open)
                     </div>
                 </sheet>
                 <footer>
                     <button name="action_validate_and_open"
+<<<<<<< HEAD
                             string="Abrir Sesión"
                             type="object"
                             class="btn-primary"/>
                     <button string="Cancelar"
                             class="btn-secondary"
                             special="cancel"/>
+=======
+                        string="Abrir caja registradora"
+                        type="object"
+                        class="btn btn-lg btn-primary" />
+                    <button string="Descartar"
+                        class="btn btn-lg btn-secondary"
+                        special="cancel" />
+>>>>>>> fcf85b9b (changes in pos session open)
                 </footer>
             </form>
         </field>
