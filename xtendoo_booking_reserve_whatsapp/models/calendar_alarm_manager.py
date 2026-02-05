@@ -10,43 +10,71 @@ class AlarmManager(models.AbstractModel):
     @api.model
     def _send_reminder(self):
         """Handle WhatsApp alarms in addition to standard ones."""
+        _logger.info("=" * 80)
+        _logger.info("INICIO _send_reminder() para WhatsApp")
+        _logger.info("=" * 80)
+
         # Call super to handle email reminders
         super()._send_reminder()
 
         # Handle WhatsApp reminders
+        _logger.info("→ Buscando eventos con alarmas WhatsApp pendientes...")
         events_by_alarm = self._get_events_by_alarm_to_notify('whatsapp')
+
         if not events_by_alarm:
+            _logger.info("⚠️ No se encontraron eventos con alarmas WhatsApp pendientes")
+            _logger.info("=" * 80)
             return
 
+        _logger.info("✓ Encontrados eventos para %d alarmas WhatsApp", len(events_by_alarm))
+
         now = fields.Datetime.now()
+        _logger.info("Fecha/hora actual: %s", now)
 
         for alarm_id, event_ids in events_by_alarm.items():
             alarm = self.env['calendar.alarm'].browse(alarm_id)
             events = self.env['calendar.event'].browse(event_ids)
 
+            _logger.info("")
+            _logger.info("→ Procesando alarma ID %s: '%s'", alarm_id, alarm.name)
+            _logger.info("  Eventos a notificar: %s (IDs: %s)", len(event_ids), event_ids)
+
             # Validate alarm has template configured
             if not alarm.whatsapp_template_id:
                 _logger.warning(
-                    "WhatsApp alarm '%s' (ID: %s) has no template configured. Skipping.",
+                    "⚠️ Alarma WhatsApp '%s' (ID: %s) NO tiene plantilla configurada. Saltando.",
                     alarm.name, alarm.id
                 )
                 continue
 
+            _logger.info("  ✓ Plantilla configurada: %s (ID: %s)",
+                        alarm.whatsapp_template_id.name, alarm.whatsapp_template_id.id)
+
             # Filter only active events (not ended yet)
             active_events = events.filtered(lambda e: e.stop > now)
+            _logger.info("  Eventos activos (no finalizados): %d de %d", len(active_events), len(events))
 
             for event in active_events:
+                _logger.info("")
+                _logger.info("  → Procesando evento ID %s: '%s'", event.id, event.name)
+                _logger.info("    Start: %s, Stop: %s", event.start, event.stop)
+                _logger.info("    Asistentes totales: %d", len(event.attendee_ids))
+
                 # Filter partners who accepted/needs action AND have opted in for WhatsApp
                 partners = event.attendee_ids.filtered(
                     lambda a: a.state != 'declined' and a.partner_id.whatsapp_opt_in
                 ).partner_id
 
+                _logger.info("    Asistentes con WhatsApp opt-in: %d", len(partners))
+
                 if not partners:
-                    _logger.debug(
-                        "Event '%s' (ID: %s) has no partners with WhatsApp opt-in. Skipping.",
+                    _logger.info(
+                        "    ⚠️ Evento '%s' (ID: %s) no tiene asistentes con WhatsApp opt-in. Saltando.",
                         event.name, event.id
                     )
                     continue
+
+                _logger.info("    ✓ Enviando recordatorios a: %s", ', '.join(partners.mapped('name')))
 
                 for partner in partners:
                     self._send_whatsapp_event_reminder(event, partner, alarm.whatsapp_template_id)
@@ -58,6 +86,11 @@ class AlarmManager(models.AbstractModel):
                     if next_date:
                         cron = self.env.ref('calendar.ir_cron_scheduler_alarm')
                         cron._trigger(at=next_date - timedelta(minutes=alarm.duration_minutes))
+
+        _logger.info("")
+        _logger.info("=" * 80)
+        _logger.info("FIN _send_reminder() para WhatsApp")
+        _logger.info("=" * 80)
 
     def _send_whatsapp_event_reminder(self, event, partner, template):
         """Send a single WhatsApp reminder for an event."""

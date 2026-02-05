@@ -24,10 +24,6 @@ class BookingRequest(models.Model):
                 partner = self._find_partner_for_request(record)
                 if partner and partner.whatsapp_opt_in != record.whatsapp_opt_in:
                     partner.sudo().write({'whatsapp_opt_in': record.whatsapp_opt_in})
-                    _logger.info(
-                        "Partner '%s' (ID: %s) whatsapp_opt_in actualizado a %s desde solicitud ID: %s (create)",
-                        partner.name, partner.id, record.whatsapp_opt_in, record.id
-                    )
 
         return records
 
@@ -42,10 +38,6 @@ class BookingRequest(models.Model):
                     partner = self._find_partner_for_request(record)
                     if partner and partner.whatsapp_opt_in != record.whatsapp_opt_in:
                         partner.sudo().write({'whatsapp_opt_in': record.whatsapp_opt_in})
-                        _logger.info(
-                            "Partner '%s' (ID: %s) whatsapp_opt_in actualizado a %s desde solicitud ID: %s (write)",
-                            partner.name, partner.id, record.whatsapp_opt_in, record.id
-                        )
 
         return res
 
@@ -107,10 +99,6 @@ class BookingRequest(models.Model):
             try:
                 # Ensure partner exists before sending WhatsApp
                 if not self.partner_id:
-                    _logger.info(
-                        "Creando partner para solicitud rechazada ID %s antes de enviar WhatsApp",
-                        self.id
-                    )
                     partner = self._get_or_create_partner()
                     self.with_context(mail_notrack=True).write({'partner_id': partner.id})
 
@@ -136,32 +124,11 @@ class BookingRequest(models.Model):
 
     def _send_whatsapp_notification(self, template_name):
         """Send WhatsApp notification using the given template."""
-        _logger.info("=" * 80)
-        _logger.info("INICIO _send_whatsapp_notification() para solicitud ID: %s", self.id)
-        _logger.info("Template buscado: '%s'", template_name)
 
-        # LISTAR TODAS LAS PLANTILLAS WHATSAPP EXISTENTES
-        _logger.info("→ Listando TODAS las plantillas WhatsApp en el sistema:")
-        all_templates = self.env['mail.whatsapp.template'].search([])
-        _logger.info("   Total de plantillas encontradas: %d", len(all_templates))
-
-        for tmpl in all_templates:
-            _logger.info("   - ID: %s | Name: '%s' | Model: %s | Gateway: %s | Status: %s",
-                        tmpl.id, tmpl.name, tmpl.model_id.model if tmpl.model_id else 'N/A',
-                        tmpl.gateway_id.name if tmpl.gateway_id else 'N/A',
-                        tmpl.status if hasattr(tmpl, 'status') else 'N/A')
-
-        # Buscar plantillas específicas para booking.request
-        _logger.info("→ Listando plantillas WhatsApp para modelo 'booking.request':")
         booking_templates = self.env['mail.whatsapp.template'].search([
             ('model_id.model', '=', 'booking.request')
         ])
-        _logger.info("   Total encontradas: %d", len(booking_templates))
-        for tmpl in booking_templates:
-            _logger.info("   - ID: %s | Name: '%s'", tmpl.id, tmpl.name)
 
-        # Ahora buscar el template específico
-        _logger.info("→ Buscando template específico: '%s' para modelo 'booking.request'", template_name)
         template = self.env['mail.whatsapp.template'].search([
             ('name', '=', template_name),
             ('model_id.model', '=', 'booking.request')
@@ -171,7 +138,6 @@ class BookingRequest(models.Model):
             _logger.warning("Template WhatsApp no encontrado con nombre: %s", template_name)
             return
 
-        _logger.info("Template WhatsApp encontrado: %s (ID: %s)", template.name, template.id)
 
         try:
             gateway = self.env['mail.gateway'].search([
@@ -182,7 +148,6 @@ class BookingRequest(models.Model):
                 _logger.error("No hay gateway WhatsApp activo e integrado configurado")
                 return
 
-            _logger.info("Gateway WhatsApp encontrado: %s (ID: %s)", gateway.name, gateway.id)
 
             # Ensure channel exists using method from mail_gateway_whatsapp_chatter inheritance
             if not hasattr(self, '_whatsapp_get_channel'):
@@ -195,7 +160,6 @@ class BookingRequest(models.Model):
                     _logger.error("No se pudo crear canal WhatsApp para solicitud ID: %s", self.id)
                     return
 
-                _logger.info("Canal WhatsApp creado correctamente para: %s", self.phone)
 
                 # Render body manually (simple variable substitution)
                 body = template.body
