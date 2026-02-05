@@ -14,28 +14,28 @@ class CalendarEvent(models.Model):
     start_time = fields.Char(
         string='Start Time',
         compute='_compute_formatted_times',
-        store=False,
+        store=True,  # Almacenado para que aparezca en selector de variables
         help="Hora de inicio formateada (HH:MM)"
     )
 
     stop_time = fields.Char(
         string='Stop Time',
         compute='_compute_formatted_times',
-        store=False,
+        store=True,  # Almacenado para que aparezca en selector de variables
         help="Hora de fin formateada (HH:MM)"
     )
 
     formatted_start_date = fields.Char(
         string='Formatted Start Date',
         compute='_compute_formatted_times',
-        store=False,
+        store=True,  # Almacenado para que aparezca en selector de variables
         help="Fecha de inicio formateada (DD/MM/YYYY)"
     )
 
     formatted_stop_date = fields.Char(
         string='Formatted Stop Date',
         compute='_compute_formatted_times',
-        store=False,
+        store=True,  # Almacenado para que aparezca en selector de variables
         help="Fecha de fin formateada (DD/MM/YYYY)"
     )
 
