@@ -42,19 +42,33 @@ class CalendarEvent(models.Model):
     @api.depends('start', 'stop', 'start_date', 'stop_date')
     def _compute_formatted_times(self):
         """Compute formatted date/time strings for WhatsApp messages."""
+        import pytz
+
+        # Obtener timezone del usuario o de la empresa, por defecto Madrid
+        tz_name = self.env.context.get('tz') or self.env.user.tz or self.env.company.tz or 'Europe/Madrid'
+        user_tz = pytz.timezone(tz_name)
+
         for event in self:
             # Formatear hora de inicio
             if event.start:
-                event.start_time = event.start.strftime('%H:%M')
-                event.formatted_start_date = event.start.strftime('%d/%m/%Y')
+                # Convertir de UTC a timezone del usuario
+                start_utc = pytz.UTC.localize(event.start)
+                start_local = start_utc.astimezone(user_tz)
+
+                event.start_time = start_local.strftime('%H:%M')
+                event.formatted_start_date = start_local.strftime('%d/%m/%Y')
             else:
                 event.start_time = ''
                 event.formatted_start_date = ''
 
             # Formatear hora de fin
             if event.stop:
-                event.stop_time = event.stop.strftime('%H:%M')
-                event.formatted_stop_date = event.stop.strftime('%d/%m/%Y')
+                # Convertir de UTC a timezone del usuario
+                stop_utc = pytz.UTC.localize(event.stop)
+                stop_local = stop_utc.astimezone(user_tz)
+
+                event.stop_time = stop_local.strftime('%H:%M')
+                event.formatted_stop_date = stop_local.strftime('%d/%m/%Y')
             else:
                 event.stop_time = ''
                 event.formatted_stop_date = ''
