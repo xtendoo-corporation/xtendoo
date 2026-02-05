@@ -1,4 +1,4 @@
-from odoo import api, models, fields
+from odoo import api, models, fields, _
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -79,14 +79,39 @@ class BookingRequest(models.Model):
     def action_approve(self):
         res = super().action_approve()
         if self.whatsapp_opt_in:
-            self._send_whatsapp_notification('Cita Aprobada Whatsapp')  # Con mayúsculas y espacios
+            try:
+                self._send_whatsapp_notification('Cita Aprobada Whatsapp')
+            except Exception as e:
+                _logger.error(
+                    "Error al enviar notificación WhatsApp de aprobación para solicitud ID %s: %s",
+                    self.id, str(e), exc_info=True
+                )
+                # Don't fail the approval if WhatsApp fails
         return res
 
     def action_reject(self):
         res = super().action_reject()
         if self.whatsapp_opt_in:
-            self._send_whatsapp_notification('Cita Rechazada Whatsapp')  # Con mayúsculas y espacios
-        return res
+            try:
+                self._send_whatsapp_notification('Cita Rechazada Whatsapp')
+            except Exception as e:
+                _logger.error(
+                    "Error al enviar notificación WhatsApp de rechazo para solicitud ID %s: %s",
+                    self.id, str(e), exc_info=True
+                )
+                # Don't fail the rejection if WhatsApp fails
+
+        # action_reject from base module doesn't return anything, so return a notification
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('¡Rechazada!'),
+                'message': _('La solicitud ha sido rechazada.'),
+                'type': 'warning',
+                'sticky': False,
+            }
+        }
 
     def _send_whatsapp_notification(self, template_name):
         """Send WhatsApp notification using the given template."""
