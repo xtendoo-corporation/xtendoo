@@ -74,8 +74,8 @@ class AlarmManager(models.AbstractModel):
             return
 
         try:
-            # Obtener gateway desde el template de la alarma
-            gateway = alarm.whatsapp_template_id.gateway_id if alarm.whatsapp_template_id else None
+            # Obtener gateway desde el template
+            gateway = template.gateway_id if template else None
 
             if not gateway:
                 _logger.error(
