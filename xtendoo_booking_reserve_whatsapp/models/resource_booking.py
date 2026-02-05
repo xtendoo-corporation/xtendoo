@@ -159,6 +159,8 @@ class ResourceBooking(models.Model):
                 'name': self.name or _('Reserva: %s') % self.display_name,
                 'start': self.start,
                 'stop': self.stop,
+                'start_date': self.start.date() if self.start else False,  # Agregar fecha para WhatsApp
+                'stop_date': self.stop.date() if self.stop else False,      # Agregar fecha para WhatsApp
                 'partner_ids': [(6, 0, self.partner_ids.ids)] if self.partner_ids else [],
                 'alarm_ids': [(6, 0, whatsapp_alarms.ids)] if whatsapp_alarms else [],
                 'description': _('Evento creado automáticamente desde reserva ID: %s') % self.id,

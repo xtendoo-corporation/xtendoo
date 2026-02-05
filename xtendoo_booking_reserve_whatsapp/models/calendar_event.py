@@ -1,7 +1,7 @@
 # Copyright 2026 Xtendoo
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 
-from odoo import api, models
+from odoo import api, fields, models
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -9,6 +9,55 @@ _logger = logging.getLogger(__name__)
 
 class CalendarEvent(models.Model):
     _inherit = 'calendar.event'
+
+    # Campos computados para formatear fecha/hora para WhatsApp
+    start_time = fields.Char(
+        string='Start Time',
+        compute='_compute_formatted_times',
+        store=False,
+        help="Hora de inicio formateada (HH:MM)"
+    )
+
+    stop_time = fields.Char(
+        string='Stop Time',
+        compute='_compute_formatted_times',
+        store=False,
+        help="Hora de fin formateada (HH:MM)"
+    )
+
+    formatted_start_date = fields.Char(
+        string='Formatted Start Date',
+        compute='_compute_formatted_times',
+        store=False,
+        help="Fecha de inicio formateada (DD/MM/YYYY)"
+    )
+
+    formatted_stop_date = fields.Char(
+        string='Formatted Stop Date',
+        compute='_compute_formatted_times',
+        store=False,
+        help="Fecha de fin formateada (DD/MM/YYYY)"
+    )
+
+    @api.depends('start', 'stop', 'start_date', 'stop_date')
+    def _compute_formatted_times(self):
+        """Compute formatted date/time strings for WhatsApp messages."""
+        for event in self:
+            # Formatear hora de inicio
+            if event.start:
+                event.start_time = event.start.strftime('%H:%M')
+                event.formatted_start_date = event.start.strftime('%d/%m/%Y')
+            else:
+                event.start_time = ''
+                event.formatted_start_date = ''
+
+            # Formatear hora de fin
+            if event.stop:
+                event.stop_time = event.stop.strftime('%H:%M')
+                event.formatted_stop_date = event.stop.strftime('%d/%m/%Y')
+            else:
+                event.stop_time = ''
+                event.formatted_stop_date = ''
 
     @api.model_create_multi
     def create(self, vals_list):
