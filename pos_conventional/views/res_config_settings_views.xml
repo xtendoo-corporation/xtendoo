@@ -14,7 +14,7 @@
                     <field name="has_open_pos_sessions" invisible="1" />
                 </setting>
                 <!-- Mensaje informativo si hay sesiones abiertas (usar attrs para vista XML) -->
-                <div invisible="not has_open_pos_sessions" class="alert alert-warning mt-2">
+                <div invisible="not has_open_pos_sessions" class="alert alert-warning mt-2" role="alert">
                     No se puede cambiar el modo táctil/no táctil mientras existan sesiones POS
                     abiertas.
                 </div>

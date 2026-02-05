@@ -12,12 +12,10 @@ class PosSessionOpeningWizard(models.TransientModel):
     cash_register_balance_start = fields.Monetary(
         string='Caja de apertura',
         currency_field='currency_id',
-        help='Cantidad de dinero en efectivo al abrir la caja',
         default=0.0
     )
     opening_notes = fields.Text(
         string='Nota de apertura',
-        help='Notas adicionales sobre la apertura de caja'
     )
     currency_id = fields.Many2one('res.currency', related='session_id.currency_id', readonly=True)
     cash_control = fields.Boolean(related='session_id.cash_control', readonly=True)

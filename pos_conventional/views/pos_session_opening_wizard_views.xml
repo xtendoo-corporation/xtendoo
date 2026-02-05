@@ -4,7 +4,7 @@
         <field name="name">pos.session.opening.wizard.form</field>
         <field name="model">pos.session.opening.wizard</field>
         <field name="arch" type="xml">
-            <form string="Control de apertura" class="o_pos_opening_wizard">
+            <form string="Control de apertura">
                 <field name="session_id" invisible="1" />
                 <field name="user_id" invisible="1" />
                 <field name="currency_id" invisible="1" />
@@ -14,8 +14,8 @@
                 <sheet>
                     <!-- Estado de pedidos (Orders status) -->
                     <div class="mb-3" invisible="pending_order_count == 0">
-                        <span class="o_form_label">Estado de los pedidos</span>
-                        <div class="alert alert-info" role="alert">
+                        <div class="mb-2">Estado de los pedidos</div>
+                        <div class="alert alert-info mb-0" role="alert">
                             <span>Aún tiene </span>
                             <field name="pending_order_count" widget="integer" nolabel="1" readonly="1" class="d-inline fw-bold"/>
                             <span> pedidos abiertos para los próximos días.</span>
@@ -24,26 +24,23 @@
 
                     <!-- Caja de apertura (Opening cash) -->
                     <div class="mb-3" invisible="not cash_control">
-                        <label for="cash_register_balance_start" class="o_form_label">Caja de apertura</label>
-                        <div class="d-flex gap-1" style="max-width: 300px;">
+                        <label for="cash_register_balance_start" string="Caja de apertura"/>
+                        <div style="max-width: 250px;">
                             <field name="cash_register_balance_start"
                                 widget="monetary"
                                 options="{'currency_field': 'currency_id'}"
                                 nolabel="1"
-                                class="form-control"
-                                placeholder="Saldo inicial Ej: 123" />
+                                placeholder="0,00" />
                         </div>
                     </div>
 
                     <!-- Nota de apertura (Opening note) -->
-                    <div class="d-flex flex-column align-items-start">
-                        <label for="opening_notes" class="o_form_label">Nota de apertura</label>
+                    <div class="mb-0">
+                        <label for="opening_notes" string="Nota de apertura"/>
                         <field name="opening_notes"
                             widget="text"
                             nolabel="1"
-                            class="form-control w-100"
-                            placeholder="Añadir una nota de apertura..."
-                            options="{'rows': 4}" />
+                            placeholder="Añadir una nota de apertura..." />
                     </div>
                 </sheet>
 
@@ -51,9 +48,9 @@
                     <button name="action_validate_and_open"
                         string="Abrir caja registradora"
                         type="object"
-                        class="btn btn-lg btn-primary" />
+                        class="btn btn-primary" />
                     <button string="Descartar"
-                        class="btn btn-lg btn-secondary"
+                        class="btn btn-secondary"
                         special="cancel" />
                 </footer>
             </form>
