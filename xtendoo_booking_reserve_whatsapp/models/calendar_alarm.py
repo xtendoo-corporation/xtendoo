@@ -10,7 +10,7 @@ class CalendarAlarm(models.Model):
     whatsapp_template_id = fields.Many2one(
         'mail.whatsapp.template',
         string="WhatsApp Template",
-        domain=[('model_id', '=', 'calendar.alarm')],
+        domain="[('model_id.model', '=', 'calendar.event')]",  # Corrected: templates for calendar.event
         help="Template used to send the WhatsApp reminder."
     )
 
