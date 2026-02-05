@@ -178,8 +178,14 @@ class BookingRequest(models.Model):
                 _logger.info("Mensaje WhatsApp renderizado, enviando...")
 
                 # Send message
-                # Pass whatsapp_template_id in context so gateway knows it's a template
-                channel.with_context(whatsapp_template_id=template.id).message_post(
+                # Pass whatsapp_template_id and record info in context so gateway knows it's a template
+                # and can extract variables correctly
+                # IMPORTANT: Use 'active_id' as that's what mail_gateway_whatsapp_variables expects
+                channel.with_context(
+                    whatsapp_template_id=template.id,
+                    active_id=self.id,           # This is what mail_gateway_whatsapp_variables looks for
+                    active_model=self._name,     # Also pass the model name
+                ).message_post(
                     body=body,
                     message_type='comment',
                     subtype_xmlid="mail.mt_comment",

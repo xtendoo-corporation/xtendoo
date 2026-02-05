@@ -128,8 +128,12 @@ class AlarmManager(models.AbstractModel):
             for key, val in replacements.items():
                 body = body.replace(key, val)
 
-            # Send message via channel
-            channel.with_context(whatsapp_template_id=template.id).message_post(
+            # Send message via channel with context for variable extraction
+            channel.with_context(
+                whatsapp_template_id=template.id,
+                active_id=event.id,           # Pass event ID for variable extraction
+                active_model='calendar.event'  # Pass the model name
+            ).message_post(
                 body=body,
                 message_type='comment',
                 subtype_xmlid="mail.mt_comment",
