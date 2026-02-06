@@ -13,6 +13,32 @@ class PosSessionCashMoveWizard(models.TransientModel):
     reason = fields.Text(string='Razón')
     partner_id = fields.Many2one('res.partner', string='Partner')
 
+    def set_type_in(self):
+        """Cambia el tipo a 'in' (entrada de efectivo)"""
+        self.ensure_one()
+        self.type = 'in'
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.session.cash_move.wizard',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'new',
+            'context': self.env.context,
+        }
+
+    def set_type_out(self):
+        """Cambia el tipo a 'out' (salida de efectivo)"""
+        self.ensure_one()
+        self.type = 'out'
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.session.cash_move.wizard',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'new',
+            'context': self.env.context,
+        }
+
     def action_confirm(self):
         self.ensure_one()
 

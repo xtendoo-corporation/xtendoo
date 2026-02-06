@@ -4,68 +4,88 @@
         <field name="name">pos.session.cash.move.wizard.form</field>
         <field name="model">pos.session.cash_move.wizard</field>
         <field name="arch" type="xml">
-            <form string="Entrada / Salida de efectivo">
+            <form>
                 <field name="currency_id" invisible="1" />
                 <field name="session_id" invisible="1" />
                 <field name="partner_id" invisible="1" />
+                <field name="type" invisible="1" />
 
-                <div class="container-fluid p-0">
-                    <div class="row align-items-center mb-4 g-3">
-                        <div class="col-7">
-                            <!-- Intentamos usar decoradores nativos.
-                                 Sin CSS, el color de fondo activo suele ser el del tema (Morado). -->
-                            <field name="type"
-                                widget="selection_badge"
-                                decoration-success="type == 'in'"
-                                decoration-danger="type == 'out'"
+                <sheet>
+                    <!-- Input amount section with toggle buttons and amount field -->
+                    <div class="input-amount d-flex mb-2 gap-2">
+                        <div class="input-group w-50">
+                            <!-- Botón Entrada activo (verde) -->
+                            <button type="object"
+                                name="set_type_in"
+                                string="Entrada"
+                                class="input-type btn btn-lg lh-lg btn-success w-50"
+                                invisible="type != 'in'"/>
+                            <!-- Botón Entrada inactivo (gris) -->
+                            <button type="object"
+                                name="set_type_in"
+                                string="Entrada"
+                                class="input-type btn btn-lg lh-lg btn-secondary w-50"
+                                invisible="type == 'in'"/>
+
+                            <!-- Botón Salida activo (rojo) -->
+                            <button type="object"
+                                name="set_type_out"
+                                string="Salida"
+                                class="input-type btn btn-lg lh-lg btn-danger w-50"
+                                invisible="type != 'out'"/>
+                            <!-- Botón Salida inactivo (gris) -->
+                            <button type="object"
+                                name="set_type_out"
+                                string="Salida"
+                                class="input-type btn btn-lg lh-lg btn-secondary w-50"
+                                invisible="type == 'out'"/>
+                        </div>
+
+                        <div class="w-25">
+                            <field name="amount"
+                                widget="monetary"
+                                options="{'currency_field': 'currency_id'}"
                                 nolabel="1"
-                                class="text-uppercase fw-bold w-100 fs-6 d-flex justify-content-between gap-1" />
-                        </div>
-
-                        <div class="col-5">
-                            <div
-                                class="d-flex align-items-baseline border rounded bg-white px-3 py-2">
-                                <field name="amount"
-                                    widget="float"
-                                    class="form-control text-end fs-3 fw-bold shadow-none p-0 me-1"
-                                    style="border: none !important; background: transparent;"
-                                    nolabel="1"
-                                    placeholder="0,00" />
-                                <span class="fs-3 fw-bold text-dark">€</span>
-                            </div>
+                                placeholder="0,00"
+                                class="text-end"/>
                         </div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <field name="reason"
-                                required="1"
-                                placeholder="Razón"
-                                class="form-control p-3 shadow-sm border"
-                                style="height: 120px; resize: none;"
-                                nolabel="1" />
-                        </div>
+                    <!-- Reason textarea with floating label -->
+                    <div class="form-floating">
+                        <field name="reason"
+                            class="form-control cash-reason"
+                            placeholder="Deja una razón aquí"
+                            style="height: 100px;"
+                            nolabel="1"
+                            required="1"/>
+                        <label for="reason">Razón</label>
                     </div>
-                </div>
+                </sheet>
 
-                <footer class="bg-white border-top-0 pt-2">
-                    <div class="d-flex justify-content-between w-100 align-items-center">
-                        <div>
-                            <button string="Confirmar"
+                <footer>
+                    <div class="w-100 d-flex flex-wrap justify-content-between gap-2">
+                        <!-- First line of buttons -->
+                        <div class="d-flex gap-2">
+                            <button name="action_confirm"
+                                string="Confirmar"
                                 type="object"
-                                name="action_confirm"
-                                class="btn btn-primary btn-lg px-4" />
+                                class="button confirm btn btn-lg lh-lg btn-primary"
+                                data-hotkey="q"/>
 
                             <button string="Descartar"
-                                class="btn btn-light btn-lg border ms-2 px-4"
-                                special="cancel" />
+                                class="button cancel btn btn-lg lh-lg btn-secondary"
+                                special="cancel"
+                                data-hotkey="x"/>
                         </div>
-                        <div>
+
+                        <!-- Second line of buttons -->
+                        <div class="d-flex gap-2">
                             <button name="action_open_cash_calculator"
-                                icon="fa-money"
+                                string="Detalles"
                                 type="object"
-                                class="btn btn-light btn-lg border px-3"
-                                title="Abrir calculadora de efectivo" />
+                                class="button btn btn-lg btn-secondary"
+                                data-hotkey="c"/>
                         </div>
                     </div>
                 </footer>

@@ -11,36 +11,40 @@
                 <field name="cash_control" invisible="1" />
                 <field name="pending_order_count" invisible="1" />
 
+                <div class="modal-header-custom">
+                    <h4 class="modal-title">Control de apertura</h4>
+                </div>
+
                 <sheet>
-                    <!-- Estado de pedidos (Orders status) -->
+
+                    <!-- Orders Status Alert -->
                     <div class="mb-3" invisible="pending_order_count == 0">
-                        <div class="mb-2">Estado de los pedidos</div>
-                        <div class="alert alert-info mb-0" role="alert">
-                            <span>Aún tiene </span>
-                            <field name="pending_order_count" widget="integer" nolabel="1" readonly="1" class="d-inline fw-bold"/>
-                            <span> pedidos abiertos para los próximos días.</span>
+                        <div class="o_form_label">Estado de pedidos</div>
+                        <div class="alert alert-info" role="alert">
+                            Todavía tienes <field name="pending_order_count" widget="integer" nolabel="1" readonly="1" class="fw-bold"/> pedidos abiertos para los próximos días.
                         </div>
                     </div>
 
-                    <!-- Caja de apertura (Opening cash) -->
+                    <!-- Opening Cash Section -->
                     <div class="mb-3" invisible="not cash_control">
-                        <label for="cash_register_balance_start" string="Caja de apertura"/>
-                        <div style="max-width: 250px;">
+                        <div class="o_form_label">Caja de apertura</div>
+                        <div class="d-flex gap-1" style="max-width: 500px;">
                             <field name="cash_register_balance_start"
-                                widget="monetary"
-                                options="{'currency_field': 'currency_id'}"
-                                nolabel="1"
-                                placeholder="0,00" />
+                                />
+                            <button name="action_open_cash_calculator"
+                                type="object"
+                                class="btn btn-secondary"
+                                icon="fa-money"
+                                title="Abrir calculadora de efectivo"/>
                         </div>
                     </div>
 
-                    <!-- Nota de apertura (Opening note) -->
-                    <div class="mb-0">
-                        <label for="opening_notes" string="Nota de apertura"/>
+                    <!-- Opening Notes -->
+                    <div class="mb-3">
+                        <label for="opening_notes" class="o_form_label">Nota de apertura</label>
                         <field name="opening_notes"
-                            widget="text"
-                            nolabel="1"
-                            placeholder="Añadir una nota de apertura..." />
+                            placeholder="Añadir una nota de apertura..."
+                            nolabel="1"/>
                     </div>
                 </sheet>
 
@@ -48,10 +52,12 @@
                     <button name="action_validate_and_open"
                         string="Abrir caja registradora"
                         type="object"
-                        class="btn btn-primary" />
+                        class="btn btn-lg btn-primary"
+                        data-hotkey="q"/>
                     <button string="Descartar"
-                        class="btn btn-secondary"
-                        special="cancel" />
+                        class="btn btn-lg btn-secondary"
+                        special="cancel"
+                        data-hotkey="x"/>
                 </footer>
             </form>
         </field>

@@ -4,208 +4,112 @@
         <field name="name">pos.session.closing.wizard.form</field>
         <field name="model">pos.session.closing.wizard</field>
         <field name="arch" type="xml">
-            <form string="Cierre de Sesión POS - Modo no táctil">
-                <sheet>
-                    <field name="state" invisible="1" />
+            <form string="Control de cierre">
+                <field name="state" invisible="1" />
+                <field name="currency_id" invisible="1" />
+                <field name="cash_control" invisible="1" />
+                <field name="cash_payments" invisible="1" />
+                <field name="card_payments" invisible="1" />
+                <field name="other_payments" invisible="1" />
+                <field name="linked_sale_orders_count" invisible="1" />
+                <field name="linked_sale_orders_total" invisible="1" />
 
-                    <!-- HEADER / ALERT INFO -->
-                    <div class="alert alert-info mb-3" role="alert" invisible="state != 'input'">
-                        <p class="mb-0">
-                            <strong>Cerrando la caja registradora</strong>
-                            <span class="float-end">
-                                <field name="session_id" readonly="1" class="fw-bold" />
-                            </span>
-                        </p>
-                    </div>
-
-                    <!-- CONFIRMATION WARNING (Only visible in 'confirmation' state) -->
-                    <div class="alert alert-warning text-center" role="alert"
-                        invisible="state != 'confirmation'">
-                        <h3 class="alert-heading mb-3">Diferencia de pagos</h3>
-                        <p class="mb-0 fs-5"> El dinero contado no coincide con el esperado. <br />
-                            ¿Desea registrar esta diferencia en los libros? </p>
-                    </div>
-
-                    <!-- INPUT FIELDS (Only visible in 'input' state) -->
-                    <div invisible="state != 'input'">
-                        <group>
-                            <field name="currency_id" invisible="1" />
-                            <field name="cash_control" invisible="1" />
-                            <field name="cash_payments" invisible="1" />
-                            <field name="card_payments" invisible="1" />
-                            <field name="other_payments" invisible="1" />
-                            <field name="linked_sale_orders_count" invisible="1" />
-                            <field name="linked_sale_orders_total" invisible="1" />
-                        </group>
-
-                        <!-- Resumen de la sesión con estructura simple -->
-                        <group string="📊 Resumen de la sesión" invisible="not cash_control">
-                            <group colspan="2">
-                                <div class="o_group_session_total">
-                                    <!-- Total de la sesión -->
-                                    <div class="row">
-                                        <div class="col-8 fw-bold">
-                                            <i class="fa fa-calculator" /> Total teórico </div>
-                                        <div class="col-4 text-end fw-bold">
-                                            <field name="cash_register_balance_end"
-                                                widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Apertura -->
-                                    <div class="row ps-3 text-muted">
-                                        <div class="col-8">Apertura</div>
-                                        <div class="col-4 text-end">
-                                            <field name="cash_register_balance_start"
-                                                widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Pagos (con desglose) -->
-                                    <div class="row ps-3">
-                                        <div class="col-8">
-                                            <i class="fa fa-caret-down" /> Pagos </div>
-                                        <div class="col-4 text-end text-success"> + <field
-                                                name="total_payments" widget="monetary" nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Desglose: Efectivo -->
-                                    <div class="row ps-5 text-muted" invisible="cash_payments == 0">
-                                        <div class="col-8">
-                                            <i class="fa fa-money" /> Efectivo </div>
-                                        <div class="col-4 text-end">
-                                            <field name="cash_payments" widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Desglose: Tarjeta -->
-                                    <div class="row ps-5 text-muted" invisible="card_payments == 0">
-                                        <div class="col-8">
-                                            <i class="fa fa-credit-card" /> Tarjeta </div>
-                                        <div class="col-4 text-end">
-                                            <field name="card_payments" widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Desglose: Otros -->
-                                    <div class="row ps-5 text-muted" invisible="other_payments == 0">
-                                        <div class="col-8">
-                                            <i class="fa fa-ellipsis-h" /> Otros </div>
-                                        <div class="col-4 text-end">
-                                            <field name="other_payments" widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Desglose: Cuenta Cliente (pedidos vinculados a sale.order) -->
-                                    <div class="row ps-5 text-muted"
-                                        invisible="linked_sale_orders_count == 0">
-                                        <div class="col-8">
-                                            <i class="fa fa-user" /> Cuenta Cliente </div>
-                                        <div class="col-4 text-end">
-                                            <field name="linked_sale_orders_total" widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Entradas y salidas de efectivo -->
-                                    <div class="row ps-3" invisible="cash_in_out_total == 0">
-                                        <div class="col-8">
-                                            <i class="fa fa-exchange" /> Entrada y salida de
-                                            efectivo </div>
-                                        <div class="col-4 text-end">
-                                            <field name="cash_in_out_total" widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Contado -->
-                                    <div class="row ps-3">
-                                        <div class="col-8">Contado</div>
-                                        <div class="col-4 text-end">
-                                            <field name="cash_register_balance_end_real"
-                                                widget="monetary" nolabel="1" readonly="1" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Diferencia -->
-                                    <div class="row ps-3 text-danger fw-bold"
-                                        invisible="cash_register_difference == 0">
-                                        <div class="col-8">Diferencia</div>
-                                        <div class="col-4 text-end">
-                                            <field name="cash_register_difference" widget="monetary"
-                                                nolabel="1" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </group>
-                        </group>
-
-                        <separator string="💰 Recuento de efectivo" invisible="not cash_control" />
-
-                        <!-- Importe manual con botón para calculadora -->
-                        <group invisible="not cash_control">
-                            <label for="cash_register_balance_end_real" string="Dinero contado" />
-                            <div class="o_row">
-                                <field name="cash_register_balance_end_real"
+                <!-- Input State -->
+                <group invisible="state != 'input'">
+                    <group string="Detalles de sesión" invisible="not cash_control">
+                        <label for="cash_register_balance_end" string="Esperado"/>
+                        <div>
+                            <field name="cash_register_balance_end"
+                                widget="monetary"
+                                options="{'currency_field': 'currency_id'}"
+                                nolabel="1"
+                                readonly="1"/>
+                            <div class="text-muted small">
+                                Apertura: <field name="cash_register_balance_start"
                                     widget="monetary"
-                                    options="{'currency_field': 'currency_id'}"
                                     nolabel="1"
-                                    placeholder="0,00" />
-                                <button name="action_open_cash_calculator"
-                                    string="🧮"
-                                    type="object"
-                                    class="btn-primary oe_highlight ms-2"
-                                    help="Abrir calculadora de monedas y billetes" />
+                                    readonly="1"/>
+                                + Pagos: <field name="total_payments"
+                                    widget="monetary"
+                                    nolabel="1"
+                                    readonly="1"/>
+                                <span invisible="cash_in_out_total == 0">
+                                    + Entrada/Salida: <field name="cash_in_out_total"
+                                        widget="monetary"
+                                        nolabel="1"
+                                        readonly="1"/>
+                                </span>
                             </div>
-                        </group>
-
-                        <div class="alert alert-warning" role="alert" invisible="not cash_control">
-                            <p class="mb-0">
-                                <i class="fa fa-info-circle" /> La diferencia se registrará
-                                automáticamente como ganancia o pérdida. </p>
                         </div>
 
-                        <div class="alert alert-info" role="alert" invisible="cash_control">
-                            <p class="mb-0">Esta caja no requiere control de efectivo.</p>
-                        </div>
+                        <field name="cash_register_balance_end_real"
+                            string="Contado"
+                            widget="monetary"
+                            options="{'currency_field': 'currency_id'}"
+                            placeholder="0,00"/>
 
-                        <group>
-                            <field name="closing_note"
-                                string="Motivo del cierre (opcional)"
-                                placeholder="Ej: Cierre de turno, fin de jornada, cambio de empleado..."
-                                colspan="2" />
-                        </group>
-                    </div>
-                </sheet>
+                        <label for="cash_register_difference"
+                            string="Diferencia"
+                            class="fw-bold"
+                            invisible="cash_register_difference == 0"/>
+                        <div invisible="cash_register_difference == 0">
+                            <field name="cash_register_difference"
+                                widget="monetary"
+                                nolabel="1"
+                                readonly="1"
+                                class="text-danger fw-bold"/>
+                        </div>
+                    </group>
+
+                    <group invisible="cash_control">
+                        <div colspan="2" class="alert alert-info">
+                            Esta caja registradora no requiere control de efectivo.
+                        </div>
+                    </group>
+
+                    <field name="closing_note"
+                        string="Nota de cierre"
+                        colspan="2"
+                        placeholder="Razón de cierre (opcional)..."/>
+                </group>
+
+                <!-- Confirmation State -->
+                <div invisible="state != 'confirmation'" class="alert alert-warning text-center">
+                    <h4>Diferencia de pago</h4>
+                    <p class="mb-0">
+                        El efectivo contado no coincide con la cantidad esperada.<br/>
+                        ¿Deseas registrar esta diferencia en las cuentas?
+                    </p>
+                </div>
+
                 <footer>
-                    <!-- Buttons for INPUT state -->
+                    <!-- Input buttons -->
                     <button name="action_close_session"
-                        string="Cerrar caja registradora"
+                        string="Cerrar caja"
                         type="object"
                         class="btn-primary"
-                        invisible="state != 'input'" />
+                        invisible="state != 'input'"
+                        data-hotkey="q"/>
 
-                    <!-- Buttons for CONFIRMATION state -->
+                    <!-- Confirmation buttons -->
                     <button name="action_close_session"
                         string="Continuar de todos modos"
                         type="object"
                         class="btn-primary"
-                        invisible="state != 'confirmation'" />
+                        invisible="state != 'confirmation'"
+                        data-hotkey="q"/>
 
-                    <button string="Descartar"
-                        class="btn-secondary"
-                        special="cancel" />
-                    <button name="action_print_daily_report"
-                        string="Venta diaria"
+                    <button name="action_open_cash_calculator"
+                        string="💰 Calculadora de efectivo"
                         type="object"
-                        class="btn-secondary float-end"
-                        invisible="state != 'input'" />
+                        class="btn-secondary"
+                        invisible="state != 'input' or not cash_control"
+                        data-hotkey="c"/>
+
+                    <button string="Cancelar"
+                        class="btn-secondary"
+                        special="cancel"
+                        data-hotkey="x"/>
                 </footer>
             </form>
         </field>

@@ -9,9 +9,9 @@ class PosSessionOpeningWizard(models.TransientModel):
     session_id = fields.Many2one('pos.session', string='Sesión', required=True, readonly=True)
     user_id = fields.Many2one('res.users', string='Usuario', required=True, readonly=True,
                               default=lambda self: self.env.user)
-    cash_register_balance_start = fields.Monetary(
+    cash_register_balance_start = fields.Float(
         string='Caja de apertura',
-        currency_field='currency_id',
+        digits=(16, 2),
         default=0.0
     )
     opening_notes = fields.Text(
@@ -51,6 +51,25 @@ class PosSessionOpeningWizard(models.TransientModel):
 
         # Retornar a la vista del POS config o sesión
         return self._return_to_backend()
+
+    def action_open_cash_calculator(self):
+        """Abre el wizard de calculadora de efectivo para calcular el saldo inicial"""
+        self.ensure_one()
+
+        # Crear el wizard de calculadora vinculado a este wizard de apertura
+        calculator_wizard = self.env['pos.cash.calculator.wizard'].create({
+            'opening_wizard_id': self.id,
+        })
+
+        return {
+            'name': _('Cash Calculator'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.cash.calculator.wizard',
+            'view_mode': 'form',
+            'res_id': calculator_wizard.id,
+            'target': 'new',
+            'context': self.env.context,
+        }
 
     def _validate_employee_pin(self, vals=None):
         """
