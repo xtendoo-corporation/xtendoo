@@ -8,7 +8,7 @@ class PosSessionCashMoveWizard(models.TransientModel):
 
     session_id = fields.Many2one('pos.session', string='Session', required=True)
     type = fields.Selection([('in', 'Entrada de efectivo'), ('out', 'Salida de efectivo')], string='Tipo', default='out')
-    amount = fields.Monetary(string='Importe', default=0.0)
+    amount = fields.Float(string='Importe', default=0.0)
     currency_id = fields.Many2one('res.currency', string='Moneda', related='session_id.currency_id', readonly=True)
     reason = fields.Text(string='Razón')
     partner_id = fields.Many2one('res.partner', string='Partner')

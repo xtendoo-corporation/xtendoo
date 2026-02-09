@@ -43,11 +43,7 @@
 
                         <div class="w-25">
                             <field name="amount"
-                                widget="monetary"
-                                options="{'currency_field': 'currency_id'}"
-                                nolabel="1"
-                                placeholder="0,00"
-                                class="text-end"/>
+                                />
                         </div>
                     </div>
 
@@ -57,8 +53,7 @@
                             class="form-control cash-reason"
                             placeholder="Deja una razón aquí"
                             style="height: 100px;"
-                            nolabel="1"
-                            required="1"/>
+                            nolabel="1"/>
                         <label for="reason">Razón</label>
                     </div>
                 </sheet>
@@ -80,13 +75,13 @@
                         </div>
 
                         <!-- Second line of buttons -->
-                        <div class="d-flex gap-2">
-                            <button name="action_open_cash_calculator"
-                                string="Detalles"
-                                type="object"
-                                class="button btn btn-lg btn-secondary"
-                                data-hotkey="c"/>
-                        </div>
+<!--                        <div class="d-flex gap-2">-->
+<!--                            <button name="action_open_cash_calculator"-->
+<!--                                string="Detalles"-->
+<!--                                type="object"-->
+<!--                                class="button btn btn-lg btn-secondary"-->
+<!--                                data-hotkey="c"/>-->
+<!--                        </div>-->
                     </div>
                 </footer>
             </form>
