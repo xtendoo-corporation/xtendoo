@@ -11,9 +11,15 @@ class PosSessionClosingWizard(models.TransientModel):
         "pos.session", string="Sesión", required=True, readonly=True
     )
     cash_register_balance_end_real = fields.Float(
-        string="Dinero contado en caja",
+        string="Recuento de efectivo",
         help="Cantidad total de dinero en efectivo contado al cerrar la caja",
         default=0.0,
+    )
+    card_number = fields.Monetary(
+        string="Tarjeta número",
+        currency_field="currency_id",
+        default=lambda self: self._default_card_amount(),
+        help="Importe contado/introducido para pagos con tarjeta (referencia).",
     )
     currency_id = fields.Many2one(
         "res.currency", related="session_id.currency_id", readonly=True
@@ -64,6 +70,12 @@ class PosSessionClosingWizard(models.TransientModel):
         compute="_compute_session_totals",
         readonly=True,
     )
+    cash_in_out_line_ids = fields.Many2many(
+        comodel_name="account.bank.statement.line",
+        compute="_compute_cash_in_out_lines",
+        string="Movimientos de caja",
+        readonly=True,
+    )
 
     # Campos para "Cuenta Cliente" (pedidos vinculados a sale.order)
     linked_sale_orders_total = fields.Monetary(
@@ -97,7 +109,6 @@ class PosSessionClosingWizard(models.TransientModel):
                     # Método de pago con tarjeta/banco
                     card_total += amount
                 else:
-
                     other_total += amount
 
             wizard.cash_payments = cash_total
@@ -105,7 +116,9 @@ class PosSessionClosingWizard(models.TransientModel):
             wizard.other_payments = other_total
             wizard.total_payments = cash_total + card_total + other_total
 
-            wizard.cash_in_out_total = wizard.session_id.cash_real_transaction
+            # Entradas/Salidas de efectivo: sumar líneas de caja vinculadas a la sesión.
+            # En el core de Odoo, `cash_real_transaction` solo se actualiza al validar/cerrar.
+            wizard.cash_in_out_total = sum(wizard.session_id.statement_line_ids.mapped('amount'))
 
             linked_orders = wizard.session_id.order_ids.filtered(
                 lambda o: o.linked_sale_order_id
@@ -121,6 +134,12 @@ class PosSessionClosingWizard(models.TransientModel):
             wizard.cash_register_difference = (
                 wizard.cash_register_balance_end_real - wizard.cash_register_balance_end
             )
+
+    @api.depends("session_id")
+    def _compute_cash_in_out_lines(self):
+        for wizard in self:
+            lines = wizard.session_id.statement_line_ids.sorted(lambda l: (l.date or fields.Date.today(), l.id))
+            wizard.cash_in_out_line_ids = [(6, 0, lines.ids)]
 
     def action_close_session(self):
         """
@@ -246,3 +265,20 @@ class PosSessionClosingWizard(models.TransientModel):
                 "default_session_id": self.session_id.id,
             },
         }
+
+    @api.model
+    def _default_card_amount(self):
+        session_id = self.env.context.get('default_session_id')
+        if not session_id:
+            return 0.0
+        session = self.env['pos.session'].browse(session_id)
+        if not session:
+            return 0.0
+
+        total = 0.0
+        for payment in session.order_ids.mapped('payment_ids'):
+            method = payment.payment_method_id
+            if method and method.type in ['bank', 'pay_later']:
+                total += payment.amount
+        return total
+

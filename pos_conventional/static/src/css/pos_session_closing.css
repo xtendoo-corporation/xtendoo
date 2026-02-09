@@ -326,3 +326,105 @@
     font-size: 1rem;
 }
 
+/* Movimientos de caja (Entrada y salida de efectivo) */
+.o_pos_session_closing_wizard .o_cash_moves_details {
+    margin-top: 0.25rem;
+    margin-left: 1.5rem; /* alineado con el desglose */
+    color: #6c757d;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_summary {
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #212529;
+    list-style: none;
+}
+
+.o_pos_session_closing_wizard details > summary::-webkit-details-marker {
+    display: none;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_summary::before {
+    content: "▸";
+    display: inline-block;
+    width: 1rem;
+    color: #6c757d;
+}
+
+.o_pos_session_closing_wizard details[open] .o_cash_moves_summary::before {
+    content: "▾";
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list {
+    margin-top: 0.5rem;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list .o_list_view {
+    border: none;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list table {
+    font-size: 0.95rem;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list thead {
+    display: none; /* en el original no se ven headers */
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list td {
+    border-top: none;
+    padding: 0.25rem 0;
+}
+
+/* Bloque de inputs finales (Recuento de efectivo / Tarjeta número */
+.o_pos_session_closing_wizard .o_pos_counted_inputs {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.o_pos_session_closing_wizard .o_counted_input_line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.o_pos_session_closing_wizard .o_counted_input_line .o_label {
+    font-size: 1rem;
+    color: #212529;
+    font-weight: 600;
+}
+
+.o_pos_session_closing_wizard .o_counted_input_line .o_value {
+    flex: 0 0 280px;
+}
+
+/* Caja que envuelve el input monetary/char para que destaque un poco */
+.o_pos_session_closing_wizard .o_pos_counted_inputs .o_field_widget {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    background: #fff;
+}
+
+.o_pos_session_closing_wizard .o_pos_counted_inputs .o_field_widget:focus-within {
+    border-color: #714B67;
+    box-shadow: 0 0 0 0.2rem rgba(113, 75, 103, 0.25);
+}
+
+.o_pos_session_closing_wizard .o_pos_counted_inputs input,
+.o_pos_session_closing_wizard .o_pos_counted_inputs textarea {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent;
+}
+
+.o_pos_session_closing_wizard .o_pos_counted_inputs input {
+    text-align: right;
+    font-size: 1.5rem;
+    font-weight: 600;
+    width: 100%;
+}

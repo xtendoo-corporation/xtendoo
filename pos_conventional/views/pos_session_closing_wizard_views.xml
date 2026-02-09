@@ -64,15 +64,20 @@
                                     readonly="1"
                                     class="o_value"/>
                             </div>
-                        </div>
 
-                        <!-- Campo Contado con input destacado -->
-                        <div class="o_closing_counted_line">
-                            <label for="cash_register_balance_end_real" class="o_label">Contado</label>
-                            <div class="o_value">
-                                <field name="cash_register_balance_end_real"
-                                  />
-                            </div>
+                            <!-- Entrada y salida de efectivo (desplegable) -->
+                            <details class="o_cash_moves_details" invisible="cash_in_out_total == 0">
+                                <summary class="o_cash_moves_summary">Entrada y salida de efectivo</summary>
+                                <div class="o_cash_moves_list">
+                                    <field name="cash_in_out_line_ids" nolabel="1" widget="one2many_list">
+                                        <list create="0" edit="0" delete="0">
+                                            <field name="date"/>
+                                            <field name="payment_ref" string="Referencia"/>
+                                            <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        </list>
+                                    </field>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Diferencia -->
@@ -144,6 +149,23 @@
                     <!-- Info sin control de efectivo -->
                     <div class="o_pos_no_cash_control_info" invisible="cash_control">
                         Esta caja registradora no requiere control de efectivo.
+                    </div>
+
+                    <!-- Recuento de efectivo (input) -->
+                    <div class="o_pos_counted_inputs" invisible="not cash_control">
+                        <div class="o_counted_input_line">
+                            <label for="cash_register_balance_end_real" class="o_label">Recuento de efectivo</label>
+                            <div class="o_value">
+                                <field name="cash_register_balance_end_real"/>
+                            </div>
+                        </div>
+
+                        <div class="o_counted_input_line">
+                            <label for="card_number" class="o_label">Tarjeta número</label>
+                            <div class="o_value">
+                                <field name="card_number" placeholder="0,00"/>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Nota de cierre -->

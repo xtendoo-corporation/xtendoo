@@ -7,9 +7,15 @@ class PosSessionCashMoveWizard(models.TransientModel):
     _description = 'Wizard para Entrada/Salida de efectivo (backend)'
 
     session_id = fields.Many2one('pos.session', string='Session', required=True)
-    type = fields.Selection([('in', 'Entrada de efectivo'), ('out', 'Salida de efectivo')], string='Tipo', default='out')
+    type = fields.Selection(
+        [('in', 'Entrada de efectivo'), ('out', 'Salida de efectivo')],
+        string='Tipo',
+        default='out',
+    )
     amount = fields.Float(string='Importe', default=0.0)
-    currency_id = fields.Many2one('res.currency', string='Moneda', related='session_id.currency_id', readonly=True)
+    currency_id = fields.Many2one(
+        'res.currency', string='Moneda', related='session_id.currency_id', readonly=True
+    )
     reason = fields.Text(string='Razón')
     partner_id = fields.Many2one('res.partner', string='Partner')
 
@@ -45,14 +51,16 @@ class PosSessionCashMoveWizard(models.TransientModel):
         if not self.amount or self.amount <= 0:
             raise UserError(_('El importe debe ser mayor que 0.'))
 
-        # Llamar al método existente try_cash_in_out en pos.session
+        if self.session_id.state not in ('opened', 'opening_control', 'closing_control'):
+            raise UserError(_('Solo puedes registrar entradas/salidas en una sesión abierta.'))
+
         extras = {'translatedType': _('Entrada') if self.type == 'in' else _('Salida')}
         self.session_id.sudo().try_cash_in_out(
             self.type,
             self.amount,
             (self.reason or '').strip(),
             self.partner_id.id if self.partner_id else False,
-            extras
+            extras,
         )
         return {'type': 'ir.actions.act_window_close'}
 
@@ -76,6 +84,3 @@ class PosSessionCashMoveWizard(models.TransientModel):
             'target': 'new',
             'context': self.env.context,
         }
-
-
-
