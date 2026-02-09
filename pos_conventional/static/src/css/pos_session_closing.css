@@ -1,0 +1,328 @@
+/* ===================================================
+   POS Session Closing Wizard - Estilo Odoo 19 Nativo
+   ================================================== */
+
+/* Contenedor principal - modal dialog style */
+.o_pos_session_closing_wizard {
+    max-width: 600px;
+}
+
+/* Estructura de dos columnas para labels y valores */
+.o_closing_details_line {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.o_closing_details_line .o_label {
+    flex: 0 0 140px;
+    color: #6c757d;
+    padding-right: 1rem;
+    font-weight: normal;
+}
+
+.o_closing_details_line .o_value {
+    flex: 1;
+    color: #212529;
+    font-weight: normal;
+    text-align: right;
+}
+
+.o_closing_details_line .o_value .o_field_widget {
+    justify-content: flex-end;
+}
+
+/* Sección principal (Esperado) */
+.o_closing_section_title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.o_closing_main_line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.o_closing_main_line .o_label {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.o_closing_main_line .o_value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+/* Desglose expandible */
+.o_cash_breakdown {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.o_cash_breakdown_line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.o_cash_breakdown_line .o_label {
+    flex: 1;
+}
+
+.o_cash_breakdown_line .o_value {
+    text-align: right;
+    color: #6c757d;
+}
+
+/* Campo "Contado" */
+.o_closing_counted_section {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.o_closing_counted_line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.o_closing_counted_line .o_label {
+    font-size: 1rem;
+    color: #212529;
+    font-weight: 600;
+}
+
+.o_closing_counted_line .o_value {
+    flex: 0 0 250px;
+}
+
+.o_closing_counted_line .o_value .o_field_monetary {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.o_closing_counted_line .o_value .o_field_monetary:focus-within {
+    border-color: #714B67;
+    box-shadow: 0 0 0 0.2rem rgba(113, 75, 103, 0.25);
+}
+
+.o_closing_counted_line .o_value input {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-align: right;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 0;
+    width: 100%;
+    background: transparent;
+}
+
+.o_closing_counted_line .o_value input:focus {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Diferencia */
+.o_closing_difference_line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.o_closing_difference_line .o_label {
+    font-size: 1rem;
+    color: #212529;
+    font-weight: 600;
+}
+
+.o_closing_difference_line .o_value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.o_closing_difference_line .o_value.text-danger {
+    color: #d9534f !important;
+}
+
+.o_closing_difference_line .o_value.text-success {
+    color: #5cb85c !important;
+}
+
+/* Secciones de métodos de pago */
+.o_payment_method_section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.o_payment_method_section:last-of-type {
+    border-bottom: none;
+}
+
+.o_payment_method_line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.o_payment_method_line .o_label {
+    font-size: 1.125rem;
+    color: #212529;
+    font-weight: 600;
+}
+
+.o_payment_method_line .o_value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.o_payment_subline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #6c757d;
+    margin-left: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Nota de cierre */
+.o_closing_note_section {
+    margin-top: 1.5rem;
+}
+
+.o_closing_note_section label {
+    font-size: 1rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.o_closing_note_section textarea {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    color: #495057;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.o_closing_note_section textarea:focus {
+    outline: none;
+    border-color: #714B67;
+    box-shadow: 0 0 0 0.2rem rgba(113, 75, 103, 0.25);
+}
+
+.o_closing_note_section textarea::placeholder {
+    color: #adb5bd;
+}
+
+/* Confirmación de diferencia */
+.o_pos_closing_confirmation {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.o_pos_closing_confirmation h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+.o_pos_closing_confirmation p {
+    font-size: 1rem;
+    color: #6c757d;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Botones del footer */
+.o_pos_session_closing_wizard .modal-footer .btn,
+.o_pos_session_closing_wizard form footer .btn,
+.o_pos_session_closing_wizard footer .btn {
+    border-radius: 4px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.125rem;
+}
+
+/* Botón primario - Cerrar caja */
+.o_pos_session_closing_wizard .btn-primary,
+.o_pos_session_closing_wizard footer .btn-primary {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+    color: #fff !important;
+}
+
+.o_pos_session_closing_wizard .btn-primary:hover,
+.o_pos_session_closing_wizard footer .btn-primary:hover {
+    background-color: #5d3d55 !important;
+    border-color: #5d3d55 !important;
+    color: #fff !important;
+}
+
+/* Botón secundario - Cancelar */
+.o_pos_session_closing_wizard .btn-secondary,
+.o_pos_session_closing_wizard footer .btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #fff !important;
+}
+
+.o_pos_session_closing_wizard .btn-secondary:hover,
+.o_pos_session_closing_wizard footer .btn-secondary:hover {
+    background-color: #5a6268 !important;
+    border-color: #545b62 !important;
+    color: #fff !important;
+}
+
+/* Botón calculadora - excepción al secundario */
+.o_pos_session_closing_wizard .o_btn_cash_calculator,
+.o_pos_session_closing_wizard footer .o_btn_cash_calculator {
+    background-color: #f0ad4e !important;
+    border-color: #f0ad4e !important;
+    color: #fff !important;
+}
+
+.o_pos_session_closing_wizard .o_btn_cash_calculator:hover,
+.o_pos_session_closing_wizard footer .o_btn_cash_calculator:hover {
+    background-color: #ec971f !important;
+    border-color: #ec971f !important;
+    color: #fff !important;
+}
+
+/* Sin control de efectivo */
+.o_pos_no_cash_control_info {
+    text-align: center;
+    padding: 1.5rem;
+    color: #6c757d;
+    font-size: 1rem;
+}
+

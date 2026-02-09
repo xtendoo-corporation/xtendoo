@@ -5,10 +5,10 @@
         <field name="model">pos.session.cash_move.wizard</field>
         <field name="arch" type="xml">
             <form>
-                <field name="currency_id" invisible="1" />
-                <field name="session_id" invisible="1" />
-                <field name="partner_id" invisible="1" />
-                <field name="type" invisible="1" />
+                <field name="currency_id" invisible="1"/>
+                <field name="session_id" invisible="1"/>
+                <field name="partner_id" invisible="1"/>
+                <field name="type" invisible="1"/>
 
                 <sheet>
                     <!-- Input amount section with toggle buttons and amount field -->
@@ -16,44 +16,45 @@
                         <div class="input-group w-50">
                             <!-- Botón Entrada activo (verde) -->
                             <button type="object"
-                                name="set_type_in"
-                                string="Entrada"
-                                class="input-type btn btn-lg lh-lg btn-success w-50"
-                                invisible="type != 'in'"/>
+                                    name="set_type_in"
+                                    string="Entrada"
+                                    class="input-type btn btn-lg lh-lg btn-success w-50"
+                                    invisible="type != 'in'"/>
                             <!-- Botón Entrada inactivo (gris) -->
                             <button type="object"
-                                name="set_type_in"
-                                string="Entrada"
-                                class="input-type btn btn-lg lh-lg btn-secondary w-50"
-                                invisible="type == 'in'"/>
+                                    name="set_type_in"
+                                    string="Entrada"
+                                    class="input-type btn btn-lg lh-lg btn-secondary w-50"
+                                    invisible="type == 'in'"/>
 
                             <!-- Botón Salida activo (rojo) -->
                             <button type="object"
-                                name="set_type_out"
-                                string="Salida"
-                                class="input-type btn btn-lg lh-lg btn-danger w-50"
-                                invisible="type != 'out'"/>
+                                    name="set_type_out"
+                                    string="Salida"
+                                    class="input-type btn btn-lg lh-lg btn-danger w-50"
+                                    invisible="type != 'out'"/>
                             <!-- Botón Salida inactivo (gris) -->
                             <button type="object"
-                                name="set_type_out"
-                                string="Salida"
-                                class="input-type btn btn-lg lh-lg btn-secondary w-50"
-                                invisible="type == 'out'"/>
-                        </div>
-
-                        <div class="w-25">
-                            <field name="amount"
-                                />
+                                    name="set_type_out"
+                                    string="Salida"
+                                    class="input-type btn btn-lg lh-lg btn-secondary w-50"
+                                    invisible="type == 'out'"/>
                         </div>
                     </div>
 
+                    <div class="form-floating">
+                        <div class="w-25">
+                            <field name="amount"
+                            />
+                        </div>
+                    </div>
                     <!-- Reason textarea with floating label -->
                     <div class="form-floating">
                         <field name="reason"
-                            class="form-control cash-reason"
-                            placeholder="Deja una razón aquí"
-                            style="height: 100px;"
-                            nolabel="1"/>
+                               class="form-control cash-reason"
+                               placeholder="Deja una razón aquí"
+                               style="height: 100px;"
+                               nolabel="1"/>
                         <label for="reason">Razón</label>
                     </div>
                 </sheet>
@@ -63,25 +64,25 @@
                         <!-- First line of buttons -->
                         <div class="d-flex gap-2">
                             <button name="action_confirm"
-                                string="Confirmar"
-                                type="object"
-                                class="button confirm btn btn-lg lh-lg btn-primary"
-                                data-hotkey="q"/>
+                                    string="Confirmar"
+                                    type="object"
+                                    class="button confirm btn btn-lg lh-lg btn-primary"
+                                    data-hotkey="q"/>
 
                             <button string="Descartar"
-                                class="button cancel btn btn-lg lh-lg btn-secondary"
-                                special="cancel"
-                                data-hotkey="x"/>
+                                    class="button cancel btn btn-lg lh-lg btn-secondary"
+                                    special="cancel"
+                                    data-hotkey="x"/>
                         </div>
 
                         <!-- Second line of buttons -->
-<!--                        <div class="d-flex gap-2">-->
-<!--                            <button name="action_open_cash_calculator"-->
-<!--                                string="Detalles"-->
-<!--                                type="object"-->
-<!--                                class="button btn btn-lg btn-secondary"-->
-<!--                                data-hotkey="c"/>-->
-<!--                        </div>-->
+                        <!--                        <div class="d-flex gap-2">-->
+                        <!--                            <button name="action_open_cash_calculator"-->
+                        <!--                                string="Detalles"-->
+                        <!--                                type="object"-->
+                        <!--                                class="button btn btn-lg btn-secondary"-->
+                        <!--                                data-hotkey="c"/>-->
+                        <!--                        </div>-->
                     </div>
                 </footer>
             </form>

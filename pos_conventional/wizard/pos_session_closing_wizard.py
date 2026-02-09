@@ -10,9 +10,8 @@ class PosSessionClosingWizard(models.TransientModel):
     session_id = fields.Many2one(
         "pos.session", string="Sesión", required=True, readonly=True
     )
-    cash_register_balance_end_real = fields.Monetary(
+    cash_register_balance_end_real = fields.Float(
         string="Dinero contado en caja",
-        currency_field="currency_id",
         help="Cantidad total de dinero en efectivo contado al cerrar la caja",
         default=0.0,
     )
