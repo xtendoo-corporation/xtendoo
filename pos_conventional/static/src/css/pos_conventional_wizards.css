@@ -5,7 +5,7 @@
 
 /* Estilo para el header personalizado */
 .modal-dialog .modal-content .modal-header-custom {
-    padding: 16px 24px;
+    padding: 16px 0 16px 0;
     border-bottom: 1px solid #dee2e6;
     background-color: #fff;
     display: flex;
@@ -15,6 +15,7 @@
 
 .modal-dialog .modal-content .modal-header-custom .modal-title {
     margin: 0;
+    padding-left: 0;
     font-size: 1.25rem;
     font-weight: 500;
     line-height: 1.5;

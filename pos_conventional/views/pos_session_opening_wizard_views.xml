@@ -5,11 +5,11 @@
         <field name="model">pos.session.opening.wizard</field>
         <field name="arch" type="xml">
             <form string="Control de apertura">
-                <field name="session_id" invisible="1" />
-                <field name="user_id" invisible="1" />
-                <field name="currency_id" invisible="1" />
-                <field name="cash_control" invisible="1" />
-                <field name="pending_order_count" invisible="1" />
+                <field name="session_id" invisible="1"/>
+                <field name="user_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="cash_control" invisible="1"/>
+                <field name="pending_order_count" invisible="1"/>
 
                 <div class="modal-header-custom">
                     <h4 class="modal-title">Control de apertura</h4>
@@ -21,43 +21,49 @@
                     <div class="mb-3" invisible="pending_order_count == 0">
                         <div class="o_form_label">Estado de pedidos</div>
                         <div class="alert alert-info" role="alert">
-                            Todavía tienes <field name="pending_order_count" widget="integer" nolabel="1" readonly="1" class="fw-bold"/> pedidos abiertos para los próximos días.
+                            Todavía tienes
+                            <field name="pending_order_count" widget="integer" nolabel="1" readonly="1"
+                                   class="fw-bold"/>
+                            pedidos abiertos para los próximos días.
                         </div>
                     </div>
 
                     <!-- Opening Cash Section -->
                     <div class="mb-3" invisible="not cash_control">
-                        <div class="o_form_label">Caja de apertura</div>
+                        <div class="o_form_label fw-bold">Caja de apertura</div>
                         <div class="d-flex gap-1" style="max-width: 500px;">
                             <field name="cash_register_balance_start"
-                                />
-                            <button name="action_open_cash_calculator"
-                                type="object"
-                                class="btn btn-secondary"
-                                icon="fa-money"
-                                title="Abrir calculadora de efectivo"/>
+                                   style="font-size: 18px; padding: 8px 12px 8px 0; min-width: 200px; margin: 0;"
+                            />
+                            <!--                            <button name="action_open_cash_calculator"-->
+                            <!--                                type="object"-->
+                            <!--                                class="btn btn-secondary"-->
+                            <!--                                icon="fa-money"-->
+                            <!--                                title="Abrir calculadora de efectivo"/>-->
                         </div>
                     </div>
 
                     <!-- Opening Notes -->
                     <div class="mb-3">
-                        <label for="opening_notes" class="o_form_label">Nota de apertura</label>
+                        <label for="opening_notes" class="o_form_label fw-bold">Nota de apertura</label>
                         <field name="opening_notes"
-                            placeholder="Añadir una nota de apertura..."
-                            nolabel="1"/>
+                               placeholder="Añadir una nota de apertura..."
+                               nolabel="1"
+                               style="font-size: 18px; padding: 8px 12px 8px 0; min-width: 200px; margin: 0;"
+                        />
                     </div>
                 </sheet>
 
                 <footer>
                     <button name="action_validate_and_open"
-                        string="Abrir caja registradora"
-                        type="object"
-                        class="btn btn-lg btn-primary"
-                        data-hotkey="q"/>
+                            string="Abrir caja registradora"
+                            type="object"
+                            class="btn btn-lg btn-primary"
+                            data-hotkey="q"/>
                     <button string="Descartar"
-                        class="btn btn-lg btn-secondary"
-                        special="cancel"
-                        data-hotkey="x"/>
+                            class="btn btn-lg btn-secondary"
+                            special="cancel"
+                            data-hotkey="x"/>
                 </footer>
             </form>
         </field>
