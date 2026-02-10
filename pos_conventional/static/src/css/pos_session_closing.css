@@ -2,9 +2,49 @@
    POS Session Closing Wizard - Estilo Odoo 19 Nativo
    ================================================== */
 
-/* Contenedor principal - modal dialog style */
-.o_pos_session_closing_wizard {
-    max-width: 600px;
+/* Contenedor principal - Asegurar que ocupe todo el ancho del modal */
+.o_pos_session_closing_wizard.modal-dialog {
+    max-width: 600px !important;
+    width: 100% !important;
+    margin: 1.75rem auto !important;
+}
+
+.o_pos_session_closing_wizard .modal-content {
+    width: 100% !important;
+}
+
+.o_pos_session_closing_wizard .modal-body {
+    width: 100% !important;
+    padding: 1rem 1.5rem !important;
+}
+
+.o_pos_session_closing_wizard .o_form_view {
+    width: 100% !important;
+}
+
+.o_pos_session_closing_wizard .o_form_sheet_bg {
+    width: 100% !important;
+}
+
+.o_pos_session_closing_wizard .o_form_sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.o_pos_session_closing_wizard .o_content {
+    width: 100% !important;
+}
+
+.o_pos_session_closing_wizard > div {
+    width: 100%;
+}
+
+/* Asegurar que las secciones ocupen todo el ancho */
+.o_pos_session_closing_wizard .o_payment_method_section,
+.o_pos_session_closing_wizard .o_cash_breakdown,
+.o_pos_session_closing_wizard .o_closing_note_section,
+.o_pos_session_closing_wizard .o_pos_counted_inputs {
+    width: 100%;
 }
 
 /* Estructura de dos columnas para labels y valores */
@@ -374,6 +414,43 @@
 .o_pos_session_closing_wizard .o_cash_moves_list td {
     border-top: none;
     padding: 0.25rem 0;
+}
+
+/* Deshabilitar navegación en las líneas de entrada/salida */
+.o_pos_session_closing_wizard .o_cash_moves_list .o_data_row {
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list .o_data_cell {
+    cursor: default !important;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list tbody tr {
+    cursor: default !important;
+}
+
+.o_pos_session_closing_wizard .o_cash_moves_list tbody tr:hover {
+    background-color: transparent !important;
+}
+
+/* Aplicar estilos no clickables a toda la lista */
+.o_pos_session_closing_wizard .o_non_clickable_list .o_list_table tbody tr {
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+.o_pos_session_closing_wizard .o_non_clickable_list .o_data_row {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+.o_pos_session_closing_wizard .o_non_clickable_list tbody tr:hover {
+    background-color: inherit !important;
+}
+
+.o_pos_session_closing_wizard .o_non_clickable_list .o_data_cell {
+    pointer-events: none !important;
 }
 
 /* Bloque de inputs finales (Recuento de efectivo / Tarjeta número */

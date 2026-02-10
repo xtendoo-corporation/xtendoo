@@ -15,11 +15,16 @@ class PosSessionClosingWizard(models.TransientModel):
         help="Cantidad total de dinero en efectivo contado al cerrar la caja",
         default=0.0,
     )
-    card_number = fields.Monetary(
+    card_number = fields.Float(
         string="Tarjeta número",
-        currency_field="currency_id",
         default=lambda self: self._default_card_amount(),
         help="Importe contado/introducido para pagos con tarjeta (referencia).",
+    )
+    card_difference = fields.Monetary(
+        string="Diferencia tarjeta",
+        compute="_compute_card_difference",
+        store=True,
+        help="Diferencia entre el importe contado de tarjeta y el importe teórico",
     )
     currency_id = fields.Many2one(
         "res.currency", related="session_id.currency_id", readonly=True
@@ -134,6 +139,11 @@ class PosSessionClosingWizard(models.TransientModel):
             wizard.cash_register_difference = (
                 wizard.cash_register_balance_end_real - wizard.cash_register_balance_end
             )
+
+    @api.depends("card_number", "card_payments")
+    def _compute_card_difference(self):
+        for wizard in self:
+            wizard.card_difference = wizard.card_number - wizard.card_payments
 
     @api.depends("session_id")
     def _compute_cash_in_out_lines(self):

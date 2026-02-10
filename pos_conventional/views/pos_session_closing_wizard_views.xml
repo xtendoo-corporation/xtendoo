@@ -10,6 +10,7 @@
                 <field name="cash_control" invisible="1" />
                 <field name="cash_payments" invisible="1" />
                 <field name="card_payments" invisible="1" />
+                <field name="card_difference" invisible="1" />
                 <field name="other_payments" invisible="1" />
                 <field name="linked_sale_orders_count" invisible="1" />
                 <field name="linked_sale_orders_total" invisible="1" />
@@ -69,8 +70,8 @@
                             <details class="o_cash_moves_details" invisible="cash_in_out_total == 0">
                                 <summary class="o_cash_moves_summary">Entrada y salida de efectivo</summary>
                                 <div class="o_cash_moves_list">
-                                    <field name="cash_in_out_line_ids" nolabel="1" widget="one2many_list">
-                                        <list create="0" edit="0" delete="0">
+                                    <field name="cash_in_out_line_ids" nolabel="1" readonly="1" class="o_non_clickable_list">
+                                        <list create="0" edit="0" delete="0" open="0" decoration-muted="True">
                                             <field name="date"/>
                                             <field name="payment_ref" string="Referencia"/>
                                             <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -111,14 +112,25 @@
                         </div>
                         <div class="o_payment_subline">
                             <span>Contado</span>
-                            <field name="card_payments"
+                            <field name="card_number"
                                 widget="monetary"
                                 nolabel="1"
                                 readonly="1"/>
                         </div>
-                        <div class="o_payment_subline">
+                        <div class="o_payment_subline" invisible="card_difference == 0">
                             <span>Diferencia</span>
-                            <span>$ 0,00</span>
+                            <field name="card_difference"
+                                widget="monetary"
+                                nolabel="1"
+                                readonly="1"
+                                class="text-danger"
+                                invisible="card_difference &gt;= 0"/>
+                            <field name="card_difference"
+                                widget="monetary"
+                                nolabel="1"
+                                readonly="1"
+                                class="text-success"
+                                invisible="card_difference &lt; 0"/>
                         </div>
                     </div>
 
