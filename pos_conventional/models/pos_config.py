@@ -72,14 +72,15 @@ class PosConfig(models.Model):
                         "default_user_id": self.env.uid,
                     },
                 }
+                # Usar la acción cliente para abrir el popup de apertura OWL
                 return {
-                    "type": "ir.actions.act_window",
-                    "res_model": "pos.session.opening.wizard",
-                    "view_mode": "form",
+                    "type": "ir.actions.client",
+                    "tag": "pos_conventional_opening_popup",
+                    "name": _("Control de apertura"),
                     "target": "new",
                     "context": {
-                        "default_session_id": session.id,
-                        "default_user_id": self.env.uid,
+                        "session_id": session.id,
+                        "config_id": self.id,
                     },
                 }
 

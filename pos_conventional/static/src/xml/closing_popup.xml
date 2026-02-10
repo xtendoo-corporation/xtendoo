@@ -26,8 +26,7 @@
     <t t-name="pos_conventional.ClosingPopup">
         <Dialog contentClass="'close-pos-popup'" size="'lg'" title="'Cerrando la caja registradora'">
             <div class="o_closing_popup_content">
-                <!-- Info de pedidos -->
-                <div class="d-flex justify-content-end mb-3" t-if="!state.loading">
+                <div t-if="!state.loading" class="d-flex justify-content-end mb-3">
                     <div class="total-orders fw-bolder">
                         <t t-esc="state.ordersDetails.quantity"/> pedidos:
                         <span class="amount text-primary" t-esc="formatCurrency(state.ordersDetails.amount)"/>
@@ -175,4 +174,3 @@
     </t>
 
 </templates>
-

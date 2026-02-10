@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Popup de apertura de caja -->
+    <t t-name="pos_conventional.OpeningPopup">
+        <div class="opening-popup container-fluid bg-view d-flex flex-column h-100">
+            <div class="opening-popup-content flex-grow-1 overflow-auto">
+                <div t-if="state.loading" class="text-center py-5">
+                    <i class="fa fa-spinner fa-spin fa-3x"/>
+                    <p class="mt-3">Cargando datos de apertura...</p>
+                </div>
+
+                <div t-else="">
+                    <!-- Información de la sesión -->
+                    <div class="mb-3">
+                        <div class="alert alert-info" role="alert">
+                            <strong>Sesión:</strong> <t t-esc="state.sessionName"/>
+                            <br/>
+                            <strong>Punto de venta:</strong> <t t-esc="state.configName"/>
+                        </div>
+                    </div>
+
+                    <!-- Efectivo de apertura -->
+                    <div class="opening-cash-section mb-3" t-if="state.cashControlEnabled">
+                        <label class="form-label fw-bold">Efectivo de apertura</label>
+                        <div class="d-flex gap-2">
+                            <div class="input-group">
+                                <span t-if="state.currencyPosition === 'before'" class="input-group-text">
+                                    <t t-esc="state.currencySymbol"/>
+                                </span>
+                                <input type="text"
+                                       class="form-control form-control-lg text-end"
+                                       t-att-value="state.openingCash"
+                                       t-on-input="(ev) => state.openingCash = ev.target.value"
+                                       placeholder="0,00"/>
+                                <span t-if="state.currencyPosition === 'after'" class="input-group-text">
+                                    <t t-esc="state.currencySymbol"/>
+                                </span>
+                            </div>
+                            <button class="btn btn-secondary btn-lg" t-on-click="autoFillCash" title="Poner a cero">
+                                <i class="fa fa-refresh"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Nota de apertura -->
+                    <div class="opening-notes-container d-flex flex-column align-items-start">
+                        <label class="form-label fw-bold">Nota de apertura</label>
+                        <textarea class="opening-notes form-control"
+                                  rows="3"
+                                  t-model="state.notes"
+                                  placeholder="Añadir una nota de apertura..."/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="opening-popup-footer border-top p-3 d-flex justify-content-between mt-auto">
+                <button class="btn btn-primary btn-lg"
+                        t-on-click="confirm"
+                        t-att-disabled="state.loading or (state.cashControlEnabled and !isValidFloat(state.openingCash))">
+                    Abrir caja
+                </button>
+                <button class="btn btn-secondary btn-lg" t-on-click="cancel">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -335,7 +335,8 @@ class ClosingPopupAction extends Component {
             this.dialog.add(ClosingPopup, {
                 sessionId: sessionId,
                 close: () => {
-                    // No hacer nada, el dialog se cierra automáticamente
+                    // Al cerrar el popup, volver al tablero
+                    this.action.doAction("point_of_sale.action_pos_config_kanban");
                 },
             });
 
@@ -348,3 +349,4 @@ class ClosingPopupAction extends Component {
 
 // Registrar la acción cliente
 registry.category("actions").add("pos_conventional_closing_popup", ClosingPopupAction);
+
