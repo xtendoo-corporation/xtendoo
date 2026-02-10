@@ -825,7 +825,113 @@ class PosOrder(models.Model):
         )
         return wizard.action_pay_card()
 
+    def action_open_payment_popup(self):
+        """
+        Retorna la acción cliente para abrir el popup de pago.
+        """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'pos_conventional_payment_popup',
+            'name': _('Realizar Pago'),
+            'target': 'new',
+            'context': {
+                'active_id': self.id,
+            }
+        }
+
+    def get_payment_popup_data(self):
+        """
+        Devuelve los datos necesarios para el popup de pago combinado.
+        """
+        self.ensure_one()
+        # Forzar recomputo de totales por si acaso
+        # En Odoo 19 el método estándar es _compute_prices o se hace vía tax_totals
+        try:
+            self._compute_prices()
+        except Exception:
+            # Fallback a un cálculo simple si fallara el estándar
+            self.amount_total = sum(self.lines.mapped('price_subtotal_incl'))
+        
+        self.flush_recordset()
+
+
+        _logger.info("POS DEBUG: get_payment_popup_data for order %s (ID %s)", self.name, self.id)
+        _logger.info("POS DEBUG: amount_total: %s, amount_paid: %s", self.amount_total, self.amount_paid)
+
+        available_methods = []
+        for pm in self.config_id.payment_method_ids:
+            available_methods.append({
+                'id': pm.id,
+                'name': pm.name,
+                'type': pm.type,
+                'use_payment_terminal': pm.use_payment_terminal,
+            })
+
+        payments = []
+        for p in self.payment_ids:
+            payments.append({
+                'id': p.id,
+                'payment_method_name': p.payment_method_id.name,
+                'amount': p.amount,
+            })
+
+        amount_due = self.amount_total - self.amount_paid
+        # Redondear para evitar problemas de coma flotante
+        amount_due = round(amount_due, self.currency_id.decimal_places)
+        
+        _logger.info("POS DEBUG: amount_due: %s, currency: %s", amount_due, self.currency_id.symbol)
+
+        return {
+            'order_id': self.id,
+            'amount_total': self.amount_total,
+            'amount_paid': self.amount_paid,
+            'amount_due': amount_due,
+            'currency_symbol': self.currency_id.symbol or "€",
+            'available_methods': available_methods,
+            'payments': payments,
+        }
+
+
+
+    def add_payment_from_ui(self, payment_method_id, amount):
+        """
+        Añade un pago desde la interfaz Owl.
+        """
+        self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_("Solo se pueden añadir pagos a pedidos en borrador."))
+
+        payment_method = self.env['pos.payment.method'].browse(payment_method_id)
+        if not payment_method.exists():
+            raise UserError(_("Método de pago no encontrado."))
+
+        self.add_payment({
+            'pos_order_id': self.id,
+            'amount': amount,
+            'payment_method_id': payment_method_id,
+        })
+        
+        # Si el pedido queda totalmente pagado, NO validamos aquí, 
+        # dejamos que el frontend decida si llamar a validar.
+        return self.get_payment_popup_data()
+
+    def remove_payment_from_ui(self, payment_id):
+        """
+        Elimina un pago desde la interfaz Owl.
+        """
+        self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_("Solo se pueden eliminar pagos de pedidos en borrador."))
+
+        payment = self.env['pos.payment'].browse(payment_id)
+        if payment.exists() and payment.pos_order_id.id == self.id:
+            payment.unlink()
+        
+        return self.get_payment_popup_data()
+
     def action_pay_account(self):
+
         self.ensure_one()
         print(f"POS DEBUG: Entering action_pay_account for {self.name}")
         if self.state != "draft":

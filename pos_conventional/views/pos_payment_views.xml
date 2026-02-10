@@ -65,4 +65,9 @@
             </xpath>
         </field>
     </record>
+    <record id="pos_conventional_payment_popup" model="ir.actions.client">
+        <field name="name">Realizar Pago</field>
+        <field name="tag">pos_conventional_payment_popup</field>
+        <field name="target">new</field>
+    </record>
 </odoo>

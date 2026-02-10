@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pos_conventional.PaymentPopup">
+        <Dialog title="'Realizar Pago'" size="'lg'">
+            <div class="payment-popup-container container-fluid p-3">
+                <t t-if="state.loading">
+                    <div class="text-center p-5">
+                        <i class="fa fa-spinner fa-spin fa-3x mb-3 text-primary"></i>
+                        <p>Procesando...</p>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-if="state.error">
+                        <div class="alert alert-danger m-3">
+                            <h4 class="alert-heading">Error</h4>
+                            <p t-esc="state.error" />
+                            <hr />
+                            <button class="btn btn-outline-danger" t-on-click="loadOrderData">Reintentar</button>
+                        </div>
+                    </t>
+                    <div class="row g-4" t-if="state.orderData">
+                        <!-- Columna Izquierda: Totales y Numpad -->
+                        <div class="col-md-5 border-end">
+                            <div class="total-due-section text-center mb-4 p-3 bg-light rounded border">
+                                <div class="text-muted text-uppercase fw-bold mb-1">Total Pendiente</div>
+                                <div class="display-3 fw-bold text-dark">
+                                    <t t-esc="formatCurrency(state.orderData.amount_due || 0)" />
+                                </div>
+                            </div>
+
+                            <!-- Input Visual (Editable) -->
+                            <div class="input-display mb-3 p-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="text-muted h4 mb-0">Importe a pagar:</span>
+                                <div class="input-group input-group-lg w-50">
+                                    <input type="text" 
+                                           class="form-control text-end fw-bold text-primary border-0 bg-transparent shadow-none fs-2 p-0"
+                                           t-att-value="state.inputBuffer"
+                                           t-on-input="onInputChange" />
+                                    <span class="input-group-text border-0 bg-transparent fs-2 fw-bold text-primary p-0 ms-1">
+                                        <t t-esc="state.orderData.currency_symbol || '€'" />
+                                    </span>
+                                </div>
+                            </div>
+
+
+                            <!-- Numpad -->
+                            <div class="numpad grid gap-2 d-grid" style="grid-template-columns: repeat(3, 1fr);">
+                                <t t-foreach="['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', 'Backspace']" 
+                                   t-as="key" t-key="key">
+                                    <button class="btn btn-outline-secondary btn-lg py-3 fw-bold fs-4"
+                                            t-on-click="() => this.sendInput(key)">
+                                        <t t-if="key == 'Backspace'">
+                                            <i class="fa fa-backspace" />
+                                        </t>
+                                        <t t-else="" t-esc="key" />
+                                    </button>
+                                </t>
+                            </div>
+
+                        </div>
+
+                        <!-- Columna Derecha: Métodos y Pagos -->
+                        <div class="col-md-7">
+                            <h4 class="mb-3 border-bottom pb-2">Seleccionar Método de Pago</h4>
+                            <div class="payment-methods row g-2 mb-4">
+                                <t t-foreach="state.orderData.available_methods" t-as="method" t-key="method.id">
+                                    <div class="col-6">
+                                        <button class="btn btn-primary w-100 py-3 text-truncate fw-bold"
+                                                t-on-click="() => this.addPayment(method.id)">
+                                            <i class="fa fa-credit-card me-2" />
+                                            <t t-esc="method.name" />
+                                        </button>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <h4 class="mb-3 border-bottom pb-2">Pagos Registrados</h4>
+                            <div class="payments-list overflow-auto" style="max-height: 200px;">
+                                <table class="table table-hover align-middle">
+                                    <tbody t-if="state.orderData.payments.length">
+                                        <t t-foreach="state.orderData.payments" t-as="payment" t-key="payment.id">
+                                            <tr>
+                                                <td class="fw-bold"><t t-esc="payment.payment_method_name" /></td>
+                                                <td class="text-end"><t t-esc="formatCurrency(payment.amount)" /></td>
+                                                <td class="text-center" style="width: 50px;">
+                                                    <button class="btn btn-link text-danger p-0" 
+                                                            t-on-click="() => this.removePayment(payment.id)">
+                                                        <i class="fa fa-trash-o fa-lg" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tbody t-else="">
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted py-3">No hay pagos registrados</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+            <t t-set-slot="footer">
+                <div class="d-flex w-100 justify-content-between">
+                    <button class="btn btn-secondary btn-lg px-4" t-on-click="cancel">Cancelar</button>
+                    <button class="btn btn-success btn-lg px-5 fw-bold" 
+                            t-att-disabled="state.loading or state.orderData.amount_due > 0.01"
+                            t-on-click="validate">
+                        Validar y Facturar
+                    </button>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- Acción dummy para el registro -->
+    <t t-name="pos_conventional.PaymentPopupAction">
+        <div class="o_payment_popup_action" />
+    </t>
+
+</templates>
