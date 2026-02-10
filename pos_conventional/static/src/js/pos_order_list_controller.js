@@ -4,10 +4,16 @@ import { ListController } from "@web/views/list/list_controller";
 import { registry } from "@web/core/registry";
 import { listView } from "@web/views/list/list_view";
 import { useState, onWillStart, onWillUnmount } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
+import { ClosingPopup } from "@pos_conventional/js/closing_popup";
+import { CashMovePopup } from "@pos_conventional/js/cash_move_popup";
 
 export class PosOrderListController extends ListController {
     setup() {
         super.setup();
+
+        // Servicios
+        this.dialogService = useService("dialog");
 
         // Estado reactivo para controlar la visibilidad de los botones
         this.state = useState({
@@ -191,20 +197,27 @@ export class PosOrderListController extends ListController {
      */
     async onCloseCashRegister() {
         try {
-            // Llamar al método del modelo pos.order que gestiona el cierre
-            const result = await this.model.orm.call(
-                "pos.order",
-                "action_close_pos_session_wizard",
-                [[]]  // Array vacío porque no necesitamos IDs específicos
-            );
+            const sessionId = this.currentSessionId || this.activeSessionId;
 
-            // Si devuelve una acción (el wizard), ejecutarla
-            if (result && result.type) {
-                await this.env.services.action.doAction(result);
+            if (!sessionId) {
+                this.env.services.notification.add(
+                    "No se encontró una sesión activa",
+                    { type: "danger" }
+                );
+                return;
             }
+
+
+            // Abrir el popup usando el servicio dialog (mantiene el contexto)
+            this.dialogService.add(ClosingPopup, {
+                sessionId: sessionId,
+                close: () => {
+                    // Recargar la lista para reflejar cambios
+                    this.model.load();
+                },
+            });
         } catch (error) {
             console.error("Error al cerrar caja:", error);
-            // Mostrar error al usuario
             this.env.services.notification.add(
                 error.message || "Error al intentar cerrar la caja",
                 { type: "danger" }
@@ -217,27 +230,24 @@ export class PosOrderListController extends ListController {
      */
     async onCashInOut() {
         try {
-            // Llamar al método del modelo pos.order que abre el wizard de entrada/salida
-            const result = await this.model.orm.call(
-                "pos.order",
-                "action_cash_in_out_wizard",
-                [[]]
-            );
+            const sessionId = this.currentSessionId || this.activeSessionId;
 
-            if (result && result.type) {
-                // Protección: algunos actions pueden no traer `views` y el frontend espera que exista
-                if (!result.views) {
-                    // Añadir una vista por defecto para evitar errores en _preprocessAction
-                    result.views = [[false, 'form']];
-                }
-                await this.env.services.action.doAction(result);
-            } else {
-                // Si no devuelve acción, mostrar notificación
+            if (!sessionId) {
                 this.env.services.notification.add(
-                    "Acción de entrada/salida ejecutada",
-                    { type: "success" }
+                    "No se encontró una sesión activa",
+                    { type: "danger" }
                 );
+                return;
             }
+
+
+            // Abrir el popup usando el servicio dialog (mantiene el contexto)
+            this.dialogService.add(CashMovePopup, {
+                sessionId: sessionId,
+                close: () => {
+                    // No hacer nada especial, el popup simplemente se cierra
+                },
+            });
         } catch (error) {
             console.error("Error en Entrada/Salida de efectivo:", error);
             this.env.services.notification.add(

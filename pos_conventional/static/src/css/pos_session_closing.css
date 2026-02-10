@@ -560,3 +560,50 @@
 .close-pos-popup .closing-notes {
     resize: none;
 }
+
+/* ===================================================
+   Cash Move Popup (OWL Component) - Estilos
+   ================================================== */
+
+.o_cash_move_popup_action {
+    background: rgba(0, 0, 0, 0.5);
+    min-height: 100vh;
+}
+
+.cash-move-popup {
+    max-width: 500px !important;
+}
+
+.cash-move-popup .cash-amount-input {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.cash-move-popup .input-group-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.cash-move-popup .btn-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.cash-move-popup .btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.cash-move-popup .btn-primary {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+}
+
+.cash-move-popup .btn-primary:hover {
+    background-color: #5d3d55 !important;
+    border-color: #5d3d55 !important;
+}
+
+.cash-move-popup .cash-reason {
+    resize: none;
+}

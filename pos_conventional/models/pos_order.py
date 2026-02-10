@@ -444,7 +444,7 @@ class PosOrder(models.Model):
             "type": "ir.actions.client",
             "tag": "pos_conventional_closing_popup",
             "name": _("Cerrar caja registradora"),
-            "target": "new",
+            "target": "current",
             "context": {
                 "session_id": session.id,
                 "default_session_id": session.id,
@@ -453,8 +453,8 @@ class PosOrder(models.Model):
 
     def action_cash_in_out_wizard(self):
         """
-        Abre un wizard o formulario para registrar una entrada/salida de efectivo
-        en la sesión POS actual del usuario.
+        Abre el popup de entrada/salida de efectivo estilo Odoo.
+        Este método se llama desde el botón en la vista de pedidos.
 
         La sesión se determina en este orden de prioridad:
         1. session_id del contexto (pasado desde la vista)
@@ -491,7 +491,6 @@ class PosOrder(models.Model):
             )
 
             # Fallback: Si no encuentro sesión del usuario, busco cualquiera abierta en POS no táctil
-            # Esto es necesario si se cambió el usuario de la sesión mediante Force Login
             if not session:
                 session = self.env["pos.session"].search(
                     [
@@ -507,33 +506,17 @@ class PosOrder(models.Model):
                 _("No tienes ninguna sesión abierta en un punto de venta no táctil.")
             )
 
-        # Crear el wizard transient para la sesión encontrada
-        wizard = self.env["pos.session.cash_move.wizard"].create(
-            {
-                "session_id": session.id,
-                "currency_id": session.currency_id.id if session.currency_id else False,
-                "amount": 0.0,
-            }
-        )
-
-        # Obtener referencia a la vista del wizard de forma segura
-        view_ref = self.env.ref(
-            "pos_conventional.view_pos_session_cash_move_wizard_form",
-            raise_if_not_found=False,
-        )
-        view_id = view_ref.id if view_ref else False
-
-        action = {
+        # Abrir el popup de entrada/salida de efectivo usando la acción cliente
+        return {
+            "type": "ir.actions.client",
+            "tag": "pos_conventional_cash_move_popup",
             "name": _("Entrada / Salida de efectivo"),
-            "type": "ir.actions.act_window",
-            "res_model": "pos.session.cash_move.wizard",
-            "res_id": wizard.id,
-            "view_mode": "form",
-            "views": [(view_id, "form")],
-            "target": "new",
-            "context": dict(self.env.context),
+            "target": "current",
+            "context": {
+                "session_id": session.id,
+                "default_session_id": session.id,
+            },
         }
-        return action
 
     def add_product_by_barcode(self, barcode=None, product_id=None, line_vals=None):
         """

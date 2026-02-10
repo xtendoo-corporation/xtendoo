@@ -1,12 +1,11 @@
 /** @odoo-module **/
 
 import { Dialog } from "@web/core/dialog/dialog";
-import { Component, useState, onWillStart } from "@odoo/owl";
+import { Component, useState, onWillStart, onMounted } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
-import { formatMonetary } from "@web/views/fields/formatters";
 
 /**
  * Componente para mostrar el desglose de movimientos de efectivo
@@ -17,6 +16,7 @@ class PaymentMethodBreakdown extends Component {
         title: { type: String, optional: true },
         total_amount: { type: Number },
         transactions: { type: Array },
+        currencyId: { type: Number, optional: true },
     };
 
     setup() {
@@ -28,13 +28,15 @@ class PaymentMethodBreakdown extends Component {
     }
 
     formatCurrency(amount) {
-        return formatMonetary(amount, { currencyId: this.props.currencyId });
+        return new Intl.NumberFormat("es-ES", {
+            style: "currency",
+            currency: "EUR",
+        }).format(amount);
     }
 }
 
 /**
  * Popup de cierre de sesión POS para modo no táctil
- * Basado en el ClosePosPopup original de Odoo
  */
 export class ClosingPopup extends Component {
     static template = "pos_conventional.ClosingPopup";
@@ -42,26 +44,18 @@ export class ClosingPopup extends Component {
     static props = {
         close: { type: Function },
         sessionId: { type: Number },
-        ...standardActionServiceProps,
     };
 
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");
-
-        // El servicio report puede no estar disponible en el backend
-        try {
-            this.report = useService("report");
-        } catch (e) {
-            this.report = null;
-        }
+        this.dialog = useService("dialog");
 
         this.state = useState({
             loading: true,
             notes: "",
             payments: {},
-            // Datos de la sesión
             sessionData: null,
             ordersDetails: { quantity: 0, amount: 0 },
             cashDetails: null,
@@ -75,21 +69,16 @@ export class ClosingPopup extends Component {
         });
     }
 
-    /**
-     * Carga los datos necesarios para el cierre de sesión
-     */
     async loadClosingData() {
         try {
             const sessionId = this.props.sessionId;
 
-            // Obtener datos de cierre desde el backend
             const data = await this.orm.call(
                 "pos.session",
                 "get_closing_control_data",
                 [sessionId]
             );
 
-            // Procesar datos
             this.state.sessionData = data;
             this.state.ordersDetails = data.orders_details || { quantity: 0, amount: 0 };
             this.state.cashDetails = data.default_cash_details || null;
@@ -97,7 +86,6 @@ export class ClosingPopup extends Component {
             this.state.cashMoves = data.default_cash_details?.moves || [];
             this.state.currencyId = data.currency_id;
 
-            // Inicializar pagos con valores por defecto
             if (this.state.cashDetails) {
                 this.state.payments[this.state.cashDetails.id] = {
                     counted: "0",
@@ -207,7 +195,6 @@ export class ClosingPopup extends Component {
         try {
             const sessionId = this.props.sessionId;
 
-            // Preparar datos de cierre
             let countedCash = 0;
             if (this.state.cashDetails) {
                 countedCash = this.parseFloat(
@@ -215,7 +202,6 @@ export class ClosingPopup extends Component {
                 );
             }
 
-            // Llamar al método de cierre
             await this.orm.call(
                 "pos.session",
                 "post_closing_cash_details",
@@ -223,19 +209,16 @@ export class ClosingPopup extends Component {
                 { counted_cash: countedCash }
             );
 
-            // Actualizar notas de cierre
             await this.orm.call(
                 "pos.session",
                 "update_closing_control_state_session",
                 [sessionId, this.state.notes]
             );
 
-            // Preparar diferencias de métodos de pago bancarios
             const bankPaymentMethodDiffPairs = this.state.paymentMethods
                 .filter((pm) => pm.type === "bank")
                 .map((pm) => [pm.id, this.getDifference(pm.id)]);
 
-            // Cerrar la sesión
             const result = await this.orm.call(
                 "pos.session",
                 "close_session_from_ui",
@@ -255,15 +238,6 @@ export class ClosingPopup extends Component {
 
             this.props.close();
 
-            // Redirigir al listado de sesiones o a la página principal
-            await this.action.doAction({
-                type: "ir.actions.act_window",
-                res_model: "pos.config",
-                view_mode: "kanban,form",
-                views: [[false, "kanban"], [false, "form"]],
-                target: "current",
-            });
-
         } catch (error) {
             console.error("Error closing session:", error);
             this.notification.add(
@@ -278,27 +252,21 @@ export class ClosingPopup extends Component {
     }
 
     async cashMove() {
-        // Abrir wizard de entrada/salida de efectivo
-        await this.action.doAction({
-            type: "ir.actions.act_window",
-            res_model: "pos.session.cash_move.wizard",
-            view_mode: "form",
-            target: "new",
-            context: {
-                default_session_id: this.props.sessionId,
+        // Importar dinámicamente el CashMovePopup para evitar dependencias circulares
+        const { CashMovePopup } = await import("./cash_move_popup");
+
+        // Abrir el popup de entrada/salida de efectivo usando el servicio dialog
+        this.dialog.add(CashMovePopup, {
+            sessionId: this.props.sessionId,
+            close: () => {
+                // Recargar los datos de cierre para actualizar los movimientos
+                this.loadClosingData();
             },
         });
-
-        // Recargar datos después
-        await this.loadClosingData();
     }
 
     async downloadSalesReport() {
-        // Usar la acción de reporte desde el backend
-        if (this.report) {
-            await this.report.doAction("point_of_sale.sale_details_report", [this.props.sessionId]);
-        } else {
-            // Fallback: Abrir el reporte de ventas usando una acción del backend
+        try {
             await this.action.doAction({
                 type: "ir.actions.report",
                 report_type: "qweb-pdf",
@@ -307,16 +275,21 @@ export class ClosingPopup extends Component {
                 data: { date_start: false, date_stop: false, config_ids: [] },
                 context: { active_ids: [this.props.sessionId] },
             });
+        } catch (error) {
+            console.error("Error downloading report:", error);
+            this.notification.add(
+                _t("Error al descargar el reporte"),
+                { type: "warning" }
+            );
         }
     }
 }
 
 /**
- * Acción cliente para abrir el popup de cierre
+ * Acción cliente para abrir el popup de cierre usando el servicio dialog
  */
 class ClosingPopupAction extends Component {
     static template = "pos_conventional.ClosingPopupAction";
-    static components = { ClosingPopup };
     static props = { ...standardActionServiceProps };
 
     setup() {
@@ -325,25 +298,17 @@ class ClosingPopupAction extends Component {
         this.orm = useService("orm");
         this.notification = useService("notification");
 
-        this.state = useState({
-            sessionId: null,
-            loading: true,
-            error: null,
-        });
-
-        onWillStart(async () => {
-            await this.findSession();
+        onMounted(async () => {
+            await this.openPopup();
         });
     }
 
-    async findSession() {
+    async openPopup() {
         try {
-            // Obtener sessionId del contexto o buscar
             const context = this.props.action?.context || {};
             let sessionId = context.session_id || context.default_session_id;
 
             if (!sessionId) {
-                // Buscar sesión abierta del usuario
                 const sessions = await this.orm.searchRead(
                     "pos.session",
                     [
@@ -360,33 +325,26 @@ class ClosingPopupAction extends Component {
             }
 
             if (!sessionId) {
-                this.state.error = _t("No se encontró ninguna sesión POS abierta.");
-                this.state.loading = false;
+                this.notification.add(_t("No se encontró ninguna sesión POS abierta."), {
+                    type: "danger",
+                });
                 return;
             }
 
-            this.state.sessionId = sessionId;
-            this.state.loading = false;
+            // Abrir el popup usando el servicio dialog
+            this.dialog.add(ClosingPopup, {
+                sessionId: sessionId,
+                close: () => {
+                    // No hacer nada, el dialog se cierra automáticamente
+                },
+            });
 
         } catch (error) {
-            console.error("Error finding session:", error);
-            this.state.error = error.message;
-            this.state.loading = false;
+            console.error("Error opening closing popup:", error);
+            this.notification.add(_t("Error al abrir el popup de cierre"), { type: "danger" });
         }
-    }
-
-    onClose() {
-        // Volver al listado de pedidos POS
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            res_model: "pos.config",
-            view_mode: "kanban,form",
-            views: [[false, "kanban"], [false, "form"]],
-            target: "current",
-        });
     }
 }
 
 // Registrar la acción cliente
 registry.category("actions").add("pos_conventional_closing_popup", ClosingPopupAction);
-
