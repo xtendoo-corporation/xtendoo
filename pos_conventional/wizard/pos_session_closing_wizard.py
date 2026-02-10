@@ -15,17 +15,6 @@ class PosSessionClosingWizard(models.TransientModel):
         help="Cantidad total de dinero en efectivo contado al cerrar la caja",
         default=0.0,
     )
-    card_number = fields.Float(
-        string="Tarjeta número",
-        default=lambda self: self._default_card_amount(),
-        help="Importe contado/introducido para pagos con tarjeta (referencia).",
-    )
-    card_difference = fields.Monetary(
-        string="Diferencia tarjeta",
-        compute="_compute_card_difference",
-        store=True,
-        help="Diferencia entre el importe contado de tarjeta y el importe teórico",
-    )
     currency_id = fields.Many2one(
         "res.currency", related="session_id.currency_id", readonly=True
     )
@@ -61,19 +50,15 @@ class PosSessionClosingWizard(models.TransientModel):
     total_payments = fields.Monetary(
         string="Total de pagos", compute="_compute_session_totals", readonly=True
     )
-    cash_payments = fields.Monetary(
-        string="Pagos en efectivo", compute="_compute_session_totals", readonly=True
-    )
-    card_payments = fields.Monetary(
-        string="Pagos con tarjeta", compute="_compute_session_totals", readonly=True
-    )
-    other_payments = fields.Monetary(
-        string="Otros pagos", compute="_compute_session_totals", readonly=True
-    )
     cash_in_out_total = fields.Monetary(
         string="Entradas/Salidas de efectivo",
         compute="_compute_session_totals",
         readonly=True,
+    )
+    payment_method_line_ids = fields.One2many(
+        comodel_name="pos.session.closing.payment.line",
+        inverse_name="wizard_id",
+        string="Líneas de métodos de pago",
     )
     cash_in_out_line_ids = fields.Many2many(
         comodel_name="account.bank.statement.line",
@@ -99,32 +84,16 @@ class PosSessionClosingWizard(models.TransientModel):
     @api.depends("session_id")
     def _compute_session_totals(self):
         for wizard in self:
-            cash_total = 0.0
-            card_total = 0.0
-            other_total = 0.0
-
+            total = 0.0
             for payment in wizard.session_id.order_ids.mapped("payment_ids"):
-                method = payment.payment_method_id
-                amount = payment.amount
+                total += payment.amount
 
-                if method.is_cash_count:
-                    # Método de pago en efectivo
-                    cash_total += amount
-                elif method.type in ["bank", "pay_later"]:
-                    # Método de pago con tarjeta/banco
-                    card_total += amount
-                else:
-                    other_total += amount
+            wizard.total_payments = total
 
-            wizard.cash_payments = cash_total
-            wizard.card_payments = card_total
-            wizard.other_payments = other_total
-            wizard.total_payments = cash_total + card_total + other_total
-
-            # Entradas/Salidas de efectivo: sumar líneas de caja vinculadas a la sesión.
-            # En el core de Odoo, `cash_real_transaction` solo se actualiza al validar/cerrar.
+            # Entradas/Salidas de efectivo
             wizard.cash_in_out_total = sum(wizard.session_id.statement_line_ids.mapped('amount'))
 
+            # Cuenta de cliente (pedidos vinculados)
             linked_orders = wizard.session_id.order_ids.filtered(
                 lambda o: o.linked_sale_order_id
             )
@@ -140,16 +109,45 @@ class PosSessionClosingWizard(models.TransientModel):
                 wizard.cash_register_balance_end_real - wizard.cash_register_balance_end
             )
 
-    @api.depends("card_number", "card_payments")
-    def _compute_card_difference(self):
-        for wizard in self:
-            wizard.card_difference = wizard.card_number - wizard.card_payments
 
     @api.depends("session_id")
     def _compute_cash_in_out_lines(self):
         for wizard in self:
             lines = wizard.session_id.statement_line_ids.sorted(lambda l: (l.date or fields.Date.today(), l.id))
             wizard.cash_in_out_line_ids = [(6, 0, lines.ids)]
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Al crear el wizard, generamos automáticamente las líneas de métodos de pago.
+        """
+        wizards = super().create(vals_list)
+        for wizard in wizards:
+            if wizard.session_id and wizard.session_id.config_id:
+                # Obtener todos los métodos de pago configurados en el POS
+                payment_methods = wizard.session_id.config_id.payment_method_ids
+
+                lines_vals = []
+                for method in payment_methods:
+                    # Calcular el total teórico (esperado) para este método
+                    total_expected = sum(
+                        payment.amount
+                        for payment in wizard.session_id.order_ids.mapped("payment_ids")
+                        if payment.payment_method_id == method
+                    )
+
+                    # Solo crear línea si hay pagos con este método o si es efectivo
+                    if total_expected > 0 or method.is_cash_count:
+                        lines_vals.append((0, 0, {
+                            'payment_method_id': method.id,
+                            'amount_expected': total_expected,
+                            'amount_counted': total_expected,  # Por defecto, igual al esperado
+                        }))
+
+                if lines_vals:
+                    wizard.write({'payment_method_line_ids': lines_vals})
+
+        return wizards
 
     def action_close_session(self):
         """
@@ -275,20 +273,4 @@ class PosSessionClosingWizard(models.TransientModel):
                 "default_session_id": self.session_id.id,
             },
         }
-
-    @api.model
-    def _default_card_amount(self):
-        session_id = self.env.context.get('default_session_id')
-        if not session_id:
-            return 0.0
-        session = self.env['pos.session'].browse(session_id)
-        if not session:
-            return 0.0
-
-        total = 0.0
-        for payment in session.order_ids.mapped('payment_ids'):
-            method = payment.payment_method_id
-            if method and method.type in ['bank', 'pay_later']:
-                total += payment.amount
-        return total
 

@@ -499,9 +499,64 @@
     background: transparent;
 }
 
-.o_pos_session_closing_wizard .o_pos_counted_inputs input {
-    text-align: right;
-    font-size: 1.5rem;
+/* ===================================================
+   Closing Popup (OWL Component) - Estilos
+   ================================================== */
+
+.o_closing_popup_action {
+    background: rgba(0, 0, 0, 0.5);
+    min-height: 100vh;
+}
+
+.close-pos-popup {
+    max-width: 650px !important;
+}
+
+.close-pos-popup .payment-methods-overview {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.close-pos-popup .fs-3 {
+    font-size: 1.25rem !important;
     font-weight: 600;
-    width: 100%;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.close-pos-popup .border-start {
+    border-left: 3px solid #dee2e6 !important;
+}
+
+.close-pos-popup .text-danger {
+    color: #dc3545 !important;
+}
+
+.close-pos-popup .cash-input {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.close-pos-popup .btn-primary {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+}
+
+.close-pos-popup .btn-primary:hover {
+    background-color: #5d3d55 !important;
+    border-color: #5d3d55 !important;
+}
+
+.close-pos-popup .payment-method-breakdown {
+    cursor: pointer;
+}
+
+.close-pos-popup .payment-method-breakdown:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.close-pos-popup .closing-notes {
+    resize: none;
 }

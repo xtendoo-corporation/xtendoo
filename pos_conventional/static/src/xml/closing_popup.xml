@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Componente PaymentMethodBreakdown -->
+    <t t-name="pos_conventional.PaymentMethodBreakdown">
+        <div class="payment-method-breakdown" t-if="props.transactions and props.transactions.length > 0">
+            <div class="d-flex align-items-center justify-content-between text-muted border-start ps-2 cursor-pointer"
+                 t-on-click="toggle">
+                <span>
+                    <i t-attf-class="fa fa-caret-{{ state.open ? 'down' : 'right' }} me-1"/>
+                    <t t-esc="props.title || 'Movimientos'"/>
+                </span>
+                <span t-esc="formatCurrency(props.total_amount)"/>
+            </div>
+            <div t-if="state.open" class="ms-4 mt-1">
+                <div t-foreach="props.transactions" t-as="move" t-key="move.id"
+                     class="d-flex justify-content-between text-muted small">
+                    <span t-esc="move.name"/>
+                    <span t-esc="formatCurrency(move.amount)"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Popup de cierre de sesión -->
+    <t t-name="pos_conventional.ClosingPopup">
+        <Dialog contentClass="'close-pos-popup'" size="'lg'">
+            <t t-set-slot="header">
+                <div class="d-flex flex-grow-1 justify-content-between">
+                    <h4 class="align-middle my-1">Cerrando la caja registradora</h4>
+                    <div class="total-orders fw-bolder align-middle my-1" t-if="!state.loading">
+                        <t t-esc="state.ordersDetails.quantity"/> pedidos:
+                        <span class="amount" t-esc="formatCurrency(state.ordersDetails.amount)"/>
+                    </div>
+                </div>
+            </t>
+
+            <div t-if="state.loading" class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-3x"/>
+                <p class="mt-3">Cargando datos de cierre...</p>
+            </div>
+
+            <div t-else="" class="payment-methods-overview">
+                <!-- Sección de Efectivo -->
+                <div t-if="state.cashDetails" class="w-100 mb-3">
+                    <t t-set="cashDiff" t-value="getDifference(state.cashDetails.id)"/>
+                    <t t-set="cashCounted" t-value="state.payments[state.cashDetails.id]?.counted || '0'"/>
+
+                    <div class="d-flex align-items-center justify-content-between fs-3">
+                        <span t-esc="state.cashDetails.name"/>
+                        <span t-esc="formatCurrency(state.cashDetails.amount)"/>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between text-muted border-start ps-2">
+                        <span>Apertura</span>
+                        <span t-esc="formatCurrency(state.cashDetails.opening)"/>
+                    </div>
+                    <div t-if="state.cashDetails.payment_amount" class="d-flex align-items-center justify-content-between text-muted border-start ps-2">
+                        <span>+ Pagos</span>
+                        <span t-esc="formatCurrency(Math.abs(state.cashDetails.payment_amount))"/>
+                    </div>
+
+                    <!-- Movimientos de efectivo -->
+                    <PaymentMethodBreakdown
+                        title="'Entrada y salida de efectivo'"
+                        total_amount="cashMoveData.total"
+                        transactions="cashMoveData.moves"
+                        currencyId="state.currencyId"/>
+
+                    <div class="d-flex align-items-center justify-content-between text-muted border-start ps-2">
+                        <span>Contado</span>
+                        <span t-esc="formatCurrency(parseFloat(cashCounted))"/>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between border-start ps-2"
+                         t-att-class="{'text-danger fw-bold': cashDiff !== 0}">
+                        <span>Diferencia</span>
+                        <span t-esc="formatCurrency(cashDiff)"/>
+                    </div>
+                </div>
+
+                <!-- Otros métodos de pago -->
+                <div class="w-100 mb-3" t-foreach="state.paymentMethods" t-as="pm" t-key="pm.id">
+                    <t t-set="_showDiff" t-value="pm.type === 'bank' and pm.number !== 0"/>
+                    <t t-set="pmDiff" t-value="_showDiff ? getDifference(pm.id) : 0"/>
+                    <t t-set="pmCounted" t-value="_showDiff and state.payments[pm.id] ? parseFloat(state.payments[pm.id].counted) : 0"/>
+
+                    <div class="d-flex align-items-center justify-content-between fs-3">
+                        <span t-esc="pm.name"/>
+                        <span t-esc="formatCurrency(pm.amount)"/>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between text-muted border-start ps-2">
+                        <span>Contado</span>
+                        <span t-esc="formatCurrency(pmCounted)"/>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between border-start ps-2"
+                         t-att-class="{'text-danger fw-bold': pmDiff !== 0}">
+                        <span>Diferencia</span>
+                        <span t-esc="formatCurrency(pmDiff)"/>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <!-- Input de recuento de efectivo -->
+                <div t-if="state.cashDetails" class="mb-3">
+                    <label class="form-label">Recuento de efectivo</label>
+                    <div class="d-flex w-100 gap-2 mt-1">
+                        <input type="text"
+                               class="form-control cash-input w-100"
+                               t-att-value="state.payments[state.cashDetails.id]?.counted || '0'"
+                               t-on-input="(ev) => this.onCashInputChange(ev)"/>
+                        <button class="btn btn-secondary" t-on-click="autoFillCashCount" title="Autocompletar">
+                            <i class="fa fa-clone"/>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inputs de otros métodos de pago -->
+                <div class="w-100 mb-3" t-foreach="state.paymentMethods" t-as="pm" t-key="pm.id">
+                    <t t-if="pm.type === 'bank' and pm.number !== 0">
+                        <label class="form-label"><t t-esc="pm.name"/> Número</label>
+                        <div class="d-flex w-100 gap-2 mt-1">
+                            <input type="text"
+                                   class="form-control w-100"
+                                   t-att-value="state.payments[pm.id]?.counted || '0'"
+                                   t-on-input="(ev) => this.onPMInputChange(pm.id, ev)"/>
+                            <button class="btn btn-secondary" t-on-click="() => this.autoFillPMCount(pm.id)" title="Autocompletar">
+                                <i class="fa fa-clone"/>
+                            </button>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Nota de cierre -->
+                <div class="closing-notes-container d-flex flex-column flex-grow-1 align-items-start mt-3">
+                    <label class="form-label">Nota de cierre</label>
+                    <textarea class="closing-notes form-control"
+                              style="height: 80px"
+                              rows="3"
+                              placeholder="Añadir una nota de cierre..."
+                              t-model="state.notes"/>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <div class="w-100 d-flex flex-wrap justify-content-between gap-2">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-lg"
+                                t-on-click="confirm"
+                                t-att-disabled="state.loading">
+                            Cerrar caja registradora
+                        </button>
+                        <button class="btn btn-secondary btn-lg" t-on-click="cancel">
+                            Descartar
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary btn-lg" t-on-click="cashMove">
+                            Entrada/salida de efectivo
+                        </button>
+                        <button class="btn btn-secondary btn-lg" t-on-click="downloadSalesReport">
+                            Venta diaria
+                            <i class="fa fa-download ms-1"/>
+                        </button>
+                    </div>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- Acción cliente wrapper -->
+    <t t-name="pos_conventional.ClosingPopupAction">
+        <div class="o_closing_popup_action h-100 d-flex align-items-center justify-content-center">
+            <div t-if="state.loading" class="text-center">
+                <i class="fa fa-spinner fa-spin fa-3x"/>
+                <p class="mt-3">Cargando...</p>
+            </div>
+            <div t-elif="state.error" class="text-center text-danger">
+                <i class="fa fa-exclamation-triangle fa-3x"/>
+                <p class="mt-3" t-esc="state.error"/>
+                <button class="btn btn-primary mt-2" t-on-click="onClose">Volver</button>
+            </div>
+            <ClosingPopup t-else=""
+                          sessionId="state.sessionId"
+                          close.bind="onClose"/>
+        </div>
+    </t>
+
+</templates>
+

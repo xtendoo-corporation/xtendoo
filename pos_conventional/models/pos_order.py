@@ -379,7 +379,7 @@ class PosOrder(models.Model):
 
     def action_close_pos_session_wizard(self):
         """
-        Abre el wizard para cerrar la sesión POS actual del usuario.
+        Abre el popup de cierre de sesión POS estilo Odoo.
         Este método se llama desde el botón en la vista de pedidos.
 
         La sesión se determina en este orden de prioridad:
@@ -424,7 +424,6 @@ class PosOrder(models.Model):
             )
 
             # Fallback: Si no encuentro sesión del usuario, busco cualquiera abierta en POS no táctil
-            # Esto es necesario si se cambió el usuario de la sesión mediante Force Login
             if not session:
                 session = self.env["pos.session"].search(
                     [
@@ -440,30 +439,16 @@ class PosOrder(models.Model):
                 _("No tienes ninguna sesión abierta en un punto de venta no táctil.")
             )
 
-        # Validar que sea caja no táctil (por seguridad)
-        if not session.config_id.pos_non_touch:
-            raise UserError(
-                _("Esta función solo está disponible para cajas en modo no táctil.")
-            )
-
-        # Crear el wizard de cierre
-        wizard = self.env["pos.session.closing.wizard"].create(
-            {
-                "session_id": session.id,
-                "cash_register_balance_end_real": session.cash_register_balance_end,
-            }
-        )
-
-        # Retornar la acción para mostrar el wizard
+        # Abrir el popup de cierre usando la acción cliente
         return {
-            "name": _("Cerrar caja - Modo no táctil"),
-            "type": "ir.actions.act_window",
-            "res_model": "pos.session.closing.wizard",
-            "res_id": wizard.id,
-            "view_mode": "form",
+            "type": "ir.actions.client",
+            "tag": "pos_conventional_closing_popup",
+            "name": _("Cerrar caja registradora"),
             "target": "new",
-            "views": [(False, "form")],
-            "context": dict(self.env.context),
+            "context": {
+                "session_id": session.id,
+                "default_session_id": session.id,
+            },
         }
 
     def action_cash_in_out_wizard(self):
@@ -972,6 +957,7 @@ class PosOrder(models.Model):
             "view_type": "form",
             "target": "current",
         }
+
 
 
 class PosOrderLine(models.Model):
