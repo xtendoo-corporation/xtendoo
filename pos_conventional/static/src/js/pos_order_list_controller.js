@@ -235,6 +235,9 @@ export class PosOrderListController extends ListController {
     /**
      * Maneja el click en el botón "Entrada / Salida de efectivo"
      */
+    /**
+     * Maneja el click en el botón "Entrada / Salida de efectivo"
+     */
     async onCashInOut() {
         try {
             const sessionId = this.currentSessionId || this.activeSessionId;
@@ -262,6 +265,35 @@ export class PosOrderListController extends ListController {
                 { type: "danger" }
             );
         }
+    }
+
+    /**
+     * Sobrescribimos actionMenuItems para inyectar nuestras acciones personalizadas
+     * tanto en el CogMenu (sin selección) como en el ActionMenus (con selección).
+     */
+    get actionMenuItems() {
+        const items = super.actionMenuItems;
+        
+        if (this.state.showCloseButton) {
+            // Añadir nuestras acciones al grupo 'action'
+            items.action.push({
+                key: "cash_in_out",
+                description: "Entrada / Salida de efectivo",
+                icon: "fa fa-money",
+                callback: () => this.onCashInOut(),
+                sequence: 100,
+            });
+            items.action.push({
+                key: "close_session",
+                description: "Cerrar caja",
+                icon: "fa fa-times-circle",
+                class: "text-danger",
+                callback: () => this.onCloseCashRegister(),
+                sequence: 110,
+            });
+        }
+        
+        return items;
     }
 }
 

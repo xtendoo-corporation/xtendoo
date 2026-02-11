@@ -8,20 +8,16 @@
             <attribute name="t-if">(props.resModel !== 'pos.order') or (state and state.showCloseButton)</attribute>
         </xpath>
 
-        <!-- Añadir botones de Entrada/Salida de efectivo y Cerrar caja -->
-        <xpath expr="//t[@t-set-slot='control-panel-create-button']/button[@class='btn btn-primary o_list_button_add']" position="after">
-           <button t-if="state and state.showCloseButton"
-                    type="button"
-                    class="btn btn-secondary ms-2"
-                    t-on-click="onCashInOut">
-                Entrada / Salida de efectivo
-            </button>
-            <button t-if="state and state.showCloseButton"
-                    type="button"
-                    class="btn btn-danger ms-2"
-                    t-on-click="onCloseCashRegister">
-                Cerrar caja
-            </button>
+        <!-- Pasar las props de menú al CogMenu para que muestre nuestras acciones aunque no haya
+        selección -->
+        <xpath expr="//t[@t-set-slot='control-panel-additional-actions']/CogMenu" position="attributes">
+            <attribute name="t-props">props.resModel === 'pos.order' ? actionMenuProps : undefined</attribute>
         </xpath>
+
+        <!-- 
+            En lugar de añadir botones físicos, ahora las acciones están en actionMenuItems del controlador.
+            Removemos los botones antiguos que añadimos en la versión anterior si existieran (o simplemente no
+        los añadimos aquí).
+        -->
     </t>
 </templates>

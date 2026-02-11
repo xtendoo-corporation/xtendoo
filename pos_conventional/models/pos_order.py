@@ -834,7 +834,7 @@ class PosOrder(models.Model):
             'type': 'ir.actions.client',
             'tag': 'pos_conventional_payment_popup',
             'name': _('Realizar Pago'),
-            'target': 'new',
+            'target': 'current',
             'context': {
                 'active_id': self.id,
             }

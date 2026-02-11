@@ -20,48 +20,8 @@
                         </div>
                     </t>
                     <div class="row g-4" t-if="state.orderData">
-                        <!-- Columna Izquierda: Totales y Numpad -->
-                        <div class="col-md-5 border-end">
-                            <div class="total-due-section text-center mb-4 p-3 bg-light rounded border">
-                                <div class="text-muted text-uppercase fw-bold mb-1">Total Pendiente</div>
-                                <div class="display-3 fw-bold text-dark">
-                                    <t t-esc="formatCurrency(state.orderData.amount_due || 0)" />
-                                </div>
-                            </div>
-
-                            <!-- Input Visual (Editable) -->
-                            <div class="input-display mb-3 p-2 border-bottom d-flex justify-content-between align-items-center">
-                                <span class="text-muted h4 mb-0">Importe a pagar:</span>
-                                <div class="input-group input-group-lg w-50">
-                                    <input type="text" 
-                                           class="form-control text-end fw-bold text-primary border-0 bg-transparent shadow-none fs-2 p-0"
-                                           t-att-value="state.inputBuffer"
-                                           t-on-input="onInputChange" />
-                                    <span class="input-group-text border-0 bg-transparent fs-2 fw-bold text-primary p-0 ms-1">
-                                        <t t-esc="state.orderData.currency_symbol || '€'" />
-                                    </span>
-                                </div>
-                            </div>
-
-
-                            <!-- Numpad -->
-                            <div class="numpad grid gap-2 d-grid" style="grid-template-columns: repeat(3, 1fr);">
-                                <t t-foreach="['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', 'Backspace']" 
-                                   t-as="key" t-key="key">
-                                    <button class="btn btn-outline-secondary btn-lg py-3 fw-bold fs-4"
-                                            t-on-click="() => this.sendInput(key)">
-                                        <t t-if="key == 'Backspace'">
-                                            <i class="fa fa-backspace" />
-                                        </t>
-                                        <t t-else="" t-esc="key" />
-                                    </button>
-                                </t>
-                            </div>
-
-                        </div>
-
-                        <!-- Columna Derecha: Métodos y Pagos -->
-                        <div class="col-md-7">
+                        <!-- Columna Izquierda: Métodos y Pagos -->
+                        <div class="col-md-7 border-end">
                             <h4 class="mb-3 border-bottom pb-2">Seleccionar Método de Pago</h4>
                             <div class="payment-methods row g-2 mb-4">
                                 <t t-foreach="state.orderData.available_methods" t-as="method" t-key="method.id">
@@ -99,6 +59,46 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+
+                        <!-- Columna Derecha: Totales y Numpad -->
+                        <div class="col-md-5">
+                            <div class="total-due-section text-center mb-4 p-3 bg-light rounded border">
+                                <div class="text-muted text-uppercase fw-bold mb-1">Total Pendiente</div>
+                                <div class="display-3 fw-bold text-dark">
+                                    <t t-esc="formatCurrency(state.orderData.amount_due || 0)" />
+                                </div>
+                            </div>
+
+                            <!-- Input Visual (Editable) -->
+                            <div class="input-display mb-3 p-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="text-muted h4 mb-0">Importe a pagar:</span>
+                                <div class="input-group input-group-lg w-50">
+                                    <input type="text" 
+                                           class="form-control text-end fw-bold text-primary border-0 bg-transparent shadow-none fs-2 p-0"
+                                           t-att-value="state.inputBuffer"
+                                           t-on-input="onInputChange" />
+                                    <span class="input-group-text border-0 bg-transparent fs-2 fw-bold text-primary p-0 ms-1">
+                                        <t t-esc="state.orderData.currency_symbol || '€'" />
+                                    </span>
+                                </div>
+                            </div>
+
+
+                            <!-- Numpad -->
+                            <div class="numpad grid gap-2 d-grid" style="grid-template-columns: repeat(3, 1fr);">
+                                <t t-foreach="['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', 'Backspace']" 
+                                   t-as="key" t-key="key">
+                                    <button class="btn btn-outline-secondary btn-lg py-3 fw-bold fs-4"
+                                            t-on-click="() => this.sendInput(key)">
+                                        <t t-if="key == 'Backspace'">
+                                            <i class="fa fa-backspace" />
+                                        </t>
+                                        <t t-else="" t-esc="key" />
+                                    </button>
+                                </t>
+                            </div>
+
                         </div>
                     </div>
                 </t>

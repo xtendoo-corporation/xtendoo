@@ -169,9 +169,7 @@
         <field name="arch" type="xml">
             <!-- Eliminar el botón original de Payment -->
             <xpath expr="//header/button[1]" position="attributes">
-                <attribute
-                    name="invisible">state != 'draft' or not has_order_lines or is_linked_to_sale
-                </attribute>
+                <attribute name="invisible">1</attribute>
                 <attribute name="class">me-2</attribute>
             </xpath>
             <xpath expr="//header/button[1]" position="after">
