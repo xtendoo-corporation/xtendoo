@@ -44,6 +44,7 @@ export class ClosingPopup extends Component {
     static props = {
         close: { type: Function },
         sessionId: { type: Number },
+        onSuccess: { type: Function, optional: true },
     };
 
     setup() {
@@ -236,6 +237,9 @@ export class ClosingPopup extends Component {
                 type: "success",
             });
 
+            if (this.props.onSuccess) {
+                await this.props.onSuccess();
+            }
             this.props.close();
 
         } catch (error) {
@@ -332,11 +336,15 @@ class ClosingPopupAction extends Component {
             }
 
             // Abrir el popup usando el servicio dialog
-            this.dialog.add(ClosingPopup, {
+            const removeDialog = this.dialog.add(ClosingPopup, {
                 sessionId: sessionId,
+                onSuccess: async () => {
+                    // Al cerrar el popup con éxito, volver al tablero
+                    await this.action.doAction("point_of_sale.action_pos_config_kanban");
+                },
                 close: () => {
-                    // Al cerrar el popup, volver al tablero
-                    this.action.doAction("point_of_sale.action_pos_config_kanban");
+                    // Simplemente cerrar el diálogo
+                    removeDialog();
                 },
             });
 

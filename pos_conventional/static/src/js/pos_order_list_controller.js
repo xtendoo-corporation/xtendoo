@@ -14,6 +14,7 @@ export class PosOrderListController extends ListController {
 
         // Servicios
         this.dialogService = useService("dialog");
+        this.actionService = useService("action");
 
         // Estado reactivo para controlar la visibilidad de los botones
         this.state = useState({
@@ -209,13 +210,19 @@ export class PosOrderListController extends ListController {
 
 
             // Abrir el popup usando el servicio dialog (mantiene el contexto)
-            this.dialogService.add(ClosingPopup, {
+            const removeDialog = this.dialogService.add(ClosingPopup, {
                 sessionId: sessionId,
+                onSuccess: async () => {
+                    // Al cerrar el popup con éxito, volver al tablero
+                    await this.actionService.doAction("point_of_sale.action_pos_config_kanban");
+                },
                 close: () => {
                     // Recargar la lista para reflejar cambios
                     this.model.load();
+                    removeDialog();
                 },
             });
+            
         } catch (error) {
             console.error("Error al cerrar caja:", error);
             this.env.services.notification.add(

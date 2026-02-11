@@ -12,13 +12,14 @@
 
                 <div t-else="">
                     <!-- Información de la sesión -->
-                    <div class="mb-3">
+                    <!--<div
+                    class="mb-3">
                         <div class="alert alert-info" role="alert">
                             <strong>Sesión:</strong> <t t-esc="state.sessionName"/>
                             <br/>
                             <strong>Punto de venta:</strong> <t t-esc="state.configName"/>
                         </div>
-                    </div>
+                    </div>-->
 
                     <!-- Efectivo de apertura -->
                     <div class="opening-cash-section mb-3" t-if="state.cashControlEnabled">
