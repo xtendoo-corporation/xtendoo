@@ -312,8 +312,7 @@
                                 <t t-foreach="state.orderData.available_methods" t-as="method" t-key="method.id">
                                     <button class="payment-method-btn"
                                             t-on-click="() => this.addPayment(method.id)">
-                                        <i t-if="method.is_cash_count" class="fa fa-money me-2"></i>
-                                        <i t-else="" class="fa fa-credit-card me-2"></i>
+                                        <i t-attf-class="fa {{method.icon}} me-2"></i>
                                         <t t-esc="method.name" />
                                     </button>
                                 </t>
@@ -328,7 +327,7 @@
                                                  t-on-click="() => this.selectPayment(payment)">
                                                 <div class="payment-line-content">
                                                     <span class="payment-method-name">
-                                                        <i class="fa fa-tag me-2 text-muted"></i>
+                                                        <i t-attf-class="fa {{payment.icon}} me-2 text-muted"></i>
                                                         <t t-esc="payment.payment_method_name" />
                                                     </span>
                                                     <span class="payment-amount">

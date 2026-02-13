@@ -861,20 +861,34 @@ class PosOrder(models.Model):
 
         available_methods = []
         for pm in self.config_id.payment_method_ids:
+            icon = "fa-money"
+            if pm.journal_id.type == "cash":
+                icon = "fa-money"
+            elif pm.journal_id.type == "bank":
+                icon = "fa-credit-card"
+            
             available_methods.append({
                 'id': pm.id,
                 'name': pm.name,
                 'type': pm.type,
                 'use_payment_terminal': pm.use_payment_terminal,
+                'icon': icon,
             })
 
         payments = []
         for p in self.payment_ids:
+            p_icon = "fa-money"
+            if p.payment_method_id.journal_id.type == "cash":
+                p_icon = "fa-money"
+            elif p.payment_method_id.journal_id.type == "bank":
+                p_icon = "fa-credit-card"
+
             payments.append({
                 'id': p.id,
                 'payment_method_id': p.payment_method_id.id,
                 'payment_method_name': p.payment_method_id.name,
                 'amount': p.amount,
+                'icon': p_icon,
             })
 
         amount_due = self.amount_total - self.amount_paid

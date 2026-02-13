@@ -216,6 +216,7 @@ export class PaymentPopup extends Component {
             id: newId,
             payment_method_id: method.id,
             payment_method_name: method.name,
+            icon: method.icon,
             amount: initialAmount,
         };
 
