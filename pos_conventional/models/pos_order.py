@@ -344,7 +344,7 @@ class PosOrder(models.Model):
             _logger.exception("Error al generar factura: %s", str(e))
             raise UserError(_("Error al generar la factura: %s") % str(e))
 
-        if self.config_id.iface_print_auto:
+        if self.config_id.iface_print_auto and not self.env.context.get("pos_skip_printing"):
             # Construir la URL del informe HTML y devolver una acción cliente
             report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
             url = f"/report/html/{report_xmlid}/{invoice.id}"
@@ -872,6 +872,7 @@ class PosOrder(models.Model):
         for p in self.payment_ids:
             payments.append({
                 'id': p.id,
+                'payment_method_id': p.payment_method_id.id,
                 'payment_method_name': p.payment_method_id.name,
                 'amount': p.amount,
             })
@@ -908,12 +909,10 @@ class PosOrder(models.Model):
 
         self.add_payment({
             'pos_order_id': self.id,
-            'amount': amount,
+            'amount': float(amount),
             'payment_method_id': payment_method_id,
         })
         
-        # Si el pedido queda totalmente pagado, NO validamos aquí, 
-        # dejamos que el frontend decida si llamar a validar.
         return self.get_payment_popup_data()
 
     def remove_payment_from_ui(self, payment_id):
@@ -929,6 +928,88 @@ class PosOrder(models.Model):
             payment.unlink()
         
         return self.get_payment_popup_data()
+
+    def update_payment_from_ui(self, payment_id, amount):
+        """
+        Actualiza el importe de un pago desde la interfaz Owl.
+        """
+        self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_("Solo se pueden modificar pagos de pedidos en borrador."))
+
+        payment = self.env['pos.payment'].browse(payment_id)
+        if payment.exists() and payment.pos_order_id.id == self.id:
+            payment.write({'amount': float(amount)})
+        
+        return self.get_payment_popup_data()
+
+    def action_register_payments_and_validate(self, payments, print_invoice=False):
+        """
+        Reemplaza los pagos existentes con la lista proporcionada y valida el pedido.
+        """
+        self.ensure_one()
+        if self.state != 'draft':
+            return {'success': False, 'message': _("El pedido ya está validado.")}
+
+        # 1. Eliminar pagos existentes
+        self.payment_ids.unlink()
+
+        # 2. Crear nuevos pagos
+        for pay in payments:
+            amount = float(pay.get('amount', 0))
+            if amount != 0:
+                self.add_payment({
+                    'pos_order_id': self.id,
+                    'payment_method_id': int(pay.get('payment_method_id')),
+                    'amount': amount,
+                })
+        
+        # 3. Validar
+        # Comprobar si está pagado completamente?
+        # El frontend debería haber validado esto, pero el backend es la autoridad.
+        if self._is_pos_order_paid():
+            # Si se pide factura simplificada o factura normal
+            if print_invoice:
+                self.to_invoice = True
+
+            self.action_pos_order_paid()
+            
+            # Acción de redirección a la vista de lista de la sesión
+            next_action = {
+                "type": "ir.actions.act_window",
+                "name": _("Pedidos de la sesión"),
+                "res_model": "pos.order",
+                "view_mode": "tree,form",
+                "views": [[False, "list"], [False, "form"]],
+                "domain": [("session_id", "=", self.session_id.id)],
+                "context": {"default_session_id": self.session_id.id},
+                "target": "main",
+            }
+
+            final_action = next_action
+
+            # Si hay factura, usar la acción cliente de impresión que luego llama a next_action
+            if self.to_invoice:
+                 invoice = self._generate_pos_order_invoice()
+                 report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
+                 url = f"/report/html/{report_xmlid}/{invoice.id}"
+                 
+                 final_action = {
+                    "type": "ir.actions.client",
+                    "tag": "pos_conventional_print_iframe",
+                    "params": {
+                        "url": url,
+                        "next_action": next_action,
+                    },
+                 }
+                 
+            return {
+                'success': True,
+                'action': final_action,
+            }
+        else:
+            # Si falta dinero, devolvemos datos actualizados
+             return self.get_payment_popup_data()
 
     def action_pay_account(self):
 

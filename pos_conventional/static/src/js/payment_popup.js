@@ -1,15 +1,10 @@
-/** @odoo-module **/
-
-import { Dialog } from "@web/core/dialog/dialog";
-import { Component, useState, onWillStart, onMounted } from "@odoo/owl";
+import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
-import { registry } from "@web/core/registry";
+import { Component, useState, onWillStart, onMounted, useExternalListener } from "@odoo/owl";
+import { Dialog } from "@web/core/dialog/dialog";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 
-/**
- * Popup de pago combinado para POS Conventional
- */
 export class PaymentPopup extends Component {
     static template = "pos_conventional.PaymentPopup";
     static components = { Dialog };
@@ -23,24 +18,21 @@ export class PaymentPopup extends Component {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.action = useService("action");
-
+        
         this.state = useState({
+            orderData: null,
+            payments: [], // Local payment state
+            selectedPaymentId: null,
+            inputBuffer: "",
+            overwrite: false,
+            printInvoice: false,
             loading: true,
-            orderData: {
-                amount_due: 0,
-                amount_total: 0,
-                amount_paid: 0,
-                currency_symbol: "€",
-                available_methods: [],
-                payments: [],
-            },
-            inputBuffer: "0",
-            selectedMethodId: null,
-            error: null,
         });
 
+        useExternalListener(window, "keydown", this.handleKeydown.bind(this));
+
         onWillStart(async () => {
-            await this.loadOrderData();
+             await this.loadOrderData();
         });
     }
 
@@ -51,151 +43,253 @@ export class PaymentPopup extends Component {
                 "get_payment_popup_data",
                 [this.props.orderId]
             );
-            if (data) {
-                this.state.orderData = data;
-                this.state.inputBuffer = (data.amount_due || 0).toFixed(2).replace(".", ",");
-                this.state.loading = false;
-            } else {
-                throw new Error("No data received from server");
+            console.log("PaymentPopup OrderData:", data);
+            this.state.orderData = data;
+            
+            // Initialize local payments from backend data
+            if (data.payments) {
+                this.state.payments = data.payments.map(p => ({
+                    id: p.id,
+                    payment_method_id: p.payment_method_id,
+                    payment_method_name: p.payment_method_name,
+                    amount: p.amount,
+                }));
             }
+
+            // Select last payment if exists
+            if (this.state.payments.length > 0) {
+                this.selectPayment(this.state.payments[this.state.payments.length - 1]);
+            }
+            this.state.loading = false;
+
         } catch (error) {
             console.error("Error loading order data:", error);
-            this.state.error = error.message || error.data?.message || _t("Error desconocido");
-            this.notification.add(_t("Error al cargar datos del pedido: ") + this.state.error, { type: "danger" });
+            this.notification.add(_t("Error al cargar datos del pedido"), { type: "danger" });
             this.state.loading = false;
         }
     }
 
+    get amountDue() {
+        if (!this.state.orderData) return 0;
+        const total = this.state.orderData.amount_total || 0;
+        const paid = this.state.payments.reduce((sum, p) => sum + p.amount, 0);
+        // Round to avoid floating point issues (e.g. -0.00000001)
+        const due = parseFloat((total - paid).toFixed(2));
+        // Treat -0.00 as 0
+        return Math.abs(due) < 0.001 ? 0 : due;
+    }
+    
+    // Proxy orderData to include local payments for XML compatibility
+    get orderDataProxy() {
+        if (!this.state.orderData) return null;
+        return {
+            ...this.state.orderData,
+            payments: this.state.payments,
+            amount_due: this.amountDue // Override due amount
+        };
+    }
+
     formatCurrency(amount) {
-        if (!this.state.orderData) return amount.toFixed(2);
+        if (!this.state.orderData) return (amount || 0).toFixed(2);
         return new Intl.NumberFormat("es-ES", {
             style: "currency",
             currency: "EUR", 
         }).format(amount).replace("EUR", this.state.orderData.currency_symbol || "€");
     }
 
-    // --- Numpad Logic ---
-    sendInput(key) {
-        // Si el buffer es igual al total pendiente inicial, lo limpiamos al empezar a escribir
-        const initialAmount = this.state.orderData.amount_due.toFixed(2).replace(".", ",");
-        if (this.state.inputBuffer === initialAmount && key !== "Backspace") {
-            this.state.inputBuffer = "";
-        }
+    togglePrintInvoice() {
+        this.state.printInvoice = !this.state.printInvoice;
+    }
 
-        if (key === "Backspace") {
-            this.state.inputBuffer = this.state.inputBuffer.slice(0, -1) || "0";
+    selectPayment(payment) {
+        this.state.selectedPaymentId = payment.id;
+        this.state.overwrite = true;
+        this.state.inputBuffer = payment.amount.toFixed(2).replace(".", ",");
+        if (this.state.inputBuffer.endsWith(",00")) {
+             this.state.inputBuffer = this.state.inputBuffer.substring(0, this.state.inputBuffer.length - 3);
+        }
+    }
+
+    handleKeydown(ev) {
+        if (this.state.loading) return;
+        if (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA") return;
+
+        const key = ev.key;
+        console.log("Key pressed:", key); // Debug
+
+        if (/^[0-9]$/.test(key)) {
+            this.handleInput(key);
+            ev.preventDefault();
+            ev.stopPropagation();
         } else if (key === "," || key === ".") {
-            if (!this.state.inputBuffer.includes(",")) {
-                this.state.inputBuffer += ",";
+            this.handleInput(",");
+            ev.preventDefault();
+            ev.stopPropagation();
+        } else if (key === "Backspace") {
+            this.handleBackspace();
+            ev.preventDefault();
+            ev.stopPropagation();
+        } else if (key === "Enter") {
+             this.validate();
+             ev.preventDefault();
+             ev.stopPropagation();
+        }
+    }
+
+    handleInput(char) {
+        if (!this.state.selectedPaymentId) return;
+
+        let newBuffer = this.state.inputBuffer;
+        
+        // Overwrite logic when starting to type on a selected payment
+        if (this.state.overwrite) {
+            this.state.overwrite = false;
+            if (/^[0-9]$/.test(char)) {
+                newBuffer = char;
+            } else if (char === ",") {
+                newBuffer = "0,";
             }
         } else {
-            if (this.state.inputBuffer === "0") {
-                this.state.inputBuffer = key;
+            // Standard append logic
+            if (newBuffer === "0" && char !== ",") {
+                newBuffer = char;
             } else {
-                this.state.inputBuffer += key;
+                if (char === "," && newBuffer.includes(",")) return;
+                newBuffer += char;
             }
         }
-    }
-
-    onInputChange(event) {
-        let value = event.target.value;
-        // Solo permitir números y una coma
-        value = value.replace(/[^0-9,]/g, "");
-        // Asegurar una sola coma
-        const parts = value.split(",");
-        if (parts.length > 2) {
-            value = parts[0] + "," + parts.slice(1).join("");
-        }
-        this.state.inputBuffer = value || "0";
-    }
-
-    get inputAmount() {
-        return parseFloat(this.state.inputBuffer.replace(",", ".")) || 0;
-    }
-
-
-    // --- Actions ---
-    async addPayment(methodId) {
-        const amount = this.inputAmount;
-        if (amount <= 0) {
-            this.notification.add(_t("El importe debe ser mayor que 0"), { type: "warning" });
-            return;
+        
+        // Validate format (max 2 decimals)
+        const parts = newBuffer.split(",");
+        if (parts.length > 1 && parts[1].length > 2) {
+            return; 
         }
 
-        try {
-            const data = await this.orm.call(
-                "pos.order",
-                "add_payment_from_ui",
-                [this.props.orderId, methodId, amount]
-            );
-            this.state.orderData = data;
-            this.state.inputBuffer = data.amount_due.toFixed(2).replace(".", ",");
-        } catch (error) {
-            console.error("Error adding payment:", error);
-            this.notification.add(_t("Error al añadir pago"), { type: "danger" });
+        console.log("New Buffer:", newBuffer); // Debug
+        this.updatePaymentFromBuffer(newBuffer);
+    }
+
+    handleBackspace() {
+        if (!this.state.selectedPaymentId) return;
+        
+        // Disable overwrite on backspace
+        if (this.state.overwrite) {
+            this.state.overwrite = false;
+        }
+        
+        let newBuffer = this.state.inputBuffer;
+        if (newBuffer.length > 0) {
+            newBuffer = newBuffer.slice(0, -1);
+            if (newBuffer === "") newBuffer = "0";
+            this.updatePaymentFromBuffer(newBuffer);
+        }
+    }
+    
+    updatePaymentFromBuffer(newBuffer) {
+        this.state.inputBuffer = newBuffer;
+        const amount = parseFloat(newBuffer.replace(",", ".")) || 0;
+        const payment = this.state.payments.find(p => p.id === this.state.selectedPaymentId);
+        if (payment) {
+            payment.amount = amount;
         }
     }
 
-    async removePayment(paymentId) {
-        try {
-            const data = await this.orm.call(
-                "pos.order",
-                "remove_payment_from_ui",
-                [this.props.orderId, paymentId]
-            );
-            this.state.orderData = data;
-            this.state.inputBuffer = data.amount_due.toFixed(2).replace(".", ",");
-        } catch (error) {
-            console.error("Error removing payment:", error);
-            this.notification.add(_t("Error al eliminar pago"), { type: "danger" });
+    addPayment(methodId) {
+        // Find method details needed for display
+        const method = this.state.orderData.available_methods.find(m => m.id === methodId);
+        if (!method) return;
+
+        // Determine clear ID (string to differentiate from server IDs)
+        const newId = "new_" + Date.now();
+        
+        // Calculate default amount
+        let initialAmount = 0;
+        // If no payments, propose Total.
+        if (this.state.payments.length === 0) {
+             initialAmount = this.state.orderData.amount_total;
+        } else {
+             // If payments exist, ALWAYS start at 0 for manual entry
+             initialAmount = 0;
+        }
+
+        const newPayment = {
+            id: newId,
+            payment_method_id: method.id,
+            payment_method_name: method.name,
+            amount: initialAmount,
+        };
+
+        this.state.payments.push(newPayment);
+        // FORCE selection update
+        this.selectPayment(newPayment);
+        
+        // FORCE buffer reset if amount is 0
+        if (initialAmount === 0) {
+            this.state.inputBuffer = ""; // Empty buffer for typing
+        }
+    }
+
+    removePayment(paymentId) {
+        // Filter out payment
+        this.state.payments = this.state.payments.filter(p => p.id !== paymentId);
+        
+        // If removed selected, deselect or select another
+        if (this.state.selectedPaymentId === paymentId) {
+            this.state.selectedPaymentId = null;
+            this.state.inputBuffer = "";
+            if (this.state.payments.length > 0) {
+                this.selectPayment(this.state.payments[this.state.payments.length - 1]);
+            }
         }
     }
 
     async validate() {
-        if (this.state.orderData.amount_due > 0.01) {
-            this.notification.add(_t("El pedido no está totalmente pagado"), { type: "warning" });
-            return;
+        // Warning if amount due is positive (not fully paid)
+        // If amount due is negative (change to return), it's allowed.
+        if (this.amountDue > 0.01) {
+            this.notification.add(_t("Falta importe por pagar"), { type: "warning" });
+             return;
         }
+
+        const payload = this.state.payments.map(p => ({
+            payment_method_id: p.payment_method_id,
+            amount: p.amount
+        }));
 
         try {
             this.state.loading = true;
             const result = await this.orm.call(
                 "pos.order",
-                "action_validate_and_invoice",
-                [this.props.orderId]
+                "action_register_payments_and_validate",
+                [this.props.orderId, payload, this.state.printInvoice]
             );
-            
-            this.props.close();
-            
-            if (result && result.type === "ir.actions.client") {
-                await this.action.doAction(result);
-            } else if (this.props.onValidate) {
-                this.props.onValidate();
+
+            if (result.success) {
+                this.props.close();
+                
+                if (result.action) {
+                     await this.action.doAction(result.action);
+                } else {
+                     location.reload(); // Fallback
+                }
             } else {
-                // Refresh order view
-                await this.action.doAction({
-                    type: "ir.actions.act_window",
-                    res_model: "pos.order",
-                    res_id: this.props.orderId,
-                    view_mode: "form",
-                    target: "current",
-                });
+                 this.notification.add(result.message || _t("Error al validar"), { type: "danger" });
+                 this.state.loading = false;
+                 // Reload data to resync?
             }
         } catch (error) {
-            console.error("Error validating order:", error);
-            this.notification.add(_t("Error al validar el pedido"), { type: "danger" });
-            this.state.loading = false;
+             console.error("Validation error:", error);
+             const msg = (error.data && error.data.message) || error.message || "Unknown error";
+             this.notification.add(_t("Error de validación: ") + msg, { type: "danger" });
+             this.state.loading = false;
         }
     }
-
+    
     cancel() {
         this.props.close();
     }
 }
 
-/**
- * Acción cliente para abrir el popup de pago
- */
 class PaymentPopupAction extends Component {
     static template = "pos_conventional.PaymentPopupAction";
     static props = { ...standardActionServiceProps };
@@ -203,6 +297,7 @@ class PaymentPopupAction extends Component {
     setup() {
         this.dialog = useService("dialog");
         this.action = useService("action");
+        this.notification = useService("notification");
 
         onMounted(() => {
             const context = this.props.action?.context || {};
@@ -221,5 +316,6 @@ class PaymentPopupAction extends Component {
         });
     }
 }
+
 
 registry.category("actions").add("pos_conventional_payment_popup", PaymentPopupAction);

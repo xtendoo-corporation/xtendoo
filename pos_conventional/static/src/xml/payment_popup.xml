@@ -2,121 +2,385 @@
 <templates id="template" xml:space="preserve">
 
     <t t-name="pos_conventional.PaymentPopup">
-        <Dialog title="'Realizar Pago'" size="'lg'">
-            <div class="payment-popup-container container-fluid p-3">
+        <!-- Inline CSS to ensure styles are loaded -->
+        <style>
+            /* ============================================
+               POS Conventional Payment Popup Styles
+               Refined Design: No Numpad, Larger Elements
+               ============================================ */
+
+            .payment-popup-dialog {
+                min-height: 600px;
+            }
+
+            .payment-popup-container {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 550px;
+                background-color: #f8f9fa;
+            }
+
+            /* Header */
+            .payment-total-header {
+                text-align: center;
+                padding: 40px 20px;
+                background-color: white;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .payment-total-amount {
+                font-size: 5rem; /* Increased size */
+                font-weight: 700;
+                color: #212529;
+                letter-spacing: -2px;
+                line-height: 1;
+            }
+            
+            .payment-total-label {
+                font-size: 1.2rem;
+                color: #6c757d;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-top: 5px;
+            }
+
+            /* Main Content */
+            .payment-content-wrapper {
+                display: flex;
+                flex: 1;
+                min-height: 300px;
+                background-color: white;
+                padding: 0;
+            }
+
+            /* Payment Methods - Left Column */
+            .payment-methods-column {
+                width: 280px; /* Wider column */
+                padding: 20px;
+                border-right: 1px solid #dee2e6;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                background-color: #f8f9fa;
+                overflow-y: auto;
+            }
+
+            .payment-method-btn {
+                padding: 20px 15px; /* Larger padding */
+                background-color: #017e84;
+                color: white;
+                border: none;
+                border-radius: 8px; /* Softer corners */
+                font-size: 1.2rem; /* Larger font */
+                font-weight: 600;
+                cursor: pointer;
+                transition: transform 0.1s ease, background-color 0.2s ease;
+                text-align: center;
+                white-space: normal; /* Allow wrapping */
+                line-height: 1.2;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .payment-method-btn:hover { 
+                background-color: #016268; 
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+            .payment-method-btn:active { 
+                background-color: #014d51; 
+                transform: translateY(0);
+            }
+
+            /* Payment List - Right Column */
+            .payment-list-column {
+                flex: 1;
+                padding: 30px;
+                overflow-y: auto;
+                background-color: white;
+            }
+
+            .payments-list {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .payment-line {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px 25px;
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                transition: background-color 0.2s ease;
+            }
+
+            .payment-line:hover { background-color: #e9ecef; }
+
+            /* Payment Line Selected State */
+            .payment-line.selected {
+                border-color: #1890ff;
+                background-color: #e6f7ff;
+                box-shadow: 0 0 0 1px #1890ff;
+            }
+            .payment-line.selected:hover { background-color: #dcf4ff; }
+
+            .payment-line-content {
+                display: flex;
+                justify-content: space-between;
+                flex: 1;
+                gap: 30px;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            .payment-method-name {
+                font-weight: 600;
+                color: #495057;
+                font-size: 1.3rem;
+            }
+
+            .payment-amount {
+                font-weight: 700;
+                color: #212529;
+                font-size: 1.5rem;
+            }
+
+            .payment-delete-btn {
+                width: 40px;
+                height: 40px;
+                border: none;
+                background-color: transparent;
+                color: #dc3545;
+                font-size: 2.2rem;
+                line-height: 1;
+                cursor: pointer;
+                padding: 0;
+                margin-left: 20px;
+                transition: color 0.2s ease, background-color 0.2s ease;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .payment-delete-btn:hover {
+                background-color: #ffebee;
+                color: #c82333;
+            }
+
+            .no-payments-message {
+                text-align: center;
+                color: #adb5bd;
+                padding: 60px;
+                font-size: 1.2rem;
+                font-style: italic;
+            }
+
+            /* Bottom Section */
+            .payment-bottom-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 30px;
+                background-color: white;
+                border-top: 1px solid #dee2e6;
+                height: 120px;
+            }
+
+            /* Invoice Toggle */
+            .invoice-toggle-container {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                cursor: pointer;
+                user-select: none;
+                padding: 15px 25px;
+                border-radius: 8px;
+                transition: background-color 0.2s ease;
+                border: 2px solid transparent;
+            }
+            
+            .invoice-toggle-container:hover {
+                background-color: #f1f3f5;
+            }
+            
+            .invoice-toggle-container.active {
+                background-color: #e6f7ff; /* Light blue bg when active */
+                border-color: #1890ff;
+            }
+
+            .invoice-checkbox {
+                font-size: 2rem;
+                color: #ced4da;
+                transition: color 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            .invoice-checkbox.checked {
+                color: #1890ff; /* Odoo blue */
+            }
+
+            .invoice-label {
+                font-size: 1.4rem;
+                font-weight: 600;
+                color: #495057;
+            }
+            
+            .invoice-label.active {
+                color: #1890ff;
+            }
+
+            /* Validate Button */
+            .payment-validate-btn {
+                padding: 0 60px;
+                height: 70px;
+                background-color: #28a745;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 1.6rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .payment-validate-btn:hover:not(:disabled) {
+                background-color: #218838;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 10px rgba(40, 167, 69, 0.3);
+            }
+
+            .payment-validate-btn:active:not(:disabled) {
+                background-color: #1e7e34;
+                transform: translateY(0);
+            }
+
+            .payment-validate-btn:disabled {
+                background-color: #6c757d;
+                cursor: not-allowed;
+                opacity: 0.6;
+                box-shadow: none;
+            }
+            
+            /* Responsive */
+            @media (max-width: 992px) {
+                .payment-methods-column { width: 220px; }
+                .payment-total-amount { font-size: 4rem; }
+                .payment-validate-btn { font-size: 1.4rem; padding: 0 40px; }
+            }
+        </style>
+        
+        <Dialog title="'Realizar Pago'" size="'xl'" contentClass="'payment-popup-dialog'">
+            <div class="payment-popup-container">
                 <t t-if="state.loading">
                     <div class="text-center p-5">
                         <i class="fa fa-spinner fa-spin fa-3x mb-3 text-primary"></i>
-                        <p>Procesando...</p>
+                        <p class="h4 text-muted">Procesando...</p>
                     </div>
                 </t>
                 <t t-else="">
                     <t t-if="state.error">
-                        <div class="alert alert-danger m-3">
-                            <h4 class="alert-heading">Error</h4>
-                            <p t-esc="state.error" />
-                            <hr />
-                            <button class="btn btn-outline-danger" t-on-click="loadOrderData">Reintentar</button>
+                        <div class="alert alert-danger m-3 p-4">
+                            <h4 class="alert-heading"><i class="fa fa-exclamation-triangle me-2"/>Error</h4>
+                            <p t-esc="state.error" class="mb-3"/>
+                            <button class="btn btn-outline-danger btn-lg" t-on-click="loadOrderData">
+                                <i class="fa fa-refresh me-2"/>Reintentar
+                            </button>
                         </div>
                     </t>
-                    <div class="row g-4" t-if="state.orderData">
-                        <!-- Columna Izquierda: Métodos y Pagos -->
-                        <div class="col-md-7 border-end">
-                            <h4 class="mb-3 border-bottom pb-2">Seleccionar Método de Pago</h4>
-                            <div class="payment-methods row g-2 mb-4">
-                                <t t-foreach="state.orderData.available_methods" t-as="method" t-key="method.id">
-                                    <div class="col-6">
-                                        <button class="btn btn-primary w-100 py-3 text-truncate fw-bold"
-                                                t-on-click="() => this.addPayment(method.id)">
-                                            <i class="fa fa-credit-card me-2" />
-                                            <t t-esc="method.name" />
-                                        </button>
-                                    </div>
-                                </t>
-                            </div>
-
-                            <h4 class="mb-3 border-bottom pb-2">Pagos Registrados</h4>
-                            <div class="payments-list overflow-auto" style="max-height: 200px;">
-                                <table class="table table-hover align-middle">
-                                    <tbody t-if="state.orderData.payments.length">
-                                        <t t-foreach="state.orderData.payments" t-as="payment" t-key="payment.id">
-                                            <tr>
-                                                <td class="fw-bold"><t t-esc="payment.payment_method_name" /></td>
-                                                <td class="text-end"><t t-esc="formatCurrency(payment.amount)" /></td>
-                                                <td class="text-center" style="width: 50px;">
-                                                    <button class="btn btn-link text-danger p-0" 
-                                                            t-on-click="() => this.removePayment(payment.id)">
-                                                        <i class="fa fa-trash-o fa-lg" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </t>
-                                    </tbody>
-                                    <tbody t-else="">
-                                        <tr>
-                                            <td colspan="3" class="text-center text-muted py-3">No hay pagos registrados</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    <t t-if="state.orderData">
+                        <!-- Header: Total Amount -->
+                        <div class="payment-total-header">
+                            <div class="payment-total-label">Total a Pagar</div>
+                            <div class="payment-total-amount">
+                                <t t-esc="formatCurrency(this.amountDue)" />
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Totales y Numpad -->
-                        <div class="col-md-5">
-                            <div class="total-due-section text-center mb-4 p-3 bg-light rounded border">
-                                <div class="text-muted text-uppercase fw-bold mb-1">Total Pendiente</div>
-                                <div class="display-3 fw-bold text-dark">
-                                    <t t-esc="formatCurrency(state.orderData.amount_due || 0)" />
-                                </div>
-                            </div>
-
-                            <!-- Input Visual (Editable) -->
-                            <div class="input-display mb-3 p-2 border-bottom d-flex justify-content-between align-items-center">
-                                <span class="text-muted h4 mb-0">Importe a pagar:</span>
-                                <div class="input-group input-group-lg w-50">
-                                    <input type="text" 
-                                           class="form-control text-end fw-bold text-primary border-0 bg-transparent shadow-none fs-2 p-0"
-                                           t-att-value="state.inputBuffer"
-                                           t-on-input="onInputChange" />
-                                    <span class="input-group-text border-0 bg-transparent fs-2 fw-bold text-primary p-0 ms-1">
-                                        <t t-esc="state.orderData.currency_symbol || '€'" />
-                                    </span>
-                                </div>
-                            </div>
-
-
-                            <!-- Numpad -->
-                            <div class="numpad grid gap-2 d-grid" style="grid-template-columns: repeat(3, 1fr);">
-                                <t t-foreach="['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', 'Backspace']" 
-                                   t-as="key" t-key="key">
-                                    <button class="btn btn-outline-secondary btn-lg py-3 fw-bold fs-4"
-                                            t-on-click="() => this.sendInput(key)">
-                                        <t t-if="key == 'Backspace'">
-                                            <i class="fa fa-backspace" />
-                                        </t>
-                                        <t t-else="" t-esc="key" />
+                        <!-- Main Content -->
+                        <div class="payment-content-wrapper">
+                            <!-- Left: Methods -->
+                            <div class="payment-methods-column">
+                                <t t-foreach="state.orderData.available_methods" t-as="method" t-key="method.id">
+                                    <button class="payment-method-btn"
+                                            t-on-click="() => this.addPayment(method.id)">
+                                        <i t-if="method.is_cash_count" class="fa fa-money me-2"></i>
+                                        <i t-else="" class="fa fa-credit-card me-2"></i>
+                                        <t t-esc="method.name" />
                                     </button>
                                 </t>
                             </div>
 
+                            <!-- Right: Payment List -->
+                            <div class="payment-list-column">
+                                <div class="payments-list">
+                                    <t t-if="state.payments.length">
+                                        <t t-foreach="state.payments" t-as="payment" t-key="payment.id">
+                                            <div t-attf-class="payment-line {{state.selectedPaymentId === payment.id ? 'selected' : ''}}"
+                                                 t-on-click="() => this.selectPayment(payment)">
+                                                <div class="payment-line-content">
+                                                    <span class="payment-method-name">
+                                                        <i class="fa fa-tag me-2 text-muted"></i>
+                                                        <t t-esc="payment.payment_method_name" />
+                                                    </span>
+                                                    <span class="payment-amount">
+                                                        <t t-if="state.selectedPaymentId === payment.id">
+                                                            <t t-esc="state.inputBuffer ? state.inputBuffer + ' ' + (state.orderData.currency_symbol || '€') : '0,00 ' + (state.orderData.currency_symbol || '€')" />
+                                                        </t>
+                                                        <t t-else="">
+                                                            <t t-esc="formatCurrency(payment.amount)" />
+                                                        </t>
+                                                    </span>
+                                                </div>
+                                                <button class="payment-delete-btn" 
+                                                        t-on-click.stop="() => this.removePayment(payment.id)"
+                                                        title="Eliminar pago">
+                                                    ×
+                                                </button>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="no-payments-message">
+                                            <i class="fa fa-arrow-left me-2"></i>Seleccione un método de pago
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+
+                        <!-- Footer: Tools & Validate -->
+                        <div class="payment-bottom-section">
+                            <!-- Invoice Toggle -->
+                            <div t-attf-class="invoice-toggle-container {{state.printInvoice ? 'active' : ''}}"
+                                 t-on-click="togglePrintInvoice">
+                                <i t-attf-class="fa {{state.printInvoice ? 'fa-check-square' : 'fa-square-o'}} invoice-checkbox {{state.printInvoice ? 'checked' : ''}}"></i>
+                                <span t-attf-class="invoice-label {{state.printInvoice ? 'active' : ''}}">
+                                    <i class="fa fa-print me-2"></i>Imprimir Factura
+                                </span>
+                            </div>
+
+                            <!-- Validate Button -->
+                            <button class="payment-validate-btn" 
+                                    t-att-disabled="state.loading or this.amountDue > 0.01"
+                                    t-on-click="validate">
+                                VALIDAR <i class="fa fa-chevron-right ms-2"></i>
+                            </button>
+                        </div>
+                    </t>
                 </t>
             </div>
-            <t t-set-slot="footer">
-                <div class="d-flex w-100 justify-content-between">
-                    <button class="btn btn-secondary btn-lg px-4" t-on-click="cancel">Cancelar</button>
-                    <button class="btn btn-success btn-lg px-5 fw-bold" 
-                            t-att-disabled="state.loading or state.orderData.amount_due > 0.01"
-                            t-on-click="validate">
-                        Validar y Facturar
-                    </button>
-                </div>
-            </t>
         </Dialog>
     </t>
 
-    <!-- Acción dummy para el registro -->
     <t t-name="pos_conventional.PaymentPopupAction">
         <div class="o_payment_popup_action" />
     </t>

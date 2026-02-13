@@ -2,184 +2,193 @@
 <odoo>
 
     <template id="report_factura_simplificada_80mm">
-    <t t-call="web.html_container">
-        <t t-foreach="docs" t-as="o">
-            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="article" t-att-data-oe-model="o and o._name"
+                    t-att-data-oe-id="o and o.id">
 
-                <style>
-                    /* 1. Eliminar márgenes de la impresora */
-                    @page {
+                    <style>
+                        /* 1. Eliminar márgenes de la impresora */
+                        @page {
                         size: 80mm auto;
                         margin: 0mm;
-                    }
-                    /* 2. Forzar al cuerpo a usar todo el ancho */
-                    body, .container, .row, .col-12 {
+                        }
+                        /* 2. Forzar al cuerpo a usar todo el ancho */
+                        body, .container, .row, .col-12 {
                         margin: 0 !important;
                         padding: 0 !important;
                         width: 100% !important;
                         max-width: 100% !important;
-                    }
-                    /* 3. Estilos del ticket */
-                    .page {
+                        }
+                        /* 3. Estilos del ticket */
+                        .page {
                         font-family: 'Courier New', monospace;
                         font-size: 12px; /* Tamaño legible */
                         color: #000;
                         padding: 1mm 2mm; /* Pequeño respiro interno para que no corte texto */
                         width: 100%;
-                    }
-                    .text-center { text-align: center; }
-                    .text-right { text-align: right; }
-                    .text-left { text-align: left; }
-                    .bold { font-weight: bold; }
+                        }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .text-left { text-align: left; }
+                        .bold { font-weight: bold; }
 
-                    /* Líneas separadoras */
-                    .dashed-line {
+                        /* Líneas separadoras */
+                        .dashed-line {
                         border-bottom: 1px dashed #000;
                         margin: 5px 0;
                         width: 100%;
-                    }
+                        }
 
-                    /* Tablas ocupando el 100% */
-                    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-                    th { font-weight: normal; border-bottom: 1px dashed #000; padding-bottom: 2px; }
-                    td { vertical-align: top; padding: 2px 0; }
+                        /* Tablas ocupando el 100% */
+                        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        th { font-weight: normal; border-bottom: 1px dashed #000; padding-bottom:
+                        2px; }
+                        td { vertical-align: top; padding: 2px 0; }
 
-                    /* Anchos de columna ajustados */
-                    .col-name { width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-                    .col-ud { width: 15%; text-align: center; }
-                    .col-total { width: 30%; text-align: right; }
-                </style>
+                        /* Anchos de columna ajustados */
+                        .col-name { width: 55%; overflow: hidden; text-overflow: ellipsis;
+                        white-space: nowrap; }
+                        .col-ud { width: 15%; text-align: center; }
+                        .col-total { width: 30%; text-align: right; }
+                    </style>
 
-                <div class="page">
-                    <div class="text-center" style="margin-bottom: 5px;">
-                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
-                             style="max-height: 70px; max-width: 95%;"/>
-                    </div>
+                    <div class="page">
+                        <div class="text-center" style="margin-bottom: 5px;">
+                            <img t-if="res_company.logo"
+                                t-att-src="image_data_uri(res_company.logo)"
+                                style="max-height: 70px; max-width: 95%;" />
+                        </div>
 
-                    <div class="text-center" style="font-size: 0.9em; margin-bottom: 5px;">
-                        <span t-field="o.invoice_date"/> <span t-if="o.invoice_date_due">, <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%H:%M')"/></span>
-                    </div>
+                        <div class="text-center" style="font-size: 0.9em; margin-bottom: 5px;">
+                            <span t-field="o.invoice_date" />
+                            <span t-if="o.invoice_date_due">, <span
+                                    t-esc="context_timestamp(datetime.datetime.now()).strftime('%H:%M')" /></span>
+                        </div>
 
-                    <div class="text-center bold" style="font-size: 1.1em; text-transform: uppercase;">
-                        <span t-field="res_company.name"/>
-                    </div>
-                    <div class="text-center">
-                        <span t-field="res_company.street"/>
-                    </div>
-                    <div class="text-center">
-                        <span t-field="res_company.zip"/> <span t-field="res_company.city"/>
-                    </div>
-                    <div class="text-center">
-                        <span t-field="res_company.vat"/>
-                    </div>
+                        <div class="text-center bold"
+                            style="font-size: 1.1em; text-transform: uppercase;">
+                            <span t-field="res_company.name" />
+                        </div>
+                        <div class="text-center">
+                            <span t-field="res_company.street" />
+                        </div>
+                        <div class="text-center">
+                            <span t-field="res_company.zip" />
+                            <span t-field="res_company.city" />
+                        </div>
+                        <div class="text-center">
+                            <span t-field="res_company.vat" />
+                        </div>
 
-                    <div class="dashed-line"/>
+                        <div class="dashed-line" />
 
-                    <div class="text-center" style="text-transform: uppercase; font-size: 0.9em;">
-                        FACTURA SIMPLIFICADA: <br/>
-                        <span t-field="o.name"/>
-                    </div>
-                    <div class="text-center" style="text-transform: uppercase; font-size: 0.9em; margin-top: 2px;">
-                        ATENDIDO POR: <span t-field="o.invoice_user_id.name"/>
-                    </div>
+                        <div class="text-center"
+                            style="text-transform: uppercase; font-size: 0.9em;"> FACTURA
+                            SIMPLIFICADA: <br />
+                        <span t-field="o.name" />
+                        </div>
+                        <div class="text-center"
+                            style="text-transform: uppercase; font-size: 0.9em; margin-top: 2px;">
+                            ATENDIDO POR: <span t-field="o.invoice_user_id.name" />
+                        </div>
 
-                    <div class="dashed-line"/>
+                        <div class="dashed-line" />
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="text-left col-name">Nombre</th>
-                                <th class="text-center col-ud">UD</th>
-                                <th class="text-right col-total">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="o.invoice_line_ids" t-as="line">
-                                <tr t-if="line.display_type == 'product'">
-                                    <td class="text-left" style="padding-right: 2px;">
-                                        <t t-if="line.product_id.default_code">
-                                            [<span t-field="line.product_id.default_code"/>]
-                                        </t>
-                                        <span t-field="line.name"/>
-                                    </td>
-                                    <td class="text-center">
-                                        <span t-esc="'%.0f' % line.quantity"/>
-                                    </td>
-                                    <td class="text-right">
-                                        <span t-esc="'%.2f' % line.price_total"/>€
-                                    </td>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="text-left col-name">Nombre</th>
+                                    <th class="text-center col-ud">UD</th>
+                                    <th class="text-right col-total">TOTAL</th>
                                 </tr>
-                            </t>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.invoice_line_ids" t-as="line">
+                                    <tr t-if="line.display_type == 'product'">
+                                        <td class="text-left" style="padding-right: 2px;">
+                                            <t t-if="line.product_id.default_code"> [<span
+                                                    t-field="line.product_id.default_code" />] </t>
+                                            <span t-field="line.name" />
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-esc="'%.0f' % line.quantity" />
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f' % line.price_total" />€ </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
 
-                    <div class="dashed-line"/>
+                        <div class="dashed-line" />
 
-                    <div class="text-right bold" style="font-size: 1.5em; margin: 10px 0;">
-                        TOTAL <span t-field="o.amount_total"/>
-                    </div>
+                        <div class="text-right bold" style="font-size: 1.5em; margin: 10px 0;">
+                            TOTAL <span t-field="o.amount_total" />
+                        </div>
 
-                   <div class="text-center" style="margin-bottom: 5px;">
-                        Pagado:
-
-                        <t t-set="pago_encontrado" t-value="False"/>
+                        <div class="text-center" style="margin-bottom: 5px;"> Pagado: <t
+                                t-set="pago_encontrado" t-value="False" />
 
                         <t t-if="o.pos_order_ids">
-                            <t t-foreach="o.pos_order_ids" t-as="pos_order">
-                                <t t-foreach="pos_order.payment_ids" t-as="payment">
-                                    <t t-set="pago_encontrado" t-value="True"/>
-                                    <span t-field="payment.payment_method_id.name"/>
+                                <t t-foreach="o.pos_order_ids" t-as="pos_order">
+                                    <t t-foreach="pos_order.payment_ids" t-as="payment">
+                                        <t t-set="pago_encontrado" t-value="True" />
+                                        <span t-field="payment.payment_method_id.name" />
+                                    </t>
+                                </t>
+                            </t>
+
+                        <t
+                                t-if="not pago_encontrado and o.invoice_payments_widget">
+                                <t t-foreach="o.invoice_payments_widget['content']"
+                                    t-as="payment_val">
+                                    <span t-out="payment_val['journal_name']" />
+                                </t>
+                            </t>
+
+                        </div>
+
+                        <div class="dashed-line" />
+
+                        <div
+                            style="display: flex; justify-content: space-between; border-bottom: 1px dashed #000; margin-bottom: 3px;">
+                            <span style="width:33%; text-align:center;">IVA</span>
+                            <span style="width:33%; text-align:center;">Base</span>
+                            <span style="width:33%; text-align:right;">Cuota</span>
+                        </div>
+
+                        <t t-set="tax_totals" t-value="o.tax_totals" />
+                        <t t-if="tax_totals.get('subtotals')">
+                            <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+                                <t t-foreach="subtotal['tax_groups']" t-as="tax_group">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="width:33%; text-align:center;">
+                                            <span t-out="tax_group['group_name']" />
+                                        </span>
+                                        <span style="width:33%; text-align:center;">
+                                            <span t-out="tax_group['base_amount']"
+                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                                        </span>
+                                        <span style="width:33%; text-align:right;">
+                                            <span t-out="tax_group['tax_amount']"
+                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                                        </span>
+                                    </div>
                                 </t>
                             </t>
                         </t>
 
-                        <t t-if="not pago_encontrado and o.invoice_payments_widget">
-                            <t t-foreach="o.invoice_payments_widget['content']" t-as="payment_val">
-                                <span t-out="payment_val['journal_name']"/>
-                            </t>
-                        </t>
+                        <div class="dashed-line" />
 
+                        <div class="text-center" style="margin-top: 10px;">
+                            Gracias por su visita
                         </div>
-
-                    <div class="dashed-line"/>
-
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #000; margin-bottom: 3px;">
-                        <span style="width:33%; text-align:center;">IVA</span>
-                        <span style="width:33%; text-align:center;">Base</span>
-                        <span style="width:33%; text-align:right;">Cuota</span>
-                    </div>
-
-                    <t t-set="tax_totals" t-value="o.tax_totals"/>
-                    <t t-if="tax_totals.get('subtotals')">
-                        <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
-                            <t t-foreach="subtotal['tax_groups']" t-as="tax_group">
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="width:33%; text-align:center;">
-                                        <span t-out="tax_group['group_name']"/>
-                                    </span>
-                                    <span style="width:33%; text-align:center;">
-                                        <span t-out="tax_group['base_amount']"
-                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                                    </span>
-                                    <span style="width:33%; text-align:right;">
-                                        <span t-out="tax_group['tax_amount']"
-                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                                    </span>
-                                </div>
-                            </t>
-                        </t>
-                    </t>
-
-                    <div class="dashed-line"/>
-
-                    <div class="text-center" style="margin-top: 10px;">
-                        Gracias por su visita
                     </div>
                 </div>
-            </div>
+            </t>
         </t>
-    </t>
-</template>
+    </template>
 
     <data>
 
