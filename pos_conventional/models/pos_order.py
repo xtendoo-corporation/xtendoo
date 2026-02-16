@@ -852,7 +852,7 @@ class PosOrder(models.Model):
         except Exception:
             # Fallback a un cálculo simple si fallara el estándar
             self.amount_total = sum(self.lines.mapped('price_subtotal_incl'))
-        
+
         self.flush_recordset()
 
 
@@ -866,7 +866,7 @@ class PosOrder(models.Model):
                 icon = "fa-money"
             elif pm.journal_id.type == "bank":
                 icon = "fa-credit-card"
-            
+
             available_methods.append({
                 'id': pm.id,
                 'name': pm.name,
@@ -894,7 +894,7 @@ class PosOrder(models.Model):
         amount_due = self.amount_total - self.amount_paid
         # Redondear para evitar problemas de coma flotante
         amount_due = round(amount_due, self.currency_id.decimal_places)
-        
+
         _logger.info("POS DEBUG: amount_due: %s, currency: %s", amount_due, self.currency_id.symbol)
 
         return {
@@ -926,7 +926,7 @@ class PosOrder(models.Model):
             'amount': float(amount),
             'payment_method_id': payment_method_id,
         })
-        
+
         return self.get_payment_popup_data()
 
     def remove_payment_from_ui(self, payment_id):
@@ -940,7 +940,7 @@ class PosOrder(models.Model):
         payment = self.env['pos.payment'].browse(payment_id)
         if payment.exists() and payment.pos_order_id.id == self.id:
             payment.unlink()
-        
+
         return self.get_payment_popup_data()
 
     def update_payment_from_ui(self, payment_id, amount):
@@ -954,7 +954,7 @@ class PosOrder(models.Model):
         payment = self.env['pos.payment'].browse(payment_id)
         if payment.exists() and payment.pos_order_id.id == self.id:
             payment.write({'amount': float(amount)})
-        
+
         return self.get_payment_popup_data()
 
     def action_register_payments_and_validate(self, payments, print_invoice=False):
@@ -977,17 +977,17 @@ class PosOrder(models.Model):
                     'payment_method_id': int(pay.get('payment_method_id')),
                     'amount': amount,
                 })
-        
+
         # 3. Validar
         # Comprobar si está pagado completamente?
         # El frontend debería haber validado esto, pero el backend es la autoridad.
         if self._is_pos_order_paid():
-            # Si se pide factura simplificada o factura normal
-            if print_invoice:
-                self.to_invoice = True
+            # Siempre facturar al validar desde el popup
+            _logger.info("POS VALIDATION: Order %s is paid. Setting to_invoice=True", self.name)
+            self.write({'to_invoice': True})
 
             self.action_pos_order_paid()
-            
+
             # Acción de redirección a la vista de lista de la sesión
             next_action = {
                 "type": "ir.actions.act_window",
@@ -1004,19 +1004,23 @@ class PosOrder(models.Model):
 
             # Si hay factura, usar la acción cliente de impresión que luego llama a next_action
             if self.to_invoice:
-                 invoice = self._generate_pos_order_invoice()
-                 report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
-                 url = f"/report/html/{report_xmlid}/{invoice.id}"
-                 
-                 final_action = {
+                _logger.info("POS VALIDATION: Generating invoice for %s", self.name)
+                invoice = self._generate_pos_order_invoice()
+                if self.state != 'invoiced':
+                    _logger.info("POS VALIDATION: Forcing state to invoiced for %s", self.name)
+                    self.write({'state': 'invoiced'})
+                report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
+                url = f"/report/html/{report_xmlid}/{invoice.id}"
+
+                final_action = {
                     "type": "ir.actions.client",
                     "tag": "pos_conventional_print_iframe",
                     "params": {
                         "url": url,
                         "next_action": next_action,
                     },
-                 }
-                 
+                }
+
             return {
                 'success': True,
                 'action': final_action,

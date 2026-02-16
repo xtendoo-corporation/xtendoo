@@ -244,7 +244,7 @@ export class PaymentPopup extends Component {
         }
     }
 
-    async validate() {
+    async validate(printInvoice = false) {
         // Warning if amount due is positive (not fully paid)
         // If amount due is negative (change to return), it's allowed.
         if (this.amountDue > 0.01) {
@@ -262,7 +262,7 @@ export class PaymentPopup extends Component {
             const result = await this.orm.call(
                 "pos.order",
                 "action_register_payments_and_validate",
-                [this.props.orderId, payload, this.state.printInvoice]
+                [this.props.orderId, payload, printInvoice]
             );
 
             if (result.success) {
@@ -287,6 +287,13 @@ export class PaymentPopup extends Component {
     }
     
     cancel() {
+        this.action.doAction({
+            type: 'ir.actions.act_window',
+            res_model: 'pos.order',
+            res_id: this.props.orderId,
+            views: [[false, 'form']],
+            target: 'current',
+        });
         this.props.close();
     }
 }
