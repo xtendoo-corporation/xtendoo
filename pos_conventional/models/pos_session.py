@@ -45,7 +45,7 @@ class PosSession(models.Model):
         # Dominio base de Odoo
         domain = [
             ("session_id", "in", self.ids),
-            ("pos_order_id.state", "in", ["paid", "invoiced", "done"]),
+            ("pos_order_id.state", "in", ["paid", "done"]),
         ]
 
         # Excluir pagos de pedidos vinculados

@@ -269,7 +269,11 @@ export class PaymentPopup extends Component {
                 this.props.close();
                 
                 if (result.action) {
-                     await this.action.doAction(result.action);
+                     if (!printInvoice && result.action.params && result.action.params.next_action) {
+                         await this.action.doAction(result.action.params.next_action);
+                     } else {
+                         await this.action.doAction(result.action);
+                     }
                 } else {
                      location.reload(); // Fallback
                 }

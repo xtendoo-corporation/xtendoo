@@ -1006,9 +1006,7 @@ class PosOrder(models.Model):
             if self.to_invoice:
                 _logger.info("POS VALIDATION: Generating invoice for %s", self.name)
                 invoice = self._generate_pos_order_invoice()
-                if self.state != 'invoiced':
-                    _logger.info("POS VALIDATION: Forcing state to invoiced for %s", self.name)
-                    self.write({'state': 'invoiced'})
+                _logger.info("POS VALIDATION: Invoice %s generated for order %s", invoice.name, self.name)
                 report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
                 url = f"/report/html/{report_xmlid}/{invoice.id}"
 
