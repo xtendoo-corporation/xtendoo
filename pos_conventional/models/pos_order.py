@@ -1,6 +1,7 @@
 import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools import float_is_zero
 
 _logger = logging.getLogger(__name__)
 
@@ -1007,14 +1008,12 @@ class PosOrder(models.Model):
                 _logger.info("POS VALIDATION: Generating invoice for %s", self.name)
                 invoice = self._generate_pos_order_invoice()
                 _logger.info("POS VALIDATION: Invoice %s generated for order %s", invoice.name, self.name)
-                report_xmlid = "pos_conventional.report_factura_simplificada_80mm"
-                url = f"/report/html/{report_xmlid}/{invoice.id}"
-
+                # Client action for native-like printing
                 final_action = {
                     "type": "ir.actions.client",
-                    "tag": "pos_conventional_print_iframe",
+                    "tag": "pos_conventional.print_receipt_client",
                     "params": {
-                        "url": url,
+                        "order_id": self.id,
                         "next_action": next_action,
                     },
                 }
@@ -1144,10 +1143,103 @@ class PosOrder(models.Model):
             "target": "current",
         }
 
+    @api.model
+    def get_order_receipt_data(self, order_id):
+        order = self.browse(order_id)
+        if not order:
+            return {}
+
+        return {
+            'pos_reference': order.pos_reference,
+            'ticket_code': order.ticket_code,
+            'date_order': order.date_order.strftime('%Y-%m-%d %H:%M:%S') if order.date_order else '',
+            'amount_total': order.amount_total,
+            'amount_return': order.amount_return,
+            'amount_tax': order.amount_tax,
+            'currency_id': [order.currency_id.id, order.currency_id.symbol, order.currency_id.position, order.currency_id.decimal_places],
+            'currency_code': order.currency_id.name,
+            'currency_rounding': order.currency_id.rounding,
+            'receipt_header': order.session_id.config_id.receipt_header or '',
+            'receipt_footer': order.session_id.config_id.receipt_footer or '',
+            'partner': {
+                'id': order.partner_id.id,
+                'name': order.partner_id.name,
+                'vat': order.partner_id.vat,
+                'email': order.partner_id.email,
+                'phone': order.partner_id.phone,
+                'address': order.partner_id._display_address(without_company=True),
+            } if order.partner_id else False,
+            'user_id': [order.user_id.id, order.user_id.name] if order.user_id else False,
+            'company': {
+                'id': order.company_id.id,
+                'name': order.company_id.name,
+                'logo': bool(order.company_id.logo),
+                'contact_address': order.company_id.partner_id._display_address(without_company=True),
+                'phone': order.company_id.phone,
+                'vat': order.company_id.vat,
+                'email': order.company_id.email,
+                'website': order.company_id.website,
+                'country_id': {'vat_label': order.company_id.country_id.vat_label or 'VAT'} if order.company_id.country_id else False,
+            },
+            'access_token': order.access_token,
+            'amount_paid': sum(order.payment_ids.mapped('amount')),
+            'tax_details': {
+                'has_tax_groups': bool(order.lines.tax_ids_after_fiscal_position),
+                'subtotals': [{
+                    'name': 'Untaxed Amount',
+                    'tax_groups': [{
+                        'id': tax.tax_group_id.id,
+                        'group_name': tax.tax_group_id.name,
+                        'group_label': tax.tax_group_id.pos_receipt_label or tax.tax_group_id.name,
+                        'tax_amount_currency': sum(line.price_subtotal_incl - line.price_subtotal for line in order.lines if tax in line.tax_ids_after_fiscal_position),
+                        'base_amount_currency': sum(line.price_subtotal for line in order.lines if tax in line.tax_ids_after_fiscal_position),
+                    } for tax in order.lines.tax_ids_after_fiscal_position]
+                }],
+                'same_tax_base': True,
+                'total_amount_currency': order.amount_total,
+                'base_amount': order.amount_total - order.amount_tax,
+                'tax_amount_currency': order.amount_tax,
+                'order_sign': 1,
+                'total_amount_no_rounding': order.amount_total,
+            },
+            'lines': [{
+                'id': line.id,
+                'product_id': [line.product_id.id, line.product_id.display_name],
+                'qty': line.qty,
+                'price_unit': line.price_unit,
+                'price_subtotal': line.price_subtotal,
+                'price_subtotal_incl': line.price_subtotal_incl,
+                'discount': line.discount,
+                'customer_note': line.customer_note,
+            } for line in order.lines],
+            'payment_ids': [{
+                'id': p.id,
+                'payment_method_id': [p.payment_method_id.id, p.payment_method_id.name],
+                'amount': p.amount,
+            } for p in order.payment_ids],
+        }
+
+
 
 
 class PosOrderLine(models.Model):
     _inherit = "pos.order.line"
+
+    @api.depends('price_subtotal', 'total_cost')
+    def _compute_margin(self):
+        for line in self:
+            sign = -1 if line.order_id.is_refund else 1
+            if line.product_id.type == 'combo':
+                line.margin = 0
+                line.margin_percent = 0
+            else:
+                line.margin = (line.price_subtotal * sign) - line.total_cost
+                if line.currency_id and line.currency_id.rounding > 0:
+                     line.margin_percent = not float_is_zero(line.price_subtotal, precision_rounding=line.currency_id.rounding) \
+                                        and line.margin / (line.price_subtotal * sign) \
+                                        or 0
+                else:
+                    line.margin_percent = 0
 
     @api.model_create_multi
     def create(self, vals_list):
