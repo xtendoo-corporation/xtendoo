@@ -171,7 +171,7 @@ export class PosReceiptClientAction extends Component {
         <div class="o_pos_receipt_client_action h-100 w-100 d-flex flex-column align-items-center justify-content-center bg-view">
              <div class="o_loader" t-if="state.loading">
                 <i class="fa fa-spinner fa-spin fa-3x mb-3 text-primary"/>
-                <p class="h4">Generando ticket original con personalizaciones...</p>
+                <p class="h4">Generando ticket...</p>
                 <div t-if="state.message" class="mt-2 text-muted italic">
                     <t t-esc="state.message"/>
                 </div>
@@ -186,8 +186,7 @@ export class PosReceiptClientAction extends Component {
             
             <div t-if="!state.loading" class="text-center p-5 rounded shadow-sm bg-surface">
                 <i class="fa fa-check-circle fa-5x text-success mb-4"/>
-                <h2 class="fw-bold mb-3">Diseño Final Aplicado</h2>
-                <p class="text-muted mb-4 h5">Se ha integrado el diseño de "Factura Simplificada" y los estilos de Odoo.</p>
+                <h2 class="fw-bold mb-3">Impresión del documento realizada</h2>
                 <div class="d-flex gap-2 justify-content-center">
                     <button class="btn btn-primary btn-lg px-5" t-on-click="closeAction">Cerrar</button>
                     <button class="btn btn-outline-secondary btn-lg" t-on-click="reprint">Volver a Imprimir</button>
