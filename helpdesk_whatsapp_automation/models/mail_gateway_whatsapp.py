@@ -114,16 +114,33 @@ class MailGatewayWhatsapp(models.AbstractModel):
             prompt_key = next((k for k in prompts if k.lower() in ticket_type.name.lower()), False)
             message_body = prompts.get(prompt_key, _("Please provide details for the ticket."))
             
-            chat.message_post(
-                body=message_body,
-                subtype_xmlid="mail.mt_comment",
-            )
+            _logger.info("WhatsApp Automation: Sending prompt for %s", ticket_type.name)
+            self._send_whatsapp_text(chat, partner, message_body)
             return
 
         # Handle incident description if waiting for it
         if chat.whatsapp_session_state == "waiting_incident":
             self._handle_incident_report(chat, partner, input_text)
             return
+
+    def _send_whatsapp_text(self, chat, partner, body):
+        """
+        Send a free-text message through the WhatsApp gateway.
+        """
+        notification = self.env['mail.notification'].sudo().create({
+            'mail_message_id': chat.message_post(
+                body=body,
+                subtype_xmlid="mail.mt_comment",
+            ).id,
+            'res_partner_id': partner.id,
+        })
+        notification.gateway_channel_id = chat
+        
+        # Trigger the gateway send logic
+        self._send(
+            gateway=chat.gateway_id,
+            record=notification
+        )
 
     def _handle_ticket_command(self, chat, partner):
         """
@@ -156,9 +173,9 @@ class MailGatewayWhatsapp(models.AbstractModel):
             )
         else:
             # Fallback if no template is configured
-            chat.message_post(
-                body=_("Please describe the incident you would like to report. (No WhatsApp template configured in settings)"),
-                subtype_xmlid="mail.mt_comment",
+            self._send_whatsapp_text(
+                chat, partner, 
+                _("Please describe the incident you would like to report. (No WhatsApp template configured in settings)")
             )
 
     def _handle_incident_report(self, chat, partner, body):
@@ -180,6 +197,12 @@ class MailGatewayWhatsapp(models.AbstractModel):
         
         ticket = self.env["helpdesk.ticket"].sudo().create(ticket_vals)
         _logger.info("WhatsApp Automation: Ticket created successfully: #%s", ticket.number)
+
+        # Confirm to the user
+        self._send_whatsapp_text(
+            chat, partner,
+            _("✅ Ticket created successfully: #%s. An agent will contact you shortly.") % ticket.number
+        )
 
         # Reset session state
         chat.write({
