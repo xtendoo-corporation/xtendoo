@@ -10,10 +10,14 @@ class DiscussChannel(models.Model):
     whatsapp_session_state = fields.Selection(
         selection=[
             ("idle", "Idle"),
-            ("waiting_incident", "Waiting for Incident Description"),
+            ("waiting_incident", "Waiting for Incident"),
         ],
         string="WhatsApp Session State",
         default="idle",
+    )
+    whatsapp_ticket_type_id = fields.Many2one(
+        "helpdesk.ticket.type",
+        string="Selected WhatsApp Ticket Type",
     )
     last_incident_request_date = fields.Datetime(
         string="Last Incident Request Date",

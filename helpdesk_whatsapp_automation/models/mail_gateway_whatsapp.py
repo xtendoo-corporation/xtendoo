@@ -26,18 +26,40 @@ class MailGatewayWhatsapp(models.AbstractModel):
         if manager and manager.partner_id not in chat.channel_partner_ids:
             chat.write({"channel_partner_ids": [(4, manager.partner_id.id)]})
 
+        # Capture button response (interactive message)
+        interactive = message.get("interactive", {})
+        button_text = ""
+        if interactive.get("type") == "button_reply":
+            button_text = interactive.get("button_reply", {}).get("title", "").strip()
+            _logger.info("WhatsApp Automation: Received button reply: %s", button_text)
+
         body = message.get("text", {}).get("body", "").strip() if message.get("text") else ""
-        if not body:
+        
+        # Use button text as body if it's a button reply
+        input_text = button_text or body
+        if not input_text:
             return
 
         # Handle /ticket command
-        if body.lower() == "/ticket":
+        if input_text.lower() == "/ticket":
             self._handle_ticket_command(chat, partner)
             return
 
+        # Check if the input_text matches a ticket type (Duda, Solicitud nuevo cambio, Error)
+        ticket_type = self.env["helpdesk.ticket.type"].sudo().search([
+            ("name", "=ilike", input_text)
+        ], limit=1)
+
+        if ticket_type and chat.whatsapp_session_state == "idle":
+             chat.write({"whatsapp_ticket_type_id": ticket_type.id})
+             _logger.info("WhatsApp Automation: Selected Ticket Type: %s", ticket_type.name)
+             # Optional: If you want to automatically trigger /ticket after selection
+             # self._handle_ticket_command(chat, partner)
+             return
+
         # Handle incident description if waiting for it
         if chat.whatsapp_session_state == "waiting_incident":
-            self._handle_incident_report(chat, partner, body)
+            self._handle_incident_report(chat, partner, input_text)
 
     def _handle_ticket_command(self, chat, partner):
         """
@@ -86,6 +108,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
             "name": _("WhatsApp Incident: %s") % body[:50],
             "description": body,
             "partner_id": partner.id,
+            "type_id": chat.whatsapp_ticket_type_id.id or False,
             "user_id": partner.communication_manager_id.id or False,
             "channel_id": self.env.ref("helpdesk_mgmt.helpdesk_ticket_channel_whatsapp", raise_if_not_found=False).id or self.env.ref("helpdesk_mgmt.helpdesk_ticket_channel_other").id,
         }
@@ -93,7 +116,10 @@ class MailGatewayWhatsapp(models.AbstractModel):
         ticket = self.env["helpdesk.ticket"].sudo().create(ticket_vals)
 
         # Reset session state
-        chat.write({"whatsapp_session_state": "idle"})
+        chat.write({
+            "whatsapp_session_state": "idle",
+            "whatsapp_ticket_type_id": False,
+        })
 
         # Mention the communication employee in the chatter
         if partner.communication_employee_id:

@@ -26,24 +26,30 @@ class ResConfigSettings(models.TransientModel):
 
         super().set_values()
         
-        # We use the company from the configuration record
-        company = self.company_id
-        manager = self.whatsapp_default_manager_id
+        # We need to make sure the value is persisted in company before reading
+        self.env.cr.execute("SELECT whatsapp_default_manager_id FROM res_company WHERE id = %s", [self.company_id.id])
+        res = self.env.cr.fetchone()
+        manager_id = res[0] if res else False
         
-        _logger.info("WhatsApp Automation DEBUG: Company: %s, Manager: %s", company.name, manager.name if manager else "None")
+        _logger.info("WhatsApp Automation DEBUG: Persisted Manager ID in Company: %s", manager_id)
 
-        if manager:
-            # We search for ALL partners that don't have a manager set
-            partners = self.env["res.partner"].sudo().search([
-                ("communication_manager_id", "=", False)
-            ])
-            _logger.info("WhatsApp Automation DEBUG: Found %s partners without manager", len(partners))
-            
-            if partners:
+        if manager_id:
+            # First, check how many partners have NO manager
+            self.env.cr.execute("SELECT count(*) FROM res_partner WHERE communication_manager_id IS NULL OR communication_manager_id = 0")
+            count_empty = self.env.cr.fetchone()[0]
+            _logger.info("WhatsApp Automation DEBUG: Total partners with EMPTY manager BEFORE update: %s", count_empty)
+
+            if count_empty > 0:
                 # Update them
-                partners.write({"communication_manager_id": manager.id})
-                _logger.info("WhatsApp Automation DEBUG: Propagation finished successfully")
-            else:
-                _logger.info("WhatsApp Automation DEBUG: All partners already have a manager")
+                self.env.cr.execute("UPDATE res_partner SET communication_manager_id = %s WHERE communication_manager_id IS NULL OR communication_manager_id = 0", [manager_id])
+                self.env.cr.commit() # Force commit to ensure visibility
+                _logger.info("WhatsApp Automation DEBUG: SQL affected %s rows", self.env.cr.rowcount)
+            
+            # Final check
+            self.env.cr.execute("SELECT count(*) FROM res_partner WHERE communication_manager_id = %s", [manager_id])
+            count_filled = self.env.cr.fetchone()[0]
+            _logger.info("WhatsApp Automation DEBUG: Total partners WITH manager %s AFTER update: %s", manager_id, count_filled)
+            
+            self.env['res.partner'].sudo().invalidate_model(['communication_manager_id'])
         else:
-            _logger.info("WhatsApp Automation DEBUG: No manager selected, skipping propagation")
+            _logger.warning("WhatsApp Automation DEBUG: No manager ID found to propagate")
