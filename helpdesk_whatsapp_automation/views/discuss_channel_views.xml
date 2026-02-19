@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="discuss_channel_view_form_inherit_whatsapp_automation" model="ir.ui.view">
+        <field name="name">discuss.channel.view.form.inherit.whatsapp.automation</field>
+        <field name="model">discuss.channel</field>
+        <field name="inherit_id" ref="mail.discuss_channel_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='channel_type']" position="after">
+                <field name="whatsapp_session_state" invisible="channel_type != 'whatsapp'" />
+                <field name="last_incident_request_date" invisible="channel_type != 'whatsapp'" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Helpdesk Channel for WhatsApp -->
+        <record id="helpdesk_ticket_channel_whatsapp" model="helpdesk.ticket.channel">
+            <field name="name">WhatsApp</field>
+        </record>
+    </data>
+</odoo>

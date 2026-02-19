@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_whatsapp_automation" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.whatsapp.automation</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="30" />
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="WhatsApp Automation" name="helpdesk_whatsapp_automation">
+                    <block title="Helpdesk WhatsApp Automation"
+                        name="whatsapp_automation_setting_block">
+                        <setting string="WhatsApp Automation"
+                            help="Configuration for WhatsApp helpdesk flow.">
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <label for="whatsapp_default_manager_id" />
+                                    <field name="whatsapp_default_manager_id" />
+                                </div>
+                                <div class="mt16">
+                                    <label for="incident_request_template_id" />
+                                    <field name="incident_request_template_id" />
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>
