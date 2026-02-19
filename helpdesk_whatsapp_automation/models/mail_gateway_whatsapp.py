@@ -14,16 +14,16 @@ class MailGatewayWhatsapp(models.AbstractModel):
         """
         Override _process_update to handle the /ticket command and incident reports.
         """
-        # Call super to ensure normal message processing (chatter integration, etc.)
-        super()._process_update(chat, message, value)
-
+        _logger.info("WhatsApp Automation: Processing update for channel %s", chat.name)
         partner = self._get_author(chat.gateway_id, value)
         if not partner or partner._name != "res.partner":
+            _logger.info("WhatsApp Automation: Message ignored (author is not a partner or not found)")
             return
 
         # Ensure communication manager receives a copy: add them to the channel
         manager = partner.communication_manager_id or self.env.company.whatsapp_default_manager_id
         if manager and manager.partner_id not in chat.channel_partner_ids:
+            _logger.info("WhatsApp Automation: Adding manager %s to channel followers", manager.name)
             chat.write({"channel_partner_ids": [(4, manager.partner_id.id)]})
 
         # Capture button response (interactive message)
@@ -40,8 +40,11 @@ class MailGatewayWhatsapp(models.AbstractModel):
         if not input_text:
             return
 
+        _logger.info("WhatsApp Automation: Input detected: '%s' (State: %s)", input_text, chat.whatsapp_session_state)
+
         # Handle /ticket command
         if input_text.lower() == "/ticket":
+            _logger.info("WhatsApp Automation: Command /ticket recognized")
             self._handle_ticket_command(chat, partner)
             return
 
@@ -50,16 +53,59 @@ class MailGatewayWhatsapp(models.AbstractModel):
             ("name", "=ilike", input_text)
         ], limit=1)
 
-        if ticket_type and chat.whatsapp_session_state == "idle":
-             chat.write({"whatsapp_ticket_type_id": ticket_type.id})
-             _logger.info("WhatsApp Automation: Selected Ticket Type: %s", ticket_type.name)
-             # Optional: If you want to automatically trigger /ticket after selection
-             # self._handle_ticket_command(chat, partner)
-             return
+        if ticket_type:
+            _logger.info("WhatsApp Automation: Ticket type '%s' selected", ticket_type.name)
+            # If they select a type (via button or text), we set it and ask for details
+            chat.write({
+                "whatsapp_ticket_type_id": ticket_type.id,
+                "whatsapp_session_state": "waiting_incident",
+                "last_incident_request_date": fields.Datetime.now(),
+            })
+            _logger.info("WhatsApp Automation: Selected Ticket Type: %s", ticket_type.name)
+            
+            # Send specific prompt based on type
+            prompts = {
+                "Duda": _(
+                    "Perfecto 👍\n\n"
+                    "Para poder resolver tu duda, indícanos por favor:\n"
+                    "• En qué módulo o sección estás trabajando\n"
+                    "• Qué quieres conseguir exactamente\n"
+                    "• Qué es lo que no tienes claro\n\n"
+                    "Con esa información podremos ayudarte más rápido."
+                ),
+                "Solicitud nuevo cambio": _(
+                    "Perfecto 👍\n\n"
+                    "Para evaluar tu solicitud de cambio necesitamos que nos indiques:\n"
+                    "• Qué funcionalidad deseas modificar o añadir\n"
+                    "• Cómo funciona actualmente\n"
+                    "• Cómo te gustaría que funcionara\n\n"
+                    "Cuanto más detalle nos facilites, más ágil será la valoración.\n\n"
+                    "(Esto es muy importante para evitar cambios mal definidos — aquí se pierden horas normalmente)."
+                ),
+                "Error": _(
+                    "Gracias 👍\n\n"
+                    "Para revisar la incidencia necesitamos que nos indiques:\n"
+                    "• Qué acción estabas realizando\n"
+                    "• Qué mensaje de error aparece (texto exacto)\n"
+                    "• En qué momento ocurre\n\n"
+                    "Si puedes adjuntar captura de pantalla, mejor aún."
+                ),
+            }
+            
+            # Find closest match in prompts keys
+            prompt_key = next((k for k in prompts if k.lower() in ticket_type.name.lower()), False)
+            message_body = prompts.get(prompt_key, _("Please provide details for the ticket."))
+            
+            chat.message_post(
+                body=message_body,
+                subtype_xmlid="mail.mt_comment",
+            )
+            return
 
         # Handle incident description if waiting for it
         if chat.whatsapp_session_state == "waiting_incident":
             self._handle_incident_report(chat, partner, input_text)
+            return
 
     def _handle_ticket_command(self, chat, partner):
         """
@@ -101,7 +147,8 @@ class MailGatewayWhatsapp(models.AbstractModel):
         """
         Create a helpdesk ticket from the incident description and notify the employee.
         """
-        _logger.info("Creating ticket for partner %s: %s", partner.name, body[:50])
+        _logger.info("WhatsApp Automation: Creating ticket for partner %s with type %s", 
+                     partner.name, chat.whatsapp_ticket_type_id.name or "None")
 
         # Create the ticket
         ticket_vals = {
@@ -114,6 +161,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
         }
         
         ticket = self.env["helpdesk.ticket"].sudo().create(ticket_vals)
+        _logger.info("WhatsApp Automation: Ticket created successfully: #%s", ticket.number)
 
         # Reset session state
         chat.write({
