@@ -14,7 +14,12 @@ class MailGatewayWhatsapp(models.AbstractModel):
         """
         Override _process_update to handle the /ticket command and incident reports.
         """
+        # Call super to ensure normal message processing (chatter integration, etc.)
+        super()._process_update(chat, message, value)
+
         _logger.info("WhatsApp Automation: Processing update for channel %s", chat.name)
+        _logger.info("WhatsApp Automation: Raw message: %s", message)
+        
         partner = self._get_author(chat.gateway_id, value)
         if not partner or partner._name != "res.partner":
             _logger.info("WhatsApp Automation: Message ignored (author is not a partner or not found)")
@@ -28,16 +33,29 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         # Capture button response (interactive message)
         interactive = message.get("interactive", {})
+        button_reply = message.get("button", {}) # For some button types
         button_text = ""
+        
         if interactive.get("type") == "button_reply":
             button_text = interactive.get("button_reply", {}).get("title", "").strip()
+        elif button_reply:
+            button_text = button_reply.get("text", "").strip()
+        
+        if button_text:
             _logger.info("WhatsApp Automation: Received button reply: %s", button_text)
 
         body = message.get("text", {}).get("body", "").strip() if message.get("text") else ""
         
         # Use button text as body if it's a button reply
         input_text = button_text or body
+        
+        # If we still have no text, check for specific 'button' field (Template Quick Replies)
+        if not input_text and message.get("type") == "button":
+            input_text = message.get("button", {}).get("text", "").strip()
+            _logger.info("WhatsApp Automation: Received template button: %s", input_text)
+
         if not input_text:
+            _logger.info("WhatsApp Automation: No text content found in message (Type: %s)", message.get("type"))
             return
 
         _logger.info("WhatsApp Automation: Input detected: '%s' (State: %s)", input_text, chat.whatsapp_session_state)
