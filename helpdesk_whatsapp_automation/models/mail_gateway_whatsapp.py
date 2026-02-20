@@ -20,6 +20,12 @@ class MailGatewayWhatsapp(models.AbstractModel):
         _logger.info("WhatsApp Automation: Processing update for channel %s", chat.name)
         _logger.info("WhatsApp Automation: Raw message: %s", message)
         
+        # Grab the message that was just created in the channel by the base module
+        last_mail_message = self.env['mail.message'].sudo().search([
+            ('model', '=', 'discuss.channel'),
+            ('res_id', '=', chat.id),
+        ], order='id desc', limit=1)
+        
         partner = self._get_author(chat.gateway_id, value)
         if not partner or partner._name != "res.partner":
             _logger.info("WhatsApp Automation: Message ignored (author is not a partner or not found)")
@@ -54,7 +60,18 @@ class MailGatewayWhatsapp(models.AbstractModel):
             input_text = message.get("button", {}).get("text", "").strip()
             _logger.info("WhatsApp Automation: Received template button: %s", input_text)
 
-        if not input_text:
+        # Handle purely attachment messages or mixed messages
+        if chat.whatsapp_session_state == "waiting_incident":
+            if not input_text and last_mail_message.attachment_ids:
+                # User sent an image/PDF without any text caption
+                input_text = _("Incidencia reportada mediante archivo adjunto")
+            elif input_text and last_mail_message.attachment_ids:
+                # User sent text AND an attachment (captioned image)
+                _logger.info("WhatsApp Automation: Received text with attachments")
+            elif not input_text:
+                _logger.info("WhatsApp Automation: No text content or attachments found in message (Type: %s)", message.get("type"))
+                return
+        elif not input_text:
             _logger.info("WhatsApp Automation: No text content found in message (Type: %s)", message.get("type"))
             return
 
@@ -120,7 +137,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         # Handle incident description if waiting for it
         if chat.whatsapp_session_state == "waiting_incident":
-            self._handle_incident_report(chat, partner, input_text)
+            self._handle_incident_report(chat, partner, input_text, last_mail_message)
             return
 
     def _send_whatsapp_text(self, chat, partner, body):
@@ -178,7 +195,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
                 _("Please describe the incident you would like to report. (No WhatsApp template configured in settings)")
             )
 
-    def _handle_incident_report(self, chat, partner, body):
+    def _handle_incident_report(self, chat, partner, body, original_message=None):
         """
         Create a helpdesk ticket from the incident description and notify the employee.
         """
@@ -206,6 +223,15 @@ class MailGatewayWhatsapp(models.AbstractModel):
         
         ticket = self.env["helpdesk.ticket"].sudo().create(ticket_vals)
         _logger.info("WhatsApp Automation: Ticket created successfully: #%s", ticket.number)
+
+        # Copy original message attachments to the ticket
+        if original_message and original_message.sudo().attachment_ids:
+            _logger.info("WhatsApp Automation: Attaching %d files to ticket %s", len(original_message.attachment_ids), ticket.number)
+            for attachment in original_message.sudo().attachment_ids:
+                attachment.copy({
+                    'res_model': 'helpdesk.ticket',
+                    'res_id': ticket.id,
+                })
 
         # Confirm to the user
         self._send_whatsapp_text(
