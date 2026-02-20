@@ -1,7 +1,6 @@
-<?xml version="1.0" ?>
 <odoo>
     <record id="gestool_import_view" model="ir.ui.view">
-        <field name="name">Gestool Import</field>
+        <field name="name">Importación Gestool</field>
         <field name="model">gestool.import</field>
         <field name="priority">1</field>
         <field name="arch" type="xml">
@@ -26,23 +25,23 @@
                 />
                 <field name="filename_partner" invisible="1" />
                 <br/>
-                <h5>Seleccione fichero de bancos de Clientes/Proveedores</h5>
-                <!--clientes-->
-                <field
-                    name="data_file_bank"
-                    filename="filename_bank"
-                    placeholder="Choose a file to import..."
-                />
-                <field name="filename_bank" invisible="1" />
-                <br/>
-                <h5>Seleccione fichero de Tarifas Atípicas</h5>
-                <!--Atipicas de clientes-->
-                <field
-                    name="data_file_atypical"
-                    filename="filename_atypical"
-                    placeholder="Choose a file to import..."
-                />
-                <field name="filename_atypical" invisible="1" />
+<!--                <h5>Seleccione fichero de bancos de Clientes/Proveedores</h5>-->
+<!--                &lt;!&ndash;clientes&ndash;&gt;-->
+<!--                <field-->
+<!--                    name="data_file_bank"-->
+<!--                    filename="filename_bank"-->
+<!--                    placeholder="Choose a file to import..."-->
+<!--                />-->
+<!--                <field name="filename_bank" invisible="1" />-->
+<!--                <br/>-->
+<!--                <h5>Seleccione fichero de Tarifas Atípicas</h5>-->
+<!--                &lt;!&ndash;Atipicas de clientes&ndash;&gt;-->
+<!--                <field-->
+<!--                    name="data_file_atypical"-->
+<!--                    filename="filename_atypical"-->
+<!--                    placeholder="Choose a file to import..."-->
+<!--                />-->
+<!--                <field name="filename_atypical" invisible="1" />-->
                 <br/>
                 <h5>Seleccione fichero de Categorías</h5>
                 <!--categorias-->
@@ -71,23 +70,23 @@
                 />
                 <field name="filename_ticket" invisible="1" />
                 <br/>
-                <h5>Seleccione fichero de Lista de materiales</h5>
-                <!--Listas de materiales-->
-                <field
-                    name="data_file_kits"
-                    filename="filename_kits"
-                    placeholder="Choose a file to import..."
-                />
-                <field name="filename_kits" invisible="1" />
-                <br/>
-                <h5>Seleccione fichero de propiedades</h5>
-                <!--Propiedades-->
-                <field
-                    name="data_file_property"
-                    filename="filename_property"
-                    placeholder="Choose a file to import..."
-                />
-                <field name="filename_property" invisible="1" />
+<!--                <h5>Seleccione fichero de Lista de materiales</h5>-->
+<!--                &lt;!&ndash;Listas de materiales&ndash;&gt;-->
+<!--                <field-->
+<!--                    name="data_file_kits"-->
+<!--                    filename="filename_kits"-->
+<!--                    placeholder="Choose a file to import..."-->
+<!--                />-->
+<!--                <field name="filename_kits" invisible="1" />-->
+<!--                <br/>-->
+<!--                <h5>Seleccione fichero de propiedades</h5>-->
+<!--                &lt;!&ndash;Propiedades&ndash;&gt;-->
+<!--                <field-->
+<!--                    name="data_file_property"-->
+<!--                    filename="filename_property"-->
+<!--                    placeholder="Choose a file to import..."-->
+<!--                />-->
+<!--                <field name="filename_property" invisible="1" />-->
                 <footer>
                     <button
                         name="import_file"
@@ -102,7 +101,7 @@
     </record>
 
     <record id="gestool_import_action" model="ir.actions.act_window">
-        <field name="name">Gestool Import</field>
+        <field name="name">Importación Gestool</field>
         <field name="res_model">gestool.import</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
