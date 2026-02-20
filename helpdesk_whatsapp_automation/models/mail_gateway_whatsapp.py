@@ -185,6 +185,15 @@ class MailGatewayWhatsapp(models.AbstractModel):
         _logger.info("WhatsApp Automation: Creating ticket for partner %s with type %s", 
                      partner.name, chat.whatsapp_ticket_type_id.name or "None")
 
+        # Safely get the channel ID or create "WhatsApp" channel if missing
+        whatsapp_channel = self.env.ref("helpdesk_mgmt.helpdesk_ticket_channel_whatsapp", raise_if_not_found=False)
+        if not whatsapp_channel:
+            whatsapp_channel = self.env["helpdesk.ticket.channel"].sudo().search([("name", "=ilike", "WhatsApp")], limit=1)
+            if not whatsapp_channel:
+                whatsapp_channel = self.env["helpdesk.ticket.channel"].sudo().create({"name": "WhatsApp"})
+        
+        channel_id = whatsapp_channel.id
+
         # Create the ticket
         ticket_vals = {
             "name": _("WhatsApp Incident: %s") % body[:50],
@@ -192,7 +201,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
             "partner_id": partner.id,
             "type_id": chat.whatsapp_ticket_type_id.id or False,
             "user_id": partner.communication_manager_id.id or False,
-            "channel_id": self.env.ref("helpdesk_mgmt.helpdesk_ticket_channel_whatsapp", raise_if_not_found=False).id or self.env.ref("helpdesk_mgmt.helpdesk_ticket_channel_other").id,
+            "channel_id": channel_id,
         }
         
         ticket = self.env["helpdesk.ticket"].sudo().create(ticket_vals)
@@ -201,7 +210,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
         # Confirm to the user
         self._send_whatsapp_text(
             chat, partner,
-            _("✅ Ticket created successfully: #%s. An agent will contact you shortly.") % ticket.number
+            _("✅ Gracias. Tu incidencia ha sido registrada con el número #%s. Un agente la revisará y se pondrá en contacto contigo lo antes posible.") % ticket.number
         )
 
         # Reset session state
