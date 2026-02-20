@@ -54,7 +54,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
         
         # Try to get caption from media if body is empty
         if not body:
-            for media_type in ["image", "document", "video"]:
+            for media_type in ["image", "document", "video", "audio", "sticker"]:
                 if message.get(media_type) and message.get(media_type).get("caption"):
                     body = message.get(media_type).get("caption").strip()
                     _logger.info("WhatsApp Automation: extracted caption from %s", media_type)
