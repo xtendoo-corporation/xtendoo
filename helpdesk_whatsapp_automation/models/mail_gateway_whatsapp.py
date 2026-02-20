@@ -52,6 +52,14 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         body = message.get("text", {}).get("body", "").strip() if message.get("text") else ""
         
+        # Try to get caption from media if body is empty
+        if not body:
+            for media_type in ["image", "document", "video"]:
+                if message.get(media_type) and message.get(media_type).get("caption"):
+                    body = message.get(media_type).get("caption").strip()
+                    _logger.info("WhatsApp Automation: extracted caption from %s", media_type)
+                    break
+
         # Use button text as body if it's a button reply
         input_text = button_text or body
         
@@ -66,8 +74,8 @@ class MailGatewayWhatsapp(models.AbstractModel):
                 # User sent an image/PDF without any text caption
                 input_text = _("Incidencia reportada mediante archivo adjunto")
             elif input_text and last_mail_message.attachment_ids:
-                # User sent text AND an attachment (captioned image)
-                _logger.info("WhatsApp Automation: Received text with attachments")
+                # User sent text AND an attachment (captioned image) - keep the text
+                _logger.info("WhatsApp Automation: Received text with attachments: %s", input_text)
             elif not input_text:
                 _logger.info("WhatsApp Automation: No text content or attachments found in message (Type: %s)", message.get("type"))
                 return
