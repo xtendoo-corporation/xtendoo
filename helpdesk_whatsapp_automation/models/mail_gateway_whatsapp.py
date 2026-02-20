@@ -85,12 +85,6 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         _logger.info("WhatsApp Automation: Input detected: '%s' (State: %s)", input_text, chat.whatsapp_session_state)
 
-        # Handle /ticket command
-        if input_text.lower() == "/ticket":
-            _logger.info("WhatsApp Automation: Command /ticket recognized")
-            self._handle_ticket_command(chat, partner)
-            return
-
         # Check if the input_text matches a ticket type (Duda, Solicitud nuevo cambio, Error)
         ticket_type = self.env["helpdesk.ticket.type"].sudo().search([
             ("name", "=ilike", input_text)
@@ -147,6 +141,11 @@ class MailGatewayWhatsapp(models.AbstractModel):
         if chat.whatsapp_session_state == "waiting_incident":
             self._handle_incident_report(chat, partner, input_text, last_mail_message)
             return
+
+        # Catch-all: If not waiting for an incident and no ticket type selected,
+        # treat ANY message as a request to start a new ticket flow.
+        _logger.info("WhatsApp Automation: Any text recognized as trigger for new ticket menu")
+        self._handle_ticket_command(chat, partner)
 
     def _send_whatsapp_text(self, chat, partner, body):
         """
