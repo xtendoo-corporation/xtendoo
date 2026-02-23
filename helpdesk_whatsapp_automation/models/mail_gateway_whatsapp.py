@@ -10,6 +10,19 @@ _logger = logging.getLogger(__name__)
 class MailGatewayWhatsapp(models.AbstractModel):
     _inherit = "mail.gateway.whatsapp"
 
+    def _get_author(self, gateway, update):
+        """
+        Override to ensure we always return a singleton.
+        If a phone number is registered to multiple partners, the base module
+        might return a recordset of multiple partners, causing an 'Expected singleton'
+        error when it tries to read author.id.
+        """
+        author = super()._get_author(gateway, update)
+        if author and len(author) > 1:
+            _logger.warning("WhatsApp Automation: Multiple authors found for %s. Using the first one.", author)
+            return author[0]
+        return author
+
     def _process_update(self, chat, message, value):
         """
         Override _process_update to handle the /ticket command and incident reports.
