@@ -19,6 +19,7 @@
         "security/ir.model.access.csv",
         "data/mail_whatsapp_template_data.xml",
         "data/helpdesk_ticket_type_data.xml",
+        "data/mail_template_assigned_employee.xml",
         "views/res_partner_views.xml",
         "views/discuss_channel_views.xml",
         "views/res_config_settings_views.xml",

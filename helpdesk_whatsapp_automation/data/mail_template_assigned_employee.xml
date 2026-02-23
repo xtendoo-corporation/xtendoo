@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Email Template to Notify Assigned Employee -->
+        <record id="email_template_assigned_employee_whatsapp_ticket" model="mail.template">
+            <field name="name">Helpdesk: WhatsApp Ticket Assigned to Employee</field>
+            <field name="model_id" ref="helpdesk_mgmt.model_helpdesk_ticket" />
+            <field name="subject">Nuevo Ticket Asignado: {{ object.name }}</field>
+            <field name="email_to">{{ object.assigned_employee_id.email_formatted }}</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted)
+                }}</field>
+            <field name="description">Email sent to the assigned employee when a WhatsApp ticket is
+                automatically assigned to them.</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;"> Hola <t
+                            t-out="object.assigned_employee_id.name or ''">Empleado</t>, <br /><br />
+                        Se te ha asignado automáticamente un nuevo ticket de Helpdesk generado a
+                        través de WhatsApp. <br /><br />
+                        <strong>Detalles del Ticket:</strong>
+                        <ul>
+                            <li>
+                                <strong>Número:</strong>
+                                <t t-out="object.number or ''">#123</t>
+                            </li>
+                            <li>
+                                <strong>Cliente:</strong>
+                                <t t-out="object.partner_id.name or ''">Cliente</t>
+                            </li>
+                            <li>
+                                <strong>Motivo (Tipo):</strong>
+                                <t t-out="object.type_id.name or 'Desconocido'"></t>
+                            </li>
+                        </ul>
+                        <br />
+                        <strong>Descripción
+                        / Mensaje Original:</strong>
+                        <blockquote
+                            style="margin: 10px 0px 10px 20px; padding-left: 10px; border-left: 3px solid #ccc; font-style: italic;">
+                            <span t-out="object.description"></span>
+                        </blockquote>
+                        <br />
+                        Por favor, entra a Odoo para revisar los detalles completos y cualquier
+                        archivo adjunto o mensaje de voz que el cliente haya proporcionado. <br /><br />
+                        <a
+                            t-att-href="object.get_base_url() + '/odoo/action-helpdesk_ticket_action/' + str(object.id)"
+                            style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                        Ver Ticket
+                        </a>
+                        <br /><br />
+                        Saludos, <br /> Odoo Helpdesk Bot </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True" />
+        </record>
+    </data>
+</odoo>
