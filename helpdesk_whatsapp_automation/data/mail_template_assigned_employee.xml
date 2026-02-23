@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-        <!-- Email Template to Notify Assigned Employee -->
+        <!-- Email Template to Notify Assigned Employee and Manager -->
         <record id="email_template_assigned_employee_whatsapp_ticket" model="mail.template">
             <field name="name">Helpdesk: WhatsApp Ticket Assigned to Employee</field>
             <field name="model_id" ref="helpdesk_mgmt.model_helpdesk_ticket" />
             <field name="subject">Nuevo Ticket Asignado: {{ object.name }}</field>
-            <field name="email_to">{{ object.assigned_employee_id.email_formatted }}</field>
+            <field name="email_to">{{ object.assigned_employee_id.email_formatted if
+                object.assigned_employee_id else '' }},{{ object.user_id.email_formatted if
+                object.user_id else '' }}</field>
             <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted)
                 }}</field>
-            <field name="description">Email sent to the assigned employee when a WhatsApp ticket is
-                automatically assigned to them.</field>
+            <field name="description">Email sent to the assigned employee and manager when a
+                WhatsApp ticket is automatically assigned to them.</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    <p style="margin: 0px; padding: 0px; font-size: 13px;"> Hola <t
-                            t-out="object.assigned_employee_id.name or ''">Empleado</t>, <br /><br />
-                        Se te ha asignado automáticamente un nuevo ticket de Helpdesk generado a
-                        través de WhatsApp. <br /><br />
-                        <strong>Detalles del Ticket:</strong>
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;"> Hola, <br /><br /> Se ha
+                        creado un nuevo ticket de Helpdesk a través de WhatsApp. <br /><br />
+                        <strong>Detalles
+                        del Ticket:</strong>
                         <ul>
                             <li>
                                 <strong>Número:</strong>
@@ -30,6 +31,14 @@
                             <li>
                                 <strong>Motivo (Tipo):</strong>
                                 <t t-out="object.type_id.name or 'Desconocido'"></t>
+                            </li>
+                            <li>
+                                <strong>Empleado Asignado:</strong>
+                                <t t-out="object.assigned_employee_id.name or 'Ninguno'"></t>
+                            </li>
+                            <li>
+                                <strong>Encargado (Manager):</strong>
+                                <t t-out="object.user_id.name or 'Ninguno'"></t>
                             </li>
                         </ul>
                         <br />

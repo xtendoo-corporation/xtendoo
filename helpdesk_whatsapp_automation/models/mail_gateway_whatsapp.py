@@ -277,11 +277,11 @@ class MailGatewayWhatsapp(models.AbstractModel):
             _("✅ Gracias. Tu incidencia ha sido registrada con el número #%s. Un agente la revisará y se pondrá en contacto contigo lo antes posible.") % ticket.number
         )
 
-        # Notify assigned employee via email
-        if ticket.assigned_employee_id:
+        # Notify assigned employee/manager via email
+        if ticket.assigned_employee_id or ticket.user_id:
             template = self.env.ref("helpdesk_whatsapp_automation.email_template_assigned_employee_whatsapp_ticket", raise_if_not_found=False)
             if template:
-                _logger.info("WhatsApp Automation: Sending assignment email to %s for ticket #%s.", ticket.assigned_employee_id.name, ticket.number)
+                _logger.info("WhatsApp Automation: Sending assignment email for ticket #%s.", ticket.number)
                 template.sudo().send_mail(ticket.id, force_send=True)
             else:
                 _logger.warning("WhatsApp Automation: Assignment email template not found.")
