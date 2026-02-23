@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Override the Dashboard "To Do" button context to NOT filter out closed tickets -->
+    <record id="helpdesk_ticket_kanban_view_inherit_whatsapp" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.team.kanban.inherit.whatsapp</field>
+        <field name="model">helpdesk.ticket.team</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.helpdesk_ticket_kanban_view" />
+        <field name="arch" type="xml">
+            <!-- Replace the "To Do" button context to remove 'search_default_open': 1 -->
+            <xpath
+                expr="//button[@name='%(helpdesk_mgmt.action_helpdesk_ticket_kanban_from_dashboard)d']"
+                position="attributes">
+                <attribute name="context">{}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -22,6 +22,8 @@
         "views/res_partner_views.xml",
         "views/discuss_channel_views.xml",
         "views/res_config_settings_views.xml",
+        "views/helpdesk_ticket_views.xml",
+        "views/helpdesk_dashboard_views.xml",
     ],
     "installable": True,
     "application": False,

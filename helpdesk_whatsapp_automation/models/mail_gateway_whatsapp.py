@@ -242,6 +242,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
             "partner_id": partner.id,
             "type_id": chat.whatsapp_ticket_type_id.id or False,
             "user_id": partner.communication_manager_id.id or False,
+            "assigned_employee_id": partner.communication_employee_id.id or False,
             "channel_id": channel_id,
         }
         

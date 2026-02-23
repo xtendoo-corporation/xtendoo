@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add assigned_employee_id to the Kanban View -->
+    <record id="view_helpdesk_ticket_kanban_inherit_whatsapp" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.kanban.inherit.whatsapp</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.view_helpdesk_ticket_kanban" />
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="assigned_employee_id" />
+            </field>
+            <xpath expr="//t[@t-name='card']//footer//field[@name='user_id']" position="before">
+                <field name="assigned_employee_id" widget="many2one_avatar_user" class="ms-1" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add assigned_employee_id to the List View -->
+    <record id="ticket_view_tree_inherit_whatsapp" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.tree.inherit.whatsapp</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.ticket_view_tree" />
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="assigned_employee_id" optional="show" widget="many2one_avatar_user" />
+            </field>
+        </field>
+    </record>
+
+    <!-- Add assigned_employee_id to the Form View -->
+    <record id="ticket_view_form_inherit_whatsapp" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.inherit.whatsapp</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.ticket_view_form" />
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="assigned_employee_id" widget="many2one_avatar_user" />
+            </field>
+        </field>
+    </record>
+
+    <!-- Add assigned_employee_id to the Search View (Group By) -->
+    <record id="helpdesk_ticket_view_search_inherit_whatsapp" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.search.inherit.whatsapp</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.helpdesk_ticket_view_search" />
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="assigned_employee_id" />
+            </field>
+            <xpath expr="//filter[@name='group_user']" position="after">
+                <filter string="Empleado Asignado" name="group_assigned_employee"
+                    context="{'group_by':'assigned_employee_id'}" />
+            </xpath>
+        </field>
+    </record>
+</odoo>
