@@ -37,6 +37,23 @@ class MailGatewayWhatsapp(models.AbstractModel):
             _logger.info("WhatsApp Automation: Adding manager %s to channel followers", manager.name)
             chat.write({"channel_partner_ids": [(4, manager.partner_id.id)]})
 
+        # Check if the partner already has an open ticket (not closed).
+        # If they do, we bypass the automation so they can talk naturally to the agent.
+        open_ticket = self.env["helpdesk.ticket"].sudo().search([
+            ("partner_id", "=", partner.id),
+            ("stage_id.closed", "=", False)
+        ], limit=1)
+
+        if open_ticket:
+            _logger.info("WhatsApp Automation: Partner has open ticket #%s. Bypassing automation menu.", open_ticket.number)
+            # Make sure session state is idle so it doesn't get stuck waiting for an incident
+            if chat.whatsapp_session_state != "idle":
+                chat.write({
+                    "whatsapp_session_state": "idle",
+                    "whatsapp_ticket_type_id": False,
+                })
+            return
+
         # Capture button response (interactive message)
         interactive = message.get("interactive", {})
         button_reply = message.get("button", {}) # For some button types
