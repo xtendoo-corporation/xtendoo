@@ -281,8 +281,25 @@ class MailGatewayWhatsapp(models.AbstractModel):
         if ticket.assigned_employee_id or ticket.user_id:
             template = self.env.ref("helpdesk_whatsapp_automation.email_template_assigned_employee_whatsapp_ticket", raise_if_not_found=False)
             if template:
-                _logger.info("WhatsApp Automation: Sending assignment email for ticket #%s.", ticket.number)
-                template.sudo().send_mail(ticket.id, force_send=True)
+                email_to_list = []
+                if ticket.assigned_employee_id and ticket.assigned_employee_id.email_formatted:
+                    email_to_list.append(ticket.assigned_employee_id.email_formatted.replace('\n', '').replace('\r', ''))
+                if ticket.user_id and ticket.user_id.email_formatted:
+                    email_to_list.append(ticket.user_id.email_formatted.replace('\n', '').replace('\r', ''))
+                
+                email_from = ticket.company_id.email_formatted or self.env.user.email_formatted
+                if email_from:
+                    email_from = email_from.replace('\n', '').replace('\r', '')
+
+                if email_to_list:
+                    email_values = {
+                        'email_to': ','.join(email_to_list),
+                        'email_from': email_from,
+                    }
+                    _logger.info("WhatsApp Automation: Sending assignment email for ticket #%s to %s.", ticket.number, email_values['email_to'])
+                    template.sudo().send_mail(ticket.id, force_send=True, email_values=email_values)
+                else:
+                    _logger.warning("WhatsApp Automation: No valid email addresses found for ticket #%s assignment.", ticket.number)
             else:
                 _logger.warning("WhatsApp Automation: Assignment email template not found.")
 

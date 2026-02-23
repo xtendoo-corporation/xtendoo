@@ -6,11 +6,6 @@
             <field name="name">Helpdesk: WhatsApp Ticket Assigned to Employee</field>
             <field name="model_id" ref="helpdesk_mgmt.model_helpdesk_ticket" />
             <field name="subject">Nuevo Ticket Asignado: {{ object.name }}</field>
-            <field name="email_to">{{ object.assigned_employee_id.email_formatted if
-                object.assigned_employee_id else '' }},{{ object.user_id.email_formatted if
-                object.user_id else '' }}</field>
-            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted)
-                }}</field>
             <field name="description">Email sent to the assigned employee and manager when a
                 WhatsApp ticket is automatically assigned to them.</field>
             <field name="body_html" type="html">
