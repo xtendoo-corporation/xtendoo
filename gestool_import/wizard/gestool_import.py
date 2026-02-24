@@ -265,6 +265,8 @@ class GestoolImport(models.TransientModel):
         if state_id:
             state_id = state_id.id
 
+        company = self.env.company
+
         # agent_id = self.env[("res.users")].search([("name", "=", row[23]), ])
         # if agent_id:
         #     agent_id = agent_id.id
@@ -306,6 +308,7 @@ class GestoolImport(models.TransientModel):
                 'state_id': state_id,
                 'vat': row[2],
                 'country_id': country_id,
+                'company_id': company.id,
             })
 
         else:
@@ -327,6 +330,7 @@ class GestoolImport(models.TransientModel):
                 'state_id': state_id,
                 'vat': row[2],
                 'country_id': country_id,
+                'company_id': company.id,
             })
     #
     # def _import_bank(self, data_file_bank):
@@ -376,17 +380,22 @@ class GestoolImport(models.TransientModel):
         return
 
     def parse_categories(self, row):
+
+        company = self.env.company
+
         category = self.env["product.category"].search([("name", "=", row[0]),])
         if not category:
             self.env["product.category"].create({
                 "name": row[0],
                 "parent_id" : 1,
+                "company_id": company.id,
             })
 
         pos_category = self.env["pos.category"].search([("name", "=", row[0]),])
         if not pos_category:
             self.env["pos.category"].create({
                 "name": row[0],
+                "company_id": company.id,
             })
 
     def _import_product(self, data_file_product):
@@ -427,6 +436,8 @@ class GestoolImport(models.TransientModel):
             print("categoria no encontrada", row[8])
             category_id = 1
 
+        company = self.env.company
+
         pos_category = self.env["pos.category"].search([("name", "=", row[8])])
         if pos_category:
             pos_categ_ids = [(6, 0, [pos_category.id])]
@@ -453,6 +464,7 @@ class GestoolImport(models.TransientModel):
                 "categ_id": category_id,
                 "available_in_pos": True,
                 "pos_categ_ids": pos_categ_ids,
+                "company_id": company.id,
             })
         else:
             print("Producto existe-------------------------------")
@@ -466,6 +478,7 @@ class GestoolImport(models.TransientModel):
                 "categ_id": category_id,
                 "available_in_pos": True,
                 "pos_categ_ids": pos_categ_ids,
+                "company_id": company.id,
             })
             # "company_id": company_id,
             # "taxes_id": taxes_id,
