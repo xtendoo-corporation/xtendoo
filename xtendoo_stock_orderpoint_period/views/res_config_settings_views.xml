@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Herencia de res.config.settings para añadir demand_factor_pct
+         Se inserta dentro de "Advanced Scheduling" (block id="schedule_info")
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="res_config_settings_view_form_period" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.period</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stock.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='schedule_info']" position="inside">
+                <setting string="Factor de demanda estacional"
+                    company_dependent="1"
+                    help="Porcentaje de ajuste aplicado a la demanda histórica al generar orderpoints estacionales. Fórmula: demanda × (1 + factor/100).">
+                    <field name="demand_factor_pct" class="oe_inline" />
+                    <span> %</span>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Herencia FORM: stock.warehouse.orderpoint
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_warehouse_orderpoint_form_period" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.form.period</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.view_warehouse_orderpoint_form" />
+        <field name="arch" type="xml">
+            <!-- Añadir campos de intervalo en el grupo derecho -->
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="date_start" />
+                <field name="date_end" />
+                <field name="is_active_today" readonly="1"
+                    widget="boolean"
+                    decoration-success="is_active_today"
+                    decoration-danger="not is_active_today" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Herencia TREE (list editable): stock.warehouse.orderpoint
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_warehouse_orderpoint_tree_period" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.list.period</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.view_warehouse_orderpoint_tree_editable" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='deadline_date']" position="after">
+                <field name="date_start" optional="hide" />
+                <field name="date_end" optional="hide" />
+                <field name="is_active_today" optional="hide"
+                    decoration-success="is_active_today"
+                    decoration-danger="not is_active_today" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Herencia SEARCH para añadir filtro por activa hoy
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="stock_reorder_report_search_period" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.reorder.search.period</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.stock_reorder_report_search" />
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_not_snoozed']" position="after">
+                <separator />
+                <filter string="Activa hoy" name="filter_active_today"
+                    domain="[('is_active_today', '=', True)]" />
+                <filter string="Inactiva hoy" name="filter_inactive_today"
+                    domain="[('is_active_today', '=', False)]" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="warehouse_orderpoint_search_period" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.search.period</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.warehouse_orderpoint_search" />
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='inactive']" position="after">
+                <separator />
+                <filter string="Activa hoy" name="filter_active_today_rules"
+                    domain="[('is_active_today', '=', True)]" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

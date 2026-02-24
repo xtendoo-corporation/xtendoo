@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_seasonality_wizard_manager,stock.orderpoint.seasonality.wizard manager,model_stock_orderpoint_seasonality_wizard,stock.group_stock_manager,1,1,1,1
+access_seasonality_wizard_line_manager,stock.orderpoint.seasonality.wizard.line manager,model_stock_orderpoint_seasonality_wizard_line,stock.group_stock_manager,1,1,1,1
+access_seasonality_wizard_month_manager,stock.orderpoint.seasonality.wizard.month manager,model_stock_orderpoint_seasonality_wizard_month,stock.group_stock_manager,1,1,1,1
+access_seasonality_wizard_user,stock.orderpoint.seasonality.wizard user,model_stock_orderpoint_seasonality_wizard,stock.group_stock_user,1,0,0,0
+access_seasonality_wizard_line_user,stock.orderpoint.seasonality.wizard.line user,model_stock_orderpoint_seasonality_wizard_line,stock.group_stock_user,1,0,0,0
+access_seasonality_wizard_month_user,stock.orderpoint.seasonality.wizard.month user,model_stock_orderpoint_seasonality_wizard_month,stock.group_stock_user,1,0,0,0

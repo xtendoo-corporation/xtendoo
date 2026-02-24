@@ -8,7 +8,9 @@
     "development_status": "Production/Stable",
     "website": "https://github.com/OCA/stock-logistics-warehouse",
     "category": "Warehouse",
-    "depends": ["stock"],
+    "depends": [
+        "stock",
+    ],
     "data": [
         "security/ir.model.access.csv",
         "security/stock_security.xml",
