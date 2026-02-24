@@ -19,24 +19,24 @@
                         <ul class="list-unstyled">
                             <strong>
                                 <li t-if="company.name">
-                                    <span t-field="company.name"/>
+                                    <span t-field="company.name" />
                                 </li>
                             </strong>
-<!--                            <li t-if="company.street">-->
-<!--                                <span t-field="company.street"/>-->
-<!--                            </li>-->
-<!--                            <li t-if="company.street2">-->
-<!--                                <span t-field="company.street2"/>-->
-<!--                            </li>-->
-<!--                            <li>-->
-<!--                                <span t-if="company.city" t-field="company.city"/>-->
-<!--                                ,-->
-<!--                                <span t-if="company.zip" t-field="company.zip"/>-->
-<!--                                <span t-if="company.state_id" t-field="company.state_id"/>-->
-<!--                            </li>-->
+                            <!--                            <li t-if="company.street">-->
+                            <!--                                <span t-field="company.street"/>-->
+                            <!--                            </li>-->
+                            <!--                            <li t-if="company.street2">-->
+                            <!--                                <span t-field="company.street2"/>-->
+                            <!--                            </li>-->
+                            <!--                            <li>-->
+                            <!--                                <span t-if="company.city" t-field="company.city"/>-->
+                            <!--                                ,-->
+                            <!--                                <span t-if="company.zip" t-field="company.zip"/>-->
+                            <!--                                <span t-if="company.state_id" t-field="company.state_id"/>-->
+                            <!--                            </li>-->
                             <li t-if="company.vat">
-                                <t t-esc="company.country_id.vat_label or 'Tax ID'"/>
-                                <span t-field="company.vat"/>
+                                <t t-esc="company.country_id.vat_label or 'Tax ID'" />
+                                <span t-field="company.vat" />
                             </li>
                             <t t-if="not is_purchase">
                             </t>
@@ -59,12 +59,13 @@
             >
             </div>
         </xpath>
-        <xpath expr="//div[@t-attf-class='footer o_clean_footer o_company_#{company.id}_layout']" position="replace">
+        <xpath expr="//div[@t-attf-class='footer o_clean_footer o_company_#{company.id}_layout']"
+            position="replace">
             <div t-attf-class="footer o_clean_footer o_company_#{company.id}_layout">
                 <div class="row mt8">
                     <div class="col-6">
                         <t t-if="not is_purchase">
-                            <span t-field="company.report_footer"/>
+                            <span t-field="company.report_footer" />
                         </t>
                         <t t-else="">
                         </t>
@@ -83,9 +84,7 @@
                         >
                             <li class="list-inline-item">
                                 <strong>
-                                    <span class="page"/>
-                                    /
-                                    <span class="topage"/>
+                                    <span class="page" /> / <span class="topage" />
                                 </strong>
                             </li>
                         </ul>
@@ -99,14 +98,14 @@
                         />
                     </div>
                 </div>
-<!--                <div class="row mt8">-->
-<!--                    <div class="col-12">-->
-<!--                        <span-->
-<!--                            style="font-size: 10px; line-height: 0px;"-->
-<!--                            t-field="company.company_registry"-->
-<!--                        />-->
-<!--                    </div>-->
-<!--                </div>-->
+                <!--                <div class="row mt8">-->
+                <!--                    <div class="col-12">-->
+                <!--                        <span-->
+                <!--                            style="font-size: 10px; line-height: 0px;"-->
+                <!--                            t-field="company.company_registry"-->
+                <!--                        />-->
+                <!--                    </div>-->
+                <!--                </div>-->
             </div>
         </xpath>
     </template>
