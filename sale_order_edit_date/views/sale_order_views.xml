@@ -1,15 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!--    inherited sale_order view for making the date_order field editable in 'sale' state -->
-    <record id="view_order_form" model="ir.ui.view">
+    <!-- Form view: move date_order before validity_date and make it editable -->
+    <record id="view_order_form_edit_date" model="ir.ui.view">
         <field name="name">sale.order.view.form.inherit.edit.order.date</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='date_order'][2]" position="replace">
-                <field name="date_order" invisible="state in ['draft', 'sent']"
-                       readonly="state in ['cancel']" nolabel="1"/>
-            </xpath>
+            <!-- Remove the Order Date label from its current position -->
+            <xpath expr="//div[label[@for='date_order' and @string='Order Date']]"
+                position="replace" />
+            <!-- Remove the date_order field from its current position (confirmed state) -->
+            <xpath expr="//field[@name='date_order'][2]" position="replace" />
+            <!-- Add Order Date label + field before validity_date -->
+            <field name="validity_date" position="before">
+                <div class="o_td_label" invisible="state in ['draft', 'sent']">
+                    <label for="date_order" string="Order Date" />
+                </div>
+                <field name="date_order"
+                    nolabel="1"
+                    invisible="state in ['draft', 'sent']"
+                    readonly="state == 'cancel'" />
+            </field>
+        </field>
+    </record>
+
+    <!-- List view: make date_order editable even when state is 'sale' -->
+    <record id="sale_order_list_edit_date" model="ir.ui.view">
+        <field name="name">sale.order.list.inherit.edit.order.date</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_tree" />
+        <field name="arch" type="xml">
+            <field name="date_order" position="attributes">
+                <attribute name="readonly">state == 'cancel'</attribute>
+            </field>
         </field>
     </record>
 </odoo>
