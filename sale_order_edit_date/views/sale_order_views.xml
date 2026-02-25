@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Form view: move date_order before validity_date and make it editable -->
+    <!-- Form view: show date_order as "Fecha" before validity_date in all states -->
     <record id="view_order_form_edit_date" model="ir.ui.view">
         <field name="name">sale.order.view.form.inherit.edit.order.date</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            <!-- Remove the Order Date label div from its current position -->
+            <!-- Remove "Quotation Date" label div (groups=base.group_no_one) -->
+            <xpath expr="//div[hasclass('o_td_label')][@groups='base.group_no_one']"
+                position="replace" />
+            <!-- Remove "Quotation Date" date_order field (groups=base.group_no_one) -->
+            <xpath expr="//field[@name='date_order'][@groups='base.group_no_one']"
+                position="replace" />
+            <!-- Remove "Order Date" label div (invisible in draft/sent) -->
             <xpath
                 expr="//div[hasclass('o_td_label')][@invisible=&quot;state in ['draft', 'sent']&quot;]"
                 position="replace" />
-            <!-- Remove the date_order field from its current position (confirmed state) -->
-            <xpath expr="//field[@name='date_order'][2]" position="replace" />
-            <!-- Add Order Date label + editable field before validity_date -->
+            <!-- Remove "Order Date" date_order field (now only one left, so it's [1]) -->
+            <xpath expr="//field[@name='date_order'][1]" position="replace" />
+            <!-- Add single editable "Fecha" field before validity_date -->
             <field name="validity_date" position="before">
-                <div class="o_td_label" invisible="state in ['draft', 'sent']">
-                    <label for="date_order" string="Order Date" />
-                </div>
-                <field name="date_order"
-                    nolabel="1"
-                    invisible="state in ['draft', 'sent']"
-                    readonly="state == 'cancel'" />
+                <label for="date_order" string="Fecha" />
+                <field name="date_order" nolabel="1" readonly="state == 'cancel'" />
             </field>
         </field>
     </record>
