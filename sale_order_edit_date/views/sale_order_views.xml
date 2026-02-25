@@ -32,9 +32,11 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.sale_order_tree" />
         <field name="arch" type="xml">
-            <field name="date_order" position="attributes">
-                <attribute name="readonly">state == 'cancel'</attribute>
-            </field>
+            <!-- Replace date_order: remove optional so it always shows, editable except when
+            cancelled -->
+            <xpath expr="//field[@name='date_order'][@optional]" position="replace">
+                <field name="date_order" readonly="state == 'cancel'" />
+            </xpath>
         </field>
     </record>
 </odoo>
