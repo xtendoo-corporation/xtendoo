@@ -6,12 +6,13 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            <!-- Remove the Order Date label div from its current position
-                 (differentiated by invisible="state in ['draft', 'sent']" and no @groups) -->
-            <xpath expr="//div[@class='o_td_label'][@invisible=\" state in ['draft' , 'sent' ]\"]" position="replace" />
-            <!-- Remove the date_order field from its current position (confirmed state, no groups) -->
+            <!-- Remove the Order Date label div from its current position -->
+            <xpath
+                expr="//div[@class='o_td_label'][@invisible=&quot;state in ['draft', 'sent']&quot;]"
+                position="replace" />
+            <!-- Remove the date_order field from its current position (confirmed state) -->
             <xpath expr="//field[@name='date_order'][2]" position="replace" />
-            <!-- Add Order Date label + field before validity_date -->
+            <!-- Add Order Date label + editable field before validity_date -->
             <field name="validity_date" position="before">
                 <div class="o_td_label" invisible="state in ['draft', 'sent']">
                     <label for="date_order" string="Order Date" />
