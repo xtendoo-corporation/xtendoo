@@ -4,17 +4,16 @@
 
 Edit Sale Order Date
 ====================
-We can change the order date of the confirmed sale order. The access for the editing
-the order date can be restricted to particular user group. The user who have no access
-to edit the field got a user error while trying to change the field.
+Allows any user to change the order date (date_order) of a confirmed sale order.
+The field is editable in the confirmed state and read-only only when the order is cancelled.
 
 Configuration
 =============
-- No additional configurations needed.
+- No additional configuration needed.
 
 Company
 -------
-* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
+* `Xtendoo Software <https://www.xtendoo.es/>`__
 
 License
 -------
@@ -23,28 +22,8 @@ General Public License, Version 3 (LGPL v3).
 
 Credits
 -------
-* Developer: (V17) Yadhu shankar E,
-             (V18) Kailas Krishna
-  Contact : odoo@cybrosys.com
+* Developer: Xtendoo Software
 
 Contacts
 --------
-* Mail Contact : odoo@cybrosys.com
-* Website : https://cybrosys.com
-
-Bug Tracker
------------
-Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
-
-Maintainer
-==========
-.. image:: https://cybrosys.com/images/logo.png
-   :target: https://cybrosys.com
-
-This module is maintained by Cybrosys Technologies.
-
-For support and more information, please visit `Our Website <https://cybrosys.com/>`__
-
-Further information
-===================
-HTML Description: `<static/description/index.html>`__
+* Website : https://www.xtendoo.es
