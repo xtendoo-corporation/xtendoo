@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_lead_view_form_inherit_strict" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.strict</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form" />
+        <field name="arch" type="xml">
+            <!-- Odoo 19 crm.lead form has company_id in multiple places, we make it readonly
+            everywhere -->
+            <xpath expr="//field[@name='company_id']" position="attributes">
+                <attribute name="readonly">1</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_lead_view_list_inherit_strict" model="ir.ui.view">
+        <field name="name">crm.lead.list.inherit.strict</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id'][1]" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="quick_create_opportunity_form_inherit_strict" model="ir.ui.view">
+        <field name="name">crm.lead.form.quick_create.inherit.strict</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form" />
+        <field name="arch" type="xml">
+            <!-- Hide Customer Company selection (commercial_partner_id) as it's confusing with Odoo
+            Company -->
+            <xpath expr="//field[@name='commercial_partner_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <!-- Ensure Lead's Odoo Company is invisible and readonly -->
+            <xpath expr="//field[@name='company_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+                <attribute name="readonly">1</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

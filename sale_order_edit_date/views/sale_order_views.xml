@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form view: show date_order as "Fecha" before validity_date in all states -->
+    <record id="view_order_form_edit_date" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.edit.order.date</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="arch" type="xml">
+            <!-- Remove "Quotation Date" label div (groups=base.group_no_one) -->
+            <xpath expr="//div[hasclass('o_td_label')][@groups='base.group_no_one']"
+                position="replace" />
+            <!-- Remove "Quotation Date" date_order field (groups=base.group_no_one) -->
+            <xpath expr="//field[@name='date_order'][@groups='base.group_no_one']"
+                position="replace" />
+            <!-- Remove "Order Date" label div (invisible in draft/sent) -->
+            <xpath
+                expr="//div[hasclass('o_td_label')][@invisible=&quot;state in ['draft', 'sent']&quot;]"
+                position="replace" />
+            <!-- Remove "Order Date" date_order field (now only one left, so it's [1]) -->
+            <xpath expr="//field[@name='date_order'][1]" position="replace" />
+            <!-- Add single editable "Fecha" field before validity_date -->
+            <field name="validity_date" position="before">
+                <label for="date_order" string="Fecha" />
+                <field name="date_order" nolabel="1" readonly="state == 'cancel'" />
+            </field>
+        </field>
+    </record>
+
+    <!-- List view: make date_order editable even when state is 'sale' -->
+    <record id="sale_order_list_edit_date" model="ir.ui.view">
+        <field name="name">sale.order.list.inherit.edit.order.date</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_tree" />
+        <field name="arch" type="xml">
+            <!-- Replace date_order: remove optional so it always shows, editable except when
+            cancelled -->
+            <xpath expr="//field[@name='date_order'][@optional]" position="replace">
+                <field name="date_order" readonly="state == 'cancel'" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Overriding CRM company rules to support bypass check -->
+    <record id="crm.crm_lead_company_rule" model="ir.rule">
+        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else [('company_id',
+            'in', company_ids + [False])]</field>
+    </record>
+
+    <record id="crm.crm_activity_report_rule_multi_company" model="ir.rule">
+        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else [('company_id',
+            'in', company_ids + [False])]</field>
+    </record>
+</odoo>
