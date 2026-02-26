@@ -36,8 +36,8 @@ class DiscussChannel(models.Model):
 
         _logger.info("WhatsApp Automation (Mirror): message_post intercepted for channel %s. channel_type is: '%s'", self.id, self.channel_type)
 
-        # Check if this is a WhatsApp channel
-        if self.channel_type == 'whatsapp':
+        # Check if this is a WhatsApp channel (or gateway in some modules)
+        if self.channel_type in ('whatsapp', 'gateway'):
             _logger.info("WhatsApp Automation (Mirror): Intercepting message_post in WhatsApp channel %s", self.id)
             
             # Identify if any partner in this channel has an open ticket
