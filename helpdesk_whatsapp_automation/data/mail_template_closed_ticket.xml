@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="0">
-        <!-- Email Template to Notify Assigned Employee and Manager -->
-        <record id="email_template_assigned_employee_whatsapp_ticket" model="mail.template">
-            <field name="name">Helpdesk: WhatsApp Ticket Assigned to Employee</field>
+    <data noupdate="1">
+        <!-- Email Template to Notify Assigned Employee and Manager when Closed -->
+        <record id="email_template_closed_whatsapp_ticket" model="mail.template">
+            <field name="name">Helpdesk: WhatsApp Ticket Closed</field>
             <field name="model_id" ref="helpdesk_mgmt.model_helpdesk_ticket" />
-            <field name="subject">Nuevo Ticket Asignado: {{ object.name }}</field>
+            <field name="subject">Ticket Cerrado: {{ object.name }}</field>
             <field name="description">Email sent to the assigned employee and manager when a
-                WhatsApp ticket is automatically assigned to them.</field>
+                WhatsApp ticket is closed.</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
                     <p style="margin: 0px; padding: 0px; font-size: 13px;"> Hola, <br /><br /> Se ha
-                        creado un nuevo ticket de Helpdesk a través de WhatsApp. <br /><br />
-                        <strong>Detalles
-                        del Ticket:</strong>
+                        cerrado un ticket de Helpdesk. <br /><br />
+                        <strong>Detalles del Ticket:</strong>
                         <ul>
                             <li>
                                 <strong>Número:</strong>
@@ -37,15 +36,6 @@
                             </li>
                         </ul>
                         <br />
-                        <strong>Descripción
-                        / Mensaje Original:</strong>
-                        <blockquote
-                            style="margin: 10px 0px 10px 20px; padding-left: 10px; border-left: 3px solid #ccc; font-style: italic;">
-                            <span t-out="object.description"></span>
-                        </blockquote>
-                        <br />
-                        Por favor, entra a Odoo para revisar los detalles completos y cualquier
-                        archivo adjunto o mensaje de voz que el cliente haya proporcionado. <br /><br />
                         <a
                             t-att-href="object.get_base_url() + '/odoo/action-helpdesk_whatsapp_automation.helpdesk_ticket_action/' + str(object.id)"
                             style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
