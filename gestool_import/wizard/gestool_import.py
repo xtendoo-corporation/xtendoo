@@ -381,21 +381,17 @@ class GestoolImport(models.TransientModel):
 
     def parse_categories(self, row):
 
-        company = self.env.company
-
         category = self.env["product.category"].search([("name", "=", row[0]),])
         if not category:
             self.env["product.category"].create({
                 "name": row[0],
                 "parent_id" : 1,
-                "company_id": company.id,
             })
 
         pos_category = self.env["pos.category"].search([("name", "=", row[0]),])
         if not pos_category:
             self.env["pos.category"].create({
                 "name": row[0],
-                "company_id": company.id,
             })
 
     def _import_product(self, data_file_product):
