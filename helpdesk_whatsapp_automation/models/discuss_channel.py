@@ -34,6 +34,8 @@ class DiscussChannel(models.Model):
         # Create the message first to capture body, attachments, etc.
         res = super().message_post(**kwargs)
 
+        _logger.info("WhatsApp Automation (Mirror): message_post intercepted for channel %s. channel_type is: '%s'", self.id, self.channel_type)
+
         # Check if this is a WhatsApp channel
         if self.channel_type == 'whatsapp':
             _logger.info("WhatsApp Automation (Mirror): Intercepting message_post in WhatsApp channel %s", self.id)
