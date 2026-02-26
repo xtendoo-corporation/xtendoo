@@ -47,7 +47,7 @@
                         Por favor, entra a Odoo para revisar los detalles completos y cualquier
                         archivo adjunto o mensaje de voz que el cliente haya proporcionado. <br /><br />
                         <a
-                            t-att-href="object.get_base_url() + '/odoo/action-helpdesk_mgmt.helpdesk_ticket_action/' + str(object.id)"
+                            t-att-href="object.get_base_url() + '/web#id=' + str(object.id) + '&amp;model=helpdesk.ticket&amp;view_type=form'"
                             style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
                         Ver Ticket
                         </a>
