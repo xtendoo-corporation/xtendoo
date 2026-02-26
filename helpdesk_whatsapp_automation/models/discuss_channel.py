@@ -54,12 +54,12 @@ class DiscussChannel(models.Model):
                     _logger.info("WhatsApp Automation (Mirror): Original body: '%s', Attachments: %s", body, len(res.attachment_ids))
                     
                     if not body and res.attachment_ids:
-                        body = "<i>Archivo adjunto enviado por WhatsApp</i>"
+                        body = "Archivo adjunto enviado por WhatsApp"
                     
                     if body:
                         # Determine author name
                         author_name = res.author_id.name if res.author_id else "Bot"
-                        prefix = f"<b>Mensaje de WhatsApp ({author_name}):</b><br/>"
+                        prefix = f"Mensaje de WhatsApp ({author_name}):"
                         
                         # Copy attachments
                         copied_attachment_ids = []
