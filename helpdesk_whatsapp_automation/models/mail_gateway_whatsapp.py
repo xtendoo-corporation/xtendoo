@@ -279,7 +279,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         # Notify assigned employee/manager via email
         if ticket.assigned_employee_id or ticket.user_id:
-            template = self.env.ref("helpdesk_whatsapp_automation.email_template_assigned_employee_whatsapp_ticket", raise_if_not_found=False)
+            template = self.env.ref("helpdesk_whatsapp_automation.email_template_assigned_employee_whatsapp_ticket_v2", raise_if_not_found=False)
             if template:
                 email_to_list = []
                 if ticket.assigned_employee_id and ticket.assigned_employee_id.email_formatted:
