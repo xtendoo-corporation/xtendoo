@@ -451,7 +451,7 @@ class GestoolImport(models.TransientModel):
             print("Producto No existe-------------------------------")
             self.env["product.template"].create({
                 "default_code": row[0],
-                "barcode": row[0],
+                "barcode": row[9],
                 "name": row[2],
                 "list_price": row[4],
                 "standard_price": row[5],
@@ -465,7 +465,7 @@ class GestoolImport(models.TransientModel):
         else:
             print("Producto existe-------------------------------")
             product.sudo().write({
-                "barcode": row[0],
+                "barcode": row[9],
                 "name": row[2],
                 "list_price": row[4],
                 "standard_price": row[5],
