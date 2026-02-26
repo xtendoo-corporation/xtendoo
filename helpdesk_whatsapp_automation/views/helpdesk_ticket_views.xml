@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Add action to view ticket from email -->
+    <record id="helpdesk_ticket_action" model="ir.actions.act_window">
+        <field name="name">Ticket de Helpdesk</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">form</field>
+    </record>
     <!-- Add assigned_employee_id to the Kanban View -->
     <record id="view_helpdesk_ticket_kanban_inherit_whatsapp" model="ir.ui.view">
         <field name="name">helpdesk.ticket.kanban.inherit.whatsapp</field>
