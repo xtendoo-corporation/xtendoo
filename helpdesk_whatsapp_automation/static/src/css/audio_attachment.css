@@ -1,0 +1,14 @@
+/* Inline audio player for WhatsApp voice messages */
+.o-mail-AttachmentCard-audio audio {
+    height: 36px;
+    border-radius: 20px;
+}
+
+.o-mail-AttachmentCard-audio audio::-webkit-media-controls-panel {
+    background-color: #f0f0f0;
+    border-radius: 20px;
+}
+
+.o-mail-AttachmentCard-audio .fa-microphone {
+    font-size: 1.2em;
+}

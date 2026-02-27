@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.AttachmentList" t-inherit-mode="extension">
+        <!-- Replace the nonImageMain ref content: if audio, show player; otherwise keep original -->
+        <xpath expr="//*[@t-ref='nonImageMain']" position="replace">
+            <t t-if="isAudioAttachment(attachment)">
+                <div class="o-mail-AttachmentCard-audio d-flex align-items-center p-2 w-100">
+                    <i class="fa fa-microphone text-primary me-2" title="Audio"/>
+                    <audio controls="controls" preload="metadata" class="flex-grow-1" style="height: 36px; min-width: 180px;">
+                        <source t-att-src="getAudioUrl(attachment)" t-att-type="attachment.mimetype"/>
+                        Tu navegador no soporta la reproducción de audio.
+                    </audio>
+                </div>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+    </t>
+</templates>

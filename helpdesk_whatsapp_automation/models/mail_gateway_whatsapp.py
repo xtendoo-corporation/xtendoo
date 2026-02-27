@@ -132,23 +132,6 @@ class MailGatewayWhatsapp(models.AbstractModel):
             
             # Send specific prompt based on type
             prompts = {
-                "Duda": _(
-                    "Perfecto 👍\n\n"
-                    "Para poder resolver tu duda, indícanos por favor:\n"
-                    "• En qué módulo o sección estás trabajando\n"
-                    "• Qué quieres conseguir exactamente\n"
-                    "• Qué es lo que no tienes claro\n\n"
-                    "Con esa información podremos ayudarte más rápido."
-                ),
-                "Solicitud nuevo cambio": _(
-                    "Perfecto 👍\n\n"
-                    "Para evaluar tu solicitud de cambio necesitamos que nos indiques:\n"
-                    "• Qué funcionalidad deseas modificar o añadir\n"
-                    "• Cómo funciona actualmente\n"
-                    "• Cómo te gustaría que funcionara\n\n"
-                    "Cuanto más detalle nos facilites, más ágil será la valoración.\n\n"
-                    "(Esto es muy importante para evitar cambios mal definidos — aquí se pierden horas normalmente)."
-                ),
                 "Error": _(
                     "Gracias 👍\n\n"
                     "Para revisar la incidencia necesitamos que nos indiques:\n"
@@ -156,6 +139,22 @@ class MailGatewayWhatsapp(models.AbstractModel):
                     "• Qué mensaje de error aparece (texto exacto)\n"
                     "• En qué momento ocurre\n\n"
                     "Si puedes adjuntar captura de pantalla, mejor aún."
+                ),
+                "Consulta": _(
+                    "Perfecto 👍\n\n"
+                    "Para poder resolver tu consulta, indícanos por favor:\n"
+                    "• En qué módulo o sección estás trabajando\n"
+                    "• Qué quieres conseguir exactamente\n"
+                    "• Qué es lo que no tienes claro\n\n"
+                    "Con esa información podremos ayudarte más rápido."
+                ),
+                "Llamame": _(
+                    "Perfecto 👍\n\n"
+                    "Hemos registrado tu solicitud de llamada.\n"
+                    "Por favor, indícanos brevemente:\n"
+                    "• El motivo de la llamada\n"
+                    "• Tu disponibilidad horaria preferida\n\n"
+                    "Un empleado se pondrá en contacto contigo lo antes posible."
                 ),
             }
             

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
-        <record id="helpdesk_ticket_type_duda" model="helpdesk.ticket.type">
-            <field name="name">Duda</field>
-        </record>
-
-        <record id="helpdesk_ticket_type_solicitud_cambio" model="helpdesk.ticket.type">
-            <field name="name">Solicitud nuevo cambio</field>
-        </record>
-
+    <data noupdate="0">
         <record id="helpdesk_ticket_type_error" model="helpdesk.ticket.type">
             <field name="name">Error</field>
+        </record>
+
+        <record id="helpdesk_ticket_type_consulta" model="helpdesk.ticket.type">
+            <field name="name">Consulta</field>
+        </record>
+
+        <record id="helpdesk_ticket_type_llamame" model="helpdesk.ticket.type">
+            <field name="name">Llamame</field>
         </record>
     </data>
 </odoo>
