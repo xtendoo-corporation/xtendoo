@@ -160,7 +160,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
             
             # Find closest match in prompts keys
             prompt_key = next((k for k in prompts if k.lower() in ticket_type.name.lower()), False)
-            message_body = prompts.get(prompt_key, _("Please provide details for the ticket."))
+            message_body = prompts.get(prompt_key, _("Porfavor introduce información al respecto a continuación sobre el motivo (Cuanta más información mejor, gracias)."))
             
             _logger.info("WhatsApp Automation: Sending prompt for %s", ticket_type.name)
             self._send_whatsapp_text(chat, partner, message_body)
