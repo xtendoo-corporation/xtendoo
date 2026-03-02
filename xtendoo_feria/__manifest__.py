@@ -15,6 +15,7 @@
             'xtendoo_feria/static/src/**/*',
         ],
     },
+    'images': ['static/description/icon.png'],
     'data': [],
     'installable': True,
     'application': False,

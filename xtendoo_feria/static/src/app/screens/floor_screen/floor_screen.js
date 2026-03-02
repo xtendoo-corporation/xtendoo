@@ -16,19 +16,11 @@ patch(FloorScreen.prototype, {
 
     /**
      * Returns the customer name for a given table.
+     * Reads from the persistent feria_partner_name field
+     * so it survives session close, order finalization, etc.
      */
     getTableCustomerName(table) {
-        const orders = table.getOrders();
-        for (const order of orders) {
-            if (order.finalized) {
-                continue;
-            }
-            const partner = order.getPartner();
-            if (partner) {
-                return partner.name;
-            }
-        }
-        return false;
+        return table.feria_partner_name || false;
     },
 
     /**
@@ -128,6 +120,12 @@ patch(FloorScreen.prototype, {
                 [[lastTable.id]]
             );
             if (response) {
+                // Clear the persistent customer assignment
+                if (lastTable.feria_partner_id) {
+                    this.pos.data.write("restaurant.table", [lastTable.id], {
+                        feria_partner_id: false,
+                    });
+                }
                 // Remove any open orders on that table first
                 for (const order of this.pos.getOpenOrders()) {
                     if (order.table_id?.id === lastTable.id) {

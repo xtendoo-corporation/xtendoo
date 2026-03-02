@@ -28,8 +28,8 @@
                         </div>
                     </t>
                     <t t-foreach="activeTables.sort((a,b) => a.table_number - b.table_number)" t-as="table" t-key="table.id">
-                        <t t-set="isOccupied" t-value="pos.tableHasOrders(table)"/>
-                        <t t-set="customerName" t-value="getTableCustomerName(table)"/>
+                        <t t-set="isOccupied" t-value="table.feria_partner_name"/>
+                        <t t-set="customerName" t-value="table.feria_partner_name"/>
                         <div
                             t-on-click="(ev) => this.onClickTable(table, ev)"
                             class="feria-table d-flex flex-column align-items-center justify-content-center cursor-pointer rounded-3 position-relative"
