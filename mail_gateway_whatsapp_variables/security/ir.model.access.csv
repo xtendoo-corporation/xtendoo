@@ -1,6 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_mail_whatsapp_template_variable_user,mail.whatsapp.template.variable.user,model_mail_whatsapp_template_variable,base.group_user,1,1,1,1
-access_mail_whatsapp_template_button_user,mail.whatsapp.template.button.user,model_mail_whatsapp_template_button,base.group_user,1,1,1,1
-access_whatsapp_composer_variable_user,whatsapp.composer.variable.user,model_whatsapp_composer_variable,base.group_user,1,1,1,1
-access_whatsapp_composer_button_user,whatsapp.composer.button.user,model_whatsapp_composer_button,base.group_user,1,1,1,1
 access_whatsapp_pending_confirmation_user,whatsapp.pending.confirmation.user,model_whatsapp_pending_confirmation,base.group_user,1,1,1,1

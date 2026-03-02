@@ -4,110 +4,35 @@
     <record id="whatsapp_composer_form_view_attachments" model="ir.ui.view">
         <field name="name">whatsapp.composer.form.attachments</field>
         <field name="model">whatsapp.composer</field>
-        <field name="inherit_id" ref="mail_gateway_whatsapp.whatsapp_composer_form_view"/>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.whatsapp_composer_form_view" />
         <field name="arch" type="xml">
             <!-- Add attachment fields after body -->
             <xpath expr="//field[@name='body']" position="after">
-                <separator string="Attachments"/>
+                <separator string="Attachments" />
 
                 <group>
                     <field name="attachment_ids"
-                           widget="many2many_binary"
-                           string="Attach Files"
-                           help="PDF, images (JPG, PNG), documents, videos, etc."
-                           nolabel="1"/>
+                        widget="many2many_binary"
+                        string="Attach Files"
+                        help="PDF, images (JPG, PNG), documents, videos, etc."
+                        nolabel="1" />
                 </group>
                 <div class="text-muted" style="font-size: 90%; padding: 8px 0;">
-                    <i class="fa fa-info-circle"/>
-                    <span>PDFs are automatically generated for Sale Orders and Invoices. You can remove them or add more files.</span>
+                    <i class="fa fa-info-circle" />
+                    <span>PDFs are automatically generated for Sale Orders and Invoices. You can
+                        remove them or add more files.</span>
                 </div>
             </xpath>
             <!-- Reemplazar el campo template_id por uno con string personalizado -->
             <xpath expr="//field[@name='template_id']" position="replace">
-                <label for="template_id" string="Selecciona la plantilla"/>
-                <field name="template_id" required="is_required_template" options="{'no_create': True, 'no_open': True}" string="Selecciona la plantilla"/>
+                <label for="template_id" string="Selecciona la plantilla" />
+                <field name="template_id" required="is_required_template"
+                    options="{'no_create': True, 'no_open': True}" string="Selecciona la plantilla" />
             </xpath>
             <xpath expr="//field[@name='body']" position="before">
-                <label for="body" string="Mensaje de la Plantilla"/>
+                <label for="body" string="Mensaje de la Plantilla" />
             </xpath>
         </field>
     </record>
 
-    <!-- Vista de plantilla con variables y botones -->
-    <record id="view_mail_whatsapp_template_form_variables_v2" model="ir.ui.view">
-        <field name="name">mail.whatsapp.template.form.variables.v2</field>
-        <field name="model">mail.whatsapp.template</field>
-        <field name="inherit_id" ref="mail_gateway_whatsapp.view_mail_whatsapp_template_form"/>
-        <field name="priority">99</field>
-        <field name="arch" type="xml">
-            <!-- Agregar notebook con pestañas -->
-            <xpath expr="//page[@name='body']" position="after">
-                <page string="Model &amp; Variables" name="model_variables">
-                    <group>
-                        <group>
-                            <field name="model_id" required="1"/>
-                        </group>
-                    </group>
-                    <separator string="Variables"/>
-                    <field name="variable_ids" widget="one2many">
-                        <list>
-                            <field name="sequence" widget="handle"/>
-                            <field name="name"/>
-                            <field name="variable_index"/>
-                            <field name="line_type"/>
-                            <field name="field_type"/>
-                            <field name="field_id" optional="hide"/>
-                            <field name="field_name" optional="show"/>
-                            <field name="demo_value"/>
-                        </list>
-                        <form>
-                            <group>
-                                <field name="name"/>
-                                <field name="variable_index"/>
-                                <field name="line_type"/>
-                                <field name="field_type"/>
-                                <field name="template_model_id" invisible="1"/>
-                                <field name="field_id"
-                                    invisible="field_type != 'field'"
-                                    required="field_type == 'field'"
-                                    options="{'no_create': True, 'no_open': True}"/>
-                                <field name="field_name"
-                                    invisible="field_type != 'field'"
-                                    placeholder="e.g., partner_id.name, order_line.product_id.name"
-                                    help="You can use dot notation to access related fields"/>
-                                <field name="demo_value"/>
-                                <field name="sequence"/>
-                            </group>
-                        </form>
-                    </field>
-                </page>
-                <page string="Buttons" name="buttons">
-                    <field name="button_ids" widget="one2many" context="{'default_sequence': 10}">
-                        <list>
-                            <field name="sequence" widget="handle"/>
-                            <field name="name"/>
-                            <field name="button_type"/>
-                        </list>
-                        <form>
-                            <group>
-                                <field name="name"/>
-                                <field name="button_type"/>
-                                <field name="call_number"
-                                    invisible="button_type != 'phone_number'"
-                                    required="button_type == 'phone_number'"/>
-                                <field name="website_url"
-                                    invisible="button_type != 'url'"
-                                    required="button_type == 'url'"/>
-                                <field name="url_type"
-                                    invisible="button_type != 'url'"
-                                    required="button_type == 'url'"/>
-                                <field name="sequence"/>
-                            </group>
-                        </form>
-                    </field>
-                </page>
-            </xpath>
-        </field>
-    </record>
 </odoo>
-
