@@ -207,96 +207,75 @@ class SeasonalityWizard(models.TransientModel):
         """Calcula demanda histórica agrupada por producto y mes.
 
         Estrategia:
-        - stock.move en estado 'done'
-        - Salidas desde la ubicación del almacén (location_id hijo del
-          almacén), es decir, movimientos que SALEN del stock.
-        - Se restan devoluciones (movimientos de entrada al mismo stock
-          con origin que contenga 'Return' o usando picking_type_code == 'incoming'
-          y origin referenciando el picking original).
-
-        Para simplificar y optimizar, usamos read_group.
+        1. sale.order.line: pedidos de venta confirmados/hechos (state in
+           ('sale', 'done')) con fecha de confirmación dentro del mes.
+           Se restan las cantidades devueltas (qty_returned si existe, o
+           se deduce de las devoluciones de picking vinculadas).
+        2. pos.order.line: órdenes POS en estado 'done' / 'invoiced'.
+           Las devoluciones POS tienen qty negativa, así que se acumulan
+           directamente.
 
         Retorna: dict  {(product_id, month): qty_in_product_uom}
-
-        VERIFY IN SOURCE – Usamos location_id (origen) dentro del almacén
-        para detectar salidas.  Si tu flujo usa location_dest_id de clientes
-        como filtro alternativo, ajusta el dominio.
         """
         result = defaultdict(float)
         if not products or not months:
             return result
 
-        location = self._get_location()
-        # Ubicaciones hijas de la ubicación de stock
-        child_locations = self.env["stock.location"].search(
-            [("id", "child_of", location.id)]
-        )
+        has_sale = "sale.order.line" in self.env
+        has_pos = "pos.order.line" in self.env
 
         for month in months:
             start, end = self._month_date_range(self.year_reference, month)
-
-            # ── Salidas (consumo / ventas) ──────────────────────────────
-            out_domain = [
-                ("state", "=", "done"),
-                ("company_id", "=", self.company_id.id),
-                ("date", ">=", fields.Datetime.to_datetime(start)),
-                (
-                    "date",
-                    "<=",
-                    fields.Datetime.to_datetime(end).replace(
-                        hour=23, minute=59, second=59
-                    ),
-                ),
-                ("product_id", "in", products.ids),
-                ("location_id", "in", child_locations.ids),
-                # Excluir movimientos internos (destino también interno)
-                ("location_dest_id", "not in", child_locations.ids),
-            ]
-            out_groups = self.env["stock.move"]._read_group(
-                out_domain,
-                ["product_id", "product_uom"],
-                ["product_qty:sum"],
+            dt_start = fields.Datetime.to_datetime(start)
+            dt_end = fields.Datetime.to_datetime(end).replace(
+                hour=23, minute=59, second=59
             )
-            for product, uom, qty_sum in out_groups:
-                # Convertir a UoM del producto si difiere
-                if uom != product.uom_id:
-                    qty_sum = uom._compute_quantity(
-                        qty_sum, product.uom_id, rounding_method="HALF-UP"
-                    )
-                result[(product.id, month)] += qty_sum
 
-            # ── Devoluciones (entradas de retorno) ──────────────────────
-            # Las devoluciones son movimientos entrantes al stock desde
-            # ubicaciones de cliente/proveedor con picking_type_code == 'incoming'.
-            # Restamos lo devuelto.
-            in_domain = [
-                ("state", "=", "done"),
-                ("company_id", "=", self.company_id.id),
-                ("date", ">=", fields.Datetime.to_datetime(start)),
-                (
-                    "date",
-                    "<=",
-                    fields.Datetime.to_datetime(end).replace(
-                        hour=23, minute=59, second=59
-                    ),
-                ),
-                ("product_id", "in", products.ids),
-                ("location_dest_id", "in", child_locations.ids),
-                ("location_id", "not in", child_locations.ids),
-                # Solo devoluciones: origin_returned_move_id presente
-                ("origin_returned_move_id", "!=", False),
-            ]
-            in_groups = self.env["stock.move"]._read_group(
-                in_domain,
-                ["product_id", "product_uom"],
-                ["product_qty:sum"],
-            )
-            for product, uom, qty_sum in in_groups:
-                if uom != product.uom_id:
-                    qty_sum = uom._compute_quantity(
-                        qty_sum, product.uom_id, rounding_method="HALF-UP"
-                    )
-                result[(product.id, month)] -= qty_sum
+            # ── 1. Ventas (sale.order) ──────────────────────────────────
+            if has_sale:
+                sol_domain = [
+                    ("order_id.state", "in", ("sale", "done")),
+                    ("order_id.company_id", "=", self.company_id.id),
+                    ("order_id.date_order", ">=", dt_start),
+                    ("order_id.date_order", "<=", dt_end),
+                    ("product_id", "in", products.ids),
+                    ("product_id.is_storable", "=", True),
+                ]
+                sol_groups = self.env["sale.order.line"]._read_group(
+                    sol_domain,
+                    ["product_id", "product_uom"],
+                    ["product_uom_qty:sum", "qty_delivered:sum"],
+                )
+                for product, uom, qty_ordered, qty_delivered in sol_groups:
+                    # Usamos qty_delivered para reflejar lo realmente
+                    # entregado (ya descuenta devoluciones de picking).
+                    # Si es 0 (aún no entregado) usamos qty_ordered.
+                    qty = qty_delivered if qty_delivered > 0 else qty_ordered
+                    if uom and uom != product.uom_id:
+                        qty = uom._compute_quantity(
+                            qty, product.uom_id, rounding_method="HALF-UP"
+                        )
+                    result[(product.id, month)] += qty
+
+            # ── 2. Ventas POS (pos.order) ───────────────────────────────
+            if has_pos:
+                # Las devoluciones POS crean líneas con qty negativa,
+                # por lo que la suma directa ya las descuenta.
+                pol_domain = [
+                    ("order_id.state", "in", ("done", "invoiced")),
+                    ("order_id.company_id", "=", self.company_id.id),
+                    ("order_id.date_order", ">=", dt_start),
+                    ("order_id.date_order", "<=", dt_end),
+                    ("product_id", "in", products.ids),
+                    ("product_id.is_storable", "=", True),
+                ]
+                pol_groups = self.env["pos.order.line"]._read_group(
+                    pol_domain,
+                    ["product_id"],
+                    ["qty:sum"],
+                )
+                for product, qty_sum in pol_groups:
+                    result[(product.id, month)] += qty_sum
 
         # Asegurar que no queden demandas negativas
         return {k: max(v, 0.0) for k, v in result.items()}

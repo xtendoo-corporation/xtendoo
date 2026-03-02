@@ -5,13 +5,18 @@
     "name": "Reaprovisionamiento por Intervalos y Estacionalidad",
     "summary": "Extiende reglas de reaprovisionamiento con intervalos de fecha "
     "y genera orderpoints mensuales basadas en demanda histórica.",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "author": "Xtendoo Corporation",
     "website": "https://www.xtendoo.es",
     "category": "Warehouse",
     "depends": [
         "stock",
+        # sale y point_of_sale son opcionales: se detectan en tiempo de
+        # ejecución con `"sale.order.line" in self.env` para no forzar
+        # su instalación.  Si están presentes, el wizard de estacionalidad
+        # leerá sus ventas para el cálculo de demanda histórica.
     ],
+    "auto_install": False,
     "data": [
         "security/ir.model.access.csv",
         "views/stock_orderpoint_views.xml",
