@@ -35,4 +35,14 @@
         </field>
     </record>
 
+    <!-- Dummy view to overwrite the deleted variables view and avoid crashes during upgrade -->
+    <record id="view_mail_whatsapp_template_form_variables_v2" model="ir.ui.view">
+        <field name="name">mail.whatsapp.template.form.variables.v2.dummy</field>
+        <field name="model">mail.whatsapp.template</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.view_mail_whatsapp_template_form" />
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <data />
+        </field>
+    </record>
 </odoo>
