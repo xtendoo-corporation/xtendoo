@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-name="xtendoo_feria.FloorScreen" t-inherit="pos_restaurant.FloorScreen" t-inherit-mode="extension">
+
+        <!-- Replace the entire floor-map-scroll div with our simplified grid version -->
+        <xpath expr="//div[@t-ref='floor-map-scroll']" position="replace">
+            <div t-ref="floor-map-scroll"
+                 class="overflow-auto flex-grow-1 flex-shrink-1 flex-basis-0 w-auto bg-view p-3">
+                <!-- Add / Remove table buttons -->
+                <div class="d-flex gap-2 mb-3 align-items-center flex-wrap">
+                    <button class="btn btn-success btn-lg d-flex align-items-center gap-2"
+                            t-on-click="onFeriaAddTable">
+                        <i class="fa fa-plus-circle" /> Añadir Mesa
+                    </button>
+                    <button class="btn btn-danger btn-lg d-flex align-items-center gap-2"
+                            t-on-click="onFeriaRemoveLastTable">
+                        <i class="fa fa-minus-circle" /> Eliminar Última Mesa
+                    </button>
+                    <span class="ms-3 fs-5 fw-bold text-muted">
+                        Total mesas: <t t-esc="activeTables.length"/>
+                    </span>
+                </div>
+                <!-- Grid of tables -->
+                <div class="feria-grid d-flex flex-wrap gap-2" t-ref="map">
+                    <t t-if="activeTables.length === 0">
+                        <div class="empty-floor d-flex align-items-center justify-content-center w-100 fs-3 text-center text-muted py-5">
+                            <span>No hay mesas disponibles.<br/>Pulsa "Añadir Mesa" para empezar.</span>
+                        </div>
+                    </t>
+                    <t t-foreach="activeTables.sort((a,b) => a.table_number - b.table_number)" t-as="table" t-key="table.id">
+                        <t t-set="isOccupied" t-value="pos.tableHasOrders(table)"/>
+                        <t t-set="customerName" t-value="getTableCustomerName(table)"/>
+                        <div
+                            t-on-click="(ev) => this.onClickTable(table, ev)"
+                            class="feria-table d-flex flex-column align-items-center justify-content-center cursor-pointer rounded-3 position-relative"
+                            t-attf-class="tableId-{{table.id}} {{ isOccupied ? 'feria-occupied' : 'feria-free' }}"
+                        >
+                            <div class="feria-table-number fw-bolder" t-esc="table.table_number"/>
+                            <div t-if="customerName"
+                                 t-esc="customerName"
+                                 class="feria-table-customer"
+                            />
+                            <t t-set="data" t-value="getChangeCount(table)"/>
+                            <div
+                                t-if="data.changes > 0"
+                                t-esc="data.changes"
+                                class="feria-badge position-absolute top-0 end-0 badge rounded-pill text-bg-danger smaller fw-bolder"
+                            />
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+
+    </t>
+</templates>
+
