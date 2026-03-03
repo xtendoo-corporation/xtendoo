@@ -80,3 +80,26 @@
     font-size: 0.7rem;
     margin: 4px;
 }
+
+/* ===== Xtendoo Feria - Recharge Button ===== */
+
+.feria-recharge-btn {
+    background: linear-gradient(135deg, #6f42c1, #8b5cf6) !important;
+    border: 2px solid #5a32a3 !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    transition: all 0.15s ease;
+    letter-spacing: 0.5px;
+
+    &:hover {
+        background: linear-gradient(135deg, #5a32a3, #7c3aed) !important;
+        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.4);
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(1px);
+        box-shadow: none;
+    }
+}
+

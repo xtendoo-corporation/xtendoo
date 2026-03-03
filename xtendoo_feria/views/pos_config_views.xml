@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_feria" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.xtendoo_feria</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='is_restaurant']" position="after">
+                <setting string="Producto Recarga Monedero"
+                         help="Producto que se añadirá al pulsar el botón Recarga en el POS"
+                         invisible="not pos_module_pos_restaurant">
+                    <field name="pos_feria_recharge_product_id"
+                           domain="[('available_in_pos', '=', True)]"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
+
+

@@ -16,7 +16,9 @@
         ],
     },
     'images': ['static/description/icon.png'],
-    'data': [],
+    'data': [
+        'views/pos_config_views.xml',
+    ],
     'installable': True,
     'application': False,
     'auto_install': False,
