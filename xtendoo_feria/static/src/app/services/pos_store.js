@@ -76,8 +76,8 @@ patch(PosStore.prototype, {
 
     /**
      * Open the recharge wizard: a NumberPopup to enter the amount.
-     * Then add the recharge product to the current order with that price,
-     * applying the customer's pricelist discount.
+     * Then add the recharge product to the current order with that exact price.
+     * No discount is applied — the entered amount is the final price.
      */
     async openFeriaRechargeWizard() {
         const order = this.getOrder();
@@ -112,39 +112,26 @@ patch(PosStore.prototype, {
         // Get the product template for the recharge product
         const productTmpl = rechargeProduct.product_tmpl_id;
 
-        // Calculate pricelist price for the recharge product to determine discount percentage
-        const pricelist = order.pricelist_id;
-        let discount = 0;
-
-        if (pricelist) {
-            const pricelistPrice = productTmpl.getPrice(
-                pricelist,
-                1,
-                0,
-                false,
-                rechargeProduct
-            );
-            const lstPrice = rechargeProduct.lst_price;
-
-            if (lstPrice && lstPrice > 0 && pricelistPrice < lstPrice) {
-                discount = ((lstPrice - pricelistPrice) / lstPrice) * 100;
-            }
-        }
-
-        // Add the recharge product to the order with the entered amount as price
+        // Add the recharge product to the order with the entered amount as the final price.
+        // We pass discount: 0 and price_type: "manual" to prevent any automatic
+        // pricelist recalculation from applying a discount to the recharge line.
         const line = await this.addLineToCurrentOrder(
             {
                 product_id: rechargeProduct,
                 product_tmpl_id: productTmpl,
                 price_unit: rechargeAmount,
+                price_type: "manual",
+                discount: 0,
                 qty: 1,
             },
             {}
         );
 
-        // Apply the pricelist discount if any
-        if (line && discount > 0) {
-            line.setDiscount(discount);
+        // Force the price and discount after creation to override any automatic recomputation
+        if (line) {
+            line.price_unit = rechargeAmount;
+            line.discount = 0;
+            line.price_type = "manual";
         }
     },
 });
