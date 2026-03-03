@@ -13,10 +13,10 @@
         'security/partner_rules.xml',
         'security/res_partner_bank.xml',
         'security/res_company_rules.xml',
-        'security/base_bypass_rules.xml',
         'views/res_partner_views.xml',
         'views/res_users_views.xml',
     ],
+    'post_init_hook': '_post_init_hook',
     'assets': {
         'web.assets_backend': [
             'xtendoo_encapsulate_companies_contacts/static/src/js/relational_utils_company_patch.js',

@@ -11,7 +11,7 @@
     'license': 'LGPL-3',
     'data': [
         'security/crm_rules.xml',
-        'security/crm_bypass_rules.xml',
         'views/crm_lead_views.xml',
     ],
+    'post_init_hook': '_post_init_hook',
 }
