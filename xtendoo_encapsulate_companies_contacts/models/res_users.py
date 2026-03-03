@@ -14,7 +14,7 @@ class ResUsers(models.Model):
         help="If checked, this user will bypass the strict company encapsulation rules.",
     )
 
-    @api.depends('company_ids', 'groups_id')
+    @api.depends('company_ids', 'group_ids')
     def _compute_see_all_companies(self):
         all_companies = self.env['res.company'].sudo().search([])
         all_company_ids = set(all_companies.ids)
