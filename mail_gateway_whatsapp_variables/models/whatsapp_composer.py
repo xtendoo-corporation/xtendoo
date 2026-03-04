@@ -132,8 +132,11 @@ class WhatsappComposer(models.TransientModel):
         channel = record._whatsapp_get_channel(self.number_field_name, self.gateway_id)
 
         # Prepare context with template and variables
+        # default_res_id is needed by OCA's prepare_value_to_send() to resolve variables
         ctx = {
             'whatsapp_template_id': self.template_id.id if self.template_id else False,
+            'default_res_id': self.res_id,
+            'default_res_model': self.res_model,
         }
 
         # Prepare attachments - we need to copy them to link to the new message

@@ -32,13 +32,13 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         _logger.info("WhatsApp Automation: Processing update for channel %s", chat.name)
         _logger.info("WhatsApp Automation: Raw message: %s", message)
-        
+
         # Grab the message that was just created in the channel by the base module
         last_mail_message = self.env['mail.message'].sudo().search([
             ('model', '=', 'discuss.channel'),
             ('res_id', '=', chat.id),
         ], order='id desc', limit=1)
-        
+
         partner = self._get_author(chat.gateway_id, value)
         if not partner or partner._name != "res.partner":
             _logger.info("WhatsApp Automation: Message ignored (author is not a partner or not found)")
@@ -71,17 +71,17 @@ class MailGatewayWhatsapp(models.AbstractModel):
         interactive = message.get("interactive", {})
         button_reply = message.get("button", {}) # For some button types
         button_text = ""
-        
+
         if interactive.get("type") == "button_reply":
             button_text = interactive.get("button_reply", {}).get("title", "").strip()
         elif button_reply:
             button_text = button_reply.get("text", "").strip()
-        
+
         if button_text:
             _logger.info("WhatsApp Automation: Received button reply: %s", button_text)
 
         body = message.get("text", {}).get("body", "").strip() if message.get("text") else ""
-        
+
         # Try to get caption from media if body is empty
         if not body:
             for media_type in ["image", "document", "video", "audio", "sticker"]:
@@ -92,7 +92,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         # Use button text as body if it's a button reply
         input_text = button_text or body
-        
+
         # If we still have no text, check for specific 'button' field (Template Quick Replies)
         if not input_text and message.get("type") == "button":
             input_text = message.get("button", {}).get("text", "").strip()
@@ -129,7 +129,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
                 "last_incident_request_date": fields.Datetime.now(),
             })
             _logger.info("WhatsApp Automation: Selected Ticket Type: %s", ticket_type.name)
-            
+
             # Send specific prompt based on type
             prompts = {
                 "Error": _(
@@ -157,11 +157,11 @@ class MailGatewayWhatsapp(models.AbstractModel):
                     "Un empleado se pondrá en contacto contigo lo antes posible."
                 ),
             }
-            
+
             # Find closest match in prompts keys
             prompt_key = next((k for k in prompts if k.lower() in ticket_type.name.lower()), False)
             message_body = prompts.get(prompt_key, _("Porfavor introduce información al respecto a continuación sobre el motivo (Cuanta más información mejor, gracias)."))
-            
+
             _logger.info("WhatsApp Automation: Sending prompt for %s", ticket_type.name)
             self._send_whatsapp_text(chat, partner, message_body)
             return
@@ -179,17 +179,23 @@ class MailGatewayWhatsapp(models.AbstractModel):
     def _send_whatsapp_text(self, chat, partner, body):
         """
         Send a free-text message through the WhatsApp gateway.
+        Uses no_gateway_notification to prevent OCA's automatic send in
+        message_post, then sends manually via _send to avoid double sending.
         """
+        message = chat.with_context(no_gateway_notification=True).message_post(
+            body=body,
+            subtype_xmlid="mail.mt_comment",
+            message_type="comment",
+        )
         notification = self.env['mail.notification'].sudo().create({
-            'mail_message_id': chat.message_post(
-                body=body,
-                subtype_xmlid="mail.mt_comment",
-            ).id,
+            'mail_message_id': message.id,
             'res_partner_id': partner.id,
+            'notification_type': 'gateway',
+            'gateway_type': 'whatsapp',
         })
         notification.gateway_channel_id = chat
-        
-        # Trigger the gateway send logic
+
+        # Trigger the gateway send logic (only once)
         self._send(
             gateway=chat.gateway_id,
             record=notification
@@ -200,7 +206,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
         Start the ticket creation flow by asking for the incident description.
         """
         _logger.info("Handling /ticket command for partner %s", partner.name)
-        
+
         chat.write({
             "whatsapp_session_state": "waiting_incident",
             "last_incident_request_date": fields.Datetime.now(),
@@ -208,26 +214,34 @@ class MailGatewayWhatsapp(models.AbstractModel):
 
         # Send incident request template from configuration
         template = self.env.company.incident_request_template_id
-        
+
         if template:
-            # Code to send template via gateway
+            # Code to send template via gateway - use no_gateway_notification
+            # to prevent OCA from sending automatically in message_post
+            message = chat.with_context(no_gateway_notification=True).message_post(
+                body=template.body,
+                subtype_xmlid="mail.mt_comment",
+                message_type="comment",
+            )
             notification = self.env['mail.notification'].sudo().create({
-                'mail_message_id': chat.message_post(
-                    body=template.body,
-                    subtype_xmlid="mail.mt_comment",
-                ).id,
+                'mail_message_id': message.id,
                 'res_partner_id': partner.id,
+                'notification_type': 'gateway',
+                'gateway_type': 'whatsapp',
             })
             notification.gateway_channel_id = chat
-            
-            self.with_context(whatsapp_template_id=template.id)._send(
+
+            self.with_context(
+                whatsapp_template_id=template.id,
+                default_res_id=partner.id,
+            )._send(
                 gateway=chat.gateway_id,
                 record=notification
             )
         else:
             # Fallback if no template is configured
             self._send_whatsapp_text(
-                chat, partner, 
+                chat, partner,
                 _("Please describe the incident you would like to report. (No WhatsApp template configured in settings)")
             )
 
@@ -235,7 +249,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
         """
         Create a helpdesk ticket from the incident description and notify the employee.
         """
-        _logger.info("WhatsApp Automation: Creating ticket for partner %s with type %s", 
+        _logger.info("WhatsApp Automation: Creating ticket for partner %s with type %s",
                      partner.name, chat.whatsapp_ticket_type_id.name or "None")
 
         # Safely get the channel ID or create "WhatsApp" channel if missing
@@ -244,7 +258,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
             whatsapp_channel = self.env["helpdesk.ticket.channel"].sudo().search([("name", "=ilike", "WhatsApp")], limit=1)
             if not whatsapp_channel:
                 whatsapp_channel = self.env["helpdesk.ticket.channel"].sudo().create({"name": "WhatsApp"})
-        
+
         channel_id = whatsapp_channel.id
 
         # Create the ticket
@@ -257,7 +271,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
             "assigned_employee_id": partner.communication_employee_id.id or False,
             "channel_id": channel_id,
         }
-        
+
         ticket = self.env["helpdesk.ticket"].sudo().create(ticket_vals)
         _logger.info("WhatsApp Automation: Ticket created successfully: #%s", ticket.number)
 
@@ -285,7 +299,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
                     email_to_list.append(ticket.assigned_employee_id.email_formatted.replace('\n', '').replace('\r', ''))
                 if ticket.user_id and ticket.user_id.email_formatted:
                     email_to_list.append(ticket.user_id.email_formatted.replace('\n', '').replace('\r', ''))
-                
+
                 email_from = ticket.company_id.email_formatted or self.env.user.email_formatted
                 if email_from:
                     email_from = email_from.replace('\n', '').replace('\r', '')
@@ -319,7 +333,7 @@ class MailGatewayWhatsapp(models.AbstractModel):
                 subtype_xmlid="mail.mt_comment",
                 partner_ids=[partner.communication_employee_id.partner_id.id]
             )
-            
+
             # Also post to the ticket's chatter
             ticket.message_post(
                 body=_("Ticket created from WhatsApp conversation. Assigned manager: %s") % partner.communication_manager_id.name,

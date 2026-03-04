@@ -55,7 +55,13 @@ class DiscussChannel(models.Model):
         result = super().message_post(**kwargs)
 
         # Si es un mensaje entrante de WhatsApp (no enviado por nosotros)
-        if self.channel_type == 'whatsapp':
+        # OCA uses channel_type='gateway', check gateway_type for whatsapp
+        is_whatsapp = (
+            self.channel_type in ('whatsapp', 'gateway')
+            and self.gateway_id
+            and self.gateway_id.gateway_type == 'whatsapp'
+        )
+        if is_whatsapp:
             # Verificar si es un mensaje entrante (no tiene author_id o author_id es el cliente)
             message_type = kwargs.get('message_type')
             author_id = kwargs.get('author_id')

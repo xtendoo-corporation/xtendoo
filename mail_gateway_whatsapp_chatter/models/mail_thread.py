@@ -43,12 +43,19 @@ class MailThread(models.AbstractModel):
         Override to support relational fields like 'partner_id.mobile'.
         This allows WhatsApp integration to work with models that don't have
         direct phone fields but have them through relations.
+        For direct fields (no dot notation), delegate to super().
         """
-        # Get the phone number from the field (supports dot notation)
+        # If it's a direct field (no dot notation), use the OCA standard method
+        if "." not in field_name and field_name in self._fields:
+            return super()._whatsapp_get_channel(field_name, gateway)
+
+        # For dot notation fields, use custom logic
         phone_value = self._get_phone_value_from_field(field_name)
 
         if not phone_value:
-            raise UserError(_("Phone number is not available for field %s") % field_name)
+            raise UserError(
+                _("Phone number is not available for field %s") % field_name
+            )
 
         # Format the phone number
         sanitized_number = self._phone_format(number=phone_value)

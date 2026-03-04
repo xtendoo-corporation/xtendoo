@@ -37,9 +37,14 @@ class DiscussChannel(models.Model):
         _logger.info("WhatsApp Automation (Mirror): message_post intercepted for channel %s. channel_type is: '%s'", self.id, self.channel_type)
 
         # Check if this is a WhatsApp channel (or gateway in some modules)
-        if self.channel_type in ('whatsapp', 'gateway'):
+        is_whatsapp = (
+            self.channel_type in ('whatsapp', 'gateway')
+            and self.gateway_id
+            and self.gateway_id.gateway_type == 'whatsapp'
+        )
+        if is_whatsapp:
             _logger.info("WhatsApp Automation (Mirror): Intercepting message_post in WhatsApp channel %s", self.id)
-            
+
             # Identify if any partner in this channel has an open ticket
             open_ticket = self.env["helpdesk.ticket"].sudo().search([
                 ("partner_id", "in", self.channel_partner_ids.ids),
@@ -48,19 +53,19 @@ class DiscussChannel(models.Model):
 
             if open_ticket:
                 _logger.info("WhatsApp Automation (Mirror): Found open ticket #%s for partners %s", open_ticket.number, self.channel_partner_ids.ids)
-                
+
                 if not self._context.get('whatsapp_no_mirror'):
                     body = res.body
                     _logger.info("WhatsApp Automation (Mirror): Original body: '%s', Attachments: %s", body, len(res.attachment_ids))
-                    
+
                     if not body and res.attachment_ids:
                         body = "Archivo adjunto enviado por WhatsApp"
-                    
+
                     if body:
                         # Determine author name
                         author_name = res.author_id.name if res.author_id else "Bot"
                         prefix = f"Mensaje de WhatsApp ({author_name}):"
-                        
+
                         # Copy attachments
                         copied_attachment_ids = []
                         for att in res.attachment_ids.sudo():
@@ -90,19 +95,19 @@ class DiscussChannel(models.Model):
                     _logger.info("WhatsApp Automation (Mirror): Ignored message due to 'whatsapp_no_mirror' context.")
             else:
                 _logger.info("WhatsApp Automation (Mirror): No open ticket found for partners %s in this channel.", self.channel_partner_ids.ids)
-                    
+
             # Try to add the communication manager to the channel (original logic)
             partner = self.env['res.partner'].search([
                 ('phone_sanitized', 'ilike', self.gateway_channel_token)
             ], limit=1) if hasattr(self, 'gateway_channel_token') and self.gateway_channel_token else False
-            
+
             if not partner:
                 # Fallback: find the non-internal user in the channel
                 for p in self.channel_partner_ids:
                     if not p.user_ids or not p.user_ids[0].has_group('base.group_user'):
                         partner = p
                         break
-            
+
             if partner:
                 manager = partner.communication_manager_id or self.env.company.whatsapp_default_manager_id
                 if manager and manager.partner_id not in self.channel_partner_ids:

@@ -387,6 +387,8 @@ class WhatsappPendingConfirmation(models.Model):
                     _logger.warning(f"   ⚠️ No report configured for model {self.res_model}")
 
             # Enviar la plantilla de confirmación (sin adjunto PDF)
+            # Use no_gateway_notification to prevent OCA from sending automatically
+            # in message_post, then send manually below
             message_vals = {
                 'body': self.confirmation_template_id.body,
                 'subtype_xmlid': "mail.mt_comment",
@@ -396,17 +398,20 @@ class WhatsappPendingConfirmation(models.Model):
             # NO adjuntar el PDF aquí
             message = channel.with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
+                no_gateway_notification=True,
             ).message_post(**message_vals)
-            _logger.info(f"   📧 Message created in channel (ID: {message.id}) (sin adjuntos)")
+            _logger.info(f"   Message created in channel (ID: {message.id}) (sin adjuntos)")
 
-            # CRÍTICO: El gateway espera un registro con gateway_channel_id
-            _logger.info(f"   📨 Preparing record for gateway...")
+            # Create notification and send manually (only once)
+            _logger.info(f"   Preparing record for gateway...")
             notification = self.env['mail.notification'].sudo().create({
                 'mail_message_id': message.id,
                 'res_partner_id': self.partner_id.id,
+                'notification_type': 'gateway',
+                'gateway_type': 'whatsapp',
             })
             notification.gateway_channel_id = channel
-            _logger.info(f"   📤 Sending via gateway with channel token: {channel.gateway_channel_token}")
+            _logger.info(f"   Sending via gateway with channel token: {channel.gateway_channel_token}")
             gateway_service = self.env['mail.gateway.whatsapp'].with_context(
                 whatsapp_template_id=self.confirmation_template_id.id,
                 default_res_model=self.res_model,
@@ -428,19 +433,23 @@ class WhatsappPendingConfirmation(models.Model):
             # Enviar el PDF como documento por WhatsApp en mensaje aparte SOLO si hay PDF generado
             if pdf_sent and attachment_id:
                 try:
-                    _logger.info(f"   📤 Enviando PDF como documento por WhatsApp en mensaje aparte...")
-                    document_message = channel.message_post(
+                    _logger.info("   Enviando PDF como documento por WhatsApp en mensaje aparte...")
+                    document_message = channel.with_context(
+                        no_gateway_notification=True,
+                    ).message_post(
                         message_type="comment",
                         subtype_xmlid="mail.mt_comment",
                         attachment_ids=[attachment_id],
                     )
-                    _logger.info(f"   ✅ PDF adjuntado en mensaje aparte (ID mensaje: {document_message.id})")
+                    _logger.info("   PDF adjuntado en mensaje aparte (ID mensaje: %s)", document_message.id)
                     document_notification = self.env['mail.notification'].sudo().create({
                         'mail_message_id': document_message.id,
                         'res_partner_id': self.partner_id.id,
+                        'notification_type': 'gateway',
+                        'gateway_type': 'whatsapp',
                     })
                     document_notification.gateway_channel_id = channel
-                    _logger.info(f"   📤 Enviando notificación de documento por WhatsApp...")
+                    _logger.info("   Enviando notificación de documento por WhatsApp...")
                     # Limpiar el contexto de plantilla para que NO se vuelva a enviar la plantilla
                     self.env['mail.gateway.whatsapp'].with_context(
                         default_res_model=self.res_model,
@@ -451,9 +460,9 @@ class WhatsappPendingConfirmation(models.Model):
                         auto_commit=False,
                         raise_exception=True,
                     )
-                    _logger.info(f"   ✅ PDF enviado como documento en WhatsApp (ID mensaje: {document_message.id})")
+                    _logger.info("   PDF enviado como documento en WhatsApp (ID mensaje: %s)", document_message.id)
                 except Exception as send_doc_error:
-                    _logger.error(f"   ❌ Error enviando PDF como documento por WhatsApp: {send_doc_error}", exc_info=True)
+                    _logger.error("   Error enviando PDF como documento por WhatsApp: %s", send_doc_error, exc_info=True)
 
             return True
 
