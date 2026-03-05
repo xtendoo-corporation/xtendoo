@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Overriding CRM company rules to support bypass check -->
+    <!-- Override CRM lead company rule: strict active-company filtering -->
     <record id="crm.crm_lead_company_rule" model="ir.rule">
-        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else [('company_id',
-            'in', company_ids + [False])]</field>
+        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else ['|',
+            ('company_id', '=', user.company_id.id),
+            ('company_id', '=', False)]</field>
     </record>
 
+    <!-- Override CRM activity report rule -->
     <record id="crm.crm_activity_report_rule_multi_company" model="ir.rule">
-        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else [('company_id',
-            'in', company_ids + [False])]</field>
+        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else ['|',
+            ('company_id', '=', user.company_id.id),
+            ('company_id', '=', False)]</field>
+    </record>
+
+    <!-- Override CRM team company rule -->
+    <record id="sales_team.sale_team_comp_rule" model="ir.rule">
+        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else ['|',
+            ('company_id', '=', user.company_id.id),
+            ('company_id', '=', False)]</field>
     </record>
 </odoo>
