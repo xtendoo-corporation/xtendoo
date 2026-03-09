@@ -3,7 +3,7 @@
 
 {
     "name": "Invoice Import Gemini AI",
-    "version": "19.0.1.1.1",
+    "version": "19.0.1.4.0",
     "category": "Accounting",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
@@ -11,12 +11,14 @@
     "summary": "Import vendor invoices using Google Gemini AI",
     "depends": [
         "account",
+        "analytic",
         "base",
         "mail",
     ],
     "data": [
         "views/res_config_settings_views.xml",
         "views/account_move_views.xml",
+        "views/account_analytic_line_views.xml",
     ],
     "external_dependencies": {
         "python": ["google-genai", "pdf2image"],

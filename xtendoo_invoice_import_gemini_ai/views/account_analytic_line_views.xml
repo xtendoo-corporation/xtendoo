@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_analytic_line_tree_inherit_gemini_upload" model="ir.ui.view">
+        <field name="name">account.analytic.line.tree.inherit.gemini.upload</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="analytic.view_account_analytic_line_tree"/>
+        <field name="arch" type="xml">
+            <!-- Odoo 19: la vista base usa <list> -->
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">file_upload_list</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
