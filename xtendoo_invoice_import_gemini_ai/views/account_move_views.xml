@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Vista lista asientos: botón Subir -->
+    <record id="view_move_tree_inherit_gemini_upload" model="ir.ui.view">
+        <field name="name">account.move.tree.inherit.gemini.upload</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">file_upload_list</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista formulario: botones AI Scan y Enseñar a Gemini -->
     <record id="view_move_form_inherit_gemini" model="ir.ui.view">
         <field name="name">account.move.form.inherit.gemini</field>
         <field name="model">account.move</field>
@@ -10,19 +23,28 @@
                     string="AI Scan (Full)"
                     type="object"
                     class="oe_highlight"
-                    invisible="move_type != 'in_invoice' or state != 'draft'" />
+                    invisible="move_type not in ('in_invoice', 'entry') or state != 'draft'" />
                 <button name="action_import_gemini_summarized"
                     string="AI Scan (Summary)"
                     type="object"
-                    invisible="move_type != 'in_invoice' or state != 'draft'" />
+                    invisible="move_type not in ('in_invoice', 'entry') or state != 'draft'" />
+                <button name="action_teach_gemini"
+                    string="🎓 Enseñar a Gemini"
+                    type="object"
+                    class="btn-warning"
+                    invisible="not gemini_has_corrections or move_type not in ('in_invoice', 'entry')"
+                    help="Guardar las correcciones manuales para que Gemini aprenda de ellas en futuras extracciones"
+                />
             </xpath>
             <xpath expr="//notebook" position="inside">
-                <page string="Gemini AI" name="gemini_ai" invisible="move_type != 'in_invoice'">
+                <page string="Gemini AI" name="gemini_ai" invisible="move_type not in ('in_invoice', 'entry')">
                     <group>
-                        <group string="Instructions">
-                            <p class="text-muted"> 1. Attach a PDF or image of the invoice.<br /> 2.
-                                Click <b>AI Scan (Full)</b> to import all lines.<br /> 3. Click <b>AI
-                                Scan (Summary)</b> to group lines by VAT percentage. </p>
+                        <group string="Instrucciones">
+                            <p class="text-muted">
+                                1. Adjunta un PDF o imagen.<br />
+                                2. Pulsa <b>AI Scan (Full)</b> para importar todas las líneas.<br />
+                                3. Pulsa <b>AI Scan (Summary)</b> para agrupar por tipo de IVA.
+                            </p>
                         </group>
                     </group>
                 </page>
@@ -30,3 +52,5 @@
         </field>
     </record>
 </odoo>
+
+

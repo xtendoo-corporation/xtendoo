@@ -34,6 +34,50 @@ class AccountAnalyticLine(models.Model):
         copy=False,
     )
 
+    # Tracking: valores que extrajo Gemini originalmente
+    gemini_extracted_partner = fields.Char(string="Proveedor extraído por Gemini", copy=False)
+    gemini_extracted_date = fields.Char(string="Fecha extraída por Gemini", copy=False)
+    gemini_extracted_amount = fields.Float(string="Importe extraído por Gemini", copy=False)
+    gemini_extracted_description = fields.Char(string="Descripción extraída por Gemini", copy=False)
+
+    # Flag: se activa cuando Gemini procesa el apunte.
+    # El usuario lo desactiva pulsando "Enseñar a Gemini" para confirmar que los datos son correctos.
+    gemini_has_corrections = fields.Boolean(
+        string="Pendiente de enseñar a Gemini",
+        default=False,
+        copy=False,
+    )
+
+
+    def action_teach_gemini(self):
+        """Enseña a Gemini las correcciones manuales realizadas."""
+        self.ensure_one()
+        feedback_vals = {
+            "source_model": "account.analytic.line",
+            "analytic_line_id": self.id,
+            "partner_id": self.partner_id.id if self.partner_id else False,
+            "gemini_partner_name": self.gemini_extracted_partner,
+            "gemini_date": self.gemini_extracted_date,
+            "gemini_amount": self.gemini_extracted_amount,
+            "gemini_description": self.gemini_extracted_description,
+            "correct_partner_name": self.partner_id.name if self.partner_id else False,
+            "correct_date": str(self.date) if self.date else False,
+            "correct_amount": self.amount,
+            "correct_description": self.name,
+        }
+        self.env["gemini.feedback"].create(feedback_vals)
+        self.gemini_has_corrections = False
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Gemini aprendió"),
+                "message": _("Las correcciones han sido guardadas. Gemini las usará en futuras extracciones."),
+                "type": "success",
+                "sticky": False,
+            },
+        }
+
     @api.model
     def create_document_from_attachment(self, name=None, attachment_ids=None):
         """
@@ -70,10 +114,10 @@ class AccountAnalyticLine(models.Model):
 
             _logger.info(f"Created analytic line {line.id} from attachment {attachment.id}")
 
-            # Procesar siempre con Gemini AI
+            # Procesar con Gemini AI
+            # gemini_auto_processed=True se guarda dentro de _apply_gemini_data_to_line
             try:
                 self._process_line_with_gemini(line, attachment, summary_mode=summary_mode)
-                line.gemini_auto_processed = True
             except Exception as e:
                 _logger.warning(f"Gemini AI failed for line {line.id}: {e}")
 
@@ -130,19 +174,18 @@ class AccountAnalyticLine(models.Model):
         _logger.info(f"Analytic line {line.id} processed by Gemini AI OK")
 
     def _apply_gemini_data_to_line(self, line, data):
-        """Aplica los datos de Gemini al apunte analítico."""
+        """Aplica los datos de Gemini al apunte analítico y guarda los valores originales."""
         supplier_data = data.get("supplier", {})
         invoice_data = data.get("invoice", {})
         totals = data.get("totals", {})
 
         vals = {}
+        amount = totals.get("untaxed") or totals.get("total") or 0.0
 
         if invoice_data.get("number"):
             vals['name'] = invoice_data["number"]
         if invoice_data.get("date"):
             vals['date'] = invoice_data["date"]
-
-        amount = totals.get("untaxed") or totals.get("total") or 0.0
         if amount:
             vals['amount'] = -abs(float(amount))
 
@@ -156,12 +199,26 @@ class AccountAnalyticLine(models.Model):
         if partner:
             vals['partner_id'] = partner.id
 
+        # Guardar valores originales y marcar como procesado en un único write
+        # así el compute se dispara una sola vez con todos los datos disponibles
+        vals['gemini_extracted_partner'] = supplier_data.get("name", "")
+        vals['gemini_extracted_date'] = invoice_data.get("date", "")
+        vals['gemini_extracted_amount'] = -abs(float(amount)) if amount else 0.0
+        vals['gemini_extracted_description'] = invoice_data.get("number", "")
+        vals['gemini_auto_processed'] = True
+        vals['gemini_has_corrections'] = True  # Activar siempre al escanear
+
         if vals:
             line.write(vals)
         _logger.info(f"Applied Gemini data to analytic line {line.id}: {vals}")
 
-    def _get_gemini_prompt(self, summary_mode=False):
-        """Get the prompt for Gemini AI."""
+    def _get_gemini_prompt(self, summary_mode=False, partner_id=None):
+        """Get the prompt for Gemini AI, incluyendo feedback de correcciones anteriores."""
+        # Contexto de correcciones anteriores
+        feedback_context = self.env["gemini.feedback"].get_feedback_context_for_prompt(
+            partner_id=partner_id
+        )
+
         prompt = """Extract all data from this document and return it in JSON format.
 Required structure:
 {
@@ -191,8 +248,11 @@ Required structure:
     }
 }
 """
+        if feedback_context:
+            prompt += feedback_context
+
         if summary_mode:
-            prompt += "\nIMPORTANT: In 'lines', please group all items by their VAT percentage. Return only one line per VAT group with the total amount for that group. Use a generic description like 'Goods/Services at X% VAT'."
+            prompt += "\nIMPORTANT: In 'lines', group all items by VAT percentage. One line per VAT group."
         else:
             prompt += "\nIMPORTANT: Extract ALL individual line items from the document."
 

@@ -3,7 +3,7 @@
 
 {
     "name": "Invoice Import Gemini AI",
-    "version": "19.0.1.4.0",
+    "version": "19.0.1.14.0",
     "category": "Accounting",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
@@ -16,6 +16,7 @@
         "mail",
     ],
     "data": [
+        "security/ir.model.access.csv",
         "views/res_config_settings_views.xml",
         "views/account_move_views.xml",
         "views/account_analytic_line_views.xml",

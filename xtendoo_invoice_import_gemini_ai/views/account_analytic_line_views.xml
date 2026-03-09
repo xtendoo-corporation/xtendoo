@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_analytic_line_tree_inherit_gemini_upload" model="ir.ui.view">
-        <field name="name">account.analytic.line.tree.inherit.gemini.upload</field>
+    <!-- Vista formulario: botón Enseñar a Gemini -->
+    <record id="view_analytic_line_form_inherit_gemini" model="ir.ui.view">
+        <field name="name">account.analytic.line.form.inherit.gemini</field>
         <field name="model">account.analytic.line</field>
-        <field name="inherit_id" ref="analytic.view_account_analytic_line_tree"/>
+        <field name="inherit_id" ref="analytic.view_account_analytic_line_form"/>
         <field name="arch" type="xml">
-            <!-- Odoo 19: la vista base usa <list> -->
-            <xpath expr="//list" position="attributes">
-                <attribute name="js_class">file_upload_list</attribute>
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_teach_gemini"
+                        string="🎓 Enseñar a Gemini"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="not gemini_has_corrections"
+                        help="Guardar las correcciones manuales para que Gemini aprenda de ellas en futuras extracciones"
+                    />
+                </header>
             </xpath>
         </field>
     </record>

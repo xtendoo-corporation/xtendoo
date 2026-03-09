@@ -39,6 +39,75 @@ class AccountMove(models.Model):
         copy=False,
     )
 
+    # Tracking: valores que extrajo Gemini originalmente
+    gemini_extracted_partner = fields.Char(string="Proveedor extraído por Gemini", copy=False)
+    gemini_extracted_date = fields.Char(string="Fecha extraída por Gemini", copy=False)
+    gemini_extracted_ref = fields.Char(string="Referencia extraída por Gemini", copy=False)
+    gemini_extracted_lines_count = fields.Integer(
+        string="Nº líneas extraídas por Gemini", default=0, copy=False,
+    )
+
+    # Flag: se activa cuando Gemini procesa el asiento.
+    # El usuario lo desactiva pulsando "Enseñar a Gemini" para confirmar que los datos son correctos.
+    gemini_has_corrections = fields.Boolean(
+        string="Pendiente de enseñar a Gemini",
+        default=False,
+        copy=False,
+    )
+
+
+    def action_teach_gemini(self):
+        """
+        Guarda el asiento correcto como ejemplo JSON para que en futuras
+        extracciones similares Gemini lo use como referencia directa.
+        """
+        self.ensure_one()
+
+        # Construir el JSON correcto del asiento tal como debe quedar
+        journal_lines_example = []
+        for line in self.line_ids:
+            journal_lines_example.append({
+                "account_code": line.account_id.code,
+                "account_name": line.account_id.name,
+                "description": line.name,
+                "debit": line.debit,
+                "credit": line.credit,
+            })
+
+        example_json = json.dumps({
+            "journal_lines": journal_lines_example,
+            "totals": {"total": sum(l["debit"] for l in journal_lines_example)},
+        }, ensure_ascii=False, indent=2)
+
+        learned_note = (
+            f"Para documentos similares a este (ref: {self.ref or 'sin ref'}), "
+            f"usa EXACTAMENTE este asiento:\n{example_json}"
+        )
+
+        self.env["gemini.feedback"].create({
+            "source_model": "account.move",
+            "move_id": self.id,
+            "partner_id": self.partner_id.id if self.partner_id else False,
+            "gemini_partner_name": self.gemini_extracted_partner,
+            "gemini_date": self.gemini_extracted_date,
+            "gemini_description": self.gemini_extracted_ref,
+            "correct_partner_name": self.partner_id.name if self.partner_id else False,
+            "correct_date": str(self.invoice_date) if self.invoice_date else False,
+            "correct_description": self.ref,
+            "notes": learned_note,
+        })
+        self.gemini_has_corrections = False
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Gemini aprendió"),
+                "message": _("El asiento correcto ha sido guardado como ejemplo para futuras extracciones."),
+                "type": "success",
+                "sticky": False,
+            },
+        }
+
     @api.model
     def create(self, vals):
         print("*"*50)
@@ -112,6 +181,57 @@ class AccountMove(models.Model):
     def action_import_gemini_summarized(self):
         """Import invoice details with Gemini AI summarized by VAT type."""
         return self._process_with_gemini(summary_mode=True)
+
+    @api.model
+    def create_document_from_attachment(self, name=None, attachment_ids=None):
+        """
+        Odoo uploader llama: create_document_from_attachment("", [ids])
+        Crea un asiento contable (move_type='entry') y lo escanea con Gemini AI.
+        """
+        if not attachment_ids:
+            raise UserError(_("No attachment was provided."))
+
+        journal = self.env['account.journal'].search(
+            [('type', '=', 'general'), ('company_id', '=', self.env.company.id)],
+            limit=1,
+        )
+        if not journal:
+            raise UserError(_("No general journal found for company %s.") % self.env.company.name)
+
+        attachments = self.env['ir.attachment'].browse(attachment_ids)
+        created_moves = self.env['account.move']
+
+        auto_scan_mode = (
+            self.env["ir.config_parameter"].sudo()
+            .get_param("xtendoo_invoice_import_gemini_ai.gemini_auto_scan", "disabled")
+        )
+        summary_mode = (auto_scan_mode == 'summary')
+
+        for attachment in attachments:
+            move = self.create({
+                'move_type': 'entry',
+                'journal_id': journal.id,
+                'state': 'draft',
+                'date': fields.Date.context_today(self),
+            })
+            attachment.write({'res_model': 'account.move', 'res_id': move.id})
+            created_moves |= move
+            _logger.info(f"Created journal entry {move.id} from attachment {attachment.id}")
+            try:
+                move._process_with_gemini(summary_mode=summary_mode, auto_mode=True)
+            except Exception as e:
+                _logger.warning(f"Gemini AI failed for move {move.id}: {e}")
+
+        if created_moves:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Journal Entry'),
+                'res_model': 'account.move',
+                'res_id': created_moves[0].id,
+                'views': [[self.env.ref('account.view_move_form').id, 'form']],
+                'target': 'current',
+            }
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     def _process_with_gemini(self, summary_mode=False, auto_mode=False):
         self.ensure_one()
@@ -217,12 +337,18 @@ class AccountMove(models.Model):
             if json_match:
                 raw_text = json_match.group(1)
             else:
-                # Try to find anything that looks like JSON
                 json_match = re.search(r"(\{.*\})", raw_text, re.DOTALL)
                 if json_match:
                     raw_text = json_match.group(1)
 
             ai_data = json.loads(raw_text)
+            _logger.warning(
+                "GEMINI_DEBUG move=%s move_type=%s keys=%s journal_lines=%d lines=%d\nRAW:%s",
+                self.id, self.move_type, list(ai_data.keys()),
+                len(ai_data.get("journal_lines", [])),
+                len(ai_data.get("lines", [])),
+                raw_text[:1000],
+            )
 
             # 4. Apply data
             self._apply_gemini_data(ai_data, summary_mode=summary_mode)
@@ -283,125 +409,184 @@ class AccountMove(models.Model):
         return attachments[0] if attachments else None
 
     def _get_gemini_prompt(self, summary_mode=False):
-        """Get the prompt for Gemini AI."""
-        prompt = """Extract all data from this invoice and return it in JSON format.
-Required structure:
-{
-    "supplier": {
-        "name": "Supplier company name",
-        "vat": "Tax ID/VAT number",
-        "address": "Full address"
-    },
-    "invoice": {
-        "number": "Invoice number",
-        "date": "YYYY-MM-DD",
-        "due_date": "YYYY-MM-DD or null",
-        "currency": "EUR/USD/etc"
-    },
-    "lines": [
-        {
-            "description": "Short description",
-            "quantity": 1.0,
-            "unit_price": 100.00,
-            "tax_percent": 21.0
-        }
-    ],
-    "totals": {
-        "untaxed": 100.00,
-        "tax": 21.00,
-        "total": 121.00
-    }
-}
-"""
-        if summary_mode:
-            prompt += "\nIMPORTANT: In 'lines', please group all items by their VAT percentage. Return only one line per VAT group with the total amount for that group. Use a generic description like 'Goods/Services at X% VAT'."
+        """Prompt diferenciado: asientos entry usan journal_lines con debe/haber."""
+        # Para entry el partner no existe aún al crear el asiento.
+        # Buscamos todos los feedbacks de asientos sin filtrar por partner.
+        if self.move_type == 'entry':
+            feedback_context = self.env["gemini.feedback"].get_feedback_context_for_prompt(
+                partner_id=None, source_model='account.move'
+            )
         else:
-            prompt += "\nIMPORTANT: Extract ALL individual line items from the invoice."
+            partner_id = self.partner_id.id if self.partner_id else None
+            feedback_context = self.env["gemini.feedback"].get_feedback_context_for_prompt(
+                partner_id=partner_id
+            )
 
-        prompt += "\nIdentify tax rates correctly (e.g., 21, 10, 4, 0). Return ONLY the JSON object."
+        if self.move_type == 'entry':
+            prompt = (
+                "Eres un asistente contable experto. Extrae los datos de este documento "
+                "y devuelve un JSON con el asiento contable correcto.\n\n"
+                "Estructura requerida:\n"
+                "{\n"
+                '    "supplier": {\n'
+                '        "name": "Nombre del emisor del documento",\n'
+                '        "vat": "NIF/CIF",\n'
+                '        "address": "Dirección"\n'
+                "    },\n"
+                '    "invoice": {\n'
+                '        "number": "Número de referencia del documento",\n'
+                '        "date": "YYYY-MM-DD"\n'
+                "    },\n"
+                '    "journal_lines": [\n'
+                "        {\n"
+                '            "account_code": "100000",\n'
+                '            "account_name": "Nombre de la cuenta contable",\n'
+                '            "description": "Descripción del apunte",\n'
+                '            "debit": 37.90,\n'
+                '            "credit": 0.00\n'
+                "        },\n"
+                "        {\n"
+                '            "account_code": "104000",\n'
+                '            "account_name": "Nombre de la cuenta contable",\n'
+                '            "description": "Descripción del apunte",\n'
+                '            "debit": 0.00,\n'
+                '            "credit": 37.90\n'
+                "        }\n"
+                "    ],\n"
+                '    "totals": {\n'
+                '        "total": 37.90\n'
+                "    }\n"
+                "}\n\n"
+                "REGLAS OBLIGATORIAS:\n"
+                "- suma(debit) debe ser igual a suma(credit) para que el asiento esté equilibrado\n"
+                "- Usa códigos del Plan General Contable español (PGC)\n"
+                "- Identifica el tipo de operación correctamente (aportación de capital, compra, venta, nómina, etc.)\n"
+                "- Devuelve SOLO el JSON, sin ningún texto adicional."
+            )
+        else:
+            prompt = (
+                "Extract all data from this invoice and return it in JSON format.\n"
+                "Required structure:\n"
+                "{\n"
+                '    "supplier": {"name": "...", "vat": "...", "address": "..."},\n'
+                '    "invoice": {"number": "...", "date": "YYYY-MM-DD", "due_date": "YYYY-MM-DD or null", "currency": "EUR"},\n'
+                '    "lines": [{"description": "...", "quantity": 1.0, "unit_price": 100.00, "tax_percent": 21.0}],\n'
+                '    "totals": {"untaxed": 100.00, "tax": 21.00, "total": 121.00}\n'
+                "}\n"
+            )
+
+        if feedback_context:
+            prompt += feedback_context
+
+        if self.move_type != 'entry':
+            if summary_mode:
+                prompt += "\nIMPORTANT: In 'lines', group all items by VAT percentage. One line per VAT group."
+            else:
+                prompt += "\nIMPORTANT: Extract ALL individual line items from the invoice."
+            prompt += "\nIdentify tax rates correctly (e.g., 21, 10, 4, 0). Return ONLY the JSON object."
+
         return prompt
 
     def _apply_gemini_data(self, data, summary_mode=False):
-        """Apply extracted data to the invoice."""
+        """Aplica los datos extraídos. Para entry crea líneas de diario con debit/credit."""
         self.ensure_one()
 
         supplier_data = data.get("supplier", {})
         invoice_data = data.get("invoice", {})
-        lines_data = data.get("lines", [])
 
         # 1. Partner
         partner = self._find_partner(supplier_data)
-        if partner:
-            self.partner_id = partner
-            # Trigger onchange to update fields like payment terms, fiscal position, etc.
-            # In Odoo 19, onchange methods are triggered automatically in form views,
-            # but when setting values programmatically, we may need to trigger them manually
-            if hasattr(self, '_onchange_partner_id'):
-                try:
-                    self._onchange_partner_id()
-                except Exception as e:
-                    _logger.warning(f"Could not trigger partner onchange: {str(e)}")
-        else:
-            vals_partner = {
+        if not partner and supplier_data.get("name"):
+            partner = self.env["res.partner"].create({
                 "name": supplier_data.get("name", "Unknown Supplier"),
                 "vat": supplier_data.get("vat", False),
                 "street": supplier_data.get("address", False),
                 "supplier_rank": 1,
-            }
-            new_partner = self.env["res.partner"].create(vals_partner)
-            self.partner_id = new_partner
-            if hasattr(self, '_onchange_partner_id'):
-                try:
-                    self._onchange_partner_id()
-                except Exception as e:
-                    _logger.warning(f"Could not trigger partner onchange: {str(e)}")
+            })
+        if partner:
+            self.partner_id = partner
 
-        # 2. Header
+        # 2. Cabecera
         if invoice_data.get("number"):
             self.ref = invoice_data["number"]
         if invoice_data.get("date"):
             self.invoice_date = invoice_data["date"]
-        if invoice_data.get("due_date"):
+            self.date = invoice_data["date"]
+        if invoice_data.get("due_date") and self.move_type != 'entry':
             self.invoice_date_due = invoice_data["due_date"]
-
-        if invoice_data.get("currency"):
+        if invoice_data.get("currency") and self.move_type != 'entry':
             currency = self.env["res.currency"].search(
                 [("name", "=", invoice_data["currency"].upper())], limit=1
             )
             if currency:
                 self.currency_id = currency
 
-        # 3. Lines
-        # Remove existing lines first
-        self.invoice_line_ids = [(5, 0, 0)]
+        # 3. Líneas — comportamiento diferente según tipo
+        if self.move_type == 'entry':
+            # Asiento contable: crear líneas de diario con debe/haber
+            journal_lines = data.get("journal_lines", [])
+            if journal_lines:
+                self.line_ids = [(5, 0, 0)]
+                lines_to_create = []
+                for jl in journal_lines:
+                    code = str(jl.get("account_code", "")).strip()
+                    account = self.env["account.account"].search(
+                        [("code", "=", code), ("company_id", "=", self.company_id.id)],
+                        limit=1,
+                    )
+                    if not account:
+                        # Búsqueda parcial por prefijo
+                        account = self.env["account.account"].search(
+                            [("code", "=like", code + "%"), ("company_id", "=", self.company_id.id)],
+                            limit=1,
+                        )
+                    if not account:
+                        _logger.warning(f"Account not found for code: {code} in entry {self.id}")
+                        continue
+                    lines_to_create.append((0, 0, {
+                        "account_id": account.id,
+                        "name": jl.get("description") or invoice_data.get("number", "/"),
+                        "debit": float(jl.get("debit", 0.0)),
+                        "credit": float(jl.get("credit", 0.0)),
+                        "partner_id": partner.id if partner else False,
+                    }))
+                if lines_to_create:
+                    self.line_ids = lines_to_create
+                    _logger.info(f"Created {len(lines_to_create)} journal lines for entry {self.id}")
+                else:
+                    _logger.warning(f"No journal lines created for entry {self.id} — accounts not found in PGC")
+            else:
+                _logger.warning(f"Gemini returned no journal_lines for entry {self.id}")
+        else:
+            # Factura de compra: crear líneas de factura
+            lines_data = data.get("lines", [])
+            self.invoice_line_ids = [(5, 0, 0)]
+            default_account = self._get_default_expense_account()
+            lines_to_create = []
+            for line in lines_data:
+                tax = self._find_tax(line.get("tax_percent"))
+                lines_to_create.append((0, 0, {
+                    "name": line.get("description", "Imported line"),
+                    "quantity": line.get("quantity", 1.0),
+                    "price_unit": line.get("unit_price", 0.0),
+                    "account_id": default_account.id if default_account else False,
+                    "tax_ids": [(6, 0, [tax.id])] if tax else [],
+                }))
+            self.invoice_line_ids = lines_to_create
 
-        lines_to_create = []
-        default_account = self._get_default_expense_account()
-
-        for line in lines_data:
-            tax_percent = line.get("tax_percent")
-            tax = self._find_tax(tax_percent)
-
-            line_vals = {
-                "name": line.get("description", "Imported line"),
-                "quantity": line.get("quantity", 1.0),
-                "price_unit": line.get("unit_price", 0.0),
-                "account_id": default_account.id if default_account else False,
-                "tax_ids": [(6, 0, [tax.id])] if tax else [],
-            }
-            lines_to_create.append((0, 0, line_vals))
-
-        self.invoice_line_ids = lines_to_create
-
-        # In Odoo 19, taxes and totals are automatically recomputed through computed fields
-        # when invoice lines are modified, so no manual trigger is needed
+        # 4. Guardar valores originales en un único write
+        self.write({
+            "gemini_extracted_partner": supplier_data.get("name", ""),
+            "gemini_extracted_date": invoice_data.get("date", ""),
+            "gemini_extracted_ref": invoice_data.get("number", ""),
+            "gemini_extracted_lines_count": len(self.line_ids),
+            "gemini_auto_processed": True,
+            "gemini_has_corrections": True,
+        })
 
     def _find_partner(self, supplier_data):
         vat = supplier_data.get("vat")
         name = supplier_data.get("name")
-        print("*"*50)
-        print("Finding partner with VAT:", vat, "or Name:", name)
-        print("*"*50)
 
         if vat:
             vat_clean = re.sub(r"[^A-Z0-9]", "", vat.upper())
@@ -444,5 +629,4 @@ Required structure:
             ],
             limit=1,
         )
-
 
