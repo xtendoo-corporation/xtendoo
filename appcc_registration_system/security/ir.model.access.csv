@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_appcc_registration_user,access.appcc.registration.user,model_appcc_registration,appcc_registration_system.group_appcc_registration_user,1,1,1,1
+access_appcc_registration_internal,access.appcc.registration.internal,model_appcc_registration,base.group_user,1,1,1,1
+

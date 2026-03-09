@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu raiz APPCC (sin dependencia de quality) -->
+    <menuitem
+        id="menu_appcc_root"
+        name="APPCC"
+        sequence="90"
+        web_icon="appcc_registration_system,static/description/icon.png"
+    />
+
+    <menuitem
+        id="menu_appcc_verificacion"
+        name="Verificacion"
+        parent="menu_appcc_root"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_appcc_registration"
+        name="Verificacion Global del Sistema"
+        parent="menu_appcc_verificacion"
+        action="action_appcc_registration"
+        sequence="10"
+    />
+</odoo>
+

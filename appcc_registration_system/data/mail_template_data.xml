@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="email_template_appcc_registration" model="mail.template">
+        <field name="name">Verificacion APPCC - Email</field>
+        <field name="model_id" ref="appcc_registration_system.model_appcc_registration"/>
+        <field name="subject">Verificacion Global APPCC - {{ object.name }}</field>
+        <field name="report_template_ids" eval="[(4, ref('appcc_registration_system.action_report_appcc_registration'))]"/>
+        <field name="body_html"><![CDATA[
+            <p>Estimado/a,</p>
+            <p>Adjunto encontrara el informe de <strong>Verificacion Global del Sistema APPCC</strong>.</p>
+            <p>Un cordial saludo.</p>
+        ]]></field>
+    </record>
+
+</odoo>
+

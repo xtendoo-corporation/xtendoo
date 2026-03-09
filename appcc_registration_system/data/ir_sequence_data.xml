@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_appcc_registration" model="ir.sequence">
+        <field name="name">APPCC Registro</field>
+        <field name="code">appcc.registration</field>
+        <field name="prefix">APPCC/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>
+

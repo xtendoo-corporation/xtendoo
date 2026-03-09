@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_appcc_registration_user" model="res.groups">
+        <field name="name">APPCC Usuario</field>
+    </record>
+</odoo>
+

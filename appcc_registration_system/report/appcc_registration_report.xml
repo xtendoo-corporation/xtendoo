@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Accion del reporte PDF -->
+    <record id="action_report_appcc_registration" model="ir.actions.report">
+        <field name="name">Verificacion APPCC</field>
+        <field name="model">appcc.registration</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">appcc_registration_system.report_appcc_registration_document</field>
+        <field name="report_file">appcc_registration_system.report_appcc_registration_document</field>
+        <field name="print_report_name">'APPCC_' + object.name + '.pdf'</field>
+        <field name="attachment">'APPCC_' + object.name + '.pdf'</field>
+        <field name="binding_model_id" ref="model_appcc_registration"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Template principal del reporte -->
+    <template id="report_appcc_registration_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <!-- Cabecera -->
+                        <div class="text-center mb-4">
+                            <h2 style="border-bottom:3px solid #2c7be5;padding-bottom:8px;">
+                                VERIFICACION GLOBAL DEL SISTEMA APPCC
+                            </h2>
+                        </div>
+
+                        <!-- Datos generales -->
+                        <table class="table table-sm table-bordered mb-4" style="width:100%;">
+                            <tr>
+                                <td style="width:25%;background:#f0f4ff;font-weight:700;">Referencia</td>
+                                <td style="width:25%;"><t t-esc="doc.name"/></td>
+                                <td style="width:25%;background:#f0f4ff;font-weight:700;">Fecha</td>
+                                <td style="width:25%;"><t t-esc="doc.date"/></td>
+                            </tr>
+                            <tr>
+                                <td style="background:#f0f4ff;font-weight:700;">Responsable</td>
+                                <td><t t-esc="doc.responsible_id.name"/></td>
+                                <td style="background:#f0f4ff;font-weight:700;">Frecuencia</td>
+                                <td><t t-esc="dict([('annual','Anual')]).get(doc.frequency, '')"/></td>
+                            </tr>
+                            <tr>
+                                <td style="background:#f0f4ff;font-weight:700;">Resultado Global</td>
+                                <td colspan="3">
+                                    <t t-if="doc.result_selection == 'favorable'">
+                                        <span style="color:#28a745;font-weight:700;">&#9679; FAVORABLE</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="color:#dc3545;font-weight:700;">&#9679; DESFAVORABLE</span>
+                                    </t>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Texto metodo -->
+                        <div class="alert alert-info mb-4" style="font-size:11px;text-align:justify;padding:10px;">
+                            <strong>METODO:</strong> Una vez al ano el responsable de la verificacion hace un analisis de toda la documentacion
+                            generada a lo largo de ese ano y procede a contestar a las preguntas que se exponen a continuacion para concluir
+                            si el sistema implantado esta funcionando correctamente con el fin de minimizar o eliminar los potenciales peligros
+                            que puedan aparecer en el desarrollo de nuestra actividad de cara a la salubridad de nuestros productos y por tanto
+                            desde el punto de vista de la seguridad alimentaria.
+                        </div>
+
+                        <!-- Macro para una fila de pregunta/respuesta -->
+                        <t t-macro="question_row" t-params="label,value">
+                            <tr>
+                                <td style="font-size:10px;padding:4px 6px;"><t t-esc="label"/></td>
+                                <td style="text-align:center;font-size:10px;padding:4px 6px;width:60px;">
+                                    <t t-if="value">
+                                        <span style="color:#28a745;font-weight:700;">SI</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="color:#dc3545;font-weight:700;">NO</span>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <!-- Macro para pie de plan -->
+                        <t t-macro="plan_footer" t-params="result,count,changes">
+                            <tr style="background:#f8f9fa;">
+                                <td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td>
+                                <td style="text-align:center;font-size:10px;padding:4px 6px;font-weight:700;">
+                                    <t t-if="result == 'favorable'">
+                                        <span style="color:#28a745;">FAVORABLE</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="color:#dc3545;">DESFAVORABLE</span>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td>
+                                <td style="text-align:center;font-size:10px;padding:4px 6px;"><t t-esc="count"/></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="font-size:10px;padding:4px 6px;">
+                                    <strong>Cambios / Incidencias:</strong> <t t-esc="changes or '-'"/>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <!-- PLAN 1 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 1: POTABILIDAD DEL AGUA
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;">
+                                <tr>
+                                    <th style="font-size:10px;padding:4px 6px;">PREGUNTA</th>
+                                    <th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">El agua de nuestra industria es suministrada por un gestor autorizado?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha contado con alguna otra fuente de abastecimiento complementaria?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se sometio el agua a analitica de control de agua de grifo INICIAL?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Los resultados de dichas analiticas se ajustaron a norma?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se somete al agua a la medicion de desinfectante residual y organoleptico?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha producido alguna incidencia relacionada con este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se han registrado en el parte de incidencias correspondiente?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Ante las incidencias, se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha cambiado la red interna de tuberias en el ultimo ano?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q10"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha efectuado la vigilancia siguiendo las directrices teoricas?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q11"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q12"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">Fruto de esta verificacion se deduce que no hay que realizar  cambios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p1_q13"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p1_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p1_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p1_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 2 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 2: LIMPIEZA Y DESINFECCION
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Existe almacen o lugar especifico para productos de limpieza?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Existen productos especificos para superficies de contacto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se tienen archivadas las fichas tecnicas y de seguridad?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Las fichas tecnicas y de seguridad estan actualizadas?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se respetaron las frecuencias de limpieza segun plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha efectuado la vigilancia segun las directrices teoricas?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha realizado la analitica programada sobre superficies?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Los resultados han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha producido alguna incidencia relacionada con este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q10"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q11"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q12"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p2_q13"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p2_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p2_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p2_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 3 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 3: DESINSECTACION Y DESRATIZACION
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Existen barreras fisicas que impidan la entrada de animales indeseables?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Existe contrato con empresa autorizada inscrita en el ROESBA?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se han respetado las frecuencias de accion estipuladas?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Existen sustancias para detectar o eliminar plagas?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Han facilitado toda la documentacion descrita en el plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha respetado la frecuencia de vigilancia del responsable?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se ha producido alguna incidencia relacionada en este periodo?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q10"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p3_q11"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p3_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias detectadas que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p3_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p3_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 4 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 4: MANTENIMIENTO DE INSTALACIONES Y EQUIPOS
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha incorporado alguna maquinaria o instalacion nueva este ano?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Cumplen condiciones para estar en contacto con materias primas y productos?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha contratado empresa para mantenimiento de maquinaria este ano?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha generado algún parte de trabajo por dicho mantenimiento?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha observado anomalia que afecte a la salubridad?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿En caso positivo, se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">¿Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p4_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p4_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p4_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p4_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 5 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 5: MANTENIMIENTO DE LA CADENA DE FRIO
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha incorporado algun nuevo equipo de frio durante este ano?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Cumplen condiciones para estar en contacto con las materias primas?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha observado anomalia que produzca perdida de la cadena de frio?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Ha tenido que intervenir alguna empresa para subsanar la anomalia?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha generado algun parte de trabajo?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿En caso positivo, se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha registrado la temperatura del equipo a diario?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se han contrastado temperaturas con termometro externo semestralmente?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">¿Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p5_q10"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p5_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p5_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p5_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 6 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 6: TRAZABILIDAD
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha controlado la entrada de materias primas y envases correctamente?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se han controlado las producciones correctamente?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se han controlado las salidas correctamente?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha observado incidencia que suponga perdida de informacion de trazabilidad?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿En caso positivo, se han registrado y aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se consideran los loteados como correctos para seguimiento interno?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Podemos llegar desde un producto final hasta el lote de materia prima?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Podemos seguir una materia prima hasta determinar donde se entrego el producto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q10"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">¿Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p6_q11"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p6_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p6_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p6_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 7 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 7: FORMACION DE MANIPULADORES
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿El personal ha recibido formacion en materia de manipulacion de alimentos?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se tiene soporte documental que avale dicha formacion?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha observado incidencia que afecte a la salubridad?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿En caso positivo, se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Ha habido incorporacion de nuevos manipuladores este ultimo ano?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Poseen acreditacion de su formacion los nuevos manipuladores?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">¿Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p7_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p7_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p7_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p7_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 8 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 8: ELIMINACION DE RESIDUOS
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se eliminan los residuos segun el procedimiento de ejecucion?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se respetan las pautas de tiempo minimo de residuos en instalaciones?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se cuenta con numero suficiente de contenedores?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha observado anomalia que afecte a materias primas o productos?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿En caso positivo, se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">¿Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p8_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p8_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p8_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p8_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 9 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 9: SUMINISTROS Y HOMOLOGACION DE PROVEEDORES
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha abastecido de proveedores con garantia sanitaria contrastada?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se cuenta con un listado de proveedores habituales actualizado?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se guardan autorizaciones sanitarias y fichas tecnicas de materias primas?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha observado alguna anomalia relacionada con este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿En caso positivo, se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Ha habido incorporacion de nuevos proveedores este ano?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q7"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Acreditan su solvencia sanitaria los nuevos proveedores?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q8"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha cumplido con el programa de registros de este plan?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q9"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">¿Fruto de esta verificacion no se procede al cambio de algun aspecto?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p9_q10"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p9_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p9_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p9_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PLAN 10 -->
+                        <h5 style="background:#2c7be5;color:#fff;padding:6px 10px;margin-top:16px;font-size:11px;">
+                            PLAN 10: ANALITICAS Y FRECUENCIAS
+                        </h5>
+                        <table class="table table-sm table-bordered" style="width:100%;margin-bottom:0;">
+                            <thead style="background:#e8f0fe;"><tr><th style="font-size:10px;padding:4px 6px;">PREGUNTA</th><th style="font-size:10px;padding:4px 6px;width:60px;text-align:center;">RESULTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se llevan a cabo las analiticas con la frecuencia estipulada?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p10_q1"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Estan realizadas por laboratorios autorizados?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p10_q2"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Se ha observado desviacion sobre la norma en los resultados?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p10_q3"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿En caso positivo, se han aplicado medidas correctoras?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p10_q4"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">¿Los resultados de su aplicacion han sido satisfactorios?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p10_q5"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#f8f9fa;"><td style="font-size:10px;padding:4px 6px;font-weight:600;">¿Fruto de esta verificacion no se procede al cambio de actuaciones, frecuencia o laboratorio?</td><td style="text-align:center;font-size:10px;"><t t-if="doc.p10_q6"><span style="color:#28a745;font-weight:700;">SI</span></t><t t-else=""><span style="color:#dc3545;font-weight:700;">NO</span></t></td></tr>
+                                <tr style="background:#e8f0fe;"><td style="font-size:10px;padding:4px 6px;font-weight:700;">Resultado del Plan de Analiticas</td><td style="text-align:center;font-size:10px;font-weight:700;"><t t-if="doc.p10_result == 'favorable'"><span style="color:#28a745;">FAVORABLE</span></t><t t-else=""><span style="color:#dc3545;">DESFAVORABLE</span></t></td></tr>
+                                <tr><td style="font-size:10px;padding:4px 6px;">Numero de incidencias en este ambito que comprometan la salubridad</td><td style="text-align:center;font-size:10px;"><t t-esc="doc.p10_incident_count"/></td></tr>
+                                <tr><td colspan="2" style="font-size:10px;padding:4px 6px;"><strong>Cambios / Incidencias:</strong> <t t-esc="doc.p10_changes or '-'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Firma -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-center">
+                                <div style="border-top:1px solid #000;margin-top:40px;padding-top:6px;font-size:10px;">
+                                    Firma del Responsable
+                                </div>
+                                <div style="font-size:10px;margin-top:4px;"><t t-esc="doc.responsible_id.name"/></div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div style="border-top:1px solid #000;margin-top:40px;padding-top:6px;font-size:10px;">
+                                    Fecha de Verificacion
+                                </div>
+                                <div style="font-size:10px;margin-top:4px;"><t t-esc="doc.date"/></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
+
