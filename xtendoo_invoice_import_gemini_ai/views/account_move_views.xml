@@ -32,7 +32,7 @@
                     string="🎓 Enseñar a Gemini"
                     type="object"
                     class="btn-warning"
-                    invisible="not gemini_has_corrections or move_type not in ('in_invoice', 'entry')"
+                    invisible="not gemini_has_corrections or move_type not in ('in_invoice', 'entry') or state != 'draft'"
                     help="Guardar las correcciones manuales para que Gemini aprenda de ellas en futuras extracciones"
                 />
             </xpath>

@@ -1,9 +1,6 @@
-# © 2026 Xtendoo
-# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-
 {
-    "name": "Invoice Import Gemini AI",
-    "version": "19.0.1.14.0",
+    "name": "Xtendoo Invoice Import Gemini AI",
+    "version": "19.0.1.28.0",
     "category": "Accounting",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",

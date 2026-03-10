@@ -48,7 +48,8 @@ class AccountMove(models.Model):
     )
 
     # Flag: se activa cuando Gemini procesa el asiento.
-    # El usuario lo desactiva pulsando "Enseñar a Gemini" para confirmar que los datos son correctos.
+    # Se reactiva con cualquier modificación posterior del usuario.
+    # El usuario lo desactiva pulsando "Enseñar a Gemini".
     gemini_has_corrections = fields.Boolean(
         string="Pendiente de enseñar a Gemini",
         default=False,
@@ -58,51 +59,93 @@ class AccountMove(models.Model):
 
     def action_teach_gemini(self):
         """
-        Guarda el asiento correcto como ejemplo JSON para que en futuras
-        extracciones similares Gemini lo use como referencia directa.
+        Guarda/fusiona el feedback del documento correcto para este emisor.
+        - entry: guarda líneas de diario con debe/haber.
+        - in_invoice: guarda líneas de factura con impuesto, cuenta, precio.
+        Las líneas siempre reflejan la última corrección del usuario.
         """
         self.ensure_one()
 
-        # Construir el JSON correcto del asiento tal como debe quedar
-        journal_lines_example = []
-        for line in self.line_ids:
-            journal_lines_example.append({
-                "account_code": line.account_id.code,
-                "account_name": line.account_id.name,
-                "description": line.name,
-                "debit": line.debit,
-                "credit": line.credit,
-            })
-
-        example_json = json.dumps({
-            "journal_lines": journal_lines_example,
-            "totals": {"total": sum(l["debit"] for l in journal_lines_example)},
-        }, ensure_ascii=False, indent=2)
-
-        learned_note = (
-            f"Para documentos similares a este (ref: {self.ref or 'sin ref'}), "
-            f"usa EXACTAMENTE este asiento:\n{example_json}"
+        emisor_name = (
+            self.partner_id.name if self.partner_id
+            else self.gemini_extracted_partner or ""
         )
 
-        self.env["gemini.feedback"].create({
+        if self.move_type == 'entry':
+            lines_example = []
+            for line in self.line_ids:
+                lines_example.append({
+                    "account_code": line.account_id.code if line.account_id else "",
+                    "account_name": line.account_id.name if line.account_id else "",
+                    "description": line.name or "",
+                    "debit": line.debit,
+                    "credit": line.credit,
+                })
+            notes = (
+                f"Emisor: '{emisor_name}'. Asiento contable corregido por el usuario. "
+                f"Usa las cuentas de correct_lines_json ajustando los importes al documento actual."
+            )
+        else:
+            # Factura de compra: guardar tax_id (ID real de Odoo), tax_name y account_code
+            lines_example = []
+            for line in self.invoice_line_ids:
+                tax_id_ref = line.tax_ids[0].id if line.tax_ids else None
+                tax_name = line.tax_ids[0].name if line.tax_ids else None
+                tax_percent = line.tax_ids[0].amount if line.tax_ids else None
+                lines_example.append({
+                    "description": line.name or "",
+                    "quantity": line.quantity,
+                    "unit_price": line.price_unit,
+                    "tax_id": tax_id_ref,
+                    "tax_name": tax_name,
+                    "tax_percent": tax_percent,
+                    "account_code": line.account_id.code if line.account_id else "",
+                    "account_name": line.account_id.name if line.account_id else "",
+                })
+            notes = (
+                f"Emisor: '{emisor_name}'. Factura de compra corregida. "
+                f"Python aplica el impuesto directamente usando tax_id."
+            )
+
+        correct_lines_json = json.dumps(lines_example, ensure_ascii=False, indent=2)
+
+        new_vals = {
             "source_model": "account.move",
             "move_id": self.id,
             "partner_id": self.partner_id.id if self.partner_id else False,
-            "gemini_partner_name": self.gemini_extracted_partner,
-            "gemini_date": self.gemini_extracted_date,
-            "gemini_description": self.gemini_extracted_ref,
-            "correct_partner_name": self.partner_id.name if self.partner_id else False,
-            "correct_date": str(self.invoice_date) if self.invoice_date else False,
-            "correct_description": self.ref,
-            "notes": learned_note,
-        })
+            "gemini_partner_name": self.gemini_extracted_partner or "",
+            "gemini_date": self.gemini_extracted_date or "",
+            "gemini_description": self.gemini_extracted_ref or "",
+            "correct_partner_name": emisor_name,
+            "correct_date": str(self.invoice_date) if self.invoice_date else "",
+            "correct_description": self.ref or "",
+            "correct_lines_json": correct_lines_json,
+            "notes": notes,
+        }
+        # Siempre crear un registro nuevo para conservar el historial.
+        # find_all_for_emisor devuelve TODOS de mas antiguo a mas reciente;
+        # el mas reciente prevalece al fusionar en _apply_feedback_taxes.
+        self.env["gemini.feedback"].create(new_vals)
+        all_fb = self.env["gemini.feedback"].find_all_for_emisor(
+            partner_id=self.partner_id.id if self.partner_id else None,
+            partner_name=emisor_name or None,
+        )
+        _logger.info(
+            "Nuevo feedback creado para emisor '%s'. Total acumulados: %d",
+            emisor_name, len(all_fb),
+        )
+
         self.gemini_has_corrections = False
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
                 "title": _("Gemini aprendió"),
-                "message": _("El asiento correcto ha sido guardado como ejemplo para futuras extracciones."),
+                "message": _(
+                    "Las correcciones han sido guardadas. "
+                    "La próxima vez que se suba un documento de '%s', "
+                    "Gemini usará estos datos automáticamente."
+                ) % (emisor_name or _("este emisor")),
                 "type": "success",
                 "sticky": False,
             },
@@ -110,20 +153,32 @@ class AccountMove(models.Model):
 
     @api.model
     def create(self, vals):
-        print("*"*50)
-        print("Entra al create")
         """Override create to trigger auto scan after creation if attachment is present."""
         move = super(AccountMove, self).create(vals)
         if move.state == 'draft':
-            print("Move created in draft state, checking for auto scan...")
             move._auto_scan_if_configured()
         return move
 
     def write(self, vals):
-        """Override write to trigger auto scan when attachments change."""
-        res = super(AccountMove, self).write(vals)
-        # Check if we should trigger auto scan
-        # We trigger on message_main_attachment_id changes or when invoices become draft
+        """Reactiva gemini_has_corrections cuando el usuario modifica el asiento
+        después de que Gemini lo haya procesado, para que el botón aparezca."""
+        gemini_internal_fields = {
+            'gemini_has_corrections', 'gemini_auto_processed',
+            'gemini_extracted_partner', 'gemini_extracted_date',
+            'gemini_extracted_ref', 'gemini_extracted_lines_count',
+            'gemini_attachment_id',
+        }
+        # Solo reactivar si:
+        # 1. El usuario toca campos que no son internos de Gemini
+        # 2. No se está escribiendo explícitamente gemini_has_corrections (ej: al enseñar)
+        user_changed_fields = set(vals.keys()) - gemini_internal_fields
+        if user_changed_fields and 'gemini_has_corrections' not in vals:
+            for rec in self:
+                if rec.gemini_auto_processed:
+                    vals['gemini_has_corrections'] = True
+                    break
+        res = super().write(vals)
+        # Trigger auto scan para facturas de compra
         if 'message_main_attachment_id' in vals or 'state' in vals:
             for move in self:
                 if move.move_type == 'in_invoice' and move.state == 'draft':
@@ -409,83 +464,89 @@ class AccountMove(models.Model):
         return attachments[0] if attachments else None
 
     def _get_gemini_prompt(self, summary_mode=False):
-        """Prompt diferenciado: asientos entry usan journal_lines con debe/haber."""
-        # Para entry el partner no existe aún al crear el asiento.
-        # Buscamos todos los feedbacks de asientos sin filtrar por partner.
+        """
+        Para asientos (entry): los feedbacks van SIEMPRE al inicio del prompt,
+        sin ninguna condición. Gemini lee el documento, identifica el emisor
+        y aplica las cuentas aprendidas por sí mismo.
+        """
         if self.move_type == 'entry':
-            feedback_context = self.env["gemini.feedback"].get_feedback_context_for_prompt(
-                partner_id=None, source_model='account.move'
-            )
-        else:
-            partner_id = self.partner_id.id if self.partner_id else None
-            feedback_context = self.env["gemini.feedback"].get_feedback_context_for_prompt(
-                partner_id=partner_id
-            )
+            # SIEMPRE todos los feedbacks, al inicio, sin condiciones ni búsquedas previas.
+            # Gemini identificará el emisor leyendo el documento y aplicará lo que corresponde.
+            feedback_context = self.env["gemini.feedback"].get_all_feedback_context_for_prompt()
+            if feedback_context:
+                _logger.info("GEMINI_FEEDBACK: enviando %d chars de contexto al prompt", len(feedback_context))
+            else:
+                _logger.info("GEMINI_FEEDBACK: sin feedback previo, Gemini deducirá el asiento")
 
-        if self.move_type == 'entry':
-            prompt = (
-                "Eres un asistente contable experto. Extrae los datos de este documento "
-                "y devuelve un JSON con el asiento contable correcto.\n\n"
-                "Estructura requerida:\n"
+            # El feedback va AL INICIO — máxima prioridad para Gemini
+            prompt = ""
+            if feedback_context:
+                prompt += feedback_context + "\n\n"
+
+            prompt += (
+                "Eres un asistente contable experto. Analiza el documento adjunto "
+                "y devuelve ÚNICAMENTE un JSON con el asiento contable.\n\n"
+                "PASOS:\n"
+                "1. Identifica el nombre del emisor del documento.\n"
+                "2. Busca ese emisor en las INSTRUCCIONES PREVIAS al inicio de este mensaje.\n"
+                "3. Si el emisor aparece: usa EXACTAMENTE esas cuentas contables, "
+                "ajustando los importes debit/credit al total real del documento "
+                "pero manteniendo las mismas cuentas.\n"
+                "4. Si el emisor NO aparece: deduce el asiento según el PGC español.\n\n"
+                "Formato JSON requerido:\n"
                 "{\n"
-                '    "supplier": {\n'
-                '        "name": "Nombre del emisor del documento",\n'
-                '        "vat": "NIF/CIF",\n'
-                '        "address": "Dirección"\n'
-                "    },\n"
-                '    "invoice": {\n'
-                '        "number": "Número de referencia del documento",\n'
-                '        "date": "YYYY-MM-DD"\n'
-                "    },\n"
-                '    "journal_lines": [\n'
-                "        {\n"
-                '            "account_code": "100000",\n'
-                '            "account_name": "Nombre de la cuenta contable",\n'
-                '            "description": "Descripción del apunte",\n'
-                '            "debit": 37.90,\n'
-                '            "credit": 0.00\n'
-                "        },\n"
-                "        {\n"
-                '            "account_code": "104000",\n'
-                '            "account_name": "Nombre de la cuenta contable",\n'
-                '            "description": "Descripción del apunte",\n'
-                '            "debit": 0.00,\n'
-                '            "credit": 37.90\n'
-                "        }\n"
-                "    ],\n"
-                '    "totals": {\n'
-                '        "total": 37.90\n'
-                "    }\n"
+                '  "supplier": {"name": "Nombre emisor", "vat": "NIF/CIF", "address": "Dirección"},\n'
+                '  "invoice": {"number": "Referencia", "date": "YYYY-MM-DD"},\n'
+                '  "journal_lines": [\n'
+                '    {"account_code": "400000", "account_name": "Proveedores", "description": "...", "debit": 0.00, "credit": 121.00},\n'
+                '    {"account_code": "600000", "account_name": "Compras", "description": "...", "debit": 100.00, "credit": 0.00},\n'
+                '    {"account_code": "472000", "account_name": "H.P. IVA soportado", "description": "...", "debit": 21.00, "credit": 0.00}\n'
+                "  ],\n"
+                '  "totals": {"total": 121.00}\n'
                 "}\n\n"
-                "REGLAS OBLIGATORIAS:\n"
-                "- suma(debit) debe ser igual a suma(credit) para que el asiento esté equilibrado\n"
-                "- Usa códigos del Plan General Contable español (PGC)\n"
-                "- Identifica el tipo de operación correctamente (aportación de capital, compra, venta, nómina, etc.)\n"
-                "- Devuelve SOLO el JSON, sin ningún texto adicional."
+                "REGLAS:\n"
+                "- suma(debit) DEBE ser igual a suma(credit).\n"
+                "- Usa códigos del Plan General Contable español (PGC).\n"
+                "- Devuelve SOLO el JSON, sin texto adicional, sin markdown."
             )
+            return prompt
         else:
-            prompt = (
-                "Extract all data from this invoice and return it in JSON format.\n"
-                "Required structure:\n"
+            # Para facturas también usamos TODOS los feedbacks al inicio.
+            # El partner no existe aún al subir el PDF, Gemini identifica el proveedor
+            # y aplica tax_percent y account_code del feedback correspondiente.
+            feedback_context = self.env["gemini.feedback"].get_all_feedback_context_for_prompt()
+            if feedback_context:
+                _logger.info("GEMINI_FEEDBACK (invoice): enviando %d chars al prompt", len(feedback_context))
+            else:
+                _logger.info("GEMINI_FEEDBACK (invoice): sin feedback previo")
+
+            prompt = ""
+            if feedback_context:
+                prompt += feedback_context + "\n\n"
+            prompt += (
+                "Extract all data from this invoice and return it in JSON format.\n\n"
+                "STEPS:\n"
+                "1. Identify the supplier name from the document.\n"
+                "2. Check if that supplier appears in the PREVIOUS INSTRUCTIONS above.\n"
+                "3. If found: use EXACTLY those account_code values for each line. "
+                "Adjust descriptions, quantities and unit prices from the document "
+                "but do NOT change account_code. "
+                "NOTE: taxes are managed by the system automatically.\n"
+                "4. If not found: extract data normally.\n\n"
+                "Required JSON structure:\n"
                 "{\n"
                 '    "supplier": {"name": "...", "vat": "...", "address": "..."},\n'
                 '    "invoice": {"number": "...", "date": "YYYY-MM-DD", "due_date": "YYYY-MM-DD or null", "currency": "EUR"},\n'
-                '    "lines": [{"description": "...", "quantity": 1.0, "unit_price": 100.00, "tax_percent": 21.0}],\n'
+                '    "lines": [{"description": "...", "quantity": 1.0, "unit_price": 100.00, "tax_percent": 21.0, "account_code": "600000"}],\n'
                 '    "totals": {"untaxed": 100.00, "tax": 21.00, "total": 121.00}\n'
                 "}\n"
             )
-
-        if feedback_context:
-            prompt += feedback_context
-
-        if self.move_type != 'entry':
             if summary_mode:
                 prompt += "\nIMPORTANT: In 'lines', group all items by VAT percentage. One line per VAT group."
             else:
                 prompt += "\nIMPORTANT: Extract ALL individual line items from the invoice."
-            prompt += "\nIdentify tax rates correctly (e.g., 21, 10, 4, 0). Return ONLY the JSON object."
-
-        return prompt
+            prompt += "\nReturn ONLY the JSON object, no markdown, no extra text."
+            return prompt
 
     def _apply_gemini_data(self, data, summary_mode=False):
         """Aplica los datos extraídos. Para entry crea líneas de diario con debit/credit."""
@@ -531,13 +592,13 @@ class AccountMove(models.Model):
                 for jl in journal_lines:
                     code = str(jl.get("account_code", "")).strip()
                     account = self.env["account.account"].search(
-                        [("code", "=", code), ("company_id", "=", self.company_id.id)],
+                        [("code", "=", code), ("company_ids", "=", self.company_id.id)],
                         limit=1,
                     )
                     if not account:
                         # Búsqueda parcial por prefijo
                         account = self.env["account.account"].search(
-                            [("code", "=like", code + "%"), ("company_id", "=", self.company_id.id)],
+                            [("code", "=like", code + "%"), ("company_ids", "=", self.company_id.id)],
                             limit=1,
                         )
                     if not account:
@@ -565,14 +626,29 @@ class AccountMove(models.Model):
             lines_to_create = []
             for line in lines_data:
                 tax = self._find_tax(line.get("tax_percent"))
+                # Usar account_code del feedback si Gemini lo devuelve
+                account = None
+                code = str(line.get("account_code", "")).strip()
+                if code:
+                    account = self.env["account.account"].search(
+                        [("code", "=", code), ("company_ids", "=", self.company_id.id)], limit=1
+                    )
+                    if not account:
+                        account = self.env["account.account"].search(
+                            [("code", "=like", code + "%"), ("company_ids", "=", self.company_id.id)], limit=1
+                        )
+                if not account:
+                    account = default_account
                 lines_to_create.append((0, 0, {
                     "name": line.get("description", "Imported line"),
                     "quantity": line.get("quantity", 1.0),
                     "price_unit": line.get("unit_price", 0.0),
-                    "account_id": default_account.id if default_account else False,
+                    "account_id": account.id if account else False,
                     "tax_ids": [(6, 0, [tax.id])] if tax else [],
                 }))
             self.invoice_line_ids = lines_to_create
+            # Sobreescribir impuestos con los del feedback (evita el impuesto incorrecto de Gemini)
+            self._apply_feedback_taxes_to_invoice_lines()
 
         # 4. Guardar valores originales en un único write
         self.write({
@@ -583,6 +659,119 @@ class AccountMove(models.Model):
             "gemini_auto_processed": True,
             "gemini_has_corrections": True,
         })
+
+    def _apply_feedback_taxes_to_invoice_lines(self):
+        """
+        Para facturas de compra: fusiona TODOS los feedbacks del proveedor de mas antiguo
+        a mas reciente. Construye un mapa de impuesto POR LINEA usando la descripcion
+        como clave de matching. El feedback mas reciente prevalece linea a linea.
+        Para lineas sin match exacto se usa el impuesto por defecto (el mas reciente global).
+        """
+        if self.move_type != "in_invoice" or not self.partner_id:
+            return
+
+        all_feedbacks = self.env["gemini.feedback"].find_all_for_emisor(
+            partner_id=self.partner_id.id,
+            partner_name=self.partner_id.name,
+        )
+        if not all_feedbacks:
+            return
+
+        _logger.info(
+            "_apply_feedback_taxes: fusionando %d feedbacks para partner_id=%s",
+            len(all_feedbacks), self.partner_id.id,
+        )
+
+        # Construir mapa description_lower -> {tax_id, tax_name}
+        # De mas antiguo a mas reciente: el mas reciente sobreescribe para cada descripcion.
+        # default_tax_info: el ultimo tax visto (fallback para lineas sin match exacto).
+        line_tax_map = {}
+        default_tax_info = None
+
+        for fb in all_feedbacks:
+            if not fb.correct_lines_json:
+                continue
+            try:
+                flines = json.loads(fb.correct_lines_json)
+            except Exception:
+                _logger.warning("Error parseando correct_lines_json del feedback %s", fb.id)
+                continue
+            for fl in flines:
+                if not fl.get("tax_id"):
+                    continue
+                tax_info = {
+                    "tax_id": int(fl["tax_id"]),
+                    "tax_name": fl.get("tax_name", ""),
+                }
+                desc = (fl.get("description") or "").strip().lower()
+                if desc:
+                    line_tax_map[desc] = tax_info
+                # El ultimo siempre actualiza el default (mas reciente gana)
+                default_tax_info = tax_info
+
+        if not line_tax_map and not default_tax_info:
+            _logger.warning("_apply_feedback_taxes: ningun feedback tiene tax_id")
+            return
+
+        # Cache de impuestos resueltos para evitar busquedas repetidas
+        tax_cache = {}
+
+        def resolve_tax(tax_id, tax_name):
+            key = (tax_id, tax_name)
+            if key in tax_cache:
+                return tax_cache[key]
+            tax = None
+            if tax_id:
+                tax = self.env["account.tax"].browse(tax_id).exists()
+                if not tax:
+                    tax = None
+            if not tax and tax_name:
+                tax = self.env["account.tax"].search([
+                    ("name", "=", tax_name),
+                    ("type_tax_use", "=", "purchase"),
+                ], limit=1)
+            tax_cache[key] = tax
+            return tax
+
+        applied = 0
+        for line in self.invoice_line_ids:
+            desc_key = (line.name or "").strip().lower()
+
+            # 1. Coincidencia exacta por descripcion
+            tax_info = line_tax_map.get(desc_key)
+
+            # 2. Coincidencia parcial (feedback contiene la desc de la linea o viceversa)
+            if not tax_info and desc_key:
+                for fb_desc, ti in line_tax_map.items():
+                    if fb_desc and (fb_desc in desc_key or desc_key in fb_desc):
+                        tax_info = ti
+                        break
+
+            # 3. Fallback: impuesto mas reciente global
+            if not tax_info:
+                tax_info = default_tax_info
+
+            if not tax_info:
+                continue
+
+            tax = resolve_tax(tax_info["tax_id"], tax_info["tax_name"])
+            if tax:
+                line.tax_ids = [(6, 0, [tax.id])]
+                applied += 1
+                _logger.info(
+                    "  Linea '%s' -> impuesto '%s' (id=%s)",
+                    line.name, tax.name, tax.id,
+                )
+            else:
+                _logger.warning(
+                    "  Linea '%s': impuesto no encontrado (tax_id=%s, tax_name=%s)",
+                    line.name, tax_info["tax_id"], tax_info["tax_name"],
+                )
+
+        _logger.info(
+            "_apply_feedback_taxes: aplicado a %d/%d lineas de factura %s",
+            applied, len(self.invoice_line_ids), self.id,
+        )
 
     def _find_partner(self, supplier_data):
         vat = supplier_data.get("vat")
@@ -625,7 +814,7 @@ class AccountMove(models.Model):
         return self.env["account.account"].search(
             [
                 ("account_type", "=", "expense"),
-                ("company_id", "=", self.company_id.id),
+                ("company_ids", "=", self.company_id.id),
             ],
             limit=1,
         )
