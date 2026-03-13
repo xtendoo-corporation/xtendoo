@@ -18,7 +18,7 @@ export class PaymentPopup extends Component {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.action = useService("action");
-        
+
         this.state = useState({
             orderData: null,
             payments: [], // Local payment state
@@ -45,7 +45,7 @@ export class PaymentPopup extends Component {
             );
             console.log("PaymentPopup OrderData:", data);
             this.state.orderData = data;
-            
+
             // Initialize local payments from backend data
             if (data.payments) {
                 this.state.payments = data.payments.map(p => ({
@@ -78,7 +78,7 @@ export class PaymentPopup extends Component {
         // Treat -0.00 as 0
         return Math.abs(due) < 0.001 ? 0 : due;
     }
-    
+
     // Proxy orderData to include local payments for XML compatibility
     get orderDataProxy() {
         if (!this.state.orderData) return null;
@@ -93,7 +93,7 @@ export class PaymentPopup extends Component {
         if (!this.state.orderData) return (amount || 0).toFixed(2);
         return new Intl.NumberFormat("es-ES", {
             style: "currency",
-            currency: "EUR", 
+            currency: "EUR",
         }).format(amount).replace("EUR", this.state.orderData.currency_symbol || "€");
     }
 
@@ -140,7 +140,7 @@ export class PaymentPopup extends Component {
         if (!this.state.selectedPaymentId) return;
 
         let newBuffer = this.state.inputBuffer;
-        
+
         // Overwrite logic when starting to type on a selected payment
         if (this.state.overwrite) {
             this.state.overwrite = false;
@@ -158,11 +158,11 @@ export class PaymentPopup extends Component {
                 newBuffer += char;
             }
         }
-        
+
         // Validate format (max 2 decimals)
         const parts = newBuffer.split(",");
         if (parts.length > 1 && parts[1].length > 2) {
-            return; 
+            return;
         }
 
         console.log("New Buffer:", newBuffer); // Debug
@@ -171,12 +171,12 @@ export class PaymentPopup extends Component {
 
     handleBackspace() {
         if (!this.state.selectedPaymentId) return;
-        
+
         // Disable overwrite on backspace
         if (this.state.overwrite) {
             this.state.overwrite = false;
         }
-        
+
         let newBuffer = this.state.inputBuffer;
         if (newBuffer.length > 0) {
             newBuffer = newBuffer.slice(0, -1);
@@ -184,7 +184,7 @@ export class PaymentPopup extends Component {
             this.updatePaymentFromBuffer(newBuffer);
         }
     }
-    
+
     updatePaymentFromBuffer(newBuffer) {
         this.state.inputBuffer = newBuffer;
         const amount = parseFloat(newBuffer.replace(",", ".")) || 0;
@@ -201,16 +201,9 @@ export class PaymentPopup extends Component {
 
         // Determine clear ID (string to differentiate from server IDs)
         const newId = "new_" + Date.now();
-        
+
         // Calculate default amount
-        let initialAmount = 0;
-        // If no payments, propose Total.
-        if (this.state.payments.length === 0) {
-             initialAmount = this.state.orderData.amount_total;
-        } else {
-             // If payments exist, ALWAYS start at 0 for manual entry
-             initialAmount = 0;
-        }
+        const initialAmount = this.amountDue;
 
         const newPayment = {
             id: newId,
@@ -223,7 +216,7 @@ export class PaymentPopup extends Component {
         this.state.payments.push(newPayment);
         // FORCE selection update
         this.selectPayment(newPayment);
-        
+
         // FORCE buffer reset if amount is 0
         if (initialAmount === 0) {
             this.state.inputBuffer = ""; // Empty buffer for typing
@@ -233,7 +226,7 @@ export class PaymentPopup extends Component {
     removePayment(paymentId) {
         // Filter out payment
         this.state.payments = this.state.payments.filter(p => p.id !== paymentId);
-        
+
         // If removed selected, deselect or select another
         if (this.state.selectedPaymentId === paymentId) {
             this.state.selectedPaymentId = null;
@@ -267,7 +260,7 @@ export class PaymentPopup extends Component {
 
             if (result.success) {
                 this.props.close();
-                
+
                 if (result.action) {
                      if (!printInvoice && result.action.params && result.action.params.next_action) {
                          await this.action.doAction(result.action.params.next_action);
@@ -289,7 +282,7 @@ export class PaymentPopup extends Component {
              this.state.loading = false;
         }
     }
-    
+
     cancel() {
         this.action.doAction({
             type: 'ir.actions.act_window',
