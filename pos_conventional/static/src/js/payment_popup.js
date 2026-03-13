@@ -79,6 +79,14 @@ export class PaymentPopup extends Component {
         return Math.abs(due) < 0.001 ? 0 : due;
     }
 
+    get amountDueLabel() {
+        return this.amountDue < 0 ? _t("Cambio") : _t("Total a Pagar");
+    }
+
+    get absoluteAmountDue() {
+        return Math.abs(this.amountDue);
+    }
+
     // Proxy orderData to include local payments for XML compatibility
     get orderDataProxy() {
         if (!this.state.orderData) return null;
