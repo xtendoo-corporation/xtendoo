@@ -1,0 +1,201 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* hr_attendance_work_center
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-12-14 07:29+0000\n"
+"PO-Revision-Date: 2022-12-14 07:29+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: hr_attendance_work_center
+#: model_terms:ir.actions.act_window,help:hr_attendance_work_center.hr_partner_attendance_action_kanban
+msgid "Add a few work center."
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model:ir.actions.client,name:hr_attendance_work_center.hr_attendance_work_center_action
+#: model:ir.model,name:hr_attendance_work_center.model_hr_attendance
+msgid "Attendance"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: code:addons/hr_attendance_work_center/models/hr_employee.py:0
+#, python-format
+msgid ""
+"Cannot perform check out on %(empl_name)s, could not find corresponding "
+"check in. Your attendances have probably been modified manually by human "
+"resources."
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Choose a Work Center"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Click to"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model:ir.model,name:hr_attendance_work_center.model_res_partner
+msgid "Contact"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model_terms:ir.actions.act_window,help:hr_attendance_work_center.hr_partner_attendance_action_kanban
+msgid "Create a new Work Center"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model:ir.model,name:hr_attendance_work_center.model_hr_employee
+msgid "Employee"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model:ir.ui.menu,name:hr_attendance_work_center.hr_attendance_action_my_attendances_work_center
+msgid "Entrada/Salida"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Error: could not find corresponding employee."
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Go back"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model_terms:ir.ui.view,arch_db:hr_attendance_work_center.res_partner_view_search_is_work_center
+msgid "Is Work Center"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Please return to the main menu."
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Sign in"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Sign out"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Today's work hours:"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Want to check out?"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid ""
+"Warning : Your user should be linked to an employee to use attendance. "
+"Please contact your administrator."
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Welcome!"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model:ir.actions.act_window,name:hr_attendance_work_center.hr_partner_attendance_action_kanban
+#: model:ir.model.fields,field_description:hr_attendance_work_center.field_hr_attendance__work_center_id
+#: model:ir.model.fields,field_description:hr_attendance_work_center.field_res_partner__is_work_center
+#: model:ir.model.fields,field_description:hr_attendance_work_center.field_res_users__is_work_center
+msgid "Work Center"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "Work Center:"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: code:addons/hr_attendance_work_center/models/hr_employee.py:0
+#, python-format
+msgid "Wrong PIN"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#: model_terms:ir.ui.view,arch_db:hr_attendance_work_center.hr_partner_kanban
+msgid "at"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "check in"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "check out"
+msgstr ""
+
+#. module: hr_attendance_work_center
+#. openerp-web
+#: code:addons/hr_attendance_work_center/static/src/xml/attendance_work_center.xml:0
+#, python-format
+msgid "¿Quiere registrar su salida?"
+msgstr ""

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="hr_attendance_work_center.GreetingAction" owl="1">
+        <div class="o_attendance_background d-flex flex-column h-100">
+            <div class="o_hr_kiosk_mode_main d-flex flex-grow-1 justify-content-center align-items-center p-3">
+                <div class="o_hr_attendance_kiosk_card card rounded-3" style="max-width: 560px; width: 100%;">
+                    <div class="card-body rounded-3">
+                        <div class="o_hr_attendance_kiosk_card_wrapper d-flex flex-column align-items-center justify-content-center text-center p-3">
+                            <div class="o_hr_attendance_user_badge text-center mb-2">
+                                <img class="o_hr_attendance_employee_badge img rounded-circle" t-attf-src="{{employeeAvatarUrl}}" t-att-height="120"/>
+                            </div>
+                            <h5 class="text-muted mb-1" t-esc="greetingTitle"/>
+                            <h2 class="mb-3" t-esc="employeeData.employee_name"/>
+
+                            <div class="alert alert-info w-100 mb-3" role="status">
+                                <strong t-esc="actionLabel"/>
+                                <t t-if="actionTime">
+                                    <span>
+                                        el <strong t-esc="actionTime"/>
+                                    </span>
+                                </t>
+                            </div>
+
+                            <div class="alert alert-light border w-100 mb-3" role="status" t-if="workCenterName">
+                                <div class="small text-muted text-uppercase mb-1">Centro de trabajo</div>
+                                <div class="fw-bold" t-esc="workCenterName"/>
+                            </div>
+
+                            <div class="alert alert-info w-100 mb-3" role="status">
+                                <t t-if="isCheckOut">
+                                    Horas de hoy: <strong t-esc="hoursToday"/>
+                                </t>
+                                <t t-else="">
+                                    Horas previas de hoy: <strong t-esc="hoursToday"/>
+                                </t>
+                            </div>
+
+                            <div class="alert alert-warning w-100 mb-4" role="status" t-if="isCheckOut and employeeData.display_overtime and overtimeToday">
+                                <div class="fw-bold mb-2">Horas extra</div>
+                                <div>Hoy: <strong t-esc="overtimeToday"/></div>
+                                <div t-if="totalOvertime">Total: <strong t-esc="totalOvertime"/></div>
+                            </div>
+
+                            <button class="btn btn-primary btn-lg rounded-pill px-5" t-on-click="kioskReturn">
+                                Aceptar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

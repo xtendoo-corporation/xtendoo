@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+        <record id="res_partner_form_view" model="ir.ui.view">
+        <field name="name">res.partner.form.view</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="arch" type="xml">
+             <xpath expr="//sheet/group" position="before">
+                 <label for="is_work_center" string="Es un centro de trabajo"/>
+                 <div class="o_row">
+                     <field name="is_work_center" string="Es un centro de trabajo" />
+                 </div>
+             </xpath>
+        </field>
+    </record>
+<!-- employee kanban view specifically for hr_attendance (to check in/out) -->
+    <record id="hr_partner_kanban" model="ir.ui.view">
+        <field name="name">hr.partner.kanban</field>
+        <field name="model">res.partner</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <kanban class="o_res_partner_attendance_kanban" create="false">
+                <field name="id"/>
+                <field name="display_name"/>
+                <field name="city"/>
+                <field name="country_id"/>
+                <field name="avatar_128"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-center gap-3 p-2">
+                            <img
+                                t-attf-src="/web/image/res.partner/#{record.id.raw_value}/avatar_128"
+                                class="rounded"
+                                style="width:56px;height:56px;object-fit:cover;"
+                            />
+                            <div class="flex-grow-1">
+                                <strong class="d-block"><field name="display_name"/></strong>
+                                <small class="text-muted" t-if="record.city.raw_value or record.country_id.raw_value">
+                                    <t t-if="record.city.raw_value"><field name="city"/></t>
+                                    <t t-if="record.city.raw_value and record.country_id.raw_value">, </t>
+                                    <t t-if="record.country_id.raw_value"><field name="country_id"/></t>
+                                </small>
+                            </div>
+                            <button type="object" name="action_open_work_center_confirm" class="btn btn-primary">
+                                Seleccionar
+                            </button>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="hr_partner_attendance_action_kanban" model="ir.actions.act_window">
+        <field name="name">Centros de trabajo</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="hr_partner_kanban"/>
+        <field name="domain">[('is_work_center', '=', True)]</field>
+        <field name="context">{'default_is_work_center': True}</field>
+        <field name="target">main</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Añade un nuevo centro de trabajo
+            </p><p>
+                Agregue algunos centros de trabajo.
+            </p>
+        </field>
+    </record>
+
+     <record id="hr_partner_attendance_action_view" model="ir.actions.act_window">
+        <field name="name">Centros de trabajo</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form,activity</field>
+        <field name="search_view_id" ref="base.view_res_partner_filter" />
+        <field name="context">{'search_default_is_work_center': 1}</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Añade un nuevo centro de trabajo
+          </p>
+        </field>
+    </record>
+
+      <record id="res_partner_view_search_is_work_center" model="ir.ui.view">
+        <field name="name">lims.partner.search.work.center</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter" />
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='inactive']" position="before">
+                <filter
+                    string="Es un centro de trabajo"
+                    name="is_work_center"
+                    domain="[('is_work_center', '=', True)]"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem
+        id="cat_menu_work_center"
+        name="Centros de trabajo"
+        parent="hr_attendance.menu_hr_attendance_root"
+        sequence="2"
+        action="hr_partner_attendance_action_view"
+    />
+</odoo>
