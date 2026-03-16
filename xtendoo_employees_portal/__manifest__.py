@@ -1,5 +1,6 @@
 {
     'name': 'Portal Empleados Multiusuario',
+    'author': 'Xtendoo',
     'version': '19.0.1.0.0',
     'license': 'LGPL-3',
     'depends': ['hr', 'hr_attendance', 'hr_holidays', 'hr_timesheet', 'portal', 'website'],

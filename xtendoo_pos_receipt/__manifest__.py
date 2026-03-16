@@ -13,6 +13,7 @@
         ],
     },
     'data': [],
+    'license': 'AGPL-3',
     'installable': True,
     'application': False,
     'auto_install': False,

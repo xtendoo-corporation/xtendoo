@@ -19,7 +19,7 @@ class AttendancePhone(http.Controller):
         _logger.info("[ATTENDANCE_PHONE] Acceso a página móvil de asistencia")
         return request.render('xtendoo_hr_attendance_phone.attendance_phone_mobile_page')
 
-    @http.route('/hr_attendance/set_settings', type='json', auth='public', csrf=False)
+    @http.route('/hr_attendance/set_settings', type='jsonrpc', auth='public', csrf=False)
     def set_attendance_settings(self, token, mode, **kwargs):
         """
         Configura el modo de asistencia del kiosco
@@ -64,7 +64,7 @@ class AttendancePhone(http.Controller):
             _logger.error("[ATTENDANCE_PHONE] Error configurando modo: %s", str(e))
             return {"success": False, "error": str(e)}
 
-    @http.route('/attendance/phone/validate_phone_only', type='json', auth='public', csrf=False)
+    @http.route('/attendance/phone/validate_phone_only', type='jsonrpc', auth='public', csrf=False)
     def validate_employee_phone_only(self, phone, token=None, **kwargs):
         """
         Valida empleado SOLO por teléfono (sin PIN), registra asistencia
@@ -136,7 +136,7 @@ class AttendancePhone(http.Controller):
             _logger.error("[ATTENDANCE_PHONE_ONLY] Error: %s", str(e))
             return {"success": False, "error": f"Error del servidor: {str(e)}"}
 
-    @http.route('/attendance/phone/validate', type='json', auth='public', csrf=False)
+    @http.route('/attendance/phone/validate', type='jsonrpc', auth='public', csrf=False)
     def validate_employee(self, phone, pin, token=None, **kwargs):
         """Valida empleado por teléfono y PIN, registra asistencia"""
         _logger.info("[ATTENDANCE_PHONE] Iniciando validación - Teléfono: %s***", phone[:3] if phone else 'N/A')
@@ -200,7 +200,7 @@ class AttendancePhone(http.Controller):
             _logger.error("[ATTENDANCE_PHONE] Error: %s", str(e))
             return {"success": False, "error": f"Error del servidor: {str(e)}"}
 
-    @http.route('/attendance/phone/status', type='json', auth='public', csrf=False)
+    @http.route('/attendance/phone/status', type='jsonrpc', auth='public', csrf=False)
     def get_employee_status(self, phone, **kwargs):
         """
         Consulta el estado actual del empleado (dentro/fuera) basado en su teléfono
@@ -268,7 +268,7 @@ class AttendancePhone(http.Controller):
             return {"success": False, "error": f"Error del servidor: {str(e)}"}
 
 
-    @http.route('/attendance/phone/register', type='json', auth='public', csrf=False)
+    @http.route('/attendance/phone/register', type='jsonrpc', auth='public', csrf=False)
     def register_employee_phone(self, employee_pin, phone_number, **kwargs):
         """
         Registra el número de teléfono del empleado la primera vez.
@@ -337,7 +337,7 @@ class AttendancePhone(http.Controller):
                 "error": f"Error del servidor: {str(e)}"
             }
 
-    @http.route('/attendance/phone/check-registration', type='json', auth='public', csrf=False)
+    @http.route('/attendance/phone/check-registration', type='jsonrpc', auth='public', csrf=False)
     def check_employee_registration(self, phone_number, **kwargs):
         """
         Verifica si un número de teléfono ya está registrado
