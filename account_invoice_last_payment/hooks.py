@@ -1,13 +1,13 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
-from odoo import SUPERUSER_ID
-from odoo.api import Environment
 
-
-def post_init_hook(cr, pool):
+def post_init_hook(env):
     """
-    Fetches all invoice and recomputed invoice
+    Backfill last payment date for existing posted invoices.
     """
-    env = Environment(cr, SUPERUSER_ID, {})
-    invoices = env["account.move"].search([])
-    invoices._compute_amount()
+    invoices = env["account.move"].search([
+        ("state", "=", "posted"),
+        ("move_type", "in", ("out_invoice", "out_refund", "in_invoice", "in_refund")),
+    ])
+    for invoice in invoices:
+        invoice.last_payment = invoice._get_last_payment_date()

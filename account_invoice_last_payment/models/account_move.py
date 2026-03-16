@@ -1,19 +1,24 @@
 # Copyright 2023 Camilo <Xtendoo, https://xtendoo.es/>.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-import logging
-
-from odoo import _, api, fields, models
-
-_logger = logging.getLogger(__name__)
+from odoo import api, fields, models
 
 
 class AccountMoveCustom(models.Model):
-    """Inherit to implement the tax calculation using avatax API"""
-
     _inherit = "account.move"
 
     last_payment = fields.Date(string="Last payment")
+
+    def _get_last_payment_date(self):
+        self.ensure_one()
+        if self.state != "posted" or not self.is_invoice(include_receipts=True):
+            return False
+
+        reconciled_payments = self._get_reconciled_payments().sorted(
+            key=lambda payment: payment.date,
+            reverse=True,
+        )
+        return reconciled_payments[0].date if reconciled_payments else False
 
     @api.depends(
         "line_ids.debit",
@@ -27,8 +32,5 @@ class AccountMoveCustom(models.Model):
     def _compute_amount(self):
         res = super()._compute_amount()
         for move in self:
-            if move._payment_state_matters() and move.state == 'posted':
-                reconciled_payments = move._get_reconciled_payments().sorted(key=lambda x: x.date, reverse=True)
-                if reconciled_payments:
-                    move.last_payment = reconciled_payments[0].date
+            move.last_payment = move._get_last_payment_date()
         return res
