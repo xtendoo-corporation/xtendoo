@@ -110,7 +110,7 @@
                 <t t-foreach="props.order.orderlines || props.order.lines || []" t-as="line" t-key="line.id">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1px; line-height: 1.2;">
                         <span style="flex: 3; word-break: break-word; font-weight: normal;">
-                            <t t-esc="line.name || line.product_id.display_name"/>
+                            <t t-esc="line.customerNote || line.name || line.product_id.display_name"/>
                         </span>
                         <span style="flex: 0.5; text-align: center; font-weight: normal;">
                             <t t-esc="line.qty"/>
