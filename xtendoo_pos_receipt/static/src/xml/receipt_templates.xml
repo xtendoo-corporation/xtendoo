@@ -52,9 +52,28 @@
                             <strong>FECHA:</strong>
                             <t t-if="props.order &amp;&amp; props.order.date_order" t-out="props.order.formatDateOrTime('date_order')"/>
                         </div>
-                        <div style="margin-bottom: 2px;" t-if="props.order.getCashierName">
-                            <strong>ATENDIDO POR:</strong> <t t-esc="props.order.getCashierName()"/>
-                        </div>
+
+                        <!-- Datos del cliente (si existe) -->
+                        <t t-set="partner" t-value="(props.data &amp;&amp; props.data.partner) || (props.order &amp;&amp; props.order.get_partner ? props.order.get_partner() : (props.order ? props.order.partner_id || props.order.partner : null))"/>
+                        <t t-if="partner">
+                            <div style="margin-bottom: 2px;">
+                                <strong>CLIENTE:</strong> <t t-esc="partner.name || partner.display_name || ''"/>
+                            </div>
+                            <t t-if="partner.vat">
+                                <div style="margin-bottom: 2px;">
+                                    <strong>NIF/CIF:</strong> <t t-esc="partner.vat"/>
+                                </div>
+                            </t>
+                            <t t-if="partner.street || partner.city">
+                                <div style="margin-bottom: 2px;">
+                                    <t t-esc="partner.street || ''"/>
+                                    <t t-if="partner.street and partner.city"> - </t>
+                                    <t t-esc="partner.city || ''"/>
+                                    <t t-if="partner.zip"> (<t t-esc="partner.zip"/>)</t>
+                                </div>
+                            </t>
+                        </t>
+
                     </div>
 
                     <!-- Línea separadora -->
@@ -91,7 +110,7 @@
                 <t t-foreach="props.order.orderlines || props.order.lines || []" t-as="line" t-key="line.id">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1px; line-height: 1.2;">
                         <span style="flex: 3; word-break: break-word; font-weight: normal;">
-                            <t t-esc="line.full_product_name || line.product_id.display_name || line.name"/>
+                            <t t-esc="line.full_product_name || line.name || line.product_id.display_name"/>
                         </span>
                         <span style="flex: 0.5; text-align: center; font-weight: normal;">
                             <t t-esc="line.qty"/>
@@ -145,7 +164,7 @@
                     <t t-if="taxTotals &amp;&amp; taxTotals.has_tax_groups">
                         <div
                             style="display: flex; justify-content: space-between; font-size: 10px; text-align: right; margin-bottom: 2px;">
-                            <span style="flex: 1;">IVA</span>
+                            <span style="flex: 1;">Impuesto</span>
                             <span style="flex: 1;">Base</span>
                             <span style="flex: 1;">Cuota</span>
                         </div>
@@ -197,6 +216,11 @@
                 <!-- Línea separadora final -->
                 <div style="border-top: 1px dashed black; margin: 4px 0;"/>
             </div>
+
+            <div style="margin-bottom: 2px;" t-if="props.order.getCashierName">
+                <strong>Atendido por:</strong> <t t-esc="props.order.getCashierName()"/>
+            </div>
+
         </xpath>
 
      </t>
