@@ -24,6 +24,24 @@
                     optional="show"
                      domain="[('is_work_center', '=', True)]"
                 />
+                <field name="responsible_id" string="Responsable" optional="show"/>
+            </field>
+        </field>
+    </record>
+     <record id="view_attendance_form_inherit" model="ir.ui.view">
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form" />
+        <field name="arch" type="xml">
+            <field name="employee_id" position="after">
+                <field
+                    name="work_center_id"
+                    string="Centro de trabajo"
+                     domain="[('is_work_center', '=', True)]"
+                />
+                <field name="responsible_id" string="Responsable"/>
+                <field name="note" string="Nota"/>
+                <field name="coste" string="Coste por hora" widget="monetary"/>
+                <field name="coste_total" widget="monetary"/>
             </field>
         </field>
     </record>

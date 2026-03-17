@@ -13,6 +13,13 @@ from odoo.exceptions import UserError
 class HrAttendance(models.Model):
     _inherit = "hr.attendance"
 
+    responsible_id = fields.Many2one('res.users', string='Responsable', tracking=True,)
+    note = fields.Text('Note', trackking=True)
+
+
+    coste_total = fields.Float('Coste total', tracking=True, store=True)
+    coste = fields.Float('Coste', tracking=True,  store=True)
+
     # check_in_latitude = fields.Float(digits="Location", readonly=True)
     # check_in_latitude_text = fields.Char(
     #     "Check-in Latitude", compute="_compute_check_in_latitude_text"
@@ -52,6 +59,19 @@ class HrAttendance(models.Model):
     #         }
     #     else:
     #         raise UserError(_("No existe Latitud y/o Longitud"))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('employee_id'):
+                employee = self.env['hr.employee'].browse(vals['employee_id'])
+                vals['coste'] = employee.hourly_cost
+        return super().create(vals_list)
+
+    @api.onchange('check_out')
+    def _onchange_check_out(self):
+        for record in self:
+            record.coste_total = record.coste * record.worked_hours
 
     @api.model
     def get_default_employee(self):
