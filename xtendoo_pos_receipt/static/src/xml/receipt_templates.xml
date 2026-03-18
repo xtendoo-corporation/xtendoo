@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="todopintura_pos_custom.ReceiptHeader" t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension">
 
@@ -151,7 +151,7 @@
                     <div style="font-size: 10px; text-align: center; margin: 4px 0;">
                         <t t-if="paymentLines &amp;&amp; paymentLines.length &gt; 0">
                             <t t-foreach="paymentLines" t-as="line" t-key="line_index">
-                                Pagado: <t t-esc="line.payment_method_id.name.toLowerCase()"/>
+                                Forma de pago: <t t-esc="line.payment_method_id.name.toLowerCase()"/>
                             </t>
                         </t>
                     </div>
@@ -217,10 +217,11 @@
                 <div style="border-top: 1px dashed black; margin: 4px 0;"/>
             </div>
 
-            <div style="margin-bottom: 2px;" t-if="props.order.getCashierName">
-                <strong>Atendido por:</strong> <t t-esc="props.order.getCashierName()"/>
+            <div style="font-family: 'Lucida Console', 'DejaVu Sans Mono', monospace; font-size: 10px; text-align: center; margin-top: 5px;">
+                <div t-if="props.order.getCashierName">
+                    Atendido por: <t t-esc="props.order.getCashierName()"/>
+                </div>
             </div>
-
         </xpath>
 
      </t>
