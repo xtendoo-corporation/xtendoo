@@ -71,7 +71,7 @@ class GreetingAction extends Component {
 
     async kioskReturn() {
         await this.actionService.doAction(
-            this.employeeData.next_action || "hr_attendance_work_center.hr_attendance_work_center_action",
+            "hr_attendance.hr_attendance_action_employee_attendance_kanban",
             { clearBreadcrumbs: true }
         );
     }

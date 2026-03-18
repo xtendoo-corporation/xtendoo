@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="hr_attendance.public_kiosk_app" t-inherit-mode="extension" owl="1">
+        <xpath expr="//CardLayout" position="inside">
+            <t t-if="this.state.active_display === 'work_center'">
+                <div class="o_hr_kiosk_mode_main d-flex flex-column gap-3 m-auto w-100" style="max-width: 980px;">
+                    <div class="text-center">
+                        <h4 class="mb-1">Seleccione centro de trabajo</h4>
+                        <p class="text-muted mb-0" t-if="this.state.pendingEmployee?.employee_name">
+                            <t t-esc="this.state.pendingEmployee.employee_name"/>
+                        </p>
+                    </div>
+                    <div class="row g-3">
+                        <t t-foreach="this.state.workCenters" t-as="center" t-key="center.id">
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <button class="btn btn-light text-start w-100 p-3 h-100"
+                                        t-on-click="() => this.completeCheckInWithWorkCenter(center.id)">
+                                    <div class="fw-bold" t-esc="center.display_name"/>
+                                    <small class="text-muted" t-if="center.city or center.country_id">
+                                        <t t-if="center.city"><t t-esc="center.city"/></t>
+                                        <t t-if="center.city and center.country_id">, </t>
+                                        <t t-if="center.country_id"><t t-esc="center.country_id[1]"/></t>
+                                    </small>
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <div class="o_hr_kiosk_mode_bottom my-4 mx-auto">
+                    <button class="btn btn-secondary btn-lg rounded-pill px-4" t-on-click="this.backToEmployeeSelection">
+                        <i class="oi oi-chevron-left me-2"/>
+                        <span>Volver</span>
+                    </button>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="hr_attendance.public_kiosk_greetings" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[contains(@class, 'o_hr_attendance_kiosk_card_bottom')]/div[contains(@class, 'd-flex') and contains(@class, 'flex-column')]" position="before">
+            <div class="alert alert-light text-center p-3 w-100" role="status" t-if="this.props.employeeData.work_center_name">
+                Centro de trabajo: <strong t-esc="this.props.employeeData.work_center_name"/>
+            </div>
+        </xpath>
+    </t>
+</templates>
+

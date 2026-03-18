@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="hr_attendance_work_center_action" model="ir.actions.client">
-        <field name="name">Attendance</field>
-        <field name="tag">hr_attendance_work_center_action</field>
-        <field name="target">main</field>
-    </record>
-
     <menuitem id="hr_attendance_action_my_attendances_work_center"
               name="Entrada/Salida"
               parent="hr_attendance.menu_hr_attendance_root"
               sequence="1"
-              action="hr_attendance_work_center_action"/>
+              action="hr_attendance.open_kiosk_url"/>
 
     <record id="view_attendance_tree_inherit" model="ir.ui.view">
         <field name="model">hr.attendance</field>
@@ -40,7 +34,7 @@
                 />
                 <field name="responsible_id" string="Responsable"/>
                 <field name="note" string="Nota"/>
-                <field name="coste" string="Coste por hora" widget="monetary"/>
+                <field name="coste" widget="monetary"/>
                 <field name="coste_total" widget="monetary"/>
             </field>
         </field>

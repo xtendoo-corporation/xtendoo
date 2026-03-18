@@ -17,12 +17,9 @@
         "views/res_partner_view.xml",
     ],
     'assets': {
-        'web.assets_backend': [
-            '/hr_attendance_work_center/static/src/js/greeting_action.js',
-            '/hr_attendance_work_center/static/src/js/work_center.js',
-            '/hr_attendance_work_center/static/src/js/work_center_confirm.js',
-            '/hr_attendance_work_center/static/src/xml/attendance_work_center.xml',
-            '/hr_attendance_work_center/static/src/xml/greeting_action.xml',
+        'hr_attendance.assets_public_attendance': [
+            '/hr_attendance_work_center/static/src/js/public_kiosk_work_center.js',
+            '/hr_attendance_work_center/static/src/xml/public_kiosk_work_center.xml',
         ],
     },
     "installable": True,

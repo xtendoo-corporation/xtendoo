@@ -60,12 +60,20 @@ class HrEmployee(models.Model):
             Check Out: modify check_out field of appropriate attendance record
         """
         self.ensure_one()
+        location = location or [0.0, 0.0]
         action_date = fields.Datetime.now()
         if self.attendance_state != 'checked_in':
+            # Validate that work_center_id is provided for check-in
+            if not work_center_id:
+                raise exceptions.UserError(
+                    _('A work center must be selected for check-in.')
+                )
+
             if work_center_id:
                 # Accept both numeric ids and string payloads coming from JS actions.
                 if isinstance(work_center_id, str):
                     work_center_id = int(work_center_id.replace(".", ""))
+
             vals = {
                 'employee_id': self.id,
                 'check_in': action_date,

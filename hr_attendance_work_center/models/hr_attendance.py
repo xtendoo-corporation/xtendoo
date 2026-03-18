@@ -18,7 +18,7 @@ class HrAttendance(models.Model):
 
 
     coste_total = fields.Float('Coste total', tracking=True, store=True)
-    coste = fields.Float('Coste', tracking=True,  store=True)
+    coste = fields.Float('Coste por hora', tracking=True,  store=True)
 
     # check_in_latitude = fields.Float(digits="Location", readonly=True)
     # check_in_latitude_text = fields.Char(

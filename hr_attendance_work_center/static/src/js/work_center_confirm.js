@@ -23,6 +23,7 @@ class WorkCenterConfirm extends Component {
             hoursToday: "0:00",
             workCenterId: this.props.action.params?.work_center_id || false,
             workCenterName: this.props.action.params?.work_center_name || "",
+            employeeId: this.props.action.params?.employee_id || null,
         });
 
         onWillStart(async () => {
@@ -31,12 +32,24 @@ class WorkCenterConfirm extends Component {
     }
 
     async loadEmployeeData() {
-        const employees = await this.orm.searchRead(
-            "hr.employee",
-            [["user_id", "=", session.uid]],
-            ["name", "attendance_state", "hours_today"]
-        );
-        this.state.employee = employees.length ? employees[0] : null;
+        if (!this.state.employeeId) {
+            // Fallback to loading from session.uid if no employee_id provided
+            const employees = await this.orm.searchRead(
+                "hr.employee",
+                [["user_id", "=", session.uid]],
+                ["name", "attendance_state", "hours_today"]
+            );
+            this.state.employee = employees.length ? employees[0] : null;
+        } else {
+            // Load the specific employee provided
+            const employees = await this.orm.searchRead(
+                "hr.employee",
+                [["id", "=", this.state.employeeId]],
+                ["name", "attendance_state", "hours_today"]
+            );
+            this.state.employee = employees.length ? employees[0] : null;
+        }
+
         this.state.checkedIn = this.state.employee?.attendance_state === "checked_in";
         this.state.hoursToday = this.state.employee
             ? this.floatTimeFormatter(this.state.employee.hours_today || 0)
@@ -45,9 +58,10 @@ class WorkCenterConfirm extends Component {
     }
 
     async goBack() {
+        // Go back to employee selection kanban
         await this.actionService.doAction(
-            "hr_attendance_work_center.hr_partner_attendance_action_kanban",
-            { additionalContext: { no_group_by: true }, clearBreadcrumbs: true }
+            "hr_attendance.hr_attendance_action_employee_attendance_kanban",
+            { clearBreadcrumbs: true }
         );
     }
 
@@ -62,7 +76,7 @@ class WorkCenterConfirm extends Component {
             "attendance_manual_work_center_force",
             [
                 [this.state.employee.id],
-                "hr_attendance_work_center.hr_attendance_work_center_action",
+                "hr_attendance.hr_attendance_action_employee_attendance_kanban",
                 this.state.workCenterId,
                 location,
             ]
