@@ -30,6 +30,9 @@
                      domain="[('is_work_center', '=', True)]"
                 />
                 <field name="responsible_id" string="Responsable" optional="show"/>
+                <field name="note" string="Nota" optional="show"/>
+                <field name="coste" string="Coste/h" optional="show"/>
+                <field name="coste_total" string="Coste total" optional="show"/>
             </field>
         </field>
     </record>
