@@ -10,8 +10,19 @@
                             <t t-esc="this.state.pendingEmployee.employee_name"/>
                         </p>
                     </div>
+                    <div class="input-group" style="max-width: 520px;">
+                        <span class="input-group-text">
+                            <i class="fa fa-search"/>
+                        </span>
+                        <input
+                            class="form-control"
+                            type="text"
+                            t-model="this.state.workCenterSearch"
+                            placeholder="Buscar centro de trabajo..."
+                        />
+                    </div>
                     <div class="row g-3">
-                        <t t-foreach="this.state.workCenters" t-as="center" t-key="center.id">
+                        <t t-foreach="this.filteredWorkCenters" t-as="center" t-key="center.id">
                             <div class="col-12 col-md-6 col-lg-4">
                                 <button class="btn btn-light text-start w-100 p-3 h-100"
                                         t-on-click="() => this.completeCheckInWithWorkCenter(center.id)">
@@ -24,6 +35,11 @@
                                 </button>
                             </div>
                         </t>
+                        <div class="col-12" t-if="!this.filteredWorkCenters.length">
+                            <div class="alert alert-light mb-0" role="status">
+                                No se han encontrado centros con ese texto.
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="o_hr_kiosk_mode_bottom my-4 mx-auto">

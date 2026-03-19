@@ -11,6 +11,7 @@ patch(kioskAttendanceApp.prototype, {
     setup() {
         super.setup(...arguments);
         this.state.workCenters = [];
+        this.state.workCenterSearch = "";
         this.state.pendingEmployee = null;
         this.state.pendingPin = false;
     },
@@ -28,10 +29,23 @@ patch(kioskAttendanceApp.prototype, {
     async openWorkCenterScreen(employeeData, pinCode = false) {
         this.state.pendingEmployee = employeeData;
         this.state.pendingPin = pinCode;
+        this.state.workCenterSearch = "";
         if (!this.state.workCenters.length) {
             await this.fetchWorkCenters();
         }
         this.switchDisplay("work_center");
+    },
+
+    get filteredWorkCenters() {
+        const query = (this.state.workCenterSearch || "").trim().toLowerCase();
+        if (!query) {
+            return this.state.workCenters;
+        }
+        return this.state.workCenters.filter((center) => {
+            const name = (center.display_name || "").toLowerCase();
+            const city = (center.city || "").toLowerCase();
+            return name.includes(query) || city.includes(query);
+        });
     },
 
     async completeCheckInWithWorkCenter(workCenterId) {

@@ -68,6 +68,10 @@ class HrAttendance(models.Model):
                 vals['coste'] = employee.hourly_cost
         return super().create(vals_list)
 
+    @api.onchange('coste')
+    def _onchange_hour_cost(self):
+        self._onchange_check_out()
+
     @api.onchange('check_out')
     def _onchange_check_out(self):
         for record in self:
