@@ -81,8 +81,6 @@ class WorkCenterAction extends Component {
     }
 
     async confirmPin() {
-    console.log("confirmPin called");
-    alert(this.state.enteredPin);
         if (!this.state.enteredPin) {
             this.notification.add(_t("Debe introducir el PIN."), { type: "danger" });
             return;
