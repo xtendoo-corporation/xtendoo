@@ -371,7 +371,7 @@
                                 <!-- Total -->
                                 <div class="payment-total-section">
                                     <div class="payment-total-label" t-esc="this.amountDueLabel" />
-                                    <div class="payment-total-amount">
+                                    <div t-attf-class="payment-total-amount {{ this.amountDue &lt; 0 ? 'text-success' : '' }}">
                                         <t t-esc="formatCurrency(this.absoluteAmountDue)" />
                                     </div>
                                 </div>
