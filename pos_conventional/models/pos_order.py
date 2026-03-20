@@ -1008,16 +1008,14 @@ class PosOrder(models.Model):
 
             self.action_pos_order_paid()
 
-            # Acción de redirección a la vista de lista de la sesión
+            # Acción de redirección a la vista de un nuevo pedido en blanco (igual que pago directo)
             next_action = {
-                "type": "ir.actions.act_window",
-                "name": _("Pedidos de la sesión"),
-                "res_model": "pos.order",
-                "view_mode": "tree,form",
-                "views": [[False, "list"], [False, "form"]],
-                "domain": [("session_id", "=", self.session_id.id)],
-                "context": {"default_session_id": self.session_id.id},
-                "target": "main",
+                "type": "ir.actions.client",
+                "tag": "pos_conventional_new_order",
+                "params": {
+                    "config_id": self.config_id.id,
+                    "default_session_id": self.session_id.id,
+                },
             }
 
             final_action = next_action
