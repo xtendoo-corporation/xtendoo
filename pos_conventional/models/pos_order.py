@@ -979,6 +979,25 @@ class PosOrder(models.Model):
                     'amount': amount,
                 })
 
+        # 2.5. Gestión del cambio (Devolución de importe excedente)
+        amount_paid = sum(self.payment_ids.mapped('amount'))
+        amount_total = self._get_rounded_amount(self.amount_total)
+
+        if self.currency_id.compare_amounts(amount_paid, amount_total) > 0:
+            change_amount = amount_paid - amount_total
+            cash_payment_method = self.session_id.payment_method_ids.filtered('is_cash_count')[:1]
+            if not cash_payment_method:
+                return {'success': False, 'message': _("No hay método de efectivo en esta sesión para devolver el cambio.")}
+            
+            self.add_payment({
+                'name': _('return'),
+                'pos_order_id': self.id,
+                'amount': -change_amount,
+                'payment_method_id': cash_payment_method.id,
+                'is_change': True,
+            })
+
+
         # 3. Validar
         # Comprobar si está pagado completamente?
         # El frontend debería haber validado esto, pero el backend es la autoridad.
