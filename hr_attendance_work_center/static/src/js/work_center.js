@@ -31,6 +31,7 @@ class WorkCenterAction extends Component {
             workCenters: [],
             attendanceResult: null,
             selectedWorkCenter: null,
+            workCenterSearch: "",
         });
 
         onWillStart(async () => {
@@ -272,6 +273,17 @@ class WorkCenterAction extends Component {
         return this.state.employees.filter((employee) =>
             (employee.name || "").toLowerCase().includes(query)
         );
+    }
+
+    get filteredWorkCenters() {
+        const query = (this.state.workCenterSearch || "").trim().toLowerCase();
+        if (!query) {
+            return this.state.workCenters;
+        }
+        return this.state.workCenters.filter((center) => {
+            const name = (center.display_name || "").toLowerCase();
+            return name.includes(query);
+        });
     }
 
     get employeeAvatarUrl() {

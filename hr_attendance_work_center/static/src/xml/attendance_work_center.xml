@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="row g-3 w-100 o_wc_scroll_area">
-                        <t t-foreach="filteredEmployees" t-as="employee" t-key="employee.id">
+                        <t t-foreach="filteredEmployees || []" t-as="employee" t-key="employee.id">
                             <div class="col-12 col-md-6 col-lg-4">
                                 <button class="btn btn-light text-start w-100 p-3 h-100"
                                         t-on-click="() => this.selectEmployee(employee)">
@@ -35,8 +35,7 @@
                                 </button>
                             </div>
                         </t>
-
-                        <div class="col-12" t-if="!filteredEmployees.length">
+                        <div class="col-12" t-if="!(filteredEmployees &amp;&amp; filteredEmployees.length)">
                             <div class="alert alert-light mb-0">No se han encontrado empleados con ese texto.</div>
                         </div>
                     </div>
@@ -93,8 +92,14 @@
                         Seleccione centro de trabajo para registrar entrada
                     </p>
 
+                    <!-- Input de búsqueda -->
+                    <div class="input-group mx-auto mb-3" style="max-width: 520px;">
+                        <span class="input-group-text"><i class="fa fa-search"/></span>
+                        <input class="form-control" type="text" t-model="state.workCenterSearch" placeholder="Buscar centro de trabajo..."/>
+                    </div>
+
                     <div class="row g-3 w-100 o_wc_scroll_area">
-                        <t t-foreach="state.workCenters" t-as="center" t-key="center.id">
+                        <t t-foreach="this.filteredWorkCenters || []" t-as="center" t-key="center.id">
                             <div class="col-12 col-md-6 col-lg-4">
                                 <button class="btn btn-light text-start w-100 p-3 h-100"
                                         t-on-click="() => this.askConfirmWorkCenter(center)">
@@ -107,6 +112,9 @@
                                 </button>
                             </div>
                         </t>
+                        <div class="col-12" t-if="!(this.filteredWorkCenters &amp;&amp; this.filteredWorkCenters.length)">
+                            <div class="alert alert-light mb-0">No se han encontrado centros con ese texto.</div>
+                        </div>
                     </div>
                 </t>
 

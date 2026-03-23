@@ -19,6 +19,7 @@ class WorkCenterSelectAction extends Component {
             workCenters: [],
             employeeId: this.props.action.params?.employee_id || null,
             employeeName: this.props.action.params?.employee_name || "",
+            workCenterSearch: "", // <-- Añadido para búsqueda
         });
 
         onWillStart(async () => {
@@ -72,6 +73,17 @@ class WorkCenterSelectAction extends Component {
         return this.state.employeeId
             ? `/web/image/hr.employee/${this.state.employeeId}/avatar_128`
             : "/web/static/img/placeholder.png";
+    }
+
+    get filteredWorkCenters() {
+        const query = (this.state.workCenterSearch || "").trim().toLowerCase();
+        if (!query) {
+            return this.state.workCenters;
+        }
+        return this.state.workCenters.filter((center) => {
+            const name = (center.display_name || "").toLowerCase();
+            return name.includes(query);
+        });
     }
 }
 
