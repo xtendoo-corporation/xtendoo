@@ -7,6 +7,16 @@
         <field name="target">main</field>
     </record>
 
+    <record id="action_update_coste_massive" model="ir.actions.server">
+    <field name="name">Actualizar Coste Masivo</field>
+    <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+    <field name="binding_model_id" ref="hr_attendance.model_hr_attendance"/>
+    <field name="state">code</field>
+    <field name="code">
+        action = env['hr.attendance'].action_update_coste_massive()
+    </field>
+</record>
+
     <record id="hr_attendance.menu_hr_attendance_root" model="ir.ui.menu">
         <field name="action" ref="hr_attendance_work_center_internal_action"/>
     </record>
@@ -17,11 +27,25 @@
               sequence="4"
               groups="hr_attendance.group_hr_attendance_officer"
               action="hr_attendance_work_center_internal_action"/>
+    <menuitem id="hr_attendance_action_my_update"
+              name="actualizar"
+              parent="hr_attendance.menu_hr_attendance_root"
+              sequence="10"
+              groups="hr_attendance.group_hr_attendance_officer"
+              action="action_update_coste_massive"/>
 
     <record id="view_attendance_tree_inherit" model="ir.ui.view">
         <field name="model">hr.attendance</field>
         <field name="inherit_id" ref="hr_attendance.view_attendance_tree" />
         <field name="arch" type="xml">
+<!--            <header>-->
+<!--                <button name="action_update_coste_massive" string="Actualizar Coste Masivo" type="object" class="oe_highlight"/>-->
+<!--            </header>-->
+            <xpath expr="//list" position="attributes">
+                <attribute name="create">true</attribute>
+            </xpath>
+            <xpath expr="//list" position="inside">
+            </xpath>
             <field name="employee_id" position="after">
                 <field
                     name="work_center_id"
@@ -36,6 +60,7 @@
             </field>
         </field>
     </record>
+
      <record id="view_attendance_form_inherit" model="ir.ui.view">
         <field name="model">hr.attendance</field>
         <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form" />

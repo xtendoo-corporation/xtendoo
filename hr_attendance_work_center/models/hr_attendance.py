@@ -139,3 +139,34 @@ class HrAttendance(models.Model):
     #             if item.check_out_longitude
     #             else False
     #         )
+
+    @api.model
+    def action_update_coste_massive(self):
+        # Buscar registros con coste vacío o 0
+        records = self.search(['|', ('coste', '=', False), ('coste', '=', 0)])
+        updated_count = 0
+        employees_with_zero_cost = set()
+        for rec in records:
+            if rec.employee_id and (not rec.coste or rec.coste == 0):
+                rec.coste = rec.employee_id.hourly_cost
+                rec.coste_total = rec.coste * rec.worked_hours
+                updated_count += 1
+                if not rec.coste:
+                    employees_with_zero_cost.add(rec.employee_id.name)
+        # Buscar de nuevo los que siguen con coste 0
+        still_zero = self.search([('coste', '=', 0)])
+        for rec in still_zero:
+            if rec.employee_id:
+                employees_with_zero_cost.add(rec.employee_id.name)
+        employee_names = '\n'.join(employees_with_zero_cost)
+        # Abrir wizard resumen
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'update.coste.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_updated_count': updated_count,
+                'default_employee_names': employee_names,
+            },
+        }

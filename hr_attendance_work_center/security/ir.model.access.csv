@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_update_coste_wizard,access_update_coste_wizard,model_update_coste_wizard,hr_attendance.group_hr_attendance_officer,1,0,1,0
+
