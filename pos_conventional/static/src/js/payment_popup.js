@@ -267,6 +267,9 @@ export class PaymentPopup extends Component {
             );
 
             if (result.success) {
+                if (this.props.markValidated) {
+                    this.props.markValidated();
+                }
                 this.props.close();
 
                 if (result.action) {
@@ -292,13 +295,8 @@ export class PaymentPopup extends Component {
     }
 
     cancel() {
-        this.action.doAction({
-            type: 'ir.actions.act_window',
-            res_model: 'pos.order',
-            res_id: this.props.orderId,
-            views: [[false, 'form']],
-            target: 'current',
-        });
+        // Si el usuario da a Cancelar manualmente, simplemente cerramos.
+        // El handler onClose en PaymentPopupAction hará la redirección.
         this.props.close();
     }
 }
@@ -316,11 +314,22 @@ class PaymentPopupAction extends Component {
             const context = this.props.action?.context || {};
             const orderId = context.active_id;
             if (orderId) {
+                let isValidated = false;
                 this.dialog.add(PaymentPopup, {
                     orderId: orderId,
-                    close: () => {
-                        this.action.doAction({ type: "ir.actions.act_window_close" });
-                    },
+                    markValidated: () => { isValidated = true; },
+                }, {
+                    onClose: () => {
+                        if (!isValidated) {
+                            this.action.doAction({
+                                type: 'ir.actions.act_window',
+                                res_model: 'pos.order',
+                                res_id: orderId,
+                                views: [[false, 'form']],
+                                target: 'current',
+                            });
+                        }
+                    }
                 });
             } else {
                 this.notification.add(_t("No se ha seleccionado ningún pedido."), { type: "warning" });
