@@ -91,11 +91,18 @@
                     </div>
                 </div>
 
+                <!-- Título principal como en Ventas -->
+                <div class="oe_title" invisible="is_linked_to_sale">
+                    <h1>
+                        <field name="name" readonly="1" invisible="name == '/'" />
+                        <span invisible="name != '/'">Nuevo</span>
+                    </h1>
+                </div>
+
                 <!-- Grupo normal de campos (oculto si está vinculado) -->
                 <group col="4" colspan="4" name="order_fields_rows" class="row"
                     invisible="is_linked_to_sale">
                     <group col="3" name="order_fields" class="col-9">
-                        <field name="name" invisible="1" />
                         <field name="has_order_lines" invisible="1" />
                         <field name="partner_id" context="{'res_partner_search_mode': 'customer'}" />
                         <field name="source" readonly="True" />
@@ -112,9 +119,6 @@
                     <group col="1" name="order_totals_sidebar"
                         class="oe_subtotal_sidebar col-6 me-4">
                         <div class="row">
-                            <!-- Total arriba, grande -->
-
-
                             <!-- Importe base (subtotal sin impuestos) -->
                             <div class="col-5 py-2 text-nowrap">Importe base:</div>
                             <div class="col-7 py-2 ps-5 text-nowrap">
@@ -123,7 +127,7 @@
                             </div>
 
                             <!-- Impuestos -->
-                            <div class="col-5 py-2 text-nowrap">Impuesto:</div>
+                            <div class="col-5 py-2 text-nowrap">Impuestos:</div>
                             <div class="col-7 py-2 ps-5 text-nowrap">
                                 <field name="amount_tax" force_save="1" widget="monetary"
                                     class="text-end d-block" />
@@ -230,14 +234,10 @@
 
             <!-- Ocultar el statusbar (campo de estado) cuando está vinculado -->
             <xpath expr="//header/field[@name='state'][1]" position="attributes">
-                <attribute name="invisible">is_linked_to_sale or (state != 'cancel' and
-                    is_linked_to_sale)
-                </attribute>
+                <attribute name="invisible">state == 'cancel' or is_linked_to_sale</attribute>
             </xpath>
             <xpath expr="//header/field[@name='state'][2]" position="attributes">
-                <attribute name="invisible">is_linked_to_sale or (state == 'cancel' and
-                    is_linked_to_sale)
-                </attribute>
+                <attribute name="invisible">state != 'cancel' or is_linked_to_sale</attribute>
             </xpath>
         </field>
     </record>
