@@ -5,17 +5,17 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='general_information']" position="inside">
-                <group string="Punto Verde">
+            <xpath expr="//notebook" position="inside">
+                <page string="Punto Verde" name="green_point_page">
                     <group>
-                        <field name="green_point_enabled" widget="boolean_toggle"/>
-                        <field name="green_point_type" invisible="not green_point_enabled" required="green_point_enabled"/>
+                        <group>
+                            <field name="green_point_enabled" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="green_point_amount" invisible="not green_point_enabled"/>
+                        </group>
                     </group>
-                    <group>
-                        <field name="green_point_amount" invisible="not green_point_enabled"/>
-                        <field name="green_point_notes" invisible="not green_point_enabled"/>
-                    </group>
-                </group>
+                </page>
             </xpath>
         </field>
     </record>
