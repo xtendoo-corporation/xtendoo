@@ -104,9 +104,10 @@
                     invisible="is_linked_to_sale">
                     <group col="3" name="order_fields" class="col-9">
                         <field name="has_order_lines" invisible="1" />
-                        <field name="partner_id" context="{'res_partner_search_mode': 'customer'}" />
+                        <field name="partner_id" context="{'res_partner_search_mode': 'customer'}"
+                            readonly="state != 'draft'" />
                         <field name="source" readonly="True" />
-                        <field name="date_order" />
+                        <field name="date_order" readonly="state != 'draft'" />
                         <field name="session_id" readonly="state != 'draft'" invisible="1" />
                         <field name="show_albaran_button" invisible="1" />
                         <field string="Usuario" name="user_id" readonly="1" />
@@ -208,12 +209,12 @@
         <field name="arch" type="xml">
             <!-- Hacer readonly la página de productos cuando está vinculado -->
             <xpath expr="//page[@name='products']//field[@name='lines']" position="attributes">
-                <attribute name="readonly">is_linked_to_sale</attribute>
+                <attribute name="readonly">state != 'draft' or is_linked_to_sale</attribute>
             </xpath>
 
             <!-- Hacer readonly la página de pagos cuando está vinculado -->
             <xpath expr="//page[@name='payments']//field[@name='payment_ids']" position="attributes">
-                <attribute name="readonly">is_linked_to_sale</attribute>
+                <attribute name="readonly">state != 'draft' or is_linked_to_sale</attribute>
             </xpath>
 
             <!-- Ocultar las páginas de productos y pagos cuando está vinculado (opcional, para más
