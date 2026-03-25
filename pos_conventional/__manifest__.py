@@ -27,6 +27,7 @@
         "views/pos_session_closing_wizard_views.xml",
         "views/pos_session_cash_move_wizard_views.xml",
         "views/pos_cash_calculator_wizard_views.xml",
+        "views/pos_make_payment_wizard_views.xml",
         "views/pos_payment_views.xml",
         "views/pos_order_views.xml",
 

@@ -828,14 +828,15 @@ class PosOrder(models.Model):
 
     def action_open_payment_popup(self):
         """
-        Retorna la acción cliente para abrir el popup de pago.
+        Abre el asistente de pago (Wizard Python/XML) para este pedido.
         """
         self.ensure_one()
         return {
-            'type': 'ir.actions.client',
-            'tag': 'pos_conventional_payment_popup',
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.make.payment.wizard',
             'name': _('Realizar Pago'),
-            'target': 'current',
+            'view_mode': 'form',
+            'target': 'new',
             'context': {
                 'active_id': self.id,
             }
