@@ -70,6 +70,15 @@
                 />
                 <field name="filename_ticket" invisible="1" />
                 <br/>
+                <h5>Seleccione fichero de Proveedores de producto</h5>
+                <!--Proveedores de producto: default_code ; ref_proveedor-->
+                <field
+                    name="data_file_supplier_info"
+                    filename="filename_supplier_info"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_supplier_info" invisible="1" />
+                <br/>
 <!--                <h5>Seleccione fichero de Lista de materiales</h5>-->
 <!--                &lt;!&ndash;Listas de materiales&ndash;&gt;-->
 <!--                <field-->

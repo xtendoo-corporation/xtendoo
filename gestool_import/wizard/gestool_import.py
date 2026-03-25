@@ -64,6 +64,13 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_ticket = fields.Char()
+
+    data_file_supplier_info = fields.Binary(
+        string="Supplier Info to Import",
+        required=False,
+        help="CSV con dos columnas: código de producto (default_code) y referencia del proveedor (ref).",
+    )
+    filename_supplier_info = fields.Char()
     #
     # data_file_kits = fields.Binary(
     #     string="File to Import",
@@ -117,6 +124,13 @@ class GestoolImport(models.TransientModel):
             data_file_ticket = b64decode(self.data_file_ticket)
             if data_file_ticket:
                 self._import_ticket(data_file_ticket)
+
+        if self.data_file_supplier_info:
+            data_file_supplier_info = b64decode(self.data_file_supplier_info)
+            if data_file_supplier_info:
+                self._import_supplier_info(data_file_supplier_info)
+
+        return True
     #
     #     if self.data_file_kits:
     #         data_file_kits = b64decode(self.data_file_kits)
@@ -753,6 +767,84 @@ class GestoolImport(models.TransientModel):
         env['pos.order'].browse(pos_order.id).write({'to_invoice': True})
         env['pos.order'].browse(pos_order.id).with_context(generate_pdf=False)._generate_pos_order_invoice()
         _logger.info("Factura generada para el pedido %s (factura=%s).", pos_order.pos_reference, pos_order.account_move)
+
+    def _import_supplier_info(self, data_file_supplier_info):
+        """Importa la relación de proveedores de un producto desde un CSV.
+
+        Columnas del CSV:
+            0 - default_code  (código interno del producto)
+            1 - ref           (referencia del proveedor en res.partner)
+        """
+        try:
+            csv_data = reader(StringIO(data_file_supplier_info.decode("utf-8")))
+        except Exception:
+            raise UserError(_("No se puede leer el fichero de proveedores de producto"))
+
+        for index, row in enumerate(csv_data):
+            if len(row) < 2:
+                _logger.warning("Fila %d ignorada (menos de 2 columnas): %s", index, row)
+                continue
+            _logger.info(
+                "-------- Proveedor de producto: default_code=%s, proveedor_ref=%s --------",
+                row[0], row[1],
+            )
+            self.parse_supplier_info(row)
+
+    def parse_supplier_info(self, row):
+        """Crea o actualiza la línea de proveedor (product.supplierinfo) para un producto.
+
+        Args:
+            row[0]: default_code del producto (product.template)
+            row[1]: ref del proveedor (res.partner)
+        """
+        product_code = row[0].strip()
+        supplier_ref = row[1].strip()
+
+        # Buscar el producto por su código interno
+        product = self.env["product.template"].search(
+            [("default_code", "=", product_code)], limit=1
+        )
+        if not product:
+            _logger.warning(
+                "Producto no encontrado con default_code='%s'. Fila omitida.", product_code
+            )
+            return
+
+        # Buscar el proveedor por su referencia interna
+        partner = self.env["res.partner"].search(
+            [("ref", "=", supplier_ref)], limit=1
+        )
+        if not partner:
+            _logger.warning(
+                "Proveedor no encontrado con ref='%s'. Fila omitida.", supplier_ref
+            )
+            return
+
+        # Comprobar si ya existe la relación proveedor-producto
+        existing = self.env["product.supplierinfo"].search(
+            [
+                ("product_tmpl_id", "=", product.id),
+                ("partner_id", "=", partner.id),
+            ],
+            limit=1,
+        )
+
+        if existing:
+            _logger.info(
+                "La relación proveedor ya existe: producto='%s', proveedor='%s'. No se crea duplicado.",
+                product_code, supplier_ref,
+            )
+        else:
+            self.env["product.supplierinfo"].sudo().create(
+                {
+                    "product_tmpl_id": product.id,
+                    "partner_id": partner.id,
+                }
+            )
+            _logger.info(
+                "Relación proveedor creada: producto='%s' (id=%s), proveedor='%s' (id=%s).",
+                product_code, product.id, supplier_ref, partner.id,
+            )
 
     # def _import_property(self, data_file_property):
     #     try:
