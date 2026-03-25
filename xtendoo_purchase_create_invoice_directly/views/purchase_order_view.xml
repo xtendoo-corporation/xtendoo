@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_order_form_direct_invoice" model="ir.ui.view">
+        <field name="name">purchase.order.form.direct.invoice</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <!-- Botón compatible con Odoo 19.0: visibilidad condicional con 'if' -->
+                <button name="action_confirm_receive_invoice"
+                        string="Recibir y facturar"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'draft'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
