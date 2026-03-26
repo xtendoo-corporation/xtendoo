@@ -868,30 +868,97 @@ class GestoolImport(models.TransientModel):
         try:
             csv_data = reader(StringIO(data_file_multiple_barcodes.decode("utf-8")))
         except Exception:
-            raise UserError(_("No se puede leer el fichero de proveedores de producto"))
+            raise UserError(_("No se puede leer el fichero de códigos de barras"))
+
+        company = self.env.company
+        _logger.info(
+            "======== Importación de códigos de barras | Compañía: %s (id=%s) ========",
+            company.name, company.id,
+        )
 
         for index, row in enumerate(csv_data):
             if len(row) < 2:
                 _logger.warning("Fila %d ignorada (menos de 2 columnas): %s", index, row)
                 continue
             _logger.info(
-                "-------- Proveedor de producto: default_code=%s, proveedor_ref=%s --------",
+                "-------- Código de barras: default_code=%s, barcode=%s --------",
                 row[0], row[1],
             )
-            self.parse_multiple_barcodes(row)
+            self.parse_multiple_barcodes(row, company)
 
-    def parse_multiple_barcodes(self, row):
-        """Crea códigos de barras para un producto.
+    def parse_multiple_barcodes(self, row, company=None):
+        """Crea o verifica códigos de barras adicionales para un producto en product.barcode.
 
-                Args:
-                    row[0]: default_code del producto (product.template)
-                    row[1]: ref del proveedor (res.partner)
-                """
+        Args:
+            row[0]: default_code del producto (product.template)
+            row[1]: código de barras a registrar
+            company: res.company activo (opcional, se toma de self.env.company si no se pasa)
+        """
+        if company is None:
+            company = self.env.company
+
         product_code = row[0].strip()
         barcode = row[1].strip()
 
-        print(product_code, "product_code")
-        print(barcode, "barcode")
+        _logger.info(
+            "Procesando: default_code='%s', barcode='%s' | Compañía: %s (id=%s)",
+            product_code, barcode, company.name, company.id,
+        )
+
+        if not product_code or not barcode:
+            _logger.warning(
+                "Fila ignorada: default_code='%s', barcode='%s' (valores vacíos).",
+                product_code, barcode,
+            )
+            return
+
+        # Buscar el producto por código interno filtrando por compañía
+        product_tmpl = self.env["product.template"].search(
+            [
+                ("default_code", "=", product_code),
+                "|",
+                ("company_id", "=", company.id),
+                ("company_id", "=", False),
+            ],
+            limit=1,
+        )
+        if not product_tmpl:
+            _logger.warning(
+                "Producto no encontrado con default_code='%s' en la compañía '%s' (id=%s). Fila omitida.",
+                product_code, company.name, company.id,
+            )
+            return
+
+        # Obtener la variante del producto
+        product = product_tmpl.product_variant_ids[:1]
+        if not product:
+            _logger.warning(
+                "El producto '%s' no tiene variantes. Fila omitida.", product_code
+            )
+            return
+
+        # Comprobar si el código de barras ya existe en product.barcode
+        existing = self.env["product.barcode"].search(
+            [("name", "=", barcode)], limit=1
+        )
+        if existing:
+            _logger.info(
+                "El código de barras '%s' ya existe (id=%s, producto='%s', compañía='%s'). No se crea duplicado.",
+                barcode, existing.id, existing.product_id.display_name,
+                existing.company_id.name or "sin compañía",
+            )
+            return
+
+        # Crear el registro en product.barcode
+        self.env["product.barcode"].sudo().create({
+            "name": barcode,
+            "product_id": product.id,
+            "product_tmpl_id": product_tmpl.id,
+        })
+        _logger.info(
+            "Código de barras creado: '%s' → producto '%s' (id=%s) | Compañía: %s (id=%s).",
+            barcode, product_code, product_tmpl.id, company.name, company.id,
+        )
 
     # def _import_property(self, data_file_property):
     #     try:
