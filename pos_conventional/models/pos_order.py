@@ -140,7 +140,10 @@ class PosOrder(models.Model):
             }
 
         # Obtener precio desde la lista de precios
-        price_unit = product.lst_price
+        public_price = product.lst_price
+        price_unit = public_price
+        discount = 0.0
+
         if pricelist_id:
             pricelist = self.env["product.pricelist"].browse(pricelist_id)
             partner = (
@@ -149,6 +152,10 @@ class PosOrder(models.Model):
             price_unit = pricelist._get_product_price(
                 product, 1.0, partner=partner, uom=product.uom_id
             )
+            
+            if public_price > price_unit and public_price > 0:
+                discount = (public_price - price_unit) / public_price * 100
+                price_unit = public_price
 
         # Obtener impuestos aplicables
         taxes = product.taxes_id.filtered(lambda t: t.company_id == self.env.company)
@@ -170,6 +177,7 @@ class PosOrder(models.Model):
                 "full_product_name": product.display_name,
                 "qty": 1.0,
                 "price_unit": price_unit,
+                "discount": discount,
                 "tax_ids": taxes.ids,
             },
         }
@@ -608,6 +616,7 @@ class PosOrder(models.Model):
                     "qty": new_qty,
                     "price_subtotal": price_subtotal,
                     "price_subtotal_incl": price_subtotal_incl,
+                    "discount": discount,
                 }
             )
 
@@ -670,13 +679,18 @@ class PosOrder(models.Model):
         self.ensure_one()
 
         # Obtener precio desde la lista de precios
+        public_price = product.lst_price
         pricelist = self.pricelist_id or self.config_id.pricelist_id
+        discount = 0.0
         if pricelist:
             price_unit = pricelist._get_product_price(
                 product, qty, partner=self.partner_id, uom=product.uom_id
             )
+            if public_price > price_unit and public_price > 0:
+                discount = (public_price - price_unit) / public_price * 100
+                price_unit = public_price
         else:
-            price_unit = product.lst_price
+            price_unit = public_price
 
         # Obtener impuestos aplicables del producto
         product_taxes = product.taxes_id.filtered(
@@ -710,7 +724,7 @@ class PosOrder(models.Model):
             "full_product_name": product.display_name,
             "qty": qty,
             "price_unit": price_unit,
-            "discount": 0.0,
+            "discount": discount,
             "price_subtotal": price_subtotal,
             "price_subtotal_incl": price_subtotal_incl,
             # Guardar los impuestos base del producto; la posición fiscal
@@ -1258,6 +1272,35 @@ class PosOrderLine(models.Model):
                                         or 0
                 else:
                     line.margin_percent = 0
+
+    @api.onchange('product_id', 'qty')
+    def _onchange_product_id(self):
+        """Calcula el precio y descuento según la tarifa del pedido al cambiar producto o cantidad."""
+        for line in self:
+            if not line.product_id:
+                continue
+            
+            # Obtener datos del pedido
+            order = line.order_id
+            pricelist = order.pricelist_id or order.config_id.pricelist_id
+            
+            # Obtener precio público y precio de tarifa
+            public_price = line.product_id.lst_price
+            if pricelist:
+                price_unit = pricelist._get_product_price(
+                    line.product_id, line.qty or 1.0, partner=order.partner_id, uom=line.product_id.uom_id
+                )
+                
+                # Si hay descuento (precio de tarifa menor al público), mostrarlo
+                if public_price > price_unit and public_price > 0:
+                    line.discount = (public_price - price_unit) / public_price * 100
+                    line.price_unit = public_price
+                else:
+                    line.price_unit = price_unit
+                    line.discount = 0.0
+            else:
+                line.price_unit = public_price
+                line.discount = 0.0
 
     @api.model_create_multi
     def create(self, vals_list):
