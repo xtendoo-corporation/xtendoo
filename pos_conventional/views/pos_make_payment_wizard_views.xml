@@ -8,52 +8,60 @@
                 <sheet>
                     <field name="order_id" invisible="1"/>
                     <field name="config_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="available_payment_method_ids" invisible="1"/>
 
-                    <!-- Main Container -->
-                    <div class="container-fluid p-0" style="min-height: 400px; display: flex; flex-direction: column;">
-                        
-                        <!-- Top Row: Methods + Total -->
-                        <div class="row g-0 mb-4 pb-3 border-bottom" style="display: flex; align-items: stretch;">
+                    <div class="o_horizontal_separator text-uppercase fw-bolder mb-3">Registrar Pago</div>
+                    
+                    <group>
+                        <group>
+                            <field name="is_cash_payment" invisible="1"/>
+                            <field name="payment_method_id" 
+                                   options="{'no_create': True, 'no_open': True}" 
+                                   required="1"/>
+                            <label for="amount_tendered"/>
+                            <div class="o_row">
+                                <field name="amount_tendered" class="oe_inline"/>
+                                <button name="action_add_payment" type="object" string="Añadir" class="btn-primary"/>
+                            </div>
+                            <field name="amount_change" invisible="not is_cash_payment" class="text-danger fw-bold"/>
+                        </group>
+                        <group class="text-end">
+                            <div class="o_td_label">
+                                <label for="amount_due" string="TOTAL A PAGAR" class="fw-bold"/>
+                            </div>
+                            <field name="amount_due" widget="monetary" options="{'currency_field': 'currency_id'}" nolabel="1" class="oe_subtotal_footer_separator"/>
                             
-                            <!-- Methods Area -->
-                            <div class="col-12 col-md-6" style="display: flex; flex-direction: column; justify-content: center; gap: 15px;">
-                                <button name="action_pay_card" type="object" string="Tarjeta" class="btn btn-secondary btn-lg" style="width: 100%; text-align: left; font-size: 1.5rem; padding: 20px; font-weight: bold; background-color: #f1f3f5; color: #212529; border: 1px solid #ced4da; margin-bottom: 10px;" icon="fa-credit-card"/>
-                                <button name="action_pay_cash" type="object" string="Efectivo" class="btn btn-secondary btn-lg" style="width: 100%; text-align: left; font-size: 1.5rem; padding: 20px; font-weight: bold; background-color: #f1f3f5; color: #212529; border: 1px solid #ced4da;" icon="fa-money"/>
-                            </div>
+                            <field name="amount_paid" widget="monetary" options="{'currency_field': 'currency_id'}" string="Pagado"/>
+                        </group>
+                    </group>
 
-                            <!-- Total Area -->
-                            <div class="col-12 col-md-6" style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center;">
-                                <div style="font-size: 1.2rem; color: #6c757d; text-transform: uppercase; letter-spacing: 1px;">TOTAL A PAGAR</div>
-                                <div style="font-size: 4rem; font-weight: bold; color: #212529; line-height: 1;">
-                                    <field name="amount_due" widget="monetary" options="{'currency_field': 'currency_id'}" nolabel="1"/>
-                                </div>
-                                <div style="margin-top: 20px; text-align: right; width: 100%; max-width: 250px;">
-                                    <label for="amount_tendered" string="Entregado" style="font-size: 1rem; color: #6c757d; text-transform: uppercase; margin-bottom: 5px; display: block;"/>
-                                    <field name="amount_tendered" nolabel="1" class="text-end" style="font-size: 2.5rem; width: 100%; padding: 5px; border: 1px solid #ced4da; border-radius: 8px; font-weight: bold;"/>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pagos Registrados (Si hay) -->
-                        <div class="row g-0 flex-grow-1" style="margin-top: 15px;">
-                            <div class="col-12" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                <label for="payment_ids" string="Pagos ya registrados:" style="font-weight: bold; margin-bottom: 0;"/>
-                                <button name="action_clear_payments" type="object" string="Borrar Pagos Invalidos" icon="fa-trash" class="btn btn-sm btn-outline-danger" title="Eliminar todos los pagos si te has equivocado"/>
-                            </div>
-                            <div class="col-12">
-                                <field name="payment_ids" widget="many2many_tags" readonly="1" style="width: 100%; font-size: 1.3rem;" />
-                            </div>
-                        </div>
+                    <div class="o_horizontal_separator text-uppercase fw-bolder mt-4 mb-3">Pagos registrados</div>
+                    
+                    <field name="payment_ids" nolabel="1" mode="list">
+                        <list create="0" delete="1">
+                            <field name="payment_method_id"/>
+                            <field name="amount" sum="Total"/>
+                            <button name="unlink" type="object" icon="fa-trash" class="text-danger" title="Eliminar"/>
+                        </list>
+                    </field>
+                    
+                    <div class="text-center text-muted p-3 italic" invisible="payment_ids">
+                        Aún no hay pagos registrados para este pedido.
                     </div>
                 </sheet>
-                <footer style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
-                    <div>
-                        <button string="Cancelar" special="cancel" class="btn btn-outline-secondary" style="font-size: 1.2rem; padding: 10px 30px; border-radius: 8px;" icon="fa-times"/>
-                    </div>
-                    <div style="display: flex; gap: 15px;">
-                        <button name="action_validate_print" type="object" string="VALIDAR E IMPRIMIR" class="btn btn-info" style="font-size: 1.2rem; padding: 15px 30px; font-weight: bold; border-radius: 8px; background-color: #17a2b8; color: white;" icon="fa-print"/>
-                        <button name="action_validate" type="object" string="VALIDAR >" class="btn btn-success" style="font-size: 1.4rem; padding: 15px 40px; font-weight: bold; border-radius: 8px; background-color: #28a745; color: white;"/>
-                    </div>
+                <footer>
+                    <button name="action_validate_print" type="object" 
+                            string="VALIDAR E IMPRIMIR" 
+                            class="btn-primary" 
+                            icon="fa-print"
+                            invisible="amount_due &gt; 0.01"/>
+                    <button name="action_validate" type="object" 
+                            string="VALIDAR" 
+                            class="btn-primary" 
+                            icon="fa-check"
+                            invisible="amount_due &gt; 0.01"/>
+                    <button string="Descartar" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
         </field>

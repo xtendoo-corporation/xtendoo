@@ -803,31 +803,33 @@ class PosOrder(models.Model):
     # --- Nuevas acciones para botones de pago (invocadas desde la vista)
     def action_pay_cash(self):
         self.ensure_one()
-        cash_method = self.env["pos.payment.method"].search(
-            [("is_cash_count", "=", True)], limit=1
-        )
+        cash_method = self.config_id.payment_method_ids.filtered('is_cash_count')[:1]
         if not cash_method:
-            raise UserError(_("No se encontró método de pago en efectivo."))
-        wizard = (
-            self.env["pos.make.payment"]
-            .with_context(active_id=self.id)
-            .create(
-                {
-                    "amount": self.amount_total - self.amount_paid,
-                    "payment_method_id": cash_method.id,
-                }
-            )
-        )
-        return wizard.action_pay_cash()
+             cash_method = self.config_id.payment_method_ids.filtered(lambda p: p.journal_id.type == 'cash')[:1]
+
+        if not cash_method:
+            raise UserError(_("No se encontró método de pago en efectivo en la caja."))
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.make.payment.wizard',
+            'name': _('Pago en Efectivo'),
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'active_id': self.id,
+                'default_payment_method_id': cash_method.id,
+                'cash_only': True,
+            }
+        }
 
     def action_pay_card(self):
         self.ensure_one()
-        # Cambia 'tarjeta' por el nombre exacto si es diferente
-        card_method = self.env["pos.payment.method"].search(
-            [("name", "ilike", "tarjeta")], limit=1
-        )
+        card_method = self.config_id.payment_method_ids.filtered(lambda p: p.journal_id.type == 'bank')[:1]
+        
         if not card_method:
-            raise UserError(_("No se encontró método de pago con tarjeta."))
+            raise UserError(_("No se encontró método de pago con tarjeta en la caja."))
+
         wizard = (
             self.env["pos.make.payment"]
             .with_context(active_id=self.id)
