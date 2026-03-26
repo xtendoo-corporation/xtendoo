@@ -99,14 +99,25 @@ class PosSession(models.Model):
     def create(self, vals_list):
         """
         Override del create para interceptar la apertura automática
-        de sesiones en modo no táctil.
+        de sesiones en modo no táctil y asegurar que el saldo inicial
+        se herede de la última sesión cerrada.
         """
+        for vals in vals_list:
+            if 'config_id' in vals and 'cash_register_balance_start' not in vals:
+                config = self.env['pos.config'].browse(vals['config_id'])
+                if config.cash_control:
+                    last_session = self.search([
+                        ('config_id', '=', config.id),
+                        ('state', '=', 'closed')
+                    ], order='id desc', limit=1)
+                    if last_session:
+                        vals['cash_register_balance_start'] = last_session.cash_register_balance_end_real
+
         # Si estamos en contexto skip_auto_open, solo crear sin abrir wizard
         if self.env.context.get("skip_auto_open"):
             return super(PosSession, self).create(vals_list)
 
         # Si no hay skip_auto_open, usar el comportamiento estándar
-        # (el wizard se abrirá desde open_ui si es necesario)
         return super(PosSession, self).create(vals_list)
 
     def action_pos_session_open(self):
@@ -138,6 +149,7 @@ class PosSession(models.Model):
             {
                 "session_id": self.id,
                 "user_id": self.env.user.id,
+                "cash_register_balance_start": self.cash_register_balance_start,
             }
         )
         return {

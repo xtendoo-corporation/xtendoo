@@ -24,6 +24,17 @@ class PosSessionOpeningWizard(models.TransientModel):
         compute='_compute_pending_order_count'
     )
 
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        session_id = res.get('session_id') or self.env.context.get('default_session_id') or self.env.context.get('active_id')
+        if session_id:
+            session = self.env['pos.session'].browse(session_id)
+            if session.exists():
+                if 'cash_register_balance_start' in fields_list:
+                    res['cash_register_balance_start'] = session.cash_register_balance_start
+        return res
+
     @api.depends('session_id')
     def _compute_pending_order_count(self):
         """Calcula el número de pedidos en borrador con líneas para los próximos días."""
