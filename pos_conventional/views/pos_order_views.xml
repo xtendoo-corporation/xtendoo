@@ -92,7 +92,7 @@
                     </div>
                 </div>
 
-                <!-- Título principal como en Ventas -->
+                <!-- Título principal -->
                 <div class="oe_title" invisible="is_linked_to_sale">
                     <h1>
                         <field name="name" readonly="1" invisible="name == '/'" />
@@ -100,71 +100,61 @@
                     </h1>
                 </div>
 
-                <!-- Estructura Híbrida: Cliente "Gigante" + Resto estándar -->
-                <div class="row mb-3" invisible="is_linked_to_sale">
-                    <div class="col-7 pe-4">
-                        <!-- Campo de cliente Gigante (Mantenido) -->
-                        <div class="mb-4 mt-2">
-                            <label for="partner_id" class="fw-bold fs-2 d-block mb-1 text-dark">
-                                Cliente</label>
-                            <field name="partner_id"
-                                widget="res_partner_many2one"
-                                nolabel="1"
-                                class="w-100 fs-4 text-dark"
-                                context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
-                                placeholder="Escriba para buscar un cliente..."
-                                readonly="state != 'draft'" />
+                <!-- Cintas de Pago (Ribbons) - Múltiples opciones para cubrir casos comunes -->
+                <field name="payment_method_ribbon" invisible="1"/>
+                <widget name="web_ribbon" title="EFECTIVO" bg_color="text-bg-success" 
+                        invisible="payment_method_ribbon != 'EFECTIVO'"/>
+                <widget name="web_ribbon" title="TARJETA" bg_color="text-bg-success" 
+                        invisible="payment_method_ribbon != 'TARJETA'"/>
+                <widget name="web_ribbon" title="CARD" bg_color="text-bg-success" 
+                        invisible="payment_method_ribbon != 'CARD'"/>
+                <widget name="web_ribbon" title="BANCO" bg_color="text-bg-success" 
+                        invisible="payment_method_ribbon != 'BANCO'"/>
+                <widget name="web_ribbon" title="TRANSFERENCIA" bg_color="text-bg-success" 
+                        invisible="payment_method_ribbon != 'TRANSFERENCIA'"/>
+                <widget name="web_ribbon" title="VALE" bg_color="text-bg-success" 
+                        invisible="payment_method_ribbon != 'VALE'"/>
+                <widget name="web_ribbon" title="PAGO MÚLTIPLE" bg_color="text-bg-success" 
+                        invisible="payment_method_ribbon != 'PAGO MÚLTIPLE'"/>
+                
+                <!-- Genérico para cualquier otro método único -->
+                <widget name="web_ribbon" title="PAGADO" bg_color="text-bg-success" 
+                        invisible="not payment_method_ribbon or payment_method_ribbon in ('EFECTIVO', 'TARJETA', 'CARD', 'BANCO', 'TRANSFERENCIA', 'VALE', 'PAGO MÚLTIPLE')"/>
+
+                <!-- Estructura: Campos a la izquierda, Totales a la derecha -->
+                <group invisible="is_linked_to_sale">
+                    <group>
+                        <field name="partner_id"
+                            widget="res_partner_many2one"
+                            context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
+                            placeholder="Escriba para buscar un cliente..."
+                            readonly="state != 'draft'" />
+                        <field name="date_order" string="Fecha" readonly="state != 'draft'" />
+                        <field string="Usuario" name="user_id" readonly="1" />
+                        <field name="session_id" readonly="1" />
+                        <field name="pricelist_id" invisible="1"/>
+                    </group>
+                    <group>
+                        <field name="amount_untaxed" widget="monetary" string="Importe base"/>
+                        <field name="amount_tax" force_save="1" widget="monetary" string="Impuestos"/>
+                        <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                            <label for="amount_total" class="fw-bold fs-2"/>
                         </div>
+                        <field name="amount_total" force_save="1" widget="monetary" nolabel="1" class="oe_subtotal_footer_separator fw-bold fs-2"/>
+                    </group>
+                </group>
 
-                        <!-- Restauración de otros campos a grupo estándar -->
-                        <group col="2" name="order_fields" class="mt-2">
-                            <field name="source" readonly="True" />
-                            <field name="date_order" readonly="state != 'draft'" />
-                            <field string="Usuario" name="user_id" readonly="1" />
-                            <field name="session_id" readonly="state != 'draft'" invisible="1" />
-                            <field name="show_albaran_button" invisible="1" />
-                            <field name="order_edit_tracking" invisible="1" />
-                            <field name="is_edited" readonly="1" invisible="not order_edit_tracking" />
-                            <field name="fiscal_position_id" options="{'no_create': True}"
-                                readonly="state != 'draft'"
-                                invisible="1" />
-                        </group>
-                        <field name="has_order_lines" invisible="1" />
-                    </div>
-
-                    <!-- Columna Derecha: Totales Sencillos (Restaurados) -->
-                    <div class="col-5 ps-4 pt-2">
-                        <group col="1" name="order_totals_sidebar" class="oe_subtotal_sidebar">
-                            <div class="row">
-                                <div class="col-6 py-2 text-muted">Importe base:</div>
-                                <div class="col-6 py-2 text-end fw-bold text-nowrap">
-                                    <field name="amount_untaxed" widget="monetary" nolabel="1" />
-                                </div>
-                                <div class="col-6 py-2 text-muted text-nowrap">Impuestos:</div>
-                                <div class="col-6 py-2 text-end fw-bold text-nowrap">
-                                    <field name="amount_tax" force_save="1" widget="monetary"
-                                        nolabel="1" />
-                                </div>
-                                <div class="col-6 py-2 fs-2 fw-bold text-dark text-nowrap">Total:</div>
-                                <div class="col-6 py-2 text-end fs-2 fw-bold text-dark text-nowrap">
-                                    <field name="amount_total" force_save="1" widget="monetary"
-                                        nolabel="1" />
-                                </div>
-                                <div class="col-6 py-2 text-muted border-top pt-3"
-                                    invisible="state == 'draft'">Total pagado:</div>
-                                <div class="col-6 py-2 text-end fw-bold border-top pt-3 text-nowrap"
-                                    invisible="state == 'draft'">
-                                    <field name="amount_paid" nolabel="1" widget="monetary"
-                                        readonly="state != 'draft'" />
-                                </div>
-                            </div>
-                        </group>
-                        <field name="currency_id" invisible="1" />
-                    </div>
-                </div>
+                <!-- Campos técnicos ocultos -->
+                <field name="show_albaran_button" invisible="1" />
+                <field name="order_edit_tracking" invisible="1" />
+                <field name="is_edited" readonly="1" invisible="not order_edit_tracking" />
+                <field name="fiscal_position_id" options="{'no_create': True}"
+                    readonly="state != 'draft'"
+                    invisible="1" />
+                <field name="has_order_lines" invisible="1" />
+                <field name="currency_id" invisible="1" />
             </xpath>
 
-            <!-- Eliminar totales originales de la página Products -->
             <xpath expr="//page[@name='products']/group[@name='order_total']" position="replace" />
 
             <!-- Eliminar totales originales de la página Payments -->

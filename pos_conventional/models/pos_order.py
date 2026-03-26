@@ -39,6 +39,29 @@ class PosOrder(models.Model):
         string="Tiene líneas de pedido", compute="_compute_has_order_lines", store=False
     )
 
+    payment_method_ribbon = fields.Char(
+        string="Cinta de método de pago",
+        compute="_compute_payment_method_ribbon",
+        store=False,
+    )
+
+    @api.depends("payment_ids", "state")
+    def _compute_payment_method_ribbon(self):
+        for order in self:
+            if order.state not in ("paid", "done"):
+                order.payment_method_ribbon = False
+                continue
+            
+            # Filtrar pagos con importe positivo (evitar el cambio que es negativo)
+            # o simplemente tomar los métodos únicos presentes.
+            methods = order.payment_ids.filtered(lambda p: p.amount > 0).mapped("payment_method_id")
+            if not methods:
+                order.payment_method_ribbon = False
+            elif len(methods) > 1:
+                order.payment_method_ribbon = "PAGO MÚLTIPLE"
+            else:
+                order.payment_method_ribbon = methods[0].name.upper()
+
     amount_untaxed = fields.Monetary(
         string="Importe base",
         compute="_compute_amount_untaxed",
