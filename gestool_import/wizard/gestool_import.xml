@@ -79,6 +79,14 @@
                 />
                 <field name="filename_supplier_info" invisible="1" />
                 <br/>
+                <h5>Seleccione fichero de multiples códigos de barras de producto</h5>
+                <field
+                    name="data_file_multiple_barcodes"
+                    filename="filename_multiple_barcodes"
+                    placeholder="Choose a file to import..."
+                />
+                <field name="filename_multiple_barcodes" invisible="1" />
+                <br/>
 <!--                <h5>Seleccione fichero de Lista de materiales</h5>-->
 <!--                &lt;!&ndash;Listas de materiales&ndash;&gt;-->
 <!--                <field-->

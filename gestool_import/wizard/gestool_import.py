@@ -71,6 +71,13 @@ class GestoolImport(models.TransientModel):
         help="CSV con dos columnas: código de producto (default_code) y referencia del proveedor (ref).",
     )
     filename_supplier_info = fields.Char()
+
+    data_file_multiple_barcodes = fields.Binary(
+        string="Multiples códigos de barras para importar",
+        required=False,
+        help="CSV con dos columnas: código de producto (default_code) y código de barra.",
+    )
+    filename_multiple_barcodes = fields.Char()
     #
     # data_file_kits = fields.Binary(
     #     string="File to Import",
@@ -129,6 +136,11 @@ class GestoolImport(models.TransientModel):
             data_file_supplier_info = b64decode(self.data_file_supplier_info)
             if data_file_supplier_info:
                 self._import_supplier_info(data_file_supplier_info)
+
+        if self.data_file_multiple_barcodes:
+            data_file_multiple_barcodes = b64decode(self.data_file_multiple_barcodes)
+            if data_file_multiple_barcodes:
+                self._import_multiple_barcodes(data_file_multiple_barcodes)
 
         return True
     #
@@ -845,6 +857,41 @@ class GestoolImport(models.TransientModel):
                 "Relación proveedor creada: producto='%s' (id=%s), proveedor='%s' (id=%s).",
                 product_code, product.id, supplier_ref, partner.id,
             )
+
+    def _import_multiple_barcodes(self, data_file_multiple_barcodes):
+        """Importa la relación de códigos de barras de un producto desde un CSV.
+
+        Columnas del CSV:
+            0 - default_code  (código interno del producto)
+            1 - Código de barras
+        """
+        try:
+            csv_data = reader(StringIO(data_file_multiple_barcodes.decode("utf-8")))
+        except Exception:
+            raise UserError(_("No se puede leer el fichero de proveedores de producto"))
+
+        for index, row in enumerate(csv_data):
+            if len(row) < 2:
+                _logger.warning("Fila %d ignorada (menos de 2 columnas): %s", index, row)
+                continue
+            _logger.info(
+                "-------- Proveedor de producto: default_code=%s, proveedor_ref=%s --------",
+                row[0], row[1],
+            )
+            self.parse_multiple_barcodes(row)
+
+    def parse_multiple_barcodes(self, row):
+        """Crea códigos de barras para un producto.
+
+                Args:
+                    row[0]: default_code del producto (product.template)
+                    row[1]: ref del proveedor (res.partner)
+                """
+        product_code = row[0].strip()
+        barcode = row[1].strip()
+
+        print(product_code, "product_code")
+        print(barcode, "barcode")
 
     # def _import_property(self, data_file_property):
     #     try:
