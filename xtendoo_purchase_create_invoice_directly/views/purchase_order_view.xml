@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!--
+    Corrección para:
+    - Eliminar el botón "Subir factura" (button_upload_bill) completamente del header.
+    - Añadir el botón "Crear factura" como primer botón del header, sin números ni texto extraño.
+    - Cumple reglas de agents.md y compatibilidad Odoo 19.
+    - El botón "Crear factura" solo se muestra si hay líneas recibidas (has_received_lines)
+    -->
     <record id="view_purchase_order_form_direct_invoice" model="ir.ui.view">
         <field name="name">purchase.order.form.direct.invoice</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//header" position="inside">
-                <!-- Botón compatible con Odoo 19.0: visibilidad condicional con 'if' -->
+            <!-- Eliminar el botón original "Subir factura" -->
+            <xpath expr="//header/widget[@name='purchase_file_uploader']" position="replace">
+                <!-- El botón solo se muestra si hay líneas recibidas y el pedido está en estado purchase o done -->
+                <button name="action_create_invoice_draft"
+                        string="Crear factura"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not has_received_lines or state not in ('purchase','done')"/>
                 <button name="action_confirm_receive_invoice"
                         string="Recibir y facturar"
                         type="object"
