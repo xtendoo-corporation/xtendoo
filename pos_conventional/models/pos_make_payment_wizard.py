@@ -219,7 +219,8 @@ class PosMakePaymentWizard(models.TransientModel):
                 order._send_order()
                 order.config_id.notify_synchronisation(order.config_id.current_session_id.id, 0)
                 
-            if print_invoice and is_conventional and order.state in {"paid", "done"} and not order.account_move:
+            should_print = print_invoice or order.config_id.iface_print_auto
+            if should_print and is_conventional and order.state in {"paid", "done"} and not order.account_move:
                 try:
                     result = order.action_validate_and_invoice()
                     if result and isinstance(result, dict) and result.get("type") == "ir.actions.client":

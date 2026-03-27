@@ -51,11 +51,6 @@
                     </div>
                 </sheet>
                 <footer>
-                    <button name="action_validate_print" type="object" 
-                            string="VALIDAR E IMPRIMIR" 
-                            class="btn-primary" 
-                            icon="fa-print"
-                            invisible="amount_due &gt; 0.01"/>
                     <button name="action_validate" type="object" 
                             string="VALIDAR" 
                             class="btn-primary" 

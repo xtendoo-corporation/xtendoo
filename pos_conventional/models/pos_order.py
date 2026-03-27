@@ -1111,15 +1111,20 @@ class PosOrder(models.Model):
                 _logger.info("POS VALIDATION: Generating invoice for %s", self.name)
                 invoice = self._generate_pos_order_invoice()
                 _logger.info("POS VALIDATION: Invoice %s generated for order %s", invoice.name, self.name)
-                # Client action for native-like printing
-                final_action = {
-                    "type": "ir.actions.client",
-                    "tag": "pos_conventional.print_receipt_client",
-                    "params": {
-                        "order_id": self.id,
-                        "next_action": next_action,
-                    },
-                }
+                
+                # Respetar el parámetro print_invoice o el setting iface_print_auto del POS
+                should_print = print_invoice or self.config_id.iface_print_auto
+                
+                if should_print:
+                    # Client action for native-like printing
+                    final_action = {
+                        "type": "ir.actions.client",
+                        "tag": "pos_conventional.print_receipt_client",
+                        "params": {
+                            "order_id": self.id,
+                            "next_action": next_action,
+                        },
+                    }
 
             return {
                 'success': True,

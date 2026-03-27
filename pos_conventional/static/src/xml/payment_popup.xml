@@ -419,13 +419,6 @@
 
                             <!-- Actions Group -->
                             <div class="payment-actions-group">
-                                <!-- Validate & Print -->
-                                <button class="payment-validate-print-btn"
-                                        t-att-disabled="state.loading or this.amountDue > 0.01"
-                                        t-on-click="() => this.validate(true)">
-                                    <i class="fa fa-print me-2"></i>VALIDAR E IMPRIMIR
-                                </button>
-
                                 <!-- Validate -->
                                 <button class="payment-validate-btn"
                                         t-att-disabled="state.loading or this.amountDue > 0.01"
