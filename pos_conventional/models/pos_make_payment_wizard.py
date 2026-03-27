@@ -105,6 +105,12 @@ class PosMakePaymentWizard(models.TransientModel):
                     res['payment_method_id'] = cash_pm.id if cash_pm else payment_methods[0].id
         return res
 
+    def _get_wizard_view_id(self):
+        """Devuelve el ID de la vista (Pequeña o Grande) según el contexto"""
+        if self._context.get('cash_only'):
+            return self.env.ref("pos_conventional.view_pos_make_payment_wizard_cash_form").id
+        return self.env.ref("pos_conventional.view_pos_make_payment_wizard_form").id
+
     def _add_payment(self, payment_method_id):
         """Función auxiliar para añadir un pago al pedido subyacente"""
         self.ensure_one()
@@ -125,13 +131,15 @@ class PosMakePaymentWizard(models.TransientModel):
         due = self.order_id.amount_total - self.order_id.amount_paid
         self.amount_tendered = due if due > 0 else 0.0
 
-        # Refrescar vista
+        # Refrescar vista preservando el tipo de wizard (Pequeño o Grande)
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'pos.make.payment.wizard',
             'res_id': self.id,
             'view_mode': 'form',
+            'view_id': self._get_wizard_view_id(),
             'target': 'new',
+            'context': self._context,
         }
 
     def action_pay_cash(self):
@@ -180,38 +188,63 @@ class PosMakePaymentWizard(models.TransientModel):
         if self.order_id.payment_ids:
             self.order_id.payment_ids.unlink()
         
-        # Refrescar la vista actualizando el importe entregado al total del pedido
-        self.amount_tendered = self.amount_total
+        # Refrescar la vista preservando el tipo de wizard (Pequeño o Grande)
         return {
             "type": "ir.actions.act_window",
             "res_model": "pos.make.payment.wizard",
             "res_id": self.id,
             "view_mode": "form",
+            "view_id": self._get_wizard_view_id(),
             "target": "new",
+            "context": self._context,
         }
         
     def _execute_validation(self, print_invoice=False):
         """Valida exactamente igual que las acciones de los botones nativos de pago"""
         self.ensure_one()
-        if self.amount_due > 0.01:
+        total_covered = self.amount_paid + self.amount_tendered
+        if total_covered < self.amount_total - 0.01:
             raise UserError(_("Falta importe por pagar."))
             
         order = self.order_id
         is_conventional = order.config_id and order.config_id.pos_non_touch
         
-        if order.state == "draft" and order.amount_paid >= order.amount_total - 0.01:
-            # Si hay sobrepago (cambio), registrarlo como un pago negativo para cuadrar el pedido
-            change = order.amount_paid - order.amount_total
-            if change > 0.01:
+        if order.state == "draft":
+            # Si hay sobrepago (cambio), registrarlo como dos pagos:
+            # 1. El importe total que entrega el cliente (amount_tendered)
+            # 2. El cambio que devolvemos (negativo)
+            
+            cash_method = self.payment_method_id
+            if not cash_method.is_cash_count and cash_method.journal_id.type != 'cash':
+                # Por si acaso, buscar el método de efectivo de la caja
                 cash_method = order.config_id.payment_method_ids.filtered('is_cash_count')[:1]
                 if not cash_method:
                     cash_method = order.config_id.payment_method_ids.filtered(lambda p: p.journal_id.type == 'cash')[:1]
-                
+
+            if self.is_cash_payment and self.amount_change > 0.01:
+                # Caso efectivo con cambio:
+                # Registramos lo que nos dan
+                order.add_payment({
+                    'pos_order_id': order.id,
+                    'amount': self.amount_tendered,
+                    'payment_method_id': self.payment_method_id.id,
+                })
+                # Registramos lo que devolvemos (en negativo)
                 if cash_method:
                     order.add_payment({
                         'pos_order_id': order.id,
-                        'amount': -change,
+                        'amount': -self.amount_change,
                         'payment_method_id': cash_method.id,
+                    })
+            else:
+                # Caso normal o sin cambio: simplemente añadir el pago del importe indicado
+                # (action_add_payment ya añade pagos, pero aquí validamos el resto)
+                due = order.amount_total - order.amount_paid
+                if due > 0.01:
+                    order.add_payment({
+                        'pos_order_id': order.id,
+                        'amount': due,
+                        'payment_method_id': self.payment_method_id.id,
                     })
 
             order._process_saved_order(False)

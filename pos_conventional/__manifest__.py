@@ -40,7 +40,7 @@
     "assets": {
         "web.assets_backend": [
             "pos_conventional/static/src/css/cashbox.css",
-            # "pos_conventional/static/src/css/pos_conventional_wizards.css",
+            "pos_conventional/static/src/scss/pos_conventional_wizard.scss",
             # "pos_conventional/static/src/css/pos_session_closing.css",
             "pos_conventional/static/src/js/pos_order_list_controller.js",
             "pos_conventional/static/src/js/pos_order_form_barcode_controller.js",

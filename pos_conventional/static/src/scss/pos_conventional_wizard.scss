@@ -1,0 +1,40 @@
+.o_pos_cash_wizard {
+    .pos-input-huge {
+        input {
+            font-size: 5rem !important;
+            font-weight: 900 !important;
+            text-align: center !important;
+            border: none !important;
+            background: transparent !important;
+            color: #0d6efd !important; /* text-primary */
+            height: auto !important;
+            padding: 0 !important;
+        }
+
+        /* Odoo renders monetary widget as a flex container */
+        display: flex !important;
+        flex-direction: row-reverse !important; /* Force symbol to the right */
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 10px !important;
+
+        .o_input_group_addon {
+            font-size: 3.5rem !important;
+            font-weight: bold !important;
+            color: #6c757d !important;
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+        }
+        
+        /* Odoo 17+ specific classes for monetary widget */
+        &.o_field_monetary {
+             justify-content: center !important;
+        }
+    }
+    
+    /* Display utilities for the large wizard */
+    .display-1 { font-size: 6rem !important; }
+    .display-2 { font-size: 5rem !important; }
+    .display-3 { font-size: 4rem !important; }
+}

@@ -72,9 +72,8 @@ export class PosPaymentButtons extends Component {
         try {
             const action = await this.orm.call(
                 "pos.order", 
-                "action_pay_with_method", 
-                [orderId], 
-                { payment_method: methodId }
+                "action_pos_convention_pay_with_method", 
+                [orderId, methodId]
             );
             
             if (action) {

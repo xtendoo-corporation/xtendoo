@@ -98,3 +98,34 @@
 .modal:has(.o_pos_cash_calculator_wizard) .btn-close {
   display: none !important;
 }
+
+/* Estilos para el nuevo asistente de cobro en efectivo */
+.o_pos_cash_wizard .pos-input-huge input {
+  font-size: 5rem !important;
+  height: 120px !important;
+  font-weight: 800 !important;
+  color: #1a1a1a !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.o_pos_cash_wizard .display-1 {
+  font-size: calc(2.5rem + 4.5vw) !important;
+}
+
+.o_pos_cash_wizard .display-2 {
+  font-size: calc(2rem + 3.5vw) !important;
+}
+
+.o_pos_cash_wizard .display-3 {
+  font-size: calc(1.5rem + 2.5vw) !important;
+}
+
+/* Forzar centrado en los campos monetarios del wizard */
+.o_pos_cash_wizard .o_field_monetary {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}

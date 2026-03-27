@@ -916,29 +916,44 @@ class PosOrder(models.Model):
         if not card_method:
             raise UserError(_("No se encontró método de pago con tarjeta en la caja."))
 
-        return self.action_pay_with_method(card_method)
+        return self.action_pos_convention_pay_with_method(card_method)
 
-    def action_pay_with_method(self, payment_method):
+    def action_pos_convention_pay_with_method(self, payment_method):
         """
         Realiza el pago con un método específico.
         Si es efectivo, abre el wizard para gestionar el importe recibido y cambio.
         Si es otro método (tarjeta, etc.), realiza el pago directamente del pendiente.
         """
         self.ensure_one()
-        if isinstance(payment_method, int):
-            payment_method = self.env['pos.payment.method'].browse(payment_method)
+        if not hasattr(payment_method, 'id'):
+            # Es un ID (int o str), lo convertimos a recordset
+            try:
+                pm_id = int(payment_method)
+                payment_method = self.env['pos.payment.method'].browse(pm_id)
+            except (ValueError, TypeError):
+                return False
 
-        if not payment_method:
+        if not payment_method or not payment_method.exists():
             return False
 
-        if payment_method.is_cash_count or payment_method.journal_id.type == "cash":
-            # Para efectivo, abrimos el wizard para que el cajero pueda meter
-            # el importe recibido y ver el cambio
+        # 1. Determinamos si es un método de tipo EFECTIVO (Abrir Wizard Grande)
+        name_lower = (payment_method.name or "").lower()
+        is_cash = (hasattr(payment_method, 'type') and payment_method.type == 'cash') or \
+                  payment_method.is_cash_count or \
+                  payment_method.journal_id.type == 'cash' or \
+                  "efectivo" in name_lower or \
+                  "cash" in name_lower or \
+                  "caja" in name_lower
+
+        if is_cash:
+            # Para efectivo, abrimos el wizard grande especializado
+            view = self.env.ref("pos_conventional.view_pos_make_payment_wizard_cash_form", False)
             return {
                 "type": "ir.actions.act_window",
                 "res_model": "pos.make.payment.wizard",
-                "name": _("Pago %s") % payment_method.name,
+                "name": _("Cobro en Efectivo"),
                 "view_mode": "form",
+                "views": [[view.id if view else False, "form"]],
                 "target": "new",
                 "context": {
                     "active_id": self.id,
@@ -946,8 +961,17 @@ class PosOrder(models.Model):
                     "cash_only": True,
                 },
             }
-        else:
-            # Para otros métodos (tarjeta, banco, etc.), realizamos el pago
+
+        # 2. Determinamos si es un método de tipo BANCO/TARJETA (Auto-validación directa)
+        is_bank = (hasattr(payment_method, 'type') and payment_method.type == 'bank') or \
+                  payment_method.journal_id.type == 'bank' or \
+                  payment_method.use_payment_terminal or \
+                  "tarjeta" in name_lower or \
+                  "banco" in name_lower or \
+                  "card" in name_lower
+
+        if is_bank:
+            # Auto-validación para tarjetas/bancos
             # del importe pendiente directamente
             amount_due = self.amount_total - self.amount_paid
             if amount_due <= 0:
@@ -971,11 +995,13 @@ class PosOrder(models.Model):
         Abre el asistente de pago (Wizard Python/XML) para este pedido.
         """
         self.ensure_one()
+        view = self.env.ref("pos_conventional.view_pos_make_payment_wizard_form", False)
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'pos.make.payment.wizard',
             'name': _('Realizar Pago'),
             'view_mode': 'form',
+            'views': [[view.id if view else False, 'form']],
             'target': 'new',
             'context': {
                 'active_id': self.id,

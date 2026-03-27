@@ -62,11 +62,68 @@
         </field>
     </record>
 
+    <!-- Nuevo Asistente para Cobro en Efectivo (Grande) -->
+    <record id="view_pos_make_payment_wizard_cash_form" model="ir.ui.view">
+        <field name="name">pos.make.payment.wizard.cash.form</field>
+        <field name="model">pos.make.payment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cobro en Efectivo" class="o_pos_cash_wizard">
+                <sheet>
+                    <field name="is_cash_payment" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="order_id" invisible="1"/>
+                    <field name="payment_method_id" invisible="1"/>
+
+                    <div class="container-fluid">
+                        <div class="row text-center mb-4">
+                            <div class="col-12">
+                                <span class="text-uppercase fw-bold text-muted h4">Total a Pagar</span>
+                                <div class="display-3 fw-bolder text-dark">
+                                    <field name="amount_due" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row text-center mb-4 p-4 border rounded bg-light shadow-sm">
+                            <div class="col-12">
+                                <label for="amount_tendered" string="IMPORTE ENTREGADO" class="fw-bolder h2 text-primary mb-3 d-block"/>
+                                <field name="amount_tendered" 
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       class="pos-input-huge" 
+                                       nolabel="1"
+                                       placeholder="0.00"
+                                       default_focus="1"/>
+                            </div>
+                        </div>
+
+                        <div class="row text-center mt-4" invisible="not is_cash_payment or amount_change &lt; 0.01">
+                            <div class="col-12 p-3 rounded" style="background-color: #fff5f5;">
+                                <span class="text-uppercase fw-bold text-danger h2 d-block mb-2">Cambio a Devolver</span>
+                                <div class="display-2 fw-bolder text-danger">
+                                    <field name="amount_change" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
+                <footer class="justify-content-center border-0 pb-4">
+                    <button name="action_validate" type="object" 
+                            string="VALIDAR Y FINALIZAR" 
+                            class="btn-primary btn-lg px-5 py-3 fw-bold h3" 
+                            icon="fa-check-circle"/>
+                    <button string="Cancelar" special="cancel" class="btn-link text-muted btn-lg"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
     <!-- La Acción para este Wizard -->
     <record id="action_pos_make_payment_wizard" model="ir.actions.act_window">
         <field name="name">Realizar Pago</field>
         <field name="res_model">pos.make.payment.wizard</field>
         <field name="view_mode">form</field>
+        <field name="view_id" ref="view_pos_make_payment_wizard_form"/>
         <field name="target">new</field>
     </record>
 </odoo>
