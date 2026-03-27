@@ -57,7 +57,9 @@
             "pos_conventional/static/src/xml/closing_popup.xml",
             "pos_conventional/static/src/xml/cash_move_popup.xml",
             "pos_conventional/static/src/js/payment_popup.js",
+            "pos_conventional/static/src/js/pos_payment_buttons.js",
             "pos_conventional/static/src/xml/payment_popup.xml",
+            "pos_conventional/static/src/xml/pos_payment_buttons.xml",
             # Include original POS receipt assets for native printing
             "point_of_sale/static/lib/qrcode.js",
             "point_of_sale/static/src/utils.js",

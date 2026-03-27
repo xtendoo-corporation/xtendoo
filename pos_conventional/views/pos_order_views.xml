@@ -174,18 +174,20 @@
                 <attribute name="class">me-2</attribute>
             </xpath>
             <xpath expr="//header/button[1]" position="after">
+                <field name="available_payment_method_ids" invisible="1"/>
                 <button name="action_open_payment_popup"
                     string="Pago"
                     type="object"
                     class="btn-primary"
                     invisible="state != 'draft' or not has_order_lines or is_linked_to_sale" />
 
-                <button name="action_pay_cash" string="Pagar en efectivo" type="object"
-                    class="btn-secondary"
-                    invisible="state != 'draft' or not has_order_lines or is_linked_to_sale" />
-                <button name="action_pay_card" string="Pagar con tarjeta" type="object"
-                    class="btn-secondary ms-2"
-                    invisible="state != 'draft' or not has_order_lines or is_linked_to_sale" />
+                <!-- Botones dinámicos de pago (JS Widget) -->
+                <field name="available_payment_method_ids" 
+                       widget="pos_payment_buttons" 
+                       nolabel="1"
+                       invisible="state != 'draft' or not has_order_lines or is_linked_to_sale"
+                       class="oe_inline"/>
+
                 <button name="action_pay_account"
                     string="Crear albarán"
                     type="object"

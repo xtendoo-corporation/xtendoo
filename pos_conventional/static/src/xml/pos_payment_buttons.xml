@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pos_conventional.PosPaymentButtons">
+        <div class="d-flex flex-wrap gap-2">
+            <t t-foreach="paymentMethods" t-as="method" t-key="method.id">
+                <button type="button" 
+                        class="btn btn-secondary"
+                        t-on-click="() => this.onPaymentMethodClick(method.id)">
+                    <span>Pago <t t-esc="method.name"/></span>
+                </button>
+            </t>
+        </div>
+    </t>
+</templates>

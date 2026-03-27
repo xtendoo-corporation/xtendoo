@@ -45,6 +45,23 @@ class PosOrder(models.Model):
         store=False,
     )
 
+    available_payment_method_ids = fields.Many2many(
+        "pos.payment.method",
+        compute="_compute_available_payment_methods",
+        string="Métodos de pago disponibles",
+        help="Métodos de pago configurados para el punto de venta de esta sesión",
+    )
+
+    @api.depends("session_id.config_id.payment_method_ids")
+    def _compute_available_payment_methods(self):
+        for order in self:
+            if order.session_id and order.session_id.config_id:
+                order.available_payment_method_ids = (
+                    order.session_id.config_id.payment_method_ids
+                )
+            else:
+                order.available_payment_method_ids = False
+
     @api.depends("payment_ids", "state")
     def _compute_payment_method_ribbon(self):
         for order in self:
@@ -880,16 +897,16 @@ class PosOrder(models.Model):
             raise UserError(_("No se encontró método de pago en efectivo en la caja."))
         
         return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'pos.make.payment.wizard',
-            'name': _('Pago en Efectivo'),
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'active_id': self.id,
-                'default_payment_method_id': cash_method.id,
-                'cash_only': True,
-            }
+            "type": "ir.actions.act_window",
+            "res_model": "pos.make.payment.wizard",
+            "name": _("Pago en Efectivo"),
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "active_id": self.id,
+                "default_payment_method_id": cash_method.id,
+                "cash_only": True,
+            },
         }
 
     def action_pay_card(self):
@@ -899,17 +916,55 @@ class PosOrder(models.Model):
         if not card_method:
             raise UserError(_("No se encontró método de pago con tarjeta en la caja."))
 
-        wizard = (
-            self.env["pos.make.payment"]
-            .with_context(active_id=self.id)
-            .create(
-                {
-                    "amount": self.amount_total - self.amount_paid,
-                    "payment_method_id": card_method.id,
-                }
+        return self.action_pay_with_method(card_method)
+
+    def action_pay_with_method(self, payment_method):
+        """
+        Realiza el pago con un método específico.
+        Si es efectivo, abre el wizard para gestionar el importe recibido y cambio.
+        Si es otro método (tarjeta, etc.), realiza el pago directamente del pendiente.
+        """
+        self.ensure_one()
+        if isinstance(payment_method, int):
+            payment_method = self.env['pos.payment.method'].browse(payment_method)
+
+        if not payment_method:
+            return False
+
+        if payment_method.is_cash_count or payment_method.journal_id.type == "cash":
+            # Para efectivo, abrimos el wizard para que el cajero pueda meter
+            # el importe recibido y ver el cambio
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": "pos.make.payment.wizard",
+                "name": _("Pago %s") % payment_method.name,
+                "view_mode": "form",
+                "target": "new",
+                "context": {
+                    "active_id": self.id,
+                    "default_payment_method_id": payment_method.id,
+                    "cash_only": True,
+                },
+            }
+        else:
+            # Para otros métodos (tarjeta, banco, etc.), realizamos el pago
+            # del importe pendiente directamente
+            amount_due = self.amount_total - self.amount_paid
+            if amount_due <= 0:
+                raise UserError(_("El pedido ya está completamente pagado."))
+
+            wizard = (
+                self.env["pos.make.payment"]
+                .with_context(active_id=self.id)
+                .create(
+                    {
+                        "amount": amount_due,
+                        "payment_method_id": payment_method.id,
+                    }
+                )
             )
-        )
-        return wizard.action_pay_card()
+            # check() en pos.make.payment (redirección a check_pos_order_paid si está pagado)
+            return wizard.check()
 
     def action_open_payment_popup(self):
         """
