@@ -129,8 +129,8 @@
                             placeholder="Escriba para buscar un cliente..."
                             readonly="state != 'draft'" />
                         <field name="date_order" string="Fecha" readonly="state != 'draft'" />
-                        <field string="Usuario" name="user_id" readonly="1" />
-                        <field name="session_id" readonly="1" />
+                        <field string="Usuario" name="user_id" readonly="1" force_save="1" />
+                        <field name="session_id" readonly="1" force_save="1" />
                         <field name="pricelist_id" invisible="1"/>
                     </group>
                     <group>

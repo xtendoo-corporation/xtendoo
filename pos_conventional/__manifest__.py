@@ -19,6 +19,7 @@
     "data": [
         "data/pos_session_sequence.xml",
         "security/ir.model.access.csv",
+        "views/res_users_views.xml",
         "views/res_config_settings_views.xml",
         "views/pos_config_kanban_views.xml",
         "views/pos_config_views.xml",

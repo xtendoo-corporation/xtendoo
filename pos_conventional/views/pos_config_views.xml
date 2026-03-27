@@ -19,10 +19,6 @@
                     help="Permite crear albaranes desde el POS">
                     <field name="pos_enable_albaran" />
                 </setting>
-                <setting string="Pedir PIN tras venta"
-                    help="Pedir PIN del empleado tras finalizar una venta.">
-                    <field name="pos_force_employee_login_after_order" />
-                </setting>
             </xpath>
         </field>
     </record>

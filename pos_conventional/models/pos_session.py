@@ -113,12 +113,8 @@ class PosSession(models.Model):
                     if last_session:
                         vals['cash_register_balance_start'] = last_session.cash_register_balance_end_real
 
-        # Si estamos en contexto skip_auto_open, solo crear sin abrir wizard
-        if self.env.context.get("skip_auto_open"):
-            return super(PosSession, self).create(vals_list)
-
         # Si no hay skip_auto_open, usar el comportamiento estándar
-        return super(PosSession, self).create(vals_list)
+        return super().create(vals_list)
 
     def action_pos_session_open(self):
         """
@@ -133,7 +129,7 @@ class PosSession(models.Model):
         normal_sessions = self - non_touch_sessions
 
         if normal_sessions:
-            super(PosSession, normal_sessions).action_pos_session_open()
+            super().action_pos_session_open()
 
         if non_touch_sessions and not self.env.context.get("skip_auto_open"):
             return non_touch_sessions._open_non_touch_wizard()
@@ -142,22 +138,24 @@ class PosSession(models.Model):
 
     def _open_non_touch_wizard(self):
         """
-        Abre el wizard de apertura de sesión para modo no táctil.
+        Abre el popup de apertura de sesión para modo no táctil (Client Action).
         """
         self.ensure_one()
-        wizard = self.env["pos.session.opening.wizard"].create(
-            {
-                "session_id": self.id,
-                "user_id": self.env.user.id,
-                "cash_register_balance_start": self.cash_register_balance_start,
-            }
-        )
         return {
-            "name": _("Abrir sesión POS - Modo no táctil"),
-            "type": "ir.actions.act_window",
-            "res_model": "pos.session.opening.wizard",
-            "res_id": wizard.id,
-            "view_mode": "form",
+            "type": "ir.actions.client",
+            "tag": "pos_conventional_opening_popup",
+            "name": _("Control de apertura"),
             "target": "new",
-            "context": self.env.context,
+            "context": {
+                "session_id": self.id,
+                "config_id": self.config_id.id,
+            },
         }
+
+    def set_opening_control(self, balance, notes):
+        """
+        Método llamado desde el popup OWL para abrir la sesión y establecer el saldo.
+        """
+        # Llamar al método estándar de Odoo para que asigne la secuencia (ej. 00031)
+        # y realice el resto de la lógica de apertura.
+        return super().set_opening_control(balance, notes)

@@ -214,44 +214,90 @@ class PosOrder(models.Model):
         if "company_id" not in res or not res.get("company_id"):
             res["company_id"] = self.env.company.id
 
-        # Inicializar amount_return si no está presente
+        # Inicializar montos si no están presentes
         if "amount_return" not in res:
             res["amount_return"] = 0.0
+        if "amount_paid" not in res:
+            res["amount_paid"] = 0.0
 
         # SOLO usar la sesión si viene explícitamente en el contexto
-        # NO buscar automáticamente sesiones porque puede causar que pedidos
-        # de cajas táctiles se asignen incorrectamente a cajas no táctiles
         session_id = self.env.context.get("default_session_id")
+        if not session_id:
+            # Reintentar con session_id plano si default_ no está
+            session_id = self.env.context.get("session_id")
+
         if session_id:
-            session = self.env["pos.session"].browse(session_id)
-            if session.exists():
-                if "session_id" not in res:
-                    res["session_id"] = session.id
-                # NO asignar config_id aquí, dejar que se compute desde session_id
+            session = self.env["pos.session"].browse(session_id).exists()
+            if session:
+                res["session_id"] = session.id
+                
+                # Inicializar otros campos desde la sesión
                 if "pricelist_id" not in res:
                     res["pricelist_id"] = session.config_id.pricelist_id.id
                 if "currency_id" not in res:
                     res["currency_id"] = session.currency_id.id
-
-                # Establecer cliente por defecto si está configurado y no hay uno ya establecido
                 if "partner_id" in fields_list and not res.get("partner_id"):
                     if session.config_id.default_partner_id:
                         res["partner_id"] = session.config_id.default_partner_id.id
-        else:
-            # Si no hay sesión en el contexto, usar valores por defecto de la compañía
-            # pero NO buscar sesiones automáticamente para evitar asignaciones incorrectas
-            company = self.env.company
-            if "currency_id" not in res:
-                res["currency_id"] = company.currency_id.id
-            if "pricelist_id" not in res:
-                # Buscar la lista de precios por defecto
-                pricelist = self.env["product.pricelist"].search(
-                    [("company_id", "=", company.id)], limit=1
-                )
-                if pricelist:
-                    res["pricelist_id"] = pricelist.id
+        
+        # Si no se encontró sesión, intentar buscar la activa para el usuario (fallback agresivo)
+        if not res.get("session_id"):
+             active_session = self.env["pos.session"].search([
+                 ("state", "=", "opened"),
+                 ("config_id.pos_non_touch", "=", True)
+             ], limit=1, order="id desc")
+             if active_session:
+                 res["session_id"] = active_session.id
 
         return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Override de create para asegurar que cada pedido tenga una sesión asignada.
+        Si no viene session_id, intenta buscar una sesión abierta para el usuario actual.
+        """
+        _logger.info("POS DEBUG: Entering create with vals_list: %s", vals_list)
+        _logger.info("POS DEBUG: Context: %s", self.env.context)
+
+        for vals in vals_list:
+            if not vals.get("session_id"):
+                # Buscar sesión abierta del usuario en un POS no táctil
+                session = self.env["pos.session"].search(
+                    [
+                        ("user_id", "=", self.env.user.id),
+                        ("state", "=", "opened"),
+                        ("config_id.pos_non_touch", "=", True),
+                    ],
+                    limit=1,
+                    order="id desc",
+                )
+
+                # Fallback: buscar cualquier sesión abierta en POS no táctil
+                if not session:
+                    session = self.env["pos.session"].search(
+                        [
+                            ("state", "=", "opened"),
+                            ("config_id.pos_non_touch", "=", True),
+                        ],
+                        limit=1,
+                        order="id desc",
+                    )
+
+                if session:
+                    vals["session_id"] = session.id
+                    # Asegurar otros campos relacionados si faltan
+                    if not vals.get("pricelist_id"):
+                        vals["pricelist_id"] = session.config_id.pricelist_id.id
+                    if not vals.get("currency_id"):
+                        vals["currency_id"] = session.currency_id.id
+            
+            # Asegurar que amount_paid esté inicializado para evitar error de constraint
+            if "amount_paid" not in vals:
+                vals["amount_paid"] = 0.0
+
+        vals_list = super().create(vals_list)
+        return vals_list
 
     @api.onchange("session_id")
     def _onchange_session_id(self):

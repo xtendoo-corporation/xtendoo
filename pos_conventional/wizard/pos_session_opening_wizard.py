@@ -82,21 +82,23 @@ class PosSessionOpeningWizard(models.TransientModel):
             'context': self.env.context,
         }
 
-    def _validate_employee_pin(self, vals=None):
+    def _validate_user_pin(self, vals=None):
         """
-        Valida el PIN del empleado usando los mecanismos estándar de Odoo.
+        Valida el PIN del usuario usando los mecanismos de res.users.
         Si se llama desde el wizard de PIN, recibe un dict con los datos.
         Si se llama desde el wizard original, usa self.
         """
         if vals:
             session_id = vals["session_id"]
             user_id = vals["user_id"]
-            employee_pin = vals["employee_pin"]
+            pos_pin = vals["pos_pin"]
         else:
             self.ensure_one()
             session_id = self.session_id
             user_id = self.user_id
-            employee_pin = getattr(self, "employee_pin", None)
+            # En el opening wizard estándar no solemos pedir PIN directamente si venimos del botón Abrir Caja,
+            # pero lo mantenemos por consistencia si se añadiera el campo.
+            pos_pin = getattr(self, "pos_pin", None)
 
         # Verificar permisos básicos primero
         if not self.env.user.has_group("point_of_sale.group_pos_user"):
@@ -104,34 +106,21 @@ class PosSessionOpeningWizard(models.TransientModel):
                 _("No tiene permisos para abrir una sesión de Punto de Venta.")
             )
 
-        # Si el módulo pos_hr está instalado y configurado, validar el PIN del empleado
-        if (
-            session_id.config_id.module_pos_hr
-            and "hr.employee"
-            and session_id.config_id.pos_force_employee_login_after_order in self.env
-        ):
-            employee = self.env["hr.employee"].search(
-                [("user_id", "=", user_id.id), ("pin", "=", employee_pin)], limit=1
+        # Buscar usuario con el PIN indicado
+        # (Si es el mismo usuario de la sesión, validamos el PIN)
+        # (Si es otro, se permite si tiene el PIN correcto)
+        user = self.env["res.users"].search(
+            [("pin", "=", pos_pin), ("id", "=", user_id.id)], limit=1
+        )
+
+        if not user:
+            raise ValidationError(
+                _(
+                    "PIN incorrecto para el usuario %s. Por favor, verifique su PIN e intente nuevamente."
+                ) % user_id.name
             )
 
-            if (
-                not employee
-                and session_id.config_id.pos_force_employee_login_after_order
-            ):
-                raise ValidationError(
-                    _(
-                        "PIN incorrecto. Por favor, verifique su PIN e intente nuevamente."
-                    )
-                )
-
-            return employee
-
-        # Si no hay módulo HR o no está configurado, aceptar cualquier PIN no vacío
-        # (esto es para compatibilidad con configuraciones básicas)
-        if not employee_pin:
-            raise ValidationError(_("Debe ingresar un PIN para abrir la sesión."))
-
-        return None
+        return user
 
     def _open_session_backend(self):
         """

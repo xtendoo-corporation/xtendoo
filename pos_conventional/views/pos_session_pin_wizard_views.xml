@@ -15,8 +15,8 @@
                     <group>
                         <field name="session_id" invisible="1"/>
                         <field name="user_id" invisible="1"/>
-                        <label for="employee_pin" string="PIN"/>
-                        <field name="employee_pin" password="True" placeholder="Ingrese su PIN (ej: 1234)" nolabel="1"/>
+                        <label for="pos_pin" string="PIN"/>
+                        <field name="pos_pin" password="True" placeholder="Ingrese su PIN (ej: 1234)" nolabel="1"/>
                     </group>
                 </sheet>
                 <footer>

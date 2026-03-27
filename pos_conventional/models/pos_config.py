@@ -24,9 +24,9 @@ class PosConfig(models.Model):
     )
 
     pos_force_employee_login_after_order = fields.Boolean(
-        string="Pedir PIN tras venta",
+        string="Pedir PIN del usuario",
         default=False,
-        help="Si está activo, pedirá el PIN del empleado después de cada venta y cambiará el usuario de la sesión.",
+        help="Si está activo, pedirá el PIN del usuario después de cada venta y cambiará el usuario de la sesión.",
     )
 
     def open_ui(self):

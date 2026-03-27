@@ -23,8 +23,8 @@
                     <field name="pos_enable_albaran" />
                 </setting>
                 <setting id="pos_force_employee_login_after_order_setting"
-                    string="Pedir PIN tras venta"
-                    help="Pedir PIN del empleado tras finalizar una venta.">
+                    string="Pedir PIN del usuario"
+                    help="Pedir PIN del usuario tras finalizar una venta.">
                     <field name="pos_force_employee_login_after_order" />
                 </setting>
             </xpath>
