@@ -85,22 +85,30 @@
                         </div>
 
                         <div class="row text-center mb-4 p-4 border rounded bg-light shadow-sm">
-                            <div class="col-12">
-                                <label for="amount_tendered" string="IMPORTE ENTREGADO" class="fw-bolder h2 text-primary mb-3 d-block"/>
-                                <field name="amount_tendered" 
-                                       widget="monetary"
-                                       options="{'currency_field': 'currency_id'}"
-                                       class="pos-input-huge" 
-                                       nolabel="1"
-                                       placeholder="0.00"
-                                       default_focus="1"/>
+                            <div class="col-12 text-center" style="min-height: 160px;">
+                                <label for="amount_tendered" string="IMPORTE ENTREGADO" class="fw-bolder h2 text-muted mb-3 d-block"/>
+                                <table style="margin: 0 auto; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="vertical-align: middle; text-align: right;">
+                                            <field name="amount_tendered" 
+                                                   widget="float"
+                                                   nolabel="1"
+                                                   placeholder="0.00"
+                                                   default_focus="1"
+                                                   style="font-size: 8rem !important; font-weight: 900 !important; color: #212529 !important; border: none !important; background: transparent !important; text-align: right !important; width: 350px !important; margin: 0 !important; padding: 0 !important;"/>
+                                        </td>
+                                        <td style="vertical-align: middle; padding-left: 20px; text-align: left;">
+                                            <span style="font-size: 6rem !important; font-weight: 900 !important; color: #212529 !important; display: block; line-height: 1;">€</span>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
 
-                        <div class="row text-center mt-4" invisible="not is_cash_payment or amount_change &lt; 0.01">
-                            <div class="col-12 p-3 rounded" style="background-color: #fff5f5;">
-                                <span class="text-uppercase fw-bold text-danger h2 d-block mb-2">Cambio a Devolver</span>
-                                <div class="display-2 fw-bolder text-danger">
+                        <div class="row text-center mt-4" invisible="not is_cash_payment">
+                            <div class="col-12 p-3 rounded bg-light border">
+                                <span class="text-uppercase fw-bold text-muted h2 d-block mb-2">Cambio a Devolver</span>
+                                <div class="display-2 fw-bolder text-dark">
                                     <field name="amount_change" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" nolabel="1"/>
                                 </div>
                             </div>

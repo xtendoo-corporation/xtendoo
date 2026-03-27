@@ -1,35 +1,37 @@
 .o_pos_cash_wizard {
-    .pos-input-huge {
-        input {
-            font-size: 5rem !important;
-            font-weight: 900 !important;
-            text-align: center !important;
-            border: none !important;
-            background: transparent !important;
-            color: #0d6efd !important; /* text-primary */
-            height: auto !important;
-            padding: 0 !important;
-        }
+    /* Nueva estrategia agresiva para el input gigante */
+    .pos-huge-input-wrapper {
+        .o_field_monetary, .o_field_widget, .o_monetary_input {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: center !important;
+            align-items: baseline !important;
+            width: 100% !important;
 
-        /* Odoo renders monetary widget as a flex container */
-        display: flex !important;
-        flex-direction: row-reverse !important; /* Force symbol to the right */
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 10px !important;
+            input {
+                font-size: 6rem !important;
+                font-weight: 900 !important;
+                text-align: center !important;
+                border: none !important;
+                background: transparent !important;
+                color: #212529 !important;
+                height: auto !important;
+                width: auto !important;
+                min-width: 200px !important;
+                order: 1 !important;
+            }
 
-        .o_input_group_addon {
-            font-size: 3.5rem !important;
-            font-weight: bold !important;
-            color: #6c757d !important;
-            border: none !important;
-            background: transparent !important;
-            padding: 0 !important;
-        }
-        
-        /* Odoo 17+ specific classes for monetary widget */
-        &.o_field_monetary {
-             justify-content: center !important;
+            /* Forzar el símbolo a la derecha sea cual sea la clase de Odoo */
+            span, .o_input_group_addon, .o_monetary_unit, .o_input_group_text {
+                font-size: 4rem !important;
+                font-weight: bold !important;
+                color: #212529 !important;
+                order: 2 !important;
+                margin-left: 20px !important;
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+            }
         }
     }
     
