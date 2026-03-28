@@ -9,6 +9,10 @@ class ResConfigSettings(models.TransientModel):
         related='pos_config_id.cash_drawer_pos_enabled',
         readonly=False,
     )
+    cash_drawer_printer_select = fields.Char(
+        related='pos_config_id.cash_drawer_printer_select',
+        readonly=False,
+    )
     cash_drawer_dummy_print = fields.Boolean(
         related='pos_config_id.cash_drawer_dummy_print',
         readonly=False,
