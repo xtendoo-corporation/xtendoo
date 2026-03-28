@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Cash Drawer Dummy Receipt:
+        A minimal receipt used to trigger the printer's drawer opening mechanism.
+        If the printer is configured to open the drawer when printing, any print
+        job like this one will trigger it.
+    -->
+    <t t-name="cash_drawer_settings.CashDrawerReceipt">
+        <div class="pos-receipt">
+            <div class="pos-receipt-center-align">
+                <t t-esc="props.dummy_text"/>
+            </div>
+            <!-- Extra line feeds to ensure the printer processes the receipt and triggers the cutter/drawer -->
+            <br/><br/>
+        </div>
+    </t>
+
+    <!-- Extending the standard ControlButtons menu -->
+    <t t-name="cash_drawer_settings.ControlButtons"
+       t-inherit="point_of_sale.ControlButtons"
+       t-inherit-mode="extension">
+
+        <!-- Target the InternalNoteButton (Main view / Mobile modal Note button) -->
+        <xpath expr="//InternalNoteButton" position="after">
+            <button t-att-class="buttonClass"
+                    title="Open Cash Drawer"
+                    t-on-click="() => this.openCashDrawer()">
+                <i class="fa fa-fw fa-unlock"/>
+                <span class="d-none d-lg-inline ms-1">Open Drawer</span>
+            </button>
+        </xpath>
+
+        <!-- Target the NoteButton (Desktop modal Note button) -->
+        <xpath expr="//NoteButton" position="after">
+            <button t-att-class="buttonClass"
+                    title="Open Cash Drawer"
+                    t-on-click="() => this.openCashDrawer()">
+                <i class="fa fa-unlock me-1" role="img" aria-label="Open Cash Drawer" title="Open Cash Drawer" />
+                Open Cash Drawer
+            </button>
+        </xpath>
+    </t>
+</templates>

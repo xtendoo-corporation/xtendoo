@@ -1,38 +1,39 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Cash Drawer Settings",
-    "version": "19.0.2.0.0",
+    "version": "19.0.3.0.0",
     "category": "Point of Sale",
-    "summary": "Apertura del cajón portamonedas desde Ajustes y desde el botón del TPV",
+    "summary": "Apertura del cajón portamonedas mediante impresión dummy en el TPV",
     "description": """
-        Configura y abre el cajón portamonedas tanto desde el menú de Ajustes
-        como directamente desde el TPV (Punto de Venta).
+        Abre el cajón portamonedas provocando una impresión mínima (dummy) en la
+        impresora de tickets configurada en el TPV.
+
+        Filosofía:
+        - No usa comandos directos de hardware desde el navegador.
+        - No requiere IoT Box, proxy local ni WebUSB.
+        - La apertura del cajón la realiza la impresora como consecuencia natural
+          de recibir una impresión, si está configurada para ello.
+        - Reutiliza el flujo estándar de impresión del POS de Odoo 19.
 
         Características:
-        * Sección en Ajustes para configurar la impresora y los bytes del comando.
-        * Botón en el menú del TPV (hamburguesa) para abrir el cajón.
-        * Cascada de estrategias:
-            1. Hardware Proxy / IoT Box (mecanismo nativo de Odoo)
-            2. WebUSB (experimental, Chrome/Edge, impresora USB local)
-            3. Proxy local (script Python en localhost:7070, útil en Windows)
-            4. RPC al backend (TCP socket / CUPS / dispositivo directo)
-        * Soporte de impresoras de red (TCP IP:puerto) y USB.
-        * Compatible con Windows (win32print, copy /b) y Linux (CUPS, /dev/).
-        * Tests unitarios Python y tour JS incluidos.
+        * Botón "Abrir cajón portamonedas" en el menú del TPV (hamburguesa).
+        * Configuración en pos.config para activar/desactivar la estrategia dummy.
+        * Texto configurable para el ticket dummy (mínimo por defecto).
+        * Feedback visual de éxito o error amigable.
     """,
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
     "license": "LGPL-3",
-    "depends": ["base_setup", "point_of_sale"],
+    "depends": ["point_of_sale"],
     "data": [
-        "views/cash_drawer_settings_views.xml",
         "views/pos_config_views.xml",
+        "views/res_config_settings_views.xml",
     ],
     "assets": {
         "point_of_sale._assets_pos": [
-            "cash_drawer_settings/static/src/js/webusb_printer.js",
+            "cash_drawer_settings/static/src/js/pos_config.js",
             "cash_drawer_settings/static/src/js/cash_drawer_button.js",
-            "cash_drawer_settings/static/src/xml/cash_drawer_navbar.xml",
+            "cash_drawer_settings/static/src/xml/cash_drawer.xml",
         ],
         "point_of_sale.assets_tests": [
             "cash_drawer_settings/static/tests/tours/cash_drawer_tour.js",

@@ -1,80 +1,85 @@
 # -*- coding: utf-8 -*-
-"""Extensión de pos.config para integrar el cajón portamonedas en el TPV."""
-from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+"""
+Extension de pos.config para la estrategia de apertura de cajón por impresión dummy.
 
-from . import cash_drawer_utils
+FILOSOFÍA:
+  La apertura del cajón NO la realiza Odoo directamente mediante comandos hardware.
+  Se provoca enviando una impresión mínima (dummy) a la impresora de tickets del TPV.
+  Si la impresora está configurada para abrir el cajón al imprimir, lo hará
+  automáticamente como consecuencia natural de cualquier impresión.
+
+  Todo el mecanismo real ocurre en el frontend (OWL/JS), que usa el servicio
+  estándar de impresión del POS para enviar el ticket dummy.
+
+  Este modelo solo almacena la configuración necesaria en pos.config.
+"""
+from odoo import api, fields, models
 
 
 class PosConfig(models.Model):
     _inherit = "pos.config"
 
-    # ------------------------------------------------------------------
-    # Campos
-    # ------------------------------------------------------------------
-
-    cash_drawer_pos_enabled = fields.Boolean(
-        string="Botón de cajón en TPV",
+    # -----------------------------------------------------------------------
+    # Activar/desactivar la estrategia de impresión dummy
+    # -----------------------------------------------------------------------
+    cash_drawer_dummy_print = fields.Boolean(
+        string="Open Cash Drawer via Dummy Print",
         default=False,
         help=(
-            "Muestra un botón en el menú del TPV para abrir el cajón "
-            "portamonedas directamente desde la interfaz del punto de venta."
+            "Enables the 'Open Cash Drawer' button in the POS burger menu.\n\n"
+            "When pressed, a minimal (dummy) receipt will be sent to the configured "
+            "POS printer. If your printer is set up to open the cash drawer when "
+            "printing, the drawer will open automatically.\n\n"
+            "IMPORTANT: This option does NOT send a direct hardware command to the "
+            "drawer. It only triggers a minimal print so the printer can open the "
+            "connected cash drawer if the printer is configured to do so.\n\n"
+            "No real order, payment or commercial receipt is created."
         ),
     )
 
-    # ------------------------------------------------------------------
-    # Métodos RPC llamados desde el TPV (JavaScript)
-    # ------------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    # Texto configurable del ticket dummy
+    # -----------------------------------------------------------------------
+    cash_drawer_dummy_text = fields.Char(
+        string="Dummy Print Text",
+        default=".",
+        help=(
+            "Text to include in the dummy receipt used to trigger drawer opening.\n\n"
+            "Keep it minimal. Examples:\n"
+            "  · '.'  → single dot (default, least intrusive)\n"
+            "  · ' '  → single space\n"
+            "  · 'OPEN DRAWER' → visible technical label\n\n"
+            "Some printers ignore completely blank content and do not cut/feed, "
+            "which may prevent the drawer from opening. A single character like '.' "
+            "is the safest minimum."
+        ),
+    )
 
-    def action_pos_open_cash_drawer(self):
-        """Abre el cajón portamonedas desde el TPV via RPC.
+    # -----------------------------------------------------------------------
+    # Fallback: usar ventana de impresión web si no hay impresora ESC/POS
+    # -----------------------------------------------------------------------
+    cash_drawer_web_print_fallback = fields.Boolean(
+        string="Use Web Print as Fallback",
+        default=False,
+        help=(
+            "If no ESC/POS printer is configured in the POS, fall back to the "
+            "browser's native print dialog (window.print). This will open the "
+            "browser print window instead of printing directly to the thermal printer.\n\n"
+            "Enable only if you are using a receipt printer configured at the OS level "
+            "and accessible via the browser print function."
+        ),
+    )
 
-        Utiliza la configuración global de ``ir.config_parameter``:
-          * ``cash_drawer_settings.printer_path``
-          * ``cash_drawer_settings.command_bytes``
-
-        Se usa como último recurso (fallback) cuando las estrategias
-        del lado del navegador (HW Proxy, WebUSB, proxy local) fallan.
-
-        Returns:
-            dict: Notificación de éxito (ir.actions.client)
-
-        Raises:
-            UserError: si no hay impresora configurada o todos los
-                       intentos de apertura fracasan.
-        """
-        self.ensure_one()
-
-        ICP = self.env["ir.config_parameter"].sudo()
-        printer_path = ICP.get_param(
-            "cash_drawer_settings.printer_path", ""
-        ).strip()
-        command_bytes_str = ICP.get_param(
-            "cash_drawer_settings.command_bytes", ""
-        ).strip()
-
-        if not printer_path:
-            raise UserError(
-                _(
-                    "No hay ninguna impresora configurada para el cajón "
-                    "portamonedas.\n\n"
-                    "Configúrala en Ajustes → Cajón Portamonedas."
-                )
-            )
-
-        try:
-            cash_drawer_utils.open_cash_drawer(printer_path, command_bytes_str)
-        except RuntimeError as exc:
-            raise UserError(str(exc)) from exc
-
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": _("Cajón portamonedas"),
-                "message": _("Comando de apertura enviado correctamente."),
-                "type": "success",
-                "sticky": False,
-            },
-        }
-
+    @api.model
+    def _load_pos_data_fields(self, config):
+        """ Include custom fields in the data loaded by the POS """
+        res = super()._load_pos_data_fields(config)
+        # If res is empty, Odoo reads all fields by default. 
+        # Only append if res is already a restricted list of fields.
+        if res:
+            res += [
+                "cash_drawer_dummy_print",
+                "cash_drawer_dummy_text",
+                "cash_drawer_web_print_fallback",
+            ]
+        return res
