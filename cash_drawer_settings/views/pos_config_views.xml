@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Añade la sección "Cajón portamonedas" al formulario de configuración
+        del Punto de Venta (pos.config), en la pestaña "Hardware".
+    -->
+    <record id="pos_config_cash_drawer_view_form" model="ir.ui.view">
+        <field name="name">pos.config.cash.drawer.form</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!--
+                Buscar el grupo "iface_cashdrawer" (ya existe en el formulario
+                nativo del TPV) e insertar justo después de él.
+            -->
+            <xpath expr="//field[@name='iface_cashdrawer']/.." position="after">
+                <group string="Cajón portamonedas (módulo extendido)"
+                       name="cash_drawer_ext_group">
+                    <field name="cash_drawer_pos_enabled"
+                           widget="boolean_toggle"/>
+                    <div class="text-muted small" colspan="2">
+                        Activa el botón "Abrir cajón portamonedas" en el menú
+                        del TPV. Requiere tener configurada la impresora en
+                        <b>Ajustes → Cajón Portamonedas</b>.
+                        <br/>
+                        Cascade de conexión: HW Proxy → WebUSB → Proxy local → RPC.
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
