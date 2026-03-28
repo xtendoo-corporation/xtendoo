@@ -5,6 +5,10 @@ from odoo import fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    cash_drawer_pos_enabled = fields.Boolean(
+        related='pos_config_id.cash_drawer_pos_enabled',
+        readonly=False,
+    )
     cash_drawer_dummy_print = fields.Boolean(
         related='pos_config_id.cash_drawer_dummy_print',
         readonly=False,

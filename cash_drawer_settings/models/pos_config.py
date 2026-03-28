@@ -22,6 +22,8 @@ class PosConfig(models.Model):
     # -----------------------------------------------------------------------
     # Activar/desactivar la estrategia de impresión dummy
     # -----------------------------------------------------------------------
+    cash_drawer_pos_enabled = fields.Boolean(string="[Obsolete] Cash Drawer Enabled")
+    
     cash_drawer_dummy_print = fields.Boolean(
         string="Open Cash Drawer via Dummy Print",
         default=False,
