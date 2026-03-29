@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="ActionpadWidget" t-inherit="point_of_sale.ActionpadWidget" t-inherit-mode="extension" owl="1">
+        <xpath expr="//button[hasclass('pay')]" position="after">
+            <t t-if='pos.config.allow_open_cash_d'>
+                <style>
+                    .pos .actionpad .button.pay {
+                        height: 108px;
+                    }
+                </style>
+                <button class='button js-open-cashdrawer' t-on-click="() => this.pos.openCashbox()">
+                    <i class='fa fa-archive' /> Open Cashbox
+                </button>
+            </t>
+        </xpath>
+    </t>
+    <t t-name="PaymentScreenButtons" t-inherit="point_of_sale.PaymentScreenButtons" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('payment-buttons')]" position="inside">
+            <button t-if="pos.config.allow_open_cash_d" class="button js_cashdrawer btn btn-light py-3 text-start rounded-0 border-bottom"
+                t-on-click="() => this.pos.openCashbox()">
+                <i class="fa fa-archive me-2" />Open Cashbox 
+            </button>
+        </xpath>
+    </t>
+</templates>

@@ -30,9 +30,11 @@ patch(ControlButtons.prototype, {
         console.log("[CashDrawer] Executing client-side print...");
         
         try {
-            await this.printer.print(CashDrawerReceipt, {
-                company: this.pos.company,
-            });
+            await this.printer.print(
+                CashDrawerReceipt, 
+                { company: this.pos.company },
+                { webPrintFallback: true }
+            );
 
             console.log("[CashDrawer] Client-side print completed.");
 
