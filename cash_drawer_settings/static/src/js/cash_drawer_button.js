@@ -16,48 +16,49 @@ patch(ControlButtons.prototype, {
     setup() {
         super.setup();
         this.printer = useService("printer");
+        this.actionService = useService("action");
+        this.notification = useService("notification");
     },
 
     /**
-     * Opens the cash drawer by printing a dummy receipt.
+     * Opens the cash drawer by printing a traditional Odoo report.
      * Relying on the printer's hardware configuration for actual opening.
      */
     async openCashDrawer() {
-        if (!this.pos.config.cash_drawer_dummy_print) {
-            return;
-        }
-
+        console.log("[CashDrawer] Executing...");
+        
         try {
-            // Trigger the dummy print using the standard printer service
-            // This is equivalent to any other receipt printing in the POS
-            const printResult = await this.printer.print(
-                "cash_drawer_settings.CashDrawerReceipt",
-                {
-                    dummy_text: this.pos.config.cash_drawer_dummy_text || ".",
-                },
-                {
-                    webPrintFallback: this.pos.config.cash_drawer_web_print_fallback,
-                }
-            );
+            const reportAction = "cash_drawer_settings.action_report_cash_drawer_receipt";
+            const configId = this.pos.config.id;
+            
+            console.log("[CashDrawer] Triggering backend report [action_report_cash_drawer_receipt] for ID:", configId);
 
-            if (printResult) {
-                this.notification.add(
-                    _t("Cash drawer signal sent (via dummy print)."),
-                    { type: "success" }
-                );
-            } else if (this.pos.config.cash_drawer_web_print_fallback) {
-                // If using web print, it's successful as long as it opens the browser dialog
-                this.notification.add(
-                    _t("Printing dummy receipt..."),
-                    { type: "info" }
-                );
-            }
+            // Trigger the traditional backend report
+            await this.actionService.doAction({
+                type: "ir.actions.report",
+                report_name: "cash_drawer_settings.report_cash_drawer_receipt",
+                report_type: "qweb-pdf",
+                context: {
+                    active_ids: [configId],
+                    active_id: configId,
+                },
+            });
+
+            console.log("[CashDrawer] Backend call completed.");
+
+            this.notification.add(
+                _t("Cash drawer signal sent."),
+                { type: "success" }
+            );
         } catch (err) {
+
             this.notification.add(
                 _t("Could not open cash drawer: ") + (err.message || String(err)),
                 { type: "danger", sticky: true }
             );
-            console.error("[CashDrawer] Dummy print failed:", err);
+            console.error("[CashDrawer] Report trigger failed:", err);
         }
     },
+
 });
+

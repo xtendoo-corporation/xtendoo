@@ -6,15 +6,11 @@
         If the printer is configured to open the drawer when printing, any print
         job like this one will trigger it.
     -->
-    <t t-name="cash_drawer_settings.CashDrawerReceipt">
-        <div class="pos-receipt">
-            <div class="pos-receipt-center-align">
-                <t t-esc="props.dummy_text"/>
-            </div>
-            <!-- Extra line feeds to ensure the printer processes the receipt and triggers the cutter/drawer -->
-            <br/><br/>
-        </div>
-    </t>
+    <!--
+        [DEPRECATED] Client-side template removed in favor of backend report.
+        Button inheritance remains below.
+    -->
+
 
     <!-- Extending the standard ControlButtons menu -->
     <t t-name="cash_drawer_settings.ControlButtons"
@@ -24,7 +20,6 @@
         <!-- Target the InternalNoteButton (Main view / Mobile modal Note button) -->
         <xpath expr="//InternalNoteButton" position="after">
             <button t-att-class="buttonClass"
-                    title="Open Cash Drawer"
                     t-on-click="() => this.openCashDrawer()">
                 <i class="fa fa-fw fa-unlock"/>
                 <span class="d-none d-lg-inline ms-1">Open Drawer</span>
@@ -34,7 +29,6 @@
         <!-- Target the NoteButton (Desktop modal Note button) -->
         <xpath expr="//NoteButton" position="after">
             <button t-att-class="buttonClass"
-                    title="Open Cash Drawer"
                     t-on-click="() => this.openCashDrawer()">
                 <i class="fa fa-unlock me-1" role="img" aria-label="Open Cash Drawer" title="Open Cash Drawer" />
                 Open Cash Drawer
