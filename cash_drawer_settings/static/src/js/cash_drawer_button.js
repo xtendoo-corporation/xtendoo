@@ -27,16 +27,38 @@ patch(ControlButtons.prototype, {
      * Relying on the printer's hardware configuration for actual opening.
      */
     async openCashDrawer() {
-        console.log("[CashDrawer] Executing client-side print...");
+        console.log("[CashDrawer] Attempting to open drawer...");
         
         try {
+            const printerDevice = this.printer.device;
+            
+            // Priority 1: Direct openCashbox command on the printer device
+            // This bypasses Odoo's standard config checks and avoids paper feed/cuts
+            if (printerDevice && typeof printerDevice.openCashbox === "function") {
+                console.log("[CashDrawer] Triggering direct openCashbox command...");
+                await printerDevice.openCashbox();
+                
+                this.notification.add(_t("Cash drawer signal sent."), {
+                    type: "success",
+                });
+                return;
+            }
+
+            // Priority 2: Use hardware_proxy service's openCashbox (standard way)
+            if (this.pos.hardwareProxy && typeof this.pos.hardwareProxy.openCashbox === "function") {
+                 console.log("[CashDrawer] Triggering via hardwareProxy...");
+                 await this.pos.hardwareProxy.openCashbox();
+                 // Note: hardwareProxy.openCashbox checks iface_cashdrawer config internally
+                 // If it does nothing, we continue to fallback strategy
+            }
+
+            // Priority 3: Minimal receipt print (Fallback for Web Print or non-standard drivers)
+            console.log("[CashDrawer] Falling back to minimal print strategy...");
             await this.printer.print(
                 CashDrawerReceipt, 
                 { company: this.pos.company },
                 { webPrintFallback: true }
             );
-
-            console.log("[CashDrawer] Client-side print completed.");
 
             this.notification.add(
                 _t("Cash drawer signal sent."),
@@ -47,7 +69,7 @@ patch(ControlButtons.prototype, {
                 _t("Could not open cash drawer: ") + (err.message || String(err)),
                 { type: "danger", sticky: true }
             );
-            console.error("[CashDrawer] Print failed:", err);
+            console.error("[CashDrawer] Action failed:", err);
         }
     },
 
