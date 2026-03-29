@@ -11,6 +11,8 @@ import { patch } from "@web/core/utils/patch";
 import { ControlButtons } from "@point_of_sale/app/screens/product_screen/control_buttons/control_buttons";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
+import { CashDrawerReceipt } from "./cash_drawer_receipt";
+
 
 patch(ControlButtons.prototype, {
     setup() {
@@ -21,42 +23,29 @@ patch(ControlButtons.prototype, {
     },
 
     /**
-     * Opens the cash drawer by printing a traditional Odoo report.
+     * Opens the cash drawer by printing a minimal front-end receipt.
      * Relying on the printer's hardware configuration for actual opening.
      */
     async openCashDrawer() {
-        console.log("[CashDrawer] Executing...");
+        console.log("[CashDrawer] Executing client-side print...");
         
         try {
-            const reportAction = "cash_drawer_settings.action_report_cash_drawer_receipt";
-            const configId = this.pos.config.id;
-            
-            console.log("[CashDrawer] Triggering backend report [action_report_cash_drawer_receipt] for ID:", configId);
-
-            // Trigger the traditional backend report
-            await this.actionService.doAction({
-                type: "ir.actions.report",
-                report_name: "cash_drawer_settings.report_cash_drawer_receipt",
-                report_type: "qweb-pdf",
-                context: {
-                    active_ids: [configId],
-                    active_id: configId,
-                },
+            await this.printer.print(CashDrawerReceipt, {
+                company: this.pos.company,
             });
 
-            console.log("[CashDrawer] Backend call completed.");
+            console.log("[CashDrawer] Client-side print completed.");
 
             this.notification.add(
                 _t("Cash drawer signal sent."),
                 { type: "success" }
             );
         } catch (err) {
-
             this.notification.add(
                 _t("Could not open cash drawer: ") + (err.message || String(err)),
                 { type: "danger", sticky: true }
             );
-            console.error("[CashDrawer] Report trigger failed:", err);
+            console.error("[CashDrawer] Print failed:", err);
         }
     },
 

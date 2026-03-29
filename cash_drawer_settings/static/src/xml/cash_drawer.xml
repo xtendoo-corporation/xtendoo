@@ -9,7 +9,29 @@
     <!--
         [DEPRECATED] Client-side template removed in favor of backend report.
         Button inheritance remains below.
+        [UPDATE] Re-adding client-side template for direct POS printing.
     -->
+
+    <t t-name="cash_drawer_settings.CashDrawerReceipt">
+        <div class="pos-receipt">
+            <t t-if="props.company">
+                <div class="pos-receipt-contact">
+                    <t t-if="props.company.name">
+                        <div class="pos-receipt-center-align">
+                            <t t-esc="props.company.name"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            <br/>
+            <div class="pos-receipt-center-align">
+                <div>- - - - - - - - - - - -</div>
+                <div>OPEN CASH DRAWER</div>
+                <div>- - - - - - - - - - - -</div>
+            </div>
+            <br/>
+        </div>
+    </t>
 
 
     <!-- Extending the standard ControlButtons menu -->
