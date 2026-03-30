@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Xtendoo Open Cash Drawer",
-    "version": "19.0.5.0.0",
+    "version": "19.0.5.1.0",
     "category": "Point of Sale",
     "summary": "Apertura directa del cajón portamonedas sin impresión (ESC/POS TCP/USB) con fallback a impresión mínima",
     "description": """

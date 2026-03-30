@@ -145,3 +145,46 @@ class TestGetDockerGateway(unittest.TestCase):
         with patch("subprocess.run", return_value=mock_result):
             gw = utils.get_docker_gateway()
         self.assertIsNone(gw)
+
+
+class TestResolvePrinterAddress(unittest.TestCase):
+    """Tests para resolve_printer_address() — soporte Docker 'host:PORT'."""
+
+    def test_passthrough_ip_port(self):
+        """Addresses with an explicit IP are returned unchanged."""
+        addr = utils.resolve_printer_address("192.168.1.50:9100")
+        self.assertEqual(addr, "192.168.1.50:9100")
+
+    def test_passthrough_device_path(self):
+        """Device paths (/dev/...) are returned unchanged."""
+        addr = utils.resolve_printer_address("/dev/usb/lp0")
+        self.assertEqual(addr, "/dev/usb/lp0")
+
+    def test_passthrough_cups_name(self):
+        """CUPS printer names (no port) are returned unchanged."""
+        addr = utils.resolve_printer_address("EPSON_TM_T20")
+        self.assertEqual(addr, "EPSON_TM_T20")
+
+    def test_host_keyword_resolves_to_gateway(self):
+        """'host:PORT' is replaced by '<docker-gateway>:PORT'."""
+        mock_result = MagicMock()
+        mock_result.stdout = "default via 172.17.0.1 dev eth0\n"
+        with patch("subprocess.run", return_value=mock_result):
+            addr = utils.resolve_printer_address("host:9100")
+        self.assertEqual(addr, "172.17.0.1:9100")
+
+    def test_host_keyword_case_insensitive(self):
+        """'HOST:PORT' (uppercase) is also resolved."""
+        mock_result = MagicMock()
+        mock_result.stdout = "default via 172.17.0.1 dev eth0\n"
+        with patch("subprocess.run", return_value=mock_result):
+            addr = utils.resolve_printer_address("HOST:9100")
+        self.assertEqual(addr, "172.17.0.1:9100")
+
+    def test_host_keyword_no_gateway_raises(self):
+        """RuntimeError raised when 'host' is used but no gateway is found."""
+        with patch("subprocess.run", side_effect=Exception("no ip route")):
+            with self.assertRaises(RuntimeError) as ctx:
+                utils.resolve_printer_address("host:9100")
+        self.assertIn("Docker gateway not detected", str(ctx.exception))
+
