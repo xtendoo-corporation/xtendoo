@@ -47,10 +47,10 @@
                         td { vertical-align: top; padding: 2px 0; }
 
                         /* Anchos de columna ajustados */
-                        .col-name { width: 55%; overflow: hidden; text-overflow: ellipsis;
+                        .col-name { width: 89%; overflow: hidden; text-overflow: ellipsis;
                         white-space: nowrap; }
-                        .col-ud { width: 15%; text-align: center; }
-                        .col-total { width: 30%; text-align: right; }
+                        .col-ud { width: 3%; text-align: center; }
+                        .col-total { width: 8%; text-align: right; }
                     </style>
 
                     <div class="page">
@@ -107,8 +107,8 @@
                                 <t t-foreach="o.invoice_line_ids" t-as="line">
                                     <tr t-if="line.display_type == 'product'">
                                         <td class="text-left" style="padding-right: 2px;">
-                                            <t t-if="line.product_id.default_code"> [<span
-                                                    t-field="line.product_id.default_code" />] </t>
+<!--                                            <t t-if="line.product_id.default_code"> [<span-->
+<!--                                                    t-field="line.product_id.default_code" />] </t>-->
                                             <span t-field="line.name" />
                                         </td>
                                         <td class="text-center">
@@ -151,39 +151,49 @@
 
                         <div class="dashed-line" />
 
-                        <div
-                            style="display: flex; justify-content: space-between; border-bottom: 1px dashed #000; margin-bottom: 3px;">
-                            <span style="width:33%; text-align:center;">IVA</span>
-                            <span style="width:33%; text-align:center;">Base</span>
-                            <span style="width:33%; text-align:right;">Cuota</span>
-                        </div>
+<!--                        <div-->
+<!--                            style="display: flex; justify-content: space-between; border-bottom: 1px dashed #000; margin-bottom: 3px;">-->
+<!--                            <span style="width:33%; text-align:center;">IVA</span>-->
+<!--                            <span style="width:33%; text-align:center;">Base</span>-->
+<!--                            <span style="width:33%; text-align:right;">Cuota</span>-->
+<!--                        </div>-->
 
-                        <t t-set="tax_totals" t-value="o.tax_totals" />
-                        <t t-if="tax_totals.get('subtotals')">
-                            <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
-                                <t t-foreach="subtotal['tax_groups']" t-as="tax_group">
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span style="width:33%; text-align:center;">
-                                            <span t-out="tax_group['group_name']" />
-                                        </span>
-                                        <span style="width:33%; text-align:center;">
-                                            <span t-out="tax_group['base_amount']"
-                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
-                                        </span>
-                                        <span style="width:33%; text-align:right;">
-                                            <span t-out="tax_group['tax_amount']"
-                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
-                                        </span>
-                                    </div>
-                                </t>
+<!--                        <t t-set="tax_totals" t-value="o.tax_totals" />-->
+<!--                        <t t-if="tax_totals.get('subtotals')">-->
+<!--                            <t t-foreach="tax_totals['subtotals']" t-as="subtotal">-->
+<!--                                <t t-foreach="subtotal['tax_groups']" t-as="tax_group">-->
+<!--                                    <div style="display: flex; justify-content: space-between;">-->
+<!--                                        <span style="width:33%; text-align:center;">-->
+<!--                                            <span t-out="tax_group['group_name']" />-->
+<!--                                        </span>-->
+<!--                                        <span style="width:33%; text-align:center;">-->
+<!--                                            <span t-out="tax_group['base_amount']"-->
+<!--                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}' />-->
+<!--                                        </span>-->
+<!--                                        <span style="width:33%; text-align:right;">-->
+<!--                                            <span t-out="tax_group['tax_amount']"-->
+<!--                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}' />-->
+<!--                                        </span>-->
+<!--                                    </div>-->
+<!--                                </t>-->
+<!--                            </t>-->
+<!--                        </t>-->
+
+<!--                        <div class="dashed-line" />-->
+                         <!-- Pie de página personalizado POS: busca el pedido POS relacionado y muestra el footer del POS -->
+                        <t t-if="o.pos_order_ids and len(o.pos_order_ids) &gt; 0">
+                            <t t-set="_pos_order" t-value="o.pos_order_ids[0]" />
+                            <t t-if="_pos_order.config_id and _pos_order.config_id.receipt_footer">
+                                <div class="text-center" style="margin-top: 5px; font-size: 0.9em; white-space: pre-line;">
+                                    <span t-out="_pos_order.config_id.receipt_footer" />
+                                </div>
                             </t>
                         </t>
-
-                        <div class="dashed-line" />
 
                         <div class="text-center" style="margin-top: 10px;">
                             Gracias por su visita
                         </div>
+
                     </div>
                 </div>
             </t>
