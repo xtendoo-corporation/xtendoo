@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <!-- Grupo para ver todos los POS -->
-    <record id="group_pos_config_all" model="res.groups">
-        <field name="name">Ver todos los POS</field>
-    </record>
-</odoo>
-
