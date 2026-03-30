@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Xtendoo Open Cash Drawer",
-    "version": "19.0.4.1.0",
+    "version": "19.0.5.0.0",
     "category": "Point of Sale",
-    "summary": "Apertura del cajón portamonedas mediante impresión tradicional en el TPV",
+    "summary": "Apertura directa del cajón portamonedas sin impresión (ESC/POS TCP/USB) con fallback a impresión mínima",
     "description": """
-        Abre el cajón portamonedas provocando una impresión mínima en la
-        impresora de tickets configurada en el TPV mediante los servicios 
-        nativos de punto de venta (Owl Components).
+        Abre el cajón portamonedas desde el TPV de Odoo usando la estrategia
+        óptima disponible, priorizando siempre la apertura directa sin imprimir
+        ningún ticket.
 
-        Filosofía:
-        - Usa una plantilla de impresión local en el TPV (Componente de recibo).
-        - La apertura del cajón la realiza la impresora como consecuencia natural
-          de recibir una impresión en el cliente POS.
+        Estrategias en orden de prioridad:
+        1. openCashbox() nativo del dispositivo ePOS (sin impresión).
+        2. Comando ESC/POS directo desde el servidor Odoo via TCP o CUPS (sin impresión).
+           Requiere configurar "Dirección de la impresora del cajón" en la config del TPV.
+        3. Hardware proxy / IoT Box de Odoo (sin impresión).
+        4. Impresión dummy mínima como último recurso (solo si está habilitado).
+
+        Las estrategias 1-3 envían únicamente los bytes ESC p al pin del cajón,
+        sin generar ni alimentar papel ni realizar ningún corte.
     """,
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
