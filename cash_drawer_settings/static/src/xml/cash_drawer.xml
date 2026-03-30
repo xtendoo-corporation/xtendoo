@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Cash Drawer Dummy Receipt:
+        A minimal receipt used to trigger the printer's drawer opening mechanism.
+        If the printer is configured to open the drawer when printing, any print
+        job like this one will trigger it.
+    -->
+    <!--
+        [DEPRECATED] Client-side template removed in favor of backend report.
+        Button inheritance remains below.
+        [UPDATE] Re-adding client-side template for direct POS printing.
+    -->
+
+    <t t-name="cash_drawer_settings.CashDrawerReceipt">
+        <!-- 
+           Minimal receipt: No visible text, no headers, no footer.
+           Used only as a fallback for 'Web Print' where direct hardware 
+           access (openCashbox) is not available.
+        -->
+        <div class="pos-receipt" style="padding: 0; margin: 0; height: 1px; width: 1px; font-size: 1px; color: transparent; overflow: hidden;">
+            .
+        </div>
+    </t>
+
+
+    <!-- Extending the standard ControlButtons menu -->
+    <t t-name="cash_drawer_settings.ControlButtons"
+       t-inherit="point_of_sale.ControlButtons"
+       t-inherit-mode="extension">
+
+        <!-- Target the InternalNoteButton (Main view / Mobile modal Note button) -->
+        <xpath expr="//InternalNoteButton" position="after">
+            <button t-att-class="buttonClass"
+                    t-on-click="() => this.openCashDrawer()">
+                <i class="fa fa-fw fa-unlock"/>
+                <span class="d-none d-lg-inline ms-1">Open Drawer</span>
+            </button>
+        </xpath>
+
+        <!-- Target the NoteButton (Desktop modal Note button) -->
+        <xpath expr="//NoteButton" position="after">
+            <button t-att-class="buttonClass"
+                    t-on-click="() => this.openCashDrawer()">
+                <i class="fa fa-unlock me-1" role="img" aria-label="Open Cash Drawer" title="Open Cash Drawer" />
+                Open Cash Drawer
+            </button>
+        </xpath>
+    </t>
+</templates>

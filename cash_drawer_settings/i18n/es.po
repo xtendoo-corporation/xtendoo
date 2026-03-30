@@ -1,0 +1,76 @@
+# Translation of cash_drawer_settings to Spanish
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.x\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-28 14:40+0000\n"
+"PO-Revision-Date: 2026-03-28 14:40+0000\n"
+"Last-Translator: Xtendoo\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: cash_drawer_settings
+#: model:ir.model,name:cash_drawer_settings.model_pos_config
+msgid "Point of Sale Configuration"
+msgstr "Configuración del TPV"
+
+#. module: cash_drawer_settings
+#: field:pos.config,cash_drawer_dummy_print:0
+msgid "Open Cash Drawer via Dummy Print"
+msgstr "Abrir cajón portamonedas mediante impresión dummy"
+
+#. module: cash_drawer_settings
+#: field:pos.config,cash_drawer_dummy_text:0
+msgid "Dummy Print Text"
+msgstr "Texto de la impresión dummy"
+
+#. module: cash_drawer_settings
+#: field:pos.config,cash_drawer_web_print_fallback:0
+msgid "Use Web Print as Fallback"
+msgstr "Usar impresión web como alternativa"
+
+#. module: cash_drawer_settings
+#: js:point_of_sale.Navbar
+msgid "Open Cash Drawer"
+msgstr "Abrir cajón portamonedas"
+
+#. module: cash_drawer_settings
+#: js:point_of_sale.Navbar
+msgid "Cash drawer signal sent (via dummy print)."
+msgstr "Señal de apertura enviada (vía impresión dummy)."
+
+#. module: cash_drawer_settings
+#: js:point_of_sale.Navbar
+msgid "Printing dummy receipt..."
+msgstr "Imprimiendo ticket dummy..."
+
+#. module: cash_drawer_settings
+#: js:point_of_sale.Navbar
+msgid "Could not open cash drawer: "
+msgstr "No se pudo abrir el cajón portamonedas: "
+
+#. module: cash_drawer_settings
+#: help:pos.config,cash_drawer_dummy_print:0
+msgid ""
+"Enables the 'Open Cash Drawer' button in the POS burger menu.\n\n"
+"When pressed, a minimal (dummy) receipt will be sent to the configured "
+"POS printer. If your printer is set up to open the cash drawer when "
+"printing, the drawer will open automatically.\n\n"
+"IMPORTANT: This option does NOT send a direct hardware command to the "
+"drawer. It only triggers a minimal print so the printer can open the "
+"connected cash drawer if the printer is configured to do so.\n\n"
+"No real order, payment or commercial receipt is created."
+msgstr ""
+"Activa el botón 'Abrir cajón portamonedas' en el menú del TPV.\n\n"
+"Cuando se pulse, se enviará un ticket mínimo (dummy) a la impresora configurada "
+"en el TPV. Si su impresora está configurada para abrir el cajón al imprimir, "
+"el cajón se abrirá automáticamente.\n\n"
+"IMPORTANTE: Esta opción NO envía un comando directo de hardware al cajón. "
+"Solo provoca una impresión mínima para que sea la impresora la que abra el "
+"cajón conectado si está configurada para ello.\n\n"
+"No se creará ningún pedido, pago o ticket comercial real."
