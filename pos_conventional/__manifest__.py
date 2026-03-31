@@ -15,6 +15,7 @@
         "sale",
         "mail",
         "xtendoo_pos_receipt",
+        "pos_conventional_core",
     ],
     "data": [
         "data/pos_session_sequence.xml",

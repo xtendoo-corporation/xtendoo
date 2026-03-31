@@ -61,22 +61,19 @@
         </field>
     </record>
 
-    <!-- Añadir un bloque de totales a la derecha del bloque de cliente/pedido y quitar los bloques
-    originales -->
+    <!-- Añadir funcionalidad de vinculación con sale.order sobre el layout de pos_conventional_core -->
     <record id="view_pos_order_form_inherit_totals" model="ir.ui.view">
         <field name="name">pos.order.form.inherit.totals</field>
         <field name="model">pos.order</field>
         <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
         <field name="arch" type="xml">
-            <!-- Reemplazar el grupo de campos del pedido por dos columnas: izquierda con campos y
-            derecha con totales -->
-            <xpath expr="//group[@name='order_fields']" position="replace">
-                <!-- Campo auxiliar para detectar si está vinculado a sale.order -->
+            <!-- Insertar campo auxiliar y panel de vinculación antes del oe_title
+                 (pos_conventional_core ya reemplazó order_fields con priority=8 y añadió el oe_title) -->
+            <xpath expr="//div[contains(@class, 'oe_title')]" position="before">
                 <field name="is_linked_to_sale" invisible="1" />
-
                 <!-- Panel especial cuando está vinculado a un sale.order -->
-                <div class="alert alert-info" role="alert" invisible="not is_linked_to_sale">
-                    <h4 class="alert-heading">
+                <div class="alert alert-info" role="status" invisible="not is_linked_to_sale">
+                    <h4 class="fw-bold">
                         <i class="fa fa-link me-2" />Pedido vinculado a venta tradicional </h4>
                     <p>Este pedido POS está vinculado a un pedido de venta tradicional.
                         La gestión del stock y facturación se realiza desde el pedido de venta
@@ -90,74 +87,19 @@
                             class="ms-2" />
                     </div>
                 </div>
-
-                <!-- Título principal -->
-                <div class="oe_title" invisible="is_linked_to_sale">
-                    <h1>
-                        <field name="name" readonly="1" invisible="name == '/'" />
-                        <span invisible="name != '/'">Nuevo</span>
-                    </h1>
-                </div>
-
-                <!-- Cintas de Pago (Ribbons) - Múltiples opciones para cubrir casos comunes -->
-                <field name="payment_method_ribbon" invisible="1"/>
-                <widget name="web_ribbon" title="EFECTIVO" bg_color="text-bg-success" 
-                        invisible="payment_method_ribbon != 'EFECTIVO'"/>
-                <widget name="web_ribbon" title="TARJETA" bg_color="text-bg-success" 
-                        invisible="payment_method_ribbon != 'TARJETA'"/>
-                <widget name="web_ribbon" title="CARD" bg_color="text-bg-success" 
-                        invisible="payment_method_ribbon != 'CARD'"/>
-                <widget name="web_ribbon" title="BANCO" bg_color="text-bg-success" 
-                        invisible="payment_method_ribbon != 'BANCO'"/>
-                <widget name="web_ribbon" title="TRANSFERENCIA" bg_color="text-bg-success" 
-                        invisible="payment_method_ribbon != 'TRANSFERENCIA'"/>
-                <widget name="web_ribbon" title="VALE" bg_color="text-bg-success" 
-                        invisible="payment_method_ribbon != 'VALE'"/>
-                <widget name="web_ribbon" title="PAGO MÚLTIPLE" bg_color="text-bg-success" 
-                        invisible="payment_method_ribbon != 'PAGO MÚLTIPLE'"/>
-                
-                <!-- Genérico para cualquier otro método único -->
-                <widget name="web_ribbon" title="PAGADO" bg_color="text-bg-success" 
-                        invisible="not payment_method_ribbon or payment_method_ribbon in ('EFECTIVO', 'TARJETA', 'CARD', 'BANCO', 'TRANSFERENCIA', 'VALE', 'PAGO MÚLTIPLE')"/>
-
-                <!-- Estructura: Campos a la izquierda, Totales a la derecha -->
-                <group invisible="is_linked_to_sale">
-                    <group>
-                        <field name="partner_id"
-                            widget="res_partner_many2one"
-                            context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
-                            placeholder="Escriba para buscar un cliente..."
-                            readonly="state != 'draft'" />
-                        <field name="date_order" string="Fecha" readonly="state != 'draft'" />
-                        <field string="Usuario" name="user_id" readonly="1" force_save="1" />
-                        <field name="session_id" readonly="1" force_save="1" />
-                        <field name="pricelist_id" invisible="1"/>
-                    </group>
-                    <group>
-                        <field name="amount_untaxed" widget="monetary" string="Importe base"/>
-                        <field name="amount_tax" force_save="1" widget="monetary" string="Impuestos"/>
-                        <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                            <label for="amount_total" class="fw-bold fs-2"/>
-                        </div>
-                        <field name="amount_total" force_save="1" widget="monetary" nolabel="1" class="oe_subtotal_footer_separator fw-bold fs-2"/>
-                    </group>
-                </group>
-
-                <!-- Campos técnicos ocultos -->
-                <field name="show_albaran_button" invisible="1" />
-                <field name="order_edit_tracking" invisible="1" />
-                <field name="is_edited" readonly="1" invisible="not order_edit_tracking" />
-                <field name="fiscal_position_id" options="{'no_create': True}"
-                    readonly="state != 'draft'"
-                    invisible="1" />
-                <field name="has_order_lines" invisible="1" />
-                <field name="currency_id" invisible="1" />
             </xpath>
-
-            <xpath expr="//page[@name='products']/group[@name='order_total']" position="replace" />
-
-            <!-- Eliminar totales originales de la página Payments -->
-            <xpath expr="//page[@name='payments']/group[@name='order_total']" position="replace" />
+            <!-- Ocultar el título cuando está vinculado -->
+            <xpath expr="//div[contains(@class, 'oe_title')]" position="attributes">
+                <attribute name="invisible">is_linked_to_sale</attribute>
+            </xpath>
+            <!-- Ocultar el grupo principal de campos cuando está vinculado -->
+            <xpath expr="//group[group[@class='oe_subtotal_footer']]" position="attributes">
+                <attribute name="invisible">is_linked_to_sale</attribute>
+            </xpath>
+            <!-- Campos técnicos ocultos exclusivos del módulo pos_conventional -->
+            <xpath expr="//field[@name='currency_id'][@invisible]" position="before">
+                <field name="show_albaran_button" invisible="1" />
+            </xpath>
 
         </field>
     </record>
@@ -182,8 +124,8 @@
                     invisible="state != 'draft' or not has_order_lines or is_linked_to_sale" />
 
                 <!-- Botones dinámicos de pago (JS Widget) -->
-                <field name="available_payment_method_ids" 
-                       widget="pos_payment_buttons" 
+                <field name="available_payment_method_ids"
+                       widget="pos_payment_buttons"
                        nolabel="1"
                        invisible="state != 'draft' or not has_order_lines or is_linked_to_sale"
                        class="oe_inline"/>
