@@ -100,7 +100,41 @@ class Base(models.AbstractModel):
             # Considerar falsy values que indican que no se ha establecido: False, None, 0, empty list/tuple
             is_falsy = original_company in (False, None, 0) or (isinstance(original_company, (list, tuple)) and len(original_company) == 0)
 
-            should_assign = ('company_id' in self._fields) and (('company_id' not in val_dict) or is_falsy)
+            is_shared_stock_seed = isinstance(val_dict, dict) and (
+                (self._name == 'stock.route' and self.env.context.get('install_mode'))
+                or (
+                    self._name == 'stock.location'
+                    and val_dict.get('usage') in {'supplier', 'customer', 'transit'}
+                    and self.env.context.get('install_mode')
+                )
+            )
+
+            is_explicitly_shared = (
+                isinstance(val_dict, dict)
+                and 'company_id' in val_dict
+                and is_falsy
+                and (
+                    self._name == 'stock.route'
+                    or (
+                        self._name == 'stock.location'
+                        and val_dict.get('usage') in {'supplier', 'customer', 'transit'}
+                    )
+                )
+            )
+
+            preserve_empty_company = is_shared_stock_seed or is_explicitly_shared
+
+            if preserve_empty_company:
+                _logger.info(
+                    "[xtendoo_encapsulate_companies_contacts] Se preserva company_id vacío en %s "
+                    "porque el registro debe seguir siendo compartido. Vals: %s",
+                    self._name,
+                    val_dict,
+                )
+
+            should_assign = ('company_id' in self._fields) and (
+                ('company_id' not in val_dict) or (is_falsy and not preserve_empty_company)
+            )
             if should_assign:
                 new_company = get_company_id()
                 val_dict['company_id'] = new_company
