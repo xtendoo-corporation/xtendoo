@@ -19,6 +19,8 @@ export class OpeningPopup extends Component {
         configId: { type: Number, optional: true },
         onOpened: { type: Function, optional: true },
         action: { type: Object, optional: true },
+        actionId: { type: Number, optional: true },
+        updateActionState: { type: Function, optional: true },
     };
 
     setup() {
