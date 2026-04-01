@@ -32,6 +32,13 @@ class TestPartnerVisibility(TransactionCase):
             'company_id': cls.company_a.id,
             'company_ids': [(6, 0, [cls.company_a.id, cls.company_b.id])],
         })
+        cls.user_all = cls.env['res.users'].with_context(no_reset_password=True).create({
+            'name': 'Visibility User All Companies',
+            'login': 'visibility_user_all_companies',
+            'email': 'visibility_user_all_companies@example.com',
+            'company_id': cls.company_a.id,
+            'company_ids': [(6, 0, [cls.company_a.id, cls.company_b.id])],
+        })
 
     def _partner_env(self, user):
         return self.env['res.partner'].with_user(user).with_context(allowed_company_ids=user.company_ids.ids)
@@ -55,6 +62,39 @@ class TestPartnerVisibility(TransactionCase):
 
         user_b_visible_ids = self._partner_env(self.user_b).search([('id', '=', self.user_b.partner_id.id)]).ids
         self.assertEqual(user_b_visible_ids, [self.user_b.partner_id.id])
+
+    def test_single_company_user_can_create_contact(self):
+        contact = self._partner_env(self.user_a).create({
+            'name': 'Visibility Created Contact',
+        })
+
+        self.assertEqual(contact.company_id, self.company_a)
+        self.assertEqual(contact.xt_visibility_company_ids, self.company_a)
+
+    def test_all_company_user_partner_is_visible_from_single_company_user(self):
+        self.assertEqual(
+            self.user_all.partner_id.xt_visibility_company_ids,
+            self.company_a | self.company_b,
+        )
+
+        visible_partner_ids = self._partner_env(self.user_a).search([('id', '=', self.user_all.partner_id.id)]).ids
+        self.assertEqual(visible_partner_ids, [self.user_all.partner_id.id])
+
+    def test_message_partner_ids_filters_invisible_followers(self):
+        visible_partner = self.user_all.partner_id
+        invisible_follower_partner = self.user_b.partner_id
+
+        visible_partner.message_subscribe([invisible_follower_partner.id])
+
+        user_a_values = visible_partner.with_user(self.user_a).with_context(
+            allowed_company_ids=self.user_a.company_ids.ids,
+        ).read(['message_partner_ids'])[0]
+        self.assertEqual(user_a_values['message_partner_ids'], [])
+
+        user_ab_values = visible_partner.with_user(self.user_ab).with_context(
+            allowed_company_ids=self.user_ab.company_ids.ids,
+        ).read(['message_partner_ids'])[0]
+        self.assertIn(invisible_follower_partner.id, user_ab_values['message_partner_ids'])
 
     def test_global_partner_is_visible_to_other_companies(self):
         global_partner = self.env['res.partner'].create({

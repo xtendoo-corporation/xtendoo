@@ -35,6 +35,17 @@ class ResPartner(models.Model):
         for partner in self:
             partner.xt_can_edit_global_visibility = can_edit
 
+    @api.depends('message_follower_ids')
+    def _compute_message_partner_ids(self):
+        current_partner_model = self.env['res.partner'].with_context(active_test=False)
+        empty_partners = current_partner_model.browse()
+        for partner in self:
+            follower_partner_ids = partner.message_follower_ids.sudo().mapped('partner_id').ids
+            if not follower_partner_ids:
+                partner.message_partner_ids = empty_partners
+                continue
+            partner.message_partner_ids = current_partner_model.search([('id', 'in', follower_partner_ids)])
+
     def _xt_check_visibility_management_rights(self, vals_list):
         if self.env.context.get(SKIP_PARTNER_VISIBILITY_SYNC_CTX_KEY):
             return
@@ -53,6 +64,44 @@ class ResPartner(models.Model):
         if not self:
             return self
         return self.sudo().with_context(active_test=False).search([('id', 'child_of', self.ids)])
+
+    def _xt_get_precreate_visibility_company_ids(self, vals):
+        if vals.get('xt_is_global_visibility'):
+            return []
+
+        company_ids = set()
+        parent_id = vals.get('parent_id')
+        if parent_id:
+            parent = self.env['res.partner'].sudo().with_context(active_test=False).browse(parent_id)
+            if parent.exists():
+                if parent.xt_is_global_visibility:
+                    return []
+                company_ids.update(parent.xt_visibility_company_ids.ids)
+
+        company_id = vals.get('company_id')
+        if company_id:
+            company_ids.add(company_id)
+
+        if not company_ids:
+            allowed_company_ids = self.env.context.get('allowed_company_ids')
+            if isinstance(allowed_company_ids, (list, tuple)) and allowed_company_ids:
+                company_ids.add(allowed_company_ids[0])
+            elif allowed_company_ids:
+                company_ids.add(allowed_company_ids)
+            elif self.env.user.company_id:
+                company_ids.add(self.env.user.company_id.id)
+            elif self.env.company:
+                company_ids.add(self.env.company.id)
+
+        return sorted(company_ids)
+
+    def _xt_prepare_create_vals_for_visibility(self, vals_list):
+        prepared_vals_list = [vals.copy() for vals in vals_list]
+        for vals in prepared_vals_list:
+            if 'xt_visibility_company_ids' in vals:
+                continue
+            vals['xt_visibility_company_ids'] = [Command.set(self._xt_get_precreate_visibility_company_ids(vals))]
+        return prepared_vals_list
 
     def _xt_get_computed_visibility_company_ids(self):
         self.ensure_one()
@@ -112,7 +161,8 @@ class ResPartner(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         self._xt_check_visibility_management_rights(vals_list)
-        partners = super().create(vals_list)
+        prepared_vals_list = self._xt_prepare_create_vals_for_visibility(vals_list)
+        partners = super(ResPartner, self.with_context(**{SKIP_PARTNER_VISIBILITY_SYNC_CTX_KEY: True})).create(prepared_vals_list)
         partners._xt_get_visibility_sync_scope()._xt_sync_visibility_companies()
         return partners
 

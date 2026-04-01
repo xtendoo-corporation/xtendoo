@@ -4,7 +4,7 @@
     'description': "Technical module to encapsulate Contacts and Settings within the active company.",
     'author': "Xtendoo",
     'category': 'Technical',
-    'version': '19.0.1.2.1',
+    'version': '19.0.1.2.3',
     'depends': ['base', 'contacts'],
     'installable': True,
     'application': False,
