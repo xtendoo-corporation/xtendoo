@@ -104,6 +104,17 @@ class TestPurchaseCreateInvoiceDirectly(TransactionCase):
         invoices = order.invoice_ids.filtered(lambda inv: inv.state in ('draft', 'posted'))
         self.assertTrue(invoices, "Debe haberse creado al menos una factura")
 
+    def test_action_confirm_receive_invoice_from_sent_confirms_and_invoices(self):
+        """Desde sent: confirma el pedido, valida el picking y crea la factura."""
+        order = self._create_draft_order()
+        order.write({'state': 'sent'})
+        self.assertEqual(order.state, 'sent')
+        result = order.action_confirm_receive_invoice()
+        self.assertTrue(result)
+        self.assertNotEqual(order.state, 'sent', "El pedido debe haber sido confirmado")
+        invoices = order.invoice_ids.filtered(lambda inv: inv.state in ('draft', 'posted'))
+        self.assertTrue(invoices, "Debe haberse creado al menos una factura desde sent")
+
     def test_action_confirm_receive_invoice_invoice_date_from_date_order(self):
         """La fecha de factura se toma de date_order cuando existe."""
         order = self._create_draft_order()

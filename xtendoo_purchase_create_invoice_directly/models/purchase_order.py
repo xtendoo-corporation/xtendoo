@@ -23,7 +23,7 @@ class PurchaseOrder(models.Model):
         Compatible con Odoo 19.0 (usa move_ids y move_line_ids con qty_done).
         """
         for order in self:
-            if order.state == 'draft':
+            if order.state in ('draft', 'sent', 'to approve'):
                 order.button_confirm()
             pickings = order.picking_ids.filtered(lambda p: p.state not in ('done', 'cancel'))
             for picking in pickings:

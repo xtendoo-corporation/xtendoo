@@ -24,7 +24,7 @@
                         string="Receive and Invoice"
                         type="object"
                         class="btn-primary"
-                        invisible="state not in ('draft', 'purchase')"/>
+                        invisible="state in ('done', 'cancel')"/>
             </xpath>
         </field>
     </record>
