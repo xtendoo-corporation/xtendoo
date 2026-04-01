@@ -16,15 +16,15 @@
             <xpath expr="//header/widget[@name='purchase_file_uploader']" position="replace">
                 <!-- El botón solo se muestra si hay líneas recibidas y el pedido está en estado purchase o done -->
                 <button name="action_create_invoice_draft"
-                        string="Crear factura"
+                        string="Create Invoice"
                         type="object"
                         class="btn-primary"
                         invisible="not has_received_lines or state not in ('purchase','done')"/>
                 <button name="action_confirm_receive_invoice"
-                        string="Recibir y facturar"
+                        string="Receive and Invoice"
                         type="object"
                         class="btn-primary"
-                        invisible="state != 'draft'"/>
+                        invisible="state not in ('draft', 'purchase')"/>
             </xpath>
         </field>
     </record>

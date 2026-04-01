@@ -1,0 +1,30 @@
+# Spanish translation for xtendoo_purchase_create_invoice_directly
+# Copyright (C) Xtendoo
+# This file is distributed under the same license as the module.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Module xtendoo_purchase_create_invoice_directly\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-01 00:00+0000\n"
+"PO-Revision-Date: 2026-04-01 00:00+0000\n"
+"Last-Translator: Xtendoo <info@xtendoo.es>\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Button in purchase order form header
+#: views/purchase_order_view.xml:0
+msgid "Create Invoice"
+msgstr "Crear factura"
+
+#. Button in purchase order form header
+#: views/purchase_order_view.xml:0
+msgid "Receive and Invoice"
+msgstr "Recibir y facturar"
+
+#. Field string
+#: models/purchase_order.py:0
+msgid "Has Received Lines"
+msgstr "Tiene líneas recibidas"

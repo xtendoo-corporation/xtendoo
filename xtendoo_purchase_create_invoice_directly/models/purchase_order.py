@@ -6,7 +6,7 @@ class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
     has_received_lines = fields.Boolean(
-        string='Tiene líneas recibidas',
+        string='Has Received Lines',
         compute='_compute_has_received_lines',
         store=False,
     )
