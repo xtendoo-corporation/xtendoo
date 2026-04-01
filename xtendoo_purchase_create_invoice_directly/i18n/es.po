@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# * xtendoo_purchase_create_invoice_directly
+# 	* xtendoo_purchase_create_invoice_directly
 #
 msgid ""
 msgstr ""
@@ -16,11 +16,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#. module: xtendoo_purchase_create_invoice_directly
+#: model_terms:ir.ui.view,arch_db:xtendoo_purchase_create_invoice_directly.view_purchase_order_form_direct_invoice
 msgid "Create Invoice"
 msgstr "Crear factura"
 
+#. module: xtendoo_purchase_create_invoice_directly
+#: model_terms:ir.ui.view,arch_db:xtendoo_purchase_create_invoice_directly.view_purchase_order_form_direct_invoice
 msgid "Receive and Invoice"
 msgstr "Recibir y facturar"
 
+#. module: xtendoo_purchase_create_invoice_directly
+#: model:ir.model.fields,field_description:xtendoo_purchase_create_invoice_directly.field_purchase_order__has_received_lines
 msgid "Has Received Lines"
 msgstr "Tiene líneas recibidas"
