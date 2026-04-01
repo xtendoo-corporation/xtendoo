@@ -3,6 +3,8 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+SKIP_COMPANY_ENCAPSULATION_CTX_KEY = 'skip_company_encapsulation'
+
 # Modelos que NO deben tener company_id asignado automáticamente
 EXCLUDED_MODELS = [
     'ir.sequence',
@@ -16,6 +18,7 @@ EXCLUDED_MODELS = [
     'ir.actions',
     'ir.config_parameter',
     'res.config.settings',
+    'account.group',
     'pos.session',
     'pos.order',
     'pos.order.line',
@@ -30,6 +33,12 @@ class Base(models.AbstractModel):
     @api.model_create_multi
     def create(self, vals_list):
         _logger.info(f"[xtendoo_encapsulate_companies] Creando registros en modelo: {self._name}")
+        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY) or self.env.context.get('chart_template_load'):
+            _logger.info(
+                "[xtendoo_encapsulate_companies] Bypass de encapsulación activo en %s.",
+                self._name,
+            )
+            return super(Base, self).create(vals_list)
         # No asignar company_id a modelos excluidos
         if self._name in EXCLUDED_MODELS or self._name.startswith('ir.actions.'):
             _logger.info(f"[xtendoo_encapsulate_companies] Modelo excluido: {self._name}. No se asigna company_id.")
@@ -37,52 +46,34 @@ class Base(models.AbstractModel):
 
         def get_company_id():
             """Regla requerida:
-            - Si el usuario tiene más de una compañía activa (allowed_company_ids con len>1) usar allowed_company_ids[0]
+            - Si hay compañía activa en contexto (allowed_company_ids), usar allowed_company_ids[0]
             - Si no, usar la compañía activa del usuario (env.user.company_id.id)
-            - Si no hay user.company_id, usar allowed_company_ids[0] si existe
             - Finalmente fallback a env.company.id
             """
             company_ctx = self.env.context.get('allowed_company_ids')
             _logger.info(f"[xtendoo_encapsulate_companies] allowed_company_ids en contexto: {company_ctx}")
 
-            # Si hay más de una compañía activa en contexto, usar la primera
             try:
-                if company_ctx is not None:
-                    try:
-                        length = len(company_ctx)
-                    except Exception:
-                        length = None
-                    if length and length > 1:
+                if company_ctx:
+                    if isinstance(company_ctx, (list, tuple)):
                         try:
                             first = company_ctx[0]
-                            _logger.info(f"[xtendoo_encapsulate_companies] Usuario con >1 company activa; usando allowed_company_ids[0]: {first}")
+                            _logger.info(f"[xtendoo_encapsulate_companies] Usando allowed_company_ids[0]: {first}")
                             return first
                         except Exception:
                             _logger.info(f"[xtendoo_encapsulate_companies] allowed_company_ids no indexable, devolviendo valor directo: {company_ctx}")
                             return company_ctx
+                    _logger.info(f"[xtendoo_encapsulate_companies] allowed_company_ids usado directamente: {company_ctx}")
+                    return company_ctx
             except Exception:
                 _logger.exception("[xtendoo_encapsulate_companies] Error evaluando allowed_company_ids")
 
-            # Si no hay >1, preferir la compañía activa del usuario
             try:
                 if hasattr(self.env, 'user') and self.env.user and self.env.user.company_id:
                     _logger.info(f"[xtendoo_encapsulate_companies] Usando company_id de usuario activo: {self.env.user.company_id.id}")
                     return self.env.user.company_id.id
             except Exception:
                 _logger.exception("[xtendoo_encapsulate_companies] Error obteniendo company_id desde env.user.company_id")
-
-            # Si no hay company_id en user, usar allowed_company_ids[0] si existe
-            try:
-                if company_ctx:
-                    try:
-                        first = company_ctx[0]
-                        _logger.info(f"[xtendoo_encapsulate_companies] allowed_company_ids tiene 1 elemento; usando: {first}")
-                        return first
-                    except Exception:
-                        _logger.info(f"[xtendoo_encapsulate_companies] allowed_company_ids usado directamente: {company_ctx}")
-                        return company_ctx
-            except Exception:
-                _logger.exception("[xtendoo_encapsulate_companies] Error procesando allowed_company_ids como fallback")
 
             # Fallback final: env.company
             try:
@@ -103,7 +94,51 @@ class Base(models.AbstractModel):
             # Considerar falsy values que indican que no se ha establecido: False, None, 0, empty list/tuple
             is_falsy = original_company in (False, None, 0) or (isinstance(original_company, (list, tuple)) and len(original_company) == 0)
 
-            should_assign = ('company_id' in self._fields) and (('company_id' not in val_dict) or is_falsy)
+            is_shared_stock_seed = isinstance(val_dict, dict) and (
+                (self._name == 'stock.route' and self.env.context.get('install_mode'))
+                or (
+                    self._name == 'stock.location'
+                    and val_dict.get('usage') in {'supplier', 'customer', 'transit'}
+                    and self.env.context.get('install_mode')
+                )
+            )
+
+            is_explicitly_shared = (
+                isinstance(val_dict, dict)
+                and 'company_id' in val_dict
+                and is_falsy
+                and (
+                    self._name == 'stock.route'
+                    or (
+                        self._name == 'stock.location'
+                        and val_dict.get('usage') in {'supplier', 'customer', 'transit'}
+                    )
+                )
+            )
+
+            is_explicitly_global_default = (
+                isinstance(val_dict, dict)
+                and self._name == 'ir.default'
+                and 'company_id' in val_dict
+                and is_falsy
+            )
+
+            preserve_empty_company = (
+                is_shared_stock_seed
+                or is_explicitly_shared
+                or is_explicitly_global_default
+            )
+
+            if preserve_empty_company:
+                _logger.info(
+                    "[xtendoo_encapsulate_companies] Se preserva company_id vacío en %s porque el registro debe seguir siendo compartido. Vals: %s",
+                    self._name,
+                    val_dict,
+                )
+
+            should_assign = ('company_id' in self._fields) and (
+                ('company_id' not in val_dict) or (is_falsy and not preserve_empty_company)
+            )
             if should_assign:
                 new_company = get_company_id()
                 val_dict['company_id'] = new_company
@@ -129,6 +164,12 @@ class Base(models.AbstractModel):
     def default_get(self, fields_list):
         """Asegurar que al abrir un formulario desde 'Nuevo' en lista, si el default de company_id es falsy
         lo rellenamos con allowed_company_ids o la compañía del usuario."""
+        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY) or self.env.context.get('chart_template_load'):
+            _logger.info(
+                "[xtendoo_encapsulate_companies] Bypass de encapsulación activo en default_get de %s.",
+                self._name,
+            )
+            return super(Base, self).default_get(fields_list)
         defaults = super(Base, self).default_get(fields_list)
         try:
             if 'company_id' in fields_list:

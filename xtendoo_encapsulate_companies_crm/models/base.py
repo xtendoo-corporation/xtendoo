@@ -18,6 +18,7 @@ EXCLUDED_MODELS = [
     'ir.actions',
     'ir.config_parameter',
     'res.config.settings',
+    'account.group',
 ]
 
 
@@ -28,7 +29,7 @@ class Base(models.AbstractModel):
     @api.model_create_multi
     def create(self, vals_list):
         _logger.info(f"[xtendoo_encapsulate_companies_crm] Creando registros en modelo: {self._name}")
-        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY):
+        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY) or self.env.context.get('chart_template_load'):
             _logger.info(
                 "[xtendoo_encapsulate_companies_crm] Bypass de encapsulación activo en %s.",
                 self._name,
@@ -44,19 +45,17 @@ class Base(models.AbstractModel):
             _logger.info(f"[xtendoo_encapsulate_companies_crm] allowed_company_ids en contexto: {company_ctx}")
 
             try:
-                if company_ctx is not None:
-                    try:
-                        length = len(company_ctx)
-                    except Exception:
-                        length = None
-                    if length and length > 1:
+                if company_ctx:
+                    if isinstance(company_ctx, (list, tuple)):
                         try:
                             first = company_ctx[0]
-                            _logger.info(f"[xtendoo_encapsulate_companies_crm] Usuario con >1 company activa; usando allowed_company_ids[0]: {first}")
+                            _logger.info(f"[xtendoo_encapsulate_companies_crm] Usando allowed_company_ids[0]: {first}")
                             return first
                         except Exception:
                             _logger.info(f"[xtendoo_encapsulate_companies_crm] allowed_company_ids no indexable, devolviendo valor directo: {company_ctx}")
                             return company_ctx
+                    _logger.info(f"[xtendoo_encapsulate_companies_crm] allowed_company_ids usado directamente: {company_ctx}")
+                    return company_ctx
             except Exception:
                 _logger.exception("[xtendoo_encapsulate_companies_crm] Error evaluando allowed_company_ids")
 
@@ -66,18 +65,6 @@ class Base(models.AbstractModel):
                     return self.env.user.company_id.id
             except Exception:
                 _logger.exception("[xtendoo_encapsulate_companies_crm] Error obteniendo company_id desde env.user.company_id")
-
-            try:
-                if company_ctx:
-                    try:
-                        first = company_ctx[0]
-                        _logger.info(f"[xtendoo_encapsulate_companies_crm] allowed_company_ids tiene 1 elemento; usando: {first}")
-                        return first
-                    except Exception:
-                        _logger.info(f"[xtendoo_encapsulate_companies_crm] allowed_company_ids usado directamente: {company_ctx}")
-                        return company_ctx
-            except Exception:
-                _logger.exception("[xtendoo_encapsulate_companies_crm] Error procesando allowed_company_ids as fallback")
 
             try:
                 _logger.info(f"[xtendoo_encapsulate_companies_crm] Fallback usando env.company: {self.env.company.id}")
@@ -157,7 +144,7 @@ class Base(models.AbstractModel):
 
     @api.model
     def default_get(self, fields_list):
-        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY):
+        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY) or self.env.context.get('chart_template_load'):
             _logger.info(
                 "[xtendoo_encapsulate_companies_crm] Bypass de encapsulación activo en default_get de %s.",
                 self._name,

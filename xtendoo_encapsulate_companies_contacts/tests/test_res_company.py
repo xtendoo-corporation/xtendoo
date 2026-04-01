@@ -2,6 +2,15 @@ from odoo.tests.common import TransactionCase
 
 
 class TestCompanyPartnerEncapsulation(TransactionCase):
+    def test_allowed_company_context_has_priority_over_user_company(self):
+        other_company = self.env['res.company'].create({'name': 'Encapsulated Context Company'})
+
+        partner = self.env['res.partner'].with_context(
+            allowed_company_ids=[other_company.id],
+        ).create({'name': 'Encapsulated Context Partner'})
+
+        self.assertEqual(partner.company_id, other_company)
+
     def test_company_partner_is_created_shared(self):
         company = self.env['res.company'].create({'name': 'Encapsulated Shared Company'})
 
@@ -46,4 +55,21 @@ class TestCompanyPartnerEncapsulation(TransactionCase):
         self.env['res.company']._xt_ensure_company_partners_shared()
 
         self.assertFalse(route.company_id)
+
+    def test_chart_template_load_does_not_force_account_group_to_user_company(self):
+        if 'account.group' not in self.env:
+            self.skipTest('Accounting no está instalado en esta base de test')
+
+        other_company = self.env['res.company'].create({'name': 'Encapsulated Account Group Company'})
+
+        group = self.env['account.group'].with_context(
+            allowed_company_ids=[other_company.id],
+            default_company_id=other_company.id,
+            chart_template_load=True,
+        ).create({
+            'name': 'Encapsulated Chart Template Group',
+            'code_prefix_start': '999991',
+        })
+
+        self.assertEqual(group.company_id, other_company)
 
