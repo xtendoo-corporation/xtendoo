@@ -12,14 +12,19 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
-            <!-- Eliminar el botón original "Subir factura" -->
-            <xpath expr="//header/widget[@name='purchase_file_uploader']" position="replace">
-                <!-- El botón solo se muestra si hay líneas recibidas y el pedido está en estado purchase o done -->
+            <!-- Ocultar el botón original "Subir factura" -->
+            <xpath expr="//header/widget[@name='purchase_file_uploader']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- Añadir botones antes del statusbar -->
+            <xpath expr="//header/field[@name='state']" position="before">
+                <!-- Solo se muestra si hay líneas recibidas y el pedido está en estado purchase o done -->
                 <button name="action_create_invoice_draft"
                         string="Create Invoice"
                         type="object"
                         class="btn-primary"
                         invisible="not has_received_lines or state not in ('purchase','done')"/>
+                <!-- Se muestra en todos los estados activos excepto done y cancel -->
                 <button name="action_confirm_receive_invoice"
                         string="Receive and Invoice"
                         type="object"
