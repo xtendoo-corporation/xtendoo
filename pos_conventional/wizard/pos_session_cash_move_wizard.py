@@ -62,6 +62,18 @@ class PosSessionCashMoveWizard(models.TransientModel):
             self.partner_id.id if self.partner_id else False,
             extras,
         )
+        # Si se abrió desde el wizard de cierre, reabrirlo para refrescar los datos
+        closing_wizard_id = self.env.context.get('closing_wizard_id')
+        if closing_wizard_id:
+            closing_wizard = self.env['pos.session.closing.wizard'].browse(closing_wizard_id)
+            if closing_wizard.exists():
+                return {
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'pos.session.closing.wizard',
+                    'view_mode': 'form',
+                    'res_id': closing_wizard_id,
+                    'target': 'new',
+                }
         return {'type': 'ir.actions.act_window_close'}
 
     def action_open_cash_calculator(self):
