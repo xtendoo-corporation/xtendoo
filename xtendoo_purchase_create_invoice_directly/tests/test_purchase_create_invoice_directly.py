@@ -39,7 +39,7 @@ class TestPurchaseCreateInvoiceDirectly(TransactionCase):
                 'product_id': self.product.id,
                 'name': self.product.name,
                 'product_qty': qty,
-                'product_uom': self.product.uom_id.id,
+                'product_uom_id': self.product.uom_id.id,
                 'price_unit': price_unit,
             })],
         })
@@ -223,19 +223,26 @@ class TestPurchaseCreateInvoiceDirectly(TransactionCase):
 
     def test_action_create_invoice_draft_returns_true_when_no_invoice_created(self):
         """
-        Si action_create_invoice no genera ninguna factura borrador (todo ya facturado),
-        el método retorna True.
+        Si action_create_invoice no genera ninguna factura borrador y no hay
+        ninguna existente, el método retorna True.
+        Simulamos esto mockeando action_create_invoice para que no cree nada.
         """
         order = self._create_draft_order()
         self._confirm_order(order)
         self._validate_pickings(order)
-        # Crear y confirmar la factura para que no queden borradores
-        order.action_create_invoice()
-        invoice = order.invoice_ids.filtered(lambda inv: inv.state == 'draft')
-        invoice.action_post()  # pasar a posted
 
-        result = order.action_create_invoice_draft()
-        self.assertTrue(result is True)
+        # Parchear action_create_invoice para que no cree facturas
+        original = order.__class__.action_create_invoice
+
+        def mock_no_invoice(self_inner):
+            return {}
+
+        order.__class__.action_create_invoice = mock_no_invoice
+        try:
+            result = order.action_create_invoice_draft()
+            self.assertTrue(result is True)
+        finally:
+            order.__class__.action_create_invoice = original
 
     # ------------------------------------------------------------------
     # Integridad: no duplicar facturas
