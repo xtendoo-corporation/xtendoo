@@ -1,215 +1,28 @@
-<section class="oe_container">
-    <div class="oe_row oe_spaced">
-        <div class="oe_span12">
-            <h2 class="oe_slogan" style="color:#875A7B;">Xtendoo POS Performance</h2>
-            <h3 class="oe_slogan">Optimización completa del rendimiento del Punto de Venta</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Xtendoo POS Performance</title>
+</head>
+<body>
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <h2 class="oe_slogan">Xtendoo POS Performance</h2>
+            <h3 class="oe_slogan">Optimización completa del rendimiento del POS: límites de carga, índices PostgreSQL y autovacuum</h3>
         </div>
-    </div>
-</section>
-
-<section class="oe_container oe_dark">
-    <div class="oe_row oe_spaced">
-        <div class="oe_span12">
-            <h2 class="oe_slogan" style="color:#875A7B;">¿Qué hace este módulo?</h2>
-            <p class="oe_mt32" style="font-size: 18px;">
-                Este módulo optimiza de forma <b>integral el rendimiento del TPV</b> en bases de datos con catálogos grandes
-                (35.000+ productos) mediante múltiples estrategias:
-            </p>
-            <ul style="font-size: 18px;">
-                <li><b>Límites de carga inicial:</b> Carga solo los registros necesarios al abrir el POS</li>
-                <li><b>Índices PostgreSQL:</b> Acelera búsquedas por código de barras, referencia y nombre</li>
-                <li><b>Autovacuum optimizado:</b> Mantiene la base de datos en condiciones óptimas</li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<section class="oe_container">
-    <div class="oe_row oe_spaced">
-        <div class="oe_span12">
-            <h2 class="oe_slogan" style="color:#875A7B;">Características principales</h2>
-        </div>
-        <div class="oe_span4">
-            <div class="oe_demo oe_picture oe_screenshot">
-                <i class="fa fa-rocket fa-5x" style="color:#875A7B;"></i>
-            </div>
-            <h3 class="oe_mb16" style="text-align: center;">Arranque 10x más rápido</h3>
-            <p class="oe_mb32" style="text-align: center;">
-                Reduce el tiempo de apertura del POS hasta un 90% en catálogos grandes
-            </p>
-        </div>
-        <div class="oe_span4">
-            <div class="oe_demo oe_picture oe_screenshot">
-                <i class="fa fa-search fa-5x" style="color:#875A7B;"></i>
-            </div>
-            <h3 class="oe_mb16" style="text-align: center;">Búsquedas instantáneas</h3>
-            <p class="oe_mb32" style="text-align: center;">
-                Índices optimizados para código de barras, referencia y búsquedas de texto
-            </p>
-        </div>
-        <div class="oe_span4">
-            <div class="oe_demo oe_picture oe_screenshot">
-                <i class="fa fa-database fa-5x" style="color:#875A7B;"></i>
-            </div>
-            <h3 class="oe_mb16" style="text-align: center;">BD optimizada</h3>
-            <p class="oe_mb32" style="text-align: center;">
-                Mantenimiento automático y configuración de autovacuum personalizada
-            </p>
-        </div>
-    </div>
-    <div class="oe_row oe_spaced">
-        <div class="oe_span4">
-            <div class="oe_demo oe_picture oe_screenshot">
-                <i class="fa fa-cogs fa-5x" style="color:#875A7B;"></i>
-            </div>
-            <h3 class="oe_mb16" style="text-align: center;">Configuración visual</h3>
-            <p class="oe_mb32" style="text-align: center;">
-                Ajusta los límites desde Ajustes sin tocar código ni parámetros técnicos
-            </p>
-        </div>
-        <div class="oe_span4">
-            <div class="oe_demo oe_picture oe_screenshot">
-                <i class="fa fa-language fa-5x" style="color:#875A7B;"></i>
-            </div>
-            <h3 class="oe_mb16" style="text-align: center;">Interfaz en español</h3>
-            <p class="oe_mb32" style="text-align: center;">
-                Todos los textos y ayudas en español para usuarios funcionales
-            </p>
-        </div>
-        <div class="oe_span4">
-            <div class="oe_demo oe_picture oe_screenshot">
-                <i class="fa fa-check-circle fa-5x" style="color:#875A7B;"></i>
-            </div>
-            <h3 class="oe_mb16" style="text-align: center;">100% compatible</h3>
-            <p class="oe_mb32" style="text-align: center;">
-                Compatible con Odoo 19.0 Community y Enterprise, multi-compañía
-            </p>
-        </div>
-    </div>
-</section>
-
-<section class="oe_container oe_dark">
-    <div class="oe_row oe_spaced">
-        <div class="oe_span12">
-            <h2 class="oe_slogan" style="color:#875A7B;">Optimizaciones incluidas</h2>
-            <div class="oe_span6">
-                <h3 style="color:#875A7B;"><i class="fa fa-limit"></i> 1. Límites de Carga</h3>
-                <p style="font-size: 16px;">
-                    Configura cuántos productos y clientes se cargan al iniciar el POS:
-                </p>
-                <ul style="font-size: 16px;">
-                    <li><code>point_of_sale.limited_product_count</code></li>
-                    <li><code>point_of_sale.limited_customer_count</code></li>
-                </ul>
-                <p style="font-size: 16px;">
-                    El resto se carga bajo demanda, manteniendo una experiencia fluida.
-                </p>
-            </div>
-            <div class="oe_span6">
-                <h3 style="color:#875A7B;"><i class="fa fa-bolt"></i> 2. Índices PostgreSQL</h3>
-                <p style="font-size: 16px;">
-                    Índices optimizados en tablas críticas:
-                </p>
-                <ul style="font-size: 16px;">
-                    <li>Código de barras y referencia interna</li>
-                    <li>Búsquedas de texto con pg_trgm</li>
-                    <li>Búsquedas sin acentos con unaccent</li>
-                    <li>Filtros de disponibilidad en POS</li>
-                </ul>
+    </section>
+    <section class="oe_container oe_dark">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <table class="table table-bordered">
+                    <tr><th>Version</th><td>19.0.1.0.0</td></tr>
+                    <tr><th>Category</th><td>Point of Sale</td></tr>
+                    <tr><th>Author</th><td>Xtendoo Software S.L.U.</td></tr>
+                    <tr><th>License</th><td>LGPL-3</td></tr>
+                    <tr><th>Website</th><td><a href="https://xtendoo.es">https://xtendoo.es</a></td></tr>
+                </table>
             </div>
         </div>
-    </div>
-    <div class="oe_row oe_spaced" style="margin-top: 30px;">
-        <div class="oe_span12">
-            <div class="oe_span6">
-                <h3 style="color:#875A7B;"><i class="fa fa-wrench"></i> 3. Autovacuum Optimizado</h3>
-                <p style="font-size: 16px;">
-                    Configuración personalizada de mantenimiento automático:
-                </p>
-                <ul style="font-size: 16px;">
-                    <li>Umbrales ajustados para product_template</li>
-                    <li>Umbrales ajustados para product_product</li>
-                    <li>Menor impacto en operaciones en caliente</li>
-                </ul>
-            </div>
-            <div class="oe_span6">
-                <h3 style="color:#875A7B;"><i class="fa fa-magic"></i> 4. Instalación Automática</h3>
-                <p style="font-size: 16px;">
-                    Al instalar el módulo se crea automáticamente:
-                </p>
-                <ul style="font-size: 16px;">
-                    <li>Extensiones PostgreSQL (pg_trgm, unaccent)</li>
-                    <li>Todos los índices necesarios</li>
-                    <li>Configuración de autovacuum</li>
-                    <li>Parámetros con valores por defecto</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="oe_container">
-    <div class="oe_row oe_spaced">
-        <div class="oe_span12">
-            <h2 class="oe_slogan" style="color:#875A7B;">Valores recomendados</h2>
-            <table class="table table-bordered" style="margin-top: 20px; font-size: 16px;">
-                <thead style="background-color: #875A7B; color: white;">
-                    <tr>
-                        <th>Tamaño del catálogo</th>
-                        <th>Valor recomendado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>&lt; 5.000 productos</td>
-                        <td>0 (sin límite)</td>
-                    </tr>
-                    <tr>
-                        <td>5.000 - 15.000 productos</td>
-                        <td>500 - 1.000</td>
-                    </tr>
-                    <tr>
-                        <td>15.000 - 50.000 productos</td>
-                        <td>300 - 500</td>
-                    </tr>
-                    <tr>
-                        <td>&gt; 50.000 productos</td>
-                        <td>200 - 300</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</section>
-
-<section class="oe_container oe_dark">
-    <div class="oe_row oe_spaced">
-        <div class="oe_span12">
-            <h2 class="oe_slogan" style="color:#875A7B;">Configuración</h2>
-            <ol style="font-size: 16px; margin-top: 20px;">
-                <li>Ir a <b>Ajustes → Punto de venta</b></li>
-                <li>Desplazarse hasta la sección <b>"Rendimiento"</b></li>
-                <li>Ajustar los valores según el tamaño de tu catálogo</li>
-                <li>Guardar y listo</li>
-            </ol>
-        </div>
-    </div>
-</section>
-
-<section class="oe_container">
-    <div class="oe_row oe_spaced">
-        <div class="oe_span12">
-            <h2 class="oe_slogan" style="color:#875A7B;">Soporte y desarrollo</h2>
-            <p class="oe_mt32 text-center" style="font-size: 18px;">
-                Desarrollado por <b>Xtendoo Software S.L.U.</b>
-            </p>
-            <p class="text-center" style="font-size: 16px;">
-                <i class="fa fa-globe"></i> <a href="https://xtendoo.es" target="_blank">www.xtendoo.es</a><br/>
-                <i class="fa fa-envelope"></i> soporte@xtendoo.es
-            </p>
-        </div>
-    </div>
-</section>
-
-<section class="oe_container oe_separator"></section>
-
+    </section>
+</body>
+</html>

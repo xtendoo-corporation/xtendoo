@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Template del botón de apertura del cajón en el Navbar -->
+    <t t-name="xtendoo_cash_drawer.CashDrawerNavbarButton">
+        <button t-if="isVisible"
+                class="btn btn-light btn-lg lh-lg cash-drawer-navbar-button"
+                t-att-disabled="state.sending"
+                t-on-click="onClick"
+                title="Abrir cajón portamonedas">
+            <i t-attf-class="fa fa-fw {{ state.sending ? 'fa-spinner fa-spin' : 'fa-unlock' }}"/>
+        </button>
+    </t>
+
+    <!-- Patch del Navbar: inyecta el botón antes del menú hamburguesa -->
+    <t t-name="xtendoo_cash_drawer.Navbar"
+       t-inherit="point_of_sale.Navbar"
+       t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('status-buttons')]//Dropdown" position="before">
+            <CashDrawerNavbarButton/>
+        </xpath>
+    </t>
+
+</templates>
+

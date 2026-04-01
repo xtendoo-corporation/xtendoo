@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Extiende los botones de control del TPV para añadir "Abrir Cajón" -->
+    <t t-name="xtendoo_cash_drawer.ControlButtons"
+       t-inherit="point_of_sale.ControlButtons"
+       t-inherit-mode="extension">
+
+        <!-- Botón en la vista principal / móvil (junto a InternalNoteButton) -->
+        <xpath expr="//InternalNoteButton" position="after">
+            <button t-if="cashDrawerUrlConfigured"
+                    t-att-class="buttonClass"
+                    t-on-click="() => this.openCashDrawerUrl()">
+                <i class="fa fa-fw fa-unlock"/>
+                <span class="d-none d-lg-inline ms-1">Abrir Cajón</span>
+            </button>
+        </xpath>
+
+        <!-- Botón en el modal de escritorio (junto a NoteButton) -->
+        <xpath expr="//NoteButton" position="after">
+            <button t-if="cashDrawerUrlConfigured"
+                    t-att-class="buttonClass"
+                    t-on-click="() => this.openCashDrawerUrl()">
+                <i class="fa fa-unlock me-1"
+                   role="img"
+                   aria-label="Abrir Cajón"
+                   title="Abrir Cajón"/>
+                Abrir Cajón
+            </button>
+        </xpath>
+
+    </t>
+
+</templates>
+
