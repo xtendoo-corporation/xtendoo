@@ -44,7 +44,9 @@ class ResCompany(models.Model):
             for vals, partner in zip(no_partner_vals_list, partners):
                 vals['partner_id'] = partner.id
 
-        return super().create(prepared_vals_list)
+        companies = super().create(prepared_vals_list)
+        companies.mapped('partner_id')._xt_get_visibility_sync_scope()._xt_sync_visibility_companies()
+        return companies
 
     @api.model
     def _xt_ensure_company_partners_shared(self):
@@ -85,6 +87,15 @@ class ResCompany(models.Model):
             for company in companies.filtered('partner_id'):
                 if hasattr(company, '_set_per_company_inter_company_locations'):
                     company.sudo()._set_per_company_inter_company_locations(inter_company_location)
+
+        companies.mapped('partner_id')._xt_get_visibility_sync_scope()._xt_sync_visibility_companies()
+
+    def write(self, vals):
+        previous_partners = self.mapped('partner_id')
+        res = super().write(vals)
+        if 'partner_id' in vals:
+            (previous_partners | self.mapped('partner_id'))._xt_get_visibility_sync_scope()._xt_sync_visibility_companies()
+        return res
 
     @api.model
     def _xt_reset_shared_stock_locations(self):

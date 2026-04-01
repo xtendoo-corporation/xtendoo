@@ -24,8 +24,8 @@
 
     <!-- Overriding base partner rule (Global) -->
     <record id="base.res_partner_rule" model="ir.rule">
-        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else ['|', '|', '|',
-            ('id', 'in', [1, 2]), ('partner_share', '=', False), ('company_id', 'parent_of',
-            company_ids), ('company_id', '=', False)]</field>
+        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else ['|', '|',
+            ('id', '=', user.partner_id.id), ('xt_is_global_visibility', '=', True),
+            ('xt_visibility_company_ids', 'in', company_ids)]</field>
     </record>
 </odoo>

@@ -3,8 +3,8 @@
     <record id="res_company_strict_rule" model="ir.rule">
         <field name="name">Strict Company Encapsulation</field>
         <field name="model_id" ref="base.model_res_company" />
-        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else [('id', '=',
-            user.company_id.id)]</field>
+        <field name="domain_force">[(1, '=', 1)] if user.see_all_companies else [('id', 'in',
+            company_ids)]</field>
         <field name="global" eval="True" />
     </record>
 

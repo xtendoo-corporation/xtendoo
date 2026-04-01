@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="base.partner_root" model="res.partner">
+        <field name="xt_is_global_visibility" eval="True" />
+    </record>
+
+    <record id="base.public_partner" model="res.partner">
+        <field name="xt_is_global_visibility" eval="True" />
+    </record>
+</odoo>
+

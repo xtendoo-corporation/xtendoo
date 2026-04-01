@@ -5,9 +5,31 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form" />
         <field name="arch" type="xml">
+            <xpath expr="//sheet//div[hasclass('mb8')]//field[@name='email']" position="attributes">
+                <attribute name="required">False</attribute>
+            </xpath>
+            <xpath expr="//page[@name='contact_addresses']//form//field[@name='email']" position="attributes">
+                <attribute name="required">False</attribute>
+            </xpath>
             <xpath expr="//field[@name='company_id']" position="attributes">
                 <attribute name="readonly">1</attribute>
                 <attribute name="force_save">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="xt_is_global_visibility" readonly="not xt_can_edit_global_visibility" />
+                <field name="xt_visibility_company_ids" widget="many2many_tags" readonly="1" optional="hide" />
+                <field name="xt_can_edit_global_visibility" invisible="1" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_simple_form_inherit_strict" model="ir.ui.view">
+        <field name="name">res.partner.simplified.form.inherit.strict</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_simple_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//group//field[@name='email']" position="attributes">
+                <attribute name="required">False</attribute>
             </xpath>
         </field>
     </record>

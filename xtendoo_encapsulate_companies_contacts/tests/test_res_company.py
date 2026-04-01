@@ -23,7 +23,11 @@ class TestCompanyPartnerEncapsulation(TransactionCase):
 
     def test_sanitizer_resets_company_partner_company_id(self):
         company = self.env['res.company'].create({'name': 'Company To Sanitize'})
-        company.partner_id.write({'company_id': self.env.company.id})
+        self.env.cr.execute(
+            "UPDATE res_partner SET company_id = %s WHERE id = %s",
+            [self.env.company.id, company.partner_id.id],
+        )
+        company.partner_id.invalidate_recordset(['company_id'])
 
         self.env['res.company']._xt_ensure_company_partners_shared()
 
@@ -31,6 +35,8 @@ class TestCompanyPartnerEncapsulation(TransactionCase):
 
     def test_global_ir_default_keeps_shared_company_id(self):
         field = self.env['ir.model.fields']._get('res.partner', 'property_stock_customer')
+        if not field:
+            self.skipTest('Stock no está instalado en esta base de test')
 
         default = self.env['ir.default'].create({
             'field_id': field.id,
