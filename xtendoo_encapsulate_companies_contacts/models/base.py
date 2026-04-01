@@ -3,6 +3,8 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+SKIP_COMPANY_ENCAPSULATION_CTX_KEY = 'skip_company_encapsulation'
+
 # Modelos que NO deben tener company_id asignado automáticamente
 # In the contacts module, we exclude base IR models and config settings.
 EXCLUDED_MODELS = [
@@ -27,6 +29,12 @@ class Base(models.AbstractModel):
     @api.model_create_multi
     def create(self, vals_list):
         _logger.info(f"[xtendoo_encapsulate_companies_contacts] Creando registros en modelo: {self._name}")
+        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY):
+            _logger.info(
+                "[xtendoo_encapsulate_companies_contacts] Bypass de encapsulación activo en %s.",
+                self._name,
+            )
+            return super(Base, self).create(vals_list)
         # No asignar company_id a modelos excluidos
         if self._name in EXCLUDED_MODELS or self._name.startswith('ir.actions.'):
             _logger.info(f"[xtendoo_encapsulate_companies_contacts] Modelo excluido: {self._name}. No se asigna company_id.")
@@ -122,7 +130,18 @@ class Base(models.AbstractModel):
                 )
             )
 
-            preserve_empty_company = is_shared_stock_seed or is_explicitly_shared
+            is_explicitly_global_default = (
+                isinstance(val_dict, dict)
+                and self._name == 'ir.default'
+                and 'company_id' in val_dict
+                and is_falsy
+            )
+
+            preserve_empty_company = (
+                is_shared_stock_seed
+                or is_explicitly_shared
+                or is_explicitly_global_default
+            )
 
             if preserve_empty_company:
                 _logger.info(
@@ -160,6 +179,12 @@ class Base(models.AbstractModel):
     def default_get(self, fields_list):
         """Asegurar que al abrir un formulario desde 'Nuevo' en lista, si el default de company_id es falsy
         lo rellenamos con allowed_company_ids o la compañía del usuario."""
+        if self.env.context.get(SKIP_COMPANY_ENCAPSULATION_CTX_KEY):
+            _logger.info(
+                "[xtendoo_encapsulate_companies_contacts] Bypass de encapsulación activo en default_get de %s.",
+                self._name,
+            )
+            return super(Base, self).default_get(fields_list)
         defaults = super(Base, self).default_get(fields_list)
         try:
             if 'company_id' in fields_list:

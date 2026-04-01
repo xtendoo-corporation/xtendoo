@@ -4,7 +4,7 @@
     "description": "Technical module to encapsulate CRM records within the active company.",
     "author": "Xtendoo",
     "category": "Technical",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "depends": ["base", "crm", "xtendoo_encapsulate_companies_contacts"],
     "installable": True,
     "application": False,
