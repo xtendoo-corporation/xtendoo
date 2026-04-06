@@ -1,6 +1,6 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 
-from odoo import _, fields, models
+from odoo import fields, models
 
 
 class ResConfigSettings(models.TransientModel):
@@ -22,6 +22,12 @@ class ResConfigSettings(models.TransientModel):
         related="pos_config_id.cash_drawer_api_key",
         readonly=False,
         string="API Key del cajón",
+    )
+
+    pos_cash_drawer_auto_open = fields.Boolean(
+        related="pos_config_id.cash_drawer_auto_open",
+        readonly=False,
+        string="Abrir cajón automáticamente en pagos en efectivo",
     )
 
     def action_test_cash_drawer(self):

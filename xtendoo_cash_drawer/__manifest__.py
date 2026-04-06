@@ -28,6 +28,7 @@
             "xtendoo_cash_drawer/static/src/js/cash_drawer_utils.js",
             "xtendoo_cash_drawer/static/src/js/cash_drawer_button.js",
             "xtendoo_cash_drawer/static/src/js/cash_drawer_navbar_button.js",
+            "xtendoo_cash_drawer/static/src/js/cash_drawer_payment.js",
             "xtendoo_cash_drawer/static/src/xml/cash_drawer.xml",
             "xtendoo_cash_drawer/static/src/xml/cash_drawer_navbar.xml",
         ],

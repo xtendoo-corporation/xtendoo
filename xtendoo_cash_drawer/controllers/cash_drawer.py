@@ -103,7 +103,7 @@ class CashDrawerController(http.Controller):
 
     @http.route(
         "/xtendoo_cash_drawer/open",
-        type="json",
+        type="jsonrpc",
         auth="user",
         methods=["POST"],
         csrf=False,

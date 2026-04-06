@@ -33,6 +33,16 @@ class PosConfig(models.Model):
         ),
     )
 
+    cash_drawer_auto_open = fields.Boolean(
+        string="Abrir cajón automáticamente en pagos en efectivo",
+        default=True,
+        help=(
+            "Si está activo, el cajón se abrirá automáticamente cuando se valide "
+            "un pedido con pago en efectivo en el TPV, siempre que haya una URL "
+            "de apertura configurada."
+        ),
+    )
+
     def action_test_cash_drawer(self):
         """Devuelve una acción cliente que prueba la apertura del cajón
         ejecutando el fetch() desde el NAVEGADOR.
