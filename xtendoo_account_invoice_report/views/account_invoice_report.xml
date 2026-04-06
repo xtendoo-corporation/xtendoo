@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_account_invoice_report_pivot_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.report.pivot.inherit</field>
+            <field name="model">account.invoice.report</field>
+            <field name="inherit_id" ref="account.view_account_invoice_report_pivot"/>
+            <field name="arch" type="xml">
+                <xpath expr="//pivot" position="inside">
+                    <field name="price_unit" type="measure"/>
+                    <field name="discount" type="measure"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_account_invoice_report_graph_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.report.graph.inherit</field>
+            <field name="model">account.invoice.report</field>
+            <field name="inherit_id" ref="account.view_account_invoice_report_graph"/>
+            <field name="arch" type="xml">
+                <xpath expr="//graph" position="inside">
+                    <field name="price_unit" type="measure"/>
+                    <field name="discount" type="measure"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_invoice_report_view_tree_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.report.view.tree.inherit</field>
+            <field name="model">account.invoice.report</field>
+            <field name="inherit_id" ref="account.account_invoice_report_view_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="inside">
+                    <field name="price_unit"/>
+                    <field name="discount"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_account_invoice_report_search_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.report.search.inherit</field>
+            <field name="model">account.invoice.report</field>
+            <field name="inherit_id" ref="account.view_account_invoice_report_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                    <field name="price_unit"/>
+                    <field name="discount"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_invoice_report_tree_info_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.report.tree.info.inherit</field>
+            <field name="model">account.invoice.report</field>
+            <field name="inherit_id" ref="account_invoice_line_report.view_invoice_report_tree_info"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='price_average']" position="before">
+                    <field name="price_unit"/>
+                    <field name="discount"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

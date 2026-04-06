@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_only_form_view_green_point" model="ir.ui.view">
+        <field name="name">product.template.form.green.point</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Punto Verde" name="green_point_page">
+                    <group>
+                        <group>
+                            <field name="green_point_enabled" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="green_point_amount" invisible="not green_point_enabled"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_form_green_point" model="ir.ui.view">
+        <field name="name">sale.order.form.green.point</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
+                <field name="green_point_applicable" column_invisible="True"/>
+                <field name="green_point_amount_unit" invisible="not green_point_applicable" optional="hide"/>
+                <field name="green_point_amount_line" invisible="not green_point_applicable" optional="show"/>
+                <field name="price_subtotal_with_green_point" optional="hide"/>
+            </xpath>
+            <xpath expr="//field[@name='tax_totals']" position="before">
+                <field name="amount_untaxed_with_green_point" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_total_green_point" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
