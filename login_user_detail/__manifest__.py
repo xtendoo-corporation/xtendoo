@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'User Log Details',
-    'version': '17.0.1.0.0',
+    'version': '18.0.1.0.0',
     'category': 'Extra Tools',
     'summary': 'Login user details & IP Address.',
     'description': """This module captures and stores user login details,

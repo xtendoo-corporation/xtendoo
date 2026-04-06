@@ -18,21 +18,21 @@
     </record>
     <!-- Tree view -->
     <record id="login_detail_view_tree" model="ir.ui.view">
-        <field name="name">login.detail.view.tree</field>
+        <field name="name">login.detail.view.list</field>
         <field name="model">login.detail</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="date_time"/>
                 <field name="ip_address"/>
-            </tree>
+            </list>
         </field>
     </record>
     <!-- Action for Login Details menu item -->
     <record id="login_detail_action" model="ir.actions.act_window">
         <field name="name">Login Detail</field>
         <field name="res_model">login.detail</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
     <!-- Login Details menu item -->
     <menuitem name="Login Details" id="login_user_detail.login_detail_menu" parent="base.menu_users"

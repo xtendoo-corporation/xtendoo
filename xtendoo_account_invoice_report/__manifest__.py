@@ -4,7 +4,7 @@
 {
     "name": "Xtendoo Account Invoice Report",
     "summary": "Account Invoice Report",
-    "version": "17.0.1.0.0",
+    "version": "18.0.1.0.0",
     "author": "Abraham,",
     "license": "AGPL-3",
     "website": "https://xtendoo.es",
