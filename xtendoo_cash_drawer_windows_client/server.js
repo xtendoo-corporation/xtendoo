@@ -159,6 +159,10 @@ app.get('/ping', (req, res) => {
   res.status(200).send('OK');
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.get('/open-drawer', validateApiKey, async (req, res) => {
   try {
     const requestedPrinter = req.query.printer || DEFAULT_PRINTER || '';
