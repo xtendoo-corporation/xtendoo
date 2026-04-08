@@ -5,7 +5,8 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='price_subtotal']" position="after">
+            <!-- Odoo 18: el nodo embebido de líneas de factura es <list>, no <tree> -->
+            <xpath expr="//field[@name='invoice_line_ids']/list/field[@name='price_subtotal']" position="after">
                 <field name="green_point_applicable" column_invisible="True"/>
                 <field name="green_point_amount_unit" invisible="not green_point_applicable" optional="hide"/>
                 <field name="green_point_amount_line" invisible="not green_point_applicable" optional="show"/>

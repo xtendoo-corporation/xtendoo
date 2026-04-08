@@ -19,14 +19,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
+# Odoo 18: _check_credentials signature changed to (credential, env)
+# where credential = {'type': 'password', 'login': str, 'password': str}
+# and env = {'interactive': bool, ...}
 import logging
-from itertools import chain
 from odoo.http import request
-from odoo import api, models
+from odoo import models
 
 _logger = logging.getLogger(__name__)
-USER_PRIVATE_FIELDS = ['password']
-concat = chain.from_iterable
 
 
 class ResUsers(models.Model):
@@ -34,15 +34,21 @@ class ResUsers(models.Model):
     details of user. """
     _inherit = 'res.users'
 
-    @api.model
-    def _check_credentials(self, password, user_agent_env):
-        """ Check user credentials during login and log the login details."""
-        result = super(ResUsers, self)._check_credentials(
-            password, user_agent_env)
-        ip_address = request.httprequest.environ['REMOTE_ADDR']
-        vals = {
+    def _check_credentials(self, credential, env):
+        """Check user credentials during login and log the login details.
+
+        Odoo 18: credential es un dict {'type', 'login', 'password'}.
+        El método se llama sobre el registro del usuario autenticado (self),
+        por lo que self.name devuelve correctamente el nombre del usuario.
+        """
+        result = super()._check_credentials(credential, env)
+        # Registrar el acceso sólo tras autenticación exitosa
+        ip_address = (
+            request.httprequest.environ.get('REMOTE_ADDR', 'n/a')
+            if request else 'n/a'
+        )
+        self.env['login.detail'].sudo().create({
             'name': self.name,
-            'ip_address': ip_address
-        }
-        self.env['login.detail'].sudo().create(vals)
+            'ip_address': ip_address,
+        })
         return result

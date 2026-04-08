@@ -28,7 +28,7 @@ class AccountMoveLine(models.Model):
                 line.green_point_amount_unit = 0.0
                 line.green_point_amount_line = 0.0
                 continue
-            
+
             # If from purchase or sales, retain calculated standard
             if line.green_point_source in ('purchase', 'sale'):
                 continue
@@ -41,11 +41,21 @@ class AccountMoveLine(models.Model):
                 line.green_point_amount_unit = line.product_id.green_point_amount
                 line.green_point_amount_line = line.product_id.green_point_amount
 
-    @api.onchange('green_point_amount_line', 'quantity')
-    def _onchange_green_point_amount_line(self):
-        """ Inverse calculation for vendor bills when user types the line amount """
-        if self.move_id.move_type in ('in_invoice', 'in_refund', 'in_receipt') and self.quantity and self.green_point_amount_line:
-            self.green_point_amount_unit = self.green_point_amount_line / self.quantity
+    # Odoo 18: @api.onchange no es fiable en account.move.line porque las líneas
+    # se editan en batch. Se sustituye por override de write() para garantizar
+    # que el cálculo inverso (línea → unidad) se ejecute siempre.
+    def write(self, vals):
+        res = super().write(vals)
+        if 'green_point_amount_line' in vals or 'quantity' in vals:
+            for line in self:
+                if (
+                    line.move_id.move_type in ('in_invoice', 'in_refund', 'in_receipt')
+                    and line.quantity
+                    and line.green_point_amount_line
+                ):
+                    # Recalcular importe unitario a partir del importe de línea
+                    line.green_point_amount_unit = line.green_point_amount_line / line.quantity
+        return res
 
     @api.constrains('green_point_amount_unit', 'green_point_amount_line')
     def _check_gp_positive(self):

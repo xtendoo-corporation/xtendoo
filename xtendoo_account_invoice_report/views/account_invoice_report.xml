@@ -25,12 +25,13 @@
             </field>
         </record>
 
+        <!-- Odoo 18: la vista de lista usa <list> en lugar de <tree> -->
         <record id="account_invoice_report_view_tree_inherit" model="ir.ui.view">
             <field name="name">account.invoice.report.view.tree.inherit</field>
             <field name="model">account.invoice.report</field>
             <field name="inherit_id" ref="account.account_invoice_report_view_tree"/>
             <field name="arch" type="xml">
-                <xpath expr="//tree" position="inside">
+                <xpath expr="//list" position="inside">
                     <field name="price_unit"/>
                     <field name="discount"/>
                 </xpath>
@@ -54,7 +55,8 @@
             <field name="model">account.invoice.report</field>
             <field name="inherit_id" ref="account_invoice_line_report.view_invoice_report_tree_info"/>
             <field name="arch" type="xml">
-                <xpath expr="//tree/field[@name='price_average']" position="before">
+                <!-- Odoo 18: XPath usa //list en lugar de //tree -->
+                <xpath expr="//list/field[@name='price_average']" position="before">
                     <field name="price_unit"/>
                     <field name="discount"/>
                 </xpath>

@@ -17,7 +17,7 @@ class PurchaseOrderLine(models.Model):
                 line.green_point_amount_line = 0.0
                 line.green_point_manual = False
                 continue
-            
+
             if line.green_point_manual:
                 continue
 
@@ -33,12 +33,17 @@ class PurchaseOrderLine(models.Model):
     def _check_gp_positive(self):
         if any(l.green_point_amount_unit < 0 or l.green_point_amount_line < 0 for l in self):
             raise ValidationError(_("El importe de Punto Verde no puede ser negativo."))
-            
-    @api.onchange('green_point_amount_line', 'product_qty')
-    def _onchange_green_point_amount_line(self):
-        """ Auto-calculate unit from line if user inputs line manually. """
-        if self.green_point_amount_line and self.product_qty:
-            self.green_point_amount_unit = self.green_point_amount_line / self.product_qty
+
+    # Odoo 18: @api.onchange puede no dispararse en operaciones batch/API.
+    # Se sustituye por override de write() para mayor fiabilidad.
+    def write(self, vals):
+        res = super().write(vals)
+        if 'green_point_amount_line' in vals or 'product_qty' in vals:
+            for line in self:
+                if line.green_point_amount_line and line.product_qty:
+                    # Recalcular importe unitario a partir del importe de línea
+                    line.green_point_amount_unit = line.green_point_amount_line / line.product_qty
+        return res
 
     def _prepare_account_move_line(self, **kwargs):
         res = super()._prepare_account_move_line(**kwargs)

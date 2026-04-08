@@ -5,7 +5,8 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
+            <!-- Odoo 18: el nodo embebido de líneas de pedido es <list>, no <tree> -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='price_subtotal']" position="after">
                 <field name="green_point_applicable" column_invisible="True"/>
                 <field name="green_point_amount_unit" invisible="not green_point_applicable" optional="hide"/>
                 <field name="green_point_amount_line" invisible="not green_point_applicable" optional="show"/>
