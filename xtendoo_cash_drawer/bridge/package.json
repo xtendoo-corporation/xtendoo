@@ -4,7 +4,8 @@
   "description": "Bridge local para apertura de cajón portamonedas desde Odoo POS",
   "main": "bridge_node.js",
   "scripts": {
-    "start": "node bridge_node.js"
+    "start": "node bridge_node.js",
+    "proxy": "node cors_proxy.js"
   },
   "dependencies": {
     "express": "^4.18.2",
