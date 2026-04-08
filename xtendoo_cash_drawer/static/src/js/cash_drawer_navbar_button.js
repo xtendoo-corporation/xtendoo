@@ -2,15 +2,16 @@
 /**
  * CashDrawerNavbarButton - Botón de apertura del cajón en el Navbar del TPV.
  *
- * Solo se muestra cuando hay una URL configurada en pos.config.
- * Usa la misma lógica de petición que el botón de ControlButtons.
+ * Solo se muestra cuando el bridge del cajón está habilitado y configurado.
+ * Llama DIRECTAMENTE al bridge local desde el navegador del TPV.
+ * No pasa por el backend de Odoo.
  */
 
 import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { usePos } from "@point_of_sale/app/hooks/pos_hook";
 import { _t } from "@web/core/l10n/translation";
-import { sendCashDrawerRequest } from "./cash_drawer_utils";
+import { sendCashDrawerRequest, checkCashDrawerHealth } from "./cash_drawer_utils";
 import { Navbar } from "@point_of_sale/app/components/navbar/navbar";
 
 export class CashDrawerNavbarButton extends Component {
@@ -20,22 +21,30 @@ export class CashDrawerNavbarButton extends Component {
     setup() {
         this.pos = usePos();
         this.notification = useService("notification");
-        this.state = useState({ sending: false });
+        this.state = useState({ sending: false, bridgeAvailable: null });
     }
 
+    /**
+     * Controla la visibilidad del botón.
+     * Compatible con nueva arquitectura (cash_drawer_use_bridge + cash_drawer_bridge_url)
+     * y con el campo legacy cash_drawer_open_url.
+     */
     get isVisible() {
-        return !!this.pos.config.cash_drawer_open_url;
+        const cfg = this.pos.config;
+        return !!(cfg.cash_drawer_use_bridge && cfg.cash_drawer_bridge_url) ||
+               !!(cfg.cash_drawer_open_url);
     }
 
+    /**
+     * Abre el cajón enviando la petición directamente al bridge local.
+     * Muestra notificación de éxito o error.
+     */
     async onClick() {
         if (this.state.sending) return;
         this.state.sending = true;
         try {
-            await sendCashDrawerRequest(
-                this.pos.config.cash_drawer_open_url,
-                this.pos.config.cash_drawer_api_key
-            );
-            this.notification.add(_t("Cajón abierto."), { type: "success" });
+            await sendCashDrawerRequest(this.pos.config);
+            this.notification.add(_t("Cajón portamonedas abierto."), { type: "success" });
         } catch (err) {
             this.notification.add(
                 _t("Error al abrir el cajón: ") + (err.message || String(err)),
@@ -46,8 +55,27 @@ export class CashDrawerNavbarButton extends Component {
             this.state.sending = false;
         }
     }
+
+    /**
+     * Comprueba disponibilidad del bridge al hacer clic largo / desde diagnóstico.
+     * No interrumpe el flujo principal.
+     */
+    async onCheckHealth() {
+        const result = await checkCashDrawerHealth(this.pos.config);
+        this.state.bridgeAvailable = result.available;
+        if (result.available) {
+            this.notification.add(
+                _t("Bridge del cajón disponible: ") + result.detail,
+                { type: "info" }
+            );
+        } else {
+            this.notification.add(
+                _t("Bridge del cajón no disponible: ") + result.detail,
+                { type: "warning", sticky: true }
+            );
+        }
+    }
 }
 
 // Registrar el componente en el Navbar del POS
 Navbar.components = { ...Navbar.components, CashDrawerNavbarButton };
-

@@ -7,30 +7,48 @@
         <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('o_settings_container')]" position="inside">
-                <setting string="Cajón portamonedas"
-                         help="Configuración del cajón portamonedas para este terminal de punto de venta">
+                <setting string="Cajón portamonedas (bridge local)"
+                         help="La apertura del cajón se realiza directamente desde el navegador del TPV al bridge local. El bridge debe correr en el PC del cajero o en la LAN.">
                     <div class="content-group">
+
+                        <!-- Habilitar bridge -->
                         <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="Usar bridge local" for="cash_drawer_use_bridge"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="cash_drawer_use_bridge"/>
+                                <span class="o_form_help ms-1"
+                                      title="Activa la integración con el bridge local del cajón portamonedas."/>
+                            </div>
+                        </div>
+
+                        <!-- URL del bridge -->
+                        <div class="row mt-2" attrs="{'invisible': [('cash_drawer_use_bridge', '=', False)]}">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="URL del bridge local" for="cash_drawer_bridge_url"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="cash_drawer_bridge_url"
+                                       placeholder="http://127.0.0.1:3211"/>
+                            </div>
+                        </div>
+
+                        <!-- Nombre impresora -->
+                        <div class="row mt-2" attrs="{'invisible': [('cash_drawer_use_bridge', '=', False)]}">
                             <div class="col-lg-4 o_light_label">
                                 <label string="Nombre de la impresora" for="cash_drawer_printer_name"/>
                             </div>
                             <div class="col-lg-8">
                                 <field name="cash_drawer_printer_name"
-                                       placeholder="Ej: EPSON TM-T20III"/>
+                                       placeholder="Ej: POS-80C, EPSON TM-T20III"/>
                             </div>
                         </div>
-                        <div class="row mt-2">
+
+                        <!-- API Key -->
+                        <div class="row mt-2" attrs="{'invisible': [('cash_drawer_use_bridge', '=', False)]}">
                             <div class="col-lg-4 o_light_label">
-                                <label string="URL de apertura del cajón" for="cash_drawer_open_url"/>
-                            </div>
-                            <div class="col-lg-8">
-                                <field name="cash_drawer_open_url"
-                                       placeholder="Ej: http://localhost:9100/open_drawer"/>
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-lg-4 o_light_label">
-                                <label string="API Key" for="cash_drawer_api_key"/>
+                                <label string="API Key del bridge" for="cash_drawer_api_key"/>
                             </div>
                             <div class="col-lg-8">
                                 <field name="cash_drawer_api_key"
@@ -38,9 +56,11 @@
                                        placeholder="Clave de autenticación (opcional)"/>
                             </div>
                         </div>
-                        <div class="row mt-2">
+
+                        <!-- Apertura automática -->
+                        <div class="row mt-2" attrs="{'invisible': [('cash_drawer_use_bridge', '=', False)]}">
                             <div class="col-lg-4 o_light_label">
-                                <label string="Apertura automática" for="cash_drawer_auto_open"/>
+                                <label string="Apertura automática en efectivo" for="cash_drawer_auto_open"/>
                             </div>
                             <div class="col-lg-8">
                                 <field name="cash_drawer_auto_open"/>
@@ -48,7 +68,9 @@
                                       title="Si está activo, el cajón se abrirá automáticamente al validar un pedido con pago en efectivo."/>
                             </div>
                         </div>
-                        <div class="row mt-3">
+
+                        <!-- Botón de prueba -->
+                        <div class="row mt-3" attrs="{'invisible': [('cash_drawer_use_bridge', '=', False)]}">
                             <div class="col-lg-12">
                                 <button name="action_test_cash_drawer"
                                         type="object"
@@ -57,6 +79,30 @@
                                         icon="fa-unlock"/>
                             </div>
                         </div>
+
+                        <!-- Separador y campo legacy -->
+                        <div class="row mt-3">
+                            <div class="col-lg-12">
+                                <div class="alert alert-light border mt-1 mb-0 small text-muted">
+                                    <i class="fa fa-info-circle me-1"/>
+                                    <strong>Campo legado:</strong> Si migraste desde una versión anterior
+                                    que usaba el proxy backend de Odoo, el campo
+                                    <em>URL de apertura (legado)</em> se conserva por compatibilidad.
+                                    Puedes migrar su valor a <em>URL del bridge local</em> y luego
+                                    activar <em>Usar bridge local</em>.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-lg-4 o_light_label">
+                                <label string="URL de apertura (legado)" for="cash_drawer_open_url"/>
+                            </div>
+                            <div class="col-lg-8">
+                                <field name="cash_drawer_open_url"
+                                       placeholder="Legado: http://..."/>
+                            </div>
+                        </div>
+
                     </div>
                 </setting>
             </xpath>

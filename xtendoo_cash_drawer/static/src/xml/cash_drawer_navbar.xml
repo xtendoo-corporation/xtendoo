@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <!-- Template del botón de apertura del cajón en el Navbar -->
+    <!--
+        Template del botón de apertura del cajón en el Navbar del TPV.
+
+        El botón se muestra cuando isVisible es true (bridge habilitado y configurado
+        o campo legacy cash_drawer_open_url relleno).
+
+        La apertura va directamente al bridge local desde el navegador del TPV.
+    -->
     <t t-name="xtendoo_cash_drawer.CashDrawerNavbarButton">
         <button t-if="isVisible"
                 class="btn btn-light btn-lg lh-lg cash-drawer-navbar-button"
@@ -22,4 +29,3 @@
     </t>
 
 </templates>
-

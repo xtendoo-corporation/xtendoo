@@ -1,15 +1,35 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Xtendoo Cash Drawer",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "category": "Point of Sale",
-    "summary": "Configuración del cajón portamonedas: impresora y URL de apertura",
+    "summary": "Cajón portamonedas vía bridge local: apertura directa desde el navegador del TPV",
     "description": """
-        Módulo para configurar el cajón portamonedas en el TPV de Odoo.
+        Módulo para configurar y controlar el cajón portamonedas en el TPV de Odoo.
 
-        Permite definir, por cada terminal de punto de venta:
-        - El nombre exacto de la impresora conectada al cajón.
-        - La URL utilizada para enviar la orden de apertura del cajón.
+        Arquitectura: frontend POS → bridge local
+        -----------------------------------------
+        La apertura del cajón se realiza DIRECTAMENTE desde el navegador del TPV
+        mediante fetch() al bridge local (por defecto http://127.0.0.1:3211).
+        Odoo no actúa como proxy: no se realizan peticiones Python al cajón.
+
+        Esto resuelve el problema fundamental de los entornos cloud/Docker:
+        el bridge corre en el PC del cajero o en la LAN local del cliente,
+        no en el servidor Odoo.
+
+        Configuración por TPV:
+        - Habilitar bridge local
+        - URL del bridge (por defecto http://127.0.0.1:3211 o IP LAN)
+        - Nombre de la impresora (parámetro ?printer= enviado al bridge)
+        - API Key del bridge (cabecera x-api-key)
+        - Apertura automática en pagos en efectivo
+
+        Compatibilidad: el campo legacy cash_drawer_open_url se mantiene
+        para instalaciones anteriores que usaban el proxy backend.
+
+        API esperada del bridge:
+          GET /open-drawer?printer=<nombre>  → { "ok": true }
+          GET /health                        → { "status": "ok" }
     """,
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
@@ -37,4 +57,3 @@
     "application": False,
     "auto_install": False,
 }
-

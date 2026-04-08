@@ -1,87 +1,157 @@
 /** @odoo-module **/
 /**
- * Acción cliente para probar la apertura del cajón portamonedas.
- * Muestra un diálogo con los datos de la petición y la envía a través
- * del proxy de Odoo (mismo origen, sin restricciones CORS).
+ * Acción cliente para probar la apertura del cajón portamonedas desde backend.
+ *
+ * Arquitectura: la prueba se ejecuta DESDE EL NAVEGADOR del usuario, no desde
+ * Python. El fetch va directamente al bridge local con la misma lógica que el
+ * TPV real (buildCashDrawerUrl + sendCashDrawerRequest).
+ *
+ * Esto garantiza que la prueba valida exactamente el mismo canal de red que
+ * usará el cajero en el TPV, incluyendo posibles problemas de CORS, firewall
+ * o configuración de IP LAN.
  */
 import { registry } from "@web/core/registry";
 import { Component, useState, xml } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
+import {
+    buildCashDrawerUrl,
+    buildCashDrawerHealthUrl,
+    sendCashDrawerRequest,
+    checkCashDrawerHealth,
+} from "./cash_drawer_utils";
+
+/**
+ * Diálogo de prueba del cajón portamonedas.
+ *
+ * Muestra la configuración activa y permite:
+ *  1. Comprobar el health check del bridge (GET /health).
+ *  2. Enviar la señal de apertura (GET /open-drawer?printer=...).
+ *
+ * Toda la lógica de red ocurre en el navegador del usuario, nunca en Python.
+ */
 class CashDrawerTestDialog extends Component {
     static components = { Dialog };
     static props = {
-        url: String,
+        bridge_url: String,
+        printer_name: { type: String, optional: true },
         api_key: { type: String, optional: true },
         close: Function,
     };
+
     setup() {
         this.notification = useService("notification");
-        this.state = useState({ sending: false, error: null, resolvedUrl: null });
+        this.state = useState({
+            sending: false,
+            checking: false,
+            error: null,
+            healthResult: null,
+            openResult: null,
+        });
     }
+
+    /** Config sintético para reutilizar las utilidades JS del POS */
+    get _config() {
+        return {
+            cash_drawer_bridge_url: this.props.bridge_url,
+            cash_drawer_printer_name: this.props.printer_name || "",
+            cash_drawer_api_key: this.props.api_key || "",
+        };
+    }
+
+    get openUrl() {
+        try {
+            return buildCashDrawerUrl(this._config);
+        } catch {
+            return "— (URL no construible con la configuración actual)";
+        }
+    }
+
+    get healthUrl() {
+        try {
+            return buildCashDrawerHealthUrl(this._config);
+        } catch {
+            return "— (URL no construible)";
+        }
+    }
+
     get maskedKey() {
         const k = this.props.api_key || "";
         if (!k) return "— (sin API key)";
         if (k.length <= 4) return "*".repeat(k.length);
         return k.slice(0, 4) + "*".repeat(Math.min(k.length - 4, 12));
     }
-    get curlCommandMasked() {
-        const { url, api_key } = this.props;
-        const header = api_key ? `-H "x-api-key: ${this.maskedKey}" ` : "";
-        return `curl ${header}"${url}"`;
+
+    /** Comprueba el health check del bridge (GET /health). */
+    async onCheckHealth() {
+        if (this.state.checking) return;
+        this.state.checking = true;
+        this.state.healthResult = null;
+        this.state.error = null;
+        try {
+            const result = await checkCashDrawerHealth(this._config);
+            this.state.healthResult = result;
+        } catch (err) {
+            this.state.error = err.message || String(err);
+        } finally {
+            this.state.checking = false;
+        }
     }
+
+    /** Envía la señal de apertura al bridge (GET /open-drawer?printer=...). */
     async onSend() {
         if (this.state.sending) return;
         this.state.sending = true;
+        this.state.openResult = null;
         this.state.error = null;
-        this.state.resolvedUrl = null;
-        const { url, api_key } = this.props;
         try {
-            const response = await fetch("/xtendoo_cash_drawer/open", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    jsonrpc: "2.0",
-                    method: "call",
-                    params: { url, api_key: api_key || "" },
-                }),
+            const result = await sendCashDrawerRequest(this._config);
+            this.state.openResult = result;
+            this.notification.add("Señal de apertura enviada correctamente.", {
+                type: "success",
             });
-            const json = await response.json();
-            if (json.error) {
-                throw new Error(json.error.data?.message || json.error.message || "Error en proxy Odoo");
-            }
-            const result = json.result || {};
-            if (result.success) {
-                this.state.resolvedUrl = result.resolved_url || url;
-                this.notification.add("Señal de apertura del cajón enviada correctamente.", { type: "success" });
-                this.props.close();
-            } else {
-                this.state.error = result.error || "El servicio respondió con un error desconocido.";
-            }
         } catch (err) {
             this.state.error = err.message || String(err);
-            console.error("[CashDrawer] Error:", err);
+            console.error("[CashDrawer] Error en prueba:", err);
         } finally {
             this.state.sending = false;
         }
     }
+
     onCancel() {
         this.props.close();
     }
 }
+
 const TEMPLATE = /* xml */ `
 <Dialog title="'Probar apertura del cajón portamonedas'">
     <t t-set-slot="default">
         <div class="mb-3">
             <p class="text-muted mb-3">
-                La petición se enviará a través del <strong>proxy de Odoo</strong>
-                con la cabecera <code>x-api-key</code> completa.
+                La prueba se realiza <strong>directamente desde este navegador</strong>
+                al bridge local. No pasa por el servidor Odoo.
+                Esto simula exactamente el comportamiento del TPV real.
             </p>
-            <table class="table table-sm table-bordered">
+
+            <!-- Configuración activa -->
+            <h6 class="fw-bold">Configuración activa</h6>
+            <table class="table table-sm table-bordered mb-3">
                 <tbody>
                     <tr>
-                        <th class="bg-light" style="width:30%">URL configurada</th>
-                        <td><code class="text-break" t-esc="props.url"/></td>
+                        <th class="bg-light" style="width:35%">URL base del bridge</th>
+                        <td><code class="text-break" t-esc="props.bridge_url || '— (no configurada)'"/></td>
+                    </tr>
+                    <tr t-if="props.printer_name">
+                        <th class="bg-light">Impresora</th>
+                        <td><code t-esc="props.printer_name"/></td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">URL de apertura construida</th>
+                        <td><code class="text-break text-primary" t-esc="openUrl"/></td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">URL health check</th>
+                        <td><code class="text-break" t-esc="healthUrl"/></td>
                     </tr>
                     <tr>
                         <th class="bg-light">Header <code>x-api-key</code></th>
@@ -90,50 +160,96 @@ const TEMPLATE = /* xml */ `
                             <span t-else="" class="text-muted">— (sin API key)</span>
                         </td>
                     </tr>
-                    <tr>
-                        <th class="bg-light">Método</th>
-                        <td><code>GET</code></td>
-                    </tr>
                 </tbody>
             </table>
-            <div class="mt-3">
-                <label class="form-label fw-bold">Equivalente curl (desde el servidor):</label>
-                <pre class="bg-dark text-light p-2 rounded small text-break"
-                     style="white-space:pre-wrap;" t-esc="curlCommandMasked"/>
+
+            <!-- Resultado health check -->
+            <div t-if="state.healthResult" class="mb-2">
+                <div t-if="state.healthResult.available" class="alert alert-success py-2">
+                    <i class="fa fa-check-circle me-1"/>
+                    <strong>Bridge disponible:</strong>
+                    <span t-esc="state.healthResult.detail"/>
+                </div>
+                <div t-else="" class="alert alert-warning py-2">
+                    <i class="fa fa-exclamation-triangle me-1"/>
+                    <strong>Bridge no disponible:</strong>
+                    <span t-esc="state.healthResult.detail"/>
+                </div>
             </div>
-            <div t-if="state.error" class="alert alert-danger mt-3" role="alert">
+
+            <!-- Resultado apertura -->
+            <div t-if="state.openResult" class="alert alert-success py-2 mb-2">
+                <i class="fa fa-unlock me-1"/>
+                Señal de apertura enviada correctamente.
+            </div>
+
+            <!-- Error -->
+            <div t-if="state.error" class="alert alert-danger mt-2" role="alert">
                 <i class="fa fa-exclamation-triangle me-1"/>
                 <strong>Error:</strong><br/>
-                <span t-esc="state.error"/>
+                <span style="white-space:pre-wrap;" t-esc="state.error"/>
+                <hr class="my-2"/>
+                <small class="text-muted">
+                    Si el error es de red o CORS, verifica que:
+                    <ul class="mb-0 mt-1">
+                        <li>El bridge está en ejecución en la URL configurada.</li>
+                        <li>El bridge tiene CORS habilitado (Access-Control-Allow-Origin).</li>
+                        <li>Si usas IP LAN, el PC del bridge está encendido y accesible.</li>
+                    </ul>
+                </small>
             </div>
         </div>
     </t>
     <t t-set-slot="footer">
-        <button class="btn btn-primary"
+        <!-- Health check -->
+        <button class="btn btn-outline-secondary"
+                t-on-click="onCheckHealth"
+                t-att-disabled="state.checking or state.sending">
+            <i t-attf-class="fa me-1 {{ state.checking ? 'fa-spinner fa-spin' : 'fa-heartbeat' }}"/>
+            <t t-if="state.checking">Comprobando…</t>
+            <t t-else="">Verificar bridge</t>
+        </button>
+        <!-- Apertura -->
+        <button class="btn btn-primary ms-2"
                 t-on-click="onSend"
-                t-att-disabled="state.sending">
+                t-att-disabled="state.sending or state.checking">
             <i t-attf-class="fa me-1 {{ state.sending ? 'fa-spinner fa-spin' : 'fa-unlock' }}"/>
             <t t-if="state.sending">Enviando…</t>
-            <t t-else="">Enviar petición</t>
+            <t t-else="">Abrir cajón</t>
         </button>
+        <!-- Cerrar -->
         <button class="btn btn-secondary ms-2"
                 t-on-click="onCancel"
-                t-att-disabled="state.sending">
-            Cancelar
+                t-att-disabled="state.sending or state.checking">
+            Cerrar
         </button>
     </t>
 </Dialog>
 `;
 CashDrawerTestDialog.template = xml`${TEMPLATE}`;
+
+/**
+ * Registra la acción cliente en el registro de Odoo.
+ *
+ * Se activa cuando action_test_cash_drawer() devuelve:
+ *   { type: "ir.actions.client", tag: "xtendoo_cash_drawer_open_test", params: {...} }
+ */
 registry.category("actions").add("xtendoo_cash_drawer_open_test", async (env, action) => {
-    const { url, api_key } = action.params || {};
-    if (!url) {
+    const params = action.params || {};
+    const bridgeUrl = params.bridge_url || "";
+
+    if (!bridgeUrl) {
         env.services.notification.add(
-            "No hay URL configurada para el cajón portamonedas.",
+            "No hay URL del bridge configurada para el cajón portamonedas.",
             { type: "warning" }
         );
         return false;
     }
-    env.services.dialog.add(CashDrawerTestDialog, { url, api_key: api_key || "" });
+
+    env.services.dialog.add(CashDrawerTestDialog, {
+        bridge_url: bridgeUrl,
+        printer_name: params.printer_name || "",
+        api_key: params.api_key || "",
+    });
     return false;
 });

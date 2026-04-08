@@ -5,16 +5,22 @@
  * Parcha PaymentScreen.validateOrder para que, tras una validación exitosa
  * de un pedido con al menos un pago con método de tipo efectivo
  * (is_cash_count === true), se envíe automáticamente la señal de apertura
- * del cajón portamonedas a través del proxy de Odoo.
+ * del cajón portamonedas DIRECTAMENTE al bridge local desde el navegador.
  *
  * La apertura sólo se ejecuta cuando:
  *  1. El pedido quedó en estado "paid" (validación completada con éxito).
  *  2. Al menos uno de los pagos usa un método de tipo efectivo (is_cash_count).
- *  3. La configuración del TPV tiene una URL de apertura del cajón.
- *  4. El campo cash_drawer_auto_open está activo en la configuración del TPV.
+ *  3. cash_drawer_auto_open está activo en la configuración del TPV.
+ *  4. El bridge está habilitado y tiene URL configurada.
  *
- * Los errores de apertura se registran en consola y se muestran como
- * notificación de advertencia, sin interrumpir el flujo normal del TPV.
+ * Tolerancia a fallos:
+ *  Los errores de apertura se registran en consola y se muestran como
+ *  notificación de advertencia, sin interrumpir el flujo normal del TPV.
+ *  El cobro siempre se completa independientemente del estado del cajón.
+ *
+ * Compatibilidad legacy:
+ *  Si cash_drawer_use_bridge=false pero cash_drawer_open_url tiene valor,
+ *  también se intenta abrir (compatibilidad con configuraciones antiguas).
  */
 
 import { patch } from "@web/core/utils/patch";
@@ -33,38 +39,48 @@ patch(PaymentScreen.prototype, {
      * Extiende validateOrder para abrir el cajón automáticamente si el pedido
      * se paga con efectivo y la configuración lo permite.
      *
+     * La apertura se lanza en background (sin await en el resultado final)
+     * para no bloquear el flujo del TPV en caso de que el bridge tarde o falle.
+     *
      * @param {boolean} isForceValidate
      */
     async validateOrder(isForceValidate) {
         const order = this.currentOrder;
-
-        // Capturamos el estado ANTES de llamar a super para detectar si hay
-        // pagos en efectivo incluso cuando el pedido cambia de pantalla.
+        // Capturamos ANTES de super para tener los datos incluso si el pedido
+        // cambia de estado durante la validación.
         const hasCashPayment = _orderHasCashPayment(order);
-        const drawerUrl = this.pos.config.cash_drawer_open_url;
-        const autoOpen = this.pos.config.cash_drawer_auto_open;
+        const cfg = this.pos.config;
+        const autoOpen = cfg.cash_drawer_auto_open;
+        // Soportamos tanto la nueva arquitectura como el campo legacy
+        const bridgeReady = (cfg.cash_drawer_use_bridge && cfg.cash_drawer_bridge_url) ||
+                            cfg.cash_drawer_open_url;
 
         await super.validateOrder(isForceValidate);
 
-        // Verificamos que el pedido quedó efectivamente pagado antes de abrir.
-        if (hasCashPayment && drawerUrl && autoOpen && order?.finalized) {
-            sendCashDrawerRequest(drawerUrl, this.pos.config.cash_drawer_api_key).then(
-                (result) => {
-                    if (!result.success) {
-                        console.warn("[CashDrawer] Auto-apertura: respuesta negativa:", result.error);
+        // Solo abrimos si el pedido quedó pagado y se cumplen todas las condiciones
+        if (hasCashPayment && autoOpen && bridgeReady && order?.finalized) {
+            // Fire-and-forget: el cajón se abre sin bloquear la UI
+            sendCashDrawerRequest(cfg)
+                .then((result) => {
+                    if (!result.ok) {
+                        console.warn(
+                            "[CashDrawer] Auto-apertura: respuesta negativa:",
+                            result
+                        );
                         this._cashDrawerNotification?.add(
-                            _t("No se pudo abrir el cajón automáticamente: ") + (result.error || ""),
+                            _t("No se pudo abrir el cajón automáticamente."),
                             { type: "warning" }
                         );
                     }
-                }
-            ).catch((err) => {
-                console.warn("[CashDrawer] Auto-apertura falló:", err);
-                this._cashDrawerNotification?.add(
-                    _t("No se pudo abrir el cajón: ") + (err.message || String(err)),
-                    { type: "warning" }
-                );
-            });
+                })
+                .catch((err) => {
+                    // El error se muestra como aviso, nunca interrumpe la sesión POS
+                    console.warn("[CashDrawer] Auto-apertura falló:", err.message || err);
+                    this._cashDrawerNotification?.add(
+                        _t("No se pudo abrir el cajón: ") + (err.message || String(err)),
+                        { type: "warning" }
+                    );
+                });
         }
     },
 });
@@ -80,4 +96,3 @@ function _orderHasCashPayment(order) {
     const lines = order.payment_ids || [];
     return lines.some((line) => line.payment_method_id?.is_cash_count);
 }
-

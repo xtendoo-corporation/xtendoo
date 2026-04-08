@@ -1,30 +1,30 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 """
-Controlador proxy para el cajón portamonedas.
+Controlador legacy del cajón portamonedas.
 
-El navegador no puede enviar cabeceras personalizadas (x-api-key) a servicios
-de terceros sin que éstos soporten CORS. Este endpoint actúa como proxy:
-el navegador llama a Odoo (mismo origen → sin CORS) y Odoo realiza la
-petición al cajón desde Python, sin restricciones de CORS.
+Estado: LEGACY — Ya no se usa como vía principal.
+-------------------------------------------------------
+La arquitectura actual del módulo realiza la apertura del cajón DIRECTAMENTE
+desde el navegador del TPV (JavaScript → fetch() → bridge local).
+Este controlador ya NO interviene en el flujo normal del POS.
 
-Resolución de 127.0.0.1 en entornos Docker
--------------------------------------------
-Dentro del contenedor, 127.0.0.1 apunta al propio contenedor, no al host.
-El controlador intenta automáticamente varias estrategias para alcanzar
-el servicio en el host:
+Se mantiene en el código por las siguientes razones:
+  1. Compatibilidad con clientes que tengan integraciones externas que llamen
+     al endpoint /xtendoo_cash_drawer/open.
+  2. Referencia documentada de cómo era el flujo anterior (proxy backend).
+  3. No romper instalaciones existentes durante la transición.
 
-  1. host.docker.internal  (requiere extra_hosts en docker-compose)
-  2. IP de la puerta de enlace leída de /proc/net/route
-  3. URL sin sustitución (funciona en entornos sin Docker / dev local)
+Si en el futuro se decide eliminar este controlador, hay que:
+  - Eliminar la importación en controllers/__init__.py.
+  - Eliminar el asset 'cash_drawer_backend_test.js' del bundle web.assets_backend
+    si ya no llama a este endpoint.
+  - Actualizar los tests que cubren _detect_docker_host_ip y _resolve_url.
 
-Para que la estrategia 2 funcione el servicio del cajón DEBE escuchar en
-0.0.0.0 (no sólo en 127.0.0.1). Si escucha sólo en loopback, añade al
-servicio Docker:
+Flujo legacy (NO activo por defecto):
+  Navegador → POST /xtendoo_cash_drawer/open → Python requests → bridge local
 
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-y configura el servicio del cajón para escuchar en 0.0.0.0.
+Flujo actual (activo):
+  Navegador del TPV → fetch() directo → bridge local
 """
 
 import re
@@ -34,12 +34,11 @@ import logging
 import requests as http_requests
 
 from odoo import http
-from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
 # Patrón para detectar referencias al host local en la URL configurada
-_LOCALHOST_RE = re.compile(r'\b(127\.0\.0\.1|localhost)\b', re.I)
+_LOCALHOST_RE = re.compile(r"\b(127\.0\.0\.1|localhost)\b", re.I)
 
 # Tiempo máximo de espera al cajón (segundos)
 _TIMEOUT = 5
@@ -88,7 +87,6 @@ def _resolve_url(url: str) -> list[str]:
         return [url]
 
     candidates = []
-
     host_ip = _detect_docker_host_ip()
     if host_ip:
         candidates.append(_LOCALHOST_RE.sub(host_ip, url))
@@ -100,6 +98,13 @@ def _resolve_url(url: str) -> list[str]:
 
 
 class CashDrawerController(http.Controller):
+    """
+    Endpoint proxy legacy para apertura del cajón portamonedas.
+
+    NOTA: Este endpoint ya NO es la vía principal de apertura del cajón.
+    El flujo actual pasa por fetch() directo desde el JS del POS al bridge local.
+    Ver static/src/js/cash_drawer_utils.js → sendCashDrawerRequest().
+    """
 
     @http.route(
         "/xtendoo_cash_drawer/open",
@@ -110,7 +115,7 @@ class CashDrawerController(http.Controller):
     )
     def open_cash_drawer(self, url: str = "", api_key: str = "", **_kwargs):
         """
-        Proxy que envía la señal de apertura al cajón portamonedas.
+        [LEGACY] Proxy que envía la señal de apertura al cajón portamonedas.
 
         Parámetros JSON:
             url     (str): URL completa del servicio del cajón.
@@ -130,10 +135,14 @@ class CashDrawerController(http.Controller):
         last_error = None
 
         for candidate_url in urls_to_try:
-            _logger.info("[CashDrawer] Probando URL: %s", candidate_url)
+            _logger.info("[CashDrawer][legacy] Probando URL: %s", candidate_url)
             try:
                 resp = http_requests.get(candidate_url, headers=headers, timeout=_TIMEOUT)
-                _logger.info("[CashDrawer] Respuesta %s desde %s", resp.status_code, candidate_url)
+                _logger.info(
+                    "[CashDrawer][legacy] Respuesta %s desde %s",
+                    resp.status_code,
+                    candidate_url,
+                )
                 return {
                     "success": True,
                     "status_code": resp.status_code,
@@ -142,15 +151,20 @@ class CashDrawerController(http.Controller):
                 }
             except http_requests.exceptions.ConnectionError as exc:
                 last_error = str(exc)
-                _logger.warning("[CashDrawer] ConnectionError en %s: %s", candidate_url, exc)
+                _logger.warning(
+                    "[CashDrawer][legacy] ConnectionError en %s: %s",
+                    candidate_url,
+                    exc,
+                )
             except http_requests.exceptions.Timeout:
                 last_error = f"Tiempo de espera agotado ({_TIMEOUT}s) en {candidate_url}"
-                _logger.warning("[CashDrawer] Timeout en %s", candidate_url)
+                _logger.warning("[CashDrawer][legacy] Timeout en %s", candidate_url)
             except Exception as exc:  # noqa: BLE001
                 last_error = str(exc)
-                _logger.exception("[CashDrawer] Error inesperado en %s", candidate_url)
+                _logger.exception(
+                    "[CashDrawer][legacy] Error inesperado en %s", candidate_url
+                )
 
-        # Ninguna URL funcionó
         hint = ""
         if _LOCALHOST_RE.search(url):
             hint = (
@@ -165,4 +179,3 @@ class CashDrawerController(http.Controller):
             "resolved_url": urls_to_try[-1],
             "error": (last_error or "Error desconocido") + hint,
         }
-
