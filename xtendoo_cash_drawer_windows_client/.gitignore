@@ -1,0 +1,4 @@
+node_modules/
+*.pem
+*.exe
+package-lock.json

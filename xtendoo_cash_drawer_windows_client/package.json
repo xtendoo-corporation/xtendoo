@@ -1,0 +1,29 @@
+{
+  "name": "impresora-service",
+  "version": "1.0.0",
+  "description": "Servicio local Windows para abrir cajon via ESC/POS RAW",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "tray": "node tray.js",
+    "build": "pkg server.js --targets node18-win-x64 --output impresora-service.exe",
+    "build:tray": "pkg tray.js --targets node18-win-x64 --output impresora-tray.exe --assets icon-green.ico,icon-red.ico,node_modules/systray2/traybin/tray_windows_release.exe"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "systray2": "^2.1.4"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "assets": [
+      "send-raw.ps1",
+      "node_modules/systray2/traybin/tray_windows_release.exe"
+    ],
+    "targets": ["node18-win-x64"]
+  }
+}
