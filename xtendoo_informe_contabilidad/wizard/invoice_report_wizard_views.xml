@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         WIZARD - INFORME DIARIO DE FACTURAS DE CLIENTES
+         Formulario con opciones de filtrado y descarga del Excel
+         =================================================================== -->
+    <record id="xtendoo_informe_contabilidad_wizard_form" model="ir.ui.view">
+        <field name="name">xtendoo.informe.contabilidad.wizard.form</field>
+        <field name="model">xtendoo.informe.contabilidad.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Informe Diario de Facturas de Clientes">
+
+                <!-- =====================================================
+                     ESTADO: CONFIGURACIÓN
+                     ===================================================== -->
+                <sheet invisible="state != 'config'">
+                    <div class="oe_title">
+                        <h2>Diario de Facturas de Clientes</h2>
+                        <p class="text-muted">
+                            Genera un informe Excel con todas las facturas de clientes
+                            publicadas en el rango de fechas indicado.
+                        </p>
+                    </div>
+
+                    <group>
+                        <group string="Rango de Fechas">
+                            <field name="date_from" string="Fecha Desde" required="1"/>
+                            <field name="date_to" string="Fecha Hasta" required="1"/>
+                        </group>
+                        <group string="Filtros Opcionales">
+                            <field name="journal_id"
+                                   string="Diario de Ventas"
+                                   options="{'no_create': True}"
+                                   placeholder="Todos los diarios de ventas"/>
+                            <field name="partner_id"
+                                   string="Cliente"
+                                   options="{'no_create': True}"
+                                   placeholder="Todos los clientes"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa fa-info-circle" title="Información"/> &#160;
+                            <strong>El informe Excel incluirá:</strong>
+                            <ul class="mt-2 mb-0">
+                                <li><strong>Serie</strong>: Código del diario contable</li>
+                                <li><strong>Número de factura</strong>: Número de la factura</li>
+                                <li><strong>Fecha</strong>: Fecha de emisión de la factura</li>
+                                <li><strong>Referencia del cliente</strong>: Referencia indicada en la factura</li>
+                                <li><strong>Neto</strong>: Importe base imponible (sin IVA)</li>
+                                <li><strong>Importe IVA</strong>: Importe total del IVA</li>
+                                <li><strong>Total factura</strong>: Importe total (Neto + IVA)</li>
+                            </ul>
+                            <p class="mt-2 mb-0">
+                                Solo se incluyen facturas <strong>publicadas</strong> (confirmadas).
+                            </p>
+                        </div>
+                    </group>
+
+                    <field name="state" invisible="1"/>
+                </sheet>
+
+                <!-- =====================================================
+                     ESTADO: COMPLETADO
+                     ===================================================== -->
+                <sheet invisible="state != 'done'">
+                    <group>
+                        <div class="alert alert-success" role="alert">
+                            <i class="fa fa-check-circle" title="Completado"/> &#160;
+                            <strong>¡Informe generado correctamente!</strong>
+                            <p class="mb-0">El archivo Excel se ha generado y la descarga debería
+                            iniciarse automáticamente. Si no es así, puede descargarlo aquí:</p>
+                        </div>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="xlsx_filename" string="Nombre del archivo" readonly="1"/>
+                            <field name="xlsx_file"
+                                   filename="xlsx_filename"
+                                   string="Archivo Excel"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="state" invisible="1"/>
+                </sheet>
+
+                <footer>
+                    <!-- Botón principal de generación -->
+                    <button string="Generar Informe Excel"
+                            name="action_generate_report"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'config'"
+                            icon="fa-file-excel-o"/>
+                    <!-- Volver a configuración -->
+                    <button string="Modificar Filtros"
+                            name="action_back"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'done'"
+                            icon="fa-arrow-left"/>
+                    <!-- Cancelar / Cerrar -->
+                    <button string="Cerrar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         ACCIÓN PARA ABRIR EL WIZARD
+         =================================================================== -->
+    <record id="action_xtendoo_informe_contabilidad_wizard" model="ir.actions.act_window">
+        <field name="name">Diario de Facturas de Clientes</field>
+        <field name="res_model">xtendoo.informe.contabilidad.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="xtendoo_informe_contabilidad_wizard_form"/>
+    </record>
+
+</odoo>
+

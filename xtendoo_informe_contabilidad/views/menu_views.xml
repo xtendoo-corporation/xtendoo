@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         MENÚ: INFORME DIARIO DE FACTURAS DE CLIENTES
+         Ubicado bajo el menú de Contabilidad > Informes
+         =================================================================== -->
+
+    <!-- Menú padre bajo Informes de Contabilidad -->
+    <menuitem id="menu_xtendoo_informe_contabilidad_root"
+              name="Informe Diario de Facturas"
+              parent="account.menu_finance_reports"
+              sequence="99"
+              action="action_xtendoo_informe_contabilidad_wizard"
+              groups="account.group_account_user"/>
+
+</odoo>
+

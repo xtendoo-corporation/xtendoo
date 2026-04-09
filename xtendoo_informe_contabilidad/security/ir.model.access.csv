@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_xtendoo_informe_contabilidad_wizard_user,xtendoo.informe.contabilidad.wizard.user,model_xtendoo_informe_contabilidad_wizard,account.group_account_user,1,1,1,1
+access_xtendoo_informe_contabilidad_wizard_manager,xtendoo.informe.contabilidad.wizard.manager,model_xtendoo_informe_contabilidad_wizard,account.group_account_manager,1,1,1,1
