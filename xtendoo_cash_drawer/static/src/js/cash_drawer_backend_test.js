@@ -2,13 +2,9 @@
 /**
  * Acción cliente para probar la apertura del cajón portamonedas desde backend.
  *
- * Arquitectura: la prueba se ejecuta DESDE EL NAVEGADOR del usuario, no desde
- * Python. El fetch va directamente al bridge local con la misma lógica que el
- * TPV real (buildCashDrawerUrl + sendCashDrawerRequest).
- *
- * Esto garantiza que la prueba valida exactamente el mismo canal de red que
- * usará el cajero en el TPV, incluyendo posibles problemas de CORS, firewall
- * o configuración de IP LAN.
+ * Arquitectura: la prueba llama al proxy Odoo (/xtendoo_cash_drawer/open),
+ * que a su vez contacta el bridge local desde Python.
+ * El navegador nunca llama al bridge directamente → sin CORS.
  */
 import { registry } from "@web/core/registry";
 import { Component, useState, xml } from "@odoo/owl";
@@ -128,9 +124,9 @@ const TEMPLATE = /* xml */ `
     <t t-set-slot="default">
         <div class="mb-3">
             <p class="text-muted mb-3">
-                La prueba se realiza <strong>directamente desde este navegador</strong>
-                al bridge local. No pasa por el servidor Odoo.
-                Esto simula exactamente el comportamiento del TPV real.
+                La prueba usa el <strong>proxy Odoo</strong>: el navegador llama
+                a Odoo (sin CORS) y Odoo reenvía la petición al bridge desde el servidor Python.
+                Esto es exactamente el mismo canal que usa el TPV real.
             </p>
 
             <!-- Configuración activa -->
@@ -190,11 +186,12 @@ const TEMPLATE = /* xml */ `
                 <span style="white-space:pre-wrap;" t-esc="state.error"/>
                 <hr class="my-2"/>
                 <small class="text-muted">
-                    Si el error es de red o CORS, verifica que:
+                    Posibles causas:
                     <ul class="mb-0 mt-1">
-                        <li>El bridge está en ejecución en la URL configurada.</li>
-                        <li>El bridge tiene CORS habilitado (Access-Control-Allow-Origin).</li>
-                        <li>Si usas IP LAN, el PC del bridge está encendido y accesible.</li>
+                        <li>El bridge no está en ejecución.</li>
+                        <li>La URL o el puerto configurados son incorrectos.</li>
+                        <li>El servidor Odoo no puede alcanzar la IP del bridge por LAN.</li>
+                        <li>El nombre de la impresora no coincide con el configurado en el bridge.</li>
                     </ul>
                 </small>
             </div>

@@ -1,35 +1,35 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Xtendoo Cash Drawer",
-    "version": "19.0.2.0.0",
+    "version": "19.0.3.0.0",
     "category": "Point of Sale",
-    "summary": "Cajón portamonedas vía bridge local: apertura directa desde el navegador del TPV",
+    "summary": "Cajón portamonedas vía bridge local: apertura a través del proxy Odoo (sin CORS)",
     "description": """
         Módulo para configurar y controlar el cajón portamonedas en el TPV de Odoo.
 
-        Arquitectura: frontend POS → bridge local
-        -----------------------------------------
-        La apertura del cajón se realiza DIRECTAMENTE desde el navegador del TPV
-        mediante fetch() al bridge local (por defecto http://127.0.0.1:3211).
-        Odoo no actúa como proxy: no se realizan peticiones Python al cajón.
+        Arquitectura: frontend POS → proxy Odoo → bridge local
+        -------------------------------------------------------
+        La apertura del cajón se realiza a través del proxy integrado en Odoo:
+          1. El navegador del TPV llama a POST /xtendoo_cash_drawer/open (mismo origen → sin CORS).
+          2. Odoo (Python) reenvía la petición GET al bridge por IP LAN (servidor-a-servidor → sin CORS).
 
-        Esto resuelve el problema fundamental de los entornos cloud/Docker:
-        el bridge corre en el PC del cajero o en la LAN local del cliente,
-        no en el servidor Odoo.
+        Esto resuelve definitivamente el problema CORS que surge cuando el bridge local
+        (ejecutable en Windows/Linux del cajero) no puede añadir cabeceras CORS porque
+        es un binario externo que no se puede modificar.
+
+        El bridge NO necesita configurar cabeceras CORS con esta arquitectura.
 
         Configuración por TPV:
         - Habilitar bridge local
-        - URL del bridge (por defecto http://127.0.0.1:3211 o IP LAN)
+        - URL del bridge (p.ej. http://192.168.18.7:3210)
         - Nombre de la impresora (parámetro ?printer= enviado al bridge)
         - API Key del bridge (cabecera x-api-key)
         - Apertura automática en pagos en efectivo
 
-        Compatibilidad: el campo legacy cash_drawer_open_url se mantiene
-        para instalaciones anteriores que usaban el proxy backend.
-
-        API esperada del bridge:
+        API esperada del bridge (llamada desde Odoo Python, no desde el navegador):
           GET /open-drawer?printer=<nombre>  → { "ok": true }
           GET /health                        → { "status": "ok" }
+          Header: x-api-key: <api_key>       (si el bridge requiere autenticación)
     """,
     "author": "Xtendoo",
     "website": "https://xtendoo.es",

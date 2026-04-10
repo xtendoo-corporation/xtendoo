@@ -3,8 +3,8 @@
  * Xtendoo Cash Drawer - Parche de ControlButtons
  * Añade el botón "Abrir Cajón" en el área de botones de control del TPV.
  *
- * La llamada va DIRECTAMENTE al bridge local desde el navegador del TPV.
- * No pasa por el backend de Odoo.
+ * La llamada va al proxy Odoo (/xtendoo_cash_drawer/open), que reenvía
+ * la petición al bridge desde Python. Sin CORS, sin restricciones de red.
  */
 
 import { patch } from "@web/core/utils/patch";

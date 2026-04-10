@@ -1,30 +1,24 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 """
-Controlador legacy del cajón portamonedas.
+Controlador proxy del cajón portamonedas.
 
-Estado: LEGACY — Ya no se usa como vía principal.
--------------------------------------------------------
-La arquitectura actual del módulo realiza la apertura del cajón DIRECTAMENTE
-desde el navegador del TPV (JavaScript → fetch() → bridge local).
-Este controlador ya NO interviene en el flujo normal del POS.
+Arquitectura: navegador → Odoo (proxy) → bridge local
+------------------------------------------------------
+Este controlador es la VÍA PRINCIPAL de apertura del cajón desde Odoo 17+.
 
-Se mantiene en el código por las siguientes razones:
-  1. Compatibilidad con clientes que tengan integraciones externas que llamen
-     al endpoint /xtendoo_cash_drawer/open.
-  2. Referencia documentada de cómo era el flujo anterior (proxy backend).
-  3. No romper instalaciones existentes durante la transición.
+Flujo de red:
+  1. El navegador del TPV envía POST /xtendoo_cash_drawer/open a Odoo.
+     → Mismo origen que Odoo: CERO problemas de CORS.
+  2. Odoo (Python) reenvía la petición GET al bridge local por IP LAN.
+     → Llamada servidor-a-servidor: CERO problemas de CORS.
 
-Si en el futuro se decide eliminar este controlador, hay que:
-  - Eliminar la importación en controllers/__init__.py.
-  - Eliminar el asset 'cash_drawer_backend_test.js' del bundle web.assets_backend
-    si ya no llama a este endpoint.
-  - Actualizar los tests que cubren _detect_docker_host_ip y _resolve_url.
+Esto resuelve definitivamente el problema CORS que aparece cuando el
+bridge local (ejecutable en Windows/Linux del cajero) no puede añadir
+cabeceras Access-Control-Allow-Origin porque es un binario externo.
 
-Flujo legacy (NO activo por defecto):
-  Navegador → POST /xtendoo_cash_drawer/open → Python requests → bridge local
-
-Flujo actual (activo):
-  Navegador del TPV → fetch() directo → bridge local
+Endpoints:
+  POST /xtendoo_cash_drawer/open   → proxy apertura del cajón
+  POST /xtendoo_cash_drawer/health → proxy health check del bridge
 """
 
 import re
@@ -99,12 +93,15 @@ def _resolve_url(url: str) -> list[str]:
 
 class CashDrawerController(http.Controller):
     """
-    Endpoint proxy legacy para apertura del cajón portamonedas.
+    Endpoints proxy para el cajón portamonedas.
 
-    NOTA: Este endpoint ya NO es la vía principal de apertura del cajón.
-    El flujo actual pasa por fetch() directo desde el JS del POS al bridge local.
-    Ver static/src/js/cash_drawer_utils.js → sendCashDrawerRequest().
+    El navegador llama a estos endpoints en el mismo servidor Odoo (sin CORS).
+    Odoo reenvía la petición al bridge local por IP LAN (sin CORS).
     """
+
+    # ------------------------------------------------------------------
+    # Apertura del cajón
+    # ------------------------------------------------------------------
 
     @http.route(
         "/xtendoo_cash_drawer/open",
@@ -115,10 +112,11 @@ class CashDrawerController(http.Controller):
     )
     def open_cash_drawer(self, url: str = "", api_key: str = "", **_kwargs):
         """
-        [LEGACY] Proxy que envía la señal de apertura al cajón portamonedas.
+        Proxy que envía la señal de apertura al cajón portamonedas.
 
         Parámetros JSON:
-            url     (str): URL completa del servicio del cajón.
+            url     (str): URL completa del endpoint de apertura del bridge.
+                           Ejemplo: http://192.168.18.7:3210/open-drawer?printer=POS-80C
             api_key (str): Clave API (se envía como cabecera x-api-key).
 
         Respuesta JSON:
@@ -135,11 +133,11 @@ class CashDrawerController(http.Controller):
         last_error = None
 
         for candidate_url in urls_to_try:
-            _logger.info("[CashDrawer][legacy] Probando URL: %s", candidate_url)
+            _logger.info("[CashDrawer] Probando URL: %s", candidate_url)
             try:
                 resp = http_requests.get(candidate_url, headers=headers, timeout=_TIMEOUT)
                 _logger.info(
-                    "[CashDrawer][legacy] Respuesta %s desde %s",
+                    "[CashDrawer] Respuesta %s desde %s",
                     resp.status_code,
                     candidate_url,
                 )
@@ -152,24 +150,24 @@ class CashDrawerController(http.Controller):
             except http_requests.exceptions.ConnectionError as exc:
                 last_error = str(exc)
                 _logger.warning(
-                    "[CashDrawer][legacy] ConnectionError en %s: %s",
+                    "[CashDrawer] ConnectionError en %s: %s",
                     candidate_url,
                     exc,
                 )
             except http_requests.exceptions.Timeout:
                 last_error = f"Tiempo de espera agotado ({_TIMEOUT}s) en {candidate_url}"
-                _logger.warning("[CashDrawer][legacy] Timeout en %s", candidate_url)
+                _logger.warning("[CashDrawer] Timeout en %s", candidate_url)
             except Exception as exc:  # noqa: BLE001
                 last_error = str(exc)
                 _logger.exception(
-                    "[CashDrawer][legacy] Error inesperado en %s", candidate_url
+                    "[CashDrawer] Error inesperado en %s", candidate_url
                 )
 
         hint = ""
         if _LOCALHOST_RE.search(url):
             hint = (
-                " — El servicio del cajón parece escuchar sólo en 127.0.0.1 del host. "
-                "Para que Odoo (Docker) pueda alcanzarlo, configura el servicio para "
+                " — El bridge parece escuchar sólo en 127.0.0.1 del host. "
+                "Para que Odoo (Docker) pueda alcanzarlo, configura el bridge para "
                 "escuchar en 0.0.0.0, o añade 'extra_hosts: [host.docker.internal:host-gateway]' "
                 "en docker-compose."
             )
@@ -179,3 +177,62 @@ class CashDrawerController(http.Controller):
             "resolved_url": urls_to_try[-1],
             "error": (last_error or "Error desconocido") + hint,
         }
+
+    # ------------------------------------------------------------------
+    # Health check del bridge
+    # ------------------------------------------------------------------
+
+    @http.route(
+        "/xtendoo_cash_drawer/health",
+        type="jsonrpc",
+        auth="user",
+        methods=["POST"],
+        csrf=False,
+    )
+    def health_check_cash_drawer(self, url: str = "", **_kwargs):
+        """
+        Proxy para verificar el estado del bridge (GET /health).
+
+        Parámetros JSON:
+            url (str): URL del endpoint /health del bridge.
+
+        Respuesta JSON:
+            {available: bool, detail: str, resolved_url: str|None}
+        """
+        if not url:
+            return {"available": False, "detail": "No hay URL configurada.", "resolved_url": None}
+
+        urls_to_try = _resolve_url(url)
+        last_error = "No se pudo conectar"
+
+        for candidate_url in urls_to_try:
+            _logger.info("[CashDrawer] Health check en: %s", candidate_url)
+            try:
+                resp = http_requests.get(candidate_url, timeout=3)
+                if resp.ok:
+                    detail = "Bridge disponible"
+                    try:
+                        data = resp.json()
+                        if data.get("status"):
+                            detail = f"Bridge disponible (status: {data['status']})"
+                    except Exception:  # noqa: BLE001
+                        pass
+                    return {"available": True, "detail": detail, "resolved_url": candidate_url}
+                else:
+                    return {
+                        "available": False,
+                        "detail": f"Bridge no disponible (HTTP {resp.status_code})",
+                        "resolved_url": candidate_url,
+                    }
+            except http_requests.exceptions.ConnectionError as exc:
+                last_error = str(exc)
+                _logger.debug("[CashDrawer] Health ConnectionError en %s: %s", candidate_url, exc)
+            except http_requests.exceptions.Timeout:
+                last_error = f"Tiempo de espera agotado en {candidate_url}"
+                _logger.debug("[CashDrawer] Health Timeout en %s", candidate_url)
+            except Exception as exc:  # noqa: BLE001
+                last_error = str(exc)
+                _logger.debug("[CashDrawer] Health error en %s: %s", candidate_url, exc)
+
+        return {"available": False, "detail": last_error, "resolved_url": None}
+
