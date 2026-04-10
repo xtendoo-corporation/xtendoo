@@ -203,6 +203,10 @@ class InformeContabilidadWizard(models.TransientModel):
         Returns:
             bytes: Contenido binario del archivo XLSX.
         """
+        # Deshabilitar prefetch para evitar conflictos con campos de módulos externos
+        # que puedan no estar sincronizados en la BD
+        invoices = invoices.with_context(prefetch_fields=False)
+
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
 
@@ -462,12 +466,19 @@ class InformeContabilidadWizard(models.TransientModel):
             col = 0
 
             # 1. Serie: código del diario contable
-            serie = invoice.journal_id.code or ''
+            try:
+                serie = invoice.journal_id.code or ''
+            except Exception:
+                serie = ''
             sheet.write(data_row, col, serie, tc_fmt)
             col += 1
 
             # 2. Número de factura
-            sheet.write(data_row, col, invoice.name or '', t_fmt)
+            try:
+                num_factura = invoice.name or ''
+            except Exception:
+                num_factura = ''
+            sheet.write(data_row, col, num_factura, t_fmt)
             col += 1
 
             # 3. Fecha Factura
