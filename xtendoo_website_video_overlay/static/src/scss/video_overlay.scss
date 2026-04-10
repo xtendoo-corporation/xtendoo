@@ -1,0 +1,48 @@
+// Scoped para evitar colisiones globales
+.s_video_overlay {
+    .o_video_wrapper {
+        // Asegura que la capa decorativa siempre respete los bordes base
+        .o_video_poster {
+            object-fit: cover;
+        }
+
+        .o_video_overlay_layer {
+            background-color: rgba(0, 0, 0, 0.35); // Filtro oscuridad
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.15); // Clear the overlay en mouse hover para UX
+
+                .o_video_play_btn {
+                    transform: scale(1.1);
+                    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.4) !important;
+                }
+            }
+
+            .o_video_play_btn {
+                width: 80px;
+                height: 80px;
+                transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease;
+                cursor: pointer;
+            }
+        }
+    }
+}
+
+// Modal Global Scss
+#XtendooVideoOverlayGlobalModal {
+    .modal-content {
+        background: transparent;
+    }
+    
+    // Obligar a que la X sea visible en un entorno oscuro/transparente
+    .btn-close-white {
+        filter: invert(1) grayscale(100%) brightness(200%);
+        opacity: 0.8;
+        padding: 1rem; // Area táctil aumentada
+        
+        &:hover {
+            opacity: 1;
+        }
+    }
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inyectamos el bloque en "Contenido interior" de Odoo 18 -->
+    <template id="video_overlay_snippet_hook" inherit_id="website.snippets" priority="20">
+        <xpath expr="//snippets[@id='snippet_content']" position="inside">
+            <t t-snippet="xtendoo_website_video_overlay.s_video_overlay"
+               string="Video Overlay"
+               t-thumbnail="/website/static/src/img/snippets_thumbs/s_video.svg"/>
+        </xpath>
+    </template>
+</odoo>

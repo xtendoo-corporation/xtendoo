@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="snippet_options" inherit_id="website.snippet_options">
+        <xpath expr="." position="inside">
+            <!-- Bloque de configuración del editor web de Odoo especifico para nuestra clase .s_video_overlay -->
+            <div data-js="XtendooVideoOverlayConfig" data-selector=".s_video_overlay">
+                <we-row string="Video URL">
+                    <we-button class="o_we_select_video" title="Seleccionar o Subir Vídeo">
+                        <i class="fa fa-upload"/> Seleccionar Vídeo Mpeg/MP4
+                    </we-button>
+                </we-row>
+            </div>
+        </xpath>
+    </template>
+</odoo>
