@@ -3,16 +3,16 @@
  * Xtendoo Cash Drawer - Parche de ControlButtons
  * Añade el botón "Abrir Cajón" en el área de botones de control del TPV.
  *
- * Arquitectura: navegador → Odoo (proxy Python) → bridge local
- * La petición sale del servidor Odoo, igual que action_test_cash_drawer,
- * eliminando cualquier problema de CORS o mixed-content HTTPS/HTTP.
+ * Arquitectura: navegador → bridge local
+ * Usa el mismo canal que la prueba de configuración (`action_test_cash_drawer`):
+ * la llamada sale directamente desde el navegador del TPV.
  */
 
 import { patch } from "@web/core/utils/patch";
 import { ControlButtons } from "@point_of_sale/app/screens/product_screen/control_buttons/control_buttons";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
-import { sendCashDrawerViaProxy, checkCashDrawerHealth } from "./cash_drawer_utils";
+import { sendCashDrawerRequest, checkCashDrawerHealth } from "./cash_drawer_utils";
 
 patch(ControlButtons.prototype, {
     setup() {
@@ -32,8 +32,8 @@ patch(ControlButtons.prototype, {
     },
 
     /**
-     * Envía la señal de apertura al cajón a través del proxy Odoo.
-     * Usa el mismo canal que action_test_cash_drawer: navegador → Odoo → bridge.
+     * Envía la señal de apertura directamente al bridge local.
+     * Usa el mismo canal que action_test_cash_drawer: navegador → bridge.
      * Muestra notificación de éxito o error al usuario.
      */
     async openCashDrawer() {
@@ -45,7 +45,7 @@ patch(ControlButtons.prototype, {
             return;
         }
         try {
-            await sendCashDrawerViaProxy(this.pos.config);
+            await sendCashDrawerRequest(this.pos.config);
             this.notification.add(_t("Cajón portamonedas abierto."), { type: "success" });
         } catch (err) {
             this.notification.add(

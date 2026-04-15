@@ -18,6 +18,7 @@ Cobertura:
 """
 
 from io import StringIO
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from odoo.exceptions import UserError
@@ -443,6 +444,42 @@ class TestPosConfigCashDrawer(TransactionCase):
         self.pos_config.cash_drawer_use_bridge = True
         self.assertTrue(self.pos_config.cash_drawer_use_bridge)
         self.assertFalse(config2.cash_drawer_use_bridge)
+
+
+# ---------------------------------------------------------------------------
+# Assets POS — regresión del canal de apertura
+# ---------------------------------------------------------------------------
+
+
+@tagged("post_install", "-at_install", "xtendoo_cash_drawer")
+class TestPosAssetsCashDrawer(TransactionCase):
+    """Garantiza que el TPV usa el mismo canal directo que la prueba de configuración."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._module_root = Path(__file__).resolve().parents[1]
+
+    def _read_asset(self, relative_path):
+        return (self._module_root / relative_path).read_text(encoding="utf-8")
+
+    def test_control_buttons_use_direct_bridge_request(self):
+        """El botón principal del POS debe abrir el cajón desde el navegador."""
+        source = self._read_asset(Path("static/src/js/cash_drawer_button.js"))
+        self.assertIn("sendCashDrawerRequest", source)
+        self.assertNotIn("sendCashDrawerViaProxy", source)
+
+    def test_navbar_button_uses_direct_bridge_request(self):
+        """El botón del navbar debe usar la misma apertura directa que configuración."""
+        source = self._read_asset(Path("static/src/js/cash_drawer_navbar_button.js"))
+        self.assertIn("sendCashDrawerRequest", source)
+        self.assertNotIn("sendCashDrawerViaProxy", source)
+
+    def test_payment_screen_auto_open_uses_direct_bridge_request(self):
+        """La autoapertura en pagos debe mantenerse en el navegador, no en Python."""
+        source = self._read_asset(Path("static/src/js/cash_drawer_payment.js"))
+        self.assertIn("sendCashDrawerRequest(cfg)", source)
+        self.assertNotIn("sendCashDrawerViaProxy", source)
 
 
 # ---------------------------------------------------------------------------
