@@ -2,33 +2,86 @@
 /**
  * Utilidades compartidas para la apertura del cajón portamonedas.
  *
- * Arquitectura: navegador → proxy Odoo → bridge local
- * ----------------------------------------------------
- * La llamada al bridge NO sale directamente desde el navegador. En su lugar,
- * el JS llama al controlador Odoo (/xtendoo_cash_drawer/open) que actúa como
- * proxy y reenvía la petición al bridge por IP LAN desde el servidor Python.
+ * Arquitectura: navegador → bridge local
+ * --------------------------------------
+ * La llamada al bridge sale directamente desde el navegador del usuario.
+ * Esto permite que un Odoo cloud controle un bridge instalado en la LAN del
+ * cliente, siempre que el navegador pueda llegar a la IP/URL configurada.
  *
- * Esto resuelve definitivamente el problema CORS:
- *   - Navegador → Odoo: mismo origen, CERO restricciones CORS.
- *   - Odoo Python → bridge: petición servidor-a-servidor, sin CORS.
+ * Requisitos del bridge para esta arquitectura:
+ *   - Debe devolver CORS para el origen de Odoo.
+ *   - Si Odoo carga por HTTPS, el bridge debe exponerse también por HTTPS
+ *     para evitar el bloqueo por mixed content del navegador.
  *
  * El bridge local puede estar en:
  *   - El propio PC del cajero (http://127.0.0.1:3210 o http://192.168.x.y:3210)
- *   - Cualquier equipo accesible desde el servidor Odoo por LAN
+ *   - Cualquier equipo accesible desde el navegador del cajero por LAN
  *
- * El bridge NO necesita configurar cabeceras CORS con esta arquitectura.
- *
- * API esperada del bridge (la llama Odoo, no el navegador)
- * ---------------------------------------------------------
+ * API esperada del bridge
+ * -----------------------
  *   GET /open-drawer?printer=<nombre>   → { "ok": true }  o  { "ok": false, "error": "..." }
  *   GET /health                         → { "status": "ok" }
  *   Header: x-api-key: <api_key>        (si el bridge requiere autenticación)
  *
- * Timeout por defecto: 8 segundos (incluye el round-trip Odoo + bridge).
+ * Timeout por defecto: 8 segundos.
  */
 
-/** Tiempo máximo de espera a la respuesta del proxy Odoo (ms). */
+/** Tiempo máximo de espera a la respuesta del bridge local (ms). */
 const CASH_DRAWER_TIMEOUT_MS = 8000;
+
+function getUrlProtocol(url) {
+    try {
+        return new URL(url, window.location.href).protocol;
+    } catch {
+        return "";
+    }
+}
+
+function ensureBrowserCanReachBridge(url) {
+    const pageProtocol = window.location.protocol;
+    const bridgeProtocol = getUrlProtocol(url);
+
+    if (pageProtocol === "https:" && bridgeProtocol === "http:") {
+        throw new Error(
+            "La web de Odoo está abierta por HTTPS pero el bridge está configurado en HTTP. " +
+            "El navegador bloqueará la petición por seguridad (mixed content). " +
+            "Configura el bridge con HTTPS, por ejemplo https://IP_DEL_PC:3212."
+        );
+    }
+}
+
+async function readResponsePayload(response) {
+    const rawText = await response.text();
+    if (!rawText) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(rawText);
+    } catch {
+        return rawText;
+    }
+}
+
+function extractBridgeError(payload, fallbackMessage) {
+    if (payload && typeof payload === "object") {
+        if (payload.error) {
+            return payload.error;
+        }
+        if (payload.detail) {
+            return payload.detail;
+        }
+        if (payload.message) {
+            return payload.message;
+        }
+    }
+
+    if (typeof payload === "string" && payload.trim()) {
+        return payload.trim();
+    }
+
+    return fallbackMessage;
+}
 
 /**
  * Construye la URL completa del endpoint de apertura del bridge local.
@@ -97,6 +150,8 @@ export function buildCashDrawerHealthUrl(config) {
  * @throws {Error} Con mensaje descriptivo en caso de timeout o error de red
  */
 async function fetchWithTimeout(url, options = {}, timeoutMs = CASH_DRAWER_TIMEOUT_MS) {
+    ensureBrowserCanReachBridge(url);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
@@ -108,7 +163,9 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = CASH_DRAWER_TIMEO
             );
         }
         throw new Error(
-            "No se pudo contactar con el servidor Odoo: " + (err.message || String(err))
+            "No se pudo contactar con el bridge local. " +
+            "Revisa conectividad, CORS, certificado HTTPS y que la URL del bridge sea accesible desde este navegador. " +
+            (err.message || String(err))
         );
     } finally {
         clearTimeout(timeoutId);
@@ -116,66 +173,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = CASH_DRAWER_TIMEO
 }
 
 /**
- * Llamada JSONRPC al proxy Odoo para apertura o health check del bridge.
- *
- * El proxy Odoo (/xtendoo_cash_drawer/open o /xtendoo_cash_drawer/health)
- * recibe los parámetros y reenvía la petición al bridge desde Python.
- * Así el navegador nunca contacta el bridge directamente → sin CORS.
- *
- * @param {string} endpoint  - Ruta relativa Odoo: "/xtendoo_cash_drawer/open" o "/health"
- * @param {object} params    - Parámetros JSONRPC (url, api_key, …)
- * @returns {Promise<object>} - Campo `result` de la respuesta JSONRPC
- * @throws {Error} Con mensaje descriptivo
- */
-async function callOdooProxy(endpoint, params) {
-    const payload = {
-        jsonrpc: "2.0",
-        method: "call",
-        id: Date.now(),
-        params,
-    };
-
-    const response = await fetchWithTimeout(endpoint, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify(payload),
-    });
-
-    let json;
-    try {
-        json = await response.json();
-    } catch {
-        throw new Error(
-            `El servidor Odoo devolvió una respuesta no válida (HTTP ${response.status}).`
-        );
-    }
-
-    if (json.error) {
-        const detail =
-            json.error?.data?.message ||
-            json.error?.message ||
-            JSON.stringify(json.error);
-        throw new Error("Error en el servidor Odoo: " + detail);
-    }
-
-    if (!json.result && json.result !== false) {
-        throw new Error("Respuesta vacía del proxy Odoo.");
-    }
-
-    return json.result;
-}
-
-/**
- * Envía la señal de apertura al cajón portamonedas usando el proxy Odoo.
- *
- * Flujo:
- *   1. Construye la URL del bridge con buildCashDrawerUrl(config).
- *   2. Llama a POST /xtendoo_cash_drawer/open en Odoo (mismo origen, sin CORS).
- *   3. Odoo (Python) reenvía GET /open-drawer?printer=... al bridge con x-api-key.
- *   4. Devuelve { ok: true } o lanza Error descriptivo.
+ * Envía la señal de apertura al cajón portamonedas directamente al bridge.
  *
  * @param {object} config - Objeto pos.config con los campos del cajón
  * @returns {Promise<{ok: boolean, raw?: object}>}
@@ -184,23 +182,37 @@ async function callOdooProxy(endpoint, params) {
 export async function sendCashDrawerRequest(config) {
     const url = buildCashDrawerUrl(config);
     const apiKey = (config.cash_drawer_api_key || "").trim();
+    const headers = {};
 
-    console.log("[CashDrawer] Enviando apertura vía proxy Odoo → bridge:", url);
-
-    const result = await callOdooProxy("/xtendoo_cash_drawer/open", {
-        url,
-        api_key: apiKey,
-    });
-
-    if (!result.success) {
-        throw new Error(result.error || "El bridge rechazó la petición de apertura.");
+    if (apiKey) {
+        headers["x-api-key"] = apiKey;
     }
 
-    return { ok: true, raw: result };
+    console.log("[CashDrawer] Enviando apertura directa al bridge:", url);
+
+    const response = await fetchWithTimeout(url, {
+        method: "GET",
+        mode: "cors",
+        headers,
+    });
+
+    const payload = await readResponsePayload(response);
+
+    if (!response.ok) {
+        throw new Error(
+            extractBridgeError(payload, `El bridge devolvió HTTP ${response.status}.`)
+        );
+    }
+
+    if (payload && typeof payload === "object" && payload.ok === false) {
+        throw new Error(payload.error || "El bridge rechazó la petición de apertura.");
+    }
+
+    return { ok: true, raw: payload ?? { status: response.status } };
 }
 
 /**
- * Comprueba la disponibilidad del bridge llamando a GET /health via proxy Odoo.
+ * Comprueba la disponibilidad del bridge llamando a GET /health directamente.
  *
  * No lanza excepción: siempre devuelve { available: boolean, detail: string }.
  *
@@ -216,10 +228,27 @@ export async function checkCashDrawerHealth(config) {
     }
 
     try {
-        const result = await callOdooProxy("/xtendoo_cash_drawer/health", { url });
+        const response = await fetchWithTimeout(url, {
+            method: "GET",
+            mode: "cors",
+        });
+        const payload = await readResponsePayload(response);
+
+        if (!response.ok) {
+            return {
+                available: false,
+                detail: extractBridgeError(payload, `Bridge no disponible (HTTP ${response.status})`),
+            };
+        }
+
+        const detail =
+            payload && typeof payload === "object" && payload.status
+                ? `Bridge disponible (status: ${payload.status})`
+                : "Bridge disponible";
+
         return {
-            available: result.available ?? false,
-            detail: result.detail || (result.available ? "Bridge disponible" : "Bridge no disponible"),
+            available: true,
+            detail,
         };
     } catch (err) {
         return { available: false, detail: err.message };

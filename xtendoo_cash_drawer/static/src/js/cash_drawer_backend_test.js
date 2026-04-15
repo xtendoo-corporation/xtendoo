@@ -2,9 +2,9 @@
 /**
  * Acción cliente para probar la apertura del cajón portamonedas desde backend.
  *
- * Arquitectura: la prueba llama al proxy Odoo (/xtendoo_cash_drawer/open),
- * que a su vez contacta el bridge local desde Python.
- * El navegador nunca llama al bridge directamente → sin CORS.
+ * Arquitectura: la prueba llama directamente al bridge local desde el navegador.
+ * Esto obliga a que el bridge tenga CORS correcto y, si Odoo va por HTTPS,
+ * que el bridge esté expuesto también por HTTPS.
  */
 import { registry } from "@web/core/registry";
 import { Component, useState, xml } from "@odoo/owl";
@@ -124,9 +124,8 @@ const TEMPLATE = /* xml */ `
     <t t-set-slot="default">
         <div class="mb-3">
             <p class="text-muted mb-3">
-                La prueba usa el <strong>proxy Odoo</strong>: el navegador llama
-                a Odoo (sin CORS) y Odoo reenvía la petición al bridge desde el servidor Python.
-                Esto es exactamente el mismo canal que usa el TPV real.
+                La prueba llama <strong>directamente al bridge local</strong> desde este navegador.
+                Esto valida exactamente el mismo canal que usará el TPV real en esta máquina.
             </p>
 
             <!-- Configuración activa -->
@@ -190,7 +189,9 @@ const TEMPLATE = /* xml */ `
                     <ul class="mb-0 mt-1">
                         <li>El bridge no está en ejecución.</li>
                         <li>La URL o el puerto configurados son incorrectos.</li>
-                        <li>El servidor Odoo no puede alcanzar la IP del bridge por LAN.</li>
+                        <li>La web de Odoo va por HTTPS y el bridge sigue en HTTP.</li>
+                        <li>El bridge no permite CORS para este origen.</li>
+                        <li>Este navegador no puede alcanzar la IP del bridge por LAN.</li>
                         <li>El nombre de la impresora no coincide con el configurado en el bridge.</li>
                     </ul>
                 </small>

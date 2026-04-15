@@ -24,6 +24,8 @@ Endpoints:
 import re
 import socket
 import logging
+from urllib.parse import urlparse
+import ipaddress
 
 import requests as http_requests
 
@@ -36,6 +38,47 @@ _LOCALHOST_RE = re.compile(r"\b(127\.0\.0\.1|localhost)\b", re.I)
 
 # Tiempo máximo de espera al cajón (segundos)
 _TIMEOUT = 5
+
+
+def _get_host_from_url(url: str) -> str:
+    try:
+        return (urlparse(url).hostname or "").strip()
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def _is_private_host(url: str) -> bool:
+    host = _get_host_from_url(url)
+    if not host:
+        return False
+    try:
+        return ipaddress.ip_address(host).is_private
+    except ValueError:
+        return False
+
+
+def _build_connectivity_hint(url: str) -> str:
+    if _LOCALHOST_RE.search(url):
+        return (
+            " El bridge parece escuchar sólo en localhost del equipo donde corre el bridge."
+            " Si Odoo está en Docker, configura el bridge para escuchar en 0.0.0.0 o añade"
+            " 'extra_hosts: [host.docker.internal:host-gateway]' en docker-compose."
+        )
+
+    if _is_private_host(url):
+        host = _get_host_from_url(url)
+        return (
+            f" La URL configurada apunta a una IP privada ({host})."
+            " Si tu Odoo está en la nube o fuera de esa LAN, el servidor Python de Odoo"
+            " no puede llegar a esa IP directamente."
+            " En ese caso tienes tres opciones:"
+            " 1) exponer el bridge mediante una IP o DNS accesible desde el servidor Odoo,"
+            " 2) conectar Odoo y la LAN del cliente mediante VPN/túnel,"
+            " 3) cambiar a una arquitectura de llamada directa navegador -> bridge local"
+            " en lugar de usar el proxy Odoo."
+        )
+
+    return ""
 
 
 def _detect_docker_host_ip():
@@ -163,14 +206,7 @@ class CashDrawerController(http.Controller):
                     "[CashDrawer] Error inesperado en %s", candidate_url
                 )
 
-        hint = ""
-        if _LOCALHOST_RE.search(url):
-            hint = (
-                " — El bridge parece escuchar sólo en 127.0.0.1 del host. "
-                "Para que Odoo (Docker) pueda alcanzarlo, configura el bridge para "
-                "escuchar en 0.0.0.0, o añade 'extra_hosts: [host.docker.internal:host-gateway]' "
-                "en docker-compose."
-            )
+        hint = _build_connectivity_hint(url)
         return {
             "success": False,
             "status_code": None,

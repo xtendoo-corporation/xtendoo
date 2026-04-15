@@ -86,6 +86,11 @@ Los ajustes están disponibles en dos lugares equivalentes:
 6. Haz clic en **Guardar**
 7. Pulsa **Probar apertura del cajón** para verificar que todo funciona
 
+> Si Odoo se carga por `https://`, el bridge también debe publicarse por `https://`
+> para que el navegador no bloquee la llamada por mixed content.
+> Con el cliente Windows de este repositorio, normalmente eso implica usar
+> `https://IP_DEL_PC:3212` en vez de `http://IP_DEL_PC:3211`.
+
 ---
 
 ## Probar la conexión
@@ -179,6 +184,9 @@ Access-Control-Allow-Methods: GET, OPTIONS
 
 Si el bridge no tiene CORS configurado, el navegador bloqueará la respuesta y
 el módulo mostrará un error de red. El bridge debe actualizarse en ese caso.
+
+Si Odoo se sirve por HTTPS, además de CORS el bridge debe responder también por HTTPS.
+Una página `https://...` no puede hacer `fetch()` a `http://...` sin que el navegador lo bloquee.
 
 ---
 

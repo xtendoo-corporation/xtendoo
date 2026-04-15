@@ -3,7 +3,7 @@
  * CashDrawerNavbarButton - Botón de apertura del cajón en el Navbar del TPV.
  *
  * Solo se muestra cuando el bridge del cajón está habilitado y configurado.
- * Llama al proxy Odoo que reenvía la petición al bridge. Sin CORS.
+ * Llama directamente al bridge local desde el navegador.
  */
 
 import { Component, useState } from "@odoo/owl";

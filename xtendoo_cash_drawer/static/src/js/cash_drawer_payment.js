@@ -5,7 +5,7 @@
  * Parcha PaymentScreen.validateOrder para que, tras una validación exitosa
  * de un pedido con al menos un pago con método de tipo efectivo
  * (is_cash_count === true), se envíe automáticamente la señal de apertura
- * del cajón portamonedas vía el proxy Odoo (sin CORS).
+ * del cajón portamonedas directamente al bridge local.
  *
  * La apertura sólo se ejecuta cuando:
  *  1. El pedido quedó en estado "paid" (validación completada con éxito).
