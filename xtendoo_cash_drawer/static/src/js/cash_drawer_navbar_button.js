@@ -10,7 +10,7 @@ import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { usePos } from "@point_of_sale/app/hooks/pos_hook";
 import { _t } from "@web/core/l10n/translation";
-import { sendCashDrawerRequest, checkCashDrawerHealth } from "./cash_drawer_utils";
+import { sendCashDrawerViaProxy, checkCashDrawerHealth } from "./cash_drawer_utils";
 import { Navbar } from "@point_of_sale/app/components/navbar/navbar";
 
 export class CashDrawerNavbarButton extends Component {
@@ -35,14 +35,15 @@ export class CashDrawerNavbarButton extends Component {
     }
 
     /**
-     * Abre el cajón enviando la petición directamente al bridge local.
+     * Abre el cajón enviando la petición a través del proxy Odoo.
+     * Usa el mismo canal que action_test_cash_drawer: navegador → Odoo → bridge.
      * Muestra notificación de éxito o error.
      */
     async onClick() {
         if (this.state.sending) return;
         this.state.sending = true;
         try {
-            await sendCashDrawerRequest(this.pos.config);
+            await sendCashDrawerViaProxy(this.pos.config);
             this.notification.add(_t("Cajón portamonedas abierto."), { type: "success" });
         } catch (err) {
             this.notification.add(

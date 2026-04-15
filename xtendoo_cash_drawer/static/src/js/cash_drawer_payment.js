@@ -5,7 +5,10 @@
  * Parcha PaymentScreen.validateOrder para que, tras una validación exitosa
  * de un pedido con al menos un pago con método de tipo efectivo
  * (is_cash_count === true), se envíe automáticamente la señal de apertura
- * del cajón portamonedas directamente al bridge local.
+ * del cajón portamonedas a través del proxy Odoo.
+ *
+ * Arquitectura: navegador → Odoo (proxy Python) → bridge local
+ * La petición sale del servidor Odoo, eliminando cualquier problema de CORS.
  *
  * La apertura sólo se ejecuta cuando:
  *  1. El pedido quedó en estado "paid" (validación completada con éxito).
@@ -23,7 +26,7 @@ import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
 import { _t } from "@web/core/l10n/translation";
-import { sendCashDrawerRequest } from "./cash_drawer_utils";
+import { sendCashDrawerViaProxy } from "./cash_drawer_utils";
 
 patch(PaymentScreen.prototype, {
     setup() {
@@ -56,7 +59,7 @@ patch(PaymentScreen.prototype, {
         // Solo abrimos si el pedido quedó pagado y se cumplen todas las condiciones
         if (hasCashPayment && autoOpen && bridgeReady && order?.finalized) {
             // Fire-and-forget: el cajón se abre sin bloquear la UI
-            sendCashDrawerRequest(cfg)
+            sendCashDrawerViaProxy(cfg)
                 .then((result) => {
                     if (!result.ok) {
                         console.warn(
