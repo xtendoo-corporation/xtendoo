@@ -1,21 +1,37 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const http = require('http');
 const https = require('https');
+const { X509Certificate } = require('crypto');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const baseDir = process.pkg ? path.dirname(process.execPath) : __dirname;
 const logsDir = path.join(baseDir, 'logs');
+const envFilePath = path.join(baseDir, '.env');
 
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
+dotenv.config({ path: envFilePath });
+
+const app = express();
 const serviceLogPath = path.join(logsDir, 'service.log');
 let requestCounter = 0;
+
+const PORT = parseInt(process.env.PORT || '3210', 10);
+const HOST = process.env.HOST || '127.0.0.1';
+let PUBLIC_HOST = process.env.PUBLIC_HOST || HOST;
+const API_KEY = process.env.API_KEY || '';
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+const DEFAULT_PRINTER = process.env.DEFAULT_PRINTER || '';
 
 function safeSerialize(value) {
   try {
@@ -88,25 +104,208 @@ function getClientIp(req) {
   return req.ip || req.socket.remoteAddress || '-';
 }
 
-// Cargar .env desde la carpeta del .exe o desde la carpeta del proyecto
-dotenv.config({ path: path.join(baseDir, '.env') });
+function getHostPriority(address) {
+  if (address.startsWith('192.168.')) {
+    return 40;
+  }
 
-const app = express();
+  if (address.startsWith('10.')) {
+    return 35;
+  }
 
-const PORT = parseInt(process.env.PORT || '3210', 10);
-const HOST = process.env.HOST || '127.0.0.1';
-const PUBLIC_HOST = process.env.PUBLIC_HOST || HOST;
-const API_KEY = process.env.API_KEY || '';
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean);
-const CERT_KEY_PATH = process.env.CERT_KEY ? path.join(baseDir, process.env.CERT_KEY) : null;
-const CERT_CERT_PATH = process.env.CERT_CERT ? path.join(baseDir, process.env.CERT_CERT) : null;
-const DEFAULT_PRINTER = process.env.DEFAULT_PRINTER || '';
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(address)) {
+    return 30;
+  }
+
+  return 10;
+}
+
+function getPreferredLanHost() {
+  const candidates = [];
+
+  for (const [interfaceName, addresses] of Object.entries(os.networkInterfaces())) {
+    for (const entry of addresses || []) {
+      if (!entry || entry.family !== 'IPv4' || entry.internal) {
+        continue;
+      }
+
+      if (!entry.address || entry.address.startsWith('169.254.')) {
+        continue;
+      }
+
+      candidates.push({
+        interfaceName,
+        address: entry.address,
+        priority: getHostPriority(entry.address)
+      });
+    }
+  }
+
+  candidates.sort((left, right) => {
+    if (right.priority !== left.priority) {
+      return right.priority - left.priority;
+    }
+
+    return left.interfaceName.localeCompare(right.interfaceName);
+  });
+
+  return candidates[0] ? candidates[0].address : '127.0.0.1';
+}
+
+function updateEnvFile(updates) {
+  const existing = fs.existsSync(envFilePath) ? fs.readFileSync(envFilePath, 'utf8') : '';
+  const eol = existing.includes('\r\n') ? '\r\n' : '\n';
+  const lines = existing ? existing.split(/\r?\n/) : [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    const nextLine = `${key}=${value}`;
+    const lineIndex = lines.findIndex((line) => line.startsWith(`${key}=`));
+
+    if (lineIndex >= 0) {
+      lines[lineIndex] = nextLine;
+    } else {
+      lines.push(nextLine);
+    }
+  }
+
+  const normalized = lines.filter((line, index, source) => {
+    return !(index === source.length - 1 && line === '');
+  });
+
+  fs.writeFileSync(envFilePath, normalized.join(eol) + eol, 'utf8');
+}
+
+function certificateIncludesHosts(certPath, hosts) {
+  try {
+    const certificate = new X509Certificate(fs.readFileSync(certPath));
+    const subjectAltName = certificate.subjectAltName || '';
+
+    return hosts.every((host) => {
+      return subjectAltName.includes(`DNS:${host}`) || subjectAltName.includes(`IP Address:${host}`);
+    });
+  } catch {
+    return false;
+  }
+}
+
+function ensureRuntimeTlsAssets() {
+  const publicHost = getPreferredLanHost();
+  const certKeyFile = process.env.CERT_KEY && String(process.env.CERT_KEY).trim()
+    ? String(process.env.CERT_KEY).trim()
+    : 'cash_drawer_service-key.pem';
+  const certCertFile = process.env.CERT_CERT && String(process.env.CERT_CERT).trim()
+    ? String(process.env.CERT_CERT).trim()
+    : 'cash_drawer_service.pem';
+  const certKeyPath = path.join(baseDir, certKeyFile);
+  const certCertPath = path.join(baseDir, certCertFile);
+  const mkcertPath = path.join(baseDir, 'mkcert.exe');
+  const mkcertCaRoot = process.env.MKCERT_CAROOT && String(process.env.MKCERT_CAROOT).trim()
+    ? path.join(baseDir, String(process.env.MKCERT_CAROOT).trim())
+    : path.join(baseDir, 'mkcert-ca');
+  const rootCaPath = path.join(mkcertCaRoot, 'rootCA.pem');
+  const rootCaKeyPath = path.join(mkcertCaRoot, 'rootCA-key.pem');
+  const requiredHosts = ['127.0.0.1', 'localhost'];
+
+  if (publicHost !== '127.0.0.1') {
+    requiredHosts.push(publicHost);
+  }
+
+  PUBLIC_HOST = publicHost;
+  process.env.PUBLIC_HOST = publicHost;
+  process.env.CERT_KEY = certKeyFile;
+  process.env.CERT_CERT = certCertFile;
+  process.env.MKCERT_CAROOT = path.relative(baseDir, mkcertCaRoot);
+
+  try {
+    updateEnvFile({
+      PUBLIC_HOST: publicHost,
+      MKCERT_CAROOT: path.relative(baseDir, mkcertCaRoot),
+      CERT_KEY: certKeyFile,
+      CERT_CERT: certCertFile
+    });
+  } catch (error) {
+    logWarn('No se pudo actualizar .env con la IP detectada', {
+      envPath: envFilePath,
+      error: error.message
+    });
+  }
+
+  const hasValidCertificate = fs.existsSync(certKeyPath)
+    && fs.existsSync(certCertPath)
+    && certificateIncludesHosts(certCertPath, requiredHosts);
+
+  if (hasValidCertificate) {
+    return { publicHost, certKeyPath, certCertPath };
+  }
+
+  if (!fs.existsSync(rootCaPath) || !fs.existsSync(rootCaKeyPath)) {
+    logWarn('CA compartida de mkcert no encontrada. Ejecuta install.ps1 para instalar una CA confiable.', {
+      mkcertCaRoot,
+      rootCaPath,
+      rootCaKeyPath,
+      publicHost
+    });
+    return { publicHost, certKeyPath: null, certCertPath: null };
+  }
+
+  if (!fs.existsSync(mkcertPath)) {
+    logWarn('mkcert.exe no encontrado. No se puede regenerar el certificado automaticamente.', {
+      mkcertPath,
+      requiredHosts
+    });
+    return { publicHost, certKeyPath: null, certCertPath: null };
+  }
+
+  logInfo('Regenerando certificado HTTPS por cambio de IP o SAN incompleto', {
+    publicHost,
+    requiredHosts,
+    certKeyPath,
+    certCertPath
+  });
+
+  const mkcertResult = spawnSync(mkcertPath, [
+    '-cert-file', certCertPath,
+    '-key-file', certKeyPath,
+    ...requiredHosts
+  ], {
+    cwd: baseDir,
+    encoding: 'utf8',
+    env: { ...process.env, CAROOT: mkcertCaRoot },
+    windowsHide: true
+  });
+
+  if (mkcertResult.error || mkcertResult.status !== 0) {
+    logError('No se pudo regenerar el certificado HTTPS', {
+      publicHost,
+      status: mkcertResult.status,
+      stdout: mkcertResult.stdout ? mkcertResult.stdout.trim() : null,
+      stderr: mkcertResult.stderr ? mkcertResult.stderr.trim() : null,
+      error: mkcertResult.error ? mkcertResult.error.message : null
+    });
+    return { publicHost, certKeyPath: null, certCertPath: null };
+  }
+
+  if (!certificateIncludesHosts(certCertPath, requiredHosts)) {
+    logError('El certificado regenerado no incluye todos los SAN requeridos', {
+      publicHost,
+      requiredHosts,
+      certCertPath
+    });
+    return { publicHost, certKeyPath: null, certCertPath: null };
+  }
+
+  logInfo('Certificado HTTPS regenerado correctamente', {
+    publicHost,
+    requiredHosts,
+    certKeyPath,
+    certCertPath
+  });
+
+  return { publicHost, certKeyPath, certCertPath };
+}
 
 if (!API_KEY) {
-  logError('Falta API_KEY en .env', { envPath: path.join(baseDir, '.env') });
+  logError('Falta API_KEY en .env', { envPath: envFilePath });
   process.exit(1);
 }
 
@@ -396,7 +595,8 @@ function printBanner(proto, printerName) {
   const mode = process.pkg ? '[EXE]' : '[DEV]';
   const maskedKey = API_KEY.length > 4 ? API_KEY.slice(0, 4) + '****' : '****';
   const originsStr = ALLOWED_ORIGINS.length > 0 ? ALLOWED_ORIGINS.join(', ') : '(cualquiera)';
-  const url = `${proto}://${HOST}:${PORT}`;
+  const advertisedHost = HOST === '0.0.0.0' ? PUBLIC_HOST : HOST;
+  const url = `${proto}://${advertisedHost}:${PORT}`;
 
   console.log('');
   console.log('============================================================');
@@ -418,6 +618,7 @@ function printBanner(proto, printerName) {
   logInfo('Servicio iniciado', {
     protocol: proto,
     host: HOST,
+    publicHost: advertisedHost,
     port: PORT,
     printerName,
     defaultPrinter: DEFAULT_PRINTER || '(impresora del sistema)',
@@ -430,25 +631,28 @@ function printBanner(proto, printerName) {
 
 async function startServer() {
   const printerName = await getDefaultPrinterName();
+  const runtimeTls = ensureRuntimeTlsAssets();
 
   let hasCerts = false;
   let sslOpts = {};
 
-  if (CERT_KEY_PATH && CERT_CERT_PATH) {
-    if (fs.existsSync(CERT_KEY_PATH) && fs.existsSync(CERT_CERT_PATH)) {
+  if (runtimeTls.certKeyPath && runtimeTls.certCertPath) {
+    if (fs.existsSync(runtimeTls.certKeyPath) && fs.existsSync(runtimeTls.certCertPath)) {
       sslOpts = {
-        key: fs.readFileSync(CERT_KEY_PATH),
-        cert: fs.readFileSync(CERT_CERT_PATH)
+        key: fs.readFileSync(runtimeTls.certKeyPath),
+        cert: fs.readFileSync(runtimeTls.certCertPath)
       };
       hasCerts = true;
       logInfo('Certificados SSL detectados', {
-        keyPath: CERT_KEY_PATH,
-        certPath: CERT_CERT_PATH
+        keyPath: runtimeTls.certKeyPath,
+        certPath: runtimeTls.certCertPath,
+        publicHost: runtimeTls.publicHost
       });
     } else {
       logWarn('Rutas de certificado en .env no encontradas. Arrancando en HTTP.', {
-        keyPath: CERT_KEY_PATH,
-        certPath: CERT_CERT_PATH
+        keyPath: runtimeTls.certKeyPath,
+        certPath: runtimeTls.certCertPath,
+        publicHost: runtimeTls.publicHost
       });
     }
   }

@@ -47,6 +47,73 @@ function Remove-FirewallRuleIfExists {
     }
 }
 
+function Get-PreferredLanHost {
+    try {
+        $defaultRoute = Get-NetRoute -AddressFamily IPv4 -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop |
+            Sort-Object RouteMetric, InterfaceMetric |
+            Select-Object -First 1
+
+        if ($defaultRoute) {
+            $candidate = Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $defaultRoute.InterfaceIndex -ErrorAction Stop |
+                Where-Object {
+                    $_.IPAddress -notlike '127.*' -and
+                    $_.IPAddress -notlike '169.254.*'
+                } |
+                Select-Object -First 1 -ExpandProperty IPAddress
+
+            if (-not [string]::IsNullOrWhiteSpace($candidate)) {
+                return $candidate
+            }
+        }
+    } catch {
+    }
+
+    try {
+        $fallback = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction Stop |
+            Where-Object {
+                $_.IPAddress -notlike '127.*' -and
+                $_.IPAddress -notlike '169.254.*' -and
+                $_.PrefixOrigin -ne 'WellKnown'
+            } |
+            Sort-Object InterfaceMetric, SkipAsSource |
+            Select-Object -First 1 -ExpandProperty IPAddress
+
+        if (-not [string]::IsNullOrWhiteSpace($fallback)) {
+            return $fallback
+        }
+    } catch {
+    }
+
+    return '127.0.0.1'
+}
+
+function Test-CertificateIncludesHost {
+    param(
+        [Parameter(Mandatory = $true)][string]$CertPath,
+        [Parameter(Mandatory = $true)][string]$HostName
+    )
+
+    if (-not (Test-Path $CertPath)) {
+        return $false
+    }
+
+    try {
+        $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 $CertPath
+        $sanExtension = $certificate.Extensions |
+            Where-Object { $_.Oid.Value -eq '2.5.29.17' } |
+            Select-Object -First 1
+
+        if (-not $sanExtension) {
+            return $false
+        }
+
+        $sanText = $sanExtension.Format($true)
+        return $sanText -match [regex]::Escape($HostName)
+    } catch {
+        return $false
+    }
+}
+
 # ?? Auto-elevacion a administrador ??????????????????????????????????????????
 function Assert-Admin {
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -69,24 +136,10 @@ Write-Host ""
 
 # ?? Ruta de los ficheros fuente (junto a este .ps1) ??????????????????????????
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-function Get-DefaultLanHost {
-    try {
-        $ip = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction Stop |
-            Where-Object {
-                $_.IPAddress -notlike '127.*' -and
-                $_.IPAddress -notlike '169.254.*' -and
-                $_.PrefixOrigin -ne 'WellKnown'
-            } |
-            Select-Object -First 1 -ExpandProperty IPAddress
-
-        if (-not [string]::IsNullOrWhiteSpace($ip)) {
-            return $ip
-        }
-    } catch {
-    }
-
-    return '192.168.1.116'
+$publicHost = Get-PreferredLanHost
+$httpsHosts = @('127.0.0.1', 'localhost')
+if ($publicHost -ne '127.0.0.1') {
+    $httpsHosts += $publicHost
 }
 
 # ?? Preguntas de configuracion ???????????????????????????????????????????????
@@ -111,33 +164,13 @@ if ([string]::IsNullOrWhiteSpace($allowedOrigins)) {
     $allowedOrigins = "https://confiteriadelcarmen.xtd.es"
 }
 
-$defaultLanHost = Get-DefaultLanHost
-$httpsHostsInput = Read-Host "Hosts/IPs HTTPS del bridge [127.0.0.1,localhost,$defaultLanHost]"
-if ([string]::IsNullOrWhiteSpace($httpsHostsInput)) {
-    $httpsHostsInput = "127.0.0.1,localhost,$defaultLanHost"
-}
-
-$httpsHosts = @(
-    $httpsHostsInput -split ',' |
-        ForEach-Object { $_.Trim() } |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        Select-Object -Unique
-)
-
-$publicHost = $httpsHosts |
-    Where-Object { $_ -ne '127.0.0.1' -and $_ -ne 'localhost' } |
-    Select-Object -First 1
-
-if ([string]::IsNullOrWhiteSpace($publicHost)) {
-    $publicHost = '127.0.0.1'
-}
-
 Write-Host ""
 Write-Host "Configuracion:" -ForegroundColor Green
 Write-Host "  Directorio : $installDir"
 Write-Host "  Puerto     : $port"
 Write-Host "  CORS       : $allowedOrigins"
 Write-Host "  Host bind  : 0.0.0.0 (local y LAN)"
+Write-Host "  IPv4 LAN   : $publicHost"
 Write-Host "  HTTPS SANs : $($httpsHosts -join ', ')"
 Write-Host "  URL publica: https://${publicHost}:$($port + 1)"
 Write-Host ""
@@ -151,6 +184,11 @@ if (-not (Test-Path $installDir)) {
 $logsDir = Join-Path $installDir "logs"
 if (-not (Test-Path $logsDir)) {
     New-Item -ItemType Directory -Path $logsDir | Out-Null
+}
+
+$mkcertCaDir = Join-Path $installDir 'mkcert-ca'
+if (-not (Test-Path $mkcertCaDir)) {
+    New-Item -ItemType Directory -Path $mkcertCaDir | Out-Null
 }
 
 # ?? Copiar ficheros del servicio ??????????????????????????????????????????????
@@ -196,8 +234,17 @@ if (-not (Test-Path $mkcertExe)) {
 if ($mkcertExe -and (Test-Path $mkcertExe)) {
     # Instalar la CA en el trust store de Windows y Chrome
     Write-Host "  Instalando CA local (mkcert -install)..."
+    $previousCaroot = $env:CAROOT
+    $env:CAROOT = $mkcertCaDir
     Push-Location $installDir
     & $mkcertExe -install 2>&1 | ForEach-Object { Write-Host "    $_" }
+
+    $rootCaPath = Join-Path $mkcertCaDir 'rootCA.pem'
+    if (Test-Path $rootCaPath) {
+        Import-Certificate -FilePath $rootCaPath -CertStoreLocation 'Cert:\LocalMachine\Root' | Out-Null
+        Import-Certificate -FilePath $rootCaPath -CertStoreLocation 'Cert:\CurrentUser\Root' | Out-Null
+        Write-Host "  CA compartida instalada en LocalMachine y CurrentUser" -ForegroundColor Green
+    }
 
     $certFile = Join-Path $installDir 'cash_drawer_service.pem'
     $keyFile  = Join-Path $installDir 'cash_drawer_service-key.pem'
@@ -205,11 +252,19 @@ if ($mkcertExe -and (Test-Path $mkcertExe)) {
     Write-Host "  Generando certificado para: $($httpsHosts -join ', ')..."
     & $mkcertExe -cert-file $certFile -key-file $keyFile @httpsHosts 2>&1 | ForEach-Object { Write-Host "    $_" }
     Pop-Location
+    $env:CAROOT = $previousCaroot
 
     if ((Test-Path $certFile) -and (Test-Path $keyFile)) {
-        Write-Host "  Certificado HTTPS generado OK" -ForegroundColor Green
-        $certEnvKey  = 'cash_drawer_service-key.pem'
-        $certEnvCert = 'cash_drawer_service.pem'
+        if ((Test-CertificateIncludesHost -CertPath $certFile -HostName '127.0.0.1') -and (Test-CertificateIncludesHost -CertPath $certFile -HostName $publicHost)) {
+            Write-Host "  Certificado HTTPS generado y validado OK" -ForegroundColor Green
+            $certEnvKey  = 'cash_drawer_service-key.pem'
+            $certEnvCert = 'cash_drawer_service.pem'
+        } else {
+            Write-Host "  [AVISO] El certificado se genero, pero no contiene todos los hosts esperados." -ForegroundColor Yellow
+            Write-Host "          Hosts esperados: 127.0.0.1, $publicHost" -ForegroundColor Yellow
+            $certEnvKey  = ""
+            $certEnvCert = ""
+        }
     } else {
         Write-Host "  [AVISO] No se encontraron los ficheros .pem. El servicio arrancara en HTTP." -ForegroundColor Yellow
         $certEnvKey  = ""
@@ -231,6 +286,7 @@ HOST=0.0.0.0
 PUBLIC_HOST=$publicHost
 ALLOWED_ORIGINS=$allowedOrigins
 DEFAULT_PRINTER=
+MKCERT_CAROOT=mkcert-ca
 CERT_KEY=$certEnvKey
 CERT_CERT=$certEnvCert
 "@
