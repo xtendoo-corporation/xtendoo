@@ -1,9 +1,9 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Instalador de Impresora Service con HTTPS local (mkcert) y servicio Windows (NSSM).
+    Instalador de Cash Drawer Service con HTTPS local (mkcert) y servicio Windows (NSSM).
 .DESCRIPTION
-    - Descarga mkcert y genera certificado de confianza para 127.0.0.1
+    - Descarga mkcert y genera certificado de confianza para 127.0.0.1, localhost y la IP LAN indicada
     - Crea .env con la configuracion del servicio
     - Registra regla de Firewall
     - Instala el servicio Windows con NSSM (si esta disponible)
@@ -13,6 +13,39 @@
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+$serviceName = "cash_drawer_service"
+$displayName = "Cash Drawer Service (ESC/POS)"
+$serviceExeName = "cash_drawer_service.exe"
+$ruleName = "Cash Drawer Service"
+$defaultInstallDir = "C:\CashDrawerService"
+$legacyServiceNames = @("ImpressoraService", "impresoraservice")
+$legacyFirewallRuleNames = @("Impresora Service")
+
+function Remove-ServiceIfExists {
+    param(
+        [string]$Name,
+        [string]$NssmExe
+    )
+
+    $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
+    if (-not $svc) {
+        return
+    }
+
+    Write-Host "  Deteniendo y eliminando servicio previo '$Name'..." -ForegroundColor Yellow
+    & $NssmExe stop $Name 2>&1 | Out-Null
+    & $NssmExe remove $Name confirm 2>&1 | Out-Null
+}
+
+function Remove-FirewallRuleIfExists {
+    param([string]$Name)
+
+    $existingRule = Get-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue
+    if ($existingRule) {
+        Remove-NetFirewallRule -DisplayName $Name
+    }
+}
 
 # ?? Auto-elevacion a administrador ??????????????????????????????????????????
 function Assert-Admin {
@@ -30,15 +63,33 @@ Assert-Admin
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "  Impresora Service - Instalacion" -ForegroundColor Cyan
+Write-Host "  Cash Drawer Service - Instalacion" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
 
 # ?? Ruta de los ficheros fuente (junto a este .ps1) ??????????????????????????
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+function Get-DefaultLanHost {
+    try {
+        $ip = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction Stop |
+            Where-Object {
+                $_.IPAddress -notlike '127.*' -and
+                $_.IPAddress -notlike '169.254.*' -and
+                $_.PrefixOrigin -ne 'WellKnown'
+            } |
+            Select-Object -First 1 -ExpandProperty IPAddress
+
+        if (-not [string]::IsNullOrWhiteSpace($ip)) {
+            return $ip
+        }
+    } catch {
+    }
+
+    return '192.168.1.116'
+}
+
 # ?? Preguntas de configuracion ???????????????????????????????????????????????
-$defaultInstallDir = "C:\ImpressoraService"
 $installDir = Read-Host "Directorio de instalacion [$defaultInstallDir]"
 if ([string]::IsNullOrWhiteSpace($installDir)) { $installDir = $defaultInstallDir }
 
@@ -60,26 +111,35 @@ if ([string]::IsNullOrWhiteSpace($allowedOrigins)) {
     $allowedOrigins = "https://confiteriadelcarmen.xtd.es"
 }
 
-# Detectar IP LAN automaticamente
-$detectedLanIp = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {
-    $_.IPAddress -notmatch '^127\.' -and $_.PrefixOrigin -eq 'Dhcp'
-} | Select-Object -First 1).IPAddress
-if (-not $detectedLanIp) {
-    $detectedLanIp = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {
-        $_.IPAddress -notmatch '^127\.' -and $_.IPAddress -notmatch '^169\.254\.' -and $_.InterfaceAlias -notmatch 'Loopback'
-    } | Select-Object -First 1).IPAddress
+$defaultLanHost = Get-DefaultLanHost
+$httpsHostsInput = Read-Host "Hosts/IPs HTTPS del bridge [127.0.0.1,localhost,$defaultLanHost]"
+if ([string]::IsNullOrWhiteSpace($httpsHostsInput)) {
+    $httpsHostsInput = "127.0.0.1,localhost,$defaultLanHost"
 }
-if (-not $detectedLanIp) { $detectedLanIp = "192.168.1.100" }
 
-$lanIpStr = Read-Host "IP LAN de este PC (para certificado HTTPS desde red local) [$detectedLanIp]"
-if ([string]::IsNullOrWhiteSpace($lanIpStr)) { $lanIpStr = $detectedLanIp }
+$httpsHosts = @(
+    $httpsHostsInput -split ',' |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Select-Object -Unique
+)
+
+$publicHost = $httpsHosts |
+    Where-Object { $_ -ne '127.0.0.1' -and $_ -ne 'localhost' } |
+    Select-Object -First 1
+
+if ([string]::IsNullOrWhiteSpace($publicHost)) {
+    $publicHost = '127.0.0.1'
+}
 
 Write-Host ""
 Write-Host "Configuracion:" -ForegroundColor Green
 Write-Host "  Directorio : $installDir"
 Write-Host "  Puerto     : $port"
 Write-Host "  CORS       : $allowedOrigins"
-Write-Host "  IP LAN     : $lanIpStr"
+Write-Host "  Host bind  : 0.0.0.0 (local y LAN)"
+Write-Host "  HTTPS SANs : $($httpsHosts -join ', ')"
+Write-Host "  URL publica: https://${publicHost}:$($port + 1)"
 Write-Host ""
 
 # ?? Crear directorio de instalacion ?????????????????????????????????????????
@@ -94,7 +154,7 @@ if (-not (Test-Path $logsDir)) {
 }
 
 # ?? Copiar ficheros del servicio ??????????????????????????????????????????????
-$filesToCopy = @("impresora-service.exe", "send-raw.ps1", "icon-green.ico", "icon-red.ico")
+$filesToCopy = @($serviceExeName, "send-raw.ps1", "icon-green.ico", "icon-red.ico")
 foreach ($f in $filesToCopy) {
     $src = Join-Path $ScriptDir $f
     if (Test-Path $src) {
@@ -139,20 +199,17 @@ if ($mkcertExe -and (Test-Path $mkcertExe)) {
     Push-Location $installDir
     & $mkcertExe -install 2>&1 | ForEach-Object { Write-Host "    $_" }
 
-    # Generar certificado para 127.0.0.1, localhost Y la IP LAN
-    Write-Host "  Generando certificado para 127.0.0.1, localhost y $lanIpStr..."
-    & $mkcertExe 127.0.0.1 $lanIpStr localhost 2>&1 | ForEach-Object { Write-Host "    $_" }
+    $certFile = Join-Path $installDir 'cash_drawer_service.pem'
+    $keyFile  = Join-Path $installDir 'cash_drawer_service-key.pem'
+
+    Write-Host "  Generando certificado para: $($httpsHosts -join ', ')..."
+    & $mkcertExe -cert-file $certFile -key-file $keyFile @httpsHosts 2>&1 | ForEach-Object { Write-Host "    $_" }
     Pop-Location
 
-    # mkcert nombra el fichero con los dominios separados por '+'
-    $certBaseName = "127.0.0.1+2"
-    $certFile = Join-Path $installDir "${certBaseName}.pem"
-    $keyFile  = Join-Path $installDir "${certBaseName}-key.pem"
-
     if ((Test-Path $certFile) -and (Test-Path $keyFile)) {
-        Write-Host "  Certificado HTTPS generado OK (cubre 127.0.0.1, $lanIpStr y localhost)" -ForegroundColor Green
-        $certEnvKey  = "${certBaseName}-key.pem"
-        $certEnvCert = "${certBaseName}.pem"
+        Write-Host "  Certificado HTTPS generado OK" -ForegroundColor Green
+        $certEnvKey  = 'cash_drawer_service-key.pem'
+        $certEnvCert = 'cash_drawer_service.pem'
     } else {
         Write-Host "  [AVISO] No se encontraron los ficheros .pem. El servicio arrancara en HTTP." -ForegroundColor Yellow
         $certEnvKey  = ""
@@ -171,6 +228,7 @@ $envContent = @"
 API_KEY=$apiKey
 PORT=$port
 HOST=0.0.0.0
+PUBLIC_HOST=$publicHost
 ALLOWED_ORIGINS=$allowedOrigins
 DEFAULT_PRINTER=
 CERT_KEY=$certEnvKey
@@ -185,14 +243,15 @@ Write-Host "  .env creado en $envPath" -ForegroundColor Green
 Write-Host ""
 Write-Host "Configurando Firewall..." -ForegroundColor Cyan
 
-$ruleName = "Impresora Service"
-$existingRule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
-if ($existingRule) {
-    Write-Host "  Regla de firewall ya existe, actualizando..." -ForegroundColor Yellow
-    Remove-NetFirewallRule -DisplayName $ruleName
+foreach ($legacyRuleName in $legacyFirewallRuleNames + $ruleName) {
+    $existingRule = Get-NetFirewallRule -DisplayName $legacyRuleName -ErrorAction SilentlyContinue
+    if ($existingRule) {
+        Write-Host "  Regla de firewall '$legacyRuleName' ya existe, actualizando..." -ForegroundColor Yellow
+        Remove-FirewallRuleIfExists -Name $legacyRuleName
+    }
 }
 
-$exePath = Join-Path $installDir "impresora-service.exe"
+$exePath = Join-Path $installDir $serviceExeName
 New-NetFirewallRule `
     -DisplayName $ruleName `
     -Direction Inbound `
@@ -201,7 +260,7 @@ New-NetFirewallRule `
     -Action Allow `
     -Profile @("Domain","Private","Public") `
     -Program $exePath `
-    -Description "Impresora Service: servicio local ESC/POS para cajon portamonedas" | Out-Null
+    -Description "Cash Drawer Service: servicio local ESC/POS para cajon portamonedas" | Out-Null
 
 Write-Host "  Regla de firewall creada para puertos $port (HTTP) y $($port+1) (HTTPS)" -ForegroundColor Green
 
@@ -211,21 +270,17 @@ if (Test-Path $nssmExe) {
     Write-Host ""
     Write-Host "Instalando servicio Windows con NSSM..." -ForegroundColor Cyan
 
-    $serviceName = "ImpressoraService"
-    $serviceExe  = Join-Path $installDir "impresora-service.exe"
+    $serviceExe  = Join-Path $installDir $serviceExeName
 
     # Eliminar servicio previo si existe
-    $svcExists = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-    if ($svcExists) {
-        Write-Host "  Deteniendo y eliminando servicio previo..."
-        & $nssmExe stop  $serviceName 2>&1 | Out-Null
-        & $nssmExe remove $serviceName confirm 2>&1 | Out-Null
-        Start-Sleep -Milliseconds 1500
+    foreach ($legacyServiceName in $legacyServiceNames + $serviceName) {
+        Remove-ServiceIfExists -Name $legacyServiceName -NssmExe $nssmExe
     }
+    Start-Sleep -Milliseconds 1500
 
     & $nssmExe install       $serviceName $serviceExe
     & $nssmExe set           $serviceName AppDirectory   $installDir
-    & $nssmExe set           $serviceName DisplayName    "Impresora Service (ESC/POS)"
+    & $nssmExe set           $serviceName DisplayName    $displayName
     & $nssmExe set           $serviceName Description    "Servicio local para apertura de cajon portamonedas via ESC/POS RAW"
     & $nssmExe set           $serviceName Start          SERVICE_AUTO_START
     & $nssmExe set           $serviceName AppRestartDelay 3000
@@ -256,16 +311,15 @@ Write-Host "============================================================" -Foreg
 Write-Host "  Instalacion completada" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Cyan
 $httpsPort = $port + 1
-Write-Host "  HTTP  (local) : http://127.0.0.1:${port}"
+Write-Host "  HTTP  (local/LAN) : http://${publicHost}:${port}"
 if ($certEnvCert) {
-    Write-Host "  HTTPS (LAN)   : https://${lanIpStr}:${httpsPort}" -ForegroundColor Green
-    Write-Host "  HTTPS (local) : https://127.0.0.1:${httpsPort}" -ForegroundColor Green
+    Write-Host "  HTTPS (publico): https://${publicHost}:${httpsPort}" -ForegroundColor Green
 }
 Write-Host "  Directorio    : $installDir"
 Write-Host ""
 if ($certEnvCert) {
     Write-Host "  Configurar en Odoo TPV -> URL del bridge:" -ForegroundColor Cyan
-    Write-Host "    https://${lanIpStr}:${httpsPort}" -ForegroundColor White
+    Write-Host "    https://${publicHost}:${httpsPort}" -ForegroundColor White
     Write-Host ""
     Write-Host "  IMPORTANTE: Chrome ya confia en el certificado local (mkcert CA)." -ForegroundColor Green
     Write-Host "  Si usas Firefox, abrelo y ejecuta: mkcert -install" -ForegroundColor Yellow

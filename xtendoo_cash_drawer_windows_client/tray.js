@@ -66,7 +66,7 @@ const systray = new SysTray({
   menu: {
     icon: ICON_RED,
     title: '',
-    tooltip: 'Impresora Service',
+    tooltip: 'Cash Drawer Service',
     items: [itemStatus, SysTray.separator, itemOpenBrowser, SysTray.separator, itemExit]
   },
   debug: false,
@@ -83,7 +83,7 @@ function setIcon(iconPath) {
     menu: {
       icon: iconPath,
       title: '',
-      tooltip: 'Impresora Service',
+      tooltip: 'Cash Drawer Service',
       items: [itemStatus, SysTray.separator, itemOpenBrowser, SysTray.separator, itemExit]
     }
   });

@@ -95,6 +95,7 @@ const app = express();
 
 const PORT = parseInt(process.env.PORT || '3210', 10);
 const HOST = process.env.HOST || '127.0.0.1';
+const PUBLIC_HOST = process.env.PUBLIC_HOST || HOST;
 const API_KEY = process.env.API_KEY || '';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
@@ -391,7 +392,7 @@ function getDefaultPrinterName() {
 }
 
 function printBanner(proto, printerName) {
-  const pkg = (() => { try { return require('./package.json'); } catch { return { name: 'impresora-service', version: '?' }; } })();
+  const pkg = (() => { try { return require('./package.json'); } catch { return { name: 'cash_drawer_service', version: '?' }; } })();
   const mode = process.pkg ? '[EXE]' : '[DEV]';
   const maskedKey = API_KEY.length > 4 ? API_KEY.slice(0, 4) + '****' : '****';
   const originsStr = ALLOWED_ORIGINS.length > 0 ? ALLOWED_ORIGINS.join(', ') : '(cualquiera)';
@@ -466,10 +467,12 @@ async function startServer() {
   if (hasCerts) {
     const HTTPS_PORT = PORT + 1;
     https.createServer(sslOpts, app).listen(HTTPS_PORT, HOST, () => {
-      const url = `https://${HOST === '0.0.0.0' ? '192.168.18.7' : HOST}:${HTTPS_PORT}`;
+      const publicHost = HOST === '0.0.0.0' ? PUBLIC_HOST : HOST;
+      const url = `https://${publicHost}:${HTTPS_PORT}`;
       logInfo('HTTPS habilitado', {
         url,
         host: HOST,
+        publicHost,
         port: HTTPS_PORT
       });
     });

@@ -1,13 +1,45 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Desinstala el servicio Windows ImpressoraService y elimina la regla de Firewall.
+    Desinstala el servicio Windows cash_drawer_service y elimina reglas de Firewall actuales o antiguas.
 .NOTES
     Requiere permisos de administrador.
 #>
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+$serviceNames = @("cash_drawer_service", "ImpressoraService", "impresoraservice")
+$firewallRuleNames = @("Cash Drawer Service", "Impresora Service")
+
+function Remove-ServiceIfExists {
+    param(
+        [string]$Name,
+        [string]$NssmExe
+    )
+
+    $svcExists = Get-Service -Name $Name -ErrorAction SilentlyContinue
+    if (-not $svcExists) {
+        Write-Host "  El servicio '$Name' no estaba instalado." -ForegroundColor Yellow
+        return
+    }
+
+    if ($svcExists.Status -eq "Running") {
+        Write-Host "  Deteniendo servicio '$Name'..."
+        Stop-Service -Name $Name -Force
+        Start-Sleep -Milliseconds 1000
+    }
+
+    if (Test-Path $NssmExe) {
+        Write-Host "  Eliminando servicio '$Name' con NSSM..."
+        & $NssmExe remove $Name confirm 2>&1 | Out-Null
+    } else {
+        Write-Host "  Eliminando servicio '$Name' con sc.exe..."
+        sc.exe delete $Name | Out-Null
+    }
+
+    Write-Host "  Servicio '$Name' eliminado." -ForegroundColor Green
+}
 
 function Assert-Admin {
     $p = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -22,40 +54,24 @@ Assert-Admin
 
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $nssmExe     = Join-Path $ScriptDir "nssm.exe"
-$serviceName = "ImpressoraService"
 
 Write-Host ""
-Write-Host "Desinstalando $serviceName..." -ForegroundColor Cyan
+Write-Host "Desinstalando servicios de cash drawer..." -ForegroundColor Cyan
 
 # Detener y eliminar servicio
-$svcExists = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-if ($svcExists) {
-    if ($svcExists.Status -eq "Running") {
-        Write-Host "  Deteniendo servicio..."
-        Stop-Service -Name $serviceName -Force
-        Start-Sleep -Milliseconds 1000
-    }
-
-    if (Test-Path $nssmExe) {
-        Write-Host "  Eliminando servicio con NSSM..."
-        & $nssmExe remove $serviceName confirm 2>&1 | Out-Null
-    } else {
-        Write-Host "  Eliminando servicio con sc.exe..."
-        sc.exe delete $serviceName | Out-Null
-    }
-    Write-Host "  Servicio eliminado." -ForegroundColor Green
-} else {
-    Write-Host "  El servicio '$serviceName' no estaba instalado." -ForegroundColor Yellow
+foreach ($serviceName in $serviceNames) {
+    Remove-ServiceIfExists -Name $serviceName -NssmExe $nssmExe
 }
 
 # Eliminar regla de firewall
-$ruleName = "Impresora Service"
-$existingRule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
-if ($existingRule) {
-    Remove-NetFirewallRule -DisplayName $ruleName
-    Write-Host "  Regla de firewall '$ruleName' eliminada." -ForegroundColor Green
-} else {
-    Write-Host "  No se encontro regla de firewall '$ruleName'." -ForegroundColor Yellow
+foreach ($ruleName in $firewallRuleNames) {
+    $existingRule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+    if ($existingRule) {
+        Remove-NetFirewallRule -DisplayName $ruleName
+        Write-Host "  Regla de firewall '$ruleName' eliminada." -ForegroundColor Green
+    } else {
+        Write-Host "  No se encontro regla de firewall '$ruleName'." -ForegroundColor Yellow
+    }
 }
 
 Write-Host ""

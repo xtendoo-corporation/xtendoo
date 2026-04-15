@@ -1,5 +1,5 @@
 {
-  "name": "impresora-service",
+  "name": "cash_drawer_service",
   "version": "1.0.0",
   "description": "Servicio local Windows para abrir cajon via ESC/POS RAW",
   "main": "server.js",
@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "tray": "node tray.js",
-    "build": "pkg server.js --targets node18-win-x64 --output impresora-service.exe",
+    "build": "pkg server.js --targets node18-win-x64 --output cash_drawer_service.exe",
     "build:tray": "pkg tray.js --targets node18-win-x64 --output impresora-tray.exe --assets icon-green.ico,icon-red.ico,node_modules/systray2/traybin/tray_windows_release.exe"
   },
   "dependencies": {

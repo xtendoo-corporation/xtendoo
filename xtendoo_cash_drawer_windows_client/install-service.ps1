@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Instala ImpressoraService como servicio Windows usando NSSM.
+    Instala cash_drawer_service como servicio Windows usando NSSM.
 .NOTES
     Requiere permisos de administrador y nssm.exe en la misma carpeta.
     Normalmente se llama desde install.ps1, pero puede ejecutarse de forma independiente.
@@ -9,6 +9,27 @@
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+$serviceName = "cash_drawer_service"
+$displayName = "Cash Drawer Service (ESC/POS)"
+$serviceExeName = "cash_drawer_service.exe"
+$legacyServiceNames = @("ImpressoraService", "impresoraservice")
+
+function Remove-ServiceIfExists {
+    param(
+        [string]$Name,
+        [string]$NssmExe
+    )
+
+    $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
+    if (-not $svc) {
+        return
+    }
+
+    Write-Host "Deteniendo servicio previo '$Name'..."
+    & $NssmExe stop $Name 2>&1 | Out-Null
+    & $NssmExe remove $Name confirm 2>&1 | Out-Null
+}
 
 function Assert-Admin {
     $p = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -23,8 +44,7 @@ Assert-Admin
 
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $nssmExe     = Join-Path $ScriptDir "nssm.exe"
-$serviceExe  = Join-Path $ScriptDir "impresora-service.exe"
-$serviceName = "ImpressoraService"
+$serviceExe  = Join-Path $ScriptDir $serviceExeName
 $logsDir     = Join-Path $ScriptDir "logs"
 
 if (-not (Test-Path $nssmExe)) {
@@ -32,7 +52,7 @@ if (-not (Test-Path $nssmExe)) {
     exit 1
 }
 if (-not (Test-Path $serviceExe)) {
-    Write-Error "impresora-service.exe no encontrado en $ScriptDir. Compila primero con: npm run build"
+    Write-Error "$serviceExeName no encontrado en $ScriptDir. Compila primero con: npm run build"
     exit 1
 }
 
@@ -41,19 +61,16 @@ if (-not (Test-Path $logsDir)) {
 }
 
 # Eliminar servicio previo si existe
-$svcExists = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-if ($svcExists) {
-    Write-Host "Deteniendo servicio previo..."
-    & $nssmExe stop   $serviceName 2>&1 | Out-Null
-    & $nssmExe remove $serviceName confirm 2>&1 | Out-Null
-    Start-Sleep -Milliseconds 1500
+foreach ($legacyServiceName in $legacyServiceNames + $serviceName) {
+    Remove-ServiceIfExists -Name $legacyServiceName -NssmExe $nssmExe
 }
+Start-Sleep -Milliseconds 1500
 
 Write-Host "Instalando servicio '$serviceName'..."
 
 & $nssmExe install       $serviceName $serviceExe
 & $nssmExe set           $serviceName AppDirectory   $ScriptDir
-& $nssmExe set           $serviceName DisplayName    "Impresora Service (ESC/POS)"
+& $nssmExe set           $serviceName DisplayName    $displayName
 & $nssmExe set           $serviceName Description    "Servicio local para apertura de cajon portamonedas via ESC/POS RAW"
 & $nssmExe set           $serviceName Start          SERVICE_AUTO_START
 & $nssmExe set           $serviceName AppRestartDelay 3000

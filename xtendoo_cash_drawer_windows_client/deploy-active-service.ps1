@@ -3,6 +3,18 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$serviceExeName = 'cash_drawer_service.exe'
+$installDirName = 'C:\CashDrawerService'
+$legacyInstallDirName = 'C:\ImpressoraService'
+
+function Get-InstallDir {
+    if (Test-Path $installDirName) {
+        return $installDirName
+    }
+
+    return $legacyInstallDirName
+}
+
 function Assert-Admin {
     $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -15,9 +27,9 @@ function Assert-Admin {
 Assert-Admin
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sourceExe = Join-Path $scriptDir 'impresora-service.exe'
-$targetDir = 'C:\ImpressoraService'
-$targetExe = Join-Path $targetDir 'impresora-service.exe'
+$sourceExe = Join-Path $scriptDir $serviceExeName
+$targetDir = Get-InstallDir
+$targetExe = Join-Path $targetDir $serviceExeName
 $logsDir = Join-Path $targetDir 'logs'
 $deployLog = Join-Path $logsDir 'deploy.log'
 $port = 3211
@@ -59,7 +71,7 @@ if ($connection) {
 }
 
 if (Test-Path $targetExe) {
-    $backupExe = Join-Path $targetDir ('impresora-service-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.bak.exe')
+    $backupExe = Join-Path $targetDir ('cash_drawer_service-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.bak.exe')
     Copy-Item $targetExe $backupExe -Force
     Write-DeployLog "Backup generado: $backupExe"
 }
