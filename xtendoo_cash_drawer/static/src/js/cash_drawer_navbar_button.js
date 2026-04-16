@@ -54,17 +54,41 @@ export class CashDrawerNavbarButton extends Component {
     }
 
     /**
-     * Abre el cajón enviando directamente la petición al bridge.
+     * Abre el cajón extrayendo la configuración fresca y enviando la petición.
      * Muestra notificación de éxito o error.
      */
     async onClick() {
         if (this.state.sending) return;
         this.state.sending = true;
         try {
-            // Se usa this.pos.config que tiene las config guardadas en POS
-            const result = await sendCashDrawerRequest(this.pos.config);
+            const configId = this.cashDrawerConfigId;
+            let finalConfig = this.pos.config;
+            
+            if (configId) {
+                try {
+                    // Solicitamos la configuración fresca del backend para evitar problemas
+                    // de caché en el TPV si el URL o la API key cambiaron recientemente.
+                    const action = await this.orm.call(
+                        "pos.config",
+                        "action_test_cash_drawer",
+                        [[configId]]
+                    );
+                    if (action && action.params) {
+                        finalConfig = { 
+                            ...this.pos.config, 
+                            cash_drawer_bridge_url: action.params.bridge_url || finalConfig.cash_drawer_bridge_url,
+                            cash_drawer_printer_name: action.params.printer_name || finalConfig.cash_drawer_printer_name,
+                            cash_drawer_api_key: action.params.api_key || finalConfig.cash_drawer_api_key,
+                        };
+                    }
+                } catch (e) {
+                    console.warn("[CashDrawer] Usando config caché (POS offline)");
+                }
+            }
+
+            const result = await sendCashDrawerRequest(finalConfig);
             if (result.ok) {
-                this.notification.add(_t("Señal de apertura enviada."), {
+                this.notification.add(_t("Señal de apertura enviada correctamente."), {
                     type: "success",
                 });
             }
