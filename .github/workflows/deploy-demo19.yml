@@ -1,0 +1,52 @@
+name: Deploy xtendoo_cash_drawer to demo19
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Preparar SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -eu
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Desplegar módulo en demo19
+        shell: bash
+        run: |
+          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" << 'EOF'
+            set -euo pipefail
+
+            PROJECT_DIR="/home/ubuntu/demo19"
+            XTENDOO_DIR="/home/ubuntu/demo19/odoo/custom/src/xtendoo"
+            DB_NAME="demo_19"
+            MODULE="xtendoo_cash_drawer"
+
+            echo "==> Actualizando repo xtendoo"
+            cd "$XTENDOO_DIR"
+            git fetch --all --prune
+            git checkout 19.0
+            git reset --hard origin/19.0
+
+            echo "==> Levantando Odoo"
+            cd "$PROJECT_DIR"
+            docker compose up -d odoo
+
+            echo "==> Actualizando módulo $MODULE en la BD $DB_NAME"
+            docker compose run --rm odoo \
+              odoo -d "$DB_NAME" -u "$MODULE" --stop-after-init
+
+            echo "==> Volviendo a levantar Odoo"
+            docker compose up -d odoo
+
+            echo "==> Deploy terminado"
+          EOF
