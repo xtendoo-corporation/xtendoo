@@ -10,7 +10,7 @@ import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { usePos } from "@point_of_sale/app/hooks/pos_hook";
 import { _t } from "@web/core/l10n/translation";
-import { checkCashDrawerHealth } from "./cash_drawer_utils";
+import { checkCashDrawerHealth, sendCashDrawerRequest } from "./cash_drawer_utils";
 import { Navbar } from "@point_of_sale/app/components/navbar/navbar";
 
 export class CashDrawerNavbarButton extends Component {
@@ -54,29 +54,19 @@ export class CashDrawerNavbarButton extends Component {
     }
 
     /**
-     * Abre el cajón llamando al método Python action_test_cash_drawer() y
-     * ejecutando la acción cliente devuelta.
+     * Abre el cajón enviando directamente la petición al bridge.
      * Muestra notificación de éxito o error.
      */
     async onClick() {
         if (this.state.sending) return;
         this.state.sending = true;
         try {
-            const configId = this.cashDrawerConfigId;
-            if (!configId) {
-                this.notification.add(
-                    _t("No se pudo identificar la configuración del TPV para abrir el cajón."),
-                    { type: "danger", sticky: true }
-                );
-                return;
-            }
-            const action = await this.orm.call(
-                "pos.config",
-                "action_test_cash_drawer",
-                [[configId]]
-            );
-            if (action) {
-                await this.action.doAction(action);
+            // Se usa this.pos.config que tiene las config guardadas en POS
+            const result = await sendCashDrawerRequest(this.pos.config);
+            if (result.ok) {
+                this.notification.add(_t("Señal de apertura enviada."), {
+                    type: "success",
+                });
             }
         } catch (err) {
             this.notification.add(
