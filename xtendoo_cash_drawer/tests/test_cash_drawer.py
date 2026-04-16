@@ -453,7 +453,7 @@ class TestPosConfigCashDrawer(TransactionCase):
 
 @tagged("post_install", "-at_install", "xtendoo_cash_drawer")
 class TestPosAssetsCashDrawer(TransactionCase):
-    """Garantiza que el TPV usa el mismo canal directo que la prueba de configuración."""
+    """Garantiza que cada entrada del TPV usa el canal de apertura previsto."""
 
     @classmethod
     def setUpClass(cls):
@@ -463,23 +463,33 @@ class TestPosAssetsCashDrawer(TransactionCase):
     def _read_asset(self, relative_path):
         return (self._module_root / relative_path).read_text(encoding="utf-8")
 
-    def test_control_buttons_use_direct_bridge_request(self):
-        """El botón principal del POS debe abrir el cajón desde el navegador."""
+    def test_control_buttons_call_action_test_cash_drawer(self):
+        """El botón principal del POS debe delegar en action_test_cash_drawer."""
         source = self._read_asset(Path("static/src/js/cash_drawer_button.js"))
-        self.assertIn("sendCashDrawerRequest", source)
-        self.assertNotIn("sendCashDrawerViaProxy", source)
+        self.assertIn('"action_test_cash_drawer"', source)
+        self.assertIn('this.orm.call(', source)
+        self.assertIn('this.action.doAction(action)', source)
+        self.assertIn('this.pos.pos_session?.config_id', source)
+        self.assertNotIn("sendCashDrawerRequest(this.pos.config)", source)
 
     def test_navbar_button_uses_direct_bridge_request(self):
-        """El botón del navbar debe usar la misma apertura directa que configuración."""
+        """El botón del navbar mantiene la apertura directa al bridge."""
         source = self._read_asset(Path("static/src/js/cash_drawer_navbar_button.js"))
         self.assertIn("sendCashDrawerRequest", source)
         self.assertNotIn("sendCashDrawerViaProxy", source)
 
     def test_payment_screen_auto_open_uses_direct_bridge_request(self):
-        """La autoapertura en pagos debe mantenerse en el navegador, no en Python."""
+        """La autoapertura en pagos se mantiene directa desde el navegador."""
         source = self._read_asset(Path("static/src/js/cash_drawer_payment.js"))
         self.assertIn("sendCashDrawerRequest(cfg)", source)
         self.assertNotIn("sendCashDrawerViaProxy", source)
+
+    def test_desktop_button_has_aria_label_without_title(self):
+        """El botón de escritorio debe usar aria-label y no depender de title."""
+        source = self._read_asset(Path("static/src/xml/cash_drawer.xml"))
+        self.assertIn('aria-label="Abrir Cajón"', source)
+        self.assertIn('aria-hidden="true"', source)
+        self.assertNotIn('title="Abrir Cajón"', source)
 
 
 @tagged("post_install", "-at_install", "xtendoo_cash_drawer")

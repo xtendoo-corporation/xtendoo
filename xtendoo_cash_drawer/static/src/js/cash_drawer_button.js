@@ -3,20 +3,22 @@
  * Xtendoo Cash Drawer - Parche de ControlButtons
  * Añade el botón "Abrir Cajón" en el área de botones de control del TPV.
  *
- * Arquitectura: navegador → bridge local
- * Usa el mismo canal que la prueba de configuración (`action_test_cash_drawer`):
- * la llamada sale directamente desde el navegador del TPV.
+ * Arquitectura: POS → método Python pos.config.action_test_cash_drawer()
+ * Reutiliza exactamente la misma acción cliente que ya funciona desde la
+ * configuración del TPV.
  */
 
 import { patch } from "@web/core/utils/patch";
 import { ControlButtons } from "@point_of_sale/app/screens/product_screen/control_buttons/control_buttons";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
-import { sendCashDrawerRequest, checkCashDrawerHealth } from "./cash_drawer_utils";
+import { checkCashDrawerHealth } from "./cash_drawer_utils";
 
 patch(ControlButtons.prototype, {
     setup() {
         super.setup();
+        this.orm = useService("orm");
+        this.action = useService("action");
         this.notification = useService("notification");
     },
 
@@ -32,9 +34,27 @@ patch(ControlButtons.prototype, {
     },
 
     /**
-     * Envía la señal de apertura directamente al bridge local.
-     * Usa el mismo canal que action_test_cash_drawer: navegador → bridge.
-     * Muestra notificación de éxito o error al usuario.
+     * Devuelve el ID real de pos.config en la sesión POS.
+     * Soporta tanto el config cargado directamente como el M2O de la sesión.
+     *
+     * @returns {number|null}
+     */
+    get cashDrawerConfigId() {
+        const configId = this.pos.config?.id;
+        if (typeof configId === "number") {
+            return configId;
+        }
+        const sessionConfigId = this.pos.pos_session?.config_id;
+        if (Array.isArray(sessionConfigId)) {
+            return sessionConfigId[0] || null;
+        }
+        return sessionConfigId || null;
+    },
+
+    /**
+     * Llama al método Python action_test_cash_drawer() y ejecuta la acción
+     * cliente devuelta. Así reutiliza el mismo flujo que funciona desde
+     * configuración, sin duplicar la lógica en JS del botón.
      */
     async openCashDrawer() {
         if (!this.cashDrawerConfigured) {
@@ -44,9 +64,23 @@ patch(ControlButtons.prototype, {
             );
             return;
         }
+        const configId = this.cashDrawerConfigId;
+        if (!configId) {
+            this.notification.add(
+                _t("No se pudo identificar la configuración del TPV para abrir el cajón."),
+                { type: "danger", sticky: true }
+            );
+            return;
+        }
         try {
-            await sendCashDrawerRequest(this.pos.config);
-            this.notification.add(_t("Cajón portamonedas abierto."), { type: "success" });
+            const action = await this.orm.call(
+                "pos.config",
+                "action_test_cash_drawer",
+                [[configId]]
+            );
+            if (action) {
+                await this.action.doAction(action);
+            }
         } catch (err) {
             this.notification.add(
                 _t("Error al abrir el cajón: ") + (err.message || String(err)),
