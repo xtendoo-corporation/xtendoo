@@ -16,7 +16,6 @@
                 t-on-click="onClick"
                 title="Abrir cajón portamonedas">
             <i t-attf-class="fa fa-fw {{ state.sending ? 'fa-spinner fa-spin' : 'fa-unlock' }}"/>
-            <span class="ms-1">Abrir</span>
         </button>
     </t>
 
