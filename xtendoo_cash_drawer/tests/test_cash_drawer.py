@@ -467,6 +467,15 @@ class TestPosAssetsCashDrawer(TransactionCase):
     def _parse_xml_asset(self, relative_path):
         return ET.fromstring(self._read_asset(relative_path))
 
+    def test_pos_assets_include_cash_drawer_client_action(self):
+        """El POS debe cargar la acción cliente reutilizada por action_test_cash_drawer."""
+        manifest = (self._module_root / "__manifest__.py").read_text(encoding="utf-8")
+        self.assertIn('"point_of_sale._assets_pos"', manifest)
+        self.assertIn(
+            '"xtendoo_cash_drawer/static/src/js/cash_drawer_backend_test.js"',
+            manifest,
+        )
+
     def test_control_buttons_call_action_test_cash_drawer(self):
         """El botón principal del POS debe delegar en action_test_cash_drawer."""
         source = self._read_asset(Path("static/src/js/cash_drawer_button.js"))
@@ -476,11 +485,14 @@ class TestPosAssetsCashDrawer(TransactionCase):
         self.assertIn('this.pos.pos_session?.config_id', source)
         self.assertNotIn("sendCashDrawerRequest(this.pos.config)", source)
 
-    def test_navbar_button_uses_direct_bridge_request(self):
-        """El botón del navbar mantiene la apertura directa al bridge."""
+    def test_navbar_button_calls_action_test_cash_drawer(self):
+        """El botón del navbar debe delegar en action_test_cash_drawer."""
         source = self._read_asset(Path("static/src/js/cash_drawer_navbar_button.js"))
-        self.assertIn("sendCashDrawerRequest", source)
-        self.assertNotIn("sendCashDrawerViaProxy", source)
+        self.assertIn('"action_test_cash_drawer"', source)
+        self.assertIn('this.orm.call(', source)
+        self.assertIn('this.action.doAction(action)', source)
+        self.assertIn('this.pos.pos_session?.config_id', source)
+        self.assertNotIn("sendCashDrawerRequest(this.pos.config)", source)
 
     def test_payment_screen_auto_open_uses_direct_bridge_request(self):
         """La autoapertura en pagos se mantiene directa desde el navegador."""

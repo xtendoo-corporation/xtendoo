@@ -43,6 +43,7 @@
         ],
         "point_of_sale._assets_pos": [
             "xtendoo_cash_drawer/static/src/js/cash_drawer_utils.js",
+            "xtendoo_cash_drawer/static/src/js/cash_drawer_backend_test.js",
             "xtendoo_cash_drawer/static/src/js/cash_drawer_button.js",
             "xtendoo_cash_drawer/static/src/js/cash_drawer_navbar_button.js",
             "xtendoo_cash_drawer/static/src/js/cash_drawer_payment.js",

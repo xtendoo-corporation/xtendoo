@@ -3,14 +3,14 @@
  * CashDrawerNavbarButton - Botón de apertura del cajón en el Navbar del TPV.
  *
  * Solo se muestra cuando el bridge del cajón está habilitado y configurado.
- * Llama directamente al bridge local desde el navegador.
+ * Reutiliza la acción cliente devuelta por pos.config.action_test_cash_drawer().
  */
 
 import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { usePos } from "@point_of_sale/app/hooks/pos_hook";
 import { _t } from "@web/core/l10n/translation";
-import { sendCashDrawerRequest, checkCashDrawerHealth } from "./cash_drawer_utils";
+import { checkCashDrawerHealth } from "./cash_drawer_utils";
 import { Navbar } from "@point_of_sale/app/components/navbar/navbar";
 
 export class CashDrawerNavbarButton extends Component {
@@ -19,6 +19,8 @@ export class CashDrawerNavbarButton extends Component {
 
     setup() {
         this.pos = usePos();
+        this.orm = useService("orm");
+        this.action = useService("action");
         this.notification = useService("notification");
         this.state = useState({ sending: false, bridgeAvailable: null });
     }
@@ -35,16 +37,47 @@ export class CashDrawerNavbarButton extends Component {
     }
 
     /**
-     * Abre el cajón enviando la petición directamente al bridge local.
-     * Usa el mismo canal que action_test_cash_drawer: navegador → bridge.
+     * Devuelve el ID real de pos.config disponible en la sesión POS.
+     *
+     * @returns {number|null}
+     */
+    get cashDrawerConfigId() {
+        const configId = this.pos.config?.id;
+        if (typeof configId === "number") {
+            return configId;
+        }
+        const sessionConfigId = this.pos.pos_session?.config_id;
+        if (Array.isArray(sessionConfigId)) {
+            return sessionConfigId[0] || null;
+        }
+        return sessionConfigId || null;
+    }
+
+    /**
+     * Abre el cajón llamando al método Python action_test_cash_drawer() y
+     * ejecutando la acción cliente devuelta.
      * Muestra notificación de éxito o error.
      */
     async onClick() {
         if (this.state.sending) return;
         this.state.sending = true;
         try {
-            await sendCashDrawerRequest(this.pos.config);
-            this.notification.add(_t("Cajón portamonedas abierto."), { type: "success" });
+            const configId = this.cashDrawerConfigId;
+            if (!configId) {
+                this.notification.add(
+                    _t("No se pudo identificar la configuración del TPV para abrir el cajón."),
+                    { type: "danger", sticky: true }
+                );
+                return;
+            }
+            const action = await this.orm.call(
+                "pos.config",
+                "action_test_cash_drawer",
+                [[configId]]
+            );
+            if (action) {
+                await this.action.doAction(action);
+            }
         } catch (err) {
             this.notification.add(
                 _t("Error al abrir el cajón: ") + (err.message || String(err)),
