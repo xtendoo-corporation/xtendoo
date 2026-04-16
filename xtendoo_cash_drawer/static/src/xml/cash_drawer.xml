@@ -28,6 +28,8 @@
         <xpath expr="//NoteButton" position="after">
             <button t-if="cashDrawerConfigured"
                     t-att-class="buttonClass"
+                    aria-label="Abrir Cajón"
+                    title="Abrir Cajón"
                     t-on-click="() => this.openCashDrawer()">
                 <i class="fa fa-unlock me-1"
                    role="img"

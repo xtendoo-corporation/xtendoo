@@ -482,6 +482,19 @@ class TestPosAssetsCashDrawer(TransactionCase):
         self.assertNotIn("sendCashDrawerViaProxy", source)
 
 
+@tagged("post_install", "-at_install", "xtendoo_cash_drawer")
+class TestCashDrawerConfigViewAccessibility(TransactionCase):
+    """Comprueba atributos básicos de accesibilidad en la vista de configuración."""
+
+    def test_legacy_notice_has_status_role_and_icon_title(self):
+        """El aviso legacy debe exponer rol accesible y el icono un título."""
+        view = self.env.ref("xtendoo_cash_drawer.pos_config_view_form_cash_drawer")
+        self.assertIn('class="alert alert-light border mt-1 mb-0 small text-muted"', view.arch_db)
+        self.assertIn('role="status"', view.arch_db)
+        self.assertIn('class="fa fa-info-circle me-1"', view.arch_db)
+        self.assertIn('title="Información"', view.arch_db)
+
+
 # ---------------------------------------------------------------------------
 # res.config.settings — campos relacionados
 # ---------------------------------------------------------------------------
