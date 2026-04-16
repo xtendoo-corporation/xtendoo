@@ -19,6 +19,7 @@ Cobertura:
 
 from io import StringIO
 from pathlib import Path
+from xml.etree import ElementTree as ET
 from unittest.mock import MagicMock, patch
 
 from odoo.exceptions import UserError
@@ -463,6 +464,9 @@ class TestPosAssetsCashDrawer(TransactionCase):
     def _read_asset(self, relative_path):
         return (self._module_root / relative_path).read_text(encoding="utf-8")
 
+    def _parse_xml_asset(self, relative_path):
+        return ET.fromstring(self._read_asset(relative_path))
+
     def test_control_buttons_call_action_test_cash_drawer(self):
         """El botón principal del POS debe delegar en action_test_cash_drawer."""
         source = self._read_asset(Path("static/src/js/cash_drawer_button.js"))
@@ -484,12 +488,10 @@ class TestPosAssetsCashDrawer(TransactionCase):
         self.assertIn("sendCashDrawerRequest(cfg)", source)
         self.assertNotIn("sendCashDrawerViaProxy", source)
 
-    def test_desktop_button_has_aria_label_without_title(self):
-        """El botón de escritorio debe usar aria-label y no depender de title."""
-        source = self._read_asset(Path("static/src/xml/cash_drawer.xml"))
-        self.assertIn('aria-label="Abrir Cajón"', source)
-        self.assertIn('aria-hidden="true"', source)
-        self.assertNotIn('title="Abrir Cajón"', source)
+    def test_control_buttons_template_has_no_active_button_xpaths(self):
+        """La plantilla no debe inyectar botones activos cuando los xpaths están comentados."""
+        root = self._parse_xml_asset(Path("static/src/xml/cash_drawer.xml"))
+        self.assertEqual(root.findall(".//xpath"), [])
 
 
 @tagged("post_install", "-at_install", "xtendoo_cash_drawer")

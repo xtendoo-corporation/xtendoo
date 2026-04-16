@@ -14,7 +14,7 @@
        t-inherit="point_of_sale.ControlButtons"
        t-inherit-mode="extension">
 
-        <!-- Botón en la vista principal / móvil (junto a InternalNoteButton) -->
+        <!-- Botón en la vista principal / móvil (junto a InternalNoteButton)
         <xpath expr="//InternalNoteButton" position="after">
             <button t-if="cashDrawerConfigured"
                     t-att-class="buttonClass"
@@ -23,8 +23,9 @@
                 <span class="d-none d-lg-inline ms-1">Abrir Cajón</span>
             </button>
         </xpath>
+        -->
 
-        <!-- Botón en el modal de escritorio (junto a NoteButton) -->
+        <!-- Botón en el modal de escritorio (junto a NoteButton)
         <xpath expr="//NoteButton" position="after">
             <button t-if="cashDrawerConfigured"
                     t-att-class="buttonClass"
@@ -34,6 +35,7 @@
                    aria-hidden="true"/>
             </button>
         </xpath>
+        -->
 
     </t>
 
