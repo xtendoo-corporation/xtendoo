@@ -2,6 +2,9 @@ name: Deploy xtendoo_cash_drawer to demo19
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 19.0
 
 jobs:
   deploy:
