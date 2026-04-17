@@ -62,40 +62,20 @@ export class CashDrawerNavbarButton extends Component {
         this.state.sending = true;
         try {
             const configId = this.cashDrawerConfigId;
-            let finalConfig = this.pos.config;
-            
             if (configId) {
-                try {
-                    // Solicitamos la configuración fresca del backend para evitar problemas
-                    // de caché en el TPV si el URL o la API key cambiaron recientemente.
-                    const action = await this.orm.call(
-                        "pos.config",
-                        "action_test_cash_drawer",
-                        [[configId]]
-                    );
-                    if (action && action.params) {
-                        finalConfig = { 
-                            ...this.pos.config, 
-                            cash_drawer_bridge_url: action.params.bridge_url || finalConfig.cash_drawer_bridge_url,
-                            cash_drawer_printer_name: action.params.printer_name || finalConfig.cash_drawer_printer_name,
-                            cash_drawer_api_key: action.params.api_key || finalConfig.cash_drawer_api_key,
-                        };
-                    }
-                } catch (e) {
-                    console.warn("[CashDrawer] Usando config caché (POS offline)");
+                const action = await this.orm.call(
+                    "pos.config",
+                    "action_test_cash_drawer",
+                    [[configId]]
+                );
+                if (action) {
+                    await this.action.doAction(action);
                 }
-            }
-
-            const result = await sendCashDrawerRequest(finalConfig);
-            if (result.ok) {
-                this.notification.add(_t("Señal de apertura enviada correctamente."), {
-                    type: "success",
-                });
             }
         } catch (err) {
             this.notification.add(
-                _t("Error al abrir el cajón: ") + (err.message || String(err)),
-                { type: "danger", sticky: true }
+                _t("Error al intentar abrir el cajón: ") + (err.message || String(err)),
+                { type: "danger" }
             );
             console.error("[CashDrawer] Error:", err);
         } finally {

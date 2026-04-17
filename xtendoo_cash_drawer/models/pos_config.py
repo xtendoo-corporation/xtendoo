@@ -142,7 +142,7 @@ class PosConfig(models.Model):
             "type": "ir.actions.client",
             "tag": "xtendoo_cash_drawer_open_test",
             "params": {
-                "bridge_url": self.cash_drawer_bridge_url or "",
+                "bridge_url": self.cash_drawer_effective_url or "",
                 "printer_name": self.cash_drawer_printer_name or "",
                 "api_key": self.cash_drawer_api_key or "",
             },
