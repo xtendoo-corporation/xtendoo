@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="layout_darkmode_assets" inherit_id="website.layout" name="Xtendoo Website Darkmode Assets">
+        <xpath expr="//html" position="attributes">
+            <attribute name="t-att-data-xtendoo-darkmode-enabled">'1' if website.xtendoo_darkmode_enabled else '0'</attribute>
+            <attribute name="t-att-data-xtendoo-darkmode-default">website.xtendoo_darkmode_default_mode if website.xtendoo_darkmode_enabled else 'light'</attribute>
+            <attribute name="t-att-data-xtendoo-darkmode-website-id">website.id</attribute>
+        </xpath>
+        <xpath expr="//head/meta[last()]" position="after">
+            <t t-if="website.xtendoo_darkmode_enabled" t-set="xtd_dark_palette" t-value="website._xtendoo_get_darkmode_palette()"/>
+            <style id="xtendoo_website_darkmode_palette" t-if="website.xtendoo_darkmode_enabled">
+:root {
+    --xtd-dark-bg: <t t-out="xtd_dark_palette['background']"/>;
+    --xtd-dark-text: <t t-out="xtd_dark_palette['text']"/>;
+    --xtd-dark-link: <t t-out="xtd_dark_palette['link']"/>;
+    --xtd-dark-header-bg: <t t-out="xtd_dark_palette['header_background']"/>;
+    --xtd-dark-header-text: <t t-out="xtd_dark_palette['header_text']"/>;
+}
+            </style>
+            <script id="xtendoo_website_darkmode_boot" t-if="website.xtendoo_darkmode_enabled">
+                (function () {
+                    const root = document.documentElement;
+                    const storageKey = "xtendoo_website_darkmode:" + <t t-out="website.id"/>;
+                    const defaultMode = "<t t-out='website.xtendoo_darkmode_default_mode'/>";
+                    let storedMode = null;
+                    try {
+                        storedMode = window.localStorage ? window.localStorage.getItem(storageKey) : null;
+                    } catch (_error) {
+                        storedMode = null;
+                    }
+                    const systemPrefersDark = Boolean(window.matchMedia &amp;&amp; window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    const preferredMode = storedMode || defaultMode;
+                    const resolvedMode = preferredMode === 'system'
+                        ? (systemPrefersDark ? 'dark' : 'light')
+                        : (preferredMode === 'dark' ? 'dark' : 'light');
+                    root.dataset.xtendooColorScheme = resolvedMode;
+                    root.dataset.bsTheme = resolvedMode;
+                    root.style.colorScheme = resolvedMode;
+                })();
+            </script>
+        </xpath>
+    </template>
+
+    <template id="header_darkmode_toggle" inherit_id="website.placeholder_header_language_selector" name="Header Dark Mode Toggle" active="True">
+        <xpath expr="." position="inside">
+            <li t-if="website.xtendoo_darkmode_enabled"
+                data-name="Dark Mode Toggle"
+                t-attf-class="o_header_darkmode_toggle #{_item_class}">
+                <button type="button"
+                        t-attf-class="xtd-darkmode-toggle__button d-inline-flex align-items-center gap-2 #{_btn_class or _additional_btn_color or 'btn o_nav_link_btn nav-link border px-3'}"
+                        data-xtendoo-darkmode-toggle="1"
+                        data-label-dark="Modo oscuro"
+                        data-label-light="Modo claro"
+                        aria-pressed="false"
+                        aria-label="Modo oscuro"
+                        title="Modo oscuro">
+                    <i class="xtd-darkmode-toggle__icon xtd-darkmode-toggle__icon--dark fa fa-moon-o" aria-hidden="true"/>
+                    <i class="xtd-darkmode-toggle__icon xtd-darkmode-toggle__icon--light fa fa-sun-o" aria-hidden="true"/>
+                    <span class="xtd-darkmode-toggle__label d-none d-xl-inline">Modo oscuro</span>
+                </button>
+            </li>
+        </xpath>
+    </template>
+</odoo>
+
+

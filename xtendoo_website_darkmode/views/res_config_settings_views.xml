@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.xtendoo.website.darkmode</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='website']/block[last()]" position="after">
+                <block title="Modo oscuro" id="xtendoo_website_darkmode_settings" invisible="not website_id">
+                    <setting id="xtendoo_darkmode_enabled_setting"
+                             string="Toggle de modo oscuro en la cabecera"
+                             help="Añade un botón en el menú superior para alternar entre modo claro y oscuro.">
+                        <field name="xtendoo_darkmode_enabled"/>
+                        <div class="content-group" invisible="not xtendoo_darkmode_enabled">
+                            <div class="row mt16">
+                                <label class="col-lg-3 o_light_label" for="xtendoo_darkmode_default_mode" string="Modo inicial"/>
+                                <field name="xtendoo_darkmode_default_mode" required="xtendoo_darkmode_enabled"/>
+                            </div>
+                            <div class="mt8">
+                                <small class="text-muted">
+                                    Los visitantes guardan su preferencia en el navegador y, si no existe todavía, se aplicará este modo por defecto.
+                                </small>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <setting id="xtendoo_darkmode_colors_setting"
+                             string="Paleta del modo oscuro"
+                             help="Configura los colores usados cuando la website entra en modo oscuro.">
+                        <div class="content-group" invisible="not xtendoo_darkmode_enabled">
+                            <div class="row mt16">
+                                <label class="col-lg-3 o_light_label" for="xtendoo_darkmode_background_color" string="Fondo"/>
+                                <field name="xtendoo_darkmode_background_color" widget="color" required="xtendoo_darkmode_enabled"/>
+                            </div>
+                            <div class="row mt16">
+                                <label class="col-lg-3 o_light_label" for="xtendoo_darkmode_text_color" string="Texto"/>
+                                <field name="xtendoo_darkmode_text_color" widget="color" required="xtendoo_darkmode_enabled"/>
+                            </div>
+                            <div class="row mt16">
+                                <label class="col-lg-3 o_light_label" for="xtendoo_darkmode_link_color" string="Enlaces"/>
+                                <field name="xtendoo_darkmode_link_color" widget="color" required="xtendoo_darkmode_enabled"/>
+                            </div>
+                            <div class="row mt16">
+                                <label class="col-lg-3 o_light_label" for="xtendoo_darkmode_header_background_color" string="Cabecera · fondo"/>
+                                <field name="xtendoo_darkmode_header_background_color" widget="color" required="xtendoo_darkmode_enabled"/>
+                            </div>
+                            <div class="row mt16">
+                                <label class="col-lg-3 o_light_label" for="xtendoo_darkmode_header_text_color" string="Cabecera · texto"/>
+                                <field name="xtendoo_darkmode_header_text_color" widget="color" required="xtendoo_darkmode_enabled"/>
+                            </div>
+                            <div class="mt8">
+                                <small class="text-muted">
+                                    Selecciona el color con el selector visual. Odoo guardará el valor en formato HEX.
+                                </small>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

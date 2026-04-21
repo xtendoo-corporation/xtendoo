@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="snippet_options" inherit_id="website.snippet_options" name="Xtendoo Website Darkmode Header Option">
+        <xpath expr="//div[@data-js='HeaderElements']" position="inside">
+            <we-row string=" " class="o_we_full_row align-items-start mt-1">
+                <we-button title="Show/hide dark mode toggle"
+                           class="fa fa-adjust flex-grow-1 d-flex justify-content-center"
+                           data-customize-website-views="xtendoo_website_darkmode.header_darkmode_toggle"
+                           data-reset-view-arch="true"
+                           data-reload="/"/>
+            </we-row>
+        </xpath>
+    </template>
+</odoo>
+
