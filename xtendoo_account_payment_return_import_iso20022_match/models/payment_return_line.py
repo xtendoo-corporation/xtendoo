@@ -3,13 +3,33 @@
 
 import logging
 
-from odoo import models
+from odoo import api, models
 
 _logger = logging.getLogger(__name__)
 
 
 class PaymentReturnLine(models.Model):
     _inherit = "payment.return.line"
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to trigger automatic matching after insert."""
+        records = super().create(vals_list)
+        # Only call _find_match if we're not already inside a matching operation
+        # to prevent infinite recursion when _find_match triggers field assignments
+        if not self.env.context.get("_payment_return_line_finding_match"):
+            records = records.with_context(_payment_return_line_finding_match=True)
+            records._find_match()
+        return records
+
+    def write(self, vals):
+        """Override write to trigger automatic matching after update."""
+        result = super().write(vals)
+        # Only call _find_match if we're not already inside a matching operation
+        if not self.env.context.get("_payment_return_line_finding_match"):
+            self_context = self.with_context(_payment_return_line_finding_match=True)
+            self_context._find_match()
+        return result
 
     def _resolve_partner_from_name(self):
         """Resolve partner_id from partner_name using exact name match.
