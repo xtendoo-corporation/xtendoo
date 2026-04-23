@@ -1,0 +1,40 @@
+// License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
+//
+// Amplía el nombre del producto en los botones del POS de 2 a 3 líneas
+// y mejora la legibilidad de descripciones largas.
+
+.rightpane {
+    .product-name {
+        // Permite hasta 3 líneas en vez de 2
+        -webkit-line-clamp: 3;
+
+        // Tamaño de fuente ligeramente reducido para aprovechar mejor el espacio
+        font-size: 0.8rem;
+
+        // Interlineado más compacto para caber las 3 líneas sin desbordamiento
+        line-height: 1.25;
+
+        // Separación interna inferior para que el texto no quede pegado al borde
+        padding-bottom: 2px;
+
+        // Asegurar que el recorte funciona correctamente
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        word-break: break-word;
+
+        &.no-image {
+            // Sin imagen: mantener líneas ampliadas pero ajustadas al espacio
+            -webkit-line-clamp: 7;
+        }
+    }
+
+    // Aumentar altura mínima del botón sin imagen para acomodar 3 líneas
+    .product:not(:has(.product-img)) {
+        min-height: 6.5rem;
+
+        @include media-breakpoint-up(lg) {
+            min-height: 5.5rem;
+        }
+    }
+}
