@@ -7,6 +7,7 @@ import logging
 import re
 
 from odoo import _, fields, models
+from odoo.tools.translate import _lt
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -21,10 +22,10 @@ except ImportError:
     io = None
 
 DOCUMENT_TYPE_LABELS = {
-    "salary": _("Payslip / Salary"),
-    "expense": _("Expense"),
-    "income": _("Income"),
-    "other": _("Other"),
+    "salary": _lt("Payslip / Salary"),
+    "expense": _lt("Expense"),
+    "income": _lt("Income"),
+    "other": _lt("Other"),
 }
 
 PROMPTS = {
@@ -106,6 +107,10 @@ class AccountMoveAIWizard(models.TransientModel):
         string="State",
     )
     ai_json_result = fields.Text(string="AI JSON Result", readonly=True)
+
+    def _get_ai_provider(self):
+        """Delegate to the AI connector mixin. Defined here to allow patching in tests."""
+        return super()._get_ai_provider()
 
     def action_analyze(self):
         """Send the document to AI for analysis."""
@@ -304,4 +309,5 @@ class AccountMoveAIWizard(models.TransientModel):
             _logger.warning(
                 "Account with code '%s' (%s) not found in chart of accounts.", code, name
             )
+            return None
         return account
