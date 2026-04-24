@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_crm_lead_ai_wizard_form" model="ir.ui.view">
+        <field name="name">crm.lead.ai.wizard.form</field>
+        <field name="model">crm.lead.ai.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Enrich Lead with AI">
+                <sheet>
+                    <group>
+                        <field name="lead_id" readonly="1"/>
+                    </group>
+
+                    <!-- Step 1: Enter text -->
+                    <group
+                        string="Step 1 — Paste Text"
+                        invisible="state == 'preview'"
+                    >
+                        <field
+                            name="source_text"
+                            widget="text"
+                            placeholder="Paste here the form submission, email, chat transcript or any free-form text from the potential customer..."
+                            nolabel="1"
+                        />
+                    </group>
+
+                    <!-- Step 2: Preview -->
+                    <group
+                        string="Step 2 — AI Extraction Preview"
+                        invisible="state != 'preview'"
+                    >
+                        <group col="2">
+                            <field name="preview_contact_name"/>
+                            <field name="preview_company_name"/>
+                            <field name="preview_email"/>
+                            <field name="preview_phone"/>
+                        </group>
+                        <separator string="AI Summary"/>
+                        <field name="preview_description" widget="text" nolabel="1" readonly="1"/>
+                        <separator string="Full AI JSON (technical)"/>
+                        <field name="ai_json_result" widget="text" readonly="1" optional="hide"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button
+                        name="action_analyze"
+                        string="Analyze with AI"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state == 'preview'"
+                    />
+                    <button
+                        name="action_apply"
+                        string="Apply to Lead"
+                        type="object"
+                        class="btn-success"
+                        invisible="state != 'preview'"
+                    />
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

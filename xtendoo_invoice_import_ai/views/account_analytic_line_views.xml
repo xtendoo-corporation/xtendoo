@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista formulario: botón Enseñar a Gemini -->
+    <record id="view_analytic_line_form_inherit_gemini" model="ir.ui.view">
+        <field name="name">account.analytic.line.form.inherit.gemini</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="analytic.view_account_analytic_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_teach_gemini"
+                        string="🎓 Enseñar a Gemini"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="not gemini_has_corrections"
+                        help="Guardar las correcciones manuales para que Gemini aprenda de ellas en futuras extracciones"
+                    />
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>

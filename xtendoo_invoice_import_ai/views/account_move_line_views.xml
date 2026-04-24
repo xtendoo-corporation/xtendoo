@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view with upload button for journal items -->
+    <record id="view_move_line_tree_inherit_gemini_upload" model="ir.ui.view">
+        <field name="name">account.move.line.tree.inherit.gemini.upload</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account.view_move_line_tree"/>
+        <field name="arch" type="xml">
+            <!-- Enable account upload widget in journal items list -->
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">account_tree</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Form view with AI scan buttons -->
+    <record id="view_move_line_form_inherit_gemini" model="ir.ui.view">
+        <field name="name">account.move.line.form.inherit.gemini</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account.view_move_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_import_gemini_full"
+                    string="AI Scan (Full)"
+                    type="object"
+                    class="oe_highlight"
+                    invisible="parent_state != 'draft'" />
+                <button name="action_import_gemini_summarized"
+                    string="AI Scan (Summary)"
+                    type="object"
+                    invisible="parent_state != 'draft'" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Update action to show upload button in journal items menu -->
+    <record id="account.action_account_moves_all" model="ir.actions.act_window">
+        <!-- Flag used client-side so Upload is shown in Journal Items menu -->
+        <field name="context">{'search_default_posted': 1, 'from_journal_items': True}</field>
+    </record>
+</odoo>
+

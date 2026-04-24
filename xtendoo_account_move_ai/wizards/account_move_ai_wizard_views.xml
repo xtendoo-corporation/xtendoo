@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_move_ai_wizard_form" model="ir.ui.view">
+        <field name="name">account.move.ai.wizard.form</field>
+        <field name="model">account.move.ai.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Document with AI">
+                <sheet>
+                    <group>
+                        <field name="move_id" readonly="1"/>
+                    </group>
+
+                    <!-- Step 1: Upload -->
+                    <group
+                        string="Step 1 — Attach Document"
+                        invisible="state == 'preview'"
+                    >
+                        <field
+                            name="attachment_id"
+                            widget="many2one"
+                            domain="[('res_model', '=', 'account.move'), ('res_id', '=', move_id)]"
+                            help="Select an already-uploaded attachment, or upload a new one."
+                        />
+                    </group>
+
+                    <!-- Step 2: Preview -->
+                    <group
+                        string="Step 2 — AI Detection Result"
+                        invisible="state != 'preview'"
+                    >
+                        <field name="detected_document_type" readonly="1"/>
+                        <field name="detected_reason" readonly="1"/>
+                        <field name="ai_json_result" widget="text" readonly="1" optional="show"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button
+                        name="action_analyze"
+                        string="Analyze with AI"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state == 'preview'"
+                    />
+                    <button
+                        name="action_apply"
+                        string="Apply to Journal Entry"
+                        type="object"
+                        class="btn-success"
+                        invisible="state != 'preview'"
+                    />
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
