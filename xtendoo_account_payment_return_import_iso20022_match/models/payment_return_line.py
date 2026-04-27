@@ -38,13 +38,20 @@ class PaymentReturnLine(models.Model):
         name. Logs a warning and leaves partner_id empty when zero or multiple
         matches are found.
         """
+
+        print("[PRL DEBUG] _resolve_partner_from_name - start line_ids=%s" % self.ids)
+
         for line in self.filtered(lambda x: not x.partner_id and x.partner_name):
+
             partners = self.env["res.partner"].search(
                 [
                     ("name", "=", line.partner_name),
                     ("customer_rank", ">", 0),
+
                 ]
+
             )
+
             if len(partners) == 1:
                 line.partner_id = partners
             elif len(partners) == 0:
@@ -73,22 +80,31 @@ class PaymentReturnLine(models.Model):
         """
         for line in self.filtered(lambda x: not x.move_line_ids and x.concept):
             domain = []
+
             if line.partner_id:
                 domain.append(("partner_id", "=", line.partner_id.id))
             domain += [
                 ("name", "=", line.concept),
                 ("move_type", "=", "out_invoice"),
             ]
+
             invoice = self.env["account.move"].search(domain, limit=1)
+
             if not invoice:
                 continue
+
+            # Assign partner from the found invoice
+            if not line.partner_id and invoice.partner_id:
+                line.partner_id = invoice.partner_id
+
+
             receivable_lines = invoice.line_ids.filtered(
                 lambda aml: aml.account_id.account_type == "asset_receivable"
             )
             payment_lines = receivable_lines.mapped("matched_debit_ids.debit_move_id")
-            payment_lines |= receivable_lines.mapped(
-                "matched_credit_ids.credit_move_id"
-            )
+            payment_lines |= receivable_lines.mapped("matched_credit_ids.credit_move_id")
+
+
             if payment_lines:
                 line.move_line_ids = payment_lines[-1].ids
 
@@ -101,8 +117,11 @@ class PaymentReturnLine(models.Model):
         """
         for line in self.filtered(lambda x: not x.move_line_ids and x.concept):
             domain = []
+
             if line.partner_id:
                 domain.append(("partner_id", "=", line.partner_id.id))
+
+
             if line.return_id.journal_id:
                 domain += [
                     ("credit", ">", 0.0),
@@ -115,9 +134,12 @@ class PaymentReturnLine(models.Model):
                 ("name", "=", line.concept),
                 ("ref", "=", line.concept),
             ]
+
             move_lines = self.env["account.move.line"].search(domain)
+
             if move_lines:
                 line.move_line_ids = move_lines.ids
+
 
     def _find_match(self):
         """Extend standard matching with concept-based and partner-name strategies.
@@ -125,21 +147,25 @@ class PaymentReturnLine(models.Model):
         Execution order:
         1. super() runs the standard matching pipeline (payment order ID,
            invoice by reference, move lines by reference, move by reference).
-        2. For lines still unmatched, resolve partner_id from partner_name
-           (exact match only).
-        3. Try to match move_line_ids using concept as invoice name.
-        4. Fallback: try to match move_line_ids using concept as move line ref.
+        2. Resolve partner_id from partner_name for all lines (exact match only).
+        3. For lines still unmatched, try to match move_line_ids using concept
+           as invoice name.
+        4. Fallback: for unmatched lines, try to match move_line_ids using
+           concept as move line ref.
         """
         super()._find_match()
 
+        # Always attempt partner resolution for every line.
+        self._resolve_partner_from_name()
+
         unmatched = self.filtered(lambda x: not x.move_line_ids)
+
         if not unmatched:
             return
-
-        unmatched._resolve_partner_from_name()
 
         unmatched.match_invoice_by_concept()
 
         unmatched = unmatched.filtered(lambda x: not x.move_line_ids)
+
         unmatched.match_move_lines_by_concept()
 
