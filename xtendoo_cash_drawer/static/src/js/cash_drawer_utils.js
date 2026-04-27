@@ -29,6 +29,34 @@
 /** Tiempo máximo de espera a la respuesta del bridge local (ms). */
 const CASH_DRAWER_TIMEOUT_MS = 8000;
 
+/**
+ * Reintentos automáticos cuando `fetch` lanza TypeError ("Failed to fetch").
+ *
+ * Este error genérico del navegador agrupa varias causas transitorias que
+ * típicamente desaparecen al recargar la pestaña con CTRL+F5:
+ *  - Caché de fallo de preflight CORS de la sesión anterior.
+ *  - Heurística de Private Network Access (PNA) en Chrome que rechaza la
+ *    primera petición desde un origen público a una IP privada.
+ *  - Conexiones HTTP/2 reusadas que ya estaban cerradas en el otro extremo.
+ *  - Bridge local recién arrancado tras un cambio de red/DHCP.
+ *
+ * Reintentar una sola vez con un pequeño backoff cubre la inmensa mayoría
+ * de los casos sin penalizar al usuario en caso de fallo real (timeout
+ * efectivo: 8s + 250ms + 8s ≈ 16s en el peor caso).
+ */
+const CASH_DRAWER_FETCH_RETRIES = 1;
+const CASH_DRAWER_RETRY_DELAY_MS = 250;
+
+function _isTransientFetchError(err) {
+    // `fetch` lanza TypeError tanto para "Failed to fetch" (Chrome) como para
+    // "NetworkError when attempting to fetch resource." (Firefox).
+    return err && err.name === "TypeError";
+}
+
+function _delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function getUrlProtocol(url) {
     try {
         return new URL(url, window.location.href).protocol;
@@ -152,24 +180,43 @@ export function buildCashDrawerHealthUrl(config) {
 async function fetchWithTimeout(url, options = {}, timeoutMs = CASH_DRAWER_TIMEOUT_MS) {
     ensureBrowserCanReachBridge(url);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-        return await fetch(url, { ...options, signal: controller.signal });
-    } catch (err) {
-        if (err.name === "AbortError") {
-            throw new Error(
-                `Tiempo de espera agotado (${timeoutMs / 1000}s) esperando respuesta del servidor.`
+    let lastError = null;
+    for (let attempt = 0; attempt <= CASH_DRAWER_FETCH_RETRIES; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } catch (err) {
+            lastError = err;
+            if (err.name === "AbortError") {
+                throw new Error(
+                    `Tiempo de espera agotado (${timeoutMs / 1000}s) esperando respuesta del servidor.`
+                );
+            }
+            // Solo reintentamos errores transitorios y mientras queden intentos.
+            if (
+                !_isTransientFetchError(err) ||
+                attempt >= CASH_DRAWER_FETCH_RETRIES
+            ) {
+                break;
+            }
+            console.warn(
+                `[CashDrawer] Fetch transitorio fallido (intento ${attempt + 1}), reintentando…`,
+                err.message || err
             );
+            await _delay(CASH_DRAWER_RETRY_DELAY_MS);
+        } finally {
+            clearTimeout(timeoutId);
         }
-        throw new Error(
-            "No se pudo contactar con el bridge local. " +
-            "Revisa conectividad, CORS, certificado HTTPS y que la URL del bridge sea accesible desde este navegador. " +
-            (err.message || String(err))
-        );
-    } finally {
-        clearTimeout(timeoutId);
     }
+
+    throw new Error(
+        "No se pudo contactar con el bridge local. " +
+        "Revisa conectividad, CORS, certificado HTTPS y que la URL del bridge sea accesible desde este navegador. " +
+        "Si el problema solo ocurre al abrir el TPV y se resuelve recargando con CTRL+F5, " +
+        "es probable que el navegador haya cacheado un fallo previo o que el bridge no estuviera disponible al iniciar la sesión. " +
+        (lastError?.message || String(lastError))
+    );
 }
 
 /**

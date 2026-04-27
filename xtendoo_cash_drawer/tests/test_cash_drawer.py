@@ -500,10 +500,28 @@ class TestPosAssetsCashDrawer(TransactionCase):
         self.assertIn("sendCashDrawerRequest(cfg)", source)
         self.assertNotIn("sendCashDrawerViaProxy", source)
 
+    def test_utils_retries_transient_fetch_errors(self):
+        """fetchWithTimeout debe reintentar errores transitorios (Failed to fetch).
+
+        Mitiga el síntoma "el cajón solo abre tras CTRL+F5" causado por
+        fallos transitorios de Chrome (PNA, preflight CORS cacheado,
+        conexiones HTTP/2 cerradas, bridge recién arrancado).
+        """
+        source = self._read_asset(Path("static/src/js/cash_drawer_utils.js"))
+        self.assertIn("CASH_DRAWER_FETCH_RETRIES", source)
+        self.assertIn("_isTransientFetchError", source)
+        # El bucle de reintentos debe seguir respetando AbortError (timeout
+        # real no debe reintentarse).
+        self.assertIn('err.name === "AbortError"', source)
+        # El mensaje de error final debe orientar al usuario sobre CTRL+F5.
+        self.assertIn("CTRL+F5", source)
+
     def test_control_buttons_template_has_no_active_button_xpaths(self):
-        """La plantilla no debe inyectar botones activos cuando los xpaths están comentados."""
-        root = self._parse_xml_asset(Path("static/src/xml/cash_drawer.xml"))
-        self.assertEqual(root.findall(".//xpath"), [])
+        """El navbar debe inyectar exactamente un xpath con el botón del cajón."""
+        root = self._parse_xml_asset(Path("static/src/xml/cash_drawer_navbar.xml"))
+        xpaths = root.findall(".//xpath")
+        self.assertEqual(len(xpaths), 1)
+        self.assertIsNotNone(xpaths[0].find("CashDrawerNavbarButton"))
 
 
 @tagged("post_install", "-at_install", "xtendoo_cash_drawer")

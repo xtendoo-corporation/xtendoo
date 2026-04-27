@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Xtendoo Cash Drawer",
-    "version": "19.0.3.0.0",
+    "version": "19.0.3.1.0",
     "category": "Point of Sale",
         "summary": "Cajón portamonedas vía bridge local: apertura directa desde el navegador",
     "description": """
