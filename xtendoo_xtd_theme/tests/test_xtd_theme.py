@@ -53,6 +53,8 @@ class TestXtdTheme(TransactionCase):
         self.assertIn('t-inherit="point_of_sale.CustomerDisplay"', content)
         self.assertIn("/xtendoo_xtd_theme/static/src/img/xtd_logo.svg", content)
         self.assertIn("//OdooLogo", content)
+        self.assertIn('t-inherit="point_of_sale.SaverScreen"', content)
+        self.assertIn("xtd-pos-saver-logo", content)
 
     def test_xtd_theme_pos_primary_buttons_follow_backend_colors(self):
         module_path = Path(__file__).resolve().parents[1]

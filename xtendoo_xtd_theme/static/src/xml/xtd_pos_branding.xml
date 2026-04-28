@@ -8,4 +8,9 @@
             <img class="xtd-pos-powered-logo" src="/xtendoo_xtd_theme/static/src/img/xtd_logo.svg" alt="Xtd"/>
         </xpath>
     </t>
+    <t t-name="xtendoo_xtd_theme.SaverScreen" t-inherit="point_of_sale.SaverScreen" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'pos-logo')]" position="replace">
+            <img class="xtd-pos-saver-logo" src="/xtendoo_xtd_theme/static/src/img/xtd_logo.svg" alt="Xtd"/>
+        </xpath>
+    </t>
 </templates>
