@@ -40,7 +40,7 @@ class TestCrmLeadAIWizard(TransactionCase):
         ICP.set_param("xtendoo_ai_connector.ai_api_key", "fake-key")
         ICP.set_param("xtendoo_ai_connector.ai_model", "gemini-2.5-flash")
 
-        cls.lead = cls.env["crm.lead"].create({"name": "Test Lead"})
+        cls.lead = cls.env["crm.lead"].create({"name": "Test Lead", "type": "lead"})
 
     def _make_wizard(self, text="Contact me ASAP"):
         return self.env["crm.lead.ai.wizard"].create(
@@ -55,30 +55,29 @@ class TestCrmLeadAIWizard(TransactionCase):
             wizard.action_analyze()
 
     @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
+        "odoo.addons.xtendoo_crm_ai.models.crm_lead.CrmLead._ai_extract_data_from_text"
     )
-    def test_action_analyze_sets_preview_state(self, mock_get_provider):
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.return_value = AI_CRM_RESPONSE
-        mock_get_provider.return_value = mock_provider
+    def test_action_analyze_sets_preview_state(self, mock_extract):
+        mock_extract.return_value = json.loads(AI_CRM_RESPONSE)
 
         wizard = self._make_wizard("I need a warehouse solution")
-        wizard.action_analyze()
+        result = wizard.action_analyze()
 
         self.assertEqual(wizard.state, "preview")
         self.assertEqual(wizard.preview_contact_name, "María García")
         self.assertEqual(wizard.preview_email, "maria@distribuciones.es")
         self.assertTrue(wizard.ai_json_result)
+        self.assertFalse(self.lead.email_from)
+        self.assertEqual(self.lead.type, "lead")
+        self.assertEqual(result["type"], "ir.actions.act_window")
+        self.assertEqual(result["res_model"], "crm.lead.ai.wizard")
+        self.assertEqual(result["res_id"], wizard.id)
 
     @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
+        "odoo.addons.xtendoo_crm_ai.models.crm_lead.CrmLead._ai_extract_data_from_text"
     )
-    def test_action_analyze_empty_ai_response_raises(self, mock_get_provider):
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.return_value = ""
-        mock_get_provider.return_value = mock_provider
+    def test_action_analyze_empty_ai_response_raises(self, mock_extract):
+        mock_extract.side_effect = UserError("empty response")
 
         wizard = self._make_wizard("Some text")
         with self.assertRaises(UserError):
@@ -90,34 +89,32 @@ class TestCrmLeadAIWizard(TransactionCase):
             wizard.action_apply()
 
     @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
+        "odoo.addons.xtendoo_crm_ai.models.crm_lead.CrmLead._ai_extract_data_from_text"
     )
-    def test_full_flow_analyze_and_apply(self, mock_get_provider):
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.return_value = AI_CRM_RESPONSE
-        mock_get_provider.return_value = mock_provider
+    def test_full_flow_analyze_and_apply(self, mock_extract):
+        mock_extract.return_value = json.loads(AI_CRM_RESPONSE)
 
         wizard = self._make_wizard("Contact: María García, company: Distribuciones SL")
         wizard.action_analyze()
-        wizard.action_apply()
+        result = wizard.action_apply()
 
         self.assertEqual(self.lead.email_from, "maria@distribuciones.es")
         self.assertEqual(self.lead.phone, "+34 612 345 678")
         self.assertTrue(self.lead.ai_enriched)
         self.assertTrue(self.lead.ai_source_text)
+        self.assertEqual(self.lead.type, "lead")
+        self.assertEqual(result["type"], "ir.actions.act_window")
+        self.assertEqual(result["res_model"], "crm.lead")
+        self.assertEqual(result["res_id"], self.lead.id)
+        self.assertEqual(result["context"]["default_type"], "lead")
 
     @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
+        "odoo.addons.xtendoo_crm_ai.models.crm_lead.CrmLead._ai_extract_data_from_text"
     )
-    def test_apply_does_not_overwrite_existing_fields(self, mock_get_provider):
+    def test_apply_does_not_overwrite_existing_fields(self, mock_extract):
         """Apply should NOT overwrite fields that already have data."""
         self.lead.write({"email_from": "existing@email.com"})
-
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.return_value = AI_CRM_RESPONSE
-        mock_get_provider.return_value = mock_provider
+        mock_extract.return_value = json.loads(AI_CRM_RESPONSE)
 
         wizard = self._make_wizard("Some text")
         wizard.action_analyze()
@@ -125,6 +122,7 @@ class TestCrmLeadAIWizard(TransactionCase):
 
         # Original email must be preserved
         self.assertEqual(self.lead.email_from, "existing@email.com")
+        self.assertEqual(self.lead.type, "lead")
 
     def test_crm_lead_ai_fields_exist(self):
         self.assertIn("ai_enriched", self.lead._fields)
@@ -141,11 +139,23 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         ICP.set_param("xtendoo_ai_connector.ai_provider", "gemini")
         ICP.set_param("xtendoo_ai_connector.ai_api_key", "fake-key")
         ICP.set_param("xtendoo_ai_connector.ai_model", "gemini-2.5-flash")
-        cls.lead = cls.env["crm.lead"].create({"name": "Extended Test Lead"})
+        cls.lead = cls.env["crm.lead"].create({"name": "Extended Test Lead", "type": "lead"})
 
     def _make_wizard(self, text="Some contact text"):
         return self.env["crm.lead.ai.wizard"].create(
             {"lead_id": self.lead.id, "source_text": text}
+        )
+
+    def _make_preview_wizard(self, lead=None, ai_data=None, text="text"):
+        lead = lead or self.lead
+        ai_data = ai_data or {}
+        return self.env["crm.lead.ai.wizard"].create(
+            {
+                "lead_id": lead.id,
+                "source_text": text,
+                "ai_json_result": json.dumps(ai_data),
+                "state": "preview",
+            }
         )
 
     def _patch_provider(self, response_text):
@@ -160,68 +170,37 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
     # --- action_analyze branches ---
 
     @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
+        "odoo.addons.xtendoo_crm_ai.models.crm_lead.CrmLead._ai_extract_data_from_text"
     )
-    def test_analyze_ai_exception_raises_userror(self, mock_get_provider):
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.side_effect = Exception("timeout")
-        mock_get_provider.return_value = mock_provider
+    def test_analyze_ai_exception_raises_userror(self, mock_extract):
+        mock_extract.side_effect = UserError("timeout")
 
         with self.assertRaises(UserError) as ctx:
             self._make_wizard().action_analyze()
         self.assertIn("timeout", str(ctx.exception))
 
-    @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
-    )
-    def test_analyze_invalid_json_raises_userror(self, mock_get_provider):
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.return_value = "not json {broken"
-        mock_get_provider.return_value = mock_provider
-
+    def test_ai_parse_response_invalid_json_raises_userror(self):
         with self.assertRaises(UserError):
-            self._make_wizard().action_analyze()
+            self.lead._ai_parse_response("not json {broken")
 
-    @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
-    )
-    def test_analyze_json_in_markdown_block(self, mock_get_provider):
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.return_value = (
+    def test_ai_parse_response_json_in_markdown_block(self):
+        result = self.lead._ai_parse_response(
             "```json\n"
             '{"contact_name": "Ana", "email": "ana@test.es",'
             ' "company_name": null, "phone": null, "description": "test"}\n'
             "```"
         )
-        mock_get_provider.return_value = mock_provider
+        self.assertEqual(result["contact_name"], "Ana")
+        self.assertEqual(result["email"], "ana@test.es")
 
-        wizard = self._make_wizard()
-        wizard.action_analyze()
-
-        self.assertEqual(wizard.preview_contact_name, "Ana")
-        self.assertEqual(wizard.preview_email, "ana@test.es")
-
-    @patch(
-        "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
-        ".CrmLeadAIWizard._get_ai_provider"
-    )
-    def test_analyze_bare_json_regex_fallback(self, mock_get_provider):
-        mock_provider = MagicMock()
-        mock_provider.send_prompt.return_value = (
+    def test_ai_parse_response_bare_json_regex_fallback(self):
+        result = self.lead._ai_parse_response(
             "Here is the data: "
             '{"contact_name": "Pedro", "email": null,'
             ' "company_name": "Test SL", "phone": null, "description": "d"}'
         )
-        mock_get_provider.return_value = mock_provider
-
-        wizard = self._make_wizard()
-        wizard.action_analyze()
-
-        self.assertEqual(wizard.preview_contact_name, "Pedro")
-        self.assertEqual(wizard.preview_company_name, "Test SL")
+        self.assertEqual(result["contact_name"], "Pedro")
+        self.assertEqual(result["company_name"], "Test SL")
 
     # --- action_apply branches ---
 
@@ -252,15 +231,25 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": "New Name",
+                "email": "new@test.es",
+                "phone": "+34999999999",
+                "company_name": None,
+                "description": None,
+                "tags": [],
+                "priority": "0",
+                "notes": None,
+            },
         )
-        wizard.action_analyze()
         wizard.action_apply()
 
         # Existing fields preserved
         self.assertEqual(lead.email_from, "original@test.es")
         self.assertEqual(lead.phone, "+34600000000")
+        self.assertEqual(lead.type, "lead")
 
     @patch(
         "odoo.addons.xtendoo_crm_ai.wizards.crm_lead_ai_wizard"
@@ -285,10 +274,19 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": None,
+                "email": None,
+                "phone": None,
+                "company_name": None,
+                "description": "AI summary",
+                "tags": [],
+                "priority": "0",
+                "notes": "Urgent delivery needed.",
+            },
         )
-        wizard.action_analyze()
         wizard.action_apply()
 
         self.assertIn("Existing description.", lead.description)
@@ -318,10 +316,19 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": None,
+                "email": None,
+                "phone": None,
+                "company_name": None,
+                "description": None,
+                "tags": [],
+                "priority": "0",
+                "notes": None,
+            },
         )
-        wizard.action_analyze()
         wizard.action_apply()
 
         self.assertEqual(lead.description, "Keep this.")
@@ -348,10 +355,19 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": None,
+                "email": None,
+                "phone": None,
+                "company_name": None,
+                "description": None,
+                "tags": ["logistics-unique-9821"],
+                "priority": "0",
+                "notes": None,
+            },
         )
-        wizard.action_analyze()
         wizard.action_apply()
 
         tag_ids = lead.tag_ids.ids
@@ -384,10 +400,19 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": None,
+                "email": None,
+                "phone": None,
+                "company_name": None,
+                "description": None,
+                "tags": [tag_name],
+                "priority": "0",
+                "notes": None,
+            },
         )
-        wizard.action_analyze()
         wizard.action_apply()
 
         tag = self.env["crm.tag"].search([("name", "=", tag_name)], limit=1)
@@ -416,10 +441,20 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": None,
+                "email": None,
+                "phone": None,
+                "company_name": None,
+                "description": None,
+                "tags": [],
+                "expected_revenue": 25000.0,
+                "priority": "0",
+                "notes": None,
+            },
         )
-        wizard.action_analyze()
         wizard.action_apply()
 
         self.assertAlmostEqual(float(lead.expected_revenue), 25000.0)
@@ -445,10 +480,19 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": None,
+                "email": None,
+                "phone": None,
+                "company_name": None,
+                "description": None,
+                "tags": [],
+                "priority": "2",
+                "notes": None,
+            },
         )
-        wizard.action_analyze()
         wizard.action_apply()
 
         self.assertEqual(lead.priority, "2")
@@ -477,13 +521,56 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         )
         mock_get_provider.return_value = mock_provider
 
-        wizard = self.env["crm.lead.ai.wizard"].create(
-            {"lead_id": lead.id, "source_text": "text"}
+        wizard = self._make_preview_wizard(
+            lead=lead,
+            ai_data={
+                "contact_name": None,
+                "company_name": None,
+                "email": None,
+                "phone": None,
+                "mobile": None,
+                "website": None,
+                "description": None,
+                "tags": [],
+                "expected_revenue": None,
+                "priority": None,
+                "notes": None,
+            },
         )
-        wizard.action_analyze()
         # Must not raise
         wizard.action_apply()
         self.assertTrue(lead.ai_enriched)
+        self.assertEqual(lead.type, "lead")
+
+    def test_apply_on_existing_opportunity_keeps_opportunity_and_redirects(self):
+        lead = self.env["crm.lead"].create(
+            {"name": "Existing Opportunity", "type": "opportunity"}
+        )
+        wizard = self.env["crm.lead.ai.wizard"].create(
+            {
+                "lead_id": lead.id,
+                "source_text": "text",
+                "ai_json_result": json.dumps(
+                    {
+                        "contact_name": None,
+                        "company_name": None,
+                        "email": None,
+                        "phone": None,
+                        "description": None,
+                        "tags": [],
+                        "priority": None,
+                        "notes": None,
+                    }
+                ),
+                "state": "preview",
+            }
+        )
+
+        result = wizard.action_apply()
+
+        self.assertEqual(lead.type, "opportunity")
+        self.assertEqual(result["type"], "ir.actions.act_window")
+        self.assertEqual(result["res_id"], lead.id)
 
     # --- CrmLead model ---
 
@@ -494,7 +581,75 @@ class TestCrmLeadAIWizardExtended(TransactionCase):
         self.assertEqual(result["res_model"], "crm.lead.ai.wizard")
         self.assertEqual(result["context"]["default_lead_id"], lead.id)
 
+    def test_action_open_ai_enrichment_wizard_raises_if_already_enriched(self):
+        lead = self.env["crm.lead"].create(
+            {"name": "Already Enriched", "ai_enriched": True}
+        )
+        with self.assertRaises(UserError):
+            lead.action_open_ai_enrichment_wizard()
+
     def test_ai_enriched_default_false(self):
         lead = self.env["crm.lead"].create({"name": "Default AI Fields"})
         self.assertFalse(lead.ai_enriched)
         self.assertFalse(lead.ai_source_text)
+
+    @patch(
+        "odoo.addons.xtendoo_crm_ai.models.crm_lead.CrmLead._ai_extract_data_from_text"
+    )
+    def test_message_new_auto_enriches_incoming_email_lead(self, mock_extract):
+        mock_extract.return_value = {
+            "contact_name": "Jenna",
+            "company_name": "Conet Plastic",
+            "email": "jenna@conetplastic.com",
+            "phone": "19026809628",
+            "description": "PVC strip door factory asking for a quotation.",
+            "tags": ["pvc", "strip curtain"],
+            "priority": "0",
+            "notes": "Preferred contact via email.",
+        }
+
+        lead = self.env["crm.lead"].message_new(
+            {
+                "subject": "Solicitud de presupuesto",
+                "email_from": "Jenna <jenna@conetplastic.com>",
+                "from": "Jenna <jenna@conetplastic.com>",
+                "to": "ventas@doorme.com",
+                "cc": "",
+                "recipients": "ventas@doorme.com",
+                "date": "2026-04-28 10:00:00",
+                "body": "<p>Our company is the pvc strip door factory.</p>",
+            },
+            custom_values={"type": "lead"},
+        )
+
+        self.assertEqual(lead.type, "lead")
+        self.assertTrue(lead.ai_enriched)
+        self.assertEqual(lead.partner_name, "Conet Plastic")
+        self.assertEqual(lead.phone, "19026809628")
+        self.assertIn("Subject: Solicitud de presupuesto", lead.ai_source_text)
+        self.assertIn("Body:", lead.ai_source_text)
+
+    @patch(
+        "odoo.addons.xtendoo_crm_ai.models.crm_lead.CrmLead._ai_extract_data_from_text"
+    )
+    def test_message_new_ai_failure_does_not_block_lead_creation(self, mock_extract):
+        mock_extract.side_effect = UserError("provider error")
+
+        lead = self.env["crm.lead"].message_new(
+            {
+                "subject": "Incoming lead",
+                "email_from": "sender@example.com",
+                "from": "sender@example.com",
+                "to": "ventas@doorme.com",
+                "cc": "",
+                "recipients": "ventas@doorme.com",
+                "date": "2026-04-28 10:00:00",
+                "body": "<p>Hello</p>",
+            },
+            custom_values={"type": "lead"},
+        )
+
+        self.assertTrue(lead)
+        self.assertEqual(lead.type, "lead")
+        self.assertFalse(lead.ai_enriched)
+

@@ -10,6 +10,7 @@
     "summary": "Enrich CRM leads/opportunities from free text using AI",
     "depends": [
         "crm",
+        "crm_iap_enrich",
         "base",
         "mail",
         "xtendoo_ai_connector",

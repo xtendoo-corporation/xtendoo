@@ -50,7 +50,7 @@
                     />
                     <button
                         name="action_apply"
-                        string="Apply to Lead"
+                        string="Apply &amp; Convert to Opportunity"
                         type="object"
                         class="btn-success"
                         invisible="state != 'preview'"

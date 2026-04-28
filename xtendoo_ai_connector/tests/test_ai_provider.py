@@ -445,3 +445,4 @@ class TestResConfigSettingsAIExtended(TransactionCase):
                 self._settings(provider="openai").action_test_ai_connection()
         finally:
             mod.openai_lib = original
+

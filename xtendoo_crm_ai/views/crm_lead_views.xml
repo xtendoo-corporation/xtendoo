@@ -5,14 +5,29 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="ai_enriched" invisible="1"/>
+            </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button
                     name="action_open_ai_enrichment_wizard"
                     type="object"
                     class="oe_stat_button"
-                    icon="fa-robot"
-                    string="Enrich with AI"
+                    icon="fa-magic"
+                    string="Enriquecer con IA"
+                    invisible="ai_enriched"
                 />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_form_hide_odoo_enrich" model="ir.ui.view">
+        <field name="name">crm.lead.form.hide.odoo.enrich</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_iap_enrich.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='iap_enrich']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
         </field>
     </record>
