@@ -96,3 +96,12 @@ class TestXtdTheme(TransactionCase):
         self.assertIn(".o-mail-ActivityListPopover > .btn", content)
         self.assertIn("padding:.7rem 1rem!important", content)
         self.assertIn("font-size:.95rem!important", content)
+
+    def test_xtd_theme_required_fields_use_underline(self):
+        module_path = Path(__file__).resolve().parents[1]
+        theme_scss = module_path / "static" / "src" / "scss" / "xtd_theme.scss"
+        content = theme_scss.read_text(encoding="utf-8")
+
+        self.assertIn(".o_required_modifier.o_input", content)
+        self.assertIn("border-left:0!important", content)
+        self.assertIn("border-bottom:1px solid var(--xtd-orange)!important", content)
