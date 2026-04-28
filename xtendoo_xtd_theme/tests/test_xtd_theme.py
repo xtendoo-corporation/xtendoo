@@ -40,21 +40,15 @@ class TestXtdTheme(TransactionCase):
         manifest = get_manifest("xtendoo_xtd_theme")
         assets = manifest["assets"]["point_of_sale._assets_pos"]
         self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_pos.scss", assets)
-        self.assertIn(
-            "xtendoo_xtd_theme/static/src/xml/xtd_pos_branding.xml",
-            assets,
-        )
 
-    def test_xtd_theme_pos_customer_display_uses_xtd_logo(self):
+    def test_xtd_theme_pos_logos_use_safe_css_override(self):
         module_path = Path(__file__).resolve().parents[1]
-        pos_xml = module_path / "static" / "src" / "xml" / "xtd_pos_branding.xml"
-        content = pos_xml.read_text(encoding="utf-8")
+        pos_scss = module_path / "static" / "src" / "scss" / "xtd_pos.scss"
+        content = pos_scss.read_text(encoding="utf-8")
 
-        self.assertIn('t-inherit="point_of_sale.CustomerDisplay"', content)
+        self.assertIn(".pos-logo", content)
         self.assertIn("/xtendoo_xtd_theme/static/src/img/xtd_logo.svg", content)
-        self.assertIn("//OdooLogo", content)
-        self.assertIn('t-inherit="point_of_sale.SaverScreen"', content)
-        self.assertIn("xtd-pos-saver-logo", content)
+        self.assertNotIn("--navbar-logo", content)
 
     def test_xtd_theme_pos_primary_buttons_follow_backend_colors(self):
         module_path = Path(__file__).resolve().parents[1]
