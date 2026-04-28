@@ -1,7 +1,7 @@
 :root{--xtd-orange:#ff4f00;--xtd-burgundy:#4a0823;--xtd-ink:#151515;--xtd-paper:#f7f5f2;--xtd-line:#dedbd6;--xtd-muted:#8b8790;--xtd-radius:10px;--o-brand-primary:var(--xtd-orange);--o-brand-odoo:var(--xtd-burgundy);--o-brand-secondary:var(--xtd-ink)}
 body{background:var(--xtd-paper);color:var(--xtd-ink)}
-.btn-primary,.o_form_button_save,.o_list_button_add,.o-kanban-button-new{--btn-bg:var(--xtd-ink);--btn-border-color:var(--xtd-ink);background:var(--xtd-ink)!important;border-color:var(--xtd-ink)!important;color:#fff!important;border-radius:var(--xtd-radius)}
-.btn-primary:hover,.o_form_button_save:hover,.o_list_button_add:hover,.o-kanban-button-new:hover{background:var(--xtd-burgundy)!important;border-color:var(--xtd-burgundy)!important}
+.btn-primary,.o_form_button_save,.o_list_button_add,.o_control_panel .o-kanban-button-new{--btn-bg:var(--xtd-ink);--btn-border-color:var(--xtd-ink);background:var(--xtd-ink)!important;border-color:var(--xtd-ink)!important;color:#fff!important;border-radius:var(--xtd-radius)}
+.btn-primary:hover,.o_form_button_save:hover,.o_list_button_add:hover,.o_control_panel .o-kanban-button-new:hover{background:var(--xtd-burgundy)!important;border-color:var(--xtd-burgundy)!important}
 .btn-secondary,.btn-light{border-color:var(--xtd-line);border-radius:var(--xtd-radius)}
 a,.btn-link{color:var(--xtd-burgundy)}a:hover,.btn-link:hover{color:var(--xtd-orange)}
 .o_main_navbar{background:#fff!important;border-bottom:1px solid var(--xtd-line);box-shadow:0 10px 30px rgba(21,21,21,.04)}
@@ -14,6 +14,8 @@ a,.btn-link{color:var(--xtd-burgundy)}a:hover,.btn-link:hover{color:var(--xtd-or
 .o_control_panel .o_breadcrumb a:hover,.o_control_panel .o_back_button:hover a,.o_control_panel .o_breadcrumb .btn.btn-light:hover{background:var(--xtd-burgundy)!important;color:#fff!important}
 .o_control_panel .o_back_button a:hover::after,.o_control_panel .o_back_button:hover a::after{color:rgba(255,255,255,.75)!important}
 .o_form_view .o_form_sheet,.o_kanban_renderer .o_kanban_record,.o_list_renderer,.modal-content,.card{border-color:var(--xtd-line);border-radius:var(--xtd-radius);box-shadow:0 10px 28px rgba(21,21,21,.045)}
+.o_form_view .o_field_x2many .o_kanban_renderer .o-kanban-button-new,.o_form_view .o_field_widget .o_kanban_renderer .o-kanban-button-new{align-items:center!important;align-self:flex-start!important;background:#fff!important;border:1px solid var(--xtd-line)!important;color:var(--xtd-burgundy)!important;display:inline-flex!important;flex:0 0 auto!important;font-size:.95rem!important;font-weight:600!important;justify-content:center!important;line-height:1.2!important;max-width:12rem!important;min-height:2.5rem!important;min-width:4.5rem!important;padding:.45rem 1rem!important;width:auto!important;box-shadow:none!important}
+.o_form_view .o_field_x2many .o_kanban_renderer .o-kanban-button-new:hover,.o_form_view .o_field_widget .o_kanban_renderer .o-kanban-button-new:hover{background:var(--xtd-burgundy)!important;border-color:var(--xtd-burgundy)!important;color:#fff!important}
 .o_required_modifier.o_input,.o_required_modifier .o_input{border-left:3px solid var(--xtd-orange)}
 .nav-tabs .nav-link.active,.o_notebook .nav-link.active{border-color:var(--xtd-line) var(--xtd-line) #fff;color:var(--xtd-burgundy)}
 .o_web_client .o_notification_manager .o_notification{border-radius:var(--xtd-radius)}
