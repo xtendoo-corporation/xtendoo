@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+
 from odoo.modules.module import get_manifest
 from odoo.tests.common import TransactionCase
 
@@ -40,3 +42,21 @@ class TestXtdTheme(TransactionCase):
             "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
             manifest["assets"]["point_of_sale._assets_pos"],
         )
+
+    def test_xtd_theme_pos_primary_buttons_follow_backend_colors(self):
+        module_path = Path(__file__).resolve().parents[1]
+        pos_scss = module_path / "static" / "src" / "scss" / "xtd_pos.scss"
+        content = pos_scss.read_text(encoding="utf-8")
+
+        self.assertIn(
+            ".pos .btn-primary,.pos .button.btn-primary,"
+            ".pos .pay-order-button,.pos .validation-button.next,",
+            content,
+        )
+        self.assertIn("background:var(--xtd-ink)!important", content)
+        self.assertIn(
+            ".pos .btn-primary:hover,.pos .button.btn-primary:hover,"
+            ".pos .pay-order-button:hover,",
+            content,
+        )
+        self.assertIn("background:var(--xtd-burgundy)!important", content)
