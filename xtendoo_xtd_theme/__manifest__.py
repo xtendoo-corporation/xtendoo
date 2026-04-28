@@ -27,6 +27,7 @@
         ],
         "point_of_sale._assets_pos": [
             "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
+            "xtendoo_xtd_theme/static/src/xml/xtd_pos_branding.xml",
         ],
     },
     "installable": True,

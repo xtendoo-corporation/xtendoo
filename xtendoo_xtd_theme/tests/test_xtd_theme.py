@@ -38,10 +38,21 @@ class TestXtdTheme(TransactionCase):
 
     def test_xtd_theme_pos_assets_are_declared(self):
         manifest = get_manifest("xtendoo_xtd_theme")
+        assets = manifest["assets"]["point_of_sale._assets_pos"]
+        self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_pos.scss", assets)
         self.assertIn(
-            "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
-            manifest["assets"]["point_of_sale._assets_pos"],
+            "xtendoo_xtd_theme/static/src/xml/xtd_pos_branding.xml",
+            assets,
         )
+
+    def test_xtd_theme_pos_customer_display_uses_xtd_logo(self):
+        module_path = Path(__file__).resolve().parents[1]
+        pos_xml = module_path / "static" / "src" / "xml" / "xtd_pos_branding.xml"
+        content = pos_xml.read_text(encoding="utf-8")
+
+        self.assertIn('t-inherit="point_of_sale.CustomerDisplay"', content)
+        self.assertIn("/xtendoo_xtd_theme/static/src/img/xtd_logo.svg", content)
+        self.assertIn("//OdooLogo", content)
 
     def test_xtd_theme_pos_primary_buttons_follow_backend_colors(self):
         module_path = Path(__file__).resolve().parents[1]
