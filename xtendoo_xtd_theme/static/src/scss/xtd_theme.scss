@@ -4,6 +4,7 @@ body{background:var(--xtd-paper);color:var(--xtd-ink)}
 .btn-primary:hover,.o_form_button_save:hover,.o_list_button_add:hover,.o_control_panel .o-kanban-button-new:hover{background:var(--xtd-burgundy)!important;border-color:var(--xtd-burgundy)!important}
 .btn-secondary,.btn-light{border-color:var(--xtd-line);border-radius:var(--xtd-radius)}
 .form-check-input:checked,.o_radio_input:checked,.o_checkbox input:checked{background-color:var(--xtd-ink)!important;border-color:var(--xtd-ink)!important}.form-check-input:focus,.o_radio_input:focus,.o_checkbox input:focus{border-color:var(--xtd-ink)!important;box-shadow:0 0 0 .18rem rgba(21,21,21,.16)!important}
+.o_loading_indicator{background-color:var(--xtd-ink)!important;border-color:var(--xtd-ink)!important;color:#fff!important}
 a,.btn-link{color:var(--xtd-burgundy)}a:hover,.btn-link:hover{color:var(--xtd-orange)}
 .o_main_navbar{background:#fff!important;border-bottom:1px solid var(--xtd-line);box-shadow:0 10px 30px rgba(21,21,21,.04)}
 .o_main_navbar .o_menu_brand,.o_main_navbar .dropdown-toggle,.o_main_navbar .o_nav_entry{color:var(--xtd-ink)!important;font-weight:600}
