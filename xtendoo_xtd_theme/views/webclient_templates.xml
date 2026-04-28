@@ -5,7 +5,7 @@
             <title t-esc="title or 'Xtd'"/>
         </xpath>
         <xpath expr="//link[@rel='shortcut icon']" position="replace">
-            <link type="image/svg+xml" rel="shortcut icon" t-att-href="x_icon or '/xtendoo_xtd_theme/static/src/img/favicon.svg'"/>
+            <link type="image/x-icon" rel="shortcut icon" t-att-href="x_icon or '/xtendoo_xtd_theme/static/src/img/favicon.ico'"/>
         </xpath>
     </template>
 
