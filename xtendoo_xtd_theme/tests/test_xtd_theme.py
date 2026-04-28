@@ -67,3 +67,12 @@ class TestXtdTheme(TransactionCase):
             content,
         )
         self.assertIn("background:var(--xtd-burgundy)!important", content)
+
+    def test_xtd_theme_form_selectors_use_xtd_ink(self):
+        module_path = Path(__file__).resolve().parents[1]
+        theme_scss = module_path / "static" / "src" / "scss" / "xtd_theme.scss"
+        content = theme_scss.read_text(encoding="utf-8")
+
+        self.assertIn(".form-check-input:checked", content)
+        self.assertIn("background-color:var(--xtd-ink)!important", content)
+        self.assertIn("border-color:var(--xtd-ink)!important", content)
