@@ -25,6 +25,9 @@
         "web.assets_frontend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
         ],
+        "point_of_sale._assets_pos": [
+            "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
+        ],
     },
     "installable": True,
     "auto_install": False,

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from odoo.modules.module import get_manifest
 from odoo.tests.common import TransactionCase
 
 
@@ -32,3 +33,10 @@ class TestXtdTheme(TransactionCase):
             "portal_debranding",
         })
         self.assertTrue(all(module.state == "installed" for module in modules))
+
+    def test_xtd_theme_pos_assets_are_declared(self):
+        manifest = get_manifest("xtendoo_xtd_theme")
+        self.assertIn(
+            "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
+            manifest["assets"]["point_of_sale._assets_pos"],
+        )

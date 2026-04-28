@@ -9,6 +9,7 @@ a,.btn-link{color:var(--xtd-burgundy)}a:hover,.btn-link:hover{color:var(--xtd-or
 .o_main_navbar .o_menu_brand:before{content:"";display:inline-block;width:34px;height:18px;margin-right:.55rem;vertical-align:-.22rem;background:url('/xtendoo_xtd_theme/static/src/img/xtd_symbol.svg') center/contain no-repeat}
 .o_main_navbar .dropdown-toggle:hover,.o_main_navbar .o_nav_entry:hover{background:rgba(255,79,0,.08)!important;color:var(--xtd-burgundy)!important}
 .o_control_panel,.o_search_panel,.o_form_view .o_form_sheet_bg{background:var(--xtd-paper)}
+.o_control_panel .o_breadcrumb,.o_control_panel .o_last_breadcrumb_item,.o_control_panel .o_last_breadcrumb_item span{background:transparent!important;box-shadow:none!important;color:var(--xtd-burgundy)!important;text-shadow:none!important}
 .o_form_view .o_form_sheet,.o_kanban_renderer .o_kanban_record,.o_list_renderer,.modal-content,.card{border-color:var(--xtd-line);border-radius:var(--xtd-radius);box-shadow:0 10px 28px rgba(21,21,21,.045)}
 .o_required_modifier.o_input,.o_required_modifier .o_input{border-left:3px solid var(--xtd-orange)}
 .nav-tabs .nav-link.active,.o_notebook .nav-link.active{border-color:var(--xtd-line) var(--xtd-line) #fff;color:var(--xtd-burgundy)}
