@@ -97,11 +97,12 @@ class TestXtdTheme(TransactionCase):
         self.assertIn("padding:.7rem 1rem!important", content)
         self.assertIn("font-size:.95rem!important", content)
 
-    def test_xtd_theme_required_fields_use_thin_left_border(self):
+    def test_xtd_theme_required_fields_underline_only_when_invalid(self):
         module_path = Path(__file__).resolve().parents[1]
         theme_scss = module_path / "static" / "src" / "scss" / "xtd_theme.scss"
         content = theme_scss.read_text(encoding="utf-8")
 
-        self.assertIn(".o_required_modifier.o_input", content)
-        self.assertIn("border-left:1px solid var(--xtd-orange)!important", content)
-        self.assertNotIn("border-bottom:1px solid var(--xtd-orange)!important", content)
+        self.assertIn(".o_field_invalid", content)
+        self.assertIn("--o-input-border-color:var(--xtd-orange)", content)
+        self.assertIn("border-width:0 0 1px 0!important", content)
+        self.assertNotIn(".o_required_modifier.o_input", content)
