@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="web_layout_xtd_branding" inherit_id="web.layout" name="Xtd Web Layout Branding">
+        <xpath expr="//title" position="replace">
+            <title t-esc="title or 'Xtd'"/>
+        </xpath>
+        <xpath expr="//link[@rel='shortcut icon']" position="replace">
+            <link type="image/svg+xml" rel="shortcut icon" t-att-href="x_icon or '/xtendoo_xtd_theme/static/src/img/favicon.svg'"/>
+        </xpath>
+    </template>
+
+    <template id="login_layout_xtd_branding" inherit_id="web.login_layout" name="Xtd Login Branding">
+        <xpath expr="//div[hasclass('card-body')]/div[hasclass('text-center')][1]" position="replace">
+            <div class="text-center pb-2 mb-4 xtd-login-brand">
+                <img src="/xtendoo_xtd_theme/static/src/img/xtd_logo_negative.svg" alt="Xtd" style="max-height:72px; max-width: 100%; width:auto"/>
+            </div>
+        </xpath>
+        <xpath expr="//a[contains(@href, 'odoo.com') and contains(@href, 'utm_medium=auth')]" position="replace">
+            <span class="text-muted">Xtd</span>
+        </xpath>
+    </template>
+
+    <template id="brand_promotion_message_xtd" inherit_id="web.brand_promotion_message" name="Xtd Brand Promotion Message">
+        <xpath expr="//t[@t-set='odoo_logo']" position="replace">
+            <t t-set="odoo_logo">
+                <span class="badge text-bg-light xtd-brand-badge">
+                    <img alt="Xtd" src="/xtendoo_xtd_theme/static/src/img/xtd_logo.svg" width="62" height="20" style="width:auto; height:1em; vertical-align:baseline;"/>
+                </span>
+            </t>
+        </xpath>
+        <xpath expr="//t[@t-set='final_message']" position="replace">
+            <t t-set="final_message">%s%s</t>
+        </xpath>
+    </template>
+</odoo>
