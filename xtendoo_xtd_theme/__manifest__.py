@@ -9,6 +9,7 @@
     "category": "Themes/Backend",
     "depends": [
         "web",
+        "web_enterprise",
         "disable_odoo_online",
         "mail_debranding",
         "portal_debranding",
@@ -21,6 +22,7 @@
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
             "xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js",
             "xtendoo_xtd_theme/static/src/xml/error_dialogs.xml",
+            "xtendoo_xtd_theme/static/src/xml/res_config_edition.xml",
         ],
         "web.assets_frontend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",

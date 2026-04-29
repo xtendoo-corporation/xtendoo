@@ -22,6 +22,7 @@ class TestXtdTheme(TransactionCase):
                     "name",
                     "in",
                     [
+                        "web_enterprise",
                         "disable_odoo_online",
                         "mail_debranding",
                         "portal_debranding",
@@ -30,6 +31,7 @@ class TestXtdTheme(TransactionCase):
             ]
         )
         self.assertEqual(set(modules.mapped("name")), {
+            "web_enterprise",
             "disable_odoo_online",
             "mail_debranding",
             "portal_debranding",
@@ -40,6 +42,23 @@ class TestXtdTheme(TransactionCase):
         manifest = get_manifest("xtendoo_xtd_theme")
         assets = manifest["assets"]["point_of_sale._assets_pos"]
         self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_pos.scss", assets)
+
+    def test_xtd_theme_settings_edition_copyright_is_removed(self):
+        manifest = get_manifest("xtendoo_xtd_theme")
+        assets = manifest["assets"]["web.assets_backend"]
+        self.assertIn(
+            "xtendoo_xtd_theme/static/src/xml/res_config_edition.xml",
+            assets,
+        )
+
+        module_path = Path(__file__).resolve().parents[1]
+        edition_xml = module_path / "static" / "src" / "xml" / "res_config_edition.xml"
+        content = edition_xml.read_text(encoding="utf-8")
+
+        self.assertIn("t-inherit=\"res_config_edition\"", content)
+        self.assertIn("o_web_settings_compact_subtitle", content)
+        self.assertNotIn("Odoo Enterprise Edition License", content)
+        self.assertNotIn("Copyright © 2004", content)
 
     def test_xtd_theme_pos_logos_use_safe_css_override(self):
         module_path = Path(__file__).resolve().parents[1]
