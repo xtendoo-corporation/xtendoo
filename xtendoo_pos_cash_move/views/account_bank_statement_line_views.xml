@@ -4,7 +4,7 @@
         <field name="name">account.bank.statement.line.tree.pos</field>
         <field name="model">account.bank.statement.line</field>
         <field name="arch" type="xml">
-            <list string="Movimientos de Caja">
+            <list string="Movimientos de Caja" editable="bottom">
                 <field name="pos_session_id"/>
                 <field name="date"/>
                 <field name="amount" string="Importe"/>
@@ -17,6 +17,4 @@
             </list>
         </field>
     </record>
-
-
 </odoo>
