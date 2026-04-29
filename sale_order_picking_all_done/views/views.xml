@@ -8,25 +8,32 @@
             <xpath expr="//button[@name='action_cancel']" position="before">
                 <button
                     name="action_sale_order_confirm_and_delivery"
-                    string="Confirm and delivery"
+                    string="Confirmar y entregar"
                     type="object"
-                    invisible="state not in ['draft']"
+                    class="oe_highlight"
+                    invisible="state not in ['draft', 'sent']"
                 />
                 <button
                     name="action_sale_order_confirm_and_invoice"
-                    string="Confirm and Invoice"
+                    string="Confirmar, entregar y facturar"
                     type="object"
-                    invisible="state not in ['draft']"
+                    class="oe_highlight"
+                    invisible="state not in ['draft', 'sent'] or invoice_status == 'invoiced'"
                 />
-                <!-- Pedido confirmado(Pedido de ventas) -->
-                <button name="action_sale_order_delivery"
-                        string="Delivery all"
-                        type="object"
-                        invisible="state not in ['sale']"/>
-                <button name="action_sale_order_delivery_and_invoiced"
-                        string="Delivery and invoiced"
-                        type="object"
-                        invisible="state not in ['sale']"/>
+                <button
+                    name="action_sale_order_delivery"
+                    string="Entregar todo"
+                    type="object"
+                    class="oe_highlight"
+                    invisible="state not in ['sale']"
+                />
+                <button
+                    name="action_sale_order_delivery_and_invoiced"
+                    string="Entregar y facturar"
+                    type="object"
+                    class="oe_highlight"
+                    invisible="state not in ['sale'] or invoice_status == 'invoiced'"
+                />
             </xpath>
         </field>
     </record>

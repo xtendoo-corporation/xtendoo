@@ -1,105 +1,181 @@
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
-from odoo import _, api, fields, models
+from odoo import _, models
+from odoo.exceptions import UserError
+from odoo.fields import Command
+from odoo.tools.float_utils import float_compare, float_is_zero
 
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     def action_sale_order_confirm_and_delivery(self):
-        # Solo confirmar si el pedido está en estado borrador o enviado
-        if self.state in ("draft", "sent"):
-            self.action_confirm()
-        for picking in self.picking_ids:
-            for line in picking.move_ids_without_package.filtered(
-                lambda m: m.state not in ["done", "cancel"]
-            ):
-                line.quantity = line.product_uom_qty
-            picking.with_context(skip_overprocessed_check=True).button_validate()
-            print("*"*50)
-            print("Picking validado")
-            print("*"*50)
-
-    def action_sale_order_confirm_and_invoice(self):
-        """
-        Confirma el pedido, valida la entrega y crea la factura usando el método estándar de ventas (action_create_invoice), forzando cantidades y políticas si es necesario.
-        Restaura los valores originales tras facturar y muestra logs de los cambios.
-        """
-        import logging
-        logger = logging.getLogger(__name__)
-        # Solo confirmar si el pedido está en estado borrador o enviado
-        if self.state in ("draft", "sent"):
-            self.action_confirm()
-        self.action_sale_order_confirm_and_delivery()
-        # Verificar que todos los pickings estén validados antes de facturar
-        pickings_pendientes = self.picking_ids.filtered(lambda p: p.state not in ["done", "cancel"])
-        if pickings_pendientes:
-            raise UserError(_("No se puede facturar porque hay entregas pendientes de validar."))
-        # Guardar valores originales
-        original_invoice_policy = {}
-        original_qty_delivered = {}
-        original_qty_to_invoice = {}
-        for line in self.order_line:
-            if line.product_id and hasattr(line.product_id, 'invoice_policy'):
-                original_invoice_policy[line.id] = line.product_id.invoice_policy
-            original_qty_delivered[line.id] = line.qty_delivered
-            original_qty_to_invoice[line.id] = getattr(line, 'qty_to_invoice', None)
-        # Forzar política y cantidades
-        for line in self.order_line:
-            if line.product_id and hasattr(line.product_id, 'invoice_policy'):
-                if line.product_id.type in ('product', 'consu'):
-                    line.product_id.invoice_policy = 'order'
-                elif line.product_id.type == 'service':
-                    line.product_id.invoice_policy = 'prepaid'
-                logger.info(f"Línea {line.id}: política cambiada a {line.product_id.invoice_policy}")
-            line.qty_delivered = line.product_uom_qty
-            # Forzar qty_to_invoice si existe
-            if hasattr(line, 'qty_to_invoice'):
-                line.qty_to_invoice = line.product_uom_qty
-                logger.info(f"Línea {line.id}: qty_to_invoice forzada a {line.qty_to_invoice}")
-            logger.info(f"Línea {line.id}: qty_delivered forzada a {line.qty_delivered}")
-        # Recalcular el estado de facturación
-        self._compute_invoice_status()
-        lines_to_invoice = self.order_line.filtered(lambda l: l.invoice_status == 'to invoice')
-        if not lines_to_invoice:
-            # Restaurar valores originales
-            for line in self.order_line:
-                if line.product_id and hasattr(line.product_id, 'invoice_policy') and line.id in original_invoice_policy:
-                    line.product_id.invoice_policy = original_invoice_policy[line.id]
-                if line.id in original_qty_delivered:
-                    line.qty_delivered = original_qty_delivered[line.id]
-                if line.id in original_qty_to_invoice and hasattr(line, 'qty_to_invoice'):
-                    line.qty_to_invoice = original_qty_to_invoice[line.id]
-            logger.error("No se pudo forzar la facturación. Se restauraron los valores originales.")
-            raise UserError(_(
-                "No se pudo forzar la facturación.\n\n"
-                "Revise la configuración de los productos y vuelva a intentarlo."
-            ))
-        # Usar el método estándar de ventas para crear la factura
-        self.sudo().action_create_invoice()
-        # Restaurar valores originales tras facturar
-        for line in self.order_line:
-            if line.product_id and hasattr(line.product_id, 'invoice_policy') and line.id in original_invoice_policy:
-                line.product_id.invoice_policy = original_invoice_policy[line.id]
-            if line.id in original_qty_delivered:
-                line.qty_delivered = original_qty_delivered[line.id]
-            if line.id in original_qty_to_invoice and hasattr(line, 'qty_to_invoice'):
-                line.qty_to_invoice = original_qty_to_invoice[line.id]
-            logger.info(f"Línea {line.id}: política, qty_delivered y qty_to_invoice restauradas")
+        """Confirmar los pedidos y validar todos sus albaranes pendientes."""
+        self._confirm_and_deliver_orders()
         return True
 
-    # Pedido confirmado( ya es un pedido de ventas)
+    def action_sale_order_confirm_and_invoice(self):
+        """Confirmar, entregar, facturar y publicar las facturas resultantes."""
+        self._confirm_and_deliver_orders()
+        invoices = self._create_and_post_invoices()
+        return self.action_view_invoice(invoices=invoices)
 
     def action_sale_order_delivery(self):
-        for picking in self.picking_ids:
-            if picking.state != "done":
-                for line in picking.move_ids_without_package:
-                    line.quantity = line.product_uom_qty
-                picking.button_validate()
+        """Validar todos los albaranes pendientes de pedidos ya confirmados."""
+        self._deliver_orders()
+        return True
 
     def action_sale_order_delivery_and_invoiced(self):
+        """Entregar pedidos confirmados, facturar y publicar sus facturas."""
+        self._deliver_orders()
+        invoices = self._create_and_post_invoices()
+        return self.action_view_invoice(invoices=invoices)
 
-        self = self.with_context({"is_sale": True,})
-        self.action_sale_order_delivery()
-        payment = self.env["sale.advance.payment.inv"].create({})
-        payment.with_context(active_ids=self.ids).create_invoices()
+    def _confirm_and_deliver_orders(self):
+        for order in self:
+            order._confirm_order_if_needed()
+        self._deliver_orders()
+
+    def _confirm_order_if_needed(self):
+        self.ensure_one()
+        if self.state in ("draft", "sent"):
+            self.action_confirm()
+        if self.state != "sale":
+            raise UserError(
+                _(
+                    "Solo se pueden procesar presupuestos o pedidos de venta. "
+                    "El pedido %(order)s está en estado %(state)s.",
+                    order=self.display_name,
+                    state=self.state,
+                )
+            )
+
+    def _deliver_orders(self):
+        for order in self:
+            order._confirm_order_if_needed()
+            order._validate_pending_pickings()
+
+    def _validate_pending_pickings(self):
+        self.ensure_one()
+        while True:
+            pending_pickings = self._get_pending_pickings()
+            if not pending_pickings:
+                break
+
+            processed_states = {
+                picking.id: picking.state for picking in pending_pickings
+            }
+            for picking in pending_pickings:
+                self._validate_picking_with_order_quantities(picking)
+
+            if self._get_pending_pickings() and all(
+                picking.state == processed_states[picking.id]
+                for picking in pending_pickings
+            ):
+                pending_names = ", ".join(self._get_pending_pickings().mapped("name"))
+                raise UserError(
+                    _(
+                        "No se pudieron validar todas las entregas del pedido "
+                        "%(order)s. Entregas pendientes: %(pickings)s.",
+                        order=self.display_name,
+                        pickings=pending_names,
+                    )
+                )
+
+    def _get_pending_pickings(self):
+        self.ensure_one()
+        pending_pickings = self.picking_ids.filtered(
+            lambda picking: picking.state not in ("done", "cancel")
+        )
+        return pending_pickings.sorted(
+            lambda picking: (
+                picking.scheduled_date or picking.create_date,
+                picking.id,
+            )
+        )
+
+    def _validate_picking_with_order_quantities(self, picking):
+        if picking.state == "draft":
+            picking.action_confirm()
+        if picking.move_ids.filtered(lambda move: move.state not in ("done", "cancel")):
+            picking.action_assign()
+
+        for move in picking.move_ids.filtered(
+            lambda move: move.state not in ("done", "cancel")
+        ):
+            self._set_move_quantity_to_order_demand(move)
+
+        result = picking.with_context(
+            skip_backorder=True,
+            skip_immediate=True,
+            skip_sms=True,
+        ).button_validate()
+        if picking.state not in ("done", "cancel"):
+            raise UserError(
+                _(
+                    "No se pudo validar la entrega %(picking)s. "
+                    "Resultado devuelto: %(result)s.",
+                    picking=picking.display_name,
+                    result=result,
+                )
+            )
+
+    def _set_move_quantity_to_order_demand(self, move):
+        demand = move.product_uom_qty
+        if float_is_zero(demand, precision_rounding=move.product_uom.rounding):
+            move.quantity = 0
+            return
+
+        if move.restrict_lot_id and move.product_id.tracking != "none":
+            self._set_restricted_lot_move_quantity(move, demand)
+            return
+
+        move.quantity = demand
+
+    def _set_restricted_lot_move_quantity(self, move, demand):
+        demand_in_product_uom = move.product_uom._compute_quantity(
+            demand,
+            move.product_id.uom_id,
+            round=False,
+        )
+        if move.product_id.tracking == "serial" and float_compare(
+            demand_in_product_uom,
+            1.0,
+            precision_rounding=move.product_id.uom_id.rounding,
+        ) != 0:
+            raise UserError(
+                _(
+                    "El producto %(product)s se gestiona por números de serie. "
+                    "La línea del pedido debe tener cantidad 1 para el "
+                    "lote/serie %(lot)s.",
+                    product=move.product_id.display_name,
+                    lot=move.restrict_lot_id.display_name,
+                )
+            )
+
+        move.move_line_ids.filtered(lambda line: line.state != "done").unlink()
+        move.move_line_ids = [
+            Command.create(
+                {
+                    **move._prepare_move_line_vals(quantity=0),
+                    "lot_id": move.restrict_lot_id.id,
+                    "quantity": demand,
+                    "product_uom_id": move.product_uom.id,
+                }
+            )
+        ]
+        move.invalidate_recordset(["quantity"])
+
+    def _create_and_post_invoices(self):
+        invoices = self.env["account.move"]
+        orders_to_invoice = self.filtered(
+            lambda order: order.invoice_status != "invoiced"
+        )
+        if orders_to_invoice:
+            invoices |= orders_to_invoice._create_invoices(final=True)
+        invoices |= (self - orders_to_invoice).mapped("invoice_ids")
+
+        draft_invoices = invoices.filtered(lambda invoice: invoice.state == "draft")
+        if draft_invoices:
+            draft_invoices.action_post()
+        return invoices
