@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Boton de accion desde sesion PoS -->
+    <record id="view_pos_session_form_xtendoo_cash_move" model="ir.ui.view">
+        <field name="name">pos.session.form.xtendoo.cash.move</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button
+                    name="%(action_pos_cash_move_wizard)d"
+                    type="action"
+                    string="Cash In/Out"
+                    class="oe_highlight"
+                    context="{'default_session_id': id}"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acceso a movimientos nativos (sin duplicar) desde sesion -->
+    <!-- Nota: este dominio puede requerir ajuste segun relacion exacta en tu Odoo 19
+    <record id="action_pos_session_cash_lines" model="ir.actions.act_window">
+        <field name="name">Movimientos de Caja</field>
+        <field name="res_model">account.bank.statement.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('pos_session_id', '=', active_id)]</field>
+        <field name="context">{'search_default_group_by_statement_id': 1}</field>
+    </record>-->
+
+    <record id="view_pos_session_form_xtendoo_cash_lines_button" model="ir.ui.view">
+        <field name="name">pos.session.form.xtendoo.cash.lines.button</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button
+                    name="%(action_pos_session_cash_lines)d"
+                    type="action"
+                    string="Ver Movimientos Caja"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>
