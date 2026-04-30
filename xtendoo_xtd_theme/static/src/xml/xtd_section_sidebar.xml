@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    xtd_section_sidebar.xml
+    Plantillas QWeb del sidebar lateral de secciones Xtd.
+
+    Estructura renderizada:
+      .xtd-section-sidebar
+        .xtd-sidebar-header   (icono + nombre de la app activa)
+        nav.xtd-sidebar-nav
+          .xtd-sidebar-group  (label UPPERCASE para grupos)
+          a.xtd-sidebar-item  (ítem navegable)
+-->
+<templates xml:space="preserve">
+
+    <!-- ═══ Raíz del sidebar ════════════════════════════════════════════════ -->
+    <t t-name="xtendoo_xtd_theme.SectionSidebar">
+        <div
+            t-if="state.currentApp and state.sections.length"
+            class="xtd-section-sidebar d-none d-md-flex flex-column"
+        >
+            <!-- Cabecera: icono + nombre de la app -->
+            <div class="xtd-sidebar-header">
+                <div class="xtd-sidebar-app-info">
+                    <img
+                        t-if="state.currentApp.webIconData"
+                        class="xtd-sidebar-app-icon"
+                        t-att-src="state.currentApp.webIconData"
+                        t-att-alt="state.currentApp.name"
+                    />
+                    <span class="xtd-sidebar-app-name" t-esc="state.currentApp.name" />
+                </div>
+            </div>
+
+            <!-- Secciones de la app -->
+            <nav class="xtd-sidebar-nav">
+                <t t-foreach="state.sections" t-as="section" t-key="section.id">
+                    <t t-call="xtendoo_xtd_theme.SidebarNode">
+                        <t t-set="node" t-value="section" />
+                        <t t-set="depth" t-value="0" />
+                    </t>
+                </t>
+            </nav>
+        </div>
+    </t>
+
+    <!-- ═══ Nodo recursivo: grupo o ítem hoja ═══════════════════════════════
+         Variables de entrada (via t-set en el t-call padre):
+           - node  : objeto de menú con childrenTree, name, actionID...
+           - depth : nivel de anidamiento (0 = primer nivel)
+    ════════════════════════════════════════════════════════════════════════ -->
+    <t t-name="xtendoo_xtd_theme.SidebarNode">
+
+        <!-- Nodo con hijos → label de grupo + hijos recursivos -->
+        <t t-if="node.childrenTree.length">
+            <div
+                class="xtd-sidebar-group"
+                t-att-class="{ 'xtd-sidebar-group--sub': depth > 0 }"
+                t-esc="node.name"
+            />
+            <t t-foreach="node.childrenTree" t-as="child" t-key="child.id">
+                <t t-call="xtendoo_xtd_theme.SidebarNode">
+                    <t t-set="node" t-value="child" />
+                    <t t-set="depth" t-value="depth + 1" />
+                </t>
+            </t>
+        </t>
+
+        <!-- Nodo hoja → ítem navegable -->
+        <t t-else="">
+            <a
+                class="xtd-sidebar-item"
+                t-att-class="{
+                    'xtd-sidebar-item--active': isActive(node),
+                    'xtd-sidebar-item--nested': depth &gt; 0
+                }"
+                t-att-href="getHref(node)"
+                t-on-click.prevent="() => this.selectMenu(node)"
+                t-att-title="node.name"
+            >
+                <span t-esc="node.name" />
+            </a>
+        </t>
+
+    </t>
+
+</templates>
+

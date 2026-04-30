@@ -9,7 +9,7 @@
     "category": "Themes/Backend",
     "depends": [
         "web",
-        "web_enterprise",
+        "web_responsive",
         "disable_odoo_online",
         "mail_debranding",
         "portal_debranding",
@@ -20,9 +20,11 @@
     "assets": {
         "web.assets_backend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_menu.scss",
             "xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js",
+            "xtendoo_xtd_theme/static/src/js/xtd_section_sidebar.esm.js",
             "xtendoo_xtd_theme/static/src/xml/error_dialogs.xml",
-            "xtendoo_xtd_theme/static/src/xml/res_config_edition.xml",
+            "xtendoo_xtd_theme/static/src/xml/xtd_section_sidebar.xml",
         ],
         "web.assets_frontend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
