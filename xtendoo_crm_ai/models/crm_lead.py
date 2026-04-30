@@ -51,8 +51,8 @@ Extraction rules:
 - Extract ONLY what is explicitly stated or strongly implied. Do NOT invent data.
 - Use null for any field not found in the text.
 - lead_name: use the subject line if present; otherwise synthesize a short title from company + contact person + intent. If the subject is very generic (e.g., "Inquiry", "Hello", "Presupuesto"), append the contact name or company to it (e.g., "Presupuesto - Juan Pérez").
-- contact_name: extract the full name of the contact person. Pay special attention to lines like "De: [Nombre]", "From: [Name]", or signatures. Prioritize this over the technical email header.
-- email: extract the email address. Look for it next to names in lines like "De: Nombre <email@addr.com>" within the message body. Prioritize this over the technical email header.
+- contact_name: extract the full name of the contact person. Pay special attention to lines like "De: [Nombre]", "From: [Name]", or signatures. If you find a name like "Xtendoo" and no specific person name is mentioned, use "Xtendoo" for this field.
+- email: extract the email address from the message body (e.g., inside "De: ... <email>"). This is the most important field.
 - company_type: infer from context clues (e.g. "factory" → manufacturer, "distributor" mentioned, etc.).
 - lang: detect the language the message body is written in.
 - preferred_contact_channel: extract from phrases like "via email", "call me", "WhatsApp", etc.
@@ -157,13 +157,15 @@ class CrmLead(models.Model):
         if ai_data.get("lead_name") and (overwrite or not lead.name or lead.name == _("New")):
             update_vals["name"] = ai_data["lead_name"]
 
-        if ai_data.get("contact_name") and (overwrite or not lead.contact_name):
-            update_vals["contact_name"] = ai_data["contact_name"]
+        contact_name = ai_data.get("contact_name") or ai_data.get("company_name")
+        if contact_name and (overwrite or not lead.contact_name or "@" in (lead.contact_name or "")):
+            update_vals["contact_name"] = contact_name
+
         if ai_data.get("job_position") and (overwrite or not lead.function):
             update_vals["function"] = ai_data["job_position"]
         if ai_data.get("company_name") and (overwrite or not lead.partner_name):
             update_vals["partner_name"] = ai_data["company_name"]
-        if ai_data.get("email") and (overwrite or not lead.email_from):
+        if ai_data.get("email") and (overwrite or not lead.email_from or "@" in (lead.email_from or "")):
             update_vals["email_from"] = ai_data["email"]
         if ai_data.get("phone") and (overwrite or not lead.phone):
             update_vals["phone"] = ai_data["phone"]
@@ -194,7 +196,7 @@ class CrmLead(models.Model):
                 partner = self.env["res.partner"].search([("email", "=ilike", ai_email)], limit=1)
 
                 if not partner:
-                    partner_name = ai_data.get("contact_name") or ai_data.get("company_name") or ai_email
+                    partner_name = contact_name or ai_email
                     partner_vals = {
                         "name": partner_name,
                         "email": ai_email,
@@ -214,6 +216,8 @@ class CrmLead(models.Model):
                         partner_vals["is_company"] = True
 
                     partner = self.env["res.partner"].create(partner_vals)
+                elif contact_name and ("@" in (partner.name or "") or not partner.name):
+                    partner.write({"name": contact_name})
 
                 if partner:
                     update_vals["partner_id"] = partner.id
