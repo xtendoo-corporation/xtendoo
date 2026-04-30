@@ -1,0 +1,138 @@
+# =============================================================================
+# docker-compose.cash-drawer.yml
+# Fragmento docker-compose para el módulo xtendoo_open_cash_drawer
+# =============================================================================
+#
+# Instrucciones:
+#   Copia el bloque del escenario que se ajuste a tu instalación dentro de
+#   docker-compose.yml (o en tu docker-compose.override.yml / prod.yaml de
+#   doodba).  Solo necesitas añadir la clave "services > odoo" que falta.
+#
+# Escenarios:
+#   A) Impresora de red (TCP/IP) .............. sin cambios en el compose
+#   B) Impresora USB en el host Docker ........ devices + privileged/cap_add
+#   C) Servidor en la nube + impresora local .. proxy local en el PC del cajero
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# ESCENARIO A — Impresora de red accesible desde el servidor (o VPN)
+# -----------------------------------------------------------------------------
+# La impresora tiene una IP fija (o estática via DHCP) accesible desde el
+# contenedor de Odoo. No se necesitan cambios en docker-compose; la red por
+# defecto del contenedor ya tiene salida a Internet / red corporativa.
+#
+# Configuración en Odoo:
+#   TPV → Configuración → Cajón portamonedas
+#   Dirección de la impresora: 192.168.1.50:9100
+#
+# Sin fragmento especial — el compose no necesita modificación para este caso.
+
+
+# -----------------------------------------------------------------------------
+# ESCENARIO B — Impresora USB conectada al HOST de Docker (mismo servidor)
+# -----------------------------------------------------------------------------
+# La impresora está conectada por USB al servidor Linux donde corre Docker.
+# Se monta el dispositivo dentro del contenedor de Odoo.
+#
+# Instrucciones:
+#   1. Averigua el nodo del dispositivo:
+#        ls /dev/usb/lp*         → p.ej. /dev/usb/lp0
+#        lpstat -p               → lista impresoras CUPS
+#   2. Ajusta la ruta "devices:" a continuación.
+#   3. Ejecuta:
+#        sudo chmod 666 /dev/usb/lp0   # una sola vez; o añade udev rule
+#
+# Configuración en Odoo:
+#   Dirección de la impresora: /dev/usb/lp0
+# -----------------------------------------------------------------------------
+# services:
+#   odoo:
+#     devices:
+#       - /dev/usb/lp0:/dev/usb/lp0     # Cambia al nodo real
+#     # Alternativa con CUPS (gestión de impresoras en el host):
+#     # environment:
+#     #   - PRINTER_NAME=EPSON_TM_T20
+#     # Dirección en Odoo: EPSON_TM_T20
+
+
+# -----------------------------------------------------------------------------
+# ESCENARIO C — Servidor en la nube + impresora en la red LOCAL del cajero
+# -----------------------------------------------------------------------------
+# Este es el caso más habitual en despliegues cloud + doodba:
+#   • Odoo corre en la nube (VPS, AWS, etc.)
+#   • La impresora de tickets está conectada al PC / TPV del cajero
+#   • El contenedor Odoo NO puede alcanzar directamente la impresora
+#
+# Solución recomendada: proxy local en el PC del cajero
+#   1. Copia tools/cash_drawer_proxy.py al PC del cajero.
+#   2. Ejecútalo (Windows):
+#        python cash_drawer_proxy.py --port 7070 --printer "EPSON TM-T20"
+#      o instálalo como servicio de inicio:
+#        install_proxy_windows.bat
+#   3. El proxy escucha en http://localhost:7070 y recibe la llamada del
+#      servidor Odoo para reenviarla a la impresora local.
+#
+# ¿Necesita configuración en docker-compose?  NO para este escenario.
+# El proxy corre en la máquina del cajero, no en el servidor cloud.
+# Odoo se comunica con él a través del navegador (JavaScript, P1/P3) o
+# mediante IoT Box (P3), no desde el servidor.
+
+
+# -----------------------------------------------------------------------------
+# ESCENARIO D — Odoo en Docker accede a impresora en el HOST del contenedor
+#               (host Docker == misma máquina que la impresora, pero red privada)
+# -----------------------------------------------------------------------------
+# Cuando el host de Docker tiene acceso a la impresora (USB o red local)
+# y quieres que Odoo envíe el comando ESC/POS desde el servidor al host.
+#
+# Usa el hostname especial "host" en la dirección de la impresora:
+#   Dirección: host:9100
+#
+# Odoo resolverá automáticamente "host" con la IP del gateway Docker
+# (normalmente 172.17.0.1) usando 'ip route' desde dentro del contenedor.
+#
+# Para que Docker exponga la IP del host al contenedor usa extra_hosts
+# (docker-compose v3.x) o --add-host=host-gateway:host-gateway (v2):
+# -----------------------------------------------------------------------------
+# services:
+#   odoo:
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"   # Docker 20.10+
+#     # Dirección en Odoo: host.docker.internal:9100
+#     # o simplemente:     host:9100  (el módulo usa ip route automáticamente)
+
+
+# -----------------------------------------------------------------------------
+# ESCENARIO E — doodba (Tecnativa/doodba) en producción
+# -----------------------------------------------------------------------------
+# doodba usa un docker-compose.yml base y anula con prod.yaml.
+# Añade el bloque en prod.yaml dentro de "services > odoo":
+# -----------------------------------------------------------------------------
+# version: "2.4"
+# services:
+#   odoo:
+#     environment:
+#       # Proxy pass-through (opcional): si usas un proxy HTTP externo
+#       # para la impresora en red, configúralo aquí.
+#       # (no es necesario para impresoras TCP directas)
+#     # Opción B: impresora USB en el servidor
+#     devices:
+#       - /dev/usb/lp0:/dev/usb/lp0
+#     # Opción D: impresora en host Docker
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"
+
+
+# -----------------------------------------------------------------------------
+# Referencia rápida — Dirección de la impresora en Odoo (TPV → Configuración)
+# -----------------------------------------------------------------------------
+#
+#  Escenario                      │ Dirección a configurar en Odoo
+# ─────────────────────────────────┼──────────────────────────────────────────
+#  Red (acceso directo)            │ 192.168.1.50:9100
+#  USB en el mismo servidor        │ /dev/usb/lp0
+#  CUPS en el mismo servidor       │ EPSON_TM_T20
+#  Host Docker (ip route auto)     │ host:9100
+#  Host Docker (host.docker.int.)  │ host.docker.internal:9100
+#  Cloud + proxy local (no aplica) │ — usar P1/P3 en el navegador —
+# -----------------------------------------------------------------------------

@@ -43,6 +43,40 @@ def parse_command_bytes(command_str):
     return bytes(result)
 
 
+def resolve_printer_address(printer):
+    """Resolve the special ``host`` hostname to the Docker bridge gateway IP.
+
+    When Odoo runs inside a Docker container and the printer is accessible on
+    the **host machine** (e.g. a USB printer connected to the Docker host, or
+    a local-network printer reachable from the host), use the special keyword
+    ``host`` as the hostname in the printer address::
+
+        host:9100
+
+    This function detects the Docker bridge gateway via :func:`get_docker_gateway`
+    and returns the resolved address, e.g. ``172.17.0.1:9100``.
+
+    For any other address the original string is returned unchanged.
+
+    :param printer: Printer address string (e.g. ``"host:9100"``, ``"192.168.1.50:9100"``).
+    :returns: Resolved printer address string.
+    :raises RuntimeError: if ``host`` is used but the gateway cannot be detected.
+    """
+    m = TCP_RE.match(printer)
+    if m and m.group(1).lower() == "host":
+        gw = get_docker_gateway()
+        if not gw:
+            raise RuntimeError(
+                "Cannot resolve 'host' in printer address '%s': "
+                "Docker gateway not detected.  "
+                "Are you running inside a Docker container?  "
+                "Use the explicit gateway IP instead (e.g. 172.17.0.1:%s)."
+                % (printer, m.group(2))
+            )
+        return "%s:%s" % (gw, m.group(2))
+    return printer
+
+
 def open_cash_drawer(printer, command_bytes_str=None):
     """Send the cash-drawer pulse to *printer*.
 
@@ -51,17 +85,21 @@ def open_cash_drawer(printer, command_bytes_str=None):
     TCP
         If *printer* matches ``host:port`` (e.g. ``192.168.1.50:9100``) a raw
         TCP connection is opened and the command bytes are sent directly.
+        The special hostname ``host`` is resolved to the Docker bridge gateway
+        IP via :func:`resolve_printer_address`, which is useful when the
+        printer is on the Docker host machine.
 
     Local device
         Otherwise *printer* is treated as a local path (e.g. ``/dev/usb/lp0``)
         or a CUPS printer name.  The function first attempts ``lp -d printer``
         and, if that fails, writes directly to the device path.
 
-    :param printer: Printer address — ``host:port`` or device path.
+    :param printer: Printer address — ``host:port``, ``ip:port``, or device path.
     :param command_bytes_str: Space-separated decimal bytes (optional).
     :returns: ``True`` on success.
     :raises RuntimeError: on any failure.
     """
+    printer = resolve_printer_address(printer)
     command = parse_command_bytes(command_bytes_str)
 
     m = TCP_RE.match(printer)

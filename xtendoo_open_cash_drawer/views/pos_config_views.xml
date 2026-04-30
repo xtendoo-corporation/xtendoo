@@ -1,1 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?><odoo></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extends the POS configuration form view to add the
+        Cash Drawer section with both direct ESC/POS and dummy-print options.
+    -->
+    <record id="view_pos_config_form_inherit_cash_drawer" model="ir.ui.view">
+        <field name="name">pos.config.form.inherit.cash_drawer</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Append the section at the end of the "Connected Devices" tab -->
+            <xpath expr="//div[hasclass('o_connected_device')]" position="inside">
+                <separator string="Cash Drawer" colspan="2"/>
+
+                <!-- Direct ESC/POS (preferred - no print job needed) -->
+                <field name="cash_drawer_printer_address"
+                       placeholder="192.168.1.50:9100  or  /dev/usb/lp0"/>
+                <field name="cash_drawer_command_bytes"
+                       attrs="{'invisible': [('cash_drawer_printer_address', '=', False)]}"/>
+
+                <!-- Dummy-print fallback -->
+                <field name="cash_drawer_dummy_print"/>
+                <field name="cash_drawer_dummy_text"
+                       attrs="{'invisible': [('cash_drawer_dummy_print', '=', False)]}"/>
+                <field name="cash_drawer_web_print_fallback"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
