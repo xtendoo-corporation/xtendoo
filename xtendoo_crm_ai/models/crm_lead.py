@@ -51,7 +51,8 @@ Extraction rules:
 - Extract ONLY what is explicitly stated or strongly implied. Do NOT invent data.
 - Use null for any field not found in the text.
 - lead_name: use the subject line if present; otherwise synthesize a short title from company + contact person + intent. If the subject is very generic (e.g., "Inquiry", "Hello", "Presupuesto"), append the contact name or company to it (e.g., "Presupuesto - Juan Pérez").
-- contact_name: extract the full name of the contact person. Look for it in greetings, signatures (e.g., "Saludos, [Nombre]"), or explicit form fields in the body. Prioritize this over the name in the email header.
+- contact_name: extract the full name of the contact person. Pay special attention to lines like "De: [Nombre]", "From: [Name]", or signatures. Prioritize this over the technical email header.
+- email: extract the email address. Look for it next to names in lines like "De: Nombre <email@addr.com>" within the message body. Prioritize this over the technical email header.
 - company_type: infer from context clues (e.g. "factory" → manufacturer, "distributor" mentioned, etc.).
 - lang: detect the language the message body is written in.
 - preferred_contact_channel: extract from phrases like "via email", "call me", "WhatsApp", etc.
@@ -185,15 +186,18 @@ class CrmLead(models.Model):
                 update_vals["country_id"] = country.id
 
         # Partner assignment/creation logic
-        if ai_data.get("email") and not lead.partner_id:
-            email = ai_data["email"].strip()
-            partner = self.env["res.partner"].search([("email", "=ilike", email)], limit=1)
+        ai_email = ai_data.get("email")
+        if ai_email:
+            ai_email = ai_email.strip()
+            current_partner_email = (lead.partner_id.email or "").lower()
+            if not lead.partner_id or (overwrite and ai_email.lower() != current_partner_email):
+                partner = self.env["res.partner"].search([("email", "=ilike", ai_email)], limit=1)
 
             if not partner:
-                partner_name = ai_data.get("contact_name") or ai_data.get("company_name") or email
+                partner_name = ai_data.get("contact_name") or ai_data.get("company_name") or ai_email
                 partner_vals = {
                     "name": partner_name,
-                    "email": email,
+                    "email": ai_email,
                     "phone": ai_data.get("phone"),
                     "mobile": ai_data.get("mobile"),
                     "street": ai_data.get("street"),
