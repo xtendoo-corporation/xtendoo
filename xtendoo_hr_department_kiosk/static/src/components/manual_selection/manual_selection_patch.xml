@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="hr_attendance.public_kiosk_manual_selection" t-inherit-mode="extension">
+        <!-- Ocultar el botón de "Todos" si estamos en un kiosco de departamento -->
+        <xpath expr="//a[contains(text(), 'All')]" position="attributes">
+            <attribute name="t-if">!window.kiosk_department_id</attribute>
+        </xpath>
+        
+        <!-- Ocultar la lista de otros departamentos si estamos en uno específico -->
+        <xpath expr="//t[@t-as='dep']" position="attributes">
+            <attribute name="t-if">!window.kiosk_department_id || dep.id === window.kiosk_department_id</attribute>
+        </xpath>
+        
+        <!-- Ocultar el dropdown de departamentos en móviles si estamos en uno específico -->
+        <xpath expr="//Dropdown" position="attributes">
+            <attribute name="t-if">!window.kiosk_department_id</attribute>
+        </xpath>
+    </t>
+</templates>

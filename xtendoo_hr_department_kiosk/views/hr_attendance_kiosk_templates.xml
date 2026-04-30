@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="public_kiosk_mode_inherit" inherit_id="hr_attendance.public_kiosk_mode">
+        <xpath expr="//script" position="after">
+            <script type="text/javascript">
+                // Inyectamos el ID del departamento en el objeto window para que sea accesible desde OWL
+                window.kiosk_department_id = <t t-out="kiosk_backend_info.get('department_id', 'null')"/>;
+            </script>
+        </xpath>
+    </template>
+</odoo>
