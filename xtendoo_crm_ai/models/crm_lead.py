@@ -184,6 +184,36 @@ class CrmLead(models.Model):
             if country:
                 update_vals["country_id"] = country.id
 
+        # Partner assignment/creation logic
+        if ai_data.get("email") and not lead.partner_id:
+            email = ai_data["email"].strip()
+            partner = self.env["res.partner"].search([("email", "=ilike", email)], limit=1)
+
+            if not partner:
+                partner_name = ai_data.get("contact_name") or ai_data.get("company_name") or email
+                partner_vals = {
+                    "name": partner_name,
+                    "email": email,
+                    "phone": ai_data.get("phone"),
+                    "mobile": ai_data.get("mobile"),
+                    "street": ai_data.get("street"),
+                    "city": ai_data.get("city"),
+                    "zip": ai_data.get("zip"),
+                    "website": ai_data.get("website"),
+                    "function": ai_data.get("job_position"),
+                }
+                country_id = update_vals.get("country_id") or lead.country_id.id
+                if country_id:
+                    partner_vals["country_id"] = country_id
+
+                if not ai_data.get("contact_name") and ai_data.get("company_name"):
+                    partner_vals["is_company"] = True
+
+                partner = self.env["res.partner"].create(partner_vals)
+
+            if partner:
+                update_vals["partner_id"] = partner.id
+
         if ai_data.get("expected_revenue") and (overwrite or not lead.expected_revenue):
             update_vals["expected_revenue"] = float(ai_data["expected_revenue"])
         if ai_data.get("priority") is not None and (overwrite or not lead.priority or lead.priority == "0"):
