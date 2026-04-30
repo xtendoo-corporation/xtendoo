@@ -75,7 +75,7 @@ class CrmLeadAIWizard(models.TransientModel):
             raise UserError(_("Please analyze text first."))
 
         ai_data = json.loads(self.ai_json_result or "{}")
-        self.lead_id._ai_apply_data(ai_data, source_text=self.source_text)
+        self.lead_id._ai_apply_data(ai_data, source_text=self.source_text, overwrite=True)
         return self.lead_id.redirect_lead_opportunity_view()
 
     def _build_preview_description(self, ai_data: dict) -> str:

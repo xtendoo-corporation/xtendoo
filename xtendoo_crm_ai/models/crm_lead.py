@@ -59,6 +59,7 @@ Extraction rules:
 - certifications: list any quality/compliance certificates mentioned (REACH, ISO, CE, etc.).
 - inquiry_type: classify the intent — quote_request if they ask for a price/budget, etc.
 - tags: use 2-5 short lowercase tags reflecting industry and product interest.
+- If the text is an email and the body contains contact information (like a form submission) that differs from the email headers (From, etc.), prioritize the information in the body.
 - priority: 1 if urgency/deadline mentioned; 2 if large budget; 3 if both; 0 otherwise.
 - notes: capture contact preferences, schedules, specific conditions, or any verbatim detail not elsewhere.
 
@@ -142,46 +143,49 @@ class CrmLead(models.Model):
 
         return self._ai_parse_response(raw_text)
 
-    def _ai_apply_data(self, ai_data, source_text=None):
-        """Apply AI-extracted CRM data without overwriting user-entered values."""
+    def _ai_apply_data(self, ai_data, source_text=None, overwrite=False):
+        """Apply AI-extracted CRM data.
+        If overwrite is True, it will replace existing values.
+        Otherwise, it only fills empty fields.
+        """
         self.ensure_one()
         lead = self
         update_vals = {}
 
-        if (ai_data.get("lead_name") and not lead.name) or lead.name == _("New"):
+        if ai_data.get("lead_name") and (overwrite or not lead.name or lead.name == _("New")):
             update_vals["name"] = ai_data["lead_name"]
 
-        if ai_data.get("contact_name") and not lead.contact_name:
+        if ai_data.get("contact_name") and (overwrite or not lead.contact_name):
             update_vals["contact_name"] = ai_data["contact_name"]
-        if ai_data.get("job_position") and not lead.function:
+        if ai_data.get("job_position") and (overwrite or not lead.function):
             update_vals["function"] = ai_data["job_position"]
-        if ai_data.get("company_name") and not lead.partner_name:
+        if ai_data.get("company_name") and (overwrite or not lead.partner_name):
             update_vals["partner_name"] = ai_data["company_name"]
-        if ai_data.get("email") and not lead.email_from:
+        if ai_data.get("email") and (overwrite or not lead.email_from):
             update_vals["email_from"] = ai_data["email"]
-        if ai_data.get("phone") and not lead.phone:
+        if ai_data.get("phone") and (overwrite or not lead.phone):
             update_vals["phone"] = ai_data["phone"]
-        if ai_data.get("mobile") and not lead.mobile:
+        if ai_data.get("mobile") and (overwrite or not lead.mobile):
             update_vals["mobile"] = ai_data["mobile"]
-        if ai_data.get("website") and not lead.website:
+        if ai_data.get("website") and (overwrite or not lead.website):
             update_vals["website"] = ai_data["website"]
 
-        if ai_data.get("street") and not lead.street:
+        if ai_data.get("street") and (overwrite or not lead.street):
             update_vals["street"] = ai_data["street"]
-        if ai_data.get("city") and not lead.city:
+        if ai_data.get("city") and (overwrite or not lead.city):
             update_vals["city"] = ai_data["city"]
-        if ai_data.get("zip") and not lead.zip:
+        if ai_data.get("zip") and (overwrite or not lead.zip):
             update_vals["zip"] = ai_data["zip"]
-        if ai_data.get("country_name") and not lead.country_id:
+        if ai_data.get("country_name") and (overwrite or not lead.country_id):
             country = self.env["res.country"].search(
                 [("name", "ilike", ai_data["country_name"])], limit=1
             )
             if country:
                 update_vals["country_id"] = country.id
 
-        if ai_data.get("expected_revenue") and not lead.expected_revenue:
+        if ai_data.get("expected_revenue") and (overwrite or not lead.expected_revenue):
             update_vals["expected_revenue"] = float(ai_data["expected_revenue"])
-        if ai_data.get("priority") is not None:
+        if ai_data.get("priority") is not None and (overwrite or not lead.priority or lead.priority == "0"):
             update_vals["priority"] = str(ai_data["priority"])
 
         tag_names = list(ai_data.get("tags") or [])
@@ -248,7 +252,7 @@ class CrmLead(models.Model):
 
         try:
             ai_data = lead._ai_extract_data_from_text(source_text)
-            lead._ai_apply_data(ai_data, source_text=source_text)
+            lead._ai_apply_data(ai_data, source_text=source_text, overwrite=True)
         except UserError as exc:
             _logger.warning(
                 "AI auto-enrichment skipped for incoming lead %s: %s",
