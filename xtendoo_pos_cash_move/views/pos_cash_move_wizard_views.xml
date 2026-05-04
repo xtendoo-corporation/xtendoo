@@ -12,12 +12,7 @@
                     <field name="reason"/>
                 </group>
                 <footer>
-                    <button
-                        name="action_confirm"
-                        string="Confirmar"
-                        type="object"
-                        class="btn-primary"
-                    />
+                    <button name="action_confirm" string="Confirmar" type="object" class="btn-primary"/>
                     <button string="Cancelar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -30,8 +25,9 @@
         <field name="target">new</field>
         <field name="context">{}</field>
     </record>
+    <!-- Accion para usuarios normales (solo lectura) -->
     <record id="action_pos_cash_moves_history" model="ir.actions.act_window">
-        <field name="name">Historial Movimientos de Caja</field>
+        <field name="name">Movimientos de Caja</field>
         <field name="res_model">account.bank.statement.line</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_bank_statement_line_tree_pos"/>
@@ -43,14 +39,36 @@
             </p>
         </field>
     </record>
-    <!--<menuitem id="menu_pos_cash_move_wizard"
-              name="Nuevo Movimiento de Caja"
-              parent="point_of_sale.menu_point_of_sale"
-              action="action_pos_cash_move_wizard"
-              sequence="20"/>-->
+    <!-- Accion para administradores (editable) -->
+    <record id="action_pos_cash_moves_history_admin" model="ir.actions.act_window">
+        <field name="name">Movimientos de Caja</field>
+        <field name="res_model">account.bank.statement.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_bank_statement_line_tree_pos_admin"/>
+        <field name="domain">[('pos_session_id', '!=', False)]</field>
+        <field name="context">{'search_default_pos_session_id': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No hay movimientos de caja asociados a sesiones de PoS.
+            </p>
+        </field>
+    </record>
+    <!-- Accion servidor: admin recibe vista editable, resto recibe solo lectura -->
+    <record id="action_pos_cash_moves_smart" model="ir.actions.server">
+        <field name="name">Movimientos de Caja</field>
+        <field name="model_id" ref="account.model_account_bank_statement_line"/>
+        <field name="state">code</field>
+        <field name="code">
+if env.user.has_group('base.group_system'):
+    action = env.ref('xtendoo_pos_cash_move.action_pos_cash_moves_history_admin').sudo().read()[0]
+else:
+    action = env.ref('xtendoo_pos_cash_move.action_pos_cash_moves_history').sudo().read()[0]
+        </field>
+    </record>
+    <!-- Un solo menu: abre vista editable para admins, solo lectura para el resto -->
     <menuitem id="menu_pos_cash_moves_history"
               name="Movimientos de Caja"
               parent="point_of_sale.menu_point_of_sale"
-              action="action_pos_cash_moves_history"
+              action="action_pos_cash_moves_smart"
               sequence="21"/>
 </odoo>
