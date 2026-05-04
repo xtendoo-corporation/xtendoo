@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_bank_statement_line_tree_pos" model="ir.ui.view">
-        <field name="name">account.bank.statement.line.tree.pos</field>
+    <record id="view_bank_statement_line_tree_pos_admin" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.tree.pos.admin</field>
         <field name="model">account.bank.statement.line</field>
+        <field name="priority" eval="20"/>
         <field name="arch" type="xml">
             <list string="Movimientos de Caja" editable="bottom">
                 <field name="pos_session_id"/>
@@ -15,6 +16,42 @@
                 />
                 <field name="payment_ref" string="Referencia Contable"/>
             </list>
+        </field>
+    </record>
+    <record id="view_bank_statement_line_tree_pos" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.tree.pos</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="priority" eval="10"/>
+        <field name="arch" type="xml">
+            <list string="Movimientos de Caja">
+                <field name="pos_session_id"/>
+                <field name="date"/>
+                <field name="amount" string="Importe"/>
+                <field name="move_type_display" string="Tipo"
+                       widget="badge"
+                       decoration-success="move_type_display == 'in'"
+                       decoration-danger="move_type_display == 'out'"
+                />
+                <field name="payment_ref" string="Referencia Contable"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista de búsqueda con filtros para account.bank.statement.line -->
+    <record id="view_bank_statement_line_search_pos" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.search.pos</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Movimientos de Caja">
+                <field name="pos_session_id"/>
+                <field name="date"/>
+                <field name="amount"/>
+                <filter string="Entradas" name="filter_in" domain="[( 'move_type_display', '=', 'in' )]" help="Mostrar solo entradas"/>
+                <filter string="Salidas" name="filter_out" domain="[( 'move_type_display', '=', 'out' )]" help="Mostrar solo salidas"/>
+                <separator/>
+                <filter string="Agrupar por Fecha" name="group_by_date" context="{'group_by': 'date:month'}"/>
+                <filter string="Agrupar por Tipo" name="group_by_type" context="{'group_by': 'move_type_display'}"/>
+            </search>
         </field>
     </record>
 </odoo>

@@ -7,7 +7,7 @@ class AccountBankStatementLine(models.Model):
         selection=[('in', 'Entrada'), ('out', 'Salida')],
         string='Tipo',
         compute='_compute_move_type_display',
-        store=False,
+        store=True,
     )
 
     @api.depends('amount')
