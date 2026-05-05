@@ -60,7 +60,7 @@ Extraction rules:
 - products_or_services: list every product, service or product category explicitly mentioned.
 - certifications: list any quality/compliance certificates mentioned (REACH, ISO, CE, etc.).
 - inquiry_type: classify the intent — quote_request if they ask for a price/budget, etc.
-- tags: use 2-5 short lowercase tags reflecting industry and product interest.
+- tags: use 2-5 short lowercase tags in Spanish reflecting industry and product interest.
 - If the text is an email and the body contains contact information (contact_name, email, phone, etc.) that differs from the email headers (From, etc.), prioritize the information in the body.
 - priority: 1 if urgency/deadline mentioned; 2 if large budget; 3 if both; 0 otherwise.
 - notes: capture contact preferences, schedules, specific conditions, or any verbatim detail not elsewhere.
