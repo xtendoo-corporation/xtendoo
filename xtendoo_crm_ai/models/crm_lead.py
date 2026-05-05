@@ -11,6 +11,27 @@ from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
 
+TAG_MAX_LENGTH = 40
+TAG_ALLOWED_RE = re.compile(r"^[a-z0-9áéíóúñü\s-]+$")
+
+INQUIRY_TYPE_TAGS_ES = {
+    "quote_request": "solicitud de presupuesto",
+    "product_info": "informacion de producto",
+    "partnership": "colaboracion",
+    "complaint": "reclamacion",
+    "support": "soporte",
+    "other": "otro",
+}
+
+COMPANY_TYPE_TAGS_ES = {
+    "manufacturer": "fabricante",
+    "distributor": "distribuidor",
+    "retailer": "minorista",
+    "agency": "agencia",
+    "freelance": "autonomo",
+    "other": "otro",
+}
+
 CRM_EXTRACTION_PROMPT = """
 You are an expert CRM analyst. The following text comes from a web contact form,
 an email, a chat transcript, or any free-form inquiry from a potential customer or supplier.
@@ -71,6 +92,20 @@ TEXT TO ANALYZE:
 
 class CrmLead(models.Model):
     _inherit = "crm.lead"
+
+    @api.model
+    def _normalize_spanish_tag(self, tag_name):
+        """Normalize and validate a tag candidate before creating crm.tag records."""
+        if not isinstance(tag_name, str):
+            return None
+        normalized = tag_name.strip().lower().replace("_", " ")
+        normalized = re.sub(r"\s+", " ", normalized)
+        if not normalized:
+            return None
+        normalized = normalized[:TAG_MAX_LENGTH].strip()
+        if not normalized or not TAG_ALLOWED_RE.match(normalized):
+            return None
+        return normalized
 
     ai_enriched = fields.Boolean(
         string="Enriched by AI",
@@ -227,16 +262,29 @@ class CrmLead(models.Model):
         if ai_data.get("priority") is not None and (overwrite or not lead.priority or lead.priority == "0"):
             update_vals["priority"] = str(ai_data["priority"])
 
-        tag_names = list(ai_data.get("tags") or [])
-        if ai_data.get("inquiry_type"):
-            tag_names.append(ai_data["inquiry_type"].replace("_", " "))
-        if ai_data.get("company_type"):
-            tag_names.append(ai_data["company_type"])
-        for cert in ai_data.get("certifications") or []:
-            tag_names.append(cert)
-        if tag_names:
+        raw_tag_names = list(ai_data.get("tags") or [])
+
+        inquiry_type = (ai_data.get("inquiry_type") or "").strip().lower()
+        if inquiry_type:
+            raw_tag_names.append(INQUIRY_TYPE_TAGS_ES.get(inquiry_type, inquiry_type))
+
+        company_type = (ai_data.get("company_type") or "").strip().lower()
+        if company_type:
+            raw_tag_names.append(COMPANY_TYPE_TAGS_ES.get(company_type, company_type))
+
+        raw_tag_names.extend(ai_data.get("certifications") or [])
+
+        normalized_tag_names = []
+        seen_tags = set()
+        for raw_tag_name in raw_tag_names:
+            normalized_tag = self._normalize_spanish_tag(raw_tag_name)
+            if normalized_tag and normalized_tag not in seen_tags:
+                seen_tags.add(normalized_tag)
+                normalized_tag_names.append(normalized_tag)
+
+        if normalized_tag_names:
             tags = self.env["crm.tag"]
-            for tag_name in tag_names:
+            for tag_name in normalized_tag_names:
                 tag = tags.search([("name", "ilike", tag_name)], limit=1)
                 if not tag:
                     tag = tags.create({"name": tag_name})
