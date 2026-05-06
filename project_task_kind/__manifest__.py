@@ -4,7 +4,7 @@
     "name": "Project task kind",
     "summary": """
         Project task kind""",
-    "version": "19.0",
+    "version": "19.0.1.0.0",
     "depends": ["project"],
     "maintainers": ["dariocruzmauro"],
     "author": "Xtendoo",

@@ -6,6 +6,7 @@
     'category': 'Point of Sale',
     'sequence': 6,
     'author': 'ErpMstar Solutions',
+    'license': 'LGPL-3',
     'summary': 'Allows you to open cash drawer from product screen.',
     'description': "Allows you to open cash drawer from product screen.",
     'depends': ['point_of_sale'],
