@@ -151,13 +151,13 @@ class AccountMove(models.Model):
             },
         }
 
-    @api.model
-    def create(self, vals):
-        """Override create to trigger auto scan after creation if attachment is present."""
-        move = super(AccountMove, self).create(vals)
-        if move.state == 'draft':
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Trigger auto scan after creation while supporting batch creates."""
+        moves = super().create(vals_list)
+        for move in moves.filtered(lambda record: record.state == "draft"):
             move._auto_scan_if_configured()
-        return move
+        return moves
 
     def write(self, vals):
         """Reactiva gemini_has_corrections cuando el usuario modifica el asiento
