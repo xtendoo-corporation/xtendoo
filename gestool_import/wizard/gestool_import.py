@@ -487,6 +487,8 @@ class GestoolImport(models.TransientModel):
                 "available_in_pos": True,
                 "pos_categ_ids": pos_categ_ids,
                 "company_id": company.id,
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
             })
         else:
             print("Producto existe-------------------------------")
@@ -501,6 +503,8 @@ class GestoolImport(models.TransientModel):
                 "available_in_pos": True,
                 "pos_categ_ids": pos_categ_ids,
                 "company_id": company.id,
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
             })
             # "company_id": company_id,
             # "taxes_id": taxes_id,
