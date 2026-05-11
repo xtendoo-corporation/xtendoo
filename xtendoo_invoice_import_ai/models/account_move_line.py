@@ -38,14 +38,14 @@ class AccountMoveLine(models.Model):
         readonly=True,
     )
 
-    @api.model
-    def create(self, vals):
-        """Override create to trigger auto scan after creation if attachment is present."""
-        line = super(AccountMoveLine, self).create(vals)
-        if line.move_id and line.move_id.state == 'draft':
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to trigger auto scan after creation while supporting batch creates."""
+        lines = super(AccountMoveLine, self).create(vals_list)
+        for line in lines.filtered(lambda record: record.move_id and record.move_id.state == 'draft'):
             _logger.info(f"Line {line.id} created in draft move, checking for auto scan...")
             line._auto_scan_if_configured()
-        return line
+        return lines
 
     def _auto_scan_if_configured(self):
         """Automatically scan entry if auto scan is enabled and conditions are met."""
