@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_barcode_scanner" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.xtendoo.sale.barcode.scanner</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/header" position="after">
+                <field
+                    name="_barcode_scanned"
+                    widget="xtendoo_sale_barcode_scanner"
+                    class="d-none"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
