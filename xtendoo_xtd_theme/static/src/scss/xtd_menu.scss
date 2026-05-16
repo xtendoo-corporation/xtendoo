@@ -1,54 +1,33 @@
-// xtd_menu.scss
-// Diseño completo del sistema de menús Xtd para web_responsive (OCA).
-// Cubre: navbar superior, panel de apps (sidebar), menú de secciones (horizontal).
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 1. NAVBAR SUPERIOR
-// ═══════════════════════════════════════════════════════════════════════════════
-
 .o_main_navbar {
-    // Aumentar ligeramente la altura para mayor respiro visual
-    --o-navbar-height: 52px;
     background: #fff !important;
     border-bottom: 1px solid var(--xtd-line) !important;
     box-shadow: none !important;
-    padding: 0 0.75rem !important;
-    gap: 0.35rem !important;
 }
 
-// ─── Botón de apertura del panel de apps ─────────────────────────────────────
 .o_grid_apps_menu__button {
-    width: 38px !important;
-    height: 38px !important;
-    min-height: 38px !important;
     border-radius: 9px !important;
     border: 1px solid var(--xtd-line) !important;
     background: var(--xtd-paper) !important;
     color: var(--xtd-ink) !important;
-    margin-right: 0.35rem !important;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
 
     &:hover,
     &:focus {
         background: rgba(255, 79, 0, 0.08) !important;
-        border-color: rgba(255, 79, 0, 0.4) !important;
+        border-color: rgba(255, 79, 0, 0.35) !important;
         color: var(--xtd-orange) !important;
     }
 }
 
-// ─── Chip de la app activa (nombre en la barra superior) ─────────────────────
 .o_main_navbar .o_menu_brand {
     background: var(--xtd-paper) !important;
     border: 1px solid var(--xtd-line) !important;
     border-radius: 8px !important;
     padding: 0.18rem 0.65rem 0.18rem 0.45rem !important;
-    margin: 0 0.6rem 0 0 !important;
     font-size: 0.875rem !important;
     font-weight: 600 !important;
     color: var(--xtd-ink) !important;
-    height: auto !important;
     line-height: 1.6 !important;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
 
     &:hover {
         background: rgba(255, 79, 0, 0.07) !important;
@@ -57,7 +36,6 @@
     }
 }
 
-// Logo XTD antes del nombre de la app (ya definido en xtd_theme.scss – se refuerza)
 .o_main_navbar .o_menu_brand::before {
     content: "" !important;
     display: inline-block !important;
@@ -69,33 +47,22 @@
     opacity: 0.85 !important;
 }
 
-// ─── Items de la sección (menú horizontal de módulo) ─────────────────────────
 .o_menu_sections .o_nav_entry,
 .o_menu_sections .dropdown > button {
     font-size: 0.855rem !important;
     font-weight: 500 !important;
     color: var(--xtd-muted) !important;
-    padding: 0 0.6rem !important;
-    border-radius: 0 !important;
-    // Indicador activo: línea inferior
     border-bottom: 2px solid transparent !important;
-    border-top: 2px solid transparent !important;
     transition: color 0.15s ease, border-color 0.15s ease !important;
-    height: 100% !important;
     background: transparent !important;
 
-    &:hover {
-        color: var(--xtd-ink) !important;
-        background: transparent !important;
-        border-bottom-color: var(--xtd-orange) !important;
-    }
-
-    // Dropdown abierto
+    &:hover,
+    &:focus,
     &.show,
     &[aria-expanded="true"] {
-        color: var(--xtd-orange) !important;
-        background: transparent !important;
+        color: var(--xtd-ink) !important;
         border-bottom-color: var(--xtd-orange) !important;
+        background: transparent !important;
     }
 
     span {
@@ -103,21 +70,14 @@
     }
 }
 
-// ─── Dropdown de sección (submenús) ──────────────────────────────────────────
 .o_menu_sections .dropdown-menu {
     border: 1px solid var(--xtd-line) !important;
     border-radius: var(--xtd-radius) !important;
     box-shadow: 0 8px 32px rgba(21, 21, 21, 0.1) !important;
     padding: 0.3rem 0 !important;
-    min-width: 210px !important;
-    margin-top: 2px !important;
 
     .dropdown-item {
-        font-size: 0.875rem !important;
-        padding: 0.42rem 1rem !important;
         color: var(--xtd-ink) !important;
-        border-radius: 0 !important;
-        transition: background 0.1s ease !important;
 
         &:hover,
         &:focus {
@@ -125,31 +85,8 @@
             color: var(--xtd-burgundy) !important;
         }
     }
-
-    // Cabeceras de grupo (secciones dentro del dropdown)
-    .dropdown-menu_group,
-    .dropdown-header {
-        font-size: 0.7rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.07em !important;
-        text-transform: uppercase !important;
-        color: var(--xtd-muted) !important;
-        padding: 0.55rem 1rem 0.2rem !important;
-    }
 }
 
-// ─── Dropdown "Más" ───────────────────────────────────────────────────────────
-.o_menu_sections_more > .dropdown > button {
-    color: var(--xtd-muted) !important;
-    font-size: 0.8rem !important;
-
-    &:hover {
-        color: var(--xtd-orange) !important;
-        border-bottom-color: var(--xtd-orange) !important;
-    }
-}
-
-// ─── Systray (iconos derecha del navbar) ─────────────────────────────────────
 .o_menu_systray {
     gap: 0.1rem !important;
 
@@ -163,373 +100,89 @@
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 2. PANEL DE APPS (menú lateral / popup)
-//    web_responsive muestra el panel de apps en un overlay fullscreen.
-//    Lo transformamos en un sidebar lateral de anchura fija.
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// Panel principal: de fullscreen a sidebar lateral
 .app-menu-container {
-    // Posición y dimensiones: sidebar estrecho, no pantalla completa
-    width: 280px !important;
-    height: calc(var(--vh100, 100dvh) - 52px) !important;
-    max-height: calc(var(--vh100, 100dvh) - 52px) !important;
-    top: 52px !important;
+    background: linear-gradient(180deg, #fff 0%, var(--xtd-paper) 100%) !important;
 
-    // Aspecto
-    background: #fff !important;
-    border-right: 1px solid var(--xtd-line) !important;
-    box-shadow: 8px 0 40px rgba(21, 21, 21, 0.1) !important;
-    border-radius: 0 !important;
-
-    // Cabecera + lista en columna
-    padding: 0 !important;
-    gap: 0 !important;
-    flex-direction: column !important;
-    flex-wrap: nowrap !important;
-    align-content: flex-start !important;
-    justify-content: flex-start !important;
-
-    // Scroll interno
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    > *:first-child {
+        background: transparent !important;
+    }
 }
 
-// Backdrop oscuro detrás del panel (usando la clase que web_responsive pone en body)
-.o_apps_menu_opened::after {
-    content: "" !important;
-    position: fixed !important;
-    inset: 52px 0 0 280px !important;
-    background: rgba(21, 21, 21, 0.18) !important;
-    backdrop-filter: blur(1px) !important;
-    z-index: 1023 !important;
-    pointer-events: none !important;
-}
-
-// ─── Cabecera del panel ───────────────────────────────────────────────────────
-// La barra de búsqueda es el primer hijo directo del container
-.app-menu-container > *:first-child {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 1 !important;
-    background: #fff !important;
-    border-bottom: 1px solid var(--xtd-line) !important;
-    padding: 0.6rem 0.75rem !important;
-    width: 100% !important;
-    flex-shrink: 0 !important;
-}
-
-// ─── Lista de apps: grid → flex columna ──────────────────────────────────────
 .o_grid_apps_menu .o-app-menu-list {
-    display: flex !important;
-    flex-direction: column !important;
-    grid-template-columns: unset !important;
-    width: 100% !important;
-    gap: 1px !important;
-    padding: 0.5rem 0.5rem !important;
+    gap: 0.5rem !important;
 }
 
-// ─── Ítem de app: tarjeta → fila horizontal ──────────────────────────────────
 .o-app-menu-item {
-    // Estructura horizontal
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 0.65rem !important;
-    justify-content: flex-start !important;
-    width: 100% !important;
-    height: auto !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
 
-    // Aspecto
-    padding: 0.48rem 0.65rem !important;
-    border-radius: 8px !important;
-    background: transparent !important;
-
-    // Sin animaciones de tarjeta
-    transform: none !important;
-    box-shadow: none !important;
-    transition: background 0.12s ease !important;
-
-    // Texto del nombre (izq → der)
     &__name {
-        text-align: left !important;
-        font-size: 0.875rem !important;
-        font-weight: 500 !important;
         color: var(--xtd-ink) !important;
         text-shadow: none !important;
-        -webkit-line-clamp: 2 !important;
-        line-height: 1.35 !important;
-        white-space: normal !important;
+        font-weight: 500 !important;
     }
 
-    // Icono compacto cuadrado
     &__icon {
-        width: 34px !important;
-        max-width: 34px !important;
-        min-width: 34px !important;
-        height: 34px !important;
-        padding: 5px !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
         background: #fff !important;
         box-shadow:
             0 0 0 1px rgba(21, 21, 21, 0.08),
-            0 1px 3px rgba(21, 21, 21, 0.1) !important;
-        flex-shrink: 0 !important;
-        aspect-ratio: 1 !important;
+            0 8px 20px rgba(21, 21, 21, 0.08) !important;
     }
 
-    // Ocultar check icon flotante (activo indicado por fondo)
     &__active {
-        display: none !important;
+        color: var(--xtd-orange) !important;
+        text-shadow: none !important;
     }
 
-    // Estado hover
     &:hover,
     &:focus {
-        background: var(--xtd-paper) !important;
-        transform: none !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
+        background: rgba(255, 255, 255, 0.75) !important;
+        box-shadow: 0 14px 24px rgba(21, 21, 21, 0.08) !important;
     }
 
-    // App activa (módulo actualmente en uso)
     &.active {
-        background: rgba(255, 79, 0, 0.07) !important;
+        background: rgba(255, 79, 0, 0.08) !important;
 
         .o-app-menu-item__name {
-            color: var(--xtd-orange) !important;
+            color: var(--xtd-burgundy) !important;
             font-weight: 600 !important;
         }
 
         .o-app-menu-item__icon {
             box-shadow:
-                0 0 0 1.5px var(--xtd-orange),
-                0 2px 6px rgba(255, 79, 0, 0.18) !important;
+                0 0 0 1.5px rgba(255, 79, 0, 0.45),
+                0 12px 24px rgba(255, 79, 0, 0.14) !important;
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 3. SIDEBAR PERSISTENTE DE SECCIONES (XtdSectionSidebar — solo escritorio)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// Offset del contenido principal cuando el sidebar está visible.
-// La clase xtd-has-sidebar la añade/elimina el componente JS.
-body.xtd-has-sidebar {
-    .o_web_client > .o_action_manager {
-        padding-left: 240px !important;
-        transition: padding-left 0.2s ease !important;
+.o_grid_apps_menu .search-container {
+    .search-input {
+        border: 1px solid rgba(21, 21, 21, 0.08) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(21, 21, 21, 0.08) !important;
     }
 
-    // El menú horizontal de secciones es redundante con el sidebar → ocultarlo
-    .o_menu_sections {
-        display: none !important;
-    }
-}
-
-// ─── Contenedor del sidebar ───────────────────────────────────────────────────
-.xtd-section-sidebar {
-    position: fixed !important;
-    left: 0 !important;
-    top: 52px !important;
-    bottom: 0 !important;
-    width: 240px !important;
-    background: #fff !important;
-    border-right: 1px solid var(--xtd-line) !important;
-    z-index: 100 !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    // Sombra mínima para que el sidebar se perciba separado del contenido
-    box-shadow: 1px 0 6px rgba(21, 21, 21, 0.04) !important;
-}
-
-// ─── Cabecera: icono + nombre de la app activa ────────────────────────────────
-.xtd-sidebar-header {
-    padding: 0.9rem 1rem 0.75rem !important;
-    border-bottom: 1px solid var(--xtd-line) !important;
-    flex-shrink: 0 !important;
-}
-
-.xtd-sidebar-app-info {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.55rem !important;
-}
-
-.xtd-sidebar-app-icon {
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 7px !important;
-    padding: 3px !important;
-    background: #fff !important;
-    box-shadow:
-        0 0 0 1px rgba(21, 21, 21, 0.1),
-        0 1px 3px rgba(21, 21, 21, 0.1) !important;
-    flex-shrink: 0 !important;
-    object-fit: contain !important;
-}
-
-.xtd-sidebar-app-name {
-    font-size: 0.875rem !important;
-    font-weight: 700 !important;
-    color: var(--xtd-ink) !important;
-    line-height: 1.3 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-// ─── Área de navegación ───────────────────────────────────────────────────────
-.xtd-sidebar-nav {
-    padding: 0.4rem 0 1rem !important;
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
-}
-
-// ─── Etiqueta de grupo (DOCUMENTOS, ADMINISTRAR…) ─────────────────────────────
-.xtd-sidebar-group {
-    font-size: 0.67rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.09em !important;
-    text-transform: uppercase !important;
-    color: var(--xtd-muted) !important;
-    padding: 0.85rem 1rem 0.25rem !important;
-    user-select: none !important;
-    pointer-events: none !important;
-
-    // Primer grupo: menos espacio superior
-    &:first-child {
-        padding-top: 0.4rem !important;
+    .search-list {
+        scrollbar-color: rgba(21, 21, 21, 0.2) transparent;
     }
 
-    // Sub-grupo (nivel 2): ligeramente indentado
-    &--sub {
-        padding-left: 1.5rem !important;
-        font-size: 0.62rem !important;
-    }
-}
+    .search-item {
+        border: 1px solid rgba(21, 21, 21, 0.06) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(21, 21, 21, 0.05) !important;
 
-// ─── Ítem hoja (navegable) ───────────────────────────────────────────────────
-.xtd-sidebar-item {
-    display: flex !important;
-    align-items: center !important;
-    padding: 0.42rem 1rem !important;
-    font-size: 0.875rem !important;
-    font-weight: 400 !important;
-    color: var(--xtd-ink) !important;
-    text-decoration: none !important;
-    border-left: 2px solid transparent !important;
-    transition: background 0.1s ease, color 0.1s ease !important;
-    line-height: 1.4 !important;
-    cursor: pointer !important;
-
-    &:hover {
-        background: rgba(21, 21, 21, 0.04) !important;
-        color: var(--xtd-ink) !important;
-        text-decoration: none !important;
-    }
-
-    // Ítems de segundo nivel
-    &--nested {
-        padding-left: 1.5rem !important;
-        font-size: 0.845rem !important;
-        color: rgba(21, 21, 21, 0.75) !important;
-    }
-
-    // Ítem activo (seleccionado actualmente)
-    &--active {
-        background: rgba(255, 79, 0, 0.07) !important;
-        color: var(--xtd-burgundy) !important;
-        font-weight: 600 !important;
-        border-left-color: var(--xtd-orange) !important;
-
+        &.highlight,
         &:hover {
-            background: rgba(255, 79, 0, 0.1) !important;
-            color: var(--xtd-burgundy) !important;
+            background: rgba(255, 79, 0, 0.07) !important;
+            box-shadow: 0 12px 32px rgba(255, 79, 0, 0.12) !important;
         }
     }
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 4. MENÚ LATERAL MÓVIL (burger / sidebar Odoo core)
-//    En escritorio con web_responsive el sidebar .o_app_menu_sidebar aparece
-//    en móvil. Le aplicamos el mismo estilo XTD.
-// ═══════════════════════════════════════════════════════════════════════════════
 
 .o_app_menu_sidebar {
     background: #fff !important;
     border-left: 1px solid var(--xtd-line) !important;
     box-shadow: -6px 0 32px rgba(21, 21, 21, 0.1) !important;
-
-    // Topbar del sidebar móvil
-    .o_sidebar_topbar {
-        background: #fff !important;
-        color: var(--xtd-ink) !important;
-        border-bottom: 1px solid var(--xtd-line) !important;
-        box-shadow: none !important;
-
-        .btn-primary {
-            background: var(--xtd-ink) !important;
-            border-color: var(--xtd-ink) !important;
-            border-radius: 8px !important;
-            font-size: 0.85rem !important;
-
-            &:hover {
-                background: var(--xtd-burgundy) !important;
-                border-color: var(--xtd-burgundy) !important;
-            }
-        }
-
-        .o_sidebar_close {
-            color: var(--xtd-muted) !important;
-
-            &:hover {
-                color: var(--xtd-ink) !important;
-            }
-        }
-    }
-
-    // Contenido: secciones de la app activa
-    .o_burger_menu_content {
-        background: #fff !important;
-
-        li {
-            color: var(--xtd-ink) !important;
-            font-size: 0.9rem !important;
-            transition: background 0.12s ease !important;
-
-            &:hover {
-                background: var(--xtd-paper) !important;
-                color: var(--xtd-burgundy) !important;
-            }
-
-            // Nombre de la app activa
-            > div.fw-bolder {
-                color: var(--xtd-ink) !important;
-            }
-        }
-
-        // Cabeceras de sección (grupos)
-        .fw-bolder.text-900 {
-            font-size: 0.7rem !important;
-            letter-spacing: 0.07em !important;
-            text-transform: uppercase !important;
-            color: var(--xtd-muted) !important;
-            font-weight: 700 !important;
-        }
-    }
-
-    // App items en la lista "All Apps" del sidebar móvil
-    .o_app {
-        border-radius: 8px !important;
-        margin: 0 0.5rem !important;
-        padding: 0.5rem !important;
-        color: var(--xtd-ink) !important;
-        transition: background 0.12s ease !important;
-
-        &:hover {
-            background: var(--xtd-paper) !important;
-        }
-    }
 }

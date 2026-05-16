@@ -1,0 +1,76 @@
+:root {
+    --xtd-orange: #ff6d2d;
+    --xtd-burgundy: #ff9b7b;
+    --xtd-ink: #f7f5f2;
+    --xtd-paper: #171717;
+    --xtd-line: #303030;
+    --xtd-muted: #b8b1ba;
+    --o-brand-primary: var(--xtd-orange);
+    --o-brand-odoo: #2a1117;
+    --o-brand-secondary: #f7f5f2;
+}
+
+body {
+    background: #101010;
+    color: var(--xtd-ink);
+}
+
+.o_main_navbar,
+.o_control_panel,
+.o_search_panel,
+.o_form_view .o_form_sheet_bg,
+.modal-content,
+.card,
+.o_database_list {
+    background: #171717 !important;
+    color: var(--xtd-ink) !important;
+    border-color: var(--xtd-line) !important;
+}
+
+.o_form_view .o_form_sheet,
+.o_kanban_renderer .o_kanban_record,
+.o_list_renderer,
+.modal-content,
+.card {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35) !important;
+}
+
+.o_control_panel .o_breadcrumb,
+.o_control_panel .breadcrumb,
+.o_control_panel .breadcrumb-item,
+.o_control_panel .o_breadcrumb a,
+.o_control_panel .o_back_button a,
+.o_control_panel .o_last_breadcrumb_item,
+.o_control_panel .o_last_breadcrumb_item span,
+.btn-secondary,
+.btn-light,
+.oe_login_form .form-control,
+.o_database_list .form-control {
+    color: var(--xtd-ink) !important;
+}
+
+.btn-secondary,
+.btn-light,
+.oe_login_form .form-control,
+.o_database_list .form-control {
+    background: #202020 !important;
+    border-color: var(--xtd-line) !important;
+}
+
+.o_loading_indicator {
+    background-color: var(--xtd-orange) !important;
+    border-color: var(--xtd-orange) !important;
+}
+
+.o-mail-ActivityListPopover > .btn {
+    background: #171717 !important;
+    border-top-color: var(--xtd-line) !important;
+    color: var(--xtd-ink) !important;
+}
+
+.o_field_invalid:not(:focus-within).o_input,
+.o_field_invalid:not(:focus-within) > .o_input,
+.o_data_row.o_selected_row > .o_data_cell.o_invalid_cell:not(.o_readonly_modifier):not(:focus-within) {
+    background: rgba(255, 109, 45, 0.12) !important;
+}
+

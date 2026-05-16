@@ -16,7 +16,16 @@
             </div>
         </xpath>
         <xpath expr="//a[contains(@href, 'odoo.com') and contains(@href, 'utm_medium=auth')]" position="replace">
-            <span class="text-muted">Xtd</span>
+            <span class="text-muted">Powered by Xtd</span>
+        </xpath>
+        <xpath expr="//a[@href='/web/database/manager']" position="replace">
+            <a class="border-end pe-2 me-1" href="/web/database/manager">Manage Xtd Databases</a>
+        </xpath>
+    </template>
+
+    <template id="webclient_bootstrap_xtd_theme_color" inherit_id="web.webclient_bootstrap" name="Xtd Webclient Bootstrap Theme Color">
+        <xpath expr="//meta[@name='theme-color']" position="replace">
+            <meta name="theme-color" t-att-content="'#151515' if color_scheme == 'dark' else '#ff4f00'"/>
         </xpath>
     </template>
 

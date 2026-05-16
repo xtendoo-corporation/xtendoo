@@ -15,6 +15,7 @@
         "portal_debranding",
     ],
     "data": [
+        "views/res_users_views.xml",
         "views/webclient_templates.xml",
     ],
     "assets": {
@@ -22,15 +23,21 @@
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_menu.scss",
             "xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js",
-            "xtendoo_xtd_theme/static/src/js/xtd_section_sidebar.esm.js",
+            "xtendoo_xtd_theme/static/src/js/xtd_color_scheme.esm.js",
             "xtendoo_xtd_theme/static/src/xml/error_dialogs.xml",
-            "xtendoo_xtd_theme/static/src/xml/xtd_section_sidebar.xml",
         ],
         "web.assets_frontend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
         ],
+        "web.assets_web_dark": [
+            "xtendoo_xtd_theme/static/src/scss/xtd_theme.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_menu.dark.scss",
+        ],
         "point_of_sale._assets_pos": [
             "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
+        ],
+        "web.assets_tests": [
+            "xtendoo_xtd_theme/static/tests/tours/xtd_theme_backend_tour.js",
         ],
     },
     "installable": True,
