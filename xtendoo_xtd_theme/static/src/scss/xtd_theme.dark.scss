@@ -15,6 +15,20 @@ body {
     color: var(--xtd-ink);
 }
 
+.o_web_client :is(i,span,a,button,div).fa,
+.o_web_client :is(i,span,a,button,div).oi,
+.o_web_client :is(i,span,a,button,div)[class^="fa-"],
+.o_web_client :is(i,span,a,button,div)[class*=" fa-"],
+.o_web_client :is(i,span,a,button,div)[class^="oi-"],
+.o_web_client :is(i,span,a,button,div)[class*=" oi-"] {
+    color: var(--xtd-ink) !important;
+}
+
+.o_web_client :is(.btn-primary, .btn-danger, .btn-success, .btn-warning, .btn-info, .o_form_button_save, .o_list_button_add, .o_control_panel .o-kanban-button-new):is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]),
+.o_web_client :is(.btn-primary, .btn-danger, .btn-success, .btn-warning, .btn-info, .o_form_button_save, .o_list_button_add, .o_control_panel .o-kanban-button-new) :is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
+    color: inherit !important;
+}
+
 .o_main_navbar,
 .o_control_panel,
 .o_search_panel,

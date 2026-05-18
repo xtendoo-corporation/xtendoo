@@ -26,6 +26,91 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
                 }
             },
         },
+        {
+            trigger: '.app-menu-container a[data-menu-xmlid="base.menu_administration"]',
+            run: "click",
+        },
+        {
+            trigger: ".o_base_settings_view .settings_tab .tab.selected",
+        },
+        {
+            trigger: "body",
+            run() {
+                const activeTab = document.querySelector(
+                    ".o_base_settings_view .settings_tab .tab.selected, " +
+                    ".o_base_settings_view .settings_tab .tab.current, " +
+                    ".o_base_settings_view .settings_tab .tab.text-bg-primary"
+                );
+                if (!activeTab) {
+                    throw new Error("No se ha encontrado la pestaña activa de Ajustes.");
+                }
+                const activeTabStyle = window.getComputedStyle(activeTab);
+                if (activeTabStyle.backgroundColor === "rgb(74, 8, 35)") {
+                    throw new Error("La pestaña activa de Ajustes no debe usar fondo morado.");
+                }
+                if (activeTabStyle.color !== "rgb(74, 8, 35)") {
+                    throw new Error("La pestaña activa de Ajustes debe usar texto borgoña Xtd.");
+                }
+                if (!activeTabStyle.boxShadow.includes("255, 79, 0")) {
+                    throw new Error("La pestaña activa de Ajustes debe resaltar con el acento naranja Xtd.");
+                }
+
+                const menuBrand = document.querySelector(".o_main_navbar .o_menu_brand");
+                if (!menuBrand) {
+                    throw new Error("No se ha encontrado el título de la app en el navbar.");
+                }
+                const menuBrandStyle = window.getComputedStyle(menuBrand);
+                if (menuBrandStyle.textDecorationLine !== "none") {
+                    throw new Error("El título de la app no debe mostrarse subrayado en el navbar.");
+                }
+                if (parseFloat(menuBrandStyle.fontSize) > 16.5) {
+                    throw new Error("El título de la app del navbar no debe quedar sobredimensionado.");
+                }
+
+                const searchIcon = document.querySelector(".o_searchview_icon");
+                if (!searchIcon) {
+                    throw new Error("No se ha encontrado un icono visible para validar el color global.");
+                }
+                const searchIconStyle = window.getComputedStyle(searchIcon);
+                if (searchIconStyle.color !== "rgb(21, 21, 21)") {
+                    throw new Error("Los iconos del backend deben mostrarse en negro en el tema claro.");
+                }
+            },
+        },
+        {
+            trigger:
+                ".o_main_navbar .o_menu_sections .dropdown-toggle:not(.o-dropdown-toggle-custo), " +
+                ".o_main_navbar .o_menu_sections .o_nav_entry",
+            run: "click",
+        },
+        {
+            trigger: "body",
+            run() {
+
+                const activeNavbarEntry = document.querySelector(
+                    ".o_main_navbar .o_menu_sections .dropdown.show > .dropdown-toggle:not(.o-dropdown-toggle-custo), " +
+                    ".o_main_navbar .o_menu_sections .dropdown-toggle[aria-expanded='true']:not(.o-dropdown-toggle-custo), " +
+                    ".o_main_navbar .o_menu_sections .o_nav_entry.active, " +
+                    ".o_main_navbar .o_menu_sections .o_nav_entry[aria-expanded='true']"
+                );
+                const navbarEntry =
+                    activeNavbarEntry ||
+                    document.querySelector(
+                        ".o_main_navbar .o_menu_sections .dropdown-toggle:not(.o-dropdown-toggle-custo), " +
+                        ".o_main_navbar .o_menu_sections .o_nav_entry"
+                    );
+                if (!navbarEntry) {
+                    throw new Error("No se ha encontrado ninguna entrada visible del menú superior.");
+                }
+                const navbarEntryStyle = window.getComputedStyle(navbarEntry);
+                if (activeNavbarEntry && navbarEntryStyle.backgroundColor === "rgb(74, 8, 35)") {
+                    throw new Error("El menú superior no debe mostrar el estado activo con bloque morado.");
+                }
+                if (parseFloat(navbarEntryStyle.height) > 40.5) {
+                    throw new Error("La opción activa del menú superior no debe quedar sobredimensionada en altura.");
+                }
+            },
+        },
     ],
 });
 

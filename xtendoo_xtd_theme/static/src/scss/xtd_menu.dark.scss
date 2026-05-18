@@ -1,28 +1,73 @@
 .o_main_navbar {
     background: #171717 !important;
     border-bottom-color: var(--xtd-line) !important;
-}
+    --NavBar-menuToggle-color: var(--xtd-ink);
+    --NavBar-brand-color: var(--xtd-ink);
+    --NavBar-entry-color--active: var(--xtd-burgundy);
+    --NavBar-entry-borderColor-active: rgba(255, 155, 123, 0.28);
+    --NavBar-entry-backgroundColor--active: rgba(255, 155, 123, 0.12);
+    --NavBar-entry-backgroundColor--hover: #262a36;
+    --NavBar-entry-backgroundColor--focus: #262a36;
 
-.o_grid_apps_menu__button,
-.o_main_navbar .o_menu_brand {
-    background: #202020 !important;
-    border-color: var(--xtd-line) !important;
-    color: var(--xtd-ink) !important;
-}
+    .o_menu_brand,
+    .o_nav_entry,
+    .o-dropdown-item,
+    .dropdown-toggle:not(.o-dropdown-toggle-custo) {
+        text-decoration: none !important;
 
-.o_menu_sections .o_nav_entry,
-.o_menu_sections .dropdown > button {
-    color: var(--xtd-muted) !important;
+        &:hover,
+        &:focus,
+        &:active {
+            text-decoration: none !important;
+        }
+    }
 
-    &:hover,
-    &:focus,
-    &.show,
-    &[aria-expanded="true"] {
-        color: var(--xtd-ink) !important;
+    .o_menu_brand {
+        align-self: center;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        line-height: 1.2 !important;
+        padding-bottom: 1px !important;
+
+        &, * {
+            text-decoration: none !important;
+        }
+    }
+
+    .o_menu_sections {
+        align-items: center;
+
+        .dropdown {
+            display: flex;
+            align-items: center;
+        }
+
+        .o_nav_entry,
+        .dropdown-toggle:not(.o-dropdown-toggle-custo) {
+            align-self: center;
+            min-height: 38px !important;
+            height: 38px !important;
+            font-weight: 500 !important;
+            line-height: 1.2 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            padding-left: 0.95rem !important;
+            padding-right: 0.95rem !important;
+
+            span {
+                line-height: 1.2 !important;
+            }
+        }
     }
 }
 
-.o_menu_sections .dropdown-menu,
+.o_grid_apps_menu__button {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: var(--xtd-ink) !important;
+}
+
 .o_app_menu_sidebar {
     background: #171717 !important;
     border-color: var(--xtd-line) !important;
