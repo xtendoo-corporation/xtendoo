@@ -185,7 +185,11 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = CASH_DRAWER_TIMEO
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
         try {
-            return await fetch(url, { ...options, signal: controller.signal });
+            return await fetch(url, {
+                cache: "no-store",
+                ...options,
+                signal: controller.signal,
+            });
         } catch (err) {
             lastError = err;
             if (err.name === "AbortError") {

@@ -33,6 +33,33 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
   .filter(Boolean);
 const DEFAULT_PRINTER = process.env.DEFAULT_PRINTER || '';
 
+function appendVaryHeader(res, value) {
+  const current = res.getHeader('Vary');
+  const values = new Set(
+    String(current || '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  );
+  values.add(value);
+  res.setHeader('Vary', Array.from(values).join(', '));
+}
+
+function applyPrivateNetworkHeaders(req, res) {
+  appendVaryHeader(res, 'Origin');
+  appendVaryHeader(res, 'Access-Control-Request-Method');
+  appendVaryHeader(res, 'Access-Control-Request-Headers');
+
+  if (req.headers['access-control-request-private-network']) {
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    appendVaryHeader(res, 'Access-Control-Request-Private-Network');
+  }
+
+  // Reducimos el número de preflights repetidos para minimizar falsos
+  // negativos temporales en navegadores como Chrome.
+  res.setHeader('Access-Control-Max-Age', '600');
+}
+
 function safeSerialize(value) {
   try {
     return JSON.stringify(value);
@@ -321,16 +348,23 @@ const corsOptions = {
   },
   methods: ['GET', 'OPTIONS'],
   allowedHeaders: ['x-api-key', 'Content-Type'],
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
+  maxAge: 600,
+  // Necesitamos continuar la cadena para poder añadir cabeceras PNA
+  // (Access-Control-Allow-Private-Network) antes de responder.
+  preflightContinue: true
 };
 
 app.use(cors(corsOptions));
 
+app.use((req, res, next) => {
+  applyPrivateNetworkHeaders(req, res);
+  next();
+});
+
 // Chrome Private Network Access: necesario para HTTPS publico -> 127.0.0.1
 app.options('*', (req, res) => {
-  if (req.headers['access-control-request-private-network']) {
-    res.setHeader('Access-Control-Allow-Private-Network', 'true');
-  }
+  applyPrivateNetworkHeaders(req, res);
   res.status(204).send('');
 });
 
