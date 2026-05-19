@@ -346,7 +346,7 @@ const corsOptions = {
     }
     return callback(new Error('CORS: origen no permitido: ' + origin));
   },
-  methods: ['GET', 'OPTIONS'],
+  methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['x-api-key', 'Content-Type'],
   optionsSuccessStatus: 204,
   maxAge: 600,
@@ -529,12 +529,12 @@ app.get('/ping', (req, res) => {
   res.status(200).send('OK');
 });
 
-app.get('/health', (req, res) => {
+function healthHandler(req, res) {
   logInfo('Health solicitado', { requestId: req.requestId, ip: getClientIp(req) });
   res.status(200).json({ status: 'ok' });
-});
+}
 
-app.get('/open-drawer', validateApiKey, async (req, res) => {
+async function openDrawerHandler(req, res) {
   try {
     const requestedPrinter = req.query.printer || DEFAULT_PRINTER || '';
     logInfo('Solicitud de apertura de cajon', {
@@ -562,7 +562,13 @@ app.get('/open-drawer', validateApiKey, async (req, res) => {
       error: error.message || 'Error enviando comando RAW'
     });
   }
-});
+}
+
+app.get('/health', healthHandler);
+app.post('/health', healthHandler);
+
+app.get('/open-drawer', validateApiKey, openDrawerHandler);
+app.post('/open-drawer', validateApiKey, openDrawerHandler);
 
 app.use((req, res) => {
   logWarn('Ruta no encontrada', {
@@ -645,7 +651,7 @@ function printBanner(proto, printerName) {
   console.log(`  LogFile    : ${serviceLogPath}`);
   console.log('------------------------------------------------------------');
   console.log(`  GET ${url}/ping`);
-  console.log(`  GET ${url}/open-drawer?api_key=<KEY>[&printer=<NOMBRE>]`);
+  console.log(`  GET|POST ${url}/open-drawer?api_key=<KEY>[&printer=<NOMBRE>]`);
   console.log('============================================================');
   console.log('');
 

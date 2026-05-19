@@ -19,8 +19,8 @@
  *
  * API esperada del bridge
  * -----------------------
- *   GET /open-drawer?printer=<nombre>   → { "ok": true }  o  { "ok": false, "error": "..." }
- *   GET /health                         → { "status": "ok" }
+ *   GET|POST /open-drawer?printer=<nombre>   → { "ok": true }  o  { "ok": false, "error": "..." }
+ *   GET|POST /health                         → { "status": "ok" }
  *   Header: x-api-key: <api_key>        (si el bridge requiere autenticación)
  *
  * Timeout por defecto: 8 segundos.
@@ -242,7 +242,10 @@ export async function sendCashDrawerRequest(config) {
     console.log("[CashDrawer] Enviando apertura directa al bridge:", url);
 
     const response = await fetchWithTimeout(url, {
-        method: "GET",
+        // En el POS de Odoo hay un service worker propio que intercepta todos
+        // los GET. Usamos POST para que la petición al bridge salga directa del
+        // navegador y no quede atrapada en la caché/offline layer del TPV.
+        method: "POST",
         mode: "cors",
         headers,
     });
@@ -273,7 +276,9 @@ export async function checkCashDrawerHealth(config) {
 
     try {
         const response = await fetchWithTimeout(url, {
-            method: "GET",
+            // Mismo motivo que en /open-drawer: evitamos que el service worker
+            // del POS intercepte diagnósticos del bridge local.
+            method: "POST",
             mode: "cors",
         });
         const payload = await readResponsePayload(response);

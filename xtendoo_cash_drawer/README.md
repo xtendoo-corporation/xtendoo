@@ -134,7 +134,7 @@ La sesión del TPV nunca queda en estado inconsistente por un fallo del cajón.
 
 El bridge local debe implementar los siguientes endpoints:
 
-### `GET /open-drawer`
+### `GET /open-drawer` o `POST /open-drawer`
 
 Abre el cajón portamonedas.
 
@@ -155,7 +155,7 @@ En caso de error:
 { "ok": false, "error": "Descripción del error" }
 ```
 
-### `GET /health`
+### `GET /health` o `POST /health`
 
 Comprueba que el bridge está en ejecución.
 
@@ -187,6 +187,11 @@ el módulo mostrará un error de red. El bridge debe actualizarse en ese caso.
 
 Si Odoo se sirve por HTTPS, además de CORS el bridge debe responder también por HTTPS.
 Una página `https://...` no puede hacer `fetch()` a `http://...` sin que el navegador lo bloquee.
+
+> **Nota específica del TPV de Odoo 19:** el POS registra un `service worker` propio para modo
+> offline y este intercepta peticiones `GET`. Para evitar timeouts falsos o respuestas de red
+> corruptas al llamar al bridge local, este módulo usa `POST` desde el navegador del TPV.
+> Por eso el cliente Windows debe aceptar tanto `GET` como `POST` en `/health` y `/open-drawer`.
 
 ---
 
