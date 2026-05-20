@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_xtendoo_stock_barcode_main_menu" model="ir.actions.client">
+        <field name="name">Xtendoo Barcode</field>
+        <field name="tag">xtendoo_stock_barcode_main_menu</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+    <record id="action_xtendoo_stock_barcode_pickings" model="ir.actions.act_window">
+        <field name="name">Xtendoo Barcode</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[("picking_type_code", "in", ["incoming", "outgoing", "internal"])]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea o abre una operación de almacén para escanearla con Xtendoo Barcode.
+            </p>
+            <p>
+                Este acceso abre los albaranes compatibles con el flujo clásico de escaneo sin interfaz Owl propia.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_xtendoo_stock_barcode_incoming" model="ir.actions.act_window">
+        <field name="name">Entradas</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[("picking_type_code", "=", "incoming")]
+        </field>
+    </record>
+
+    <record id="action_xtendoo_stock_barcode_outgoing" model="ir.actions.act_window">
+        <field name="name">Salidas</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[("picking_type_code", "=", "outgoing")]
+        </field>
+    </record>
+
+    <record id="action_xtendoo_stock_barcode_internal" model="ir.actions.act_window">
+        <field name="name">Internas</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[("picking_type_code", "=", "internal")]
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_xtendoo_stock_barcode_root"
+        name="Xtendoo Barcode"
+        sequence="65"
+        action="action_xtendoo_stock_barcode_main_menu"
+        web_icon="xtendoo_stock_barcode,static/description/icon.svg"
+    />
+
+    <menuitem
+        id="menu_xtendoo_stock_barcode_home"
+        name="Inicio"
+        parent="menu_xtendoo_stock_barcode_root"
+        sequence="5"
+        action="action_xtendoo_stock_barcode_main_menu"
+    />
+
+    <menuitem
+        id="menu_xtendoo_stock_barcode_pickings"
+        name="Operaciones"
+        parent="menu_xtendoo_stock_barcode_root"
+        sequence="10"
+        action="action_xtendoo_stock_barcode_pickings"
+    />
+
+    <menuitem
+        id="menu_xtendoo_stock_barcode_incoming"
+        name="Entradas"
+        parent="menu_xtendoo_stock_barcode_root"
+        sequence="20"
+        action="action_xtendoo_stock_barcode_incoming"
+    />
+
+    <menuitem
+        id="menu_xtendoo_stock_barcode_outgoing"
+        name="Salidas"
+        parent="menu_xtendoo_stock_barcode_root"
+        sequence="30"
+        action="action_xtendoo_stock_barcode_outgoing"
+    />
+
+    <menuitem
+        id="menu_xtendoo_stock_barcode_internal"
+        name="Internas"
+        parent="menu_xtendoo_stock_barcode_root"
+        sequence="40"
+        action="action_xtendoo_stock_barcode_internal"
+    />
+</odoo>
+
+

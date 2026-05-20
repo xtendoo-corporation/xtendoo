@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_inherit_xtendoo_stock_barcode" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.xtendoo.stock.barcode</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>
+                <field name="xt_barcode_supported" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Xtendoo Barcode" invisible="not xt_barcode_supported">
+                    <group>
+                        <group string="Contexto de escaneo">
+                            <field name="xt_barcode_mode" readonly="1"/>
+                            <field name="xt_barcode_current_line_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="xt_barcode_current_package_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="xt_barcode_source_location_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="xt_barcode_destination_location_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="xt_barcode_pending_tracking_count" readonly="1"/>
+                            <field name="xt_barcode_pending_destination_count" readonly="1"/>
+                            <field name="xt_barcode_pending_package_count" readonly="1"/>
+                            <field name="xt_barcode_last_scan" readonly="1"/>
+                            <field name="xt_barcode_last_message" readonly="1" nolabel="1" colspan="2"/>
+                        </group>
+                        <group string="Acciones rápidas">
+                            <div class="d-flex flex-wrap gap-2">
+                                <button name="action_xt_barcode_set_mode_source" type="object" class="btn btn-secondary" string="Modo origen"/>
+                                <button name="action_xt_barcode_set_mode_product" type="object" class="btn btn-primary" string="Modo producto"/>
+                                <button name="action_xt_barcode_set_mode_lot" type="object" class="btn btn-secondary" string="Modo lote/serie"/>
+                                <button name="action_xt_barcode_set_mode_destination" type="object" class="btn btn-secondary" string="Modo destino"/>
+                                <button name="action_xt_barcode_set_mode_package" type="object" class="btn btn-secondary" string="Modo paquete"/>
+                                <button name="action_xt_barcode_validate" type="object" class="btn btn-success" string="Validar flujo barcode"/>
+                                <button name="action_xt_barcode_reset_context" type="object" class="btn btn-outline-secondary" string="Reset contexto"/>
+                            </div>
+                            <div class="o_form_label">Flujo recomendado:</div>
+                            <div>
+                                <p class="text-muted mb-1">1. Selecciona un modo.</p>
+                                <p class="text-muted mb-1">2. Escanea el código con el foco dentro del formulario.</p>
+                                <p class="text-muted mb-1">3. Completa, si aplica, origen, lote/serie, destino y paquete.</p>
+                                <p class="text-muted mb-1">4. Usa “Validar flujo barcode” o el flujo estándar del picking.</p>
+                            </div>
+                        </group>
+                    </group>
+                    <group string="Operaciones del picking">
+                        <field name="move_line_ids" readonly="state in ('done', 'cancel')">
+                            <list editable="bottom">
+                                <field name="product_id"/>
+                                <field name="quantity"/>
+                                <field name="product_uom_id" optional="show"/>
+                                <field name="lot_id" optional="show"/>
+                                <field name="lot_name" optional="show"/>
+                                <field name="location_id" optional="show"/>
+                                <field name="location_dest_id" optional="show"/>
+                                <field name="result_package_id" optional="show"/>
+                                <field name="picked" optional="show"/>
+                                <field name="xt_barcode_source_scanned" optional="hide"/>
+                                <field name="xt_barcode_tracking_scanned" optional="hide"/>
+                                <field name="xt_barcode_destination_scanned" optional="hide"/>
+                                <field name="xt_barcode_package_scanned" optional="hide"/>
+                            </list>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
+

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_type_form_inherit_xtendoo_stock_barcode" model="ir.ui.view">
+        <field name="name">stock.picking.type.form.inherit.xtendoo.stock.barcode</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general']/group[@name='second']" position="inside">
+                <group string="Xtendoo Barcode" invisible="code not in ['incoming', 'outgoing', 'internal']">
+                    <field name="xt_barcode_allow_extra_product"/>
+                    <field name="xt_barcode_restrict_scan_source_location"/>
+                    <field name="xt_barcode_restrict_scan_dest_location"/>
+                    <field name="xt_barcode_restrict_scan_tracking_number" groups="stock.group_production_lot"/>
+                    <field name="xt_barcode_restrict_put_in_pack" groups="stock.group_tracking_lot"/>
+                    <field name="xt_barcode_validation_full"/>
+                    <field name="xt_barcode_validation_after_dest_location" invisible="xt_barcode_restrict_scan_dest_location == 'no'"/>
+                    <field name="xt_barcode_validation_all_product_packed" groups="stock.group_tracking_lot" invisible="xt_barcode_restrict_put_in_pack == 'no'"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
