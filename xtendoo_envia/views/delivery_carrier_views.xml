@@ -51,50 +51,56 @@
                                    invisible="envia_mail_type != 'pallet' or country_id != %(base.us)d"/>
                         </group>
                     </group>
-                    <group string="¿No tienes cuenta?" invisible="delivery_type != 'envia'">
-                        <ul>
-                            <li>Si no tienes cuenta, te recomendamos acceder a través de
-                                <a href="https://ship.envia.com/registro?partner_id=673">nuestro enlace personalizado</a>.
-                                Este enlace te dará atención personalizada y precios más bajos.
-                            </li>
-                            <li>Asegúrate de seleccionar el país apropiado para tu facturación principal.
-                                Si tienes operaciones en varios países, puedes crear dos cuentas separadas.
-                                Ten en cuenta que tu facturación se realizará en tu moneda principal.
-                                <br/>
-                                <img src="/xtendoo_envia/static/src/img/join.png" alt="Crear una cuenta" title="Crear una cuenta"/>
-                            </li>
-                            <li>Se te pedirá confirmar tu dirección de email y número de teléfono por SMS.</li>
-                        </ul>
-                    </group>
-                    <group string="Configuración en Envia" invisible="delivery_type != 'envia'">
-                        <ul>
-                            <li>Para los carriers disponibles, asegúrate de que estén activos en Envia
-                                (selecciona todos los países disponibles):
-                                <br/>
-                                <img src="/xtendoo_envia/static/src/img/carriers.png" alt="Agregar nuevos carriers en Envia" title="Agregar nuevos carriers en Envia"/>
-                            </li>
-                            <li>Si exportas a otros países, asegúrate de seleccionar quién pagará los aranceles aduaneros.</li>
-                            <li>Puedes preseleccionar qué servicios se utilizarán; nuestra recomendación es no limitar esto ya que los seleccionaremos en Odoo.</li>
-                            <li>Para cualquier carrier que desees usar que no esté activado, actívalo aquí.</li>
-                            <li>No te preocupes por las opciones de impresión; solo anota cuáles existen para tu carrier favorito ya que las seleccionaremos en Odoo.</li>
-                            <br/>
-                            <li>Por último, ve a la sección Developers / API Keys y genera una nueva API Key. Odoo la usará para comunicarse con Envia.</li>
-                        </ul>
-                    </group>
-                    <group string="Configuración en Odoo" invisible="delivery_type != 'envia'">
-                        <ul>
-                            <li>Copia la API Key de Envia en el campo sandbox o producción de los Métodos de Envío.</li>
-                            <li>Especifica el país de origen desde donde enviará este conector. Por defecto es el país de la empresa.</li>
-                            <li>Especifica la moneda con la que está configurada tu cuenta Envia. Por defecto es la moneda de la empresa.</li>
-                            <li>Crea y edita un paquete para este método de envío como referencia para presupuestos y etiquetas. El paquete puede ser de tipo <b>box</b>, <b>envelope</b> o <b>pallet</b>.</li>
-                            <li>Una vez configurado correctamente el método de envío, puedes sincronizar los carriers de Envia para tu país de origen:
-                                <br/>
-                                <img src="/xtendoo_envia/static/src/img/envia-sync-img.png" alt="Sincronizar Carriers Envia" title="Sincronizar Carriers Envia"/>
-                            </li>
-                            <li>Podrás especificar un carrier y servicio específico de Envia para usar en tu región. Ten en cuenta que cada servicio puede tener precios y disponibilidad distintos.</li>
-                            <br/>
-                            <li>Nota: algunos países soportan servicios adicionales únicos para envíos en pallet o caja. Por ejemplo, Canadá tiene la opción de manejar entregas fallidas devolviéndolas a tu almacén o abandonándolas en la puerta del cliente.</li>
-                        </ul>
+                    <group col="1" invisible="delivery_type != 'envia'">
+                        <separator string="¿No tienes cuenta?"/>
+                        <div class="alert alert-info" role="status">
+                            <ul class="mb-0 ps-3">
+                                <li>Si no tienes cuenta, te recomendamos acceder a través de
+                                    <a href="https://ship.envia.com/registro?partner_id=673">nuestro enlace personalizado</a>.
+                                    Este enlace te dará atención personalizada y precios más bajos.
+                                </li>
+                                <li>Asegúrate de seleccionar el país apropiado para tu facturación principal.
+                                    Si tienes operaciones en varios países, puedes crear dos cuentas separadas.
+                                    Ten en cuenta que tu facturación se realizará en tu moneda principal.
+                                </li>
+                                <li>Se te pedirá confirmar tu dirección de email y número de teléfono por SMS.</li>
+                            </ul>
+                            <div class="mt-3 text-center">
+                                <img src="/xtendoo_envia/static/src/img/join.png" alt="Crear una cuenta" title="Crear una cuenta" class="img-fluid"/>
+                            </div>
+                        </div>
+
+                        <separator string="Configuración en Envia"/>
+                        <div class="alert alert-secondary" role="status">
+                            <ul class="mb-0 ps-3">
+                                <li>Para los carriers disponibles, asegúrate de que estén activos en Envia
+                                    (selecciona todos los países disponibles).</li>
+                                <li>Si exportas a otros países, asegúrate de seleccionar quién pagará los aranceles aduaneros.</li>
+                                <li>Puedes preseleccionar qué servicios se utilizarán; nuestra recomendación es no limitar esto ya que los seleccionaremos en Odoo.</li>
+                                <li>Para cualquier carrier que desees usar que no esté activado, actívalo aquí.</li>
+                                <li>No te preocupes por las opciones de impresión; solo anota cuáles existen para tu carrier favorito ya que las seleccionaremos en Odoo.</li>
+                                <li>Por último, ve a la sección Developers / API Keys y genera una nueva API Key. Odoo la usará para comunicarse con Envia.</li>
+                            </ul>
+                            <div class="mt-3 text-center">
+                                <img src="/xtendoo_envia/static/src/img/carriers.png" alt="Agregar nuevos carriers en Envia" title="Agregar nuevos carriers en Envia" class="img-fluid"/>
+                            </div>
+                        </div>
+
+                        <separator string="Configuración en Odoo"/>
+                        <div class="alert alert-light border" role="status">
+                            <ul class="mb-0 ps-3">
+                                <li>Copia la API Key de Envia en el campo sandbox o producción de los Métodos de Envío.</li>
+                                <li>Especifica el país de origen desde donde enviará este conector. Por defecto es el país de la empresa.</li>
+                                <li>Especifica la moneda con la que está configurada tu cuenta Envia. Por defecto es la moneda de la empresa.</li>
+                                <li>Crea y edita un paquete para este método de envío como referencia para presupuestos y etiquetas. El paquete puede ser de tipo <b>box</b>, <b>envelope</b> o <b>pallet</b>.</li>
+                                <li>Una vez configurado correctamente el método de envío, puedes sincronizar los carriers de Envia para tu país de origen.</li>
+                                <li>Podrás especificar un carrier y servicio específico de Envia para usar en tu región. Ten en cuenta que cada servicio puede tener precios y disponibilidad distintos.</li>
+                                <li>Nota: algunos países soportan servicios adicionales únicos para envíos en pallet o caja. Por ejemplo, Canadá tiene la opción de manejar entregas fallidas devolviéndolas a tu almacén o abandonándolas en la puerta del cliente.</li>
+                            </ul>
+                            <div class="mt-3 text-center">
+                                <img src="/xtendoo_envia/static/src/img/envia-sync-img.png" alt="Sincronizar Carriers Envia" title="Sincronizar Carriers Envia" class="img-fluid"/>
+                            </div>
+                        </div>
                     </group>
                 </page>
             </xpath>
