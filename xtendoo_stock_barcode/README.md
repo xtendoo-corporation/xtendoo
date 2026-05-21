@@ -1,17 +1,16 @@
 # Xtendoo Stock Barcode
 
-MVP backend-first para Odoo 19 que introduce un flujo de escaneo clásico en
-`stock.picking` con flujo clásico y un uso mínimo de JS solo para el menú principal escaneable.
+Módulo backend-first para Odoo 19 que introduce un flujo de escaneo clásico en
+`stock.picking` y una pantalla PDA propia, sin depender de `stock_barcode` ni de componentes Enterprise.
 
 ## Objetivo
 
-Ofrecer una primera versión funcional inspirada en `stock_barcode`, pero con una
-arquitectura mucho más simple y basada en:
+Ofrecer una solución simple y mantenible basada en:
 
 - `barcodes.barcode_events_mixin`
 - `widget="barcode_handler"`
 - lógica Python sobre `stock.picking`
-- vista formulario clásica
+- vistas formulario clásicas y una vista PDA propia
 
 ## Alcance actual
 
@@ -28,18 +27,17 @@ Incluye:
 - creación o incremento de líneas en `stock.move.line`;
 - mantenimiento de un contexto de escaneo en el propio picking;
 - validación guiada del flujo barcode;
-- reglas clásicas por tipo de operación inspiradas en Enterprise.
+- reglas clásicas por tipo de operación;
+- pantalla PDA propia para comprobar esperado vs escaneado.
 
 No incluye todavía:
 
-- interfaz fullscreen tipo app;
-- caché reactiva;
 - GS1;
 - RFID;
 - inventario por barcode;
-- caché avanzada y orquestación frontend tipo Enterprise.
+- caché avanzada o lógica frontend compleja.
 
-## Arquitectura del MVP
+## Arquitectura
 
 ### Modelo principal
 
@@ -47,7 +45,7 @@ Se extiende `stock.picking` con el mixin `barcodes.barcode_events_mixin`.
 
 Además, se añade un menú principal propio con una acción cliente mínima que escucha el servicio estándar de barcode y delega toda la resolución al backend.
 
-Campos auxiliares:
+Campos auxiliares principales:
 
 - `xt_barcode_mode`
 - `xt_barcode_current_line_id`
@@ -55,14 +53,21 @@ Campos auxiliares:
 - `xt_barcode_destination_location_id`
 - `xt_barcode_last_scan`
 - `xt_barcode_last_message`
+- `xt_barcode_compare_state`
+- `xt_barcode_expected_move_count`
+- `xt_barcode_checked_move_count`
+- `xt_barcode_pending_move_count`
+- `xt_barcode_excess_move_count`
 
-### Modos de escaneo
+### Comparación PDA
 
-- `product`
-- `source`
-- `destination`
-- `lot`
-- `package`
+La vista PDA propia abre el picking en una pantalla simplificada para comprobación y muestra:
+
+- líneas esperadas del movimiento (`stock.move`);
+- cantidad esperada vs escaneada;
+- cantidad pendiente por línea;
+- estado por línea: pendiente, parcial, completo o exceso;
+- resumen global del picking.
 
 ### Menú principal
 
@@ -75,17 +80,6 @@ El menú principal resuelve en backend estos casos:
 - lote/serie -> abre el lote;
 - paquete -> abre el paquete.
 
-### Reglas actuales
-
-- producto sin tracking: incrementa una línea compatible o crea una nueva;
-- producto con tracking por lote: crea/incrementa línea pendiente y pasa a modo lote;
-- producto con tracking por serie: crea una línea de cantidad 1 y pasa a modo lote/serie;
-- ubicación origen/destino: actualiza el contexto de escaneo y, si existe, la línea actual;
-- lote/serie: asigna `lot_id` o `lot_name` a la línea activa;
-- paquete: selecciona o crea un `stock.package` y empaqueta la línea activa;
-- el tipo de operación puede exigir origen, destino, lote/serie, paquete y bloquear productos extra;
-- la validación clásica puede exigir que las líneas trabajadas queden completamente cerradas según esas reglas.
-
 ## Validación rápida
 
 Comprobación de sintaxis:
@@ -93,6 +87,7 @@ Comprobación de sintaxis:
 ```bash
 cd /home/xtendoo/Escritorio/odoo/odoo_19_enterprise
 python3 -m py_compile \
+  odoo/custom/src/xtendoo/xtendoo_stock_barcode/models/stock_move.py \
   odoo/custom/src/xtendoo/xtendoo_stock_barcode/models/stock_picking.py \
   odoo/custom/src/xtendoo/xtendoo_stock_barcode/tests/test_stock_picking_barcode.py
 ```
@@ -104,4 +99,3 @@ cd /home/xtendoo/Escritorio/odoo/odoo_19_enterprise
 # Ejemplo orientativo; ajusta el servicio/contenedor a tu entorno
 # docker compose run --rm -T odoo bash -c "odoo -d <db> --test-enable --stop-after-init -i xtendoo_stock_barcode --test-tags /xtendoo_stock_barcode"
 ```
-

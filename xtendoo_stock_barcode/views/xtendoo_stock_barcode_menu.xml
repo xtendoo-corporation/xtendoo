@@ -52,46 +52,6 @@
         action="action_xtendoo_stock_barcode_main_menu"
         web_icon="xtendoo_stock_barcode,static/description/icon.svg"
     />
-
-    <menuitem
-        id="menu_xtendoo_stock_barcode_home"
-        name="Inicio"
-        parent="menu_xtendoo_stock_barcode_root"
-        sequence="5"
-        action="action_xtendoo_stock_barcode_main_menu"
-    />
-
-    <menuitem
-        id="menu_xtendoo_stock_barcode_pickings"
-        name="Operaciones"
-        parent="menu_xtendoo_stock_barcode_root"
-        sequence="10"
-        action="action_xtendoo_stock_barcode_pickings"
-    />
-
-    <menuitem
-        id="menu_xtendoo_stock_barcode_incoming"
-        name="Entradas"
-        parent="menu_xtendoo_stock_barcode_root"
-        sequence="20"
-        action="action_xtendoo_stock_barcode_incoming"
-    />
-
-    <menuitem
-        id="menu_xtendoo_stock_barcode_outgoing"
-        name="Salidas"
-        parent="menu_xtendoo_stock_barcode_root"
-        sequence="30"
-        action="action_xtendoo_stock_barcode_outgoing"
-    />
-
-    <menuitem
-        id="menu_xtendoo_stock_barcode_internal"
-        name="Internas"
-        parent="menu_xtendoo_stock_barcode_root"
-        sequence="40"
-        action="action_xtendoo_stock_barcode_internal"
-    />
 </odoo>
 
 

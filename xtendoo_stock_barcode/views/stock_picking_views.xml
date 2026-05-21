@@ -6,67 +6,179 @@
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>
+                <field name="_barcode_scanned" widget="barcode_handler" class="d-none"/>
                 <field name="xt_barcode_supported" invisible="1"/>
             </xpath>
 
-            <xpath expr="//sheet/notebook" position="inside">
-                <page string="Xtendoo Barcode" invisible="not xt_barcode_supported">
-                    <group>
-                        <group string="Contexto de escaneo">
-                            <field name="xt_barcode_mode" readonly="1"/>
-                            <field name="xt_barcode_current_line_id" readonly="1" options="{'no_open': True}"/>
-                            <field name="xt_barcode_current_package_id" readonly="1" options="{'no_open': True}"/>
-                            <field name="xt_barcode_source_location_id" readonly="1" options="{'no_open': True}"/>
-                            <field name="xt_barcode_destination_location_id" readonly="1" options="{'no_open': True}"/>
-                            <field name="xt_barcode_pending_tracking_count" readonly="1"/>
-                            <field name="xt_barcode_pending_destination_count" readonly="1"/>
-                            <field name="xt_barcode_pending_package_count" readonly="1"/>
-                            <field name="xt_barcode_last_scan" readonly="1"/>
-                            <field name="xt_barcode_last_message" readonly="1" nolabel="1" colspan="2"/>
-                        </group>
-                        <group string="Acciones rápidas">
-                            <div class="d-flex flex-wrap gap-2">
-                                <button name="action_xt_barcode_set_mode_source" type="object" class="btn btn-secondary" string="Modo origen"/>
-                                <button name="action_xt_barcode_set_mode_product" type="object" class="btn btn-primary" string="Modo producto"/>
-                                <button name="action_xt_barcode_set_mode_lot" type="object" class="btn btn-secondary" string="Modo lote/serie"/>
-                                <button name="action_xt_barcode_set_mode_destination" type="object" class="btn btn-secondary" string="Modo destino"/>
-                                <button name="action_xt_barcode_set_mode_package" type="object" class="btn btn-secondary" string="Modo paquete"/>
-                                <button name="action_xt_barcode_validate" type="object" class="btn btn-success" string="Validar flujo barcode"/>
-                                <button name="action_xt_barcode_reset_context" type="object" class="btn btn-outline-secondary" string="Reset contexto"/>
-                            </div>
-                            <div class="o_form_label">Flujo recomendado:</div>
-                            <div>
-                                <p class="text-muted mb-1">1. Selecciona un modo.</p>
-                                <p class="text-muted mb-1">2. Escanea el código con el foco dentro del formulario.</p>
-                                <p class="text-muted mb-1">3. Completa, si aplica, origen, lote/serie, destino y paquete.</p>
-                                <p class="text-muted mb-1">4. Usa “Validar flujo barcode” o el flujo estándar del picking.</p>
-                            </div>
-                        </group>
-                    </group>
-                    <group string="Operaciones del picking">
-                        <field name="move_line_ids" readonly="state in ('done', 'cancel')">
-                            <list editable="bottom">
-                                <field name="product_id"/>
-                                <field name="quantity"/>
-                                <field name="product_uom_id" optional="show"/>
-                                <field name="lot_id" optional="show"/>
-                                <field name="lot_name" optional="show"/>
-                                <field name="location_id" optional="show"/>
-                                <field name="location_dest_id" optional="show"/>
-                                <field name="result_package_id" optional="show"/>
-                                <field name="picked" optional="show"/>
-                                <field name="xt_barcode_source_scanned" optional="hide"/>
-                                <field name="xt_barcode_tracking_scanned" optional="hide"/>
-                                <field name="xt_barcode_destination_scanned" optional="hide"/>
-                                <field name="xt_barcode_package_scanned" optional="hide"/>
-                            </list>
-                        </field>
-                    </group>
-                </page>
+            <xpath expr="//header" position="inside">
+                <button name="action_xt_barcode_open_pda"
+                        type="object"
+                        string="Comprobación PDA"
+                        class="btn btn-primary"
+                        invisible="not xt_barcode_supported"/>
             </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_picking_form_xtendoo_stock_barcode_pda_intuitive" model="ir.ui.view">
+        <field name="name">stock.picking.form.xtendoo.stock.barcode.pda.intuitive</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <form string="Comprobación PDA" create="false" delete="false">
+                <header>
+                    <button name="action_xt_barcode_open_form" type="object" string="Volver al picking" class="btn btn-outline-secondary"/>
+                    <button name="action_xt_barcode_validate"
+                            type="object"
+                            string="Validar movimiento"
+                            class="btn btn-primary"
+                            invisible="state in ('done', 'cancel')"/>
+                    <field name="state" widget="badge"
+                           decoration-info="state == 'draft'"
+                           decoration-warning="state in ['waiting', 'confirmed']"
+                           decoration-primary="state == 'assigned'"
+                           decoration-success="state == 'done'"
+                           decoration-danger="state == 'cancel'"/>
+                </header>
+                <sheet>
+                    <field name="_barcode_scanned" widget="xtendoo_stock_barcode_scanner" class="d-none"/>
+                    <field name="xt_barcode_supported" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="xt_barcode_focus_move_id" invisible="1"/>
+                    <field name="xt_barcode_has_scanned_products" invisible="1"/>
+                    <field name="xt_barcode_zero_scan_message" invisible="1"/>
+                    <div class="mt-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <h2 class="mb-1"><field name="name" readonly="1"/> · <field name="picking_type_id" readonly="1"/></h2>
+                                <div class="text-muted small">
+                                    <field name="scheduled_date" readonly="1"/>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <div class="border rounded px-3 py-2 bg-light">
+                                    <div class="text-muted small fw-bold text-uppercase">Modo</div>
+                                    <field name="xt_barcode_mode"
+                                           readonly="1"
+                                           widget="badge"
+                                           nolabel="1"
+                                           decoration-primary="xt_barcode_mode == 'product'"
+                                           decoration-info="xt_barcode_mode == 'source'"
+                                           decoration-warning="xt_barcode_mode == 'lot'"
+                                           decoration-secondary="xt_barcode_mode == 'destination'"
+                                           decoration-danger="xt_barcode_mode == 'package'"/>
+                                </div>
+                                <div class="border rounded px-3 py-2 bg-light" invisible="not xt_barcode_has_scanned_products">
+                                    <div class="text-muted small fw-bold text-uppercase">Estado</div>
+                                    <field name="xt_barcode_compare_state"
+                                           readonly="1"
+                                           widget="badge"
+                                           nolabel="1"
+                                           decoration-info="xt_barcode_compare_state == 'pending'"
+                                           decoration-warning="xt_barcode_compare_state == 'partial'"
+                                           decoration-success="xt_barcode_compare_state == 'complete'"
+                                           decoration-danger="xt_barcode_compare_state == 'excess'"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mb-3"
+                             role="alert"
+                             invisible="xt_barcode_has_scanned_products or not xt_barcode_zero_scan_message">
+                            <div class="fw-bold mb-1">
+                                <field name="xt_barcode_zero_scan_message" readonly="1" nolabel="1"/>
+                            </div>
+                            <field name="xt_barcode_next_step" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="row g-3 align-items-stretch">
+                            <div class="col-12 col-lg-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="text-muted small fw-bold text-uppercase mb-2">Escanea ahora</div>
+                                        <div class="fw-bold mb-2">
+                                            <field name="xt_barcode_focus_product_label" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="mb-2">
+                                            <field name="xt_barcode_focus_quantity_label" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="text-primary fw-semibold mb-2">
+                                            <field name="xt_barcode_next_step" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <field name="xt_barcode_pending_summary" readonly="1" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-8">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                                            <div>
+                                                <h3 class="h5 mb-1">Líneas pendientes</h3>
+                                                <div class="text-muted small">Solo se muestran productos todavía abiertos.</div>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2" invisible="not xt_barcode_has_scanned_products">
+                                                <div class="border rounded px-3 py-2 bg-light">
+                                                    <div class="text-muted small fw-bold text-uppercase">Progreso</div>
+                                                    <field name="xt_barcode_progress_percent" readonly="1" widget="progressbar" nolabel="1"/>
+                                                </div>
+                                                <div class="border rounded px-3 py-2 bg-light">
+                                                    <div class="text-muted small fw-bold text-uppercase">Pendientes</div>
+                                                    <field name="xt_barcode_pending_move_count" readonly="1" nolabel="1"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <field name="xt_barcode_pending_move_ids" readonly="1" nolabel="1">
+                                            <list create="false"
+                                                  delete="false"
+                                                  decoration-warning="xt_barcode_check_state == 'partial'"
+                                                  decoration-danger="xt_barcode_check_state == 'excess'"
+                                                  decoration-info="xt_barcode_check_state == 'pending'">
+                                                <field name="product_id"/>
+                                                <field name="xt_barcode_remaining_qty" string="Pendiente"/>
+                                                <field name="xt_barcode_scanned_qty" string="Hecho"/>
+                                                <field name="product_uom_qty" string="Demanda"/>
+                                                <field name="xt_barcode_check_state"
+                                                       string="Estado"
+                                                       widget="badge"
+                                                       decoration-info="xt_barcode_check_state == 'pending'"
+                                                       decoration-warning="xt_barcode_check_state == 'partial'"
+                                                       decoration-danger="xt_barcode_check_state == 'excess'"/>
+                                            </list>
+                                        </field>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-12 col-lg-6" invisible="not xt_barcode_last_scan and not xt_barcode_last_message">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="text-muted small fw-bold text-uppercase mb-2">Último escaneo</div>
+                                        <field name="xt_barcode_last_scan" readonly="1"/>
+                                        <field name="xt_barcode_last_message" readonly="1" nolabel="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6" invisible="xt_barcode_pending_tracking_count == 0 and xt_barcode_pending_destination_count == 0 and xt_barcode_pending_package_count == 0 and xt_barcode_excess_move_count == 0">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="text-muted small fw-bold text-uppercase mb-2">Pendientes técnicos</div>
+                                        <field name="xt_barcode_pending_tracking_count" readonly="1"/>
+                                        <field name="xt_barcode_pending_destination_count" readonly="1"/>
+                                        <field name="xt_barcode_pending_package_count" readonly="1"/>
+                                        <field name="xt_barcode_excess_move_count" readonly="1" invisible="xt_barcode_excess_move_count == 0"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
         </field>
     </record>
 </odoo>
-
-

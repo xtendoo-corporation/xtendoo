@@ -12,11 +12,11 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
     "company": "Xtendoo",
     "website": "https://www.xtendoo.es",
     "category": "Inventory/Inventory",
+    "license": "AGPL-3",
     "depends": [
         "stock",
         "barcodes",
     ],
-    "license": "AGPL-3",
     "data": [
         "data/xtendoo_stock_barcode_data.xml",
         "views/xtendoo_stock_barcode_menu.xml",
@@ -25,6 +25,7 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
     ],
     "assets": {
         "web.assets_backend": [
+            "xtendoo_stock_barcode/static/src/pda/*.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.xml",
         ],
@@ -33,4 +34,3 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
     "application": True,
     "auto_install": False,
 }
-
