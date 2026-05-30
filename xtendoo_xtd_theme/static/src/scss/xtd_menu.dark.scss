@@ -27,10 +27,31 @@
         font-size: 1rem !important;
         font-weight: 500 !important;
         line-height: 1.2 !important;
-        padding-bottom: 1px !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        margin: 0 0.18rem !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 0.95rem !important;
+        padding-right: 0.95rem !important;
+        border: 1px solid transparent !important;
+        border-radius: 10px !important;
+        background: transparent !important;
+        color: var(--xtd-ink) !important;
+        transition:
+            background-color 0.15s ease,
+            border-color 0.15s ease,
+            color 0.15s ease !important;
 
         &, * {
             text-decoration: none !important;
+        }
+
+        &:hover,
+        &:focus {
+            background: var(--NavBar-entry-backgroundColor--hover) !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
         }
     }
 
@@ -59,6 +80,37 @@
             }
         }
     }
+}
+
+.o_main_navbar .o_menu_brand {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    min-height: 38px !important;
+    height: 38px !important;
+}
+
+.o_main_navbar .o_menu_brand:hover,
+.o_main_navbar .o_menu_brand:focus,
+.o_main_navbar .o_menu_brand:focus-visible {
+    background: var(--NavBar-entry-backgroundColor--active) !important;
+    border-color: var(--NavBar-entry-borderColor-active) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+.o_main_navbar a.o_menu_brand.o-dropdown-item.dropdown-item:hover,
+.o_main_navbar a.o_menu_brand.o-dropdown-item.dropdown-item:focus,
+.o_main_navbar a.o_menu_brand.o-dropdown-item.dropdown-item:focus-visible {
+    background: var(--NavBar-entry-backgroundColor--active) !important;
+    border-color: var(--NavBar-entry-borderColor-active) !important;
+    color: #ffffff !important;
+}
+
+.o_main_navbar .o_menu_brand:hover *,
+.o_main_navbar .o_menu_brand:focus *,
+.o_main_navbar .o_menu_brand:focus-visible * {
+    color: inherit !important;
 }
 
 .o_grid_apps_menu__button {

@@ -5,6 +5,11 @@
     --xtd-paper: #171717;
     --xtd-line: #303030;
     --xtd-muted: #b8b1ba;
+    --xtd-deep: #1b1d26;
+    --xtd-surface: #262a36;
+    --xtd-surface-soft: #20232c;
+    --xtd-surface-hover: #2f3441;
+    --xtd-link: #9fc7ff;
     --o-brand-primary: var(--xtd-orange);
     --o-brand-odoo: #2a1117;
     --o-brand-secondary: #f7f5f2;
@@ -13,6 +18,41 @@
 body {
     background: #101010;
     color: var(--xtd-ink);
+}
+
+.o_web_client,
+.o_web_client > .o_action_manager,
+.o_action_manager .o_view_controller,
+.o_action_manager .o_content {
+    background: var(--xtd-deep) !important;
+    color: var(--xtd-ink) !important;
+}
+
+.btn-primary,
+.o_form_button_save,
+.o_list_button_add,
+.o_control_panel .o-kanban-button-new,
+.o_control_panel .btn.btn-primary {
+    background: var(--o-brand-primary) !important;
+    border-color: var(--o-brand-primary) !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+
+    &:hover,
+    &:focus,
+    &.active {
+        background: #ff8754 !important;
+        border-color: #ff8754 !important;
+        color: #101010 !important;
+    }
+
+    &:disabled,
+    &.disabled {
+        background: rgba(255, 109, 45, 0.28) !important;
+        border-color: rgba(255, 109, 45, 0.28) !important;
+        color: rgba(16, 16, 16, 0.7) !important;
+        opacity: 1 !important;
+    }
 }
 
 .o_web_client :is(i,span,a,button,div).fa,
@@ -36,9 +76,311 @@ body {
 .modal-content,
 .card,
 .o_database_list {
-    background: #171717 !important;
+    background: var(--xtd-deep) !important;
     color: var(--xtd-ink) !important;
     border-color: var(--xtd-line) !important;
+}
+
+.o_control_panel {
+    border-bottom: 1px solid #3c3e4b !important;
+
+    .o_control_panel_main,
+    .o_control_panel_navigation,
+    .o_cp_buttons,
+    .o_cp_pager {
+        background: transparent !important;
+    }
+}
+
+.o_notification_manager {
+    .o_notification {
+        --Notification__background-color: var(--xtd-surface) !important;
+        background: var(--xtd-surface) !important;
+        border: 1px solid #3c3e4b !important;
+        border-radius: 0.65rem !important;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32) !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o_notification > .text-break,
+    .o_notification_body,
+    .o_notification_content,
+    .o_notification_buttons {
+        background: transparent !important;
+        color: var(--xtd-ink) !important;
+        border-color: #3c3e4b !important;
+    }
+
+    .o_notification_content,
+    .o_notification_content *,
+    .o_notification_body,
+    .o_notification_body * {
+        color: var(--xtd-ink) !important;
+    }
+
+    .o_notification_close,
+    .o_notification .btn-close {
+        filter: invert(1) grayscale(1) !important;
+        opacity: 0.8 !important;
+
+        &:hover,
+        &:focus {
+            opacity: 1 !important;
+        }
+    }
+
+    .o_notification_buttons .btn-link {
+        color: var(--xtd-link) !important;
+
+        &:hover,
+        &:focus {
+            color: #cfe1ff !important;
+        }
+    }
+}
+
+.o_form_view {
+    .o_form_sheet_bg,
+    &.o_form_nosheet,
+    .o_form_nosheet {
+        background: var(--xtd-deep) !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o_form_sheet {
+        background: var(--xtd-surface) !important;
+        border-color: #3c3e4b !important;
+        color: var(--xtd-ink) !important;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24) !important;
+    }
+
+    .o_form_statusbar {
+        background: var(--xtd-deep) !important;
+        border-bottom: 1px solid #3c3e4b !important;
+        box-shadow: none !important;
+    }
+
+    .o_field_statusbar > .o_statusbar_status {
+        --o-statusbar-border: #3c3e4b !important;
+        --o-statusbar-background-active: var(--xtd-surface) !important;
+        --o-statusbar-border-active: #4a4d5c !important;
+        --o-statusbar-background-hover: var(--xtd-surface-hover) !important;
+    }
+
+    .o_field_statusbar > .o_statusbar_status > .o_arrow_button:not(.d-none) {
+        background: var(--xtd-surface-soft) !important;
+        color: #d1d1d1 !important;
+
+        &.o_arrow_button_current:disabled,
+        &:active:not(.o_last) {
+            background: var(--xtd-surface) !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .oe_title,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .o_horizontal_separator,
+    .o_form_label,
+    .o_field_widget,
+    .o_field_widget .o_input,
+    .o_field_widget input,
+    .o_field_widget textarea,
+    .o_field_widget select {
+        color: var(--xtd-ink) !important;
+    }
+
+    .o_field_widget .o_input::placeholder,
+    .o_field_widget input::placeholder,
+    .o_field_widget textarea::placeholder {
+        color: var(--xtd-muted) !important;
+    }
+
+    a:not(.btn):not(.dropdown-item):not(.o-dropdown-item):not(.nav-link) {
+        color: var(--xtd-link) !important;
+
+        &:hover,
+        &:focus {
+            color: #cfe1ff !important;
+        }
+    }
+
+    .text-muted,
+    .text-body-secondary,
+    small,
+    .o_field_empty,
+    .o_readonly_modifier {
+        color: #d1d1d1 !important;
+    }
+
+    .o_notebook {
+        --Notebook__link-border-color--active: #3c3e4b !important;
+        --Notebook__link-border-color--hover: #3c3e4b !important;
+        --Notebook__link-border-top-color--active: var(--o-brand-primary) !important;
+
+        .nav {
+            background: transparent !important;
+            border-bottom: 1px solid #3c3e4b !important;
+        }
+
+        .nav-link {
+            background: transparent !important;
+            border-color: transparent !important;
+            color: var(--xtd-ink) !important;
+
+            &:hover,
+            &:focus {
+                background: var(--xtd-surface-soft) !important;
+                color: var(--xtd-burgundy) !important;
+            }
+
+            &.active {
+                background: var(--xtd-surface) !important;
+                border-color: #3c3e4b #3c3e4b var(--xtd-surface) !important;
+                box-shadow: inset 0 2px 0 rgba(255, 155, 123, 0.9) !important;
+                color: var(--xtd-burgundy) !important;
+            }
+        }
+    }
+
+    .o-mail-Form-chatter,
+    .o-mail-Chatter {
+        background: var(--xtd-surface) !important;
+        border-top: 1px solid #3c3e4b !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o-mail-Chatter-top {
+        background: var(--xtd-surface) !important;
+        border-bottom: 1px solid #3c3e4b !important;
+        box-shadow: none !important;
+
+        &.shadow-sm {
+            background-image: linear-gradient(90deg, transparent, rgba(38, 42, 54, 0.96), transparent) !important;
+        }
+    }
+
+    .o-mail-Chatter-topbar,
+    .o-mail-Chatter-content,
+    .o-mail-Thread {
+        background: inherit !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o-mail-Chatter-sendMessage,
+    .o-mail-Chatter-logNote,
+    .o-mail-Chatter-activity {
+        background: var(--xtd-surface-soft) !important;
+        border-color: #3c3e4b !important;
+        color: var(--xtd-ink) !important;
+
+        &:hover,
+        &:focus,
+        &.active {
+            background: var(--xtd-surface-hover) !important;
+            border-color: #4a4d5c !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .o-mail-Chatter-sendMessage.active,
+    .o-mail-Chatter-logNote.active {
+        background: rgba(255, 109, 45, 0.18) !important;
+        border-color: rgba(255, 109, 45, 0.35) !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o-mail-Chatter-topbar .btn-link,
+    .o-mail-Chatter-topbar .text-action,
+    .o-mail-Followers-button,
+    .o-mail-Chatter-attachFiles {
+        color: #d1d1d1 !important;
+
+        &:hover,
+        &:focus,
+        &.active {
+            background: transparent !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .o-mail-Followers-button.active {
+        color: var(--xtd-link) !important;
+    }
+
+    .o-mail-Message,
+    .o-mail-Message-core,
+    .o-mail-Message-sidebar,
+    .o-mail-Message-contentContainer,
+    .o-mail-Message-content,
+    .o-mail-Message-textContent {
+        background: transparent !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o-mail-Message.o-card {
+        background: var(--xtd-surface-soft) !important;
+        border: 1px solid #3c3e4b !important;
+        border-radius: 0.5rem !important;
+    }
+
+    .o-mail-Message-author,
+    .o-mail-Message-date,
+    .o-mail-Message-trackingOld,
+    .o-mail-Message-trackingField {
+        color: #aeb3bc !important;
+        opacity: 1 !important;
+    }
+
+    .o-mail-Message-trackingSeparator,
+    .o-mail-Message .text-600 {
+        color: #8b8f9a !important;
+    }
+
+    .o-mail-Message-trackingNew,
+    .o-mail-Message .text-info {
+        color: var(--xtd-link) !important;
+    }
+
+    .o-mail-Message-body,
+    .o-mail-Message-body p,
+    .o-mail-Message-body span,
+    .o-mail-Message-body div,
+    .o-mail-Message-body strong,
+    .o-mail-Message-body em,
+    .o-mail-Message-body i {
+        color: inherit;
+    }
+
+    .o-mail-Message-actions {
+        --o-mail-ActionList-Button-opacity: .5;
+        --o-mail-ActionList-Button-opacity--hover: 1;
+        --o-mail-ActionList-Button-color--hover: #ffffff;
+    }
+
+    .o-mail-Chatter hr,
+    .o-mail-Chatter .dropdown-divider,
+    .o-mail-Chatter separator {
+        border-color: #3c3e4b !important;
+        color: #8b8f9a !important;
+    }
+
+    .o-mail-Form-chatter .btn-link,
+    .o-mail-Form-chatter .text-action,
+    .o-mail-Chatter .btn-link,
+    .o-mail-Chatter .text-action {
+        color: var(--xtd-ink) !important;
+
+        &:hover,
+        &:focus {
+            color: #ffffff !important;
+        }
+    }
 }
 
 .o_form_view .o_form_sheet,
@@ -47,6 +389,142 @@ body {
 .modal-content,
 .card {
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35) !important;
+}
+
+.o_list_renderer {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.o_list_renderer .table-responsive,
+.o_list_renderer .o_list_table.table {
+    background: var(--xtd-surface) !important;
+}
+
+.o_list_renderer .o_list_table {
+    background: var(--xtd-surface) !important;
+    color: var(--xtd-ink) !important;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead {
+        background: var(--xtd-deep) !important;
+
+        th {
+            background: var(--xtd-deep) !important;
+            color: var(--xtd-ink) !important;
+            border-bottom: 1px solid #3c3e4b !important;
+            box-shadow: none !important;
+
+            &:hover,
+            &:focus-within,
+            &.table-active {
+                background: var(--xtd-surface-soft) !important;
+                color: #ffffff !important;
+            }
+        }
+
+        .o_column_sortable {
+            .o_list_sortable_icon,
+            .o_optional_columns_dropdown_toggle,
+            button,
+            .btn {
+                background: transparent !important;
+                color: var(--xtd-ink) !important;
+            }
+
+            &:hover,
+            &:focus-within {
+                .o_list_sortable_icon,
+                .o_optional_columns_dropdown_toggle,
+                button,
+                .btn {
+                    color: #ffffff !important;
+                }
+            }
+        }
+    }
+
+    tbody {
+        tr {
+            background: var(--xtd-surface) !important;
+
+            &:hover,
+            &:focus-within {
+                background: var(--xtd-surface-hover) !important;
+            }
+
+            &.o_selected_row {
+                background: rgba(106, 181, 251, 0.14) !important;
+            }
+        }
+
+        td {
+            background: transparent !important;
+            color: var(--xtd-ink) !important;
+            border-top-color: #3c3e4b !important;
+
+            a:not(.btn) {
+                color: inherit !important;
+
+                &:hover,
+                &:focus {
+                    color: #ffffff !important;
+                }
+            }
+        }
+    }
+}
+
+.o_list_renderer .o_list_table tfoot {
+    background: var(--xtd-deep) !important;
+
+    > tr > td,
+    > tr > th {
+        background: var(--xtd-deep) !important;
+        color: #d1d1d1 !important;
+        border-top: 1px solid #3c3e4b !important;
+        box-shadow: none !important;
+    }
+}
+
+.o_list_renderer .o_list_table .o_optional_columns_dropdown_toggle,
+.o_list_renderer .o_list_table thead button,
+.o_list_renderer .o_list_table thead .btn,
+.o_list_renderer .o_list_table thead .dropdown-toggle {
+    color: var(--xtd-ink) !important;
+
+    &:hover,
+    &:focus,
+    &.show {
+        background: var(--xtd-surface-soft) !important;
+        color: #ffffff !important;
+    }
+}
+
+.o_form_view .o_field_x2many .o_list_table thead th,
+.o_form_view .o_field_x2many .o_list_table thead th *,
+.o_form_view .o_field_x2many .o_list_table thead .o_optional_columns_dropdown_toggle,
+.o_form_view .o_field_x2many .o_list_table thead button,
+.o_form_view .o_field_x2many .o_list_table thead .btn,
+.o_form_view .o_field_x2many .o_list_table thead .dropdown-toggle {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.o_list_renderer .o_optional_columns_dropdown_toggle,
+.o_list_renderer .o_list_record_selector,
+.o_list_renderer .o_list_number,
+.o_list_renderer .text-muted,
+.o_list_renderer .text-body-secondary {
+    color: #d1d1d1 !important;
+}
+
+.o_list_renderer .o_list_table tbody .text-danger,
+.o_list_renderer .o_list_table tbody .text-warning {
+    color: #ff6d6d !important;
 }
 
 .o_control_panel .o_breadcrumb,
@@ -67,8 +545,140 @@ body {
 .btn-light,
 .oe_login_form .form-control,
 .o_database_list .form-control {
-    background: #202020 !important;
-    border-color: var(--xtd-line) !important;
+    background: var(--xtd-surface-soft) !important;
+    border-color: #3c3e4b !important;
+}
+
+.o_control_panel .btn-secondary,
+.o_control_panel .btn-light,
+.o_control_panel .dropdown-toggle,
+.o_control_panel .o_cp_switch_buttons .btn,
+.o_control_panel .o_cp_pager .btn {
+    background: var(--xtd-surface-soft) !important;
+    border-color: #3c3e4b !important;
+    color: var(--xtd-ink) !important;
+
+    &:hover,
+    &:focus,
+    &.active {
+        background: var(--xtd-surface-hover) !important;
+        border-color: #4a4d5c !important;
+        color: #ffffff !important;
+    }
+}
+
+.o_searchview {
+    background: var(--xtd-surface-soft) !important;
+    border: 1px solid #3c3e4b !important;
+    box-shadow: none !important;
+
+    .o_searchview_input {
+        background: transparent !important;
+        color: var(--xtd-ink) !important;
+
+        &::placeholder {
+            color: var(--xtd-muted) !important;
+        }
+    }
+
+    .o_searchview_facet {
+        --SearchBar-facet-background: var(--xtd-surface) !important;
+        background: var(--xtd-surface) !important;
+        border-color: #3c3e4b !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o_searchview_icon,
+    .o_searchview_more,
+    .o_searchview_dropdown_toggler {
+        color: var(--xtd-ink) !important;
+    }
+}
+
+.dropdown-menu,
+.o_popover,
+.o-dropdown--menu {
+    background: var(--xtd-surface-soft) !important;
+    border-color: #3c3e4b !important;
+    color: var(--xtd-ink) !important;
+}
+
+.o_kanban_renderer {
+    --Kanban-background: var(--xtd-deep) !important;
+    --KanbanGroup-background: var(--xtd-deep) !important;
+    --KanbanGroup-grouped-bg: var(--xtd-deep) !important;
+    --KanbanColumn__highlight-background: rgba(255, 109, 45, 0.12) !important;
+    --KanbanColumn__highlight-border: rgba(255, 109, 45, 0.35) !important;
+    --KanbanColumn__highlight-selected: rgba(106, 181, 251, 0.14) !important;
+    background: var(--xtd-deep) !important;
+}
+
+.o_kanban_renderer .o_kanban_group,
+.o_kanban_renderer .o_kanban_quick_create {
+    background: var(--xtd-deep) !important;
+}
+
+.o_kanban_renderer .o_kanban_record:not(.o_kanban_ghost),
+.o_kanban_renderer .o_kanban_quick_create,
+.o_kanban_renderer .o_kanban_record.o-kanban-button-new {
+    background: var(--xtd-surface) !important;
+    border-color: #3c3e4b !important;
+    color: var(--xtd-ink) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
+}
+
+.o_kanban_renderer .o_kanban_record:not(.o_kanban_ghost):hover,
+.o_kanban_renderer .o_kanban_record:not(.o_kanban_ghost):focus-within {
+    background: var(--xtd-surface-hover) !important;
+}
+
+.o_kanban_renderer .o_kanban_record a:not(.btn),
+.o_kanban_renderer .o_kanban_record div,
+.o_kanban_renderer .o_kanban_record span,
+.o_kanban_renderer .o_kanban_record strong,
+.o_kanban_renderer .o_kanban_record main,
+.o_kanban_renderer .o_kanban_record footer {
+    color: inherit !important;
+}
+
+.o_kanban_renderer .o_kanban_record .text-muted,
+.o_kanban_renderer .o_kanban_record .text-body-secondary,
+.o_kanban_renderer .o_kanban_record small {
+    color: #d1d1d1 !important;
+}
+
+.o_kanban_renderer .o_kanban_record .o_dropdown_kanban .dropdown-toggle,
+.o_kanban_renderer .o_kanban_record .o_kanban_record_subtitle,
+.o_kanban_renderer .o_kanban_record .o_field_widget,
+.o_kanban_renderer .o_kanban_record .o_field_text,
+.o_kanban_renderer .o_kanban_record .o_field_char,
+.o_kanban_renderer .o_kanban_record .o_field_monetary {
+    color: var(--xtd-ink) !important;
+}
+
+.o_kanban_renderer .o_kanban_record .o_field_empty,
+.o_kanban_renderer .o_kanban_record .opacity-50,
+.o_kanban_renderer .o_kanban_record .text-opacity-50 {
+    color: rgba(247, 245, 242, 0.55) !important;
+}
+
+.dropdown-item,
+.o-dropdown-item {
+    color: var(--xtd-ink) !important;
+
+    &:hover,
+    &:focus,
+    &.active {
+        background: var(--xtd-surface-hover) !important;
+        color: #ffffff !important;
+    }
+}
+
+.badge.text-bg-light,
+.badge.bg-light,
+.o_tag_badge.o_badge_color_0 {
+    background: #3c3e4b !important;
+    color: var(--xtd-ink) !important;
 }
 
 .o_loading_indicator {

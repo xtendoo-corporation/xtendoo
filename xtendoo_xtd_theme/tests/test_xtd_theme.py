@@ -124,6 +124,10 @@ class TestXtdTheme(TransactionCase):
         content = dark_menu_scss.read_text(encoding="utf-8")
 
         self.assertIn(".o_menu_brand,", content)
+        self.assertIn(".o_main_navbar .o_menu_brand {", content)
+        self.assertIn("min-height: 38px !important;", content)
+        self.assertIn("border-radius: 10px !important;", content)
+        self.assertIn("a.o_menu_brand.o-dropdown-item.dropdown-item:hover", content)
         self.assertIn(".o-dropdown-item,", content)
         self.assertIn("text-decoration: none !important;", content)
         self.assertIn("font-size: 1rem !important;", content)
@@ -154,6 +158,41 @@ class TestXtdTheme(TransactionCase):
         self.assertIn('.o_web_client :is(i,span,a,button,div).fa,', content)
         self.assertIn('color: var(--xtd-ink) !important;', content)
         self.assertIn('color: inherit !important;', content)
+
+    def test_xtd_theme_dark_backend_surfaces_follow_enterprise_like_contract(self):
+        dark_theme_scss = self.module_path / "static" / "src" / "scss" / "xtd_theme.dark.scss"
+        content = dark_theme_scss.read_text(encoding="utf-8")
+
+        self.assertIn("--xtd-deep: #1b1d26;", content)
+        self.assertIn("--xtd-surface: #262a36;", content)
+        self.assertIn(".o_web_client > .o_action_manager,", content)
+        self.assertIn(".o_list_button_add,", content)
+        self.assertIn("background: var(--o-brand-primary) !important;", content)
+        self.assertIn(".o_form_view {", content)
+        self.assertIn(".o_notification_manager {", content)
+        self.assertIn("--Notification__background-color: var(--xtd-surface) !important;", content)
+        self.assertIn(".o_notification_close,", content)
+        self.assertIn(".o_form_sheet {", content)
+        self.assertIn(".o_form_statusbar {", content)
+        self.assertIn(".o_field_statusbar > .o_statusbar_status", content)
+        self.assertIn(".o_notebook {", content)
+        self.assertIn(".o-mail-Form-chatter,", content)
+        self.assertIn(".o-mail-Chatter-top {", content)
+        self.assertIn(".o-mail-Chatter-sendMessage,", content)
+        self.assertIn(".o-mail-Message-author,", content)
+        self.assertIn(".o-mail-Message-trackingNew,", content)
+        self.assertIn(".o_list_renderer .o_list_table", content)
+        self.assertIn(".o_list_renderer .o_list_table tfoot", content)
+        self.assertIn(".o_form_view .o_field_x2many .o_list_table thead th,", content)
+        self.assertIn("color: #ffffff !important;", content)
+        self.assertIn(".o_control_panel .o_cp_pager .btn", content)
+        self.assertIn(".o_list_renderer .o_list_table thead button,", content)
+        self.assertIn(".o_searchview_facet", content)
+        self.assertIn("--SearchBar-facet-background: var(--xtd-surface) !important;", content)
+        self.assertIn(".o_kanban_renderer {", content)
+        self.assertIn(".o_kanban_renderer .o_kanban_record:not(.o_kanban_ghost),", content)
+        self.assertIn(".dropdown-menu,", content)
+        self.assertIn(".badge.text-bg-light,", content)
 
     def test_xtd_theme_settings_scss_scopes_primary_states(self):
         theme_scss = self.module_path / "static" / "src" / "scss" / "xtd_theme.scss"
