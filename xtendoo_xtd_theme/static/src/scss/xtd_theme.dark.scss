@@ -147,6 +147,35 @@ body {
         color: var(--xtd-ink) !important;
     }
 
+    .o_field_x2many .o_kanban_renderer .o-kanban-button-new,
+    .o_field_widget .o_kanban_renderer .o-kanban-button-new {
+        align-self: stretch !important;
+        background: var(--xtd-surface-soft) !important;
+        border: 1px solid #3c3e4b !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        color: var(--xtd-link) !important;
+        display: flex !important;
+        flex: 0 0 auto !important;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        justify-content: center !important;
+        line-height: 1.3 !important;
+        max-width: none !important;
+        min-height: 4.5rem !important;
+        min-width: 0 !important;
+        padding: 1rem 1.5rem !important;
+        width: 100% !important;
+
+        &:hover,
+        &:focus,
+        &:active {
+            background: var(--xtd-surface) !important;
+            border-color: #4c5566 !important;
+            color: #cfe1ff !important;
+        }
+    }
+
     .o_form_sheet {
         background: var(--xtd-surface) !important;
         border-color: #3c3e4b !important;
