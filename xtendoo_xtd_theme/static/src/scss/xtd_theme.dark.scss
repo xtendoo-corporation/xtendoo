@@ -185,9 +185,9 @@ body {
     .o_field_widget .o_kanban_view.o_field_x2many_kanban .o_kanban_renderer.o_kanban_ungrouped .o_kanban_record {
         background: transparent !important;
         border-radius: 0 !important;
-        flex: 0 0 calc(50% - 0.5rem) !important;
-        max-width: calc(50% - 0.5rem) !important;
-        width: calc(50% - 0.5rem) !important;
+        flex: 0 0 24rem !important;
+        max-width: 24rem !important;
+        width: 24rem !important;
     }
 
     .o_field_widget .o_kanban_view.o_field_x2many_kanban .o_kanban_renderer.o_kanban_ungrouped .o_kanban_record.flex-row:not(.o-kanban-button-new) {
