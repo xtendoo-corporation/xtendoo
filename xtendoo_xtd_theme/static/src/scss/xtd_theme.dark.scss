@@ -176,6 +176,57 @@ body {
         }
     }
 
+    .o_field_widget .o_kanban_view.o_field_x2many_kanban,
+    .o_field_widget .o_kanban_view.o_field_x2many_kanban .o_kanban_renderer.o_kanban_ungrouped {
+        --Kanban-background: transparent !important;
+        background: transparent !important;
+    }
+
+    .o_field_widget .o_kanban_view.o_field_x2many_kanban .o_kanban_renderer.o_kanban_ungrouped .o_kanban_record {
+        background: transparent !important;
+        border-radius: 0 !important;
+        flex: 0 0 calc(50% - 0.5rem) !important;
+        max-width: calc(50% - 0.5rem) !important;
+        width: calc(50% - 0.5rem) !important;
+    }
+
+    .o_field_widget .o_kanban_view.o_field_x2many_kanban .o_kanban_renderer.o_kanban_ungrouped .o_kanban_record.flex-row:not(.o-kanban-button-new) {
+        align-items: center !important;
+        min-height: 5rem !important;
+
+        > main {
+            justify-content: center !important;
+            order: 1 !important;
+            padding-left: 0 !important;
+        }
+
+        > aside.o_kanban_aside_full {
+            flex: 0 0 2.25rem !important;
+            margin-left: auto !important;
+            order: 2 !important;
+            width: 2.25rem !important;
+
+            > * {
+                height: 2.25rem !important;
+                margin: 0 !important;
+                width: 2.25rem !important;
+            }
+
+            .o_kanban_image_fill,
+            img {
+                height: 2.25rem !important;
+                max-height: 2.25rem !important;
+                min-height: 2.25rem !important;
+                width: 2.25rem !important;
+            }
+        }
+    }
+
+    .o_field_widget .o_kanban_view.o_field_x2many_kanban .o_kanban_renderer.o_kanban_ungrouped .o_kanban_record.flex-row:not(.o-kanban-button-new):hover,
+    .o_field_widget .o_kanban_view.o_field_x2many_kanban .o_kanban_renderer.o_kanban_ungrouped .o_kanban_record.flex-row:not(.o-kanban-button-new):focus-within {
+        background: transparent !important;
+    }
+
     .o_form_sheet {
         background: var(--xtd-surface) !important;
         border-color: #3c3e4b !important;
