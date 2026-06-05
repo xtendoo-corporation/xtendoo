@@ -16,6 +16,7 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
     "depends": [
         "stock",
         "barcodes",
+        "barcodes_gs1_nomenclature",
     ],
     "data": [
         "data/xtendoo_stock_barcode_data.xml",
@@ -28,6 +29,8 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
             "xtendoo_stock_barcode/static/src/pda/*.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.xml",
+            "xtendoo_stock_barcode/static/src/client_action/picking_client_action.js",
+            "xtendoo_stock_barcode/static/src/client_action/picking_client_action.xml",
         ],
     },
     "installable": True,

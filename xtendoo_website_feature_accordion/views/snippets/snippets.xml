@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- Register the snippet in the Website Builder snippet panel -->
+<template id="snippets" inherit_id="website.snippets" priority="20">
+    <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+        <t t-snippet="xtendoo_website_feature_accordion.s_feature_accordion"
+           string="Feature Accordion"
+           t-thumbnail="/xtendoo_website_feature_accordion/static/src/img/snippets_thumbs/s_feature_accordion.svg"
+           group="content">
+            <keywords>accordion, feature, image, interactive, salesforce, showcase, toggle, tabs, highlight, benefits</keywords>
+        </t>
+    </xpath>
+</template>
+
+</odoo>

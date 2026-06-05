@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="s_feature_accordion" name="Feature Accordion">
+    <section class="s_feature_accordion pt80 pb80" data-snippet="s_feature_accordion" data-name="Feature Accordion">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Left column: Feature image -->
+                <div class="col-lg-6 s_feature_accordion_image_col pb16 pb-lg-0">
+                    <div class="s_feature_accordion_image_wrapper position-relative overflow-hidden rounded-3">
+                        <img src="/xtendoo_website_feature_accordion/static/src/img/snippets_demo/s_feature_accordion_1.png"
+                             class="img img-fluid w-100 s_feature_accordion_img"
+                             data-index="0"
+                             alt="Feature illustration"
+                             loading="lazy"/>
+                    </div>
+                </div>
+                <!-- Right column: Title + accordion items -->
+                <div class="col-lg-5 offset-lg-1 pt16 pb16">
+                    <h2 class="h3-fs mb-2">Discover Our <strong>Key Features</strong></h2>
+                    <p class="lead text-muted mb-4">Everything you need to transform your business, in one platform.</p>
+                    <div class="s_feature_accordion_list" data-name="Feature List">
+                        <!-- Item 1 (active by default) -->
+                        <div class="s_feature_accordion_item active"
+                             data-name="Feature Item"
+                             data-feature-img="/xtendoo_website_feature_accordion/static/src/img/snippets_demo/s_feature_accordion_1.png">
+                            <div class="s_feature_accordion_item_header">
+                                <span class="s_feature_accordion_item_title h6-fs fw-bold">Advanced Analytics</span>
+                            </div>
+                            <div class="s_feature_accordion_item_body">
+                                <p class="mb-0">Gain real-time insights into your operations with our powerful analytics dashboard. Track KPIs, generate custom reports, and make data-driven decisions effortlessly.</p>
+                            </div>
+                        </div>
+                        <!-- Item 2 -->
+                        <div class="s_feature_accordion_item"
+                             data-name="Feature Item"
+                             data-feature-img="/xtendoo_website_feature_accordion/static/src/img/snippets_demo/s_feature_accordion_2.png">
+                            <div class="s_feature_accordion_item_header">
+                                <span class="s_feature_accordion_item_title h6-fs fw-bold">Team Collaboration</span>
+                            </div>
+                            <div class="s_feature_accordion_item_body">
+                                <p class="mb-0">Empower your team with seamless collaboration tools. Share projects, assign tasks, and communicate in real time — all within a single workspace designed for productivity.</p>
+                            </div>
+                        </div>
+                        <!-- Item 3 -->
+                        <div class="s_feature_accordion_item"
+                             data-name="Feature Item"
+                             data-feature-img="/xtendoo_website_feature_accordion/static/src/img/snippets_demo/s_feature_accordion_3.png">
+                            <div class="s_feature_accordion_item_header">
+                                <span class="s_feature_accordion_item_title h6-fs fw-bold">Cloud Infrastructure</span>
+                            </div>
+                            <div class="s_feature_accordion_item_body">
+                                <p class="mb-0">Built on enterprise-grade cloud architecture for maximum uptime and security. Your data is always protected, encrypted, and available whenever you need it.</p>
+                            </div>
+                        </div>
+                        <!-- Item 4 -->
+                        <div class="s_feature_accordion_item"
+                             data-name="Feature Item"
+                             data-feature-img="/xtendoo_website_feature_accordion/static/src/img/snippets_demo/s_feature_accordion_4.png">
+                            <div class="s_feature_accordion_item_header">
+                                <span class="s_feature_accordion_item_title h6-fs fw-bold">Mobile Experience</span>
+                            </div>
+                            <div class="s_feature_accordion_item_body">
+                                <p class="mb-0">Access everything on the go. Our fully responsive platform adapts to any device, so you can manage your business from your phone or tablet with ease.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</template>
+
+</odoo>

@@ -1,0 +1,134 @@
+// ============================================================================
+// Feature Accordion Snippet — Salesforce-style interactive block
+// Module: xtendoo_website_feature_accordion
+// ============================================================================
+
+// ----- Configuration variables -----
+$s-feature-accent: #0066FF !default;
+$s-feature-accent-light: rgba(0, 102, 255, 0.06) !default;
+$s-feature-transition-speed: 0.4s !default;
+$s-feature-border-radius: 12px !default;
+$s-feature-item-radius: 8px !default;
+
+// ----- Main section -----
+.s_feature_accordion {
+    // ----- Image column -----
+    .s_feature_accordion_image_wrapper {
+        border-radius: $s-feature-border-radius;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08),
+                    0 4px 16px rgba(0, 0, 0, 0.04);
+        aspect-ratio: 4 / 3;
+        background-color: #f4f6f9;
+    }
+
+    .s_feature_accordion_img {
+        width: 100% !important;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity $s-feature-transition-speed ease,
+                    transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        will-change: opacity, transform;
+
+        &.s_feature_accordion_img_fade_out {
+            opacity: 0;
+            transform: scale(1.03);
+        }
+
+        &.s_feature_accordion_img_fade_in {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    // ----- Accordion list -----
+    .s_feature_accordion_list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    // ----- Individual item -----
+    .s_feature_accordion_item {
+        position: relative;
+        padding: 16px 16px 16px 24px;
+        border-radius: $s-feature-item-radius;
+        cursor: pointer;
+        transition: background-color 0.3s ease,
+                    box-shadow 0.3s ease;
+        border-left: 3px solid transparent;
+        background: transparent;
+
+        &:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        // ----- Active state: blue left bar + subtle bg -----
+        &.active {
+            border-left-color: $s-feature-accent;
+            background: $s-feature-accent-light;
+            box-shadow: 0 2px 12px rgba(0, 102, 255, 0.06);
+
+            .s_feature_accordion_item_title {
+                color: $s-feature-accent;
+            }
+        }
+
+        // ----- Header -----
+        .s_feature_accordion_item_header {
+            display: flex;
+            align-items: center;
+            user-select: none;
+        }
+
+        .s_feature_accordion_item_title {
+            margin: 0;
+            transition: color 0.25s ease;
+            line-height: 1.4;
+        }
+
+        // ----- Collapsible body -----
+        .s_feature_accordion_item_body {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height $s-feature-transition-speed cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.3s ease 0.05s,
+                        padding 0.3s ease;
+            padding-top: 0;
+
+            p {
+                font-size: 0.925rem;
+                line-height: 1.65;
+                color: rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        &.active .s_feature_accordion_item_body {
+            max-height: 300px;
+            opacity: 1;
+            padding-top: 10px;
+        }
+    }
+
+    // ----- Responsive -----
+    @media (max-width: 991.98px) {
+        .s_feature_accordion_image_col {
+            order: -1;
+            margin-bottom: 24px;
+        }
+
+        .s_feature_accordion_image_wrapper {
+            aspect-ratio: 16 / 9;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .s_feature_accordion_item {
+            padding: 12px 12px 12px 18px;
+        }
+
+        .s_feature_accordion_image_wrapper {
+            border-radius: 8px;
+        }
+    }
+}

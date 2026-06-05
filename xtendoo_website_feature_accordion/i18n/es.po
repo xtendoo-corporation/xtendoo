@@ -1,0 +1,97 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * xtendoo_website_feature_accordion
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-18 21:00+0000\n"
+"PO-Revision-Date: 2026-05-18 21:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish <>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Feature Accordion"
+msgstr "Acordeón de Funcionalidades"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Discover Our"
+msgstr "Descubre Nuestras"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Key Features"
+msgstr "Funcionalidades Clave"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Everything you need to transform your business, in one platform."
+msgstr "Todo lo que necesitas para transformar tu negocio, en una sola plataforma."
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Advanced Analytics"
+msgstr "Analítica Avanzada"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Gain real-time insights into your operations with our powerful analytics dashboard. Track KPIs, generate custom reports, and make data-driven decisions effortlessly."
+msgstr "Obtén información en tiempo real sobre tus operaciones con nuestro potente panel de analítica. Rastrea KPIs, genera informes personalizados y toma decisiones basadas en datos sin esfuerzo."
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Team Collaboration"
+msgstr "Colaboración en Equipo"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Empower your team with seamless collaboration tools. Share projects, assign tasks, and communicate in real time — all within a single workspace designed for productivity."
+msgstr "Potencia tu equipo con herramientas de colaboración integradas. Comparte proyectos, asigna tareas y comunícate en tiempo real — todo en un único espacio de trabajo diseñado para la productividad."
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Cloud Infrastructure"
+msgstr "Infraestructura en la Nube"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Built on enterprise-grade cloud architecture for maximum uptime and security. Your data is always protected, encrypted, and available whenever you need it."
+msgstr "Construida sobre arquitectura en la nube de nivel empresarial para máxima disponibilidad y seguridad. Tus datos siempre protegidos, cifrados y disponibles cuando los necesites."
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Mobile Experience"
+msgstr "Experiencia Móvil"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Access everything on the go. Our fully responsive platform adapts to any device, so you can manage your business from your phone or tablet with ease."
+msgstr "Accede a todo en cualquier momento. Nuestra plataforma totalmente adaptable se ajusta a cualquier dispositivo, para que puedas gestionar tu negocio desde tu teléfono o tablet con facilidad."
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.ui.view,arch_db:xtendoo_website_feature_accordion.s_feature_accordion
+msgid "Feature illustration"
+msgstr "Ilustración de funcionalidad"
+
+#. module: xtendoo_website_feature_accordion
+#: model_terms:ir.ui.view,arch_db:xtendoo_website_feature_accordion.snippets
+msgid "Feature Accordion"
+msgstr "Acordeón de Funcionalidades"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.module.module,shortdesc:xtendoo_website_feature_accordion.module_xtendoo_website_feature_accordion
+msgid "Website Feature Accordion"
+msgstr "Acordeón de Funcionalidades Web"
+
+#. module: xtendoo_website_feature_accordion
+#: model:ir.module.module,summary:xtendoo_website_feature_accordion.module_xtendoo_website_feature_accordion
+msgid "Snippet reutilizable tipo Salesforce: imagen + acordeón interactivo con cambio de imagen al seleccionar cada elemento."
+msgstr "Snippet reutilizable tipo Salesforce: imagen + acordeón interactivo con cambio de imagen al seleccionar cada elemento."

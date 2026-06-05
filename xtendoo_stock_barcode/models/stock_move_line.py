@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class StockMoveLine(models.Model):
@@ -26,4 +26,15 @@ class StockMoveLine(models.Model):
         string="Paquete confirmado por barcode",
         copy=False,
     )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("picking_id"):
+                picking = self.env["stock.picking"].browse(vals["picking_id"])
+                if not vals.get("result_package_id") and picking.xt_barcode_current_package_id:
+                    vals["result_package_id"] = picking.xt_barcode_current_package_id.id
+                if not vals.get("location_dest_id") and picking.xt_barcode_destination_location_id:
+                    vals["location_dest_id"] = picking.xt_barcode_destination_location_id.id
+        return super().create(vals_list)
 

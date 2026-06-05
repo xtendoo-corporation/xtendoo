@@ -75,28 +75,7 @@ export class XtendooStockBarcodeMainMenu extends Component {
         return this.openAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_internal");
     }
 
-    async openCentralRequestsAction() {
-        try {
-            const result = await this.orm.call(
-                "stock.warehouse",
-                "action_open_tp_central_requests_for_current_user",
-                []
-            );
-            if (result.action) {
-                return this.actionService.doAction(result.action);
-            }
-            if (result.warning) {
-                this.notificationService.add(result.warning.message, {
-                    title: result.warning.title || _t("Xtendoo Barcode"),
-                    type: "warning",
-                });
-                return false;
-            }
-        } catch {
-            return this.openAction("todopinturas_stock_barcode.action_todopinturas_central_request");
-        }
-        return false;
-    }
+
 
     async onBarcodeScanned(barcode) {
         this.state.lastBarcode = barcode;

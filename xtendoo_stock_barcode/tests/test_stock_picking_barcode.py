@@ -62,9 +62,7 @@ class TestXtendooStockBarcode(TransactionCase):
         )
         cls.package = cls.env["stock.package"].create({"name": "PACK-MENU-01"})
         cls.warehouse.int_type_id.barcode = "BC-TYPE-INT-01"
-        cls.pda_view = cls.env.ref(
-            "xtendoo_stock_barcode.view_picking_form_xtendoo_stock_barcode_pda_intuitive"
-        )
+
 
     def setUp(self):
         super().setUp()
@@ -79,9 +77,10 @@ class TestXtendooStockBarcode(TransactionCase):
     def test_action_open_pda_uses_custom_xtendoo_view(self):
         action = self.picking.action_xt_barcode_open_pda()
 
-        self.assertEqual(action["res_model"], "stock.picking")
-        self.assertEqual(action["res_id"], self.picking.id)
-        self.assertEqual(action["views"][0][0], self.pda_view.id)
+        self.assertEqual(action["type"], "ir.actions.client")
+        self.assertEqual(action["tag"], "xtendoo_stock_barcode_client_action")
+        self.assertEqual(action["params"]["model"], "stock.picking")
+        self.assertEqual(action["params"]["picking_id"], self.picking.id)
 
     def standard_form_view_exposes_pda_access_and_barcode_handler(self):
         view = self.env["stock.picking"].get_view(
@@ -104,38 +103,7 @@ class TestXtendooStockBarcode(TransactionCase):
         standard_form_view_exposes_pda_access_and_barcode_handler
     )
 
-    def pda_form_view_guides_the_first_scan_and_omits_manual_controls(self):
-        view = self.env["stock.picking"].get_view(
-            view_id=self.pda_view.id,
-            view_type="form",
-        )
-        arch = etree.fromstring(view["arch"].encode())
 
-        scanner_fields = arch.xpath(
-            "//field[@name='_barcode_scanned'][@widget='xtendoo_stock_barcode_scanner']"
-        )
-        zero_scan_alerts = arch.xpath(
-            "//div[contains(@class, 'alert')][.//field[@name='xt_barcode_zero_scan_message']]"
-        )
-        focus_labels = arch.xpath("//field[@name='xt_barcode_focus_product_label']")
-        next_steps = arch.xpath("//field[@name='xt_barcode_next_step']")
-        pending_summaries = arch.xpath("//field[@name='xt_barcode_pending_summary']")
-        removed_controls = arch.xpath(
-            "//button[@name='action_xt_barcode_set_mode_product' or @name='action_xt_barcode_set_mode_source' or @name='action_xt_barcode_set_mode_destination' or @name='action_xt_barcode_set_mode_lot' or @name='action_xt_barcode_set_mode_package' or @name='action_xt_barcode_reset_context']"
-        )
-
-        self.assertEqual(len(scanner_fields), 1)
-        self.assertEqual(len(zero_scan_alerts), 1)
-        self.assertIn("xt_barcode_has_scanned_products", zero_scan_alerts[0].attrib["invisible"])
-        self.assertIn("xt_barcode_zero_scan_message", zero_scan_alerts[0].attrib["invisible"])
-        self.assertEqual(len(focus_labels), 1)
-        self.assertGreaterEqual(len(next_steps), 2)
-        self.assertEqual(len(pending_summaries), 1)
-        self.assertFalse(removed_controls)
-
-    test_pda_form_view_guides_the_first_scan_and_omits_manual_controls = (
-        pda_form_view_guides_the_first_scan_and_omits_manual_controls
-    )
 
     def opening_pda_falls_back_to_the_standard_form_when_scanning_is_not_allowed(self):
         self.picking.action_cancel()
@@ -530,10 +498,8 @@ class TestXtendooStockBarcode(TransactionCase):
     def test_root_menu_is_available_from_home(self):
         menu = self.env.ref("xtendoo_stock_barcode.menu_xtendoo_stock_barcode_root")
         action = self.env.ref("xtendoo_stock_barcode.action_xtendoo_stock_barcode_main_menu")
-        central_menu = self.env.ref("todopinturas_stock_barcode.menu_todopinturas_stock_barcode_root")
 
         self.assertEqual(menu.name, "Xtendoo Barcode")
         self.assertFalse(menu.parent_id)
         self.assertEqual(menu.action.id, action.id)
-        self.assertEqual(menu.child_id, central_menu)
 
