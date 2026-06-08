@@ -50,3 +50,44 @@ class StockPicking(models.Model):
             return {"success": True, "message": "Código escaneado correctamente.", "excess": excess}
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+    def action_xt_complete_line(self, move_id):
+        self.ensure_one()
+        move = self.env["stock.move"].browse(move_id)
+        if move in self.move_ids and move.state not in ('cancel', 'done'):
+            missing_qty = move.product_uom_qty - move.xt_barcode_scanned_qty
+            if missing_qty <= 0:
+                return {"success": True}
+                
+            for ml in move.move_line_ids:
+                if missing_qty <= 0:
+                    break
+                line_missing = getattr(ml, "quantity_product_uom", 0) - ml.quantity
+                if line_missing > 0:
+                    qty_to_add = min(missing_qty, line_missing)
+                    ml.write({
+                        "quantity": ml.quantity + qty_to_add,
+                        "xt_barcode_product_scanned": True,
+                    })
+                    missing_qty -= qty_to_add
+                elif not ml.xt_barcode_product_scanned:
+                    ml.write({"xt_barcode_product_scanned": True})
+
+            if missing_qty > 0:
+                if move.move_line_ids:
+                    ml = move.move_line_ids[0]
+                    ml.write({
+                        "quantity": ml.quantity + missing_qty,
+                        "xt_barcode_product_scanned": True,
+                    })
+                else:
+                    self._create_barcode_move_line(
+                        move,
+                        move.product_id,
+                        move.location_id,
+                        move.location_dest_id,
+                        missing_qty,
+                        barcode_flags=self._get_new_line_barcode_flags(move.product_id)
+                    )
+            return {"success": True}
+        return {"success": False, "error": "Movimiento no válido."}

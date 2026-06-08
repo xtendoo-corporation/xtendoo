@@ -98,6 +98,28 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         }
     }
 
+    async completeLine(moveId) {
+        if (!this.state.picking || this.state.picking.state === 'done') return;
+        
+        try {
+            const result = await this.orm.call("stock.picking", "action_xt_complete_line", [this.pickingId, moveId]);
+            if (result.success) {
+                this.state.lastMessage = _t("Línea completada correctamente.");
+                this.state.lastMessageSuccess = true;
+                this.playSound('success');
+                await this.loadData();
+            } else {
+                this.state.lastMessage = result.error || _t("Error al completar la línea.");
+                this.state.lastMessageSuccess = false;
+                this.playSound('error');
+            }
+        } catch (error) {
+            this.state.lastMessage = error.message?.data?.message || error.message || _t("Error inesperado al completar la línea.");
+            this.state.lastMessageSuccess = false;
+            this.playSound('error');
+        }
+    }
+
     async validatePicking() {
         try {
             const result = await this.orm.call("stock.picking", "button_validate", [[this.pickingId]]);

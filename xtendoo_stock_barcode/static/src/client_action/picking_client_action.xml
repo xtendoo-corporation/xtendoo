@@ -53,6 +53,11 @@
                                             <div class="fw-bold fs-5" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done > line.qty_demand ? 'text-danger' : 'text-primary')">
                                                 <t t-esc="line.qty_done"/> / <t t-esc="line.qty_demand"/>
                                             </div>
+                                            <button t-if="line.qty_done &lt; line.qty_demand" 
+                                                    class="btn btn-sm btn-outline-success mt-1" 
+                                                    t-on-click="() => this.completeLine(line.id)">
+                                                <i class="fa fa-check"/> Completar
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

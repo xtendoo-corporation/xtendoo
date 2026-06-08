@@ -562,12 +562,11 @@ class StockPicking(models.Model):
         total_scanned = sum(product_moves.mapped("xt_barcode_scanned_qty"))
 
         if total_demand > 0 and total_scanned + quantity > total_demand:
-            if not self._barcode_allow_extra_product():
-                return self._barcode_scan_warning(
-                    barcode,
-                    _("Has superado la demanda inicial para %s (%s pedidas). No se permiten unidades extra.", product.display_name, total_demand),
-                    raise_on_error=raise_on_error,
-                )
+            return self._barcode_scan_warning(
+                barcode,
+                _("Has superado la demanda inicial para %s (%s pedidas). No se permiten unidades extra.", product.display_name, total_demand),
+                raise_on_error=raise_on_error,
+            )
 
         if not self._barcode_allow_extra_product() and not existing_move:
             return self._barcode_scan_warning(
