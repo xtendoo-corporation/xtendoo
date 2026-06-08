@@ -40,43 +40,49 @@
                         <div class="list-group list-group-flush">
                             <t t-foreach="state.picking.lines" t-as="line" t-key="line.id">
                                 <div class="list-group-item p-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="flex-grow-1">
-                                            <div class="fw-bold fs-5 mb-1"><t t-esc="line.product_name"/></div>
-                                            <div class="text-muted">
-                                                <i class="fa fa-barcode me-1"/>
-                                                <t t-esc="line.product_barcode || 'Sin código'"/>
+                                    <div class="container-fluid p-0">
+                                        <!-- Primera línea: Nombre del producto -->
+                                        <div class="row g-0 mb-2">
+                                            <div class="col-12 fw-bold fs-5"><t t-esc="line.product_name"/></div>
+                                        </div>
+
+                                        <!-- Segunda línea: Barcode y Ubicación Destino -->
+                                        <div class="row g-0 mb-3 align-items-center text-muted">
+                                            <div class="col-6">
+                                                <i class="fa fa-barcode me-1"/> <t t-esc="line.product_barcode || 'Sin código'"/>
                                             </div>
-                                            <div class="text-muted small mt-1">
-                                                <i class="fa fa-arrow-right mx-1"/>
-                                                <t t-esc="line.location_dest_name"/>
+                                            <div class="col-6 text-end">
+                                                <i class="fa fa-map-marker me-1"/> <t t-esc="line.location_dest_name"/>
                                             </div>
                                         </div>
-                                        <div class="text-end ms-3">
-                                            <div class="fw-bold fs-3 mb-2"
-                                                 t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done > line.qty_demand ? 'text-danger' : 'text-primary')">
-                                                <t t-esc="line.qty_done"/>
-                                                /
-                                                <t t-esc="line.qty_demand"/>
+
+                                        <!-- Tercera línea: Cantidades y Botones -->
+                                        <div class="row g-0 align-items-center">
+                                            <div class="col-4">
+                                                <div class="fw-bold fs-2" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done > line.qty_demand ? 'text-danger' : 'text-primary')">
+                                                    <t t-esc="line.qty_done"/> <small class="text-muted">/</small> <t t-esc="line.qty_demand"/>
+                                                </div>
                                             </div>
-                                            <div class="d-flex flex-wrap justify-content-end gap-2">
-                                                <button class="btn btn-outline-danger fw-bold px-3"
-                                                        t-on-click="() => this.resetLine(line)">
-                                                    0
-                                                </button>
-                                                <button class="btn btn-outline-danger fw-bold px-3"
-                                                        t-on-click="() => this.adjustQty(line, -1)">
-                                                    -1
-                                                </button>
-                                                <button class="btn btn-outline-success fw-bold px-3"
-                                                        t-on-click="() => this.adjustQty(line, 1)">
-                                                    +1
-                                                </button>
-                                                <button t-if="line.qty_done &lt; line.qty_demand"
-                                                        class="btn btn-outline-success fw-bold px-3"
-                                                        t-on-click="() => this.completeLine(line)">
-                                                    <i class="fa fa-check"/>
-                                                </button>
+                                            <div class="col-8">
+                                                <div class="d-flex justify-content-end gap-2">
+                                                    <button class="btn btn-outline-danger fw-bold px-3 py-2"
+                                                            t-on-click="() => this.resetLine(line)">
+                                                        0
+                                                    </button>
+                                                    <button class="btn btn-outline-danger fw-bold px-3 py-2"
+                                                            t-on-click="() => this.adjustQty(line, -1)">
+                                                        -1
+                                                    </button>
+                                                    <button class="btn btn-outline-success fw-bold px-3 py-2"
+                                                            t-on-click="() => this.adjustQty(line, 1)">
+                                                        +1
+                                                    </button>
+                                                    <button t-if="line.qty_done &lt; line.qty_demand"
+                                                            class="btn btn-outline-success fw-bold px-3 py-2"
+                                                            t-on-click="() => this.completeLine(line)">
+                                                        <i class="fa fa-check"/>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
