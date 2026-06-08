@@ -35,24 +35,14 @@
 
                                 <div class="row g-3 mb-4">
 
-                                    <div class="col-md-6 col-xl">
+                                    <div class="col-md-6">
                                         <button type="button" class="btn btn-outline-primary w-100 py-3" t-on-click="openIncomingAction">
                                             Entradas
                                         </button>
                                     </div>
-                                    <div class="col-md-6 col-xl">
-                                        <button type="button" class="btn btn-outline-primary w-100 py-3" t-on-click="openOutgoingAction">
-                                            Salidas
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6 col-xl">
+                                    <div class="col-md-6">
                                         <button type="button" class="btn btn-outline-primary w-100 py-3" t-on-click="openInternalAction">
-                                            Internas
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6 col-xl">
-                                        <button type="button" class="btn btn-outline-primary w-100 py-3" t-on-click="openPickingsAction">
-                                            Todas
+                                            Transferencias internas
                                         </button>
                                     </div>
                                 </div>

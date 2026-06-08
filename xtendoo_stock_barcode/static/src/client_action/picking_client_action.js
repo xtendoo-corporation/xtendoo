@@ -17,6 +17,8 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         this.orm = useService("orm");
 
         this.pickingId = this.props.action.params.picking_id;
+        this.locationId = this.props.action.params.location_id;
+        this.mode = this.props.action.params.mode || 'standard';
 
         this.state = useState({
             loading: true,
@@ -41,7 +43,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             const gainNode = audioCtx.createGain();
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            
+
             if (type === 'error' || type === 'excess') {
                 oscillator.type = 'square';
                 oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
@@ -65,18 +67,28 @@ export class XtendooStockBarcodePickingClientAction extends Component {
     async loadData() {
         this.state.loading = true;
         try {
-            this.state.picking = await this.orm.call("stock.picking", "action_xt_get_barcode_data", [this.pickingId]);
+            if (this.mode === 'aggregated') {
+                this.state.picking = await this.orm.call("stock.picking", "action_xt_get_aggregated_barcode_data", [this.locationId]);
+            } else {
+                this.state.picking = await this.orm.call("stock.picking", "action_xt_get_barcode_data", [this.pickingId]);
+            }
         } catch (error) {
-            this.notificationService.add(_t("Error al cargar datos del picking."), { type: "danger" });
+            this.notificationService.add(_t("Error al cargar datos."), { type: "danger" });
         }
         this.state.loading = false;
     }
 
     async onBarcodeScanned(barcode) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
-        
+
         try {
-            const result = await this.orm.call("stock.picking", "action_xt_process_barcode_scan", [this.pickingId, barcode]);
+            let result;
+            if (this.mode === 'aggregated') {
+                result = await this.orm.call("stock.picking", "action_xt_process_aggregated_barcode_scan", [this.locationId, barcode]);
+            } else {
+                result = await this.orm.call("stock.picking", "action_xt_process_barcode_scan", [this.pickingId, barcode]);
+            }
+
             if (result.success) {
                 this.state.lastMessage = result.message;
                 this.state.lastMessageSuccess = true;
@@ -98,11 +110,17 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         }
     }
 
-    async completeLine(moveId) {
+    async completeLine(line) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
-        
+
         try {
-            const result = await this.orm.call("stock.picking", "action_xt_complete_line", [this.pickingId, moveId]);
+            let result;
+            if (this.mode === 'aggregated') {
+                result = await this.orm.call("stock.picking", "action_xt_complete_aggregated_line", [line.move_ids]);
+            } else {
+                result = await this.orm.call("stock.picking", "action_xt_complete_line", [this.pickingId, line.id]);
+            }
+
             if (result.success) {
                 this.state.lastMessage = _t("Línea completada correctamente.");
                 this.state.lastMessageSuccess = true;
@@ -120,28 +138,80 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         }
     }
 
+    async resetLine(line) {
+        if (!this.state.picking || this.state.picking.state === 'done') return;
+        try {
+            if (this.mode === 'aggregated') {
+                await this.orm.call("stock.picking", "action_xt_reset_aggregated_line", [line.move_ids]);
+            } else {
+                await this.orm.call("stock.picking", "action_xt_reset_line", [this.pickingId, line.id]);
+            }
+            await this.loadData();
+        } catch (error) {}
+    }
+
+    async adjustQty(line, qty) {
+        if (!this.state.picking || this.state.picking.state === 'done') return;
+        try {
+            let result;
+            if (this.mode === 'aggregated') {
+                result = await this.orm.call("stock.picking", "action_xt_add_aggregated_qty", [line.move_ids, qty]);
+            } else {
+                result = await this.orm.call("stock.picking", "action_xt_adjust_qty", [this.pickingId, line.id, qty]);
+            }
+
+            if (result && result.success) {
+                await this.loadData();
+            } else if (result && result.error) {
+                this.notificationService.add(result.error, { type: "danger" });
+            }
+        } catch (error) {}
+    }
+
     async validatePicking() {
         try {
-            const result = await this.orm.call("stock.picking", "button_validate", [[this.pickingId]]);
+            let result;
+            if (this.mode === 'aggregated') {
+                result = await this.orm.call("stock.picking", "action_xt_validate_aggregated_pickings", [this.locationId]);
+            } else {
+                result = await this.orm.call("stock.picking", "button_validate", [[this.pickingId]]);
+            }
+
+            if (result && result.action) {
+                return this.actionService.doAction(result.action);
+            }
             if (result && typeof result === 'object' && result.type) {
                 return this.actionService.doAction(result);
             }
-            this.notificationService.add(_t("Picking validado correctamente."), { type: "success" });
-            this.exitAction();
+
+            if (result && result.success) {
+                this.notificationService.add(result.message || _t("Operación validada correctamente."), { type: "success" });
+                if (result.finished) {
+                    this.exitAction();
+                } else {
+                    await this.loadData();
+                }
+            } else if (result && result.error) {
+                this.notificationService.add(result.error, { type: "danger" });
+            }
         } catch (error) {
             this.notificationService.add(error.message?.data?.message || _t("Error al validar el picking."), { type: "danger" });
         }
     }
 
     exitAction() {
-        // Fallback to open the form view directly if going back fails
-        this.actionService.doAction({
-            type: "ir.actions.act_window",
-            res_model: "stock.picking",
-            res_id: parseInt(this.pickingId),
-            views: [[false, "form"]],
-            target: "main",
-        });
+        if (this.mode === 'aggregated') {
+            this.actionService.doAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_main_menu", { clear_breadcrumbs: true });
+        } else {
+            // Fallback to open the form view directly if going back fails
+            this.actionService.doAction({
+                type: "ir.actions.act_window",
+                res_model: "stock.picking",
+                res_id: parseInt(this.pickingId),
+                views: [[false, "form"]],
+                target: "main",
+            });
+        }
     }
 }
 

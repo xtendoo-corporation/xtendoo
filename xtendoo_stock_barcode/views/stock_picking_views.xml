@@ -21,4 +21,16 @@
         </field>
     </record>
 
+    <record id="view_picking_kanban_inherit_xtendoo_stock_barcode" model="ir.ui.view">
+        <field name="name">stock.picking.kanban.inherit.xtendoo_stock_barcode</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.stock_picking_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="action">action_xt_barcode_open_pda</attribute>
+                <attribute name="type">object</attribute>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

@@ -72,7 +72,7 @@ export class XtendooStockBarcodeMainMenu extends Component {
     }
 
     async openInternalAction() {
-        return this.openAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_internal");
+        return this.openAction("xtendoo_stock_barcode.action_stock_barcode_internal_wizard");
     }
 
 
@@ -112,4 +112,3 @@ export class XtendooStockBarcodeMainMenu extends Component {
 }
 
 registry.category("actions").add("xtendoo_stock_barcode_main_menu", XtendooStockBarcodeMainMenu);
-

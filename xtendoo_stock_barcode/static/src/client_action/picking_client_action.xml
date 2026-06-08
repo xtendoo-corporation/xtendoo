@@ -53,11 +53,25 @@
                                             <div class="fw-bold fs-5" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done > line.qty_demand ? 'text-danger' : 'text-primary')">
                                                 <t t-esc="line.qty_done"/> / <t t-esc="line.qty_demand"/>
                                             </div>
-                                            <button t-if="line.qty_done &lt; line.qty_demand" 
-                                                    class="btn btn-sm btn-outline-success mt-1" 
-                                                    t-on-click="() => this.completeLine(line.id)">
-                                                <i class="fa fa-check"/> Completar
-                                            </button>
+                                            <div class="d-flex flex-wrap justify-content-end gap-1 mt-1">
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        t-on-click="() => this.resetLine(line)">
+                                                    Reset
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        t-on-click="() => this.adjustQty(line, -1)">
+                                                    -1
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-success"
+                                                        t-on-click="() => this.adjustQty(line, 1)">
+                                                    +1
+                                                </button>
+                                                <button t-if="line.qty_done &lt; line.qty_demand"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        t-on-click="() => this.completeLine(line)">
+                                                    <i class="fa fa-check"/> Completar
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

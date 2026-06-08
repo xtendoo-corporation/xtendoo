@@ -19,7 +19,9 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
         "barcodes_gs1_nomenclature",
     ],
     "data": [
+        "security/ir.model.access.csv",
         "data/xtendoo_stock_barcode_data.xml",
+        "wizard/stock_barcode_internal_wizard_views.xml",
         "views/xtendoo_stock_barcode_menu.xml",
         "views/stock_picking_type_views.xml",
         "views/stock_picking_views.xml",
