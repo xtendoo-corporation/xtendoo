@@ -12,6 +12,7 @@ class StockPicking(models.Model):
             "name": self.name,
             "state": self.state,
             "picking_type_code": self.picking_type_id.code,
+            "location_dest_name": self.location_dest_id.display_name,
             "company_id": self.company_id.id,
             "scheduled_date": self.scheduled_date,
             "lines": [
@@ -109,25 +110,44 @@ class StockPicking(models.Model):
         move = self.env["stock.move"].browse(move_id)
         if move in self.move_ids and move.state not in ('cancel', 'done'):
             if qty > 0:
-                try:
-                    self._apply_scanned_barcode(move.product_id.barcode, raise_on_error=True)
-                    return {"success": True}
-                except Exception as e:
-                    return {"success": False, "error": str(e)}
+                # Intentamos usar la lógica de escaneo si tiene barcode y no tiene tracking
+                if move.product_id.barcode and move.product_id.tracking == 'none':
+                    try:
+                        # Asegurar modo producto para el escaneo
+                        self.xt_barcode_mode = 'product'
+                        res = self._apply_scanned_barcode(move.product_id.barcode, raise_on_error=True)
+                        return {"success": True}
+                    except Exception as e:
+                        return {"success": False, "error": str(e)}
+
+                # Incremento manual si no hay barcode, tiene tracking o falló el escaneo parcial
+                # Buscamos una línea existente para este movimiento
+                ml = move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done'))[:1]
+                barcode_flags = self._get_new_line_barcode_flags(move.product_id)
+
+                if ml:
+                    self._increase_line_quantity(ml, qty, barcode_flags=barcode_flags)
+                else:
+                    self._create_barcode_move_line(
+                        move, move.product_id, move.location_id, move.location_dest_id, qty,
+                        barcode_flags=barcode_flags
+                    )
+                return {"success": True}
             else:
-                # Restar cantidad
-                ml = move.move_line_ids.filtered(lambda l: l.xt_barcode_product_scanned and l.quantity >= abs(qty))[:1]
+                # Restar cantidad (ya estaba implementado, lo mantenemos igual)
+                ml = move.move_line_ids.filtered(lambda l: l.xt_barcode_product_scanned and l.quantity >= abs(qty)).sorted('id', reverse=True)[:1]
                 if ml:
                     ml.write({'quantity': ml.quantity + qty})
                     if ml.quantity == 0:
                         ml.write({'xt_barcode_product_scanned': False})
                 return {"success": True}
-        return {"success": False}
+        return {"success": False, "error": _("Movimiento no encontrado o ya finalizado.")}
 
     @api.model
     def action_xt_get_aggregated_barcode_data(self, location_id):
         # Buscamos todos los pickings que tengan esa ubicación como destino (Recepciones) or origen (Entregas/Internas)
         # y que no estén finalizados ni cancelados.
+        location = self.env['stock.location'].browse(location_id)
         pickings = self.search([
             '|', ('location_id', '=', location_id), ('location_dest_id', '=', location_id),
             ('state', 'not in', ('cancel', 'done'))
@@ -163,6 +183,7 @@ class StockPicking(models.Model):
             "name": _("Transferencias Internas"),
             "state": 'assigned',
             "picking_type_code": 'internal',
+            "location_dest_name": location.display_name,
             "lines": list(product_data.values()),
         }
 
@@ -217,17 +238,34 @@ class StockPicking(models.Model):
         # Buscamos el producto implicado (todos los moves deben ser del mismo producto)
         moves = self.env['stock.move'].browse(move_ids)
         if not moves:
-            return {"success": False}
+            return {"success": False, "error": _("No hay movimientos seleccionados.")}
 
         product = moves[0].product_id
         if qty > 0:
-            # Reutilizamos la lógica de escaneo para añadir cantidad al primer movimiento disponible
+            # Intentamos usar el primer movimiento que le falte cantidad
             target_move = moves.filtered(lambda m: m.xt_barcode_scanned_qty < m.product_uom_qty)[:1] or moves[0]
-            try:
-                target_move.picking_id._apply_scanned_barcode(product.barcode, raise_on_error=True)
-                return {"success": True}
-            except Exception as e:
-                return {"success": False, "error": str(e)}
+
+            # Si tiene barcode y no tiene tracking, usamos la lógica de escaneo principal
+            if product.barcode and product.tracking == 'none':
+                try:
+                    target_move.picking_id.xt_barcode_mode = 'product'
+                    target_move.picking_id._apply_scanned_barcode(product.barcode, raise_on_error=True)
+                    return {"success": True}
+                except Exception as e:
+                    return {"success": False, "error": str(e)}
+
+            # Incremento manual si no hay barcode o tiene tracking
+            ml = target_move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done'))[:1]
+            barcode_flags = target_move.picking_id._get_new_line_barcode_flags(product)
+
+            if ml:
+                target_move.picking_id._increase_line_quantity(ml, qty, barcode_flags=barcode_flags)
+            else:
+                target_move.picking_id._create_barcode_move_line(
+                    target_move, product, target_move.location_id, target_move.location_dest_id, qty,
+                    barcode_flags=barcode_flags
+                )
+            return {"success": True}
         else:
             # Para restar, buscamos movimientos que tengan cantidad escaneada
             source_move = moves.filtered(lambda m: m.xt_barcode_scanned_qty > 0).sorted('id', reverse=True)[:1]

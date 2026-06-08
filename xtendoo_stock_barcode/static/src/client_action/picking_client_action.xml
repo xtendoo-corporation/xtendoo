@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="xtendoo_stock_barcode.PickingClientAction">
-        <div class="o_action h-100 overflow-auto bg-light">
+        <div class="o_action h-100 overflow-auto bg-light" style="padding-bottom: 100px;">
             <div class="container-fluid py-3">
                 <div t-if="state.loading" class="text-center mt-5">
                     <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-primary"/>
@@ -9,26 +9,27 @@
                 </div>
                 <t t-else="">
                     <div class="card shadow-sm border-0 mb-3">
-                        <div class="card-body">
+                        <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h2 class="h4 mb-1"><t t-esc="state.picking.name"/></h2>
-                                    <span class="badge bg-primary"><t t-esc="state.picking.picking_type_code"/></span>
-                                    <span t-if="state.picking.state === 'assigned'" class="badge bg-success ms-1">Preparado</span>
-                                </div>
-                                <div>
-                                    <button class="btn btn-primary" t-on-click="validatePicking" t-att-disabled="state.picking.state === 'done'">
-                                        Validar
-                                    </button>
-                                    <button class="btn btn-outline-secondary ms-2" t-on-click="exitAction">
-                                        Salir
-                                    </button>
+                                    <h2 class="h3 mb-2"><t t-esc="state.picking.name"/></h2>
+                                    <div class="mb-3">
+                                        <span class="badge bg-primary fs-6"><t t-esc="state.picking.picking_type_code"/></span>
+                                        <span t-if="state.picking.state === 'assigned'"
+                                              class="badge bg-success fs-6 ms-2">Preparado</span>
+                                    </div>
+                                    <div t-if="state.picking.location_dest_name" class="text-muted fs-5">
+                                        <i class="fa fa-map-marker me-1"/>
+                                        Recibiendo en:
+                                        <span class="fw-bold text-dark"><t t-esc="state.picking.location_dest_name"/></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div t-if="state.lastMessage" class="alert mb-3" t-att-class="state.lastMessageSuccess ? 'alert-success' : 'alert-danger'">
+                    <div t-if="state.lastMessage" class="alert mb-3"
+                         t-att-class="state.lastMessageSuccess ? 'alert-success' : 'alert-danger'">
                         <t t-esc="state.lastMessage"/>
                     </div>
 
@@ -38,38 +39,46 @@
                         </div>
                         <div class="list-group list-group-flush">
                             <t t-foreach="state.picking.lines" t-as="line" t-key="line.id">
-                                <div class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <div class="fw-bold"><t t-esc="line.product_name"/></div>
-                                            <div class="text-muted small">
-                                                <i class="fa fa-barcode me-1"/> <t t-esc="line.product_barcode || 'Sin código'"/>
+                                <div class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold fs-5 mb-1"><t t-esc="line.product_name"/></div>
+                                            <div class="text-muted">
+                                                <i class="fa fa-barcode me-1"/>
+                                                <t t-esc="line.product_barcode || 'Sin código'"/>
                                             </div>
-                                            <div class="text-muted small">
-                                                <i class="fa fa-map-marker me-1"/> <t t-esc="line.location_name"/> <i class="fa fa-arrow-right mx-1"/> <t t-esc="line.location_dest_name"/>
+                                            <div class="text-muted small mt-1">
+                                                <i class="fa fa-map-marker me-1"/>
+                                                <t t-esc="line.location_name"/>
+                                                <i class="fa fa-arrow-right mx-1"/>
+                                                <t t-esc="line.location_dest_name"/>
                                             </div>
                                         </div>
-                                        <div class="text-end">
-                                            <div class="fw-bold fs-5" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done > line.qty_demand ? 'text-danger' : 'text-primary')">
-                                                <t t-esc="line.qty_done"/> / <t t-esc="line.qty_demand"/>
+                                        <div class="text-end ms-3">
+                                            <div class="fw-bold fs-3 mb-2"
+                                                 t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done > line.qty_demand ? 'text-danger' : 'text-primary')">
+                                                <t t-esc="line.qty_done"/>
+                                                /
+                                                <t t-esc="line.qty_demand"/>
                                             </div>
-                                            <div class="d-flex flex-wrap justify-content-end gap-1 mt-1">
-                                                <button class="btn btn-sm btn-outline-danger"
+                                            <div class="d-flex flex-wrap justify-content-end gap-2">
+                                                <button class="btn btn-outline-danger fw-bold px-3"
                                                         t-on-click="() => this.resetLine(line)">
-                                                    Reset
+                                                    0
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger"
+                                                <button class="btn btn-outline-danger fw-bold px-3"
                                                         t-on-click="() => this.adjustQty(line, -1)">
                                                     -1
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-success"
+                                                <button class="btn btn-outline-success fw-bold px-3"
                                                         t-on-click="() => this.adjustQty(line, 1)">
                                                     +1
                                                 </button>
                                                 <button t-if="line.qty_done &lt; line.qty_demand"
-                                                        class="btn btn-sm btn-outline-success"
+                                                        class="btn btn-outline-success fw-bold px-3"
                                                         t-on-click="() => this.completeLine(line)">
-                                                    <i class="fa fa-check"/> Completar
+                                                    <i class="fa fa-check"/>
+                                                    Completar
                                                 </button>
                                             </div>
                                         </div>
@@ -79,6 +88,17 @@
                         </div>
                     </div>
                 </t>
+            </div>
+            <!-- Botones estáticos abajo -->
+            <div t-if="!state.loading" class="fixed-bottom p-3 bg-white border-top d-flex gap-2 w-100">
+                <button class="btn btn-secondary flex-grow-1 py-3 fw-bold" t-on-click="exitAction">
+                    SALIR
+                </button>
+                <button class="btn btn-primary flex-grow-1 py-3 fw-bold" t-on-click="validatePicking"
+                        t-att-disabled="state.picking.state === 'done'">
+                    <i class="fa fa-check"/>
+                    Validar
+                </button>
             </div>
         </div>
     </t>
