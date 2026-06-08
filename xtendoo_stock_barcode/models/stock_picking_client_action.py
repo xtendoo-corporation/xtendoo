@@ -163,6 +163,7 @@ class StockPicking(models.Model):
             p_id = m.product_id.id
             if p_id not in product_data:
                 product_data[p_id] = {
+                    "id": p_id,
                     "product_id": p_id,
                     "product_name": m.product_id.display_name,
                     "product_barcode": m.product_id.barcode,

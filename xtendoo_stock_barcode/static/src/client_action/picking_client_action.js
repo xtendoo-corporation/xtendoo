@@ -22,6 +22,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
 
         this.state = useState({
             loading: true,
+            updating: false,
             picking: null,
             lastMessage: false,
             lastMessageSuccess: false,
@@ -65,7 +66,11 @@ export class XtendooStockBarcodePickingClientAction extends Component {
     }
 
     async loadData() {
-        this.state.loading = true;
+        if (!this.state.picking) {
+            this.state.loading = true;
+        } else {
+            this.state.updating = true;
+        }
         try {
             if (this.mode === 'aggregated') {
                 this.state.picking = await this.orm.call("stock.picking", "action_xt_get_aggregated_barcode_data", [this.locationId]);
@@ -74,8 +79,10 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             }
         } catch (error) {
             this.notificationService.add(_t("Error al cargar datos."), { type: "danger" });
+        } finally {
+            this.state.loading = false;
+            this.state.updating = false;
         }
-        this.state.loading = false;
     }
 
     async onBarcodeScanned(barcode) {
@@ -113,6 +120,10 @@ export class XtendooStockBarcodePickingClientAction extends Component {
     async completeLine(line) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
 
+        // Actualización optimista
+        const originalQty = line.qty_done;
+        line.qty_done = line.qty_demand;
+
         try {
             let result;
             if (this.mode === 'aggregated') {
@@ -127,11 +138,13 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                 this.playSound('success');
                 await this.loadData();
             } else {
+                line.qty_done = originalQty;
                 this.state.lastMessage = result.error || _t("Error al completar la línea.");
                 this.state.lastMessageSuccess = false;
                 this.playSound('error');
             }
         } catch (error) {
+            line.qty_done = originalQty;
             this.state.lastMessage = error.message?.data?.message || error.message || _t("Error inesperado al completar la línea.");
             this.state.lastMessageSuccess = false;
             this.playSound('error');
@@ -140,6 +153,11 @@ export class XtendooStockBarcodePickingClientAction extends Component {
 
     async resetLine(line) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
+        
+        // Actualización optimista
+        const originalQty = line.qty_done;
+        line.qty_done = 0;
+        
         try {
             if (this.mode === 'aggregated') {
                 await this.orm.call("stock.picking", "action_xt_reset_aggregated_line", [line.move_ids]);
@@ -147,11 +165,18 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                 await this.orm.call("stock.picking", "action_xt_reset_line", [this.pickingId, line.id]);
             }
             await this.loadData();
-        } catch (error) {}
+        } catch (error) {
+            line.qty_done = originalQty;
+        }
     }
 
     async adjustQty(line, qty) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
+        
+        // Actualización optimista
+        const originalQty = line.qty_done;
+        line.qty_done = Math.max(0, line.qty_done + qty);
+        
         try {
             let result;
             if (this.mode === 'aggregated') {
@@ -162,10 +187,15 @@ export class XtendooStockBarcodePickingClientAction extends Component {
 
             if (result && result.success) {
                 await this.loadData();
-            } else if (result && result.error) {
-                this.notificationService.add(result.error, { type: "danger" });
+            } else {
+                line.qty_done = originalQty;
+                if (result && result.error) {
+                    this.notificationService.add(result.error, { type: "danger" });
+                }
             }
-        } catch (error) {}
+        } catch (error) {
+            line.qty_done = originalQty;
+        }
     }
 
     async validatePicking() {
