@@ -48,8 +48,6 @@
                                                 <t t-esc="line.product_barcode || 'Sin código'"/>
                                             </div>
                                             <div class="text-muted small mt-1">
-                                                <i class="fa fa-map-marker me-1"/>
-                                                <t t-esc="line.location_name"/>
                                                 <i class="fa fa-arrow-right mx-1"/>
                                                 <t t-esc="line.location_dest_name"/>
                                             </div>
@@ -78,7 +76,6 @@
                                                         class="btn btn-outline-success fw-bold px-3"
                                                         t-on-click="() => this.completeLine(line)">
                                                     <i class="fa fa-check"/>
-                                                    Completar
                                                 </button>
                                             </div>
                                         </div>
