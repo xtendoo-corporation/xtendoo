@@ -61,6 +61,11 @@ class StockPicking(models.Model):
             if missing_qty <= 0:
                 return {"success": True}
 
+            # Comprobar exceso de demanda antes de completar
+            excess_error = self._check_barcode_excess_demand(move.product_id, missing_qty)
+            if excess_error:
+                return {"success": False, "error": excess_error}
+
             for ml in move.move_line_ids:
                 if missing_qty <= 0:
                     break
@@ -110,6 +115,11 @@ class StockPicking(models.Model):
         move = self.env["stock.move"].browse(move_id)
         if move in self.move_ids and move.state not in ('cancel', 'done'):
             if qty > 0:
+                # Comprobar exceso de demanda antes de ajustar
+                excess_error = self._check_barcode_excess_demand(move.product_id, qty)
+                if excess_error:
+                    return {"success": False, "error": excess_error}
+
                 # Intentamos usar la lógica de escaneo si tiene barcode y no tiene tracking
                 if move.product_id.barcode and move.product_id.tracking == 'none':
                     try:
@@ -242,7 +252,16 @@ class StockPicking(models.Model):
             return {"success": False, "error": _("No hay movimientos seleccionados.")}
 
         product = moves[0].product_id
+        picking = moves[0].picking_id
+
         if qty > 0:
+            # Comprobar exceso de demanda antes de ajustar
+            # En modo agregado, comprobamos contra la demanda total de los movimientos seleccionados
+            total_demand = sum(moves.mapped('product_uom_qty'))
+            total_scanned = sum(moves.mapped('xt_barcode_scanned_qty'))
+            if total_demand > 0 and total_scanned + qty > total_demand:
+                 return {"success": False, "error": _("Has superado la demanda inicial para %s (%s pedidas). No se permiten unidades extra.", product.display_name, total_demand)}
+
             # Intentamos usar el primer movimiento que le falte cantidad
             target_move = moves.filtered(lambda m: m.xt_barcode_scanned_qty < m.product_uom_qty)[:1] or moves[0]
 

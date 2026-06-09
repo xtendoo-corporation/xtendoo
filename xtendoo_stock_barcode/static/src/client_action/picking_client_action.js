@@ -153,11 +153,11 @@ export class XtendooStockBarcodePickingClientAction extends Component {
 
     async resetLine(line) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
-        
+
         // Actualización optimista
         const originalQty = line.qty_done;
         line.qty_done = 0;
-        
+
         try {
             if (this.mode === 'aggregated') {
                 await this.orm.call("stock.picking", "action_xt_reset_aggregated_line", [line.move_ids]);
@@ -172,11 +172,11 @@ export class XtendooStockBarcodePickingClientAction extends Component {
 
     async adjustQty(line, qty) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
-        
+
         // Actualización optimista
         const originalQty = line.qty_done;
         line.qty_done = Math.max(0, line.qty_done + qty);
-        
+
         try {
             let result;
             if (this.mode === 'aggregated') {
@@ -214,18 +214,34 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                 return this.actionService.doAction(result);
             }
 
+            // Si llegamos aquí sin redirección, es que se ha validado (éxito manual o sin wizard)
+            this.state.lastMessage = _t("Operación validada correctamente. Pulsa salir.");
+            this.state.lastMessageSuccess = true;
+            this.playSound('success');
+
             if (result && result.success) {
                 this.notificationService.add(result.message || _t("Operación validada correctamente."), { type: "success" });
                 if (result.finished) {
-                    this.exitAction();
+                    // Esperar un poco para que el usuario vea el mensaje antes de salir si es automático
+                    setTimeout(() => this.exitAction(), 2000);
                 } else {
                     await this.loadData();
                 }
             } else if (result && result.error) {
                 this.notificationService.add(result.error, { type: "danger" });
+                this.state.lastMessage = result.error;
+                this.state.lastMessageSuccess = false;
+                this.playSound('error');
+            } else {
+                // Caso por defecto: se ha validado pero no hay respuesta estructurada (ej. button_validate directo)
+                await this.loadData();
             }
         } catch (error) {
-            this.notificationService.add(error.message?.data?.message || _t("Error al validar el picking."), { type: "danger" });
+            const msg = error.message?.data?.message || error.message || _t("Error al validar el picking.");
+            this.notificationService.add(msg, { type: "danger" });
+            this.state.lastMessage = msg;
+            this.state.lastMessageSuccess = false;
+            this.playSound('error');
         }
     }
 

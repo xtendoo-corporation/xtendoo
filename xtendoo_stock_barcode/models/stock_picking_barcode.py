@@ -10,6 +10,16 @@ _logger = logging.getLogger(__name__)
 class StockPicking(models.Model):
     _inherit = "stock.picking"
 
+    def _check_barcode_excess_demand(self, product, quantity):
+        self.ensure_one()
+        product_moves = self.move_ids.filtered(lambda m: m.product_id == product and m.state not in ("done", "cancel"))
+        total_demand = sum(product_moves.mapped("product_uom_qty"))
+        total_scanned = sum(product_moves.mapped("xt_barcode_scanned_qty"))
+
+        if total_demand > 0 and total_scanned + quantity > total_demand:
+            return _("Has superado la demanda inicial para %s (%s pedidas). No se permiten unidades extra.", product.display_name, total_demand)
+        return False
+
     def _set_barcode_feedback(self, barcode, message):
         self.ensure_one()
         self.xt_barcode_last_scan = barcode
@@ -557,14 +567,11 @@ class StockPicking(models.Model):
         existing_move = exact_move or self._get_candidate_move_anywhere(product)
 
         # Bloquear exceso de demanda si no se permiten productos extra
-        product_moves = self.move_ids.filtered(lambda m: m.product_id == product and m.state not in ("done", "cancel"))
-        total_demand = sum(product_moves.mapped("product_uom_qty"))
-        total_scanned = sum(product_moves.mapped("xt_barcode_scanned_qty"))
-
-        if total_demand > 0 and total_scanned + quantity > total_demand:
+        excess_error = self._check_barcode_excess_demand(product, quantity)
+        if excess_error:
             return self._barcode_scan_warning(
                 barcode,
-                _("Has superado la demanda inicial para %s (%s pedidas). No se permiten unidades extra.", product.display_name, total_demand),
+                excess_error,
                 raise_on_error=raise_on_error,
             )
 
@@ -763,18 +770,18 @@ class StockPicking(models.Model):
             res = self._scan_destination_location(gs1_data["location_dest"], raise_on_error=raise_on_error)
             if res and "warning" in res:
                 return res
-            
+
         if "product" in gs1_data:
             quantity = gs1_data.get("product_qty", 1.0)
             res = self._scan_product(gs1_data["product"], quantity=quantity, gs1_barcode=barcode, raise_on_error=raise_on_error)
             if res and "warning" in res:
                 return res
-                
+
         if "lot" in gs1_data:
             res = self._scan_lot_or_serial(gs1_data["lot"], raise_on_error=raise_on_error)
             if res and "warning" in res:
                 return res
-                
+
         if "package" in gs1_data:
             res = self._scan_package(gs1_data["package"], raise_on_error=raise_on_error)
             if res and "warning" in res:
