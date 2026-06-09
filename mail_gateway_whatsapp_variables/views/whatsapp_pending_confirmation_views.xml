@@ -108,21 +108,24 @@
         <field name="model">mail.whatsapp.template</field>
         <field name="inherit_id" ref="mail_gateway_whatsapp.view_mail_whatsapp_template_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='language']" position="after">
-                <group string="Confirmación Automática" name="confirmation">
-                    <field name="requires_confirmation"/>
-                    <field name="confirmation_template_id" invisible="requires_confirmation == False" options="{'no_create': True}"/>
-                    <field name="confirmation_type" invisible="requires_confirmation == False"/>
-                    <div colspan="2" invisible="requires_confirmation == False" class="alert alert-info" role="alert">
-                        <strong>ℹ️ Flujo de Confirmación Automática:</strong><br/>
-                        Cuando se envíe esta plantilla, el sistema esperará una respuesta del cliente.
-                        Si el cliente responde según el tipo configurado, se enviará automáticamente
-                        la plantilla de confirmación seleccionada.
-                        <br/><br/>
-                        <strong>Nota:</strong> Las respuestas interactivas (botones) abren una ventana de 24 horas
-                        para enviar mensajes adicionales, incluyendo archivos PDF.
-                    </div>
-                </group>
+            <xpath expr="//sheet/group/group[2]" position="inside">
+                <separator string="Confirmación Automática" colspan="2"/>
+                <field name="requires_confirmation" nolabel="0"/>
+                <field name="confirmation_template_id"
+                       invisible="not requires_confirmation"
+                       required="requires_confirmation"
+                       options="{'no_create': True}"
+                       nolabel="0"/>
+                <field name="confirmation_type"
+                       invisible="not requires_confirmation"
+                       required="requires_confirmation"
+                       nolabel="0"/>
+            </xpath>
+            <xpath expr="//notebook" position="before">
+                <div invisible="not requires_confirmation" class="alert alert-info mt-2" role="alert">
+                    <strong>ℹ️ Flujo de Confirmación Automática:</strong><br/>
+                    Cuando se envíe esta plantilla, el sistema esperará una respuesta del cliente para enviar automáticamente la plantilla de confirmación.
+                </div>
             </xpath>
         </field>
     </record>
