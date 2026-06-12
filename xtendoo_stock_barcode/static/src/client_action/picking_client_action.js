@@ -62,6 +62,14 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                 oscillator.start();
                 oscillator.stop(audioCtx.currentTime + 0.2);
             }
+
+            if (navigator.vibrate) {
+                if (type === 'error' || type === 'excess') {
+                    navigator.vibrate([100, 50, 100]);
+                } else {
+                    navigator.vibrate(50);
+                }
+            }
         } catch(e) {}
     }
 

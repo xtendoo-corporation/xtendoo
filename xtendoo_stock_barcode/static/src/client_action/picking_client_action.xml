@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="xtendoo_stock_barcode.PickingClientAction">
-        <div class="o_action h-100 overflow-auto bg-light" style="padding-bottom: 100px;">
+        <div class="o_action h-100 overflow-auto bg-light" style="padding-bottom: 200px;">
             <div class="container-fluid py-3">
                 <div t-if="state.loading" class="text-center mt-5">
                     <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-primary"/>
@@ -30,12 +30,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div t-if="state.lastMessage" class="alert mb-3"
-                         t-att-class="state.lastMessageSuccess ? 'alert-success' : 'alert-danger'">
-                        <t t-esc="state.lastMessage"/>
-                    </div>
-
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-white fw-bold">
                             Líneas de Movimiento
@@ -48,7 +42,6 @@
                                         <div class="row g-0 mb-2">
                                             <div class="col-12 fw-bold fs-5"><t t-esc="line.product_name"/></div>
                                         </div>
-
                                         <!-- Segunda línea: Barcode y Ubicación Destino -->
                                         <div class="row g-0 mb-3 align-items-center text-muted">
                                             <div class="col-6">
@@ -58,11 +51,10 @@
                                                 <i class="fa fa-map-marker me-1"/> <t t-esc="line.location_dest_name"/>
                                             </div>
                                         </div>
-
                                         <!-- Tercera línea: Cantidades y Botones -->
                                         <div class="row g-0 align-items-center">
                                             <div class="col-4">
-                                                <div class="fw-bold fs-2" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done > line.qty_demand ? 'text-danger' : 'text-primary')">
+                                                <div class="fw-bold fs-2" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done &gt; line.qty_demand ? 'text-danger' : 'text-primary')">
                                                     <t t-esc="line.qty_done"/> <small class="text-muted">/</small> <t t-esc="line.qty_demand"/>
                                                 </div>
                                             </div>
@@ -96,15 +88,29 @@
                 </t>
             </div>
             <!-- Botones estáticos abajo -->
-            <div t-if="!state.loading" class="fixed-bottom p-3 bg-white border-top d-flex gap-2 w-100">
-                <button class="btn btn-secondary flex-grow-1 py-3 fw-bold" t-on-click="exitAction">
-                    SALIR
-                </button>
-                <button class="btn btn-primary flex-grow-1 py-3 fw-bold" t-on-click="validatePicking"
-                        t-att-disabled="state.picking.state === 'done'">
-                    <i class="fa fa-check"/>
-                    Validar
-                </button>
+            <div t-if="!state.loading" class="fixed-bottom bg-white border-top w-100 shadow-lg">
+                <div t-if="state.lastMessage" class="px-3 py-3 border-bottom border-top border-3"
+                     t-att-class="state.lastMessageSuccess ? 'bg-success-subtle text-success-emphasis border-success' : 'bg-danger-subtle text-danger-emphasis border-danger'">
+                    <div class="d-flex align-items-baseline">
+                        <i t-att-class="state.lastMessageSuccess ? 'fa fa-check-circle' : 'fa fa-exclamation-triangle'" class="me-2 fs-5"/>
+                        <div class="flex-grow-1">
+                            <span class="fw-bold fs-5"><t t-esc="state.lastMessage"/></span>
+                        </div>
+                        <button class="btn btn-sm p-0 ms-2" t-on-click="() => state.lastMessage = false">
+                            <i class="fa fa-times fs-5 opacity-50"/>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-3 d-flex gap-2 w-100">
+                    <button class="btn btn-secondary flex-grow-1 py-3 fw-bold" t-on-click="exitAction">
+                        SALIR
+                    </button>
+                    <button class="btn btn-primary flex-grow-1 py-3 fw-bold" t-on-click="validatePicking"
+                            t-att-disabled="state.picking.state === 'done'">
+                        <i class="fa fa-check"/>
+                        Validar
+                    </button>
+                </div>
             </div>
         </div>
     </t>
