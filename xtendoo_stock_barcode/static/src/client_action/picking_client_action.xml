@@ -36,7 +36,12 @@
                         </div>
                         <div class="list-group list-group-flush">
                             <t t-foreach="state.picking.lines" t-as="line" t-key="line.id">
-                                <div class="list-group-item p-3">
+                                <div class="list-group-item p-3"
+                                     t-on-mousedown="() => this.onLineStart(line)"
+                                     t-on-touchstart="() => this.onLineStart(line)"
+                                     t-on-mouseup="() => this.onLineEnd()"
+                                     t-on-touchend="() => this.onLineEnd()"
+                                     style="user-select: none;">
                                     <div class="container-fluid p-0">
                                         <!-- Primera línea: Nombre del producto -->
                                         <div class="row g-0 mb-2">
@@ -65,18 +70,10 @@
                                                         0
                                                     </button>
                                                     <button class="btn btn-outline-danger fw-bold px-3 py-2"
-                                                            t-on-mousedown="() => this.onBtnStart(line, -1)"
-                                                            t-on-touchstart="() => this.onBtnStart(line, -1)"
-                                                            t-on-mouseup="() => this.onBtnEnd()"
-                                                            t-on-touchend="() => this.onBtnEnd()"
                                                             t-on-click="() => this.handleBtnClick(line, -1)">
                                                         -<t t-esc="line.input_qty || 1"/>
                                                     </button>
                                                     <button class="btn btn-outline-success fw-bold px-3 py-2"
-                                                            t-on-mousedown="() => this.onBtnStart(line, 1)"
-                                                            t-on-touchstart="() => this.onBtnStart(line, 1)"
-                                                            t-on-mouseup="() => this.onBtnEnd()"
-                                                            t-on-touchend="() => this.onBtnEnd()"
                                                             t-on-click="() => this.handleBtnClick(line, 1)">
                                                         +<t t-esc="line.input_qty || 1"/>
                                                     </button>
@@ -120,6 +117,11 @@
                     </button>
                 </div>
             </div>
+            <!-- Vista de Detalle de Producto -->
+            <ProductDetailView t-if="state.detailLine"
+                               line="state.detailLine"
+                               onConfirm="(val) => this.onDetailConfirm(val)"
+                               onClose="() => state.detailLine = null"/>
         </div>
     </t>
 </templates>

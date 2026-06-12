@@ -10,6 +10,7 @@ class StockPicking(models.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "picking_name": self.name,
             "state": self.state,
             "picking_type_code": self.picking_type_id.code,
             "location_dest_name": self.location_dest_id.display_name,
@@ -21,6 +22,7 @@ class StockPicking(models.Model):
                     "product_id": m.product_id.id,
                     "product_name": m.product_id.display_name,
                     "product_barcode": m.product_id.barcode,
+                    "picking_name": self.name,
                     "qty_done": m.xt_barcode_scanned_qty,
                     "qty_demand": m.product_uom_qty,
                     "location_id": m.location_id.id,
@@ -65,7 +67,6 @@ class StockPicking(models.Model):
                 "success": True,
                 "message": excess_message or "Código escaneado correctamente.",
                 "excess": bool(excess_message),
-                "new_qty_done": self.xt_barcode_scanned_qty,
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -233,6 +234,7 @@ class StockPicking(models.Model):
                     "product_id": p_id,
                     "product_name": m.product_id.display_name,
                     "product_barcode": m.product_id.barcode,
+                    "picking_name": m.picking_id.name,
                     "qty_done": 0,
                     "qty_demand": 0,
                     "location_id": m.location_id.id,

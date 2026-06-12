@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="xtendoo_stock_barcode.ProductDetailView">
+        <div class="o_action h-100 overflow-auto bg-white position-fixed top-0 start-0 w-100 z-index-master d-flex flex-column text-dark o_product_detail_custom">
+            <!-- Header (Estructura Enterprise, Colores Claros) -->
+            <div class="d-flex align-items-center p-3 border-bottom bg-light shadow-sm">
+                <button class="btn btn-outline-secondary border-0 me-3" t-on-click="_onClose">
+                    <i class="fa fa-chevron-left fs-4"/>
+                </button>
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="text-muted small text-uppercase fw-bold"><t t-esc="props.line.picking_name || ''"/></div>
+                    <h4 class="mb-0 text-truncate text-primary"><t t-esc="props.line.product_name"/></h4>
+                    <div t-if="!props.line.product_barcode" class="small text-danger italic">Sin código de barras</div>
+                </div>
+                <button class="btn btn-outline-secondary border-0" t-on-click="_onClose">
+                    <i class="fa fa-times fs-4"/>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-grow-1 p-4 d-flex flex-column align-items-center justify-content-start pt-5 container" style="max-width: 600px;">
+                <!-- Info Header (Reference/Barcode) -->
+                <div class="w-100 mb-4 px-3 d-flex align-items-center gap-2 text-muted">
+                   <i class="fa fa-tag text-primary"/> <span class="fw-bold"><t t-esc="props.line.product_id"/></span>
+                </div>
+
+                <div class="w-100 d-flex align-items-center mb-5 gap-0 overflow-hidden rounded-3 border border-secondary-subtle bg-light shadow-sm">
+                    <input type="number"
+                           class="form-control form-control-lg bg-white text-dark border-0 py-4 fs-1 text-center o_product_detail_input fw-light flex-grow-1 shadow-none"
+                           t-model="state.input_qty"
+                            t-on-keydown="(ev) => ev.key === 'Enter' &amp;&amp; this._onConfirm()"/>
+                </div>
+
+                <!-- Control Buttons (Enterprise Layout, Light Colors) -->
+                <div class="w-100 row g-2 mb-4">
+                    <div class="col-3">
+                        <button class="btn btn-outline-secondary w-100 py-3 fs-3 fw-bold" t-on-click="() => this._setQty(0)">
+                            0
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-outline-secondary w-100 py-3 fs-3 fw-bold" t-on-click="() => this._addQty(-1)">
+                            -1
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-outline-secondary w-100 py-3 fs-3 fw-bold" t-on-click="() => this._addQty(1)">
+                            +1
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-primary w-100 py-3 fs-3 fw-bold shadow-sm" t-on-click="() => this._addQty(5)">
+                            +5
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Additional fields -->
+                <div class="w-100 mt-auto mb-4">
+                    <div class="p-3 border border-light rounded-3 bg-light shadow-sm">
+                        <div class="text-muted small mb-1"><i class="fa fa-map-marker me-2 text-primary"/> Ubicación de destino</div>
+                        <div class="text-dark fw-bold ps-4"><t t-esc="props.line.location_dest_name"/></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="row g-0 border-top shadow-lg">
+                <div class="col-6">
+                    <button class="btn btn-light w-100 py-4 fs-4 border-end rounded-0 text-muted fw-bold" t-on-click="this._onClose">
+                        DESCARTAR
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-primary w-100 py-4 fs-4 border-0 rounded-0 fw-bold shadow-none" t-on-click="this._onConfirm">
+                        CONFIRMAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

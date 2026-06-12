@@ -7,9 +7,11 @@ import { standardActionServiceProps } from "@web/webclient/actions/action_servic
 import { Component, onWillStart, useState } from "@odoo/owl";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { QtyWizard } from "../components/qty_wizard/qty_wizard";
+import { ProductDetailView } from "../components/product_detail/product_detail";
 
 export class XtendooStockBarcodePickingClientAction extends Component {
     static template = "xtendoo_stock_barcode.PickingClientAction";
+    static components = { ProductDetailView };
     static props = { ...standardActionServiceProps };
 
     setup() {
@@ -31,6 +33,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             lastMessage: false,
             lastMessageSuccess: false,
             isWarning: false,
+            detailLine: null, // Línea seleccionada para ver el detalle
         });
 
         useBus(this.barcodeService.bus, "barcode_scanned", (ev) =>
@@ -150,9 +153,6 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                         }
                         if (forceResult && forceResult.success) {
                             // Sincronización inmediata tras confirmación
-                            if (forceResult.new_qty_done !== undefined) {
-                                line.qty_done = forceResult.new_qty_done;
-                            }
                             this.state.lastMessage = forceResult.message || "";
                             this.state.lastMessageSuccess = true;
                             this.state.isWarning = true;
@@ -238,7 +238,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         const val = parseFloat(qty);
         if (isNaN(val) || val === 0) return;
 
-        // Actualización optimista: solo sumar el valor deseado una vez
+        // Actualización optimista para feedback inmediato en UI
         const originalQty = line.qty_done;
         line.qty_done = Math.max(0, originalQty + val);
 
@@ -251,12 +251,12 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             }
 
             if (result && result.success) {
-                // Sincronización inmediata con el valor real del servidor
+                // Sincronización con el valor real del servidor
                 if (result.new_qty_done !== undefined) {
                     line.qty_done = result.new_qty_done;
                 }
 
-                this.state.lastMessage = result.message || "";
+                this.state.lastMessage = result.message || _t("Cantidad actualizada.");
                 this.state.lastMessageSuccess = true;
                 this.state.isWarning = result.excess || false;
                 if (result.excess) {
@@ -264,10 +264,11 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                 } else {
                     this.playSound('success');
                 }
-                // Recargamos datos pero la línea ya tiene el valor correcto
+                // Refrescar datos del servidor para asegurar que pickings internos y otros estados se actualizan
                 await this.loadData();
             } else if (result && result.type === 'excess_confirmation') {
-                line.qty_done = originalQty; // Revertir para preguntar
+                // Revertir para preguntar
+                line.qty_done = originalQty;
                 this.playSound('excess');
                 this.dialogService.add(ConfirmationDialog, {
                     body: result.message || result.error,
@@ -279,7 +280,6 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                             forceResult = await this.orm.call("stock.picking", "action_xt_adjust_qty", [this.pickingId, line.id, val, true]);
                         }
                         if (forceResult && forceResult.success) {
-                            // Sincronización inmediata tras confirmación
                             if (forceResult.new_qty_done !== undefined) {
                                 line.qty_done = forceResult.new_qty_done;
                             }
@@ -300,6 +300,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             }
         } catch (error) {
             line.qty_done = originalQty;
+            this.notificationService.add(_t("Error al actualizar la cantidad."), { type: "danger" });
         }
     }
 
@@ -309,7 +310,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             if (this.mode === 'aggregated') {
                 result = await this.orm.call("stock.picking", "action_xt_validate_aggregated_pickings", [this.locationId]);
             } else {
-                result = await this.orm.call("stock.picking", "button_validate", [[this.pickingId]]);
+                result = await this.orm.call("stock.picking", "action_xt_barcode_validate", [[this.pickingId]]);
             }
 
             if (result && result.action) {
@@ -351,6 +352,11 @@ export class XtendooStockBarcodePickingClientAction extends Component {
     }
 
     exitAction() {
+        if (this.state.detailLine) {
+            this.state.detailLine = null;
+            return;
+        }
+
         if (this.returnState) {
             return this.actionService.doAction({
                 type: "ir.actions.client",
@@ -381,26 +387,30 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         await this.adjustQty(line, val * (line.input_qty || 1));
     }
 
-    onBtnStart(line, val) {
+    onLineStart(line) {
         if (this.longPressTimer) clearTimeout(this.longPressTimer);
         this.isLongPress = false;
         this.longPressTimer = setTimeout(() => {
             this.isLongPress = true;
-            this.askCustomQty(line, val);
+            this.state.detailLine = line;
         }, 600);
     }
 
-    onBtnEnd() {
+    onLineEnd() {
         clearTimeout(this.longPressTimer);
     }
 
-    async askCustomQty(line, direction) {
-        this.dialogService.add(QtyWizard, {
-            title: direction > 0 ? _t("Cantidad a sumar") : _t("Cantidad a restar"),
-            confirm: (val) => {
-                line.input_qty = val;
-            },
-        });
+
+    async onDetailConfirm(val) {
+        if (!this.state.detailLine) return;
+
+        const currentQty = this.state.detailLine.qty_done;
+        const diff = val - currentQty;
+
+        if (diff !== 0) {
+            await this.adjustQty(this.state.detailLine, diff);
+        }
+        this.state.detailLine = null;
     }
 }
 

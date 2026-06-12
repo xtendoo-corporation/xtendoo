@@ -413,7 +413,7 @@ class StockPicking(models.Model):
 
     def _increase_line_quantity(self, line, quantity, barcode_flags=None):
         self.ensure_one()
-        current_qty = line.quantity if getattr(line, "xt_barcode_product_scanned", False) else 0.0
+        current_qty = line.quantity or 0.0
         values = {"quantity": current_qty + quantity, "xt_barcode_product_scanned": True}
         if values["quantity"] > 0 and not line.picked:
             values["picked"] = True
