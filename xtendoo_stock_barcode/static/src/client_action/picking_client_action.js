@@ -83,11 +83,26 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             this.state.updating = true;
         }
         try {
+            let picking;
             if (this.mode === 'aggregated') {
-                this.state.picking = await this.orm.call("stock.picking", "action_xt_get_aggregated_barcode_data", [this.locationId]);
+                picking = await this.orm.call("stock.picking", "action_xt_get_aggregated_barcode_data", [this.locationId]);
             } else {
-                this.state.picking = await this.orm.call("stock.picking", "action_xt_get_barcode_data", [this.pickingId]);
+                picking = await this.orm.call("stock.picking", "action_xt_get_barcode_data", [this.pickingId]);
             }
+
+            // Conservar el valor del input de cantidad para que no se resetee en cada recarga
+            const inputQtys = {};
+            if (this.state.picking && this.state.picking.lines) {
+                this.state.picking.lines.forEach(l => {
+                    inputQtys[l.id] = l.input_qty;
+                });
+            }
+
+            picking.lines.forEach(line => {
+                line.input_qty = inputQtys[line.id] || 1;
+            });
+
+            this.state.picking = picking;
         } catch (error) {
             this.notificationService.add(_t("Error al cargar datos."), { type: "danger" });
         } finally {
@@ -128,17 +143,16 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                         } else {
                             forceResult = await this.orm.call("stock.picking", "action_xt_process_barcode_scan", [this.pickingId, barcode, true]);
                         }
-                        if (forceResult.success) {
-                            this.state.lastMessage = forceResult.message;
+                        if (forceResult && forceResult.success) {
+                            // Sincronización inmediata tras confirmación
+                            if (forceResult.new_qty_done !== undefined) {
+                                line.qty_done = forceResult.new_qty_done;
+                            }
+                            this.state.lastMessage = forceResult.message || "";
                             this.state.lastMessageSuccess = true;
                             this.state.isWarning = true;
                             this.playSound('success');
                             await this.loadData();
-                        } else {
-                            this.state.lastMessage = forceResult.error || _t("Error al escanear.");
-                            this.state.lastMessageSuccess = false;
-                            this.state.isWarning = false;
-                            this.playSound('error');
                         }
                     },
                     cancel: () => {},
@@ -172,6 +186,10 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             }
 
             if (result.success) {
+                // Sincronización inmediata
+                if (result.new_qty_done !== undefined) {
+                    line.qty_done = result.new_qty_done;
+                }
                 this.state.lastMessage = _t("Línea completada correctamente.");
                 this.state.lastMessageSuccess = true;
                 this.playSound('success');
@@ -212,19 +230,27 @@ export class XtendooStockBarcodePickingClientAction extends Component {
     async adjustQty(line, qty) {
         if (!this.state.picking || this.state.picking.state === 'done') return;
 
-        // Actualización optimista
+        const val = parseFloat(qty);
+        if (isNaN(val) || val === 0) return;
+
+        // Actualización optimista: solo sumar el valor deseado una vez
         const originalQty = line.qty_done;
-        line.qty_done = Math.max(0, line.qty_done + qty);
+        line.qty_done = Math.max(0, originalQty + val);
 
         try {
             let result;
             if (this.mode === 'aggregated') {
-                result = await this.orm.call("stock.picking", "action_xt_add_aggregated_qty", [line.move_ids, qty]);
+                result = await this.orm.call("stock.picking", "action_xt_add_aggregated_qty", [line.move_ids, val]);
             } else {
-                result = await this.orm.call("stock.picking", "action_xt_adjust_qty", [this.pickingId, line.id, qty]);
+                result = await this.orm.call("stock.picking", "action_xt_adjust_qty", [this.pickingId, line.id, val]);
             }
 
             if (result && result.success) {
+                // Sincronización inmediata con el valor real del servidor
+                if (result.new_qty_done !== undefined) {
+                    line.qty_done = result.new_qty_done;
+                }
+
                 this.state.lastMessage = result.message || "";
                 this.state.lastMessageSuccess = true;
                 this.state.isWarning = result.excess || false;
@@ -233,6 +259,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                 } else {
                     this.playSound('success');
                 }
+                // Recargamos datos pero la línea ya tiene el valor correcto
                 await this.loadData();
             } else if (result && result.type === 'excess_confirmation') {
                 line.qty_done = originalQty; // Revertir para preguntar
@@ -242,11 +269,15 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                     confirm: async () => {
                         let forceResult;
                         if (this.mode === 'aggregated') {
-                            forceResult = await this.orm.call("stock.picking", "action_xt_add_aggregated_qty", [line.move_ids, qty, true]);
+                            forceResult = await this.orm.call("stock.picking", "action_xt_add_aggregated_qty", [line.move_ids, val, true]);
                         } else {
-                            forceResult = await this.orm.call("stock.picking", "action_xt_adjust_qty", [this.pickingId, line.id, qty, true]);
+                            forceResult = await this.orm.call("stock.picking", "action_xt_adjust_qty", [this.pickingId, line.id, val, true]);
                         }
                         if (forceResult && forceResult.success) {
+                            // Sincronización inmediata tras confirmación
+                            if (forceResult.new_qty_done !== undefined) {
+                                line.qty_done = forceResult.new_qty_done;
+                            }
                             this.state.lastMessage = forceResult.message || "";
                             this.state.lastMessageSuccess = true;
                             this.state.isWarning = true;
