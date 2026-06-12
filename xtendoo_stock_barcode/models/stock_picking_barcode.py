@@ -914,4 +914,18 @@ class StockPicking(models.Model):
         errors = self._get_barcode_validation_errors()
         if errors:
             raise UserError("\n".join(errors))
-        return self.button_validate()
+        res = self.button_validate()
+
+        if res is True:
+            if self.picking_type_code in ("incoming", "outgoing"):
+                return self.env.ref("stock.action_report_delivery").report_action(self)
+            if self.picking_type_code == "internal":
+                return {
+                    "name": _("Pickings validados"),
+                    "type": "ir.actions.act_window",
+                    "res_model": "stock.picking",
+                    "view_mode": "list,form",
+                    "domain": [("id", "=", self.id)],
+                    "target": "current",
+                }
+        return res

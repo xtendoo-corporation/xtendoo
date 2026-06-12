@@ -419,6 +419,7 @@ class StockPicking(models.Model):
         if not pickings_to_process:
             return {"success": False, "error": _("No hay nada escaneado para validar.")}
 
+        validated_picking_ids = []
         for picking in pickings_to_process:
             try:
                 if picking._check_backorder():
@@ -430,8 +431,24 @@ class StockPicking(models.Model):
                 else:
                     # Validación directa si está completo
                     picking.button_validate()
+                validated_picking_ids.append(picking.id)
             except Exception as e:
                 return {"success": False, "error": _("Error al validar %s: %s") % (picking.name, str(e))}
+
+        if validated_picking_ids:
+            # Si hay pickings validados, comprobamos el tipo para decidir la acción
+            first_picking = self.browse(validated_picking_ids[0])
+            if first_picking.picking_type_code in ('incoming', 'outgoing'):
+                return self.env.ref('stock.action_report_delivery').report_action(validated_picking_ids)
+            if first_picking.picking_type_code == 'internal':
+                return {
+                    'name': _('Pickings validados'),
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'stock.picking',
+                    'view_mode': 'list,form',
+                    'domain': [('id', 'in', validated_picking_ids)],
+                    'target': 'current',
+                }
 
         return {
             "success": True,
