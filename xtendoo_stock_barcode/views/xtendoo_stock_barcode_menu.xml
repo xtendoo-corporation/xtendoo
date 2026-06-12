@@ -26,7 +26,7 @@
         <field name="name">Entradas</field>
         <field name="res_model">stock.picking</field>
         <field name="view_mode">kanban,list,form</field>
-        <field name="domain">[("picking_type_code", "=", "incoming")]</field>
+        <field name="domain">[("picking_type_code", "=", "incoming"), ("picking_type_id.warehouse_id.tp_is_central_request_hub", "=", True)]</field>
         <field name="context">{'search_default_available': 1}</field>
     </record>
 
@@ -54,5 +54,3 @@
         web_icon="xtendoo_stock_barcode,static/description/icon.png"
     />
 </odoo>
-
-

@@ -30,6 +30,14 @@
                 <attribute name="action">action_xt_barcode_open_pda</attribute>
                 <attribute name="type">object</attribute>
             </xpath>
+            <xpath expr="//kanban" position="inside">
+                <field name="origin"/>
+            </xpath>
+            <xpath expr="//kanban/templates//div[field[@name='name']]" position="after">
+                <div t-if="record.origin.raw_value" class="text-muted small ps-1">
+                    <field name="origin"/>
+                </div>
+            </xpath>
         </field>
     </record>
 

@@ -1,3 +1,5 @@
+/** @odoo-module **/
+
 import { registry } from "@web/core/registry";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
@@ -36,5 +38,3 @@ export class StockPickingBarcodeRefreshField extends Component {
 registry.category("fields").add("xtendoo_stock_barcode_scanner", {
     component: StockPickingBarcodeRefreshField,
 });
-
-

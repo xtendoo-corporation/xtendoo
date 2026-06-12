@@ -7,4 +7,5 @@ from . import stock_picking
 from . import stock_picking_barcode
 from . import stock_picking_menu
 from . import stock_picking_type
+from . import stock_warehouse
 from . import stock_picking_client_action
