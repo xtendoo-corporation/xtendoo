@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="xtendoo_stock_barcode.PickingClientAction">
-        <div class="o_action h-100 overflow-auto bg-light" style="padding-bottom: 200px;">
+        <div class="o_action h-100 overflow-auto bg-light o_xtendoo_stock_barcode" style="padding-bottom: 200px;">
             <div class="container-fluid py-3">
                 <div t-if="state.loading" class="text-center mt-5">
                     <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-primary"/>
@@ -16,10 +16,10 @@
                                         <t t-esc="state.picking.name"/>
                                         <i t-if="state.updating" class="fa fa-circle-o-notch fa-spin text-muted ms-2 fs-5"/>
                                     </h2>
-                                    <div class="mb-3">
-                                        <span class="badge bg-primary fs-6"><t t-esc="state.picking.picking_type_code"/></span>
+                                    <div class="mb-3 d-flex gap-2">
+                                        <span class="badge bg-primary fs-6 shadow-sm"><t t-esc="state.picking.picking_type_code"/></span>
                                         <span t-if="state.picking.state === 'assigned'"
-                                              class="badge bg-success fs-6 ms-2">Preparado</span>
+                                              class="badge bg-success fs-6 shadow-sm">Preparado</span>
                                     </div>
                                     <div t-if="state.picking.location_dest_name" class="text-muted fs-5">
                                         <i class="fa fa-map-marker me-1"/>
@@ -54,25 +54,22 @@
                                         <!-- Tercera línea: Cantidades y Botones -->
                                         <div class="row g-0 align-items-center">
                                             <div class="col-4">
-                                                <div class="fw-bold fs-2" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done &gt; line.qty_demand ? 'text-warning' : 'text-primary')">
+                                                <div class="fw-bold fs-2" t-att-class="line.qty_done === line.qty_demand ? 'text-primary' : (line.qty_done &gt; line.qty_demand ? 'text-warning' : 'text-primary')">
                                                     <t t-esc="line.qty_done"/> <small class="text-muted">/</small> <t t-esc="line.qty_demand"/>
                                                 </div>
                                             </div>
                                             <div class="col-8">
                                                 <div class="d-flex justify-content-end gap-2 align-items-center">
-                                                    <!-- Nuevo selector de cantidad dinámica -->
                                                     <div class="input-group input-group-sm w-auto border rounded overflow-hidden">
                                                         <span class="input-group-text bg-light text-muted border-0 small px-2">Cantidad +/-</span>
                                                         <input type="number" class="form-control text-center fw-bold border-0 p-0"
                                                                style="width: 50px; height: 38px; min-width: 50px;"
                                                                t-model="line.input_qty"/>
                                                     </div>
-                                                    <!-- Botón 0 a la izquierda y en rojo -->
                                                     <button class="btn btn-outline-danger fw-bold px-3 py-2"
                                                             t-on-click="() => this.resetLine(line)">
                                                         0
                                                     </button>
-                                                    <!-- Botones que usan la cantidad del input al lado del símbolo -->
                                                     <button class="btn btn-outline-danger fw-bold px-3 py-2"
                                                             t-on-click="() => this.adjustQty(line, -line.input_qty)">
                                                         -<t t-esc="line.input_qty"/>

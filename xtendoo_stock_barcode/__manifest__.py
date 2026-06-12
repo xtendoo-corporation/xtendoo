@@ -29,6 +29,7 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
     ],
     "assets": {
         "web.assets_backend": [
+            "xtendoo_stock_barcode/static/src/scss/stock_barcode.scss",
             "xtendoo_stock_barcode/static/src/pda/*.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.xml",

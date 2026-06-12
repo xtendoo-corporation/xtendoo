@@ -39,6 +39,10 @@ export class XtendooStockBarcodeMainMenu extends Component {
         });
     }
 
+    async onExit() {
+        window.location.href = '/web';
+    }
+
     async openManualBarcodeDialog() {
         this.dialogService.add(ManualBarcodeScanner, {
             facingMode: "environment",

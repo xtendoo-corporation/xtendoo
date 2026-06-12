@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="xtendoo_stock_barcode.MainMenu">
-        <div class="o_action h-100 overflow-auto">
+        <div class="o_action h-100 overflow-auto o_xtendoo_stock_barcode">
             <div class="container py-4 py-lg-5">
                 <div class="row justify-content-center">
                     <div class="col-12 col-xl-9">
@@ -62,6 +62,11 @@
                                             <span class="ms-1"><t t-esc="state.lastMessage or '-'"/></span>
                                         </div>
                                     </t>
+                                </div>
+                                <div class="mt-4">
+                                    <button type="button" class="btn btn-secondary w-100 py-3 fw-bold shadow-sm" t-on-click="onExit">
+                                        SALIR AL MENÚ INICIAL
+                                    </button>
                                 </div>
                             </div>
                         </div>
