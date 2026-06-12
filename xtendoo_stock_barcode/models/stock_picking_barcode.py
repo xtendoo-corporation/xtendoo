@@ -12,12 +12,28 @@ class StockPicking(models.Model):
 
     def _check_barcode_excess_demand(self, product, quantity):
         self.ensure_one()
+
+        # Si ya ha sido confirmado el exceso para este producto en este picking, no volvemos a preguntar
+        if product.id in self.xt_barcode_excess_confirmed_product_ids.ids:
+            return False
+
         product_moves = self.move_ids.filtered(lambda m: m.product_id == product and m.state not in ("done", "cancel"))
         total_demand = sum(product_moves.mapped("product_uom_qty"))
         total_scanned = sum(product_moves.mapped("xt_barcode_scanned_qty"))
 
         if total_demand > 0 and total_scanned + quantity > total_demand:
-            return _("Has superado la demanda inicial para %s (%s pedidas). No se permiten unidades extra.", product.display_name, total_demand)
+            return _("Has superado la demanda inicial para %s (%s pedidas). ¿Deseas añadir unidades extra?", product.display_name, total_demand)
+        return False
+
+    def _get_barcode_excess_message(self, product):
+        self.ensure_one()
+        product_moves = self.move_ids.filtered(lambda m: m.product_id == product and m.state not in ("done", "cancel"))
+        total_demand = sum(product_moves.mapped("product_uom_qty"))
+        total_scanned = sum(product_moves.mapped("xt_barcode_scanned_qty"))
+
+        if total_demand > 0 and total_scanned > total_demand:
+            excess_qty = total_scanned - total_demand
+            return _("Producto %s se ha excedido de la cantidad original en %s unidades.", product.display_name, excess_qty)
         return False
 
     def _set_barcode_feedback(self, barcode, message):
@@ -517,7 +533,7 @@ class StockPicking(models.Model):
             _("Paquete activo seleccionado: %s", package.display_name),
         )
 
-    def _scan_product(self, barcode, quantity=1.0, gs1_barcode=False, *, raise_on_error=False):
+    def _scan_product(self, barcode, quantity=1.0, gs1_barcode=False, *, raise_on_error=False, force_excess=False):
         self.ensure_one()
         pending_line = self._get_current_barcode_line()
         if pending_line:
@@ -567,15 +583,19 @@ class StockPicking(models.Model):
         existing_move = exact_move or self._get_candidate_move_anywhere(product)
 
         # Bloquear exceso de demanda si no se permiten productos extra
-        excess_error = self._check_barcode_excess_demand(product, quantity)
-        if excess_error:
-            return self._barcode_scan_warning(
-                barcode,
-                excess_error,
-                raise_on_error=raise_on_error,
-            )
+        if not force_excess:
+            excess_error = self._check_barcode_excess_demand(product, quantity)
+            if excess_error:
+                return {
+                    "warning": {
+                        "title": _("Exceso de cantidad"),
+                        "message": excess_error,
+                        "type": "excess_confirmation",
+                        "product_name": product.display_name,
+                    }
+                }
 
-        if not self._barcode_allow_extra_product() and not existing_move:
+        if not self._barcode_allow_extra_product() and not existing_move and not force_excess:
             return self._barcode_scan_warning(
                 barcode,
                 _(
@@ -789,7 +809,7 @@ class StockPicking(models.Model):
 
         return self._barcode_scan_success(barcode, _("Código GS1 procesado correctamente."))
 
-    def _apply_scanned_barcode(self, barcode, *, raise_on_error=False):
+    def _apply_scanned_barcode(self, barcode, *, raise_on_error=False, force_excess=False):
         self.ensure_one()
         barcode = (barcode or "").strip()
         if not barcode:
@@ -822,7 +842,7 @@ class StockPicking(models.Model):
             return self._scan_lot_or_serial(barcode, raise_on_error=raise_on_error)
         if mode == "package":
             return self._scan_package(barcode, raise_on_error=raise_on_error)
-        return self._scan_product(barcode, quantity=1.0, raise_on_error=raise_on_error)
+        return self._scan_product(barcode, quantity=1.0, raise_on_error=raise_on_error, force_excess=force_excess)
 
     def _xt_barcode_get_onchange_target(self):
         self.ensure_one()

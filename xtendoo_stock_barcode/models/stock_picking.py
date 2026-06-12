@@ -131,6 +131,11 @@ class StockPicking(models.Model):
         string="Resumen foco PDA",
         compute="_compute_xt_barcode_guidance",
     )
+    xt_barcode_excess_confirmed_product_ids = fields.Many2many(
+        "product.product",
+        string="Productos con exceso confirmado",
+        copy=False,
+    )
 
     def _compute_xt_barcode_supported(self):
         allowed_codes = set(self._barcode_scan_supported_operation_codes())
@@ -341,7 +346,6 @@ class StockPicking(models.Model):
     def _barcode_scan_log_prefix(self):
         self.ensure_one()
         return f"[xtendoo_stock_barcode] [{self.name or self.id or 'new'}]"
-
 
 
 

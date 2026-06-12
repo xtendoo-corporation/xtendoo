@@ -58,4 +58,3 @@ class StockMove(models.Model):
                 move.xt_barcode_check_state = "partial"
             else:
                 move.xt_barcode_check_state = "pending"
-

@@ -54,7 +54,7 @@
                                         <!-- Tercera línea: Cantidades y Botones -->
                                         <div class="row g-0 align-items-center">
                                             <div class="col-4">
-                                                <div class="fw-bold fs-2" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done &gt; line.qty_demand ? 'text-danger' : 'text-primary')">
+                                                <div class="fw-bold fs-2" t-att-class="line.qty_done === line.qty_demand ? 'text-success' : (line.qty_done &gt; line.qty_demand ? 'text-warning' : 'text-primary')">
                                                     <t t-esc="line.qty_done"/> <small class="text-muted">/</small> <t t-esc="line.qty_demand"/>
                                                 </div>
                                             </div>
@@ -90,9 +90,9 @@
             <!-- Botones estáticos abajo -->
             <div t-if="!state.loading" class="fixed-bottom bg-white border-top w-100 shadow-lg">
                 <div t-if="state.lastMessage" class="px-3 py-3 border-bottom border-top border-3"
-                     t-att-class="state.lastMessageSuccess ? 'bg-success-subtle text-success-emphasis border-success' : 'bg-danger-subtle text-danger-emphasis border-danger'">
+                     t-att-class="state.lastMessageSuccess ? (state.isWarning ? 'bg-warning-subtle text-warning-emphasis border-warning' : 'bg-success-subtle text-success-emphasis border-success') : 'bg-danger-subtle text-danger-emphasis border-danger'">
                     <div class="d-flex align-items-baseline">
-                        <i t-att-class="state.lastMessageSuccess ? 'fa fa-check-circle' : 'fa fa-exclamation-triangle'" class="me-2 fs-5"/>
+                        <i t-att-class="state.lastMessageSuccess ? (state.isWarning ? 'fa fa-exclamation-triangle' : 'fa fa-check-circle') : 'fa fa-exclamation-triangle'" class="me-2 fs-5"/>
                         <div class="flex-grow-1">
                             <span class="fw-bold fs-5"><t t-esc="state.lastMessage"/></span>
                         </div>

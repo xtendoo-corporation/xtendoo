@@ -5,6 +5,7 @@ import { registry } from "@web/core/registry";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { Component, onWillStart, useState } from "@odoo/owl";
+import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 
 export class XtendooStockBarcodePickingClientAction extends Component {
     static template = "xtendoo_stock_barcode.PickingClientAction";
@@ -15,6 +16,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         this.barcodeService = useService("barcode");
         this.notificationService = useService("notification");
         this.orm = useService("orm");
+        this.dialogService = useService("dialog");
 
         this.pickingId = this.props.action.params.picking_id;
         this.locationId = this.props.action.params.location_id;
@@ -26,6 +28,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             picking: null,
             lastMessage: false,
             lastMessageSuccess: false,
+            isWarning: false,
         });
 
         useBus(this.barcodeService.bus, "barcode_scanned", (ev) =>
@@ -107,15 +110,43 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             if (result.success) {
                 this.state.lastMessage = result.message;
                 this.state.lastMessageSuccess = true;
+                this.state.isWarning = result.excess || false;
                 if (result.excess) {
                     this.playSound('excess');
                 } else {
                     this.playSound('success');
                 }
                 await this.loadData(); // Recargar líneas para actualizar la interfaz
+            } else if (result.type === 'excess_confirmation') {
+                this.playSound('excess');
+                this.dialogService.add(ConfirmationDialog, {
+                    body: result.message,
+                    confirm: async () => {
+                        let forceResult;
+                        if (this.mode === 'aggregated') {
+                            forceResult = await this.orm.call("stock.picking", "action_xt_process_aggregated_barcode_scan", [this.locationId, barcode, true]);
+                        } else {
+                            forceResult = await this.orm.call("stock.picking", "action_xt_process_barcode_scan", [this.pickingId, barcode, true]);
+                        }
+                        if (forceResult.success) {
+                            this.state.lastMessage = forceResult.message;
+                            this.state.lastMessageSuccess = true;
+                            this.state.isWarning = true;
+                            this.playSound('success');
+                            await this.loadData();
+                        } else {
+                            this.state.lastMessage = forceResult.error || _t("Error al escanear.");
+                            this.state.lastMessageSuccess = false;
+                            this.state.isWarning = false;
+                            this.playSound('error');
+                        }
+                    },
+                    cancel: () => {},
+                });
             } else {
                 this.state.lastMessage = result.error || _t("Error al escanear.");
                 this.state.lastMessageSuccess = false;
+                this.state.isWarning = false;
                 this.playSound('error');
             }
         } catch (error) {
@@ -194,7 +225,37 @@ export class XtendooStockBarcodePickingClientAction extends Component {
             }
 
             if (result && result.success) {
+                this.state.lastMessage = result.message || "";
+                this.state.lastMessageSuccess = true;
+                this.state.isWarning = result.excess || false;
+                if (result.excess) {
+                    this.playSound('excess');
+                } else {
+                    this.playSound('success');
+                }
                 await this.loadData();
+            } else if (result && result.type === 'excess_confirmation') {
+                line.qty_done = originalQty; // Revertir para preguntar
+                this.playSound('excess');
+                this.dialogService.add(ConfirmationDialog, {
+                    body: result.message || result.error,
+                    confirm: async () => {
+                        let forceResult;
+                        if (this.mode === 'aggregated') {
+                            forceResult = await this.orm.call("stock.picking", "action_xt_add_aggregated_qty", [line.move_ids, qty, true]);
+                        } else {
+                            forceResult = await this.orm.call("stock.picking", "action_xt_adjust_qty", [this.pickingId, line.id, qty, true]);
+                        }
+                        if (forceResult && forceResult.success) {
+                            this.state.lastMessage = forceResult.message || "";
+                            this.state.lastMessageSuccess = true;
+                            this.state.isWarning = true;
+                            this.playSound('success');
+                            await this.loadData();
+                        }
+                    },
+                    cancel: () => {},
+                });
             } else {
                 line.qty_done = originalQty;
                 if (result && result.error) {

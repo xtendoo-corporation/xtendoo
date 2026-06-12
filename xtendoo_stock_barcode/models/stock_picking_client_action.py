@@ -37,19 +37,35 @@ class StockPicking(models.Model):
             },
         }
 
-    def action_xt_process_barcode_scan(self, barcode):
+    def action_xt_process_barcode_scan(self, barcode, force_excess=False):
         self.ensure_one()
         try:
-            res = self._apply_scanned_barcode(barcode, raise_on_error=True)
+            products = self._find_product_from_barcode(barcode)
+            product = products[0] if products else False
 
-            # Comprobar si hay exceso
-            excess = False
-            for m in self.move_ids:
-                if m.state not in ('cancel', 'done') and m.xt_barcode_scanned_qty > m.product_uom_qty:
-                    excess = True
-                    break
+            if force_excess and product:
+                self.write({'xt_barcode_excess_confirmed_product_ids': [(4, product.id)]})
 
-            return {"success": True, "message": "Código escaneado correctamente.", "excess": excess}
+            res = self._apply_scanned_barcode(barcode, raise_on_error=True, force_excess=force_excess)
+
+            if isinstance(res, dict) and res.get('warning') and res['warning'].get('type') == 'excess_confirmation':
+                return {
+                    "success": False,
+                    "type": "excess_confirmation",
+                    "message": res['warning']['message'],
+                    "product_name": res['warning']['product_name']
+                }
+
+            # Comprobar si hay exceso para marcarlo en el frontend con el mensaje persistente
+            excess_message = False
+            if product:
+                excess_message = self._get_barcode_excess_message(product)
+
+            return {
+                "success": True,
+                "message": excess_message or "Código escaneado correctamente.",
+                "excess": bool(excess_message)
+            }
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -59,6 +75,10 @@ class StockPicking(models.Model):
         if move in self.move_ids and move.state not in ('cancel', 'done'):
             missing_qty = move.product_uom_qty - move.xt_barcode_scanned_qty
             if missing_qty <= 0:
+                # Si ya está completo, permitir añadir más?
+                # El usuario quiere poder pasarse. Si pulsa completar y ya está a tope,
+                # tal vez no deba hacer nada o añadir 1?
+                # Por ahora completar solo llega hasta la demanda.
                 return {"success": True}
 
             # Comprobar exceso de demanda antes de completar
@@ -110,15 +130,24 @@ class StockPicking(models.Model):
             return {"success": True}
         return {"success": False}
 
-    def action_xt_adjust_qty(self, move_id, qty):
+    def action_xt_adjust_qty(self, move_id, qty, force_excess=False):
         self.ensure_one()
         move = self.env["stock.move"].browse(move_id)
         if move in self.move_ids and move.state not in ('cancel', 'done'):
             if qty > 0:
+                if force_excess:
+                    self.write({'xt_barcode_excess_confirmed_product_ids': [(4, move.product_id.id)]})
+
                 # Comprobar exceso de demanda antes de ajustar
-                excess_error = self._check_barcode_excess_demand(move.product_id, qty)
-                if excess_error:
-                    return {"success": False, "error": excess_error}
+                if not force_excess:
+                    excess_error = self._check_barcode_excess_demand(move.product_id, qty)
+                    if excess_error:
+                        return {
+                            "success": False,
+                            "type": "excess_confirmation",
+                            "message": excess_error,
+                            "product_name": move.product_id.display_name
+                        }
 
                 # Intentamos usar la lógica de escaneo si tiene barcode y no tiene tracking
                 if move.product_id.barcode and move.product_id.tracking == 'none':
@@ -142,7 +171,13 @@ class StockPicking(models.Model):
                         move, move.product_id, move.location_id, move.location_dest_id, qty,
                         barcode_flags=barcode_flags
                     )
-                return {"success": True}
+
+                excess_message = self._get_barcode_excess_message(move.product_id)
+                return {
+                    "success": True,
+                    "message": excess_message or "Cantidad actualizada.",
+                    "excess": bool(excess_message)
+                }
             else:
                 # Restar cantidad (ya estaba implementado, lo mantenemos igual)
                 ml = move.move_line_ids.filtered(lambda l: l.xt_barcode_product_scanned and l.quantity >= abs(qty)).sorted('id', reverse=True)[:1]
@@ -150,7 +185,13 @@ class StockPicking(models.Model):
                     ml.write({'quantity': ml.quantity + qty})
                     if ml.quantity == 0:
                         ml.write({'xt_barcode_product_scanned': False})
-                return {"success": True}
+
+                excess_message = self._get_barcode_excess_message(move.product_id)
+                return {
+                    "success": True,
+                    "message": excess_message or "Cantidad actualizada.",
+                    "excess": bool(excess_message)
+                }
         return {"success": False, "error": _("Movimiento no encontrado o ya finalizado.")}
 
     @api.model
@@ -199,7 +240,7 @@ class StockPicking(models.Model):
         }
 
     @api.model
-    def action_xt_process_aggregated_barcode_scan(self, location_id, barcode):
+    def action_xt_process_aggregated_barcode_scan(self, location_id, barcode, force_excess=False):
         # Buscamos los pickings que tengan esa ubicación como destino u origen
         pickings = self.search([
             '|', ('location_id', '=', location_id), ('location_dest_id', '=', location_id),
@@ -216,12 +257,33 @@ class StockPicking(models.Model):
         if not moves:
             return {"success": False, "error": _("El producto no está en ninguna transferencia pendiente.")}
 
+        if force_excess:
+            for p in pickings:
+                p.write({'xt_barcode_excess_confirmed_product_ids': [(4, product.id)]})
+
+        # Comprobar exceso de demanda si no se fuerza
+        if not force_excess:
+            # Usamos el primer picking para la comprobación ya que el producto es el mismo
+            excess_error = pickings[0]._check_barcode_excess_demand(product, 1.0)
+            if excess_error:
+                 return {
+                    "success": False,
+                    "type": "excess_confirmation",
+                    "message": excess_error,
+                    "product_name": product.display_name
+                }
+
         # Intentamos aplicar el escaneo al primer movimiento que le falte cantidad, o al primero si todos están llenos
         target_move = moves.filtered(lambda m: m.xt_barcode_scanned_qty < m.product_uom_qty)[:1] or moves[0]
 
         try:
-            target_move.picking_id._apply_scanned_barcode(barcode, raise_on_error=True)
-            return {"success": True, "message": _("Producto %s escaneado correctamente.") % product.display_name}
+            target_move.picking_id._apply_scanned_barcode(barcode, raise_on_error=True, force_excess=force_excess)
+            excess_message = target_move.picking_id._get_barcode_excess_message(product)
+            return {
+                "success": True,
+                "message": excess_message or _("Producto %s escaneado correctamente.") % product.display_name,
+                "excess": bool(excess_message)
+            }
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -245,7 +307,7 @@ class StockPicking(models.Model):
         return {"success": True}
 
     @api.model
-    def action_xt_add_aggregated_qty(self, move_ids, qty):
+    def action_xt_add_aggregated_qty(self, move_ids, qty, force_excess=False):
         # Buscamos el producto implicado (todos los moves deben ser del mismo producto)
         moves = self.env['stock.move'].browse(move_ids)
         if not moves:
@@ -255,12 +317,20 @@ class StockPicking(models.Model):
         picking = moves[0].picking_id
 
         if qty > 0:
+            if force_excess:
+                for p in moves.mapped('picking_id'):
+                    p.write({'xt_barcode_excess_confirmed_product_ids': [(4, product.id)]})
+
             # Comprobar exceso de demanda antes de ajustar
-            # En modo agregado, comprobamos contra la demanda total de los movimientos seleccionados
-            total_demand = sum(moves.mapped('product_uom_qty'))
-            total_scanned = sum(moves.mapped('xt_barcode_scanned_qty'))
-            if total_demand > 0 and total_scanned + qty > total_demand:
-                 return {"success": False, "error": _("Has superado la demanda inicial para %s (%s pedidas). No se permiten unidades extra.", product.display_name, total_demand)}
+            if not force_excess:
+                excess_error = picking._check_barcode_excess_demand(product, qty)
+                if excess_error:
+                     return {
+                        "success": False,
+                        "type": "excess_confirmation",
+                        "message": excess_error,
+                        "product_name": product.display_name
+                    }
 
             # Intentamos usar el primer movimiento que le falte cantidad
             target_move = moves.filtered(lambda m: m.xt_barcode_scanned_qty < m.product_uom_qty)[:1] or moves[0]
@@ -269,8 +339,14 @@ class StockPicking(models.Model):
             if product.barcode and product.tracking == 'none':
                 try:
                     target_move.picking_id.xt_barcode_mode = 'product'
-                    target_move.picking_id._apply_scanned_barcode(product.barcode, raise_on_error=True)
-                    return {"success": True}
+                    target_move.picking_id._apply_scanned_barcode(product.barcode, raise_on_error=True, force_excess=force_excess)
+
+                    excess_message = target_move.picking_id._get_barcode_excess_message(product)
+                    return {
+                        "success": True,
+                        "message": excess_message or "Cantidad actualizada.",
+                        "excess": bool(excess_message)
+                    }
                 except Exception as e:
                     return {"success": False, "error": str(e)}
 
@@ -285,7 +361,13 @@ class StockPicking(models.Model):
                     target_move, product, target_move.location_id, target_move.location_dest_id, qty,
                     barcode_flags=barcode_flags
                 )
-            return {"success": True}
+
+            excess_message = target_move.picking_id._get_barcode_excess_message(product)
+            return {
+                "success": True,
+                "message": excess_message or "Cantidad actualizada.",
+                "excess": bool(excess_message)
+            }
         else:
             # Para restar, buscamos movimientos que tengan cantidad escaneada
             source_move = moves.filtered(lambda m: m.xt_barcode_scanned_qty > 0).sorted('id', reverse=True)[:1]
@@ -298,7 +380,14 @@ class StockPicking(models.Model):
                 ml.write({'quantity': ml.quantity + qty})
                 if ml.quantity == 0:
                     ml.write({'xt_barcode_product_scanned': False})
-            return {"success": True}
+
+            excess_message = source_move.picking_id._get_barcode_excess_message(product)
+            return {
+                "success": True,
+                "message": excess_message or "Cantidad actualizada.",
+                "excess": bool(excess_message)
+            }
+        return {"success": False, "error": _("Movimiento no encontrado o ya finalizado.")}
 
     @api.model
     def action_xt_validate_aggregated_pickings(self, location_id):
