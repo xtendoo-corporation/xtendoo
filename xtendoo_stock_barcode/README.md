@@ -1,4 +1,4 @@
-# Xtendoo Stock Barcode
+# Transferencias internas
 
 Módulo backend-first para Odoo 19 que introduce un flujo de escaneo clásico en
 `stock.picking` y una pantalla PDA propia, sin depender de `stock_barcode` ni de componentes Enterprise.
@@ -16,7 +16,7 @@ Ofrecer una solución simple y mantenible basada en:
 
 Incluye:
 
-- app raíz `Xtendoo Barcode` visible en el menú inicial de Odoo;
+- app raíz `Transferencias internas` visible en el menú inicial de Odoo;
 - menú principal escaneable que abre o crea registros según el barcode leído;
 - accesos directos por tipo de operación (`Entradas`, `Salidas`, `Internas`);
 - escaneo de producto en `stock.picking`;

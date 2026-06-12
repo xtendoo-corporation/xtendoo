@@ -51,7 +51,7 @@ export class XtendooStockBarcodeMainMenu extends Component {
             this.notificationService.add(
                 _t("La opción solicitada no está disponible en esta base de datos."),
                 {
-                    title: _t("Xtendoo Barcode"),
+                    title: _t("Transferencias internas"),
                     type: "warning",
                 }
             );
@@ -87,7 +87,7 @@ export class XtendooStockBarcodeMainMenu extends Component {
         const warning = result.warning || {};
         this.state.lastMessage = warning.message || warning || _t("No se pudo resolver el código.");
         this.notificationService.add(this.state.lastMessage, {
-            title: warning.title || _t("Xtendoo Barcode"),
+            title: warning.title || _t("Transferencias internas"),
             type: "danger",
         });
     }

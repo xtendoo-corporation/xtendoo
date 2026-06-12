@@ -499,7 +499,7 @@ class TestXtendooStockBarcode(TransactionCase):
         menu = self.env.ref("xtendoo_stock_barcode.menu_xtendoo_stock_barcode_root")
         action = self.env.ref("xtendoo_stock_barcode.action_xtendoo_stock_barcode_main_menu")
 
-        self.assertEqual(menu.name, "Xtendoo Barcode")
+        self.assertEqual(menu.name, "Transferencias internas")
         self.assertFalse(menu.parent_id)
         self.assertEqual(menu.action.id, action.id)
 

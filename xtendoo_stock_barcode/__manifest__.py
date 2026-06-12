@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 {
-    "name": "Xtendoo Stock Barcode",
+    "name": "Transferencias internas",
     "summary": "Escaneo clásico de operaciones de almacén sin interfaz Owl propia",
     "version": "19.0.1.0.0",
     "description": """

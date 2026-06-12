@@ -274,7 +274,7 @@ class StockPicking(models.Model):
         if not picking_type:
             return {
                 "warning": {
-                    "title": _("Xtendoo Barcode"),
+                    "title": _("Transferencias internas"),
                     "message": _("No existe un tipo de operación interna configurado para esta compañía."),
                 }
             }
@@ -298,7 +298,7 @@ class StockPicking(models.Model):
         if not barcode:
             return {
                 "warning": {
-                    "title": _("Xtendoo Barcode"),
+                    "title": _("Transferencias internas"),
                     "message": _("Escanea o introduce un código de barras."),
                 }
             }
@@ -326,4 +326,4 @@ class StockPicking(models.Model):
                 "No se ha encontrado ningún picking, producto, lote o paquete para el código '%s'.",
                 barcode,
             )
-        return {"warning": {"title": _("Xtendoo Barcode"), "message": message}}
+        return {"warning": {"title": _("Transferencias internas"), "message": message}}
