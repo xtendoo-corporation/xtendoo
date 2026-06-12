@@ -51,14 +51,14 @@
                                     </div>
                                     <!-- Filtro de producto activo (Badge) -->
                                     <div t-if="state.productFilter" class="mt-3 d-flex align-items-center gap-2">
-                                        <span class="badge bg-info text-dark p-2 d-flex align-items-center gap-2">
+                                        <span class="badge bg-primary text-white p-2 d-flex align-items-center gap-2 shadow-sm rounded-pill px-3">
                                             <i class="fa fa-barcode"/>
-                                            FILTRO: <t t-esc="state.productFilter.name"/>
-                                            <button class="btn btn-link btn-sm p-0 border-0 text-dark" t-on-click="clearProductFilter">
+                                            PRODUCTO: <t t-esc="state.productFilter.name"/>
+                                            <button class="btn btn-link btn-sm p-0 border-0 text-white" t-on-click="clearProductFilter">
                                                 <i class="fa fa-times-circle fs-5"/>
                                             </button>
                                         </span>
-                                        <small class="text-muted">Escaneado código: <t t-esc="state.productFilter.barcode"/></small>
+                                        <small class="text-muted">Escaneado: <t t-esc="state.productFilter.barcode"/></small>
                                     </div>
                                 </div>
                             </div>
@@ -83,8 +83,13 @@
                                             <div class="d-flex justify-content-between align-items-start mb-2">
                                                 <div>
                                                     <h5 class="mb-1 fw-bold text-primary" t-esc="picking.name"/>
-                                                    <div t-if="picking.origin" class="text-muted small">
-                                                        <i class="fa fa-tag me-1"/> <t t-esc="picking.origin"/>
+                                                    <div class="d-flex flex-wrap gap-3 mt-1">
+                                                        <div t-if="picking.partner_name" class="text-dark fw-semibold small">
+                                                            <i class="fa fa-truck me-1 text-muted"/> <t t-esc="picking.partner_name"/>
+                                                        </div>
+                                                        <div t-if="picking.origin" class="text-muted small">
+                                                            <i class="fa fa-tag me-1"/> <t t-esc="picking.origin"/>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <span t-attf-class="badge rounded-pill px-3 py-2 #{stateColors[picking.state] or 'bg-secondary'}">
