@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="xtendoo_stock_barcode.PickingList">
+        <div class="o_action h-100 overflow-auto bg-light">
+            <div class="container py-4 py-lg-5">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-xl-10">
+                        <div class="d-flex flex-column gap-3 mb-4">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <button class="btn btn-light shadow-sm py-2 px-3" t-on-click="exitAction">
+                                        <i class="fa fa-arrow-left me-1"/> Volver
+                                    </button>
+                                    <h1 class="h3 mb-0" t-esc="props.action.name or 'Listado de Operaciones'"/>
+                                </div>
+                                <button class="btn btn-primary shadow-sm py-2" t-on-click="loadData">
+                                    <i class="fa fa-refresh" t-att-class="{'fa-spin': state.loading}"/> Actualizar
+                                </button>
+                            </div>
+
+                            <!-- Filtros y Búsqueda -->
+                            <div class="card shadow-sm border-0">
+                                <div class="card-body p-3">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-12 col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white border-end-0">
+                                                    <i class="fa fa-search text-muted"/>
+                                                </span>
+                                                <input type="text"
+                                                       class="form-control border-start-0"
+                                                       placeholder="Buscar por referencia u origen..."
+                                                       t-att-value="state.searchQuery"
+                                                       t-on-input="onSearchInput"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="btn-group w-100 shadow-sm" role="group">
+                                                <button type="button"
+                                                        t-attf-class="btn btn-outline-primary py-2 #{state.filter === 'pending' ? 'active' : ''}"
+                                                        t-on-click="() => this.setFilter('pending')">
+                                                    Pendientes
+                                                </button>
+                                                <button type="button"
+                                                        t-attf-class="btn btn-outline-primary py-2 #{state.filter === 'all' ? 'active' : ''}"
+                                                        t-on-click="() => this.setFilter('all')">
+                                                    Todos
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Filtro de producto activo (Badge) -->
+                                    <div t-if="state.productFilter" class="mt-3 d-flex align-items-center gap-2">
+                                        <span class="badge bg-info text-dark p-2 d-flex align-items-center gap-2">
+                                            <i class="fa fa-barcode"/>
+                                            FILTRO: <t t-esc="state.productFilter.name"/>
+                                            <button class="btn btn-link btn-sm p-0 border-0 text-dark" t-on-click="clearProductFilter">
+                                                <i class="fa fa-times-circle fs-5"/>
+                                            </button>
+                                        </span>
+                                        <small class="text-muted">Escaneado código: <t t-esc="state.productFilter.barcode"/></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div t-if="state.loading" class="text-center py-5">
+                            <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-primary mb-3"/>
+                            <div class="text-muted">Cargando operaciones...</div>
+                        </div>
+
+                        <div t-else="" class="card shadow-sm border-0">
+                            <div class="card-body p-0">
+                                <div t-if="!state.pickings.length" class="text-center py-5">
+                                    <i class="fa fa-folder-open-o fa-3x text-muted mb-3"/>
+                                    <p class="h5 text-muted">No se encontraron operaciones pendientes.</p>
+                                </div>
+                                <div t-else="" class="list-group list-group-flush">
+                                    <t t-foreach="state.pickings" t-as="picking" t-key="picking.id">
+                                        <button type="button"
+                                                class="list-group-item list-group-item-action p-4 border-start-0 border-end-0"
+                                                t-on-click="() => this.openPicking(picking.id)">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h5 class="mb-1 fw-bold text-primary" t-esc="picking.name"/>
+                                                    <div t-if="picking.origin" class="text-muted small">
+                                                        <i class="fa fa-tag me-1"/> <t t-esc="picking.origin"/>
+                                                    </div>
+                                                </div>
+                                                <span t-attf-class="badge rounded-pill px-3 py-2 #{stateColors[picking.state] or 'bg-secondary'}">
+                                                    <t t-esc="stateLabels[picking.state] or picking.state"/>
+                                                </span>
+                                            </div>
+                                            <div class="row g-2 text-muted small mt-2">
+                                                <div class="col-12 col-md-5">
+                                                    <i class="fa fa-arrow-right me-1 text-danger"/>
+                                                    <span class="fw-semibold">Origen:</span> <t t-esc="picking.location_name"/>
+                                                </div>
+                                                <div class="col-12 col-md-5">
+                                                    <i class="fa fa-arrow-left me-1 text-success"/>
+                                                    <span class="fw-semibold">Destino:</span> <t t-esc="picking.location_dest_name"/>
+                                                </div>
+                                                <div class="col-12 col-md-2 text-md-end">
+                                                    <i class="fa fa-calendar me-1"/> <t t-esc="picking.scheduled_date.split(' ')[0]"/>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

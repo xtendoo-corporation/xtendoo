@@ -21,6 +21,7 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         this.pickingId = this.props.action.params.picking_id;
         this.locationId = this.props.action.params.location_id;
         this.mode = this.props.action.params.mode || 'standard';
+        this.returnState = this.props.action.params.return_state || null;
 
         this.state = useState({
             loading: true,
@@ -346,17 +347,28 @@ export class XtendooStockBarcodePickingClientAction extends Component {
     }
 
     exitAction() {
-        if (this.mode === 'aggregated') {
-            this.actionService.doAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_main_menu", { clear_breadcrumbs: true });
-        } else {
-            // Fallback to open the form view directly if going back fails
-            this.actionService.doAction({
-                type: "ir.actions.act_window",
-                res_model: "stock.picking",
-                res_id: parseInt(this.pickingId),
-                views: [[false, "form"]],
-                target: "main",
-            });
+        if (this.returnState) {
+            return this.actionService.doAction({
+                type: "ir.actions.client",
+                tag: "xtendoo_stock_barcode_picking_list",
+                name: _t("Entradas"),
+                params: {
+                    domain: [["picking_type_code", "=", "incoming"], ["picking_type_id.warehouse_id.tp_is_central_request_hub", "=", true]],
+                    state: this.returnState
+                }
+            }, { clear_breadcrumbs: true });
+        }
+
+        try {
+            // Intentar volver atrás en el stack de acciones (breadcrumb anterior)
+            return this.actionService.restore();
+        } catch (e) {
+            // Fallback por si restore falla
+            if (this.mode === 'aggregated') {
+                this.actionService.doAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_main_menu", { clear_breadcrumbs: true });
+            } else {
+                this.actionService.doAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_main_menu", { clear_breadcrumbs: true });
+            }
         }
     }
 }

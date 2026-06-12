@@ -32,6 +32,8 @@ Permite operar pickings desde una vista clásica usando el handler nativo de có
             "xtendoo_stock_barcode/static/src/pda/*.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.js",
             "xtendoo_stock_barcode/static/src/main_menu/main_menu.xml",
+            "xtendoo_stock_barcode/static/src/picking_list/picking_list.js",
+            "xtendoo_stock_barcode/static/src/picking_list/picking_list.xml",
             "xtendoo_stock_barcode/static/src/client_action/picking_client_action.js",
             "xtendoo_stock_barcode/static/src/client_action/picking_client_action.xml",
         ],

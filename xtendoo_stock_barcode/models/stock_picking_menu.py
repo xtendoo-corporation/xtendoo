@@ -327,3 +327,16 @@ class StockPicking(models.Model):
                 barcode,
             )
         return {"warning": {"title": _("Transferencias internas"), "message": message}}
+
+    @api.model
+    def action_xt_get_picking_list_data(self, domain):
+        pickings = self.search_read(
+            domain,
+            ["id", "name", "origin", "location_id", "location_dest_id", "state", "scheduled_date", "picking_type_id"],
+            order="scheduled_date desc, id desc"
+        )
+        for p in pickings:
+            p["location_name"] = p["location_id"][1] if p["location_id"] else ""
+            p["location_dest_name"] = p["location_dest_id"][1] if p["location_dest_id"] else ""
+            p["picking_type_name"] = p["picking_type_id"][1] if p["picking_type_id"] else ""
+        return pickings

@@ -6,6 +6,12 @@
         <field name="target">current</field>
     </record>
 
+    <record id="action_xtendoo_stock_barcode_picking_list" model="ir.actions.client">
+        <field name="name">Listado de Operaciones</field>
+        <field name="tag">xtendoo_stock_barcode_picking_list</field>
+        <field name="target">current</field>
+    </record>
+
     <record id="action_xtendoo_stock_barcode_pickings" model="ir.actions.act_window">
         <field name="name">Transferencias internas</field>
         <field name="res_model">stock.picking</field>

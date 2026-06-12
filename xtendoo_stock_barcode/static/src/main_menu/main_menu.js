@@ -46,9 +46,9 @@ export class XtendooStockBarcodeMainMenu extends Component {
         });
     }
 
-    async openAction(xmlid) {
+    async openAction(xmlid, params = {}) {
         try {
-            return await this.actionService.doAction(xmlid);
+            return await this.actionService.doAction(xmlid, { additionalContext: params.context || {}, props: { action: { params } } });
         } catch {
             this.notificationService.add(
                 _t("La opción solicitada no está disponible en esta base de datos."),
@@ -66,11 +66,14 @@ export class XtendooStockBarcodeMainMenu extends Component {
     }
 
     async openIncomingAction() {
-        return this.openAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_incoming");
-    }
-
-    async openOutgoingAction() {
-        return this.openAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_outgoing");
+        return this.actionService.doAction({
+            type: "ir.actions.client",
+            tag: "xtendoo_stock_barcode_picking_list",
+            name: _t("Entradas"),
+            params: {
+                domain: [["picking_type_code", "=", "incoming"], ["picking_type_id.warehouse_id.tp_is_central_request_hub", "=", true]],
+            }
+        });
     }
 
     async openInternalAction() {
