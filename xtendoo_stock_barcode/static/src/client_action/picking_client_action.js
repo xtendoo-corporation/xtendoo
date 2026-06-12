@@ -6,6 +6,7 @@ import { useBus, useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { Component, onWillStart, useState } from "@odoo/owl";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
+import { QtyWizard } from "../components/qty_wizard/qty_wizard";
 
 export class XtendooStockBarcodePickingClientAction extends Component {
     static template = "xtendoo_stock_barcode.PickingClientAction";
@@ -39,6 +40,9 @@ export class XtendooStockBarcodePickingClientAction extends Component {
         onWillStart(async () => {
             await this.loadData();
         });
+
+        this.longPressTimer = null;
+        this.isLongPress = false;
     }
 
     playSound(type) {
@@ -370,6 +374,33 @@ export class XtendooStockBarcodePickingClientAction extends Component {
                 this.actionService.doAction("xtendoo_stock_barcode.action_xtendoo_stock_barcode_main_menu", { clear_breadcrumbs: true });
             }
         }
+    }
+
+    async handleBtnClick(line, val) {
+        if (this.isLongPress) return;
+        await this.adjustQty(line, val * (line.input_qty || 1));
+    }
+
+    onBtnStart(line, val) {
+        if (this.longPressTimer) clearTimeout(this.longPressTimer);
+        this.isLongPress = false;
+        this.longPressTimer = setTimeout(() => {
+            this.isLongPress = true;
+            this.askCustomQty(line, val);
+        }, 600);
+    }
+
+    onBtnEnd() {
+        clearTimeout(this.longPressTimer);
+    }
+
+    async askCustomQty(line, direction) {
+        this.dialogService.add(QtyWizard, {
+            title: direction > 0 ? _t("Cantidad a sumar") : _t("Cantidad a restar"),
+            confirm: (val) => {
+                line.input_qty = val;
+            },
+        });
     }
 }
 

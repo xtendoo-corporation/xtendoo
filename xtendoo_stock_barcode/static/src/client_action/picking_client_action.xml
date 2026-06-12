@@ -60,23 +60,25 @@
                                             </div>
                                             <div class="col-8">
                                                 <div class="d-flex justify-content-end gap-2 align-items-center">
-                                                    <div class="input-group input-group-sm w-auto border rounded overflow-hidden">
-                                                        <span class="input-group-text bg-light text-muted border-0 small px-2">Cantidad +/-</span>
-                                                        <input type="number" class="form-control text-center fw-bold border-0 p-0"
-                                                               style="width: 50px; height: 38px; min-width: 50px;"
-                                                               t-model="line.input_qty"/>
-                                                    </div>
                                                     <button class="btn btn-outline-danger fw-bold px-3 py-2"
                                                             t-on-click="() => this.resetLine(line)">
                                                         0
                                                     </button>
                                                     <button class="btn btn-outline-danger fw-bold px-3 py-2"
-                                                            t-on-click="() => this.adjustQty(line, -line.input_qty)">
-                                                        -<t t-esc="line.input_qty"/>
+                                                            t-on-mousedown="() => this.onBtnStart(line, -1)"
+                                                            t-on-touchstart="() => this.onBtnStart(line, -1)"
+                                                            t-on-mouseup="() => this.onBtnEnd()"
+                                                            t-on-touchend="() => this.onBtnEnd()"
+                                                            t-on-click="() => this.handleBtnClick(line, -1)">
+                                                        -<t t-esc="line.input_qty || 1"/>
                                                     </button>
                                                     <button class="btn btn-outline-success fw-bold px-3 py-2"
-                                                            t-on-click="() => this.adjustQty(line, line.input_qty)">
-                                                        +<t t-esc="line.input_qty"/>
+                                                            t-on-mousedown="() => this.onBtnStart(line, 1)"
+                                                            t-on-touchstart="() => this.onBtnStart(line, 1)"
+                                                            t-on-mouseup="() => this.onBtnEnd()"
+                                                            t-on-touchend="() => this.onBtnEnd()"
+                                                            t-on-click="() => this.handleBtnClick(line, 1)">
+                                                        +<t t-esc="line.input_qty || 1"/>
                                                     </button>
                                                     <button t-if="line.qty_done &lt; line.qty_demand"
                                                             class="btn btn-outline-success fw-bold px-3 py-2"

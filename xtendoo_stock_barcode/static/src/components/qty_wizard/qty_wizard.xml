@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="xtendoo_stock_barcode.QtyWizard">
+        <Dialog title="props.title or 'Introducir Cantidad'" size="'sm'">
+            <div class="p-3">
+                <input type="number"
+                       class="form-control form-control-lg text-center o_qty_wizard_input"
+                       t-model="state.qty"
+                       t-on-keydown="(ev) => ev.key === 'Enter' &amp;&amp; _onConfirm()"/>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary px-4 py-2 fw-bold" t-on-click="_onConfirm">Confirmar</button>
+                <button class="btn btn-secondary px-4 py-2 fw-bold" t-on-click="_onCancel">Cancelar</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>
+
