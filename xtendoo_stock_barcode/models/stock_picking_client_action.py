@@ -436,18 +436,26 @@ class StockPicking(models.Model):
                 return {"success": False, "error": _("Error al validar %s: %s") % (picking.name, str(e))}
 
         if validated_picking_ids:
-            # Si hay pickings validados, comprobamos el tipo para decidir la acción
-            first_picking = self.browse(validated_picking_ids[0])
-            if first_picking.picking_type_code in ('incoming', 'outgoing'):
-                return self.env.ref('stock.action_report_delivery').report_action(validated_picking_ids)
-            if first_picking.picking_type_code == 'internal':
+            pickings = self.browse(validated_picking_ids)
+            # Buscamos pickings que se hayan confirmado/asignado a raíz de esta validación múltiple
+            following_pickings = pickings.move_ids.move_dest_ids.picking_id.filtered(
+                lambda p: p.state in ("assigned", "confirmed")
+            )
+
+            # Si hay pickings seguidos o validados, los mostramos en lugar de imprimir
+            pickings_to_show = following_pickings or pickings
+
+            first_picking = pickings[0]
+            if first_picking.picking_type_code in ("incoming", "internal", "outgoing"):
                 return {
-                    'name': _('Pickings validados'),
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'stock.picking',
-                    'view_mode': 'list,form',
-                    'domain': [('id', 'in', validated_picking_ids)],
-                    'target': 'current',
+                    "name": _("Pickings confirmados") if following_pickings else _("Pickings validados"),
+                    "type": "ir.actions.act_window",
+                    "res_model": "stock.picking",
+                    "view_mode": "list,form",
+                    "views": [[False, "list"], [False, "form"]],
+                    "domain": [("id", "in", pickings_to_show.ids)],
+                    "target": "current",
+                    "context": self.env.context,
                 }
 
         return {

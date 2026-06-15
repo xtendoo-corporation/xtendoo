@@ -914,18 +914,32 @@ class StockPicking(models.Model):
         errors = self._get_barcode_validation_errors()
         if errors:
             raise UserError("\n".join(errors))
+
+        # Almacenamos IDs de movimientos para buscar destinos después
+        move_ids = self.move_ids.ids
+
         res = self.button_validate()
 
         if res is True:
-            if self.picking_type_code in ("incoming", "outgoing"):
-                return self.env.ref("stock.action_report_delivery").report_action(self)
-            if self.picking_type_code == "internal":
+            # Buscamos pickings que se hayan confirmado/asignado a raíz de esta validación
+            following_pickings = self.env["stock.move"].browse(move_ids).move_dest_ids.picking_id.filtered(
+                lambda p: p.state in ("assigned", "confirmed")
+            )
+
+            # En caso de entrada, interna o salida, mostramos los pickings relacionados
+            # Si hay pickings confirmados a raíz de esta acción, los priorizamos
+            # Si no, mostramos el picking que se acaba de validar
+            pickings_to_show = following_pickings or self
+
+            if self.picking_type_code in ("incoming", "internal", "outgoing"):
                 return {
-                    "name": _("Pickings validados"),
+                    "name": _("Pickings confirmados") if following_pickings else _("Picking validado"),
                     "type": "ir.actions.act_window",
                     "res_model": "stock.picking",
                     "view_mode": "list,form",
-                    "domain": [("id", "=", self.id)],
+                    "views": [[False, "list"], [False, "form"]],
+                    "domain": [("id", "in", pickings_to_show.ids)],
                     "target": "current",
+                    "context": self.env.context,
                 }
         return res
