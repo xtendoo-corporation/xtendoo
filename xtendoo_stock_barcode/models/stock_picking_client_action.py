@@ -75,51 +75,47 @@ class StockPicking(models.Model):
         self.ensure_one()
         move = self.env["stock.move"].browse(move_id)
         if move in self.move_ids and move.state not in ('cancel', 'done'):
-            missing_qty = move.product_uom_qty - move.xt_barcode_scanned_qty
-            if missing_qty <= 0:
-                # Si ya está completo, permitir añadir más?
-                # El usuario quiere poder pasarse. Si pulsa completar y ya está a tope,
-                # tal vez no deba hacer nada o añadir 1?
-                # Por ahora completar solo llega hasta la demanda.
-                return {"success": True}
+            # CORRECCIÓN DEFINITIVA PARA EVITAR DUPLICACIÓN DE CANTIDAD
+            # Al pulsar "completar", primero marcamos las líneas como escaneadas.
+            # Pero antes de nada, debemos asegurarnos de que xt_barcode_scanned_qty
+            # no cuente lo que Odoo tiene en 'quantity' si aún no está marcado.
 
-            # Comprobar exceso de demanda antes de completar
+            for ml in move.move_line_ids:
+                if not ml.xt_barcode_product_scanned:
+                    # Marcamos como escaneado y nos aseguramos de que no sume doble:
+                    # Si ya tiene cantidad, la respetamos como escaneada.
+                    # Si no marcamos esto primero, el cálculo de missing_qty será erróneo.
+                    ml.write({"xt_barcode_product_scanned": True, "picked": True})
+
+            # Forzamos recalculo tras marcar las líneas existentes
+            move._compute_xt_barcode_checking()
+
+            missing_qty = move.product_uom_qty - move.xt_barcode_scanned_qty
+
+            # Si tras marcar las líneas existentes nos hemos pasado o estamos clavados, ya hemos terminado
+            if missing_qty <= 0:
+                return {
+                    "success": True,
+                    "new_qty_done": move.xt_barcode_scanned_qty,
+                    "message": self._get_barcode_excess_message(move.product_id)
+                }
+
+            # Si aún falta cantidad tras marcar lo que Odoo ya tenía, añadimos el resto
+            # Comprobar exceso de demanda antes de completar lo que falta
             excess_error = self._check_barcode_excess_demand(move.product_id, missing_qty)
             if excess_error:
                 return {"success": False, "error": excess_error}
 
-            for ml in move.move_line_ids:
-                if missing_qty <= 0:
-                    break
-                line_missing = getattr(ml, "quantity_product_uom", 0) - ml.quantity
-                if line_missing > 0:
-                    qty_to_add = min(missing_qty, line_missing)
-                    ml.write({
-                        "quantity": ml.quantity + qty_to_add,
-                        "xt_barcode_product_scanned": True,
-                    })
-                    missing_qty -= qty_to_add
-                elif not ml.xt_barcode_product_scanned:
-                    ml.write({"xt_barcode_product_scanned": True})
+            # Añadimos lo que falta a la primera línea o creamos una nueva
+            if move.move_line_ids:
+                ml = move.move_line_ids[0]
+                ml.write({"quantity": ml.quantity + missing_qty})
+            else:
+                self._create_barcode_move_line(
+                    move, move.product_id, move.location_id, move.location_dest_id, missing_qty,
+                    barcode_flags=self._get_new_line_barcode_flags(move.product_id)
+                )
 
-            if missing_qty > 0:
-                if move.move_line_ids:
-                    ml = move.move_line_ids[0]
-                    ml.write({
-                        "quantity": ml.quantity + missing_qty,
-                        "xt_barcode_product_scanned": True,
-                    })
-                else:
-                    self._create_barcode_move_line(
-                        move,
-                        move.product_id,
-                        move.location_id,
-                        move.location_dest_id,
-                        missing_qty,
-                        barcode_flags=self._get_new_line_barcode_flags(move.product_id)
-                    )
-
-            # Forzar recalculo
             move._compute_xt_barcode_checking()
 
             excess_message = self._get_barcode_excess_message(move.product_id)
@@ -137,7 +133,8 @@ class StockPicking(models.Model):
         if move in self.move_ids and move.state not in ('cancel', 'done'):
             move.move_line_ids.filtered(lambda ml: ml.xt_barcode_product_scanned).write({
                 'quantity': 0.0,
-                'xt_barcode_product_scanned': False
+                'xt_barcode_product_scanned': False,
+                'picked': False
             })
             # Forzar el recalculo de xt_barcode_scanned_qty y otros campos computados en el move
             move._compute_xt_barcode_checking()
@@ -163,32 +160,78 @@ class StockPicking(models.Model):
                             "product_name": move.product_id.display_name
                         }
 
-                # Buscamos una línea existente para este movimiento que ya esté marcada como escaneada
-                ml = move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done') and l.xt_barcode_product_scanned)[:1]
-                # Si no hay, buscamos una línea cualquiera del movimiento (por si es la primera vez que se ajusta a mano)
-                if not ml:
-                    ml = move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done'))[:1]
+                # Buscamos movimientos del mismo producto/ubicación para aplicar el ajuste
+                moves = self.move_ids.filtered(lambda m:
+                    m.product_id == move.product_id and
+                    m.location_id == move.location_id and
+                    m.location_dest_id == move.location_dest_id and
+                    m.state not in ('cancel', 'done')
+                )
 
-                barcode_flags = self._get_new_line_barcode_flags(move.product_id)
+                if qty > 0:
+                    if force_excess:
+                        self.write({'xt_barcode_excess_confirmed_product_ids': [(4, move.product_id.id)]})
 
-                if ml:
-                    self._increase_line_quantity(ml, qty, barcode_flags=barcode_flags)
+                    # Comprobar exceso de demanda antes de ajustar
+                    if not force_excess:
+                        excess_error = self._check_barcode_excess_demand(move.product_id, qty)
+                        if excess_error:
+                            return {
+                                "success": False,
+                                "type": "excess_confirmation",
+                                "message": excess_error,
+                                "product_name": move.product_id.display_name
+                            }
+
+                    # Aplicamos al primer movimiento que le falte cantidad, o al primero
+                    move = moves.filtered(lambda m: m.xt_barcode_scanned_qty < m.product_uom_qty)[:1] or moves[0]
+
+                    # Buscamos una línea existente (preferiblemente ya escaneada)
+                    ml = move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done') and l.xt_barcode_product_scanned)[:1]
+
+                    # Si no hay ninguna línea marcada como escaneada, buscamos una línea cualquiera de Odoo
+                    if not ml:
+                        ml = move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done'))[:1]
+
+                    barcode_flags = move.picking_id._get_new_line_barcode_flags(move.product_id)
+
+                    if ml:
+                        move.picking_id._increase_line_quantity(ml, qty, barcode_flags=barcode_flags)
+                    else:
+                        move.picking_id._create_barcode_move_line(
+                            move, move.product_id, move.location_id, move.location_dest_id, qty,
+                            barcode_flags=barcode_flags
+                        )
+
+                    # Forzar recalculo
+                    move._compute_xt_barcode_checking()
+
+                    excess_message = move.picking_id._get_barcode_excess_message(move.product_id)
+                    return {
+                        "success": True,
+                        "message": excess_message or "Cantidad actualizada.",
+                        "excess": bool(excess_message),
+                        "new_qty_done": move.xt_barcode_scanned_qty,
+                    }
                 else:
-                    self._create_barcode_move_line(
-                        move, move.product_id, move.location_id, move.location_dest_id, qty,
-                        barcode_flags=barcode_flags
-                    )
+                    # Restar cantidad (ya estaba implementado, lo mantenemos igual)
+                    # Buscamos prioritariamente líneas marcadas como escaneadas y con cantidad suficiente
+                    ml = move.move_line_ids.filtered(lambda l: l.xt_barcode_product_scanned and l.quantity >= abs(qty)).sorted('id', reverse=True)[:1]
+                    if ml:
+                        ml.write({'quantity': ml.quantity + qty})
+                        if ml.quantity <= 0:
+                            ml.write({'xt_barcode_product_scanned': False, 'picked': False})
 
-                # Forzar recalculo
-                move._compute_xt_barcode_checking()
+                    # Forzar recalculo
+                    move._compute_xt_barcode_checking()
 
-                excess_message = self._get_barcode_excess_message(move.product_id)
-                return {
-                    "success": True,
-                    "message": excess_message or "Cantidad actualizada.",
-                    "excess": bool(excess_message),
-                    "new_qty_done": move.xt_barcode_scanned_qty,
-                }
+                    excess_message = move.picking_id._get_barcode_excess_message(move.product_id)
+                    return {
+                        "success": True,
+                        "message": excess_message or "Cantidad actualizada.",
+                        "excess": bool(excess_message),
+                        "new_qty_done": move.xt_barcode_scanned_qty,
+                    }
             else:
                 # Restar cantidad (ya estaba implementado, lo mantenemos igual)
                 # Buscamos prioritariamente líneas marcadas como escaneadas y con cantidad suficiente
@@ -196,12 +239,12 @@ class StockPicking(models.Model):
                 if ml:
                     ml.write({'quantity': ml.quantity + qty})
                     if ml.quantity <= 0:
-                        ml.write({'xt_barcode_product_scanned': False})
+                        ml.write({'xt_barcode_product_scanned': False, 'picked': False})
 
                 # Forzar recalculo
                 move._compute_xt_barcode_checking()
 
-                excess_message = self._get_barcode_excess_message(move.product_id)
+                excess_message = move.picking_id._get_barcode_excess_message(move.product_id)
                 return {
                     "success": True,
                     "message": excess_message or "Cantidad actualizada.",
@@ -319,7 +362,8 @@ class StockPicking(models.Model):
             if move.state not in ('cancel', 'done'):
                 move.move_line_ids.filtered(lambda ml: ml.xt_barcode_product_scanned).write({
                     'quantity': 0.0,
-                    'xt_barcode_product_scanned': False
+                    'xt_barcode_product_scanned': False,
+                    'picked': False
                 })
         return {"success": True}
 
@@ -352,8 +396,11 @@ class StockPicking(models.Model):
             # Intentamos usar el primer movimiento que le falte cantidad
             target_move = moves.filtered(lambda m: m.xt_barcode_scanned_qty < m.product_uom_qty)[:1] or moves[0]
 
-            # Incremento manual directo para respetar la cantidad (evitamos _apply_scanned_barcode que es unitario)
-            ml = target_move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done'))[:1]
+            # Buscamos una línea existente (preferiblemente ya escaneada)
+            ml = target_move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done') and l.xt_barcode_product_scanned)[:1]
+            if not ml:
+                ml = target_move.move_line_ids.filtered(lambda l: l.state not in ('cancel', 'done'))[:1]
+
             barcode_flags = target_move.picking_id._get_new_line_barcode_flags(product)
 
             if ml:
@@ -389,7 +436,7 @@ class StockPicking(models.Model):
             if ml:
                 ml.write({'quantity': ml.quantity + qty})
                 if ml.quantity == 0:
-                    ml.write({'xt_barcode_product_scanned': False})
+                    ml.write({'xt_barcode_product_scanned': False, 'picked': False})
 
             # Forzar recalculo
             source_move._compute_xt_barcode_checking()

@@ -413,10 +413,13 @@ class StockPicking(models.Model):
 
     def _increase_line_quantity(self, line, quantity, barcode_flags=None):
         self.ensure_one()
+        # Si la línea no ha sido escaneada aún (es una reserva), reseteamos a 0
+        # para que el primer escaneo/ajuste sume sobre 0 y no sobre la reserva de Odoo.
         current_qty = line.quantity or 0.0
-        values = {"quantity": current_qty + quantity, "xt_barcode_product_scanned": True}
-        if values["quantity"] > 0 and not line.picked:
-            values["picked"] = True
+        if quantity > 0 and not line.xt_barcode_product_scanned:
+            current_qty = 0.0
+
+        values = {"quantity": current_qty + quantity, "xt_barcode_product_scanned": True, "picked": True}
         if barcode_flags:
             values.update(barcode_flags)
         line.write(values)
@@ -914,6 +917,17 @@ class StockPicking(models.Model):
         errors = self._get_barcode_validation_errors()
         if errors:
             raise UserError("\n".join(errors))
+
+        # Odoo 19: Asegurar que todas las líneas escaneadas están marcadas como "picked"
+        # y que la demanda se ajusta si se ha escaneado más de la cuenta.
+        for move in self.move_ids.filtered(lambda m: m.state not in ('done', 'cancel')):
+            if move.xt_barcode_scanned_qty > move.product_uom_qty:
+                move.write({'product_uom_qty': move.xt_barcode_scanned_qty})
+
+            # Marcamos las líneas escaneadas como 'picked' para que Odoo no las ignore
+            scanned_lines = move.move_line_ids.filtered(lambda ml: ml.xt_barcode_product_scanned)
+            if scanned_lines:
+                scanned_lines.write({'picked': True})
 
         # Almacenamos IDs de movimientos para buscar destinos después
         move_ids = self.move_ids.ids
