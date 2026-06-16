@@ -52,6 +52,22 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     console.log("[ATTENDANCE_PHONE] Página de asistencia por teléfono cargada");
 
+                    async function getPosition() {
+                        if (!navigator.geolocation) {
+                            return { latitude: null, longitude: null };
+                        }
+                        return new Promise((resolve) => {
+                            navigator.geolocation.getCurrentPosition(
+                                ({ coords: { latitude, longitude } }) => resolve({ latitude, longitude }),
+                                (err) => {
+                                    console.warn("[ATTENDANCE_PHONE] Error geolocalización:", err);
+                                    resolve({ latitude: null, longitude: null });
+                                },
+                                { enableHighAccuracy: true, timeout: 5000 }
+                            );
+                        });
+                    }
+
                     const form = document.getElementById('attendance_form');
                     form.addEventListener('submit', async function(e) {
                         e.preventDefault();
@@ -67,6 +83,8 @@
                         spinner.classList.remove('d-none');
 
                         try {
+                            const { latitude, longitude } = await getPosition();
+
                             const response = await fetch('/attendance/phone/validate', {
                                 method: 'POST',
                                 headers: {
@@ -77,7 +95,9 @@
                                     method: 'call',
                                     params: {
                                         phone: phone,
-                                        pin: pin
+                                        pin: pin,
+                                        latitude: latitude,
+                                        longitude: longitude
                                     }
                                 })
                             });
@@ -287,6 +307,22 @@
                         document.getElementById('message_container').innerHTML = '';
                     }
 
+                    async function getPosition() {
+                        if (!navigator.geolocation) {
+                            return { latitude: null, longitude: null };
+                        }
+                        return new Promise((resolve) => {
+                            navigator.geolocation.getCurrentPosition(
+                                ({ coords: { latitude, longitude } }) => resolve({ latitude, longitude }),
+                                (err) => {
+                                    console.warn("[ATTENDANCE_PHONE] Error geolocalización:", err);
+                                    resolve({ latitude: null, longitude: null });
+                                },
+                                { enableHighAccuracy: true, timeout: 5000 }
+                            );
+                        });
+                    }
+
                     // Función para hacer peticiones JSON-RPC
                     async function rpcCall(url, params) {
                         const response = await fetch(url, {
@@ -336,9 +372,13 @@
                         btnAttendance.innerHTML = '<span class="spinner"></span> Procesando...';
 
                         try {
+                            const { latitude, longitude } = await getPosition();
+
                             const result = await rpcCall('/attendance/phone/validate', {
                                 phone: phone,
-                                pin: pin
+                                pin: pin,
+                                latitude: latitude,
+                                longitude: longitude
                             });
 
                             if (result.success) {

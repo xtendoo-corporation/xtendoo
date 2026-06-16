@@ -62,6 +62,7 @@ export class KioskPhoneAttendance extends Component {
         companyId: { type: Number },
         companyName: { type: String },
         companyImageUrl: { type: String },
+        deviceTrackingEnabled: { type: Boolean, optional: true },
         onAttendanceRegistered: { type: Function, optional: true },
     };
 
@@ -129,6 +130,28 @@ export class KioskPhoneAttendance extends Component {
         }
     }
 
+    /**
+     * Obtiene la posición actual si el seguimiento está habilitado
+     */
+    async getPosition() {
+        if (!this.props.deviceTrackingEnabled || !navigator.geolocation) {
+            return { latitude: null, longitude: null };
+        }
+
+        return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                ({ coords: { latitude, longitude } }) => {
+                    resolve({ latitude, longitude });
+                },
+                (err) => {
+                    console.warn("[ATTENDANCE_PHONE] Error obteniendo geolocalización:", err);
+                    resolve({ latitude: null, longitude: null });
+                },
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        });
+    }
+
     get companyImageUrl() {
         return this.props.companyImageUrl;
     }
@@ -177,10 +200,14 @@ export class KioskPhoneAttendance extends Component {
         console.log("[ATTENDANCE_PHONE] Iniciando proceso de validación...");
 
         try {
+            const { latitude, longitude } = await this.getPosition();
+
             const result = await rpc('/attendance/phone/validate', {
                 phone: phone,
                 pin: pin,
-                token: this.props.token
+                token: this.props.token,
+                latitude: latitude,
+                longitude: longitude
             });
 
             console.log("[ATTENDANCE_PHONE] Respuesta del servidor:", {
@@ -258,10 +285,14 @@ export class KioskPhoneAttendance extends Component {
         this.ui.block();
 
         try {
+            const { latitude, longitude } = await this.getPosition();
+
             const result = await rpc('/attendance/phone/validate', {
                 phone: phone,
                 pin: pin,
-                token: this.props.token
+                token: this.props.token,
+                latitude: latitude,
+                longitude: longitude
             });
 
             if (result.success) {
@@ -328,6 +359,7 @@ export class KioskPhoneOnlyAttendance extends Component {
         companyId: { type: Number },
         companyName: { type: String },
         companyImageUrl: { type: String },
+        deviceTrackingEnabled: { type: Boolean, optional: true },
         onAttendanceRegistered: { type: Function, optional: true },
     };
 
@@ -392,8 +424,26 @@ export class KioskPhoneOnlyAttendance extends Component {
         }
     }
 
-    get companyImageUrl() {
-        return this.props.companyImageUrl;
+    /**
+     * Obtiene la posición actual si el seguimiento está habilitado
+     */
+    async getPosition() {
+        if (!this.props.deviceTrackingEnabled || !navigator.geolocation) {
+            return { latitude: null, longitude: null };
+        }
+
+        return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                ({ coords: { latitude, longitude } }) => {
+                    resolve({ latitude, longitude });
+                },
+                (err) => {
+                    console.warn("[ATTENDANCE_PHONE_ONLY] Error obteniendo geolocalización:", err);
+                    resolve({ latitude: null, longitude: null });
+                },
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        });
     }
 
     async onSubmit(event) {
@@ -419,9 +469,13 @@ export class KioskPhoneOnlyAttendance extends Component {
         this.ui.block();
 
         try {
+            const { latitude, longitude } = await this.getPosition();
+
             const result = await rpc('/attendance/phone/validate_phone_only', {
                 phone: phone,
-                token: this.props.token
+                token: this.props.token,
+                latitude: latitude,
+                longitude: longitude
             });
 
             if (result.success) {
@@ -476,9 +530,13 @@ export class KioskPhoneOnlyAttendance extends Component {
         this.ui.block();
 
         try {
+            const { latitude, longitude } = await this.getPosition();
+
             const result = await rpc('/attendance/phone/validate_phone_only', {
                 phone: phone,
-                token: this.props.token
+                token: this.props.token,
+                latitude: latitude,
+                longitude: longitude
             });
 
             if (result.success) {
@@ -615,4 +673,3 @@ patch(kioskAttendanceApp.prototype, {
 });
 
 console.log("[ATTENDANCE_PHONE] ✅ Módulo y patches inicializados correctamente");
-

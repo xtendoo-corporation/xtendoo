@@ -7,6 +7,55 @@ _logger = logging.getLogger(__name__)
 
 class AttendancePhone(http.Controller):
 
+    def _get_geoip_response(self, mode, latitude=False, longitude=False, device_tracking_enabled=True):
+        response = {'mode': mode}
+        if not device_tracking_enabled:
+            return response
+
+        try:
+            location = request.env['base.geocoder'].sudo()._get_localisation(latitude, longitude)
+        except Exception:
+            location = "Unknown"
+
+        response.update({
+            'location': location,
+            'latitude': latitude or (request.geoip.location.latitude if request.geoip and request.geoip.location else False),
+            'longitude': longitude or (request.geoip.location.longitude if request.geoip and request.geoip.location else False),
+            'ip_address': request.geoip.ip if request.geoip else False,
+            'browser': request.httprequest.user_agent.browser if request.httprequest.user_agent else False,
+        })
+        return response
+
+    def _match_phone(self, phone_input, employee_phone):
+        """
+        Compara un número de teléfono ingresado con uno de la base de datos.
+        Ambos se limpian de caracteres no numéricos.
+        Se considera coincidencia si son idénticos o si uno es sufijo del otro
+        (mínimo 9 dígitos para evitar falsos positivos).
+        """
+        if not phone_input or not employee_phone:
+            return False
+
+        input_clean = ''.join(filter(str.isdigit, phone_input.replace('+', '')))
+        emp_clean = ''.join(filter(str.isdigit, employee_phone.replace('+', '')))
+
+        if not input_clean or not emp_clean:
+            return False
+
+        # Si son iguales, éxito directo
+        if input_clean == emp_clean:
+            return True
+
+        # Si el input tiene al menos 9 dígitos y coincide con el final del número del empleado
+        if len(input_clean) >= 9 and emp_clean.endswith(input_clean):
+            return True
+
+        # Si el número del empleado tiene al menos 9 dígitos y coincide con el final del input
+        if len(emp_clean) >= 9 and input_clean.endswith(emp_clean):
+            return True
+
+        return False
+
     @http.route('/attendance/phone', type='http', auth='public', website=True)
     def attendance_phone(self):
         """Página web para registro de asistencia por teléfono"""
@@ -65,13 +114,15 @@ class AttendancePhone(http.Controller):
             return {"success": False, "error": str(e)}
 
     @http.route('/attendance/phone/validate_phone_only', type='jsonrpc', auth='public', csrf=False)
-    def validate_employee_phone_only(self, phone, token=None, **kwargs):
+    def validate_employee_phone_only(self, phone, token=None, latitude=None, longitude=None, **kwargs):
         """
         Valida empleado SOLO por teléfono (sin PIN), registra asistencia
 
         Args:
             phone (str): Número de teléfono del empleado
             token (str, optional): Token del kiosco para validación
+            latitude (float, optional): Latitud para geolocalización
+            longitude (float, optional): Longitud para geolocalización
 
         Returns:
             dict: Resultado de la validación y registro
@@ -92,12 +143,7 @@ class AttendancePhone(http.Controller):
             employee = None
 
             for emp in all_employees:
-                # Obtener teléfonos del empleado y limpiarlos
-                mobile_clean = ''.join(filter(str.isdigit, (emp.mobile_phone or '').replace('+', '')))
-                work_clean = ''.join(filter(str.isdigit, (emp.work_phone or '').replace('+', '')))
-
-                # Comparar números limpios
-                if mobile_clean == phone_cleaned or work_clean == phone_cleaned:
+                if self._match_phone(phone, emp.mobile_phone) or self._match_phone(phone, emp.work_phone):
                     employee = emp
                     _logger.info("[ATTENDANCE_PHONE_ONLY] ✅ Empleado encontrado: %s", emp.name)
                     break
@@ -108,6 +154,15 @@ class AttendancePhone(http.Controller):
 
             _logger.info("[ATTENDANCE_PHONE_ONLY] Empleado encontrado: %s (ID: %s)", employee.name, employee.id)
 
+            # Preparar información de geolocalización y dispositivo
+            company = employee.company_id
+            geo_information = self._get_geoip_response(
+                mode='kiosk',
+                latitude=latitude,
+                longitude=longitude,
+                device_tracking_enabled=company.attendance_device_tracking
+            )
+
             # Determinar si será entrada o salida ANTES de cambiar
             current_attendance = request.env['hr.attendance'].sudo().search([
                 ('employee_id', '=', employee.id),
@@ -117,9 +172,9 @@ class AttendancePhone(http.Controller):
             action_type = 'check_out' if current_attendance else 'check_in'
             _logger.info("[ATTENDANCE_PHONE_ONLY] Acción a realizar: %s", action_type)
 
-            # Registrar asistencia sin parámetros adicionales
+            # Registrar asistencia
             try:
-                employee.sudo()._attendance_action_change()
+                employee.sudo()._attendance_action_change(geo_information=geo_information)
                 _logger.info("[ATTENDANCE_PHONE_ONLY] ✅ Asistencia registrada para %s", employee.name)
             except Exception as attendance_error:
                 _logger.error("[ATTENDANCE_PHONE_ONLY] Error registrando asistencia: %s", str(attendance_error))
@@ -137,7 +192,7 @@ class AttendancePhone(http.Controller):
             return {"success": False, "error": f"Error del servidor: {str(e)}"}
 
     @http.route('/attendance/phone/validate', type='jsonrpc', auth='public', csrf=False)
-    def validate_employee(self, phone, pin, token=None, **kwargs):
+    def validate_employee(self, phone, pin, token=None, latitude=None, longitude=None, **kwargs):
         """Valida empleado por teléfono y PIN, registra asistencia"""
         _logger.info("[ATTENDANCE_PHONE] Iniciando validación - Teléfono: %s***", phone[:3] if phone else 'N/A')
 
@@ -145,7 +200,7 @@ class AttendancePhone(http.Controller):
 
             if not phone or not pin:
                 _logger.warning("[ATTENDANCE_PHONE] Parámetros faltantes - Phone: %s, Pin: %s",
-                              bool(phone), bool(pin))
+                               bool(phone), bool(pin))
                 return {"success": False, "error": "Parámetros requeridos faltantes"}
 
             # Limpiar el número de teléfono (remover espacios, guiones, etc.)
@@ -158,16 +213,22 @@ class AttendancePhone(http.Controller):
             # Verificar teléfono
             employee = None
             for emp in employees_with_pin:
-                mobile_clean = ''.join(filter(str.isdigit, (emp.mobile_phone or '').replace('+', '')))
-                work_clean = ''.join(filter(str.isdigit, (emp.work_phone or '').replace('+', '')))
-
-                if mobile_clean == phone_cleaned or work_clean == phone_cleaned:
+                if self._match_phone(phone, emp.mobile_phone) or self._match_phone(phone, emp.work_phone):
                     employee = emp
                     _logger.info("[ATTENDANCE_PHONE] ✅ Coincidencia encontrada con empleado %s", emp.name)
                     break
 
             if not employee:
                 return {"success": False, "error": "PIN o teléfono incorrecto"}
+
+            # Preparar información de geolocalización y dispositivo
+            company = employee.company_id
+            geo_information = self._get_geoip_response(
+                mode='kiosk',
+                latitude=latitude,
+                longitude=longitude,
+                device_tracking_enabled=company.attendance_device_tracking
+            )
 
             # Determinar si será entrada o salida ANTES de cambiar
             # Si el empleado tiene una asistencia abierta (sin check_out), será salida
@@ -182,7 +243,7 @@ class AttendancePhone(http.Controller):
 
             # Registrar asistencia
             try:
-                result = employee.sudo()._attendance_action_change()
+                result = employee.sudo()._attendance_action_change(geo_information=geo_information)
                 _logger.info("[ATTENDANCE_PHONE] ✅ Asistencia registrada exitosamente para %s", employee.name)
 
                 return {
@@ -226,10 +287,7 @@ class AttendancePhone(http.Controller):
             employee = None
 
             for emp in all_employees:
-                mobile_clean = ''.join(filter(str.isdigit, (emp.mobile_phone or '').replace('+', '')))
-                work_clean = ''.join(filter(str.isdigit, (emp.work_phone or '').replace('+', '')))
-
-                if mobile_clean == phone_cleaned or work_clean == phone_cleaned:
+                if self._match_phone(phone, emp.mobile_phone) or self._match_phone(phone, emp.work_phone):
                     employee = emp
                     _logger.info("[ATTENDANCE_PHONE_STATUS] ✅ Empleado encontrado: %s", emp.name)
                     break
@@ -300,16 +358,16 @@ class AttendancePhone(http.Controller):
             phone_cleaned = ''.join(filter(str.isdigit, phone_number.replace('+', '')))
 
             # Verificar si el teléfono ya está registrado para otro empleado
-            existing = request.env['hr.employee'].sudo().search([
-                ('id', '!=', employee.id),
-                '|',
-                ('mobile_phone', 'ilike', phone_cleaned),
-                ('work_phone', 'ilike', phone_cleaned)
-            ], limit=1)
+            existing = None
+            all_other_employees = request.env['hr.employee'].sudo().search([('id', '!=', employee.id)])
+            for emp in all_other_employees:
+                if self._match_phone(phone_number, emp.mobile_phone) or self._match_phone(phone_number, emp.work_phone):
+                    existing = emp
+                    break
 
             if existing:
-                _logger.warning("[ATTENDANCE_PHONE] El teléfono ya está registrado para otro empleado")
-                return {"success": False, "error": "Este teléfono ya está registrado para otro empleado"}
+                _logger.warning("[ATTENDANCE_PHONE] El teléfono ya está registrado para otro empleado: %s", existing.name)
+                return {"success": False, "error": f"Este teléfono ya está registrado para {existing.name}"}
 
             # Guardar el teléfono en el campo mobile_phone si está vacío, sino en work_phone
             if not employee.mobile_phone:
@@ -352,13 +410,12 @@ class AttendancePhone(http.Controller):
             if not phone_number:
                 return {"registered": False, "error": "Teléfono requerido"}
 
-            phone_cleaned = ''.join(filter(str.isdigit, phone_number.replace('+', '')))
-
-            employee = request.env['hr.employee'].sudo().search([
-                '|',
-                ('mobile_phone', 'ilike', phone_cleaned),
-                ('work_phone', 'ilike', phone_cleaned)
-            ], limit=1)
+            all_employees = request.env['hr.employee'].sudo().search([])
+            employee = None
+            for emp in all_employees:
+                if self._match_phone(phone_number, emp.mobile_phone) or self._match_phone(phone_number, emp.work_phone):
+                    employee = emp
+                    break
 
             if employee:
                 return {
@@ -372,4 +429,3 @@ class AttendancePhone(http.Controller):
         except Exception as e:
             _logger.error("[ATTENDANCE_PHONE] Error verificando registro: %s", str(e))
             return {"registered": False, "error": str(e)}
-

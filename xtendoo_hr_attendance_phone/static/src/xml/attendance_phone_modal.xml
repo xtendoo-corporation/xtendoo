@@ -63,6 +63,7 @@
                     companyId="this.props.companyId"
                     companyName="this.props.companyName"
                     companyImageUrl="this.companyImageUrl"
+                    deviceTrackingEnabled="this.props.deviceTrackingEnabled"
                     onClickBack="() => this.kioskReturn()"
                     onAttendanceRegistered="(result) => this.onPhoneAttendanceRegistered(result)"
                 />
@@ -73,6 +74,7 @@
                     companyId="this.props.companyId"
                     companyName="this.props.companyName"
                     companyImageUrl="this.companyImageUrl"
+                    deviceTrackingEnabled="this.props.deviceTrackingEnabled"
                     onClickBack="() => this.kioskReturn()"
                     onAttendanceRegistered="(result) => this.onPhoneAttendanceRegistered(result)"
                 />
