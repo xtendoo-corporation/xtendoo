@@ -1,6 +1,7 @@
 .o_main_navbar {
     background: #171717 !important;
-    border-bottom-color: var(--xtd-line) !important;
+    border-bottom: 0 !important;
+    position: relative;
     --NavBar-menuToggle-color: var(--xtd-ink);
     --NavBar-brand-color: var(--xtd-ink);
     --NavBar-entry-color--active: var(--xtd-burgundy);
@@ -27,8 +28,8 @@
         font-size: 1rem !important;
         font-weight: 500 !important;
         line-height: 1.2 !important;
-        min-height: 38px !important;
-        height: 38px !important;
+        min-height: 28px !important;
+        height: 28px !important;
         margin: 0 0.18rem !important;
         padding-top: 0 !important;
         padding-bottom: 0 !important;
@@ -66,8 +67,8 @@
         .o_nav_entry,
         .dropdown-toggle:not(.o-dropdown-toggle-custo) {
             align-self: center;
-            min-height: 38px !important;
-            height: 38px !important;
+            min-height: 28px !important;
+            height: 28px !important;
             font-weight: 500 !important;
             line-height: 1.2 !important;
             padding-top: 0 !important;
@@ -82,12 +83,24 @@
     }
 }
 
+.o_main_navbar::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background: var(--xtd-line);
+    pointer-events: none;
+    z-index: 2;
+}
+
 .o_main_navbar .o_menu_brand {
     background: transparent !important;
     border: 1px solid transparent !important;
     border-radius: 10px !important;
-    min-height: 38px !important;
-    height: 38px !important;
+    min-height: 28px !important;
+    height: 28px !important;
 }
 
 .o_main_navbar .o_menu_brand:hover,
@@ -118,6 +131,41 @@
     border: 0 !important;
     border-radius: 0 !important;
     color: var(--xtd-ink) !important;
+}
+
+.o_menu_systray {
+    align-items: center;
+    gap: 0.1rem !important;
+
+    > * {
+        display: flex;
+        align-items: center;
+        margin: 0 0.18rem !important;
+        border-radius: 8px !important;
+        transition: background 0.15s ease !important;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
+    }
+
+    .o_nav_entry,
+    .dropdown-toggle,
+    .btn,
+    > li > a,
+    > li > button {
+        align-items: center;
+        align-self: center;
+        display: inline-flex;
+        justify-content: center;
+        min-height: 28px !important;
+        height: 28px !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        border-radius: 10px !important;
+        position: relative;
+        z-index: 1;
+    }
 }
 
 .o_app_menu_sidebar {

@@ -66,6 +66,9 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
                 if (parseFloat(menuBrandStyle.fontSize) > 16.5) {
                     throw new Error("El título de la app del navbar no debe quedar sobredimensionado.");
                 }
+                if (parseFloat(menuBrandStyle.height) > 32.5) {
+                    throw new Error("El título de la app del navbar debe conservar una altura compacta.");
+                }
 
                 const searchIcon = document.querySelector(".o_searchview_icon");
                 if (!searchIcon) {
@@ -74,6 +77,21 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
                 const searchIconStyle = window.getComputedStyle(searchIcon);
                 if (searchIconStyle.color !== "rgb(21, 21, 21)") {
                     throw new Error("Los iconos del backend deben mostrarse en negro en el tema claro.");
+                }
+
+                const systrayEntry = document.querySelector(
+                    ".o_main_navbar .o_menu_systray .dropdown-toggle, " +
+                    ".o_main_navbar .o_menu_systray .btn, " +
+                    ".o_main_navbar .o_menu_systray > li > a, " +
+                    ".o_main_navbar .o_menu_systray > li > button"
+                );
+                if (systrayEntry) {
+                    const systrayEntryStyle = window.getComputedStyle(systrayEntry);
+                    if (parseFloat(systrayEntryStyle.height) > 32.5) {
+                        throw new Error(
+                            "Las entradas del systray deben conservar una altura compacta para no invadir el separador inferior del navbar."
+                        );
+                    }
                 }
             },
         },
@@ -108,6 +126,16 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
                 }
                 if (parseFloat(navbarEntryStyle.height) > 40.5) {
                     throw new Error("La opción activa del menú superior no debe quedar sobredimensionada en altura.");
+                }
+                const menuBrand = document.querySelector(".o_main_navbar .o_menu_brand");
+                if (menuBrand) {
+                    const menuBrandHeight = parseFloat(window.getComputedStyle(menuBrand).height);
+                    const navbarEntryHeight = parseFloat(navbarEntryStyle.height);
+                    if (Math.abs(menuBrandHeight - navbarEntryHeight) > 4) {
+                        throw new Error(
+                            "El título de la app y las entradas del menú superior deben mantener una altura visual homogénea."
+                        );
+                    }
                 }
             },
         },
