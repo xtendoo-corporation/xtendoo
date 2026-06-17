@@ -35,10 +35,23 @@ class TestHrExpenseAIWizard(TransactionCase):
         ICP.set_param("xtendoo_ai_connector.ai_api_key", "fake-key")
         ICP.set_param("xtendoo_ai_connector.ai_model", "gemini-2.5-flash")
 
+        # Create an employee
+        cls.employee = cls.env["hr.employee"].create({
+            "name": "Test Employee",
+        })
+
+        # Create a product that can be expensed
+        cls.product = cls.env["product.product"].create({
+            "name": "Expensable Product",
+            "can_be_expensed": True,
+            "type": "service",
+        })
+
         # Create an expense
         cls.expense = cls.env["hr.expense"].create({
             "name": "Draft Expense",
-            "product_id": cls.env.ref("hr_expense.product_product_fixed_cost").id,
+            "employee_id": cls.employee.id,
+            "product_id": cls.product.id,
             "total_amount_currency": 0.0,
         })
 
@@ -90,4 +103,3 @@ class TestHrExpenseAIWizard(TransactionCase):
         self.expense.write({"ai_processed": True, "ai_has_corrections": False})
         self.expense.write({"name": "MANUAL-CHANGE"})
         self.assertTrue(self.expense.ai_has_corrections)
-
