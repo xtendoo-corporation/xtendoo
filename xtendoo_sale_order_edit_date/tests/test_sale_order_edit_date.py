@@ -8,6 +8,19 @@ class TestSaleOrderEditDate(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.partner = cls.env.ref("base.res_partner_1")
+        cls.salesperson_group = cls.env.ref("sales_team.group_sale_salesman")
+        cls.sales_user = cls.env["res.users"].with_context(
+            no_reset_password=True
+        ).create(
+            {
+                "name": "Sales User Edit Date",
+                "login": "sales_user_edit_date",
+                "email": "sales_user_edit_date@example.com",
+                "groups_id": [Command.set(cls.salesperson_group.ids)],
+                "company_id": cls.env.company.id,
+                "company_ids": [Command.set(cls.env.company.ids)],
+            }
+        )
         cls.product = cls.env["product.product"].create(
             {
                 "name": "Test Sale Order Edit Date",
@@ -19,8 +32,11 @@ class TestSaleOrderEditDate(TransactionCase):
         )
 
     @classmethod
-    def _create_order(cls, date_order=None):
-        order = cls.env["sale.order"].create(
+    def _create_order(cls, date_order=None, user=None):
+        order_env = cls.env["sale.order"]
+        if user:
+            order_env = order_env.with_user(user)
+        order = order_env.create(
             {
                 "partner_id": cls.partner.id,
                 "date_order": date_order or fields.Datetime.now(),
@@ -84,3 +100,16 @@ class TestSaleOrderEditDate(TransactionCase):
         self.assertTrue(order_without_date.date_order)
         self.assertGreaterEqual(order_without_date.date_order, before_confirm)
         self.assertLessEqual(order_without_date.date_order, after_confirm)
+
+    def test_sales_user_can_edit_date_without_extra_group(self):
+        draft_date = fields.Datetime.to_datetime("2024-04-03 11:00:00")
+        sale_date = fields.Datetime.to_datetime("2024-04-05 13:30:00")
+        order = self._create_order(user=self.sales_user)
+
+        order.with_user(self.sales_user).write({"date_order": draft_date})
+        self.assertEqual(order.date_order, draft_date)
+
+        order.action_confirm()
+        order.with_user(self.sales_user).write({"date_order": sale_date})
+        self.assertEqual(order.date_order, sale_date)
+

@@ -23,19 +23,15 @@
     'name': "Edit Sale Order Date",
     'version': '18.0.1.0.0',
     'category': 'Sales',
-    'summary': 'Change the order date for particular user group',
-    'description': 'We can change the order date of the confirmed sale order.'
-                   'The access for the editing the order date can be'
-                   'restricted to particular user group. The user who have no '
-                   'access to edit the field got a user error while trying to'
-                   'change the field',
+    'summary': 'Allow sales users to edit the sale order date',
+    'description': 'Sales users can change the quotation and sales order date '
+                   'without any additional security group.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['sale_management'],
     'data': [
-        'security/edit_order_date_groups.xml',
         'views/sale_order_views.xml'
     ],
     'images': ['static/description/banner.jpg'],

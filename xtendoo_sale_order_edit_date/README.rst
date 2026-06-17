@@ -4,9 +4,8 @@
 
 Edit Sale Order Date
 ====================
-We can change the order date of the confirmed sale order. The access for the editing
-the order date can be restricted to particular user group. The user who have no access
-to edit the field got a user error while trying to change the field.
+Sales users can change the quotation date and the confirmed sales order date without
+any additional security group.
 
 Configuration
 =============
