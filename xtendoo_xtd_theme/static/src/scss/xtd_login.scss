@@ -130,31 +130,15 @@ main {
         color: #333 !important;
         margin-bottom: 10px !important;
         display: block !important;
-    }
 
-    /* Contenedor para el botón de elegir usuario (reubicado) */
-    .o_xtd_user_switch_btn_container {
-        margin-top: -5px !important;
-        margin-bottom: 15px !important;
-
-        .o_user_switch_btn {
+        /* Estilo para el texto "Elige un usuario" que Odoo concatena */
+        small, span, t {
+            display: block !important;
             font-size: 14px !important;
-            color: #FD953E !important;
-            font-weight: 600 !important;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            transition: all 0.2s ease !important;
-
-            &:hover {
-                color: #FF7A00 !important;
-                text-decoration: underline !important;
-            }
-
-            i {
-                font-size: 12px !important;
-                vertical-align: middle !important;
-            }
+            color: #999 !important;
+            font-weight: 400 !important;
+            margin-top: 5px !important;
+            margin-bottom: 10px !important;
         }
     }
 

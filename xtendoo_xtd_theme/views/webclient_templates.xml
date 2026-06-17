@@ -87,14 +87,8 @@
             <div class="oe_login_buttons d-grid mb-1">
                 <button type="submit" class="btn btn-primary btn-login">Iniciar sesión</button>
                 <div class="separator">
-                    <span>o</span>
                 </div>
-                <button type="button" class="btn btn-passkey">
-                    <i class="fa fa-qrcode"/> Usar una clave de acceso
-                </button>
-                <t t-if="debug">
-                    <button type="submit" name="redirect" value="/web/become" class="btn btn-link btn-sm mt-4 text-muted">Log in as superuser</button>
-                </t>
+                
             </div>
         </xpath>
     </template>
