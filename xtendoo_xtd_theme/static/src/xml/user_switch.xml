@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="web.login_user_switch" t-inherit-mode="extension">
+        <!-- Reubicar el botón de elegir usuario a nuestro contenedor personalizado -->
+        <xpath expr="//t[@t-portal]" position="attributes">
+            <attribute name="t-portal">'.o_xtd_user_switch_btn_container'</attribute>
+        </xpath>
+        <!-- Mejorar el diseño del botón -->
+        <xpath expr="//button[hasclass('o_user_switch_btn')]" position="replace">
+            <button type="button" class="o_user_switch_btn btn btn-link m-0 p-0 text-decoration-none" tabindex="1" t-on-click="() => this.toggleFormDisplay()">
+                <i class="fa fa-users me-1"/> Elige un usuario
+            </button>
+        </xpath>
+    </t>
+</templates>

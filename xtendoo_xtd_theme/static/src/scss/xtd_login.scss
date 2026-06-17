@@ -1,0 +1,362 @@
+/* Estilos de layout globales - Forzar centrado absoluto */
+body.xtd_login_body {
+    background-color: #FDF5ED !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+}
+
+#wrapwrap {
+    background-color: #FDF5ED !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+}
+
+main {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* El Wrapper que genera el fondo con la ola */
+.xtd-login-wrapper {
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1;
+    background-color: #FDF5ED !important;
+
+    /* Ola naranja inferior de fondo (Imagen 2) */
+    &::after {
+        content: '' !important;
+        position: absolute !important;
+        bottom: -15vh !important;
+        left: -10% !important;
+        width: 125% !important;
+        height: 45vh !important;
+        background: linear-gradient(90deg, #F9A05D 0%, #FD953E 100%) !important;
+        border-radius: 100% 100% 0 0 !important;
+        z-index: -1 !important;
+        pointer-events: none !important;
+    }
+}
+
+.xtd-login-card {
+    background: white !important;
+    padding: 60px 45px !important;
+    border-radius: 40px !important;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.08) !important;
+    width: 460px !important;
+    max-width: 90vw !important;
+    position: relative !important;
+    overflow: hidden !important;
+    z-index: 10 !important;
+    margin: auto !important;
+
+    /* Mancha naranja superior derecha (Imagen 2) */
+    &::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -45px !important;
+        right: -35px !important;
+        width: 180px !important;
+        height: 150px !important;
+        background: #FFB37C !important;
+        border-radius: 50px !important;
+        transform: rotate(-15deg) !important;
+        z-index: 0 !important;
+        opacity: 1 !important;
+        display: block !important;
+    }
+
+    /* Forzamos que no tenga otras formas que ensucien */
+    &::after { display: none !important; }
+
+    .xtd-dots {
+        position: absolute;
+        bottom: 35px;
+        left: 35px;
+        width: 60px;
+        height: 60px;
+        background-image: radial-gradient(#FF7A00 2px, transparent 2px);
+        background-size: 12px 12px;
+        opacity: 0.15;
+        z-index: 0;
+    }
+
+    .xtd-card-content {
+        position: relative;
+        z-index: 5;
+    }
+
+    /* Logo controlado */
+    .xtd-login-logo {
+        text-align: center;
+        margin-bottom: 40px !important;
+        img {
+            max-height: 80px !important;
+            max-width: 200px !important;
+            width: auto !important;
+            margin: 0 auto !important;
+            display: block !important;
+        }
+    }
+
+    h2 {
+        font-weight: 800 !important;
+        font-size: 32px !important;
+        color: #1a1a1a !important;
+        margin-bottom: 8px !important;
+        letter-spacing: -0.5px !important;
+    }
+
+    p.subtitle {
+        color: #777 !important;
+        font-size: 17px !important;
+        margin-bottom: 35px !important;
+    }
+
+    .form-label {
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        color: #333 !important;
+        margin-bottom: 10px !important;
+        display: block !important;
+    }
+
+    /* Contenedor para el botón de elegir usuario (reubicado) */
+    .o_xtd_user_switch_btn_container {
+        margin-top: -5px !important;
+        margin-bottom: 15px !important;
+
+        .o_user_switch_btn {
+            font-size: 14px !important;
+            color: #FD953E !important;
+            font-weight: 600 !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            transition: all 0.2s ease !important;
+
+            &:hover {
+                color: #FF7A00 !important;
+                text-decoration: underline !important;
+            }
+
+            i {
+                font-size: 12px !important;
+                vertical-align: middle !important;
+            }
+        }
+    }
+
+    /* Inputs Modernos */
+    .input-group {
+        background: #F9FAFB !important;
+        border: 1.5px solid #F1F3F5 !important;
+        border-radius: 20px !important;
+        padding: 4px 18px !important;
+        margin-bottom: 22px !important;
+        display: flex !important;
+        align-items: center !important;
+        transition: all 0.2s ease;
+
+        &:focus-within {
+            border-color: #FF7A00 !important;
+            background: white !important;
+            box-shadow: 0 0 0 4px rgba(255, 122, 0, 0.1) !important;
+        }
+
+        .input-group-text {
+            background: transparent !important;
+            border: none !important;
+            color: #ADB5BD !important;
+            padding-right: 12px !important;
+            font-size: 20px !important;
+        }
+
+        .form-control {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            height: 55px !important;
+            font-size: 16px !important;
+            color: #212529 !important;
+            padding: 0 !important;
+            &::placeholder { color: #CED4DA !important; }
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            padding: 0 10px !important;
+            color: #ADB5BD !important;
+            &:hover { color: #FF7A00 !important; }
+        }
+    }
+
+    .forgot-password {
+        text-align: right;
+        margin-top: -12px;
+        margin-bottom: 35px;
+        a {
+            color: #FF7A00 !important;
+            font-weight: 700 !important;
+            font-size: 15px !important;
+            text-decoration: none !important;
+            &:hover { text-decoration: underline !important; }
+        }
+    }
+
+    /* Botón Principal (Gradiente exacto) */
+    .btn-primary.btn-login {
+        background: linear-gradient(90deg, #FF7A00 0%, #FF9233 100%) !important;
+        border: none !important;
+        border-radius: 20px !important;
+        height: 65px !important;
+        font-weight: 800 !important;
+        font-size: 19px !important;
+        color: white !important;
+        box-shadow: 0 15px 35px rgba(255, 122, 0, 0.25) !important;
+        width: 100% !important;
+        transition: all 0.3s ease !important;
+        &:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 20px 45px rgba(255, 122, 0, 0.35) !important;
+            filter: brightness(1.05);
+        }
+    }
+
+    .separator {
+        display: flex;
+        align-items: center;
+        color: #DEE2E6;
+        margin: 30px 0;
+        &::before, &::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #E9ECEF;
+        }
+        span { padding: 0 18px; font-size: 15px; font-weight: 500; }
+    }
+
+    .btn-passkey {
+        background: white !important;
+        border: 1.5px solid #E9ECEF !important;
+        border-radius: 20px !important;
+        height: 65px !important;
+        color: #495057 !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 15px !important;
+        width: 100% !important;
+        transition: all 0.2s ease;
+        &:hover {
+            background: #F8F9FA !important;
+            border-color: #DEE2E6 !important;
+        }
+    }
+
+    .signup-footer {
+        margin-top: 40px;
+        text-align: center;
+        color: #6C757D;
+        font-size: 15px;
+        a {
+            color: #FF7A00 !important;
+            font-weight: 800 !important;
+            text-decoration: none !important;
+            &:hover { text-decoration: underline !important; }
+        }
+    }
+
+    /* Selector de Usuarios (User Switch) - Estilizado como botones del card */
+    .o_user_switch_list, .list-group, .o_login_auth {
+        margin-top: 25px !important;
+        border: none !important;
+        padding: 0 !important;
+
+        .list-group-item, .o_user_switch_item, .btn-link {
+            background: #F9FAFB !important;
+            border: 1.5px solid #F1F3F5 !important;
+            border-radius: 20px !important;
+            margin-bottom: 15px !important;
+            padding: 18px 22px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: all 0.3s ease !important;
+            color: #343A40 !important;
+            text-decoration: none !important;
+            width: 100% !important;
+            text-align: left !important;
+            box-shadow: none !important;
+
+            &:hover {
+                border-color: #FF7A00 !important;
+                background: white !important;
+                transform: translateY(-3px) !important;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+            }
+
+            img, .o_user_switch_avatar, i {
+                width: 40px !important;
+                height: 40px !important;
+                border-radius: 14px !important;
+                margin-right: 18px !important;
+                object-fit: cover !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: #E9ECEF;
+            }
+
+            .o_user_switch_name, span, b {
+                font-weight: 700 !important;
+                font-size: 17px !important;
+                flex-grow: 1;
+            }
+
+            .o_user_switch_close, .btn-remove, .fa-times {
+                opacity: 0.2;
+                font-size: 18px !important;
+                padding: 5px !important;
+                color: #212529 !important;
+                border: none !important;
+                background: none !important;
+                &:hover { opacity: 1; color: #DC3545 !important; }
+            }
+        }
+    }
+}
+
+.xtd-login-footer-links {
+    position: fixed;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.9);
+    z-index: 100;
+    font-size: 15px;
+    font-weight: 500;
+    pointer-events: auto;
+
+    a {
+        color: white !important;
+        font-weight: 800 !important;
+        text-decoration: none !important;
+        &:hover { text-decoration: underline !important; }
+    }
+
+    span { opacity: 0.5; margin: 0 10px; }
+}

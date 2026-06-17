@@ -13,6 +13,7 @@
         "disable_odoo_online",
         "mail_debranding",
         "portal_debranding",
+        "auth_signup",
     ],
     "data": [
         "views/res_users_views.xml",
@@ -28,6 +29,8 @@
         ],
         "web.assets_frontend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_login.scss",
+            "xtendoo_xtd_theme/static/src/xml/user_switch.xml",
         ],
         "web.assets_web_dark": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.dark.scss",
