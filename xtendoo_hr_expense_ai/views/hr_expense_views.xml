@@ -7,27 +7,26 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
                 <button name="action_open_ai_document_wizard"
-                        string="AI Import"
+                        string="Importar IA"
                         type="object"
                         class="oe_highlight"
                         invisible="state not in ['draft', 'reported']"/>
             </xpath>
             <xpath expr="//sheet" position="before">
                 <div class="alert alert-info" role="alert" invisible="not ai_processed or ai_has_corrections">
-                    This document was processed by AI.
+                    Este documento ha sido procesado por IA.
                 </div>
                 <div class="alert alert-warning" role="alert" invisible="not ai_has_corrections">
-                    AI data has been modified manually. Feedback will be sent in next batch.
+                    Los datos de la IA han sido modificados manualmente. Se enviarán correcciones en el próximo lote.
                 </div>
             </xpath>
             <xpath expr="//group" position="after">
-                <group string="AI Detection Metadata" groups="base.group_no_one">
-                    <field name="ai_document_type"/>
-                    <field name="ai_processed"/>
-                    <field name="ai_has_corrections"/>
+                <group string="Metadatos de Detección IA" groups="base.group_no_one">
+                    <field name="ai_document_type" string="Tipo de Documento Detectado"/>
+                    <field name="ai_processed" string="Procesado por IA"/>
+                    <field name="ai_has_corrections" string="Correcciones de IA Pendientes"/>
                 </group>
             </xpath>
         </field>
     </record>
 </odoo>
-

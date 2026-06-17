@@ -65,7 +65,8 @@ class TestHrExpenseAIWizard(TransactionCase):
     def _make_wizard(self):
         return self.env["hr.expense.ai.wizard"].create({
             "expense_id": self.expense.id,
-            "attachment_id": self.attachment.id,
+            "attachment_file": self.attachment.datas,
+            "attachment_name": self.attachment.name,
         })
 
     def test_action_analyze_no_attachment_raises(self):

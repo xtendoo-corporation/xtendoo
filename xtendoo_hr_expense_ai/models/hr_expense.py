@@ -7,31 +7,31 @@ class HrExpense(models.Model):
     _inherit = "hr.expense"
     ai_document_type = fields.Selection(
         selection=[
-            ("expense", "Expense"),
-            ("other", "Other"),
+            ("expense", "Gasto"),
+            ("other", "Otro"),
         ],
-        string="Detected Document Type",
+        string="Tipo de Documento Detectado",
         copy=False,
         readonly=True,
-        help="Document type auto-detected by AI.",
+        help="Tipo de documento detectado automáticamente por la IA.",
     )
     ai_processed = fields.Boolean(
-        string="Processed by AI",
+        string="Procesado por IA",
         default=False,
         copy=False,
     )
     ai_has_corrections = fields.Boolean(
-        string="Pending AI Feedback",
+        string="Correcciones de IA Pendientes",
         default=False,
         copy=False,
-        help="Indicates manual corrections have been made after AI processing.",
+        help="Indica si se han realizado correcciones manuales tras el procesamiento por IA.",
     )
     def action_open_ai_document_wizard(self):
         """Open the AI document import wizard for this expense."""
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": _("Import Document with AI"),
+            "name": _("Importar Documento con IA"),
             "res_model": "hr.expense.ai.wizard",
             "view_mode": "form",
             "target": "new",
