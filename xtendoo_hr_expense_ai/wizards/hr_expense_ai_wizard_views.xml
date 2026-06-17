@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_expense_ai_wizard_view_form" model="ir.ui.view">
+        <field name="name">hr.expense.ai.wizard.view.form</field>
+        <field name="model">hr.expense.ai.wizard</field>
+        <field name="arch" type="xml">
+            <form string="AI Document Import">
+                <sheet>
+                    <div invisible="state != 'draft'">
+                        <group>
+                            <field name="attachment_id" widget="binary" filename="attachment_name" required="1"/>
+                            <field name="expense_id" invisible="1"/>
+                        </group>
+                        <p class="text-muted">
+                            Upload a PDF or Image of the expense receipt. Our AI will extract the date, description, amount and vendor information.
+                        </p>
+                    </div>
+
+                    <div invisible="state != 'preview'">
+                        <group>
+                            <field name="detected_reason"/>
+                        </group>
+                        <notebook>
+                            <page string="Extracted Data (JSON)">
+                                <field name="ai_json_result" widget="ace" options="{'mode': 'json'}"/>
+                            </page>
+                        </notebook>
+                    </div>
+
+                    <footer>
+                        <button name="action_analyze" string="Analyze Document" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_apply" string="Apply Changes" type="object" class="oe_highlight" invisible="state != 'preview'"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
+

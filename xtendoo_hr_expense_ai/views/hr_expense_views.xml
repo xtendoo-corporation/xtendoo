@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_expense_view_form_inherit_ai" model="ir.ui.view">
+        <field name="name">hr.expense.view.form.inherit.ai</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_ai_document_wizard"
+                        string="AI Import"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="state not in ['draft', 'reported']"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-info" role="alert" invisible="not ai_processed or ai_has_corrections">
+                    This document was processed by AI.
+                </div>
+                <div class="alert alert-warning" role="alert" invisible="not ai_has_corrections">
+                    AI data has been modified manually. Feedback will be sent in next batch.
+                </div>
+            </xpath>
+            <xpath expr="//group" position="after">
+                <group string="AI Detection Metadata" groups="base.group_no_one">
+                    <field name="ai_document_type"/>
+                    <field name="ai_processed"/>
+                    <field name="ai_has_corrections"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
