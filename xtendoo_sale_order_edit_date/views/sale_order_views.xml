@@ -20,6 +20,9 @@
                 <field name="date_order" invisible="state in ['draft', 'sent']"
                        readonly="state == 'cancel'" nolabel="1"/>
             </xpath>
+            <xpath expr="//group[@name='order_details']/field[@name='date_order'][2]" position="after">
+                <xpath expr="//group[@name='order_details']/field[@name='validity_date']" position="move"/>
+            </xpath>
         </field>
     </record>
 </odoo>
