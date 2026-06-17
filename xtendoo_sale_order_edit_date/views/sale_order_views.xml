@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!--    inherited sale_order view for making the date_order field editable in 'sale' state -->
+    <!-- inherited sale_order view for making the date_order field editable -->
     <record id="view_order_form" model="ir.ui.view">
         <field name="name">sale.order.view.form.inherit.edit.order.date</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//group[@name='order_details']/div[1]" position="replace">
+                <div class="o_td_label" invisible="state in ['sale', 'cancel']">
+                    <label for="date_order" string="Quotation Date"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='date_order'][1]" position="replace">
+                <field name="date_order" nolabel="1"
+                       invisible="state in ['sale', 'cancel']"
+                       readonly="state == 'cancel'"/>
+            </xpath>
             <xpath expr="//field[@name='date_order'][2]" position="replace">
                 <field name="date_order" invisible="state in ['draft', 'sent']"
-                       readonly="state in ['cancel']" nolabel="1"/>
+                       readonly="state == 'cancel'" nolabel="1"/>
             </xpath>
         </field>
     </record>
