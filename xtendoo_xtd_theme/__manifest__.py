@@ -16,16 +16,24 @@
         "auth_signup",
     ],
     "data": [
+        "data/dashboard_data.xml",
         "views/res_users_views.xml",
         "views/webclient_templates.xml",
+        "views/dashboard_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_menu.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_sidebar_toggle.scss",
             "xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js",
-            "xtendoo_xtd_theme/static/src/js/xtd_color_scheme.esm.js",
+            "xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js",
             "xtendoo_xtd_theme/static/src/xml/error_dialogs.xml",
+            "xtendoo_xtd_theme/static/src/js/xtd_color_scheme.esm.js",
+            "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js",
+            "xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml",
+            "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml",
+            "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.scss",
         ],
         "web.assets_frontend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",

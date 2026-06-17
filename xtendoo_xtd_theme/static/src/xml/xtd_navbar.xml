@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <!-- Heredamos de la NavBar de web_responsive para poner nuestro botón y forzar el sidebar en desktop -->
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//AppsMenu" position="before">
+            <t t-if="!this.ui.isSmall">
+                <t t-call="web.NavBar.AppsMenu.Sidebar">
+                    <t t-set="apps" t-value="menuService.getApps()" />
+                </t>
+            </t>
+        </xpath>
+        <!-- No ocultamos el AppsMenu, ya que contiene el botón de hamburguesa que hemos parcheado -->
+    </t>
+
+    <t t-inherit="web_responsive.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o_grid_apps_menu__button')]" position="replace">
+            <button
+                class="o_grid_apps_menu__button o_xtd_apps_toggle"
+                title="Menú de Aplicaciones"
+                t-on-click.stop="toggleXtdSidebar"
+            >
+                <i class="oi oi-apps fs-4" />
+            </button>
+        </xpath>
+    </t>
+
+    <!-- Modificamos el sidebar de aplicaciones -->
+    <t t-inherit="web.NavBar.AppsMenu.Sidebar" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_app_menu_sidebar')]" position="attributes">
+            <attribute name="class" add="xtd-sidebar-panel" separator=" "/>
+        </xpath>
+
+        <!-- Inyectamos el logo y quitamos el botón 'All Apps' original para un diseño más limpio -->
+        <xpath expr="//div[hasclass('o_sidebar_topbar')]" position="replace">
+            <div class="o_sidebar_topbar d-flex align-items-center flex-shrink-0 py-4 px-3 mb-3">
+                <img src="/xtendoo_xtd_theme/static/src/img/xtd_logo.svg" class="img-fluid" style="max-height: 40px;"/>
+            </div>
+        </xpath>
+
+        <!-- Aseguramos que el contenido del sidebar siempre use la lista de apps completa -->
+        <xpath expr="//nav[hasclass('o_burger_menu_content')]" position="replace">
+            <nav class="o_burger_menu_content flex-grow-1 flex-shrink-1 overflow-auto p-0">
+                <ul class="nav nav-pills flex-column gap-1 ps-0">
+                    <t t-foreach="apps" t-as="app" t-key="app.id">
+                        <li class="nav-item">
+                            <a t-att-href="getMenuItemHref(app)"
+                               class="nav-link d-flex align-items-center gap-3 py-3 text-dark rounded-dashboard border-0"
+                               t-att-class="{'active': menuService.getCurrentApp() === app}"
+                               t-on-click="() => { this.onNavBarDropdownItemSelection(app); }">
+                                <img t-if="app.webIconData" t-att-src="app.webIconData" style="width: 24px; height: 24px;"/>
+                                <span class="fw-bold" t-out="app.name"/>
+                            </a>
+                        </li>
+                    </t>
+                </ul>
+            </nav>
+        </xpath>
+
+        <!-- Eliminamos el backdrop modal que pone web_responsive en móvil si queremos que se comporte como sidebar persistente -->
+        <xpath expr="//div[hasclass('modal-backdrop')]" position="replace"/>
+    </t>
+</templates>
+

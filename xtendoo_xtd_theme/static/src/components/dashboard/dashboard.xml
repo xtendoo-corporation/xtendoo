@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="xtendoo_xtd_theme.XtdDashboard">
+        <div class="o_xtd_dashboard d-flex h-100 overflow-hidden">
+            <!-- Eliminado el Sidebar interno cableado -->
+
+            <!-- Main Content Area -->
+            <div class="flex-grow-1 overflow-auto bg-light position-relative">
+                <div class="xtd-dashboard-bg"/>
+                <div class="container-fluid p-5 position-relative z-index-1">
+                    <!-- ...existing code... -->
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <div>
+                            <h2 class="fw-bold mb-1">Hola, <t t-esc="session.name"/></h2>
+                            <p class="text-muted opacity-75">Aquí tienes un resumen de la actividad de tu empresa.</p>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle rounded-pill px-4 py-2 shadow-sm" type="button" data-bs-toggle="dropdown">
+                                Acciones rápidas
+                            </button>
+                            <ul class="dropdown-menu border-0 shadow-lg mt-2">
+                                <li><a class="dropdown-item" href="#" t-on-click="() => this.openAction('sale.action_orders')">Nuevo Pedido</a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click="() => this.openAction('account.action_move_out_invoice_type')">Nueva Factura</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- KPI Cards -->
+                    <div class="row g-4 mb-5">
+                        <t t-foreach="Object.keys(statistics)" t-as="key" t-key="key">
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100 kpi-card cursor-pointer" t-on-click="() => this.onKpiClick(key)">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div t-attf-class="rounded-dashboard icon-box p-3 me-3 bg-#{key}-light text-#{key}">
+                                            <i t-attf-class="fa #{statistics[key].icon} fa-xl"/>
+                                        </div>
+                                        <span class="text-muted fw-bold small text-uppercase letter-spacing-1" t-esc="statistics[key].label"/>
+                                    </div>
+                                    <div class="mt-auto">
+                                        <h2 class="fw-black mb-2 kpi-value" t-esc="statistics[key].value"/>
+                                        <div t-attf-class="trend-badge d-inline-flex align-items-center px-2 py-1 rounded-pill text-#{statistics[key].trend.startsWith('+') ? 'success' : 'danger'}">
+                                            <i t-attf-class="fa fa-arrow-#{statistics[key].trend.startsWith('+') ? 'up' : 'down'} me-1 x-small"/>
+                                            <span class="fw-bold x-small" t-esc="statistics[key].trend"/>
+                                            <span class="text-muted fw-normal ms-2 x-small">vs mes anterior</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                    <!-- Main Seccion -->
+                    <div class="row g-4">
+                        <!-- Ventas Chart -->
+                        <div class="col-12 col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-5">
+                                    <h4 class="fw-bold mb-0">Ventas</h4>
+                                    <select class="form-select form-select-sm border-0 bg-soft-light rounded-pill w-auto px-4">
+                                        <option>Este mes</option>
+                                    </select>
+                                </div>
+                                <!-- Placeholder para Gráfico Real -->
+                                <div class="chart-container mb-4 position-relative">
+                                    <div class="xtd-fake-chart">
+                                        <div class="chart-line"/>
+                                    </div>
+                                </div>
+                                <div class="row g-0 mt-auto pt-4 border-top">
+                                    <div class="col text-center">
+                                        <span class="text-muted x-small d-block mb-1">Total ventas</span>
+                                        <span class="fw-bold h5 mb-0" t-esc="statistics.sales.value"/>
+                                    </div>
+                                    <div class="col text-center border-start border-light">
+                                        <span class="text-muted x-small d-block mb-1">Pedidos</span>
+                                        <span class="fw-bold h5 mb-0" t-esc="statistics.orders.value"/>
+                                    </div>
+                                    <div class="col text-center border-start border-light">
+                                        <span class="text-muted x-small d-block mb-1">Ticket medio</span>
+                                        <span class="fw-bold h5 mb-0">1.353 €</span>
+                                    </div>
+                                    <div class="col text-center border-start border-light">
+                                        <span class="text-muted x-small d-block mb-1">Crecimiento</span>
+                                        <span class="fw-bold h5 mb-0 text-success" t-esc="statistics.sales.trend"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Actividades -->
+                        <div class="col-12 col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
+                                <h4 class="fw-bold mb-5">Actividades pendientes</h4>
+                                <div class="vstack gap-4">
+                                    <t t-if="activities and activities.length">
+                                        <t t-foreach="activities" t-as="activity" t-key="activity.id">
+                                            <div class="d-flex align-items-center gap-3 activity-item p-2 rounded-dashboard">
+                                                <div class="bg-primary-soft text-primary p-3 rounded-dashboard">
+                                                    <i class="fa fa-calendar-check-o fa-lg"/>
+                                                </div>
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <span class="fw-bold small text-truncate" t-esc="activity.res_name"/>
+                                                        <span class="text-danger x-small fw-black" t-esc="activity.date_deadline"/>
+                                                    </div>
+                                                    <div class="text-muted x-small text-truncate" t-esc="activity.summary or 'Sin descripción'"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="text-center py-5">
+                                            <i class="fa fa-check-circle-o fa-4x text-success mb-3 opacity-25"/>
+                                            <p class="text-muted">¡Todo al día!</p>
+                                        </div>
+                                    </t>
+                                </div>
+                                <button class="btn btn-link text-primary fw-bold text-decoration-none mt-auto pt-4 shadow-none btn-hover-arrow" t-on-click="() => this.openAction('mail.mail_activity_action_view_tree')">
+                                    Ver todas las actividades <i class="fa fa-arrow-right ms-2 transition-300"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Bottom Row: Top Productos y Estado Pedidos -->
+                    <div class="row g-4 mt-4 mb-5">
+                        <!-- Top Productos -->
+                        <div class="col-12 col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-dashboard p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="fw-bold mb-0">Top productos</h5>
+                                    <select class="form-select form-select-sm border-0 bg-light rounded-pill w-auto">
+                                        <option>Este mes</option>
+                                    </select>
+                                </div>
+                                <div class="vstack gap-3">
+                                    <t t-if="topProducts and topProducts.length">
+                                        <t t-foreach="topProducts" t-as="product" t-key="product.id">
+                                            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-dashboard transition-300 hover-elevate">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="bg-white p-2 rounded-dashboard shadow-xs">
+                                                        <i class="fa fa-cube text-primary fa-lg"/>
+                                                    </div>
+                                                    <span class="fw-bold small" t-esc="product.name"/>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="d-block small fw-black" t-esc="product.amount"/>
+                                                    <span class="text-muted x-small" t-esc="product.qty + ' uds'"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Estado Pedidos (Pie Chart mockup) -->
+                        <div class="col-12 col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
+                                <h5 class="fw-bold mb-4">Estado de pedidos</h5>
+                                <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                    <!-- Donut Chart Mockup using CSS -->
+                                    <div class="donut-chart mb-4">
+                                        <div class="donut-center d-flex flex-column align-items-center justify-content-center">
+                                            <span class="fw-black h4 mb-0"><t t-esc="statistics.orders.value"/></span>
+                                            <span class="text-muted x-small">Pedidos</span>
+                                        </div>
+                                    </div>
+                                    <div class="w-100 vstack gap-2">
+                                        <t t-foreach="orderStatus" t-as="status" t-key="status.state">
+                                            <div class="d-flex align-items-center justify-content-between small">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div t-attf-class="rounded-circle status-dot bg-#{status.state}"/>
+                                                    <span class="text-muted" t-esc="status.label"/>
+                                                </div>
+                                                <span class="fw-bold"><t t-esc="status.count"/></span>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
