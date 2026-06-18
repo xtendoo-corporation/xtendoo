@@ -37,6 +37,23 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px) + 14px);
     .o_burger_menu_content {
         padding: 0 !important;
         margin: 0 !important;
+        scrollbar-color: var(--xtd-orange) transparent;
+        scrollbar-width: thin;
+
+        &::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--xtd-orange);
+            border: 2px solid transparent;
+            border-radius: 999px;
+            background-clip: padding-box;
+        }
 
         ul,
         li {
@@ -51,8 +68,10 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px) + 14px);
         display: flex;
         align-items: center;
         width: 100%;
-        min-height: 58px;
+        min-height: 48px;
         border-radius: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
         padding-left: 18px !important;
         padding-right: 0 !important;
         gap: 1rem;
@@ -98,9 +117,9 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px) + 14px);
         border-top: 1px solid #eef0f3;
         color: #5f6368;
         display: flex;
-        flex: 0 0 58px;
+        flex: 0 0 48px;
         gap: 1rem;
-        min-height: 58px;
+        min-height: 48px;
         padding: 0 0 0 18px;
         text-align: left;
         transition: background-color 0.2s ease, color 0.2s ease;
