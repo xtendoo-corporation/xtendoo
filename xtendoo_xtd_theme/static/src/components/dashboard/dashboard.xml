@@ -271,12 +271,12 @@
                                                             <i t-attf-class="fa #{statistics[key].icon} fa-xl"/>
                                                         </div>
                                                         <span class="text-muted fw-bold small text-uppercase letter-spacing-1" t-esc="statistics[key].label"/>
+                                                        <t t-if="statistics[key].total">
+                                                            <span class="ms-auto fw-bold h5 mb-0 text-dark" t-esc="statistics[key].total"/>
+                                                        </t>
                                                     </div>
                                                     <div class="mt-auto">
                                                         <h2 class="fw-black mb-1 kpi-value" t-esc="statistics[key].value"/>
-                                                        <t t-if="statistics[key].total">
-                                                            <div class="small fw-semibold text-muted mb-2" t-esc="statistics[key].total"/>
-                                                        </t>
 <div t-attf-class="trend-badge d-inline-flex align-items-center px-2 py-1 rounded-pill text-#{statistics[key].trend >= 0 ? 'success' : 'danger'}">
     <i t-attf-class="fa fa-arrow-#{statistics[key].trend >= 0 ? 'up' : 'down'} me-1 x-small"/>
     <span class="fw-bold x-small" t-esc="statistics[key].trend_str"/>

@@ -278,7 +278,8 @@ export class XtdDashboard extends Component {
             kpis.invoiced = {
                 value: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
                 previous_value: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                total: 0, previous_total: 0,
+                total: cur.reduce((s, r) => s + (r.__count || 0), 0),
+                previous_total: prev.reduce((s, r) => s + (r.__count || 0), 0),
                 label: "Facturado", icon: "fa-file-text-o",
             };
         } catch {
@@ -326,7 +327,7 @@ export class XtdDashboard extends Component {
                 [["state", "in", ["sale", "done"]],
                  ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
                 ["name", "partner_id", "amount_total", "date_order"],
-            ], { limit: 5, order: "date_order desc" });
+            ], { limit: 3, order: "date_order desc" });
         } catch {
             this.state.recentItems.sales = [];
         }
@@ -336,7 +337,7 @@ export class XtdDashboard extends Component {
                 [["state", "in", ["draft", "sent"]],
                  ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
                 ["name", "partner_id", "amount_total", "date_order"],
-            ], { limit: 5, order: "date_order desc" });
+            ], { limit: 3, order: "date_order desc" });
         } catch {
             this.state.recentItems.orders = [];
         }
@@ -346,7 +347,7 @@ export class XtdDashboard extends Component {
                 [["move_type", "=", "out_invoice"], ["state", "=", "posted"],
                  ["invoice_date", ">=", fmt(curStart)], ["invoice_date", "<", fmt(endNext)]],
                 ["name", "partner_id", "amount_total", "invoice_date"],
-            ], { limit: 5, order: "invoice_date desc" });
+            ], { limit: 3, order: "invoice_date desc" });
         } catch {
             this.state.recentItems.invoiced = [];
         }
@@ -356,7 +357,7 @@ export class XtdDashboard extends Component {
                 [["state", "in", ["purchase", "done"]],
                  ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
                 ["name", "partner_id", "amount_total", "date_order"],
-            ], { limit: 5, order: "date_order desc" });
+            ], { limit: 3, order: "date_order desc" });
         } catch {
             this.state.recentItems.purchase_orders = [];
         }
@@ -785,11 +786,11 @@ export class XtdDashboard extends Component {
                 amount: toNum(item.price_subtotal),
             }));
 
-            const maxAmount = products.reduce((max, p) => Math.max(max, p.amount), 0);
+            const maxQty = products.reduce((max, p) => Math.max(max, p.qty), 0);
             this.state.topProducts = products.map(p => ({
                 ...p,
                 amountFmt: this._formatCurrency(p.amount),
-                barWidth: maxAmount > 0 ? (p.amount / maxAmount) * 100 : 0,
+                barWidth: maxQty > 0 ? (p.qty / maxQty) * 100 : 0,
             }));
         } catch (e) {
             console.warn("No se pudo cargar top productos:", e);
@@ -859,7 +860,7 @@ export class XtdDashboard extends Component {
             },
             invoiced: {
                 value: formatCurrency(toNum(kpis.invoiced?.value)),
-                total: "",
+                total: toNum(kpis.invoiced?.total).toString(),
                 trend: toNum(kpis.invoiced?.trend),
                 trend_str: this._formatTrend(kpis.invoiced?.trend),
                 label: kpis.invoiced?.label || "Facturado (mes)",
