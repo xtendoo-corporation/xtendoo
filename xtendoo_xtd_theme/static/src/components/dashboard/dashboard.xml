@@ -45,20 +45,174 @@
                                 <h6 class="fw-bold mb-1">Bloques disponibles</h6>
                                 <span class="text-muted small">Añade, quita y reordena los bloques visibles.</span>
                             </div>
-                            <span class="badge rounded-pill bg-light text-dark" t-esc="state.layout.mode === 'user' ? 'Dashboard de usuario' : 'Dashboard global'"/>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge rounded-pill bg-light text-dark" t-esc="state.layout.mode === 'user' ? 'Dashboard de usuario' : 'Dashboard global'"/>
+                                <button type="button" class="btn btn-primary btn-sm rounded-pill" t-on-click="openBlockBuilder">
+                                    <i class="fa fa-plus me-1"/>
+                                    Nuevo bloque
+                                </button>
+                            </div>
                         </div>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div t-if="state.showBlockBuilder" class="xtd-dashboard-builder mb-3">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label small fw-bold">Nombre</label>
+                                    <input class="form-control form-control-sm" t-model="state.newBlock.name"/>
+                                </div>
+                                <div class="col-12 col-md-2">
+                                    <label class="form-label small fw-bold">Tipo</label>
+                                    <select class="form-select form-select-sm" t-model="state.newBlock.block_type">
+                                        <option value="generic_list">Lista</option>
+                                        <option value="generic_kanban">Kanban</option>
+                                        <option value="generic_calendar">Calendario</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-2">
+                                    <label class="form-label small fw-bold">App</label>
+                                    <select class="form-select form-select-sm" t-model="state.newBlock.app" t-on-change="onNewBlockAppChange">
+                                        <option value="">Todas</option>
+                                        <t t-foreach="state.builderOptions.apps" t-as="app" t-key="app.key">
+                                            <option t-att-value="app.key" t-esc="app.name"/>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label small fw-bold">Modelo</label>
+                                    <select class="form-select form-select-sm" t-model="state.newBlock.model" t-on-change="onNewBlockModelChange">
+                                        <option value="">Selecciona modelo</option>
+                                        <t t-foreach="filteredBuilderModels" t-as="model" t-key="model.model">
+                                            <option t-att-value="model.model" t-esc="model.name"/>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label small fw-bold">Campos</label>
+                                    <div t-if="state.builderOptions.fields.length" class="xtd-dashboard-field-picker">
+                                        <t t-foreach="state.builderOptions.fields" t-as="field" t-key="field.name">
+                                            <button type="button"
+                                                    class="xtd-dashboard-field-chip"
+                                                    t-att-class="{'xtd-dashboard-field-chip--active': isNewBlockFieldSelected(field.name)}"
+                                                    t-on-click="() => this.toggleNewBlockField(field.name)">
+                                                <span t-esc="field.string"/>
+                                                <small t-esc="field.name"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                    <div t-else="" class="form-text">
+                                        Selecciona un modelo para elegir campos.
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-1">
+                                    <label class="form-label small fw-bold">Límite</label>
+                                    <input type="number" min="1" max="20" class="form-control form-control-sm" t-model="state.newBlock.limit"/>
+                                </div>
+                                <div class="col-6 col-md-1">
+                                    <label class="form-label small fw-bold">Tamaño</label>
+                                    <select class="form-select form-select-sm" t-model="state.newBlock.size">
+                                        <option value="small">S</option>
+                                        <option value="medium">M</option>
+                                        <option value="large">L</option>
+                                        <option value="full">XL</option>
+                                    </select>
+                                </div>
+                                <div t-if="state.newBlock.block_type === 'generic_calendar'" class="col-12 col-md-3">
+                                    <label class="form-label small fw-bold">Campo fecha</label>
+                                    <select class="form-select form-select-sm" t-model="state.newBlock.date_field">
+                                        <option value="">Selecciona fecha</option>
+                                        <t t-foreach="state.builderOptions.fields.filter((field) => ['date', 'datetime'].includes(field.type))" t-as="field" t-key="field.name">
+                                            <option t-att-value="field.name" t-esc="field.string"/>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="col-12 d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-light btn-sm rounded-pill" t-on-click="closeBlockBuilder">Cancelar</button>
+                                    <button type="button" class="btn btn-primary btn-sm rounded-pill" t-on-click="createCustomBlock">Crear bloque</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="xtd-dashboard-library">
                             <t t-if="availableDashboardBlocks.length">
                                 <t t-foreach="availableDashboardBlocks" t-as="availableBlock" t-key="availableBlock.key">
-                                    <button type="button" class="btn btn-light btn-sm rounded-pill" t-on-click="() => this.addDashboardBlock(availableBlock)">
-                                        <i class="fa fa-plus me-1"/>
-                                        <span t-esc="availableBlock.name"/>
-                                    </button>
+                                    <div class="xtd-dashboard-library-item" t-att-class="{'xtd-dashboard-library-item--active': isBlockPreviewed(availableBlock)}">
+                                        <button type="button" class="xtd-dashboard-library-item__main" t-on-click="() => this.previewDashboardBlock(availableBlock)">
+                                            <span class="fw-bold small text-truncate" t-esc="availableBlock.name"/>
+                                            <span class="text-muted x-small" t-esc="getBlockComponentLabel(availableBlock)"/>
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" title="Añadir" t-on-click="() => this.addDashboardBlock(availableBlock)">
+                                            <i class="fa fa-plus"/>
+                                        </button>
+                                    </div>
                                 </t>
                             </t>
                             <t t-else="">
                                 <span class="text-muted small">Todos los bloques disponibles ya están visibles.</span>
                             </t>
+                        </div>
+                        <div t-if="state.previewBlock" class="xtd-dashboard-block-preview mt-3">
+                            <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-1" t-esc="state.previewBlock.name"/>
+                                    <span class="text-muted small" t-esc="getBlockComponentLabel(state.previewBlock)"/>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm rounded-pill" t-on-click="() => this.addDashboardBlock(state.previewBlock)">
+                                    <i class="fa fa-plus me-1"/>
+                                    Añadir bloque
+                                </button>
+                            </div>
+                            <div t-if="['generic_list', 'generic_calendar', 'generic_kanban'].includes(state.previewBlock.component)" class="xtd-dashboard-preview-surface">
+                                <div t-if="state.previewBlock.component === 'generic_kanban'" class="xtd-dashboard-kanban-grid">
+                                    <t t-if="getGenericBlockData(state.previewBlock).records.length">
+                                        <t t-foreach="getGenericBlockData(state.previewBlock).records" t-as="record" t-key="record.id">
+                                            <div class="xtd-dashboard-kanban-card">
+                                                <span class="xtd-dashboard-kanban-card__title" t-esc="getGenericKanbanTitle(state.previewBlock, record)"/>
+                                                <span t-foreach="getGenericKanbanDetailFields(state.previewBlock)" t-as="fieldName" t-key="fieldName" class="xtd-dashboard-kanban-card__line">
+                                                    <small t-esc="getGenericFieldLabel(state.previewBlock, fieldName)"/>
+                                                    <span t-esc="formatGenericValue(record[fieldName], state.previewBlock, fieldName)"/>
+                                                </span>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="text-muted small py-4">Sin datos para previsualizar</div>
+                                    </t>
+                                </div>
+                                <div t-else="" class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <t t-foreach="getGenericBlockData(state.previewBlock).fields" t-as="fieldName" t-key="fieldName">
+                                                    <th class="text-muted small" t-esc="getGenericFieldLabel(state.previewBlock, fieldName)"/>
+                                                </t>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="getGenericBlockData(state.previewBlock).records.length">
+                                                <t t-foreach="getGenericBlockData(state.previewBlock).records" t-as="record" t-key="record.id">
+                                                    <tr>
+                                                        <t t-foreach="getGenericBlockData(state.previewBlock).fields" t-as="fieldName" t-key="fieldName">
+                                                            <td class="small" t-esc="formatGenericValue(record[fieldName], state.previewBlock, fieldName)"/>
+                                                        </t>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <tr>
+                                                    <td class="text-muted small py-4" t-att-colspan="getGenericBlockData(state.previewBlock).fields.length || 1">Sin datos para previsualizar</td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div t-else="" class="xtd-dashboard-preview-surface xtd-dashboard-preview-static">
+                                <span class="xtd-dashboard-preview-static__icon">
+                                    <i t-att-class="'fa ' + (state.previewBlock.component === 'main_kpis' ? 'fa-dashboard' : state.previewBlock.component === 'sales_chart' ? 'fa-line-chart' : 'fa-th-large')"/>
+                                </span>
+                                <div>
+                                    <strong t-esc="state.previewBlock.name"/>
+                                    <p class="text-muted small mb-0">Bloque visual preparado para añadir al dashboard.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row g-4 mb-5">
@@ -213,6 +367,58 @@
                                 </div>
                             </div>
                         </div>
+                            <div t-if="['generic_list', 'generic_calendar', 'generic_kanban'].includes(block.component)" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                                <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
+                                <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h5 class="fw-bold mb-0" t-esc="block.name"/>
+                                        <span class="badge rounded-pill bg-light text-dark" t-esc="block.component === 'generic_calendar' ? 'Calendario' : (block.component === 'generic_kanban' ? 'Kanban' : 'Lista')"/>
+                                    </div>
+                                    <div t-if="block.component === 'generic_kanban'" class="xtd-dashboard-kanban-grid">
+                                        <t t-if="getGenericBlockData(block).records.length">
+                                            <t t-foreach="getGenericBlockData(block).records" t-as="record" t-key="record.id">
+                                                <button type="button" class="xtd-dashboard-kanban-card" t-on-click="() => this.openGenericRecord(block, record)">
+                                                    <span class="xtd-dashboard-kanban-card__title" t-esc="getGenericKanbanTitle(block, record)"/>
+                                                    <span t-foreach="getGenericKanbanDetailFields(block)" t-as="fieldName" t-key="fieldName" class="xtd-dashboard-kanban-card__line">
+                                                        <small t-esc="getGenericFieldLabel(block, fieldName)"/>
+                                                        <span t-esc="formatGenericValue(record[fieldName], block, fieldName)"/>
+                                                    </span>
+                                                </button>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="text-muted small py-4">Sin datos</div>
+                                        </t>
+                                    </div>
+                                    <div t-else="" class="table-responsive">
+                                        <table class="table table-sm align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <t t-foreach="getGenericBlockData(block).fields" t-as="fieldName" t-key="fieldName">
+                                                        <th class="text-muted small" t-esc="getGenericFieldLabel(block, fieldName)"/>
+                                                    </t>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-if="getGenericBlockData(block).records.length">
+                                                    <t t-foreach="getGenericBlockData(block).records" t-as="record" t-key="record.id">
+                                                        <tr class="xtd-dashboard-generic-row" t-on-click="() => this.openGenericRecord(block, record)">
+                                                            <t t-foreach="getGenericBlockData(block).fields" t-as="fieldName" t-key="fieldName">
+                                                                <td class="small" t-esc="formatGenericValue(record[fieldName], block, fieldName)"/>
+                                                            </t>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <tr>
+                                                        <td class="text-muted small py-4" t-att-colspan="getGenericBlockData(block).fields.length || 1">Sin datos</td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </t>
                     </div>
                 </div>
@@ -238,6 +444,9 @@
                 </button>
                 <button type="button" class="btn btn-light btn-sm text-danger" title="Quitar" t-on-click="() => this.removeDashboardBlock(block)">
                     <i class="fa fa-times"/>
+                </button>
+                <button t-if="block.can_delete" type="button" class="btn btn-light btn-sm text-danger" title="Eliminar bloque" t-on-click="() => this.deleteCustomBlock(block)">
+                    <i class="fa fa-trash"/>
                 </button>
             </div>
         </div>

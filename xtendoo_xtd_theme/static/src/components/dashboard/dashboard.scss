@@ -168,6 +168,138 @@
         padding: 1rem;
     }
 
+    .xtd-dashboard-builder {
+        background: #fbfbfb;
+        border: 1px solid #eef0f3;
+        border-radius: 8px;
+        padding: 0.85rem;
+    }
+
+    .xtd-dashboard-field-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        max-height: 9rem;
+        overflow: auto;
+        padding-right: 0.25rem;
+    }
+
+    .xtd-dashboard-field-chip {
+        align-items: flex-start;
+        background: #fff;
+        border: 1px solid #e1e4e8;
+        border-radius: 8px;
+        color: #2f3337;
+        display: inline-flex;
+        flex-direction: column;
+        gap: 0.05rem;
+        line-height: 1.1;
+        max-width: 12rem;
+        min-height: 2.25rem;
+        padding: 0.3rem 0.5rem;
+        text-align: left;
+
+        span,
+        small {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        small {
+            color: #8b8790;
+            font-size: 0.68rem;
+        }
+
+        &.xtd-dashboard-field-chip--active {
+            background: rgba(244, 87, 0, 0.08);
+            border-color: #f45700;
+            color: #151515;
+        }
+    }
+
+    .xtd-dashboard-library {
+        display: grid;
+        gap: 0.55rem;
+        grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+    }
+
+    .xtd-dashboard-library-item {
+        align-items: stretch;
+        background: #fff;
+        border: 1px solid #e7e9ed;
+        border-radius: 8px;
+        display: flex;
+        min-height: 3rem;
+        overflow: hidden;
+
+        &.xtd-dashboard-library-item--active {
+            border-color: #f45700;
+            box-shadow: 0 0 0 2px rgba(244, 87, 0, 0.08);
+        }
+
+        .btn {
+            align-items: center;
+            border-radius: 0;
+            display: inline-flex;
+            flex: 0 0 2.75rem;
+            justify-content: center;
+            padding: 0;
+        }
+    }
+
+    .xtd-dashboard-library-item__main {
+        background: transparent;
+        border: 0;
+        color: #2f3337;
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+        padding: 0.45rem 0.65rem;
+        text-align: left;
+
+        &:hover {
+            background: rgba(244, 87, 0, 0.04);
+        }
+    }
+
+    .xtd-dashboard-block-preview {
+        background: #fff;
+        border: 1px solid #e7e9ed;
+        border-radius: 8px;
+        padding: 0.85rem;
+    }
+
+    .xtd-dashboard-preview-surface {
+        background: #fbfbfc;
+        border: 1px solid #eef0f3;
+        border-radius: 8px;
+        max-height: 18rem;
+        overflow: auto;
+        padding: 0.75rem;
+    }
+
+    .xtd-dashboard-preview-static {
+        align-items: center;
+        display: flex;
+        gap: 0.75rem;
+        min-height: 5rem;
+    }
+
+    .xtd-dashboard-preview-static__icon {
+        align-items: center;
+        background: rgba(244, 87, 0, 0.09);
+        border-radius: 8px;
+        color: #f45700;
+        display: inline-flex;
+        flex: 0 0 2.75rem;
+        height: 2.75rem;
+        justify-content: center;
+    }
+
     .xtd-dashboard-block-controls {
         align-items: center;
         background: #fff;
@@ -218,5 +350,88 @@
     .xtd-dashboard-editable-block {
         padding-top: 3rem;
         position: relative;
+    }
+
+    .table {
+        --bs-table-bg: transparent;
+
+        th {
+            border-bottom-color: #eef0f3;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        td {
+            border-bottom-color: #f2f3f5;
+            color: #2f3337;
+        }
+    }
+
+    .xtd-dashboard-generic-row {
+        cursor: pointer;
+
+        &:hover {
+            --bs-table-bg: rgba(244, 87, 0, 0.05);
+        }
+    }
+
+    .xtd-dashboard-kanban-grid {
+        display: grid;
+        gap: 0.65rem;
+        grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    }
+
+    .xtd-dashboard-kanban-card {
+        background: #fbfbfc;
+        border: 1px solid #eef0f3;
+        border-radius: 8px;
+        color: #2f3337;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        min-height: 5.75rem;
+        padding: 0.75rem;
+        text-align: left;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+
+        &:hover {
+            border-color: rgba(244, 87, 0, 0.45);
+            box-shadow: 0 8px 18px rgba(21, 21, 21, 0.06);
+            transform: translateY(-1px);
+        }
+    }
+
+    .xtd-dashboard-kanban-card__title {
+        color: #151515;
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 800;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .xtd-dashboard-kanban-card__line {
+        align-items: baseline;
+        display: flex;
+        gap: 0.4rem;
+        min-width: 0;
+
+        small {
+            color: #8b8790;
+            flex: 0 0 auto;
+            font-size: 0.68rem;
+            font-weight: 700;
+        }
+
+        span {
+            flex: 1 1 auto;
+            font-size: 0.78rem;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     }
 }

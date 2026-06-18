@@ -52,6 +52,266 @@
         <field name="sequence">50</field>
     </record>
 
+    <!-- Biblioteca: Ventas -->
+    <record id="xtd_dashboard_block_sale_recent_quotes" model="xtd.dashboard.block">
+        <field name="name">Últimos presupuestos</field>
+        <field name="technical_key">sale_recent_quotes</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">sale.order</field>
+        <field name="action_xmlid">sale.action_quotations</field>
+        <field name="default_size">large</field>
+        <field name="sequence">110</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'state'], 'limit': 6, 'domain': [('state', 'in', ['draft', 'sent'])]}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_sale_orders_pending_delivery" model="xtd.dashboard.block">
+        <field name="name">Pedidos pendientes de entregar</field>
+        <field name="technical_key">sale_orders_pending_delivery</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">sale.order</field>
+        <field name="action_xmlid">sale.action_orders</field>
+        <field name="default_size">large</field>
+        <field name="sequence">120</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'commitment_date', 'state'], 'limit': 6, 'domain': [('state', 'in', ['sale', 'done'])], 'date_field': 'commitment_date'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_sale_orders_kanban" model="xtd.dashboard.block">
+        <field name="name">Pedidos de venta destacados</field>
+        <field name="technical_key">sale_orders_kanban</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">sale.order</field>
+        <field name="action_xmlid">sale.action_orders</field>
+        <field name="default_size">large</field>
+        <field name="sequence">130</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'state'], 'limit': 6, 'domain': [('state', 'in', ['sale', 'done'])]}"/>
+    </record>
+
+    <!-- Biblioteca: Facturación -->
+    <record id="xtd_dashboard_block_account_unpaid_invoices" model="xtd.dashboard.block">
+        <field name="name">Facturas pendientes de cobro</field>
+        <field name="technical_key">account_unpaid_invoices</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">account.move</field>
+        <field name="action_xmlid">account.action_move_out_invoice_type</field>
+        <field name="default_size">large</field>
+        <field name="sequence">210</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'invoice_date_due', 'payment_state'], 'limit': 6, 'domain': [('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('payment_state', 'in', ['not_paid', 'partial'])], 'date_field': 'invoice_date_due'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_account_vendor_bills" model="xtd.dashboard.block">
+        <field name="name">Facturas de proveedor pendientes</field>
+        <field name="technical_key">account_vendor_bills_pending</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">account.move</field>
+        <field name="action_xmlid">account.action_move_in_invoice_type</field>
+        <field name="default_size">large</field>
+        <field name="sequence">220</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'invoice_date_due', 'payment_state'], 'limit': 6, 'domain': [('move_type', '=', 'in_invoice'), ('state', '=', 'posted'), ('payment_state', 'in', ['not_paid', 'partial'])], 'date_field': 'invoice_date_due'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_account_recent_invoices" model="xtd.dashboard.block">
+        <field name="name">Últimas facturas emitidas</field>
+        <field name="technical_key">account_recent_customer_invoices</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">account.move</field>
+        <field name="action_xmlid">account.action_move_out_invoice_type</field>
+        <field name="default_size">large</field>
+        <field name="sequence">230</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'payment_state'], 'limit': 6, 'domain': [('move_type', '=', 'out_invoice'), ('state', '=', 'posted')]}"/>
+    </record>
+
+    <!-- Biblioteca: Compras -->
+    <record id="xtd_dashboard_block_purchase_rfq" model="xtd.dashboard.block">
+        <field name="name">Solicitudes de presupuesto de compra</field>
+        <field name="technical_key">purchase_rfq_pending</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">purchase.order</field>
+        <field name="action_xmlid">purchase.purchase_rfq</field>
+        <field name="default_size">large</field>
+        <field name="sequence">310</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'date_order', 'state'], 'limit': 6, 'domain': [('state', 'in', ['draft', 'sent'])], 'date_field': 'date_order'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_purchase_pending_receipt" model="xtd.dashboard.block">
+        <field name="name">Compras pendientes de recibir</field>
+        <field name="technical_key">purchase_pending_receipt</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">purchase.order</field>
+        <field name="action_xmlid">purchase.purchase_form_action</field>
+        <field name="default_size">large</field>
+        <field name="sequence">320</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'date_planned', 'state'], 'limit': 6, 'domain': [('state', 'in', ['purchase', 'done'])], 'date_field': 'date_planned'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_purchase_recent_orders" model="xtd.dashboard.block">
+        <field name="name">Últimos pedidos de compra</field>
+        <field name="technical_key">purchase_recent_orders</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">purchase.order</field>
+        <field name="action_xmlid">purchase.purchase_form_action</field>
+        <field name="default_size">large</field>
+        <field name="sequence">330</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'state'], 'limit': 6, 'domain': [('state', 'in', ['purchase', 'done'])]}"/>
+    </record>
+
+    <!-- Biblioteca: Inventario -->
+    <record id="xtd_dashboard_block_stock_outgoing" model="xtd.dashboard.block">
+        <field name="name">Entregas pendientes</field>
+        <field name="technical_key">stock_outgoing_pending</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">stock.picking</field>
+        <field name="action_xmlid">stock.action_picking_tree_all</field>
+        <field name="default_size">large</field>
+        <field name="sequence">410</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'scheduled_date', 'state'], 'limit': 6, 'domain': [('picking_type_code', '=', 'outgoing'), ('state', 'not in', ['done', 'cancel'])], 'date_field': 'scheduled_date'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_stock_incoming" model="xtd.dashboard.block">
+        <field name="name">Recepciones pendientes</field>
+        <field name="technical_key">stock_incoming_pending</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">stock.picking</field>
+        <field name="action_xmlid">stock.action_picking_tree_all</field>
+        <field name="default_size">large</field>
+        <field name="sequence">420</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'scheduled_date', 'state'], 'limit': 6, 'domain': [('picking_type_code', '=', 'incoming'), ('state', 'not in', ['done', 'cancel'])], 'date_field': 'scheduled_date'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_stock_low_products" model="xtd.dashboard.block">
+        <field name="name">Productos con stock bajo</field>
+        <field name="technical_key">stock_low_products</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">product.product</field>
+        <field name="action_xmlid">stock.product_template_action_product</field>
+        <field name="default_size">medium</field>
+        <field name="sequence">430</field>
+        <field name="config" eval="{'fields': ['display_name', 'qty_available', 'virtual_available'], 'limit': 8}"/>
+    </record>
+
+    <!-- Biblioteca: CRM -->
+    <record id="xtd_dashboard_block_crm_pipeline" model="xtd.dashboard.block">
+        <field name="name">Pipeline comercial</field>
+        <field name="technical_key">crm_pipeline_kanban</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">crm.lead</field>
+        <field name="action_xmlid">crm.crm_lead_action_pipeline</field>
+        <field name="default_size">large</field>
+        <field name="sequence">510</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'expected_revenue', 'stage_id', 'user_id'], 'limit': 6, 'domain': [('type', '=', 'opportunity'), ('active', '=', True)]}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_crm_new_leads" model="xtd.dashboard.block">
+        <field name="name">Leads recientes</field>
+        <field name="technical_key">crm_recent_leads</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">crm.lead</field>
+        <field name="action_xmlid">crm.crm_lead_all_leads</field>
+        <field name="default_size">large</field>
+        <field name="sequence">520</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'user_id', 'stage_id'], 'limit': 6, 'domain': [('type', '=', 'lead'), ('active', '=', True)]}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_crm_expected_revenue" model="xtd.dashboard.block">
+        <field name="name">Oportunidades con ingresos esperados</field>
+        <field name="technical_key">crm_expected_revenue</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">crm.lead</field>
+        <field name="action_xmlid">crm.crm_lead_action_pipeline</field>
+        <field name="default_size">large</field>
+        <field name="sequence">530</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'expected_revenue', 'probability'], 'limit': 6, 'domain': [('type', '=', 'opportunity'), ('active', '=', True)]}"/>
+    </record>
+
+    <!-- Biblioteca: Punto de venta -->
+    <record id="xtd_dashboard_block_pos_recent_orders" model="xtd.dashboard.block">
+        <field name="name">Últimos tickets TPV</field>
+        <field name="technical_key">pos_recent_orders</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">pos.order</field>
+        <field name="action_xmlid">point_of_sale.action_pos_pos_form</field>
+        <field name="default_size">large</field>
+        <field name="sequence">610</field>
+        <field name="config" eval="{'fields': ['name', 'partner_id', 'amount_total', 'date_order', 'state'], 'limit': 6, 'date_field': 'date_order'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_pos_sessions" model="xtd.dashboard.block">
+        <field name="name">Sesiones TPV abiertas</field>
+        <field name="technical_key">pos_open_sessions</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">pos.session</field>
+        <field name="action_xmlid">point_of_sale.action_pos_session</field>
+        <field name="default_size">medium</field>
+        <field name="sequence">620</field>
+        <field name="config" eval="{'fields': ['name', 'user_id', 'start_at', 'state'], 'limit': 6, 'domain': [('state', 'not in', ['closed'])], 'date_field': 'start_at'}"/>
+    </record>
+
+    <!-- Biblioteca: Asistencias -->
+    <record id="xtd_dashboard_block_hr_attendance_today" model="xtd.dashboard.block">
+        <field name="name">Fichajes recientes</field>
+        <field name="technical_key">hr_attendance_recent</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">hr.attendance</field>
+        <field name="action_xmlid">hr_attendance.hr_attendance_action</field>
+        <field name="default_size">large</field>
+        <field name="sequence">710</field>
+        <field name="config" eval="{'fields': ['employee_id', 'check_in', 'check_out', 'worked_hours'], 'limit': 8, 'date_field': 'check_in'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_hr_attendance_open" model="xtd.dashboard.block">
+        <field name="name">Fichajes sin salida</field>
+        <field name="technical_key">hr_attendance_open</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">hr.attendance</field>
+        <field name="action_xmlid">hr_attendance.hr_attendance_action</field>
+        <field name="default_size">medium</field>
+        <field name="sequence">720</field>
+        <field name="config" eval="{'fields': ['employee_id', 'check_in', 'worked_hours'], 'limit': 6, 'domain': [('check_out', '=', False)], 'date_field': 'check_in'}"/>
+    </record>
+
+    <!-- Biblioteca: Empleados -->
+    <record id="xtd_dashboard_block_hr_employees" model="xtd.dashboard.block">
+        <field name="name">Empleados activos</field>
+        <field name="technical_key">hr_employees_active</field>
+        <field name="block_type">custom</field>
+        <field name="component">generic_kanban</field>
+        <field name="model_name">hr.employee</field>
+        <field name="action_xmlid">hr.open_view_employee_list_my</field>
+        <field name="default_size">large</field>
+        <field name="sequence">810</field>
+        <field name="config" eval="{'fields': ['name', 'department_id', 'job_id', 'work_email'], 'limit': 8, 'domain': [('active', '=', True)]}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_hr_contracts" model="xtd.dashboard.block">
+        <field name="name">Contratos a revisar</field>
+        <field name="technical_key">hr_contracts_to_review</field>
+        <field name="block_type">list</field>
+        <field name="component">generic_list</field>
+        <field name="model_name">hr.contract</field>
+        <field name="action_xmlid">hr_contract.action_hr_contract</field>
+        <field name="default_size">large</field>
+        <field name="sequence">820</field>
+        <field name="config" eval="{'fields': ['name', 'employee_id', 'date_start', 'date_end', 'state'], 'limit': 6, 'domain': [('state', 'in', ['open', 'close'])], 'date_field': 'date_end'}"/>
+    </record>
+
     <record id="xtd_dashboard_layout_kpis" model="xtd.dashboard.layout">
         <field name="block_id" ref="xtd_dashboard_block_kpis"/>
         <field name="sequence">10</field>

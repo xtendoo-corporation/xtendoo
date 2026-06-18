@@ -24,6 +24,20 @@ export class XtdDashboard extends Component {
             layout: { mode: "global", can_customize: false, blocks: [] },
             editingLayout: false,
             draftBlocks: [],
+            genericBlockData: {},
+            previewBlock: null,
+            builderOptions: { apps: [], models: [], fields: [] },
+            showBlockBuilder: false,
+            newBlock: {
+                name: "",
+                block_type: "generic_list",
+                app: "",
+                model: "",
+                selectedFields: [],
+                date_field: "",
+                limit: 5,
+                size: "medium",
+            },
             isSidebarHidden: document.body.classList.contains("xtd-sidebar-hidden"),
         });
 
@@ -50,6 +64,14 @@ export class XtdDashboard extends Component {
         return (this.state.layout.available_blocks || []).filter((block) => !visibleKeys.has(block.key));
     }
     get isSidebarHidden() { return this.state.isSidebarHidden; }
+    get filteredBuilderModels() {
+        if (!this.state.newBlock.app) {
+            return this.state.builderOptions.models || [];
+        }
+        return (this.state.builderOptions.models || []).filter((model) => (
+            model.apps?.includes(this.state.newBlock.app)
+        ));
+    }
 
     async _fetchData() {
         const today = new Date();
@@ -65,6 +87,7 @@ export class XtdDashboard extends Component {
             if (!this.state.layout.blocks?.length) {
                 this.state.layout = this._defaultLayout();
             }
+            await this._fetchGenericBlocks();
 
             // Ventas Reales (Facturas de cliente del mes actual)
             const salesData = await this.orm.call(
@@ -151,6 +174,44 @@ export class XtdDashboard extends Component {
         }
     }
 
+    async _fetchGenericBlocks() {
+        const genericBlocks = (this.state.layout.blocks || []).filter((block) => (
+            ["generic_list", "generic_calendar", "generic_kanban"].includes(block.component)
+        ));
+        for (const block of genericBlocks) {
+            await this._fetchGenericBlock(block);
+        }
+    }
+
+    async _fetchGenericBlock(block) {
+        const config = block.config || {};
+        const fields = config.fields?.length ? config.fields : ["display_name"];
+        try {
+            const records = await this.orm.searchRead(
+                block.model,
+                config.domain || [],
+                fields,
+                { limit: config.limit || 5, order: config.date_field ? `${config.date_field} desc` : "id desc" }
+            );
+            this.state.genericBlockData[block.key] = {
+                fields,
+                fieldLabels: config.field_labels || {},
+                fieldTypes: config.field_types || {},
+                records,
+                date_field: config.date_field,
+            };
+        } catch (error) {
+            console.warn(`No se pudo cargar el bloque ${block.key}:`, error);
+            this.state.genericBlockData[block.key] = {
+                fields,
+                fieldLabels: config.field_labels || {},
+                fieldTypes: config.field_types || {},
+                records: [],
+                date_field: config.date_field,
+            };
+        }
+    }
+
     _defaultLayout() {
         return {
             mode: "global",
@@ -185,6 +246,7 @@ export class XtdDashboard extends Component {
 
     cancelLayoutEdition() {
         this.state.draftBlocks = [];
+        this.state.previewBlock = null;
         this.state.editingLayout = false;
     }
 
@@ -201,6 +263,7 @@ export class XtdDashboard extends Component {
             [this.state.draftBlocks]
         );
         this.state.draftBlocks = [];
+        this.state.previewBlock = null;
         this.state.editingLayout = false;
     }
 
@@ -239,6 +302,173 @@ export class XtdDashboard extends Component {
             ...this.state.draftBlocks,
             this._cloneBlocks([block])[0],
         ];
+        this.state.previewBlock = null;
+    }
+
+    getGenericBlockData(block) {
+        return this.state.genericBlockData[block.key] || { fields: [], fieldLabels: {}, fieldTypes: {}, records: [] };
+    }
+
+    getGenericFieldLabel(block, fieldName) {
+        return this.getGenericBlockData(block).fieldLabels[fieldName] || fieldName;
+    }
+
+    openGenericRecord(block, record) {
+        if (!block.model || !record?.id) {
+            return;
+        }
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: block.model,
+            res_id: record.id,
+            views: [[false, "form"]],
+            target: "current",
+        });
+    }
+
+    formatGenericValue(value, block = null, fieldName = null) {
+        if (Array.isArray(value)) {
+            return value[1] || "";
+        }
+        if (value === false || value === null || value === undefined) {
+            return "";
+        }
+        if (this.isMonetaryField(block, fieldName, value)) {
+            return this._formatCurrency(value);
+        }
+        return value;
+    }
+
+    isMonetaryField(block, fieldName, value) {
+        if (!block || !fieldName || typeof value !== "number") {
+            return false;
+        }
+        const fieldTypes = this.getGenericBlockData(block).fieldTypes || {};
+        if (fieldTypes[fieldName] === "monetary") {
+            return true;
+        }
+        return /(^|_)(amount|price|total|subtotal|balance|debit|credit|cost|revenue|margin)(_|$)/.test(fieldName);
+    }
+
+    getGenericKanbanTitle(block, record) {
+        const fields = this.getGenericBlockData(block).fields || [];
+        const titleField = fields[0] || "display_name";
+        return this.formatGenericValue(record[titleField], block, titleField) || record.display_name || `#${record.id}`;
+    }
+
+    getGenericKanbanDetailFields(block) {
+        return (this.getGenericBlockData(block).fields || []).slice(1);
+    }
+
+    async openBlockBuilder() {
+        this.state.showBlockBuilder = true;
+        this.state.newBlock = this._defaultNewBlock();
+        this.state.builderOptions = await this.orm.call(
+            "xtd.dashboard.service",
+            "get_block_builder_options",
+            [false]
+        );
+    }
+
+    async previewDashboardBlock(block) {
+        this.state.previewBlock = this._cloneBlocks([block])[0];
+        if (["generic_list", "generic_calendar", "generic_kanban"].includes(block.component)) {
+            await this._fetchGenericBlock(block);
+        }
+    }
+
+    isBlockPreviewed(block) {
+        return this.state.previewBlock?.key === block.key;
+    }
+
+    getBlockComponentLabel(block) {
+        const labels = {
+            generic_list: "Lista",
+            generic_kanban: "Kanban",
+            generic_calendar: "Calendario",
+            main_kpis: "KPIs",
+            sales_chart: "Gráfico",
+            pending_activities: "Lista",
+            top_products: "Ranking",
+            order_status: "Estado",
+        };
+        return labels[block.component] || block.type || "Bloque";
+    }
+
+    closeBlockBuilder() {
+        this.state.showBlockBuilder = false;
+    }
+
+    onNewBlockAppChange(event) {
+        this.state.newBlock.app = event.target.value;
+        this.state.newBlock.model = "";
+        this.state.newBlock.selectedFields = [];
+        this.state.newBlock.date_field = "";
+        this.state.builderOptions.fields = [];
+    }
+
+    async onNewBlockModelChange(event) {
+        this.state.newBlock.model = event.target.value;
+        this.state.newBlock.selectedFields = [];
+        this.state.newBlock.date_field = "";
+        if (!this.state.newBlock.model) {
+            this.state.builderOptions.fields = [];
+            return;
+        }
+        this.state.builderOptions = await this.orm.call(
+            "xtd.dashboard.service",
+            "get_block_builder_options",
+            [this.state.newBlock.model]
+        );
+        this.state.newBlock.selectedFields = this.state.builderOptions.fields
+            .slice(0, 4)
+            .map((field) => field.name);
+    }
+
+    toggleNewBlockField(fieldName) {
+        const selectedFields = this.state.newBlock.selectedFields || [];
+        this.state.newBlock.selectedFields = selectedFields.includes(fieldName)
+            ? selectedFields.filter((selectedField) => selectedField !== fieldName)
+            : [...selectedFields, fieldName];
+    }
+
+    isNewBlockFieldSelected(fieldName) {
+        return (this.state.newBlock.selectedFields || []).includes(fieldName);
+    }
+
+    async createCustomBlock() {
+        if (!this.state.newBlock.name || !this.state.newBlock.model) {
+            return;
+        }
+        this.state.layout = await this.orm.call(
+            "xtd.dashboard.service",
+            "create_custom_block",
+            [{
+                ...this.state.newBlock,
+                fields: this.state.newBlock.selectedFields,
+            }]
+        );
+        await this._fetchGenericBlocks();
+        this.state.draftBlocks = this._cloneBlocks(this.state.layout.blocks || []);
+        this.state.showBlockBuilder = false;
+        this.state.newBlock = this._defaultNewBlock();
+    }
+
+    async deleteCustomBlock(block) {
+        if (!block.can_delete) {
+            return;
+        }
+        const confirmed = window.confirm(`¿Eliminar definitivamente el bloque "${block.name}"?`);
+        if (!confirmed) {
+            return;
+        }
+        this.state.layout = await this.orm.call(
+            "xtd.dashboard.service",
+            "delete_custom_block",
+            [block.block_id]
+        );
+        await this._fetchGenericBlocks();
+        this.state.draftBlocks = this._cloneBlocks(this.state.layout.blocks || []);
     }
 
     _cloneBlocks(blocks) {
@@ -246,6 +476,19 @@ export class XtdDashboard extends Component {
             ...block,
             config: { ...(block.config || {}) },
         }));
+    }
+
+    _defaultNewBlock() {
+        return {
+            name: "",
+            block_type: "generic_list",
+            app: "",
+            model: "",
+            selectedFields: [],
+            date_field: "",
+            limit: 5,
+            size: "medium",
+        };
     }
 
     async _fetchTopProducts() {

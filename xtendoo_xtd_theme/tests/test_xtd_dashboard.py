@@ -43,3 +43,37 @@ class TestXtdDashboard(TransactionCase):
             [block["block_id"] for block in updated_layout["blocks"]],
             [block["block_id"] for block in blocks],
         )
+
+    def test_dashboard_service_creates_custom_list_block(self):
+        service = self.env["xtd.dashboard.service"]
+
+        layout = service.create_custom_block({
+            "name": "Usuarios recientes",
+            "block_type": "generic_list",
+            "model": "res.users",
+            "fields": "name,login",
+            "limit": 3,
+            "size": "medium",
+        })
+
+        self.assertIn("Usuarios recientes", [block["name"] for block in layout["blocks"]])
+        block = self.env["xtd.dashboard.block"].search([("name", "=", "Usuarios recientes")], limit=1)
+        self.assertEqual(block.component, "generic_list")
+        self.assertEqual(block.config["fields"], ["name", "login"])
+
+    def test_dashboard_service_creates_custom_kanban_block(self):
+        service = self.env["xtd.dashboard.service"]
+
+        layout = service.create_custom_block({
+            "name": "Contactos kanban",
+            "block_type": "generic_kanban",
+            "model": "res.partner",
+            "fields": ["display_name", "email", "phone"],
+            "limit": 6,
+            "size": "large",
+        })
+
+        created_blocks = [block for block in layout["blocks"] if block["name"] == "Contactos kanban"]
+        self.assertTrue(created_blocks)
+        self.assertEqual(created_blocks[0]["component"], "generic_kanban")
+        self.assertTrue(created_blocks[0]["can_delete"])
