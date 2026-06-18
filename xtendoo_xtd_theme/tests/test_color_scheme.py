@@ -22,6 +22,15 @@ class TestXtdThemeColorScheme(TransactionCase):
         self.user.write({"color_scheme": "light"})
         self.assertEqual(self.user.res_users_settings_id.color_scheme, "light")
 
+    def test_sidebar_app_order_is_stored_in_user_settings(self):
+        settings = self.user.res_users_settings_id
+        order = [42, 7, 13]
+
+        formatted = settings.set_res_users_settings({"xtd_sidebar_app_order": order})
+
+        self.assertEqual(settings.xtd_sidebar_app_order, order)
+        self.assertEqual(formatted["xtd_sidebar_app_order"], order)
+
 
 @tagged("post_install", "-at_install")
 class TestXtdThemeColorSchemeHttp(HttpCase):
@@ -49,7 +58,6 @@ class TestXtdThemeColorSchemeHttp(HttpCase):
         response = self.url_open("/odoo")
 
         self.assertEqual(response.cookies.get("color_scheme"), "light")
-
 
 
 

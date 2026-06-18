@@ -17,3 +17,7 @@ class ResUsersSettings(models.Model):
         string="Theme",
     )
 
+    xtd_sidebar_app_order = fields.Json(
+        default=list,
+        string="Xtd Sidebar App Order",
+    )

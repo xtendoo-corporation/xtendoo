@@ -1,10 +1,14 @@
 $xtd-sidebar-width: 280px;
 $xtd-sidebar-collapsed-width: 76px;
+$xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px) + 14px);
 
 .xtd-sidebar-panel {
     width: $xtd-sidebar-width !important;
     left: 0 !important;
     right: auto !important;
+    top: $xtd-sidebar-menu-top-offset !important;
+    bottom: auto !important;
+    height: calc(100vh - #{$xtd-sidebar-menu-top-offset}) !important;
     transform: translateX(0) !important;
     transition: width 0.3s ease !important;
     z-index: 1000 !important;
@@ -18,19 +22,26 @@ $xtd-sidebar-collapsed-width: 76px;
         width: $xtd-sidebar-collapsed-width !important;
         visibility: visible !important;
         transform: translateX(0) !important;
+        border-right: 0 !important;
     }
 
     .o_sidebar_topbar {
-        transition: all 0.2s ease;
+        display: none !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
 
-        body.xtd-sidebar-hidden & {
-            height: 80px !important;
-            margin-bottom: 0 !important;
-        }
+    .o_burger_menu_content {
+        padding: 0 !important;
+        margin: 0 !important;
 
-        body.xtd-sidebar-hidden & img {
-            opacity: 0;
-            display: none;
+        ul,
+        li {
+            padding: 0 !important;
+            margin: 0 !important;
         }
     }
 
@@ -39,12 +50,18 @@ $xtd-sidebar-collapsed-width: 76px;
         white-space: nowrap;
         display: flex;
         align-items: center;
-        padding-left: 2px !important;
+        width: 100%;
+        min-height: 58px;
+        border-radius: 0 !important;
+        padding-left: 18px !important;
+        padding-right: 0 !important;
         gap: 1rem;
 
         body.xtd-sidebar-hidden & {
-             padding-left: 20px !important;
-             gap: 0 !important;
+            justify-content: center !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            gap: 0 !important;
         }
 
         &.active {
@@ -67,6 +84,100 @@ $xtd-sidebar-collapsed-width: 76px;
             overflow: hidden;
             pointer-events: none;
         }
+
+        body.xtd-sidebar-hidden & img {
+            flex: 0 0 auto;
+            margin: 0 !important;
+        }
+    }
+
+    .xtd-sidebar-settings {
+        align-items: center;
+        background: #ffffff;
+        border: 0;
+        border-top: 1px solid #eef0f3;
+        color: #5f6368;
+        display: flex;
+        flex: 0 0 58px;
+        gap: 1rem;
+        min-height: 58px;
+        padding: 0 0 0 18px;
+        text-align: left;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        width: 100%;
+
+        &:hover,
+        &.xtd-sidebar-settings--active {
+            background: #f8f9fa;
+            color: var(--primary);
+        }
+
+        i {
+            flex: 0 0 24px;
+            text-align: center;
+        }
+
+        span {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+    }
+}
+
+body.xtd-sidebar-hidden {
+    .xtd-sidebar-panel:hover {
+        width: $xtd-sidebar-width !important;
+        border-right: 1px solid #e9ecef !important;
+        box-shadow: 8px 0 28px rgba(21, 21, 21, 0.08);
+
+        .nav-link {
+            justify-content: flex-start !important;
+            padding-left: 18px !important;
+            gap: 1rem !important;
+
+            span {
+                opacity: 1;
+                width: auto;
+                overflow: visible;
+                pointer-events: auto;
+            }
+        }
+
+        .xtd-sidebar-settings {
+            justify-content: flex-start !important;
+            padding-left: 18px !important;
+            gap: 1rem !important;
+
+            span {
+                opacity: 1;
+                width: auto;
+                overflow: visible;
+                pointer-events: auto;
+            }
+        }
+    }
+
+    .xtd-sidebar-settings {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        gap: 0 !important;
+
+        span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+    }
+
+    .xtd-section-sidebar {
+        display: none !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
     }
 }
 
@@ -88,11 +199,58 @@ $xtd-sidebar-collapsed-width: 76px;
 
 /* Ajustes para la barra de navegación */
 .o_main_navbar {
-    margin-left: $xtd-sidebar-width;
+    margin-left: 0 !important;
+    position: relative;
+    z-index: 1100 !important;
     transition: margin-left 0.3s ease;
 
+    .o_menu_brand {
+        display: none !important;
+    }
+
     body.xtd-sidebar-hidden & {
-        margin-left: $xtd-sidebar-collapsed-width !important;
+        margin-left: 0 !important;
+    }
+}
+
+.o_xtd_dashboard_home {
+    align-items: center !important;
+    display: inline-flex !important;
+    flex: 0 0 $xtd-sidebar-collapsed-width !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    width: $xtd-sidebar-collapsed-width !important;
+    min-width: $xtd-sidebar-collapsed-width !important;
+    max-width: $xtd-sidebar-collapsed-width !important;
+
+    img {
+        width: 30px;
+        height: 30px;
+        display: block;
+    }
+}
+
+.xtd-sidebar-reorder {
+    display: inline-flex !important;
+    gap: 0.25rem;
+    padding-right: 0.75rem;
+}
+
+.xtd-sidebar-reorder-btn {
+    align-items: center;
+    background: transparent;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    color: #5f6368;
+    display: inline-flex;
+    height: 28px;
+    justify-content: center;
+    padding: 0;
+    width: 28px;
+
+    &:hover {
+        background: #ffffff;
+        color: var(--primary);
     }
 }
 
@@ -101,6 +259,8 @@ $xtd-sidebar-collapsed-width: 76px;
     .xtd-sidebar-panel {
         z-index: 1050 !important;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        top: 0 !important;
+        height: 100vh !important;
 
         body.xtd-sidebar-hidden & {
             transform: translateX(-100%) !important;
@@ -110,4 +270,3 @@ $xtd-sidebar-collapsed-width: 76px;
         margin-left: 0 !important;
     }
 }
-

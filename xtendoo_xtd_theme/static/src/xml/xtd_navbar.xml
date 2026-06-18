@@ -15,11 +15,11 @@
     <t t-inherit="web_responsive.AppsMenu" t-inherit-mode="extension">
         <xpath expr="//button[hasclass('o_grid_apps_menu__button')]" position="replace">
             <button
-                class="o_grid_apps_menu__button o_xtd_apps_toggle"
-                title="Menú de Aplicaciones"
-                t-on-click.stop="toggleXtdSidebar"
+                class="o_grid_apps_menu__button o_xtd_dashboard_home"
+                title="Inicio"
+                t-on-click.stop="goToXtdDashboard"
             >
-                <i class="oi oi-apps fs-4" />
+                <img src="/xtendoo_xtd_theme/static/src/img/xtd_symbol.svg" alt="Xtd"/>
             </button>
         </xpath>
     </t>
@@ -41,7 +41,8 @@
         <xpath expr="//nav[hasclass('o_burger_menu_content')]" position="replace">
             <nav class="o_burger_menu_content flex-grow-1 flex-shrink-1 overflow-auto p-0">
                 <ul class="nav nav-pills flex-column gap-1 ps-0">
-                    <t t-foreach="apps" t-as="app" t-key="app.id">
+                    <t t-set="sidebarApps" t-value="getXtdSidebarApps(apps)"/>
+                    <t t-foreach="sidebarApps" t-as="app" t-key="app.id">
                         <li class="nav-item">
                             <a t-att-href="getMenuItemHref(app)"
                                class="nav-link d-flex align-items-center gap-3 py-3 text-dark rounded-dashboard border-0"
@@ -49,15 +50,36 @@
                                t-on-click="() => { this.onNavBarDropdownItemSelection(app); }">
                                 <img t-if="app.webIconData" t-att-src="app.webIconData" style="width: 24px; height: 24px;"/>
                                 <span class="fw-bold" t-out="app.name"/>
+                                <span t-if="xtdSidebarState.isReordering" class="xtd-sidebar-reorder ms-auto">
+                                    <button type="button"
+                                            class="xtd-sidebar-reorder-btn"
+                                            title="Subir"
+                                            t-on-click.stop.prevent="() => this.moveXtdSidebarApp(app, -1)">
+                                        <i class="fa fa-chevron-up"/>
+                                    </button>
+                                    <button type="button"
+                                            class="xtd-sidebar-reorder-btn"
+                                            title="Bajar"
+                                            t-on-click.stop.prevent="() => this.moveXtdSidebarApp(app, 1)">
+                                        <i class="fa fa-chevron-down"/>
+                                    </button>
+                                </span>
                             </a>
                         </li>
                     </t>
                 </ul>
             </nav>
+            <button type="button"
+                    class="xtd-sidebar-settings"
+                    t-att-class="{'xtd-sidebar-settings--active': xtdSidebarState.isReordering}"
+                    title="Ordenar aplicaciones"
+                    t-on-click.stop.prevent="toggleXtdSidebarReorder">
+                <i class="fa fa-cog"/>
+                <span>Ordenar aplicaciones</span>
+            </button>
         </xpath>
 
         <!-- Eliminamos el backdrop modal que pone web_responsive en móvil si queremos que se comporte como sidebar persistente -->
         <xpath expr="//div[hasclass('modal-backdrop')]" position="replace"/>
     </t>
 </templates>
-
