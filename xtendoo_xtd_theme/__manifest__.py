@@ -33,6 +33,7 @@
             "xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js",
             "xtendoo_xtd_theme/static/src/xml/error_dialogs.xml",
             "xtendoo_xtd_theme/static/src/js/xtd_color_scheme.esm.js",
+            "xtendoo_xtd_theme/static/lib/chart.js/chart.umd.min.js",
             "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js",
             "xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml",
             "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml",

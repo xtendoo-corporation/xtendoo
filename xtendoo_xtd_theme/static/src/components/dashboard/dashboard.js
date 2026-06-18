@@ -1,7 +1,9 @@
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, onMounted, onWillDestroy, onPatched, useState, useRef } from "@odoo/owl";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
 import { session } from "@web/session";
+
+const Chart = window.Chart;
 
 export class XtdDashboard extends Component {
     static template = "xtendoo_xtd_theme.XtdDashboard";
@@ -11,16 +13,17 @@ export class XtdDashboard extends Component {
         this.orm = useService("orm");
         this.session = session;
 
+        this.salesChartRef = useRef("salesChart");
+        this.orderStatusChartRef = useRef("orderStatusChart");
+        this._chartInstances = {};
+
         this.state = useState({
-            statistics: {
-                sales: { value: "0 €", trend: "0%", label: "Ventas (mes)", icon: "fa-money" },
-                orders: { value: "0", trend: "0%", label: "Pedidos", icon: "fa-shopping-bag" },
-                purchase_orders: { value: "0", trend: "0%", label: "Pedidos de compra", icon: "fa-truck" },
-                invoiced: { value: "0 €", trend: "0%", label: "Facturado (mes)", icon: "fa-file-text-o" },
-            },
+            statistics: {},
             activities: [],
             topProducts: [],
             orderStatus: [],
+            chartData: null,
+            loading: true,
             layout: { mode: "global", can_customize: false, blocks: [] },
             editingLayout: false,
             draftBlocks: [],
@@ -39,6 +42,10 @@ export class XtdDashboard extends Component {
                 size: "medium",
             },
             isSidebarHidden: document.body.classList.contains("xtd-sidebar-hidden"),
+            chartPeriod: "year",
+            kpiPeriod: "month",
+            topPeriod: "month",
+            recentItems: { sales: [], orders: [], purchase_orders: [], invoiced: [] },
         });
 
         useBus(this.env.bus, "XTD_SIDEBAR:TOGGLE", () => {
@@ -47,6 +54,18 @@ export class XtdDashboard extends Component {
 
         onWillStart(async () => {
             await this._fetchData();
+        });
+
+        onMounted(() => {
+            this._renderCharts();
+        });
+
+        onPatched(() => {
+            this._renderCharts();
+        });
+
+        onWillDestroy(() => {
+            this._destroyCharts();
         });
     }
 
@@ -74,103 +93,348 @@ export class XtdDashboard extends Component {
     }
 
     async _fetchData() {
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const dateStr = firstDayOfMonth.toISOString().split('T')[0];
+        this.state.loading = true;
 
         try {
-            this.state.layout = await this.orm.call(
-                "xtd.dashboard.service",
-                "get_dashboard_layout",
-                []
-            );
-            if (!this.state.layout.blocks?.length) {
+            try {
+                const layout = await this.orm.call("xtd.dashboard.service", "get_dashboard_layout", []);
+                this.state.layout = layout?.blocks?.length ? layout : this._defaultLayout();
+            } catch {
                 this.state.layout = this._defaultLayout();
             }
+
+            await Promise.all([
+                this._fetchKpis(),
+                this._fetchChartData(),
+                this._fetchActivities(),
+                this._fetchTopProducts(),
+                this._fetchOrderStatus(),
+                this._fetchRecentItems(),
+            ]);
+
             await this._fetchGenericBlocks();
+        } catch (e) {
+            console.error("Error al cargar datos del dashboard:", e);
+            this._resetData();
+        } finally {
+            this.state.loading = false;
+        }
+    }
 
-            // Ventas Reales (Facturas de cliente del mes actual)
-            const salesData = await this.orm.call(
-                "account.move",
-                "read_group",
-                [
-                    [
-                        ["move_type", "=", "out_invoice"],
-                        ["state", "=", "posted"],
-                        ["invoice_date", ">=", dateStr]
-                    ],
-                    ["amount_total:sum"],
-                    []
-                ]
-            );
+    _resetData() {
+        this.state.layout = this._defaultLayout();
+        this.state.chartData = { labels: [], quotations: [], orders_count: [] };
+        this.state.chartPeriod = "year";
+        this.state.kpiPeriod = "month";
+        this.state.topPeriod = "month";
+        this.state.recentItems = { sales: [], orders: [], purchase_orders: [], invoiced: [] };
+        this.state.statistics = this._formatKpis({});
+        this.state.activities = [];
+        this.state.topProducts = [];
+        this.state.orderStatus = [];
+    }
 
-            // Pedidos de Venta Reales
-            const ordersCount = await this.orm.searchCount(
-                "sale.order",
-                [
+    _calcTrend(current, previous) {
+        if (!previous) return current ? 100.0 : 0.0;
+        return Math.round(((current - previous) / previous) * 100 * 10) / 10;
+    }
+
+    _getPeriodRange(period) {
+        const now = new Date();
+        let start, end;
+        if (period === "week") {
+            const day = now.getDay();
+            const diff = day === 0 ? 6 : day - 1;
+            start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
+            end = new Date(start);
+            end.setDate(start.getDate() + 6);
+        } else if (period === "month") {
+            start = new Date(now.getFullYear(), now.getMonth(), 1);
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        } else {
+            start = new Date(now.getFullYear(), 0, 1);
+            end = new Date(now.getFullYear(), 11, 31);
+        }
+        return { start, end };
+    }
+
+    async onChangeChartPeriod(period) {
+        this.state.chartPeriod = period;
+        await this._fetchChartData();
+    }
+
+    async onChangeKpiPeriod(period) {
+        this.state.kpiPeriod = period;
+        await this._fetchKpis();
+        await this._fetchRecentItems();
+    }
+
+    async onChangeTopPeriod(period) {
+        this.state.topPeriod = period;
+        await this._fetchTopProducts();
+    }
+
+    _kpiPeriodRanges(period) {
+        const now = new Date();
+        let curStart, curEnd, prevStart, prevEnd;
+        if (period === "week") {
+            const day = now.getDay();
+            const diff = day === 0 ? 6 : day - 1;
+            curStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
+            curEnd = new Date(curStart);
+            curEnd.setDate(curStart.getDate() + 6);
+            prevStart = new Date(curStart);
+            prevStart.setDate(prevStart.getDate() - 7);
+            prevEnd = new Date(curStart);
+        } else if (period === "year") {
+            curStart = new Date(now.getFullYear(), 0, 1);
+            curEnd = new Date(now.getFullYear(), 11, 31);
+            prevStart = new Date(now.getFullYear() - 1, 0, 1);
+            prevEnd = new Date(now.getFullYear() - 1, 11, 31);
+        } else {
+            curStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            curEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            prevEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        }
+        const endNext = new Date(curEnd);
+        endNext.setDate(endNext.getDate() + 1);
+        const prevEndNext = new Date(prevEnd);
+        prevEndNext.setDate(prevEndNext.getDate() + 1);
+        return { curStart, curEnd, prevStart, prevEnd, endNext, prevEndNext };
+    }
+
+    async _fetchKpis() {
+        const period = this.state.kpiPeriod || "month";
+        const { curStart, prevStart, endNext, prevEndNext } = this._kpiPeriodRanges(period);
+        const fmt = d => d.toISOString().split("T")[0];
+
+        const readSum = (model, domain, fields) =>
+            this.orm.call(model, "search_read", [domain, fields], { limit: 10000 });
+
+        const kpis = {};
+
+        try {
+            const [cur, prev] = await Promise.all([
+                readSum("sale.order", [
                     ["state", "in", ["sale", "done"]],
-                    ["date_order", ">=", dateStr]
-                ]
-            );
-
-            // Pedidos de Compra Reales
-            const purchaseCount = await this.orm.searchCount(
-                "purchase.order",
-                [
-                    ["state", "in", ["purchase", "done"]],
-                    ["date_order", ">=", dateStr]
-                ]
-            );
-
-            const invoicedAmount = salesData[0]?.amount_total || 0;
-
-            this.state.statistics = {
-                sales: { value: this._formatCurrency(invoicedAmount), trend: "+12.5%", label: "Ventas (mes)", icon: "fa-money" },
-                orders: { value: ordersCount.toString(), trend: "+8.3%", label: "Pedidos", icon: "fa-shopping-bag" },
-                purchase_orders: { value: purchaseCount.toString(), trend: "-5.1%", label: "Pedidos de compra", icon: "fa-truck" },
-                invoiced: { value: this._formatCurrency(invoicedAmount), trend: "+15.2%", label: "Facturado (mes)", icon: "fa-file-text-o" },
+                    ["date_order", ">=", fmt(curStart)],
+                    ["date_order", "<", fmt(endNext)],
+                ], ["amount_total"]),
+                readSum("sale.order", [
+                    ["state", "in", ["sale", "done"]],
+                    ["date_order", ">=", fmt(prevStart)],
+                    ["date_order", "<", fmt(prevEndNext)],
+                ], ["amount_total"]),
+            ]);
+            kpis.sales = {
+                value: cur.length,
+                previous_value: prev.length,
+                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                label: "Pedidos venta", icon: "fa-shopping-bag",
             };
+        } catch {
+            kpis.sales = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Pedidos venta", icon: "fa-shopping-bag" };
+        }
 
-            // Actividades Pendientes
+        try {
+            const [cur, prev] = await Promise.all([
+                readSum("sale.order", [
+                    ["state", "in", ["draft", "sent"]],
+                    ["date_order", ">=", fmt(curStart)],
+                    ["date_order", "<", fmt(endNext)],
+                ], ["amount_total"]),
+                readSum("sale.order", [
+                    ["state", "in", ["draft", "sent"]],
+                    ["date_order", ">=", fmt(prevStart)],
+                    ["date_order", "<", fmt(prevEndNext)],
+                ], ["amount_total"]),
+            ]);
+            kpis.orders = {
+                value: cur.length,
+                previous_value: prev.length,
+                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                label: "Presupuestos", icon: "fa-file-text-o",
+            };
+        } catch {
+            kpis.orders = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Presupuestos", icon: "fa-file-text-o" };
+        }
+
+        try {
+            const [cur, prev] = await Promise.all([
+                this.orm.call("account.move", "read_group", [[
+                    ["move_type", "=", "out_invoice"], ["state", "=", "posted"],
+                    ["invoice_date", ">=", fmt(curStart)],
+                    ["invoice_date", "<", fmt(endNext)],
+                ], ["amount_total:sum"], ["invoice_date:month"]]),
+                this.orm.call("account.move", "read_group", [[
+                    ["move_type", "=", "out_invoice"], ["state", "=", "posted"],
+                    ["invoice_date", ">=", fmt(prevStart)],
+                    ["invoice_date", "<", fmt(prevEndNext)],
+                ], ["amount_total:sum"], ["invoice_date:month"]]),
+            ]);
+            kpis.invoiced = {
+                value: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                previous_value: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                total: 0, previous_total: 0,
+                label: "Facturado", icon: "fa-file-text-o",
+            };
+        } catch {
+            kpis.invoiced = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Facturado", icon: "fa-file-text-o" };
+        }
+
+        try {
+            const [cur, prev] = await Promise.all([
+                readSum("purchase.order", [
+                    ["state", "in", ["purchase", "done"]],
+                    ["date_order", ">=", fmt(curStart)],
+                    ["date_order", "<", fmt(endNext)],
+                ], ["amount_total"]),
+                readSum("purchase.order", [
+                    ["state", "in", ["purchase", "done"]],
+                    ["date_order", ">=", fmt(prevStart)],
+                    ["date_order", "<", fmt(prevEndNext)],
+                ], ["amount_total"]),
+            ]);
+            kpis.purchase_orders = {
+                value: cur.length,
+                previous_value: prev.length,
+                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                label: "Compras", icon: "fa-truck",
+            };
+        } catch {
+            kpis.purchase_orders = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Compras", icon: "fa-truck" };
+        }
+
+        for (const key of Object.keys(kpis)) {
+            kpis[key].trend = this._calcTrend(kpis[key].value, kpis[key].previous_value);
+        }
+
+        this.state.statistics = this._formatKpis(kpis);
+    }
+
+    async _fetchRecentItems() {
+        const period = this.state.kpiPeriod || "month";
+        const { curStart, endNext } = this._kpiPeriodRanges(period);
+        const fmt = d => d.toISOString().split("T")[0];
+
+        try {
+            this.state.recentItems.sales = await this.orm.call("sale.order", "search_read", [
+                [["state", "in", ["sale", "done"]],
+                 ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
+                ["name", "partner_id", "amount_total", "date_order"],
+            ], { limit: 5, order: "date_order desc" });
+        } catch {
+            this.state.recentItems.sales = [];
+        }
+
+        try {
+            this.state.recentItems.orders = await this.orm.call("sale.order", "search_read", [
+                [["state", "in", ["draft", "sent"]],
+                 ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
+                ["name", "partner_id", "amount_total", "date_order"],
+            ], { limit: 5, order: "date_order desc" });
+        } catch {
+            this.state.recentItems.orders = [];
+        }
+
+        try {
+            this.state.recentItems.invoiced = await this.orm.call("account.move", "search_read", [
+                [["move_type", "=", "out_invoice"], ["state", "=", "posted"],
+                 ["invoice_date", ">=", fmt(curStart)], ["invoice_date", "<", fmt(endNext)]],
+                ["name", "partner_id", "amount_total", "invoice_date"],
+            ], { limit: 5, order: "invoice_date desc" });
+        } catch {
+            this.state.recentItems.invoiced = [];
+        }
+
+        try {
+            this.state.recentItems.purchase_orders = await this.orm.call("purchase.order", "search_read", [
+                [["state", "in", ["purchase", "done"]],
+                 ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
+                ["name", "partner_id", "amount_total", "date_order"],
+            ], { limit: 5, order: "date_order desc" });
+        } catch {
+            this.state.recentItems.purchase_orders = [];
+        }
+    }
+
+    async _fetchChartData() {
+        const period = this.state.chartPeriod || "year";
+        const { start, end } = this._getPeriodRange(period);
+        const endNext = new Date(end);
+        endNext.setDate(endNext.getDate() + 1);
+        const fmt = d => d.toISOString().split("T")[0];
+        const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+        const monthLabels = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+        const quotationsByBucket = {};
+        const ordersByBucket = {};
+
+        try {
+            const orders = await this.orm.call("sale.order", "search_read", [
+                [["date_order", ">=", fmt(start)], ["date_order", "<", fmt(endNext)]],
+                ["date_order", "state"],
+            ], { limit: 10000 });
+            for (const order of orders) {
+                if (!order.date_order) continue;
+                const key = period === "year" ? String(order.date_order).slice(0, 7) : String(order.date_order).slice(0, 10);
+                if (["sale", "done"].includes(order.state)) {
+                    ordersByBucket[key] = (ordersByBucket[key] || 0) + 1;
+                } else if (["draft", "sent"].includes(order.state)) {
+                    quotationsByBucket[key] = (quotationsByBucket[key] || 0) + 1;
+                }
+            }
+        } catch { /* no sale module */ }
+
+        const labels = [];
+        const quotations = [];
+        const orders_count = [];
+
+        if (period === "week") {
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(start);
+                d.setDate(start.getDate() + i);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                labels.push(`${dayLabels[d.getDay()]} ${d.getDate()}`);
+                quotations.push(quotationsByBucket[key] || 0);
+                orders_count.push(ordersByBucket[key] || 0);
+            }
+        } else if (period === "month") {
+            const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const key = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                labels.push(String(day));
+                quotations.push(quotationsByBucket[key] || 0);
+                orders_count.push(ordersByBucket[key] || 0);
+            }
+        } else {
+            const cur = new Date(start);
+            while (cur <= end) {
+                const key = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}`;
+                labels.push(`${monthLabels[cur.getMonth()]} ${cur.getFullYear()}`);
+                quotations.push(quotationsByBucket[key] || 0);
+                orders_count.push(ordersByBucket[key] || 0);
+                cur.setMonth(cur.getMonth() + 1);
+            }
+        }
+
+        this.state.chartData = { labels, quotations, orders_count, period };
+    }
+
+    async _fetchActivities() {
+        try {
             this.state.activities = await this.orm.searchRead(
                 "mail.activity",
-                [
-                    ["user_id", "=", this.session.uid],
-                    ["date_deadline", ">=", new Date().toISOString().split('T')[0]]
-                ],
+                [["user_id", "=", this.session.uid], ["date_deadline", ">=", new Date().toISOString().split("T")[0]]],
                 ["res_name", "summary", "date_deadline"],
                 { limit: 5 }
             );
-
-            // Top Productos (simulado con datos reales si es posible)
-            await this._fetchTopProducts();
-
-            // Estado de Pedidos
-            await this._fetchOrderStatus();
-
-        } catch (e) {
-            console.error("Error al cargar datos reales, usando mockups:", e);
-            // Fallback a datos simulados si los módulos (como sale/purchase) no están instalados
-            this.state.layout = this._defaultLayout();
-            this.state.statistics = {
-                sales: { value: "24.350 €", trend: "+12.5%", label: "Ventas (mes)", icon: "fa-money" },
-                orders: { value: "18", trend: "+8.3%", label: "Pedidos", icon: "fa-shopping-bag" },
-                purchase_orders: { value: "12", trend: "-5.1%", label: "Pedidos de compra", icon: "fa-truck" },
-                invoiced: { value: "19.870 €", trend: "+15.2%", label: "Facturado (mes)", icon: "fa-file-text-o" },
-            };
+        } catch {
             this.state.activities = [];
-            this.state.topProducts = [
-                { id: 1, name: "Producto A", qty: 120, amount: "4.850 €" },
-                { id: 2, name: "Producto B", qty: 85, amount: "3.120 €" },
-                { id: 3, name: "Producto C", qty: 60, amount: "2.450 €" }
-            ];
-            this.state.orderStatus = [
-                { state: 'sale', count: 45, label: 'Confirmados' },
-                { state: 'sent', count: 30, label: 'Enviados' },
-                { state: 'draft', count: 15, label: 'Pendientes' },
-                { state: 'cancel', count: 10, label: 'Cancelados' }
-            ];
-            this.state.isSidebarHidden = document.body.classList.contains("xtd-sidebar-hidden");
         }
     }
 
@@ -219,9 +483,9 @@ export class XtdDashboard extends Component {
             blocks: [
                 { key: "main_kpis", component: "main_kpis", size: "full", sequence: 10 },
                 { key: "sales_chart", component: "sales_chart", size: "large", sequence: 20 },
+                { key: "order_status", component: "order_status", size: "medium", sequence: 25 },
                 { key: "pending_activities", component: "pending_activities", size: "medium", sequence: 30 },
                 { key: "top_products", component: "top_products", size: "large", sequence: 40 },
-                { key: "order_status", component: "order_status", size: "medium", sequence: 50 },
             ],
         };
     }
@@ -492,15 +756,21 @@ export class XtdDashboard extends Component {
     }
 
     async _fetchTopProducts() {
+        const period = this.state.topPeriod || "month";
+        const { curStart, endNext } = this._kpiPeriodRanges(period);
+        const fmt = d => d.toISOString().split("T")[0];
+        const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+
         try {
-            // Intentar obtener productos más vendidos (requiere sale.order.line)
-            const topProductsData = await this.orm.call(
+            const data = await this.orm.call(
                 "sale.order.line",
                 "read_group",
                 [
                     [
                         ["state", "in", ["sale", "done"]],
-                        ["product_id", "!=", false]
+                        ["product_id", "!=", false],
+                        ["order_id.date_order", ">=", fmt(curStart)],
+                        ["order_id.date_order", "<", fmt(endNext)],
                     ],
                     ["product_id", "product_uom_qty:sum", "price_subtotal:sum"],
                     ["product_id"]
@@ -508,46 +778,276 @@ export class XtdDashboard extends Component {
                 { limit: 5, orderby: "product_uom_qty desc" }
             );
 
-            this.state.topProducts = topProductsData.map(item => ({
+            const products = data.map(item => ({
                 id: item.product_id[0],
                 name: item.product_id[1],
-                qty: Math.round(item.product_uom_qty),
-                amount: this._formatCurrency(item.price_subtotal)
+                qty: Math.round(toNum(item.product_uom_qty)),
+                amount: toNum(item.price_subtotal),
+            }));
+
+            const maxAmount = products.reduce((max, p) => Math.max(max, p.amount), 0);
+            this.state.topProducts = products.map(p => ({
+                ...p,
+                amountFmt: this._formatCurrency(p.amount),
+                barWidth: maxAmount > 0 ? (p.amount / maxAmount) * 100 : 0,
             }));
         } catch (e) {
             console.warn("No se pudo cargar top productos:", e);
-            this.state.topProducts = [
-                { id: 1, name: "Producto A", qty: 120, amount: "4.850 €" },
-                { id: 2, name: "Producto B", qty: 85, amount: "3.120 €" },
-                { id: 3, name: "Producto C", qty: 60, amount: "2.450 €" }
-            ];
+            this.state.topProducts = [];
         }
     }
 
     async _fetchOrderStatus() {
         try {
-            const orderStatus = await this.orm.call(
-                "sale.order",
-                "read_group",
-                [
-                    [],
-                    ["state"],
-                    ["state"]
-                ]
-            );
-            this.state.orderStatus = orderStatus.map(item => ({
-                state: item.state,
-                count: item.state_count,
-                label: this._getOrderStateLabel(item.state)
-            }));
+            const states = ["draft", "sent", "sale", "done", "cancel"];
+            const results = await Promise.all(states.map(s =>
+                this.orm.call("sale.order", "search_count", [[["state", "=", s]]])
+            ));
+            this.state.orderStatus = states
+                .map((state, i) => ({ state, count: results[i] }))
+                .filter(item => item.count > 0)
+                .map(item => ({
+                    state: item.state,
+                    count: item.count,
+                    label: this._getOrderStateLabel(item.state)
+                }));
         } catch (e) {
-            this.state.orderStatus = [
-                { state: 'sale', count: 45, label: 'Confirmados' },
-                { state: 'sent', count: 30, label: 'Enviados' },
-                { state: 'draft', count: 15, label: 'Pendientes' },
-                { state: 'cancel', count: 10, label: 'Cancelados' }
-            ];
+            console.warn("No se pudo cargar estado de pedidos:", e);
         }
+    }
+
+    get donutTotal() {
+        return this.state.orderStatus.reduce((sum, s) => sum + (s.count || 0), 0);
+    }
+
+    get kpiPeriodLabel() {
+        const labels = { week: "vs semana anterior", month: "vs mes anterior", year: "vs año anterior" };
+        return labels[this.state.kpiPeriod] || "vs periodo anterior";
+    }
+
+    _formatKpis(kpis) {
+        const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+        const formatCurrency = (val) => val ? this._formatCurrency(val) : "0 €";
+        const salesVal = toNum(kpis.sales?.value);
+        const invoicedVal = toNum(kpis.invoiced?.value);
+        const ticketMedio = salesVal > 0 ? this._formatCurrency(invoicedVal / salesVal) : "—";
+        return {
+            sales: {
+                value: salesVal.toString(),
+                total: formatCurrency(toNum(kpis.sales?.total)),
+                trend: toNum(kpis.sales?.trend),
+                trend_str: this._formatTrend(kpis.sales?.trend),
+                label: kpis.sales?.label || "Pedidos venta",
+                icon: "fa-shopping-bag",
+                ticket_medio: ticketMedio,
+            },
+            orders: {
+                value: toNum(kpis.orders?.value).toString(),
+                total: formatCurrency(toNum(kpis.orders?.total)),
+                trend: toNum(kpis.orders?.trend),
+                trend_str: this._formatTrend(kpis.orders?.trend),
+                label: kpis.orders?.label || "Presupuestos",
+                icon: "fa-file-text-o",
+            },
+            purchase_orders: {
+                value: toNum(kpis.purchase_orders?.value).toString(),
+                total: formatCurrency(toNum(kpis.purchase_orders?.total)),
+                trend: toNum(kpis.purchase_orders?.trend),
+                trend_str: this._formatTrend(kpis.purchase_orders?.trend),
+                label: kpis.purchase_orders?.label || "Pedidos de compra",
+                icon: "fa-truck",
+            },
+            invoiced: {
+                value: formatCurrency(toNum(kpis.invoiced?.value)),
+                total: "",
+                trend: toNum(kpis.invoiced?.trend),
+                trend_str: this._formatTrend(kpis.invoiced?.trend),
+                label: kpis.invoiced?.label || "Facturado (mes)",
+                icon: "fa-file-text-o",
+            },
+        };
+    }
+
+    _formatTrend(trend) {
+        if (trend === undefined || trend === null) return "0%";
+        const sign = trend >= 0 ? "+" : "";
+        return `${sign}${trend}%`;
+    }
+
+    _renderCharts() {
+        if (!Chart) return;
+        this._renderSalesChart();
+        this._renderOrderStatusChart();
+    }
+
+    _renderSalesChart() {
+        const canvas = this.salesChartRef?.el;
+        const data = this.state.chartData;
+
+        if (this._chartInstances.sales) {
+            if (!canvas) {
+                this._chartInstances.sales.destroy();
+                delete this._chartInstances.sales;
+                return;
+            }
+            if (data?.labels?.length) {
+                this._chartInstances.sales.data.labels = data.labels;
+                this._chartInstances.sales.data.datasets[0].data = data.quotations;
+                this._chartInstances.sales.data.datasets[1].data = data.orders_count;
+                this._chartInstances.sales.update();
+            }
+            return;
+        }
+
+        if (!canvas || !data?.labels?.length) return;
+        const ctx = canvas.getContext("2d");
+
+        const gradient = ctx.createLinearGradient(0, 0, 200, 0);
+        gradient.addColorStop(0, "rgba(255, 122, 0, 0.25)");
+        gradient.addColorStop(1, "rgba(255, 122, 0, 0)");
+
+        const rawData = this.state.chartData;
+
+        this._chartInstances.sales = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: rawData.labels,
+                datasets: [
+                    {
+                        label: "Presupuestos",
+                        data: rawData.quotations,
+                        borderColor: "#FFC107",
+                        backgroundColor: "rgba(255, 193, 7, 0.08)",
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: "#FFC107",
+                        pointBorderColor: "#fff",
+                        pointBorderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        borderDash: [5, 3],
+                    },
+                    {
+                        label: "Pedidos de venta",
+                        data: rawData.orders_count,
+                        borderColor: "#6464FF",
+                        backgroundColor: "rgba(100, 100, 255, 0.08)",
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: "#6464FF",
+                        pointBorderColor: "#fff",
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 3,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: {
+                        position: "top",
+                        align: "end",
+                        labels: { usePointStyle: true, boxWidth: 8, padding: 16, font: { size: 11 } },
+                    },
+                    tooltip: {
+                        backgroundColor: "#151515",
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 11 },
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`,
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 }, color: "#8b8790" },
+                    },
+                    y: {
+                        position: "left",
+                        grid: { color: "rgba(0,0,0,0.05)" },
+                        ticks: {
+                            font: { size: 10 },
+                            color: "#8b8790",
+                            precision: 0,
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    _renderOrderStatusChart() {
+        const canvas = this.orderStatusChartRef?.el;
+        const statuses = this.state.orderStatus;
+
+        if (this._chartInstances.orderStatus) {
+            if (!canvas) {
+                this._chartInstances.orderStatus.destroy();
+                delete this._chartInstances.orderStatus;
+                return;
+            }
+            if (statuses?.length) {
+                const statusColors = { sale: "#FF7A00", sent: "#6464FF", draft: "#FFC107", cancel: "#DC3545", done: "#28A745" };
+                this._chartInstances.orderStatus.data.labels = statuses.map((s) => s.label);
+                this._chartInstances.orderStatus.data.datasets[0].data = statuses.map((s) => s.count);
+                this._chartInstances.orderStatus.data.datasets[0].backgroundColor = statuses.map((s) => statusColors[s.state] || "#6c757d");
+                this._chartInstances.orderStatus.update();
+            }
+            return;
+        }
+
+        if (!canvas || !statuses?.length) return;
+        const ctx = canvas.getContext("2d");
+
+        const statusColors = { sale: "#FF7A00", sent: "#6464FF", draft: "#FFC107", cancel: "#DC3545", done: "#28A745" };
+
+        this._chartInstances.orderStatus = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: statuses.map((s) => s.label),
+                datasets: [{
+                    data: statuses.map((s) => s.count),
+                    backgroundColor: statuses.map((s) => statusColors[s.state] || "#6c757d"),
+                    borderColor: "#fff",
+                    borderWidth: 3,
+                    hoverOffset: 8,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "72%",
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: "#151515",
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12, weight: "bold" },
+                        padding: 10,
+                        cornerRadius: 8,
+                        z: 9999,
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.parsed} pedidos`,
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    _destroyCharts() {
+        Object.values(this._chartInstances).forEach((chart) => {
+            if (chart) chart.destroy();
+        });
+        this._chartInstances = {};
     }
 
     _getOrderStateLabel(state) {
@@ -571,13 +1071,37 @@ export class XtdDashboard extends Component {
 
     onKpiClick(key) {
         const actions = {
-            sales: "account.action_move_out_invoice_type",
-            orders: "sale.action_orders",
-            purchase_orders: "purchase.purchase_form_action",
-            invoiced: "account.action_move_out_invoice_type",
-        };
-        if (actions[key]) {
-            this.openAction(actions[key]);
+            sales: {
+                type: "ir.actions.act_window",
+                res_model: "sale.order",
+                views: [[false, "list"], [false, "form"]],
+                domain: [["state", "in", ["sale", "done"]]],
+                name: "Pedidos venta",
+            },
+            orders: {
+                type: "ir.actions.act_window",
+                res_model: "sale.order",
+                views: [[false, "list"], [false, "form"]],
+                domain: [["state", "in", ["draft", "sent"]]],
+                name: "Presupuestos",
+            },
+            purchase_orders: {
+                type: "ir.actions.act_window",
+                res_model: "purchase.order",
+                views: [[false, "list"], [false, "form"]],
+                domain: [["state", "in", ["purchase", "done"]]],
+                name: "Compras",
+            },
+            invoiced: {
+                type: "ir.actions.act_window",
+                res_model: "account.move",
+                views: [[false, "list"], [false, "form"]],
+                domain: [["move_type", "=", "out_invoice"], ["state", "=", "posted"]],
+                name: "Facturado",
+            },
+        }[key];
+        if (actions) {
+            this.action.doAction(actions, { clearBreadcrumbs: true });
         }
     }
 }

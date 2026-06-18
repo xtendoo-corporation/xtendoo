@@ -215,11 +215,53 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row g-4 mb-5">
+                    <div t-if="state.loading" class="row g-4 mb-5">
+                        <div class="col-12">
+                            <div class="row g-4">
+                                <div class="col-12 col-md-6 col-xl-3" t-foreach="4" t-as="i" t-key="i">
+                                    <div class="card border-0 shadow-sm rounded-dashboard p-4">
+                                        <div class="xtd-skeleton xtd-skeleton--icon mb-4"/>
+                                        <div class="xtd-skeleton xtd-skeleton--text w-50 mb-2"/>
+                                        <div class="xtd-skeleton xtd-skeleton--text w-75"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm rounded-dashboard p-4">
+                                <div class="xtd-skeleton xtd-skeleton--text w-25 mb-4"/>
+                                <div class="xtd-skeleton xtd-skeleton--chart mb-4"/>
+                                <div class="d-flex gap-4">
+                                    <div t-foreach="3" t-as="j" t-key="j" class="flex-fill">
+                                        <div class="xtd-skeleton xtd-skeleton--text w-50 mb-1"/>
+                                        <div class="xtd-skeleton xtd-skeleton--text w-75"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div t-else="" class="row g-4 mb-5">
                         <t t-foreach="dashboardBlocks" t-as="block" t-key="block.key">
                             <t t-if="block.component === 'main_kpis'">
                                 <div t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
                                     <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h4 class="fw-bold mb-0">Resumen</h4>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button"
+                                                    class="btn rounded-pill px-3"
+                                                    t-att-class="state.kpiPeriod === 'week' ? 'btn-primary' : 'btn-light'"
+                                                    t-on-click="() => this.onChangeKpiPeriod('week')">Semana</button>
+                                            <button type="button"
+                                                    class="btn rounded-pill px-3"
+                                                    t-att-class="state.kpiPeriod === 'month' ? 'btn-primary' : 'btn-light'"
+                                                    t-on-click="() => this.onChangeKpiPeriod('month')">Mes</button>
+                                            <button type="button"
+                                                    class="btn rounded-pill px-3"
+                                                    t-att-class="state.kpiPeriod === 'year' ? 'btn-primary' : 'btn-light'"
+                                                    t-on-click="() => this.onChangeKpiPeriod('year')">Año</button>
+                                        </div>
+                                    </div>
                                     <div class="row g-4">
                                         <t t-foreach="Object.keys(statistics)" t-as="key" t-key="key">
                                             <div class="col-12 col-md-6 col-xl-3">
@@ -231,12 +273,31 @@
                                                         <span class="text-muted fw-bold small text-uppercase letter-spacing-1" t-esc="statistics[key].label"/>
                                                     </div>
                                                     <div class="mt-auto">
-                                                        <h2 class="fw-black mb-2 kpi-value" t-esc="statistics[key].value"/>
-                                                        <div t-attf-class="trend-badge d-inline-flex align-items-center px-2 py-1 rounded-pill text-#{statistics[key].trend.startsWith('+') ? 'success' : 'danger'}">
-                                                            <i t-attf-class="fa fa-arrow-#{statistics[key].trend.startsWith('+') ? 'up' : 'down'} me-1 x-small"/>
-                                                            <span class="fw-bold x-small" t-esc="statistics[key].trend"/>
-                                                            <span class="text-muted fw-normal ms-2 x-small">vs mes anterior</span>
-                                                        </div>
+                                                        <h2 class="fw-black mb-1 kpi-value" t-esc="statistics[key].value"/>
+                                                        <t t-if="statistics[key].total">
+                                                            <div class="small fw-semibold text-muted mb-2" t-esc="statistics[key].total"/>
+                                                        </t>
+<div t-attf-class="trend-badge d-inline-flex align-items-center px-2 py-1 rounded-pill text-#{statistics[key].trend >= 0 ? 'success' : 'danger'}">
+    <i t-attf-class="fa fa-arrow-#{statistics[key].trend >= 0 ? 'up' : 'down'} me-1 x-small"/>
+    <span class="fw-bold x-small" t-esc="statistics[key].trend_str"/>
+    <span class="text-muted fw-normal ms-2 x-small" t-esc="kpiPeriodLabel"/>
+</div>
+                                                        <t t-if="state.recentItems[key] &amp;&amp; state.recentItems[key].length">
+                                                            <div class="mt-3 pt-3 border-top xtd-recent-list">
+                                                                <t t-foreach="state.recentItems[key]" t-as="item" t-key="item.id">
+                                                                    <div class="d-flex justify-content-between align-items-center py-1 xtd-recent-row">
+                                                                        <div class="text-truncate me-2">
+                                                                            <span class="small fw-medium d-block text-truncate" t-esc="item.name"/>
+                                                                            <span class="x-small text-muted" t-esc="Array.isArray(item.partner_id) ? item.partner_id[1] : ''"/>
+                                                                        </div>
+                                                                        <div class="text-end flex-shrink-0">
+                                                                            <span class="small fw-bold d-block" t-esc="_formatCurrency(item.amount_total)"/>
+                                                                            <span class="x-small text-muted" t-esc="item.invoice_date || item.date_order"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </t>
+                                                            </div>
+                                                        </t>
                                                     </div>
                                                 </div>
                                             </div>
@@ -246,18 +307,26 @@
                             </t>
                             <div t-if="block.component === 'sales_chart'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
                             <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
-                            <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-5">
-                                    <h4 class="fw-bold mb-0">Ventas</h4>
-                                    <select class="form-select form-select-sm border-0 bg-soft-light rounded-pill w-auto px-4">
-                                        <option>Este mes</option>
-                                    </select>
-                                </div>
-                                <!-- Placeholder para Gráfico Real -->
-                                <div class="chart-container mb-4 position-relative">
-                                    <div class="xtd-fake-chart">
-                                        <div class="chart-line"/>
+                            <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="fw-bold mb-0">Presupuestos vs Pedidos</h4>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button"
+                                                class="btn rounded-pill px-3"
+                                                t-att-class="state.chartPeriod === 'week' ? 'btn-primary' : 'btn-light'"
+                                                t-on-click="() => this.onChangeChartPeriod('week')">Semana</button>
+                                        <button type="button"
+                                                class="btn rounded-pill px-3"
+                                                t-att-class="state.chartPeriod === 'month' ? 'btn-primary' : 'btn-light'"
+                                                t-on-click="() => this.onChangeChartPeriod('month')">Mes</button>
+                                        <button type="button"
+                                                class="btn rounded-pill px-3"
+                                                t-att-class="state.chartPeriod === 'year' ? 'btn-primary' : 'btn-light'"
+                                                t-on-click="() => this.onChangeChartPeriod('year')">Año</button>
                                     </div>
+                                </div>
+                                <div class="chart-container flex-grow-1 position-relative">
+                                    <canvas t-ref="salesChart" class="xtd-chart-canvas"></canvas>
                                 </div>
                                 <div class="row g-0 mt-auto pt-4 border-top">
                                     <div class="col text-center">
@@ -269,12 +338,12 @@
                                         <span class="fw-bold h5 mb-0" t-esc="statistics.orders.value"/>
                                     </div>
                                     <div class="col text-center border-start border-light">
-                                        <span class="text-muted x-small d-block mb-1">Ticket medio</span>
-                                        <span class="fw-bold h5 mb-0">1.353 €</span>
+                                        <span class="text-muted x-small d-block mb-1">Crecimiento</span>
+                                        <span class="fw-bold h5 mb-0" t-attf-class="text-#{statistics.sales.trend >= 0 ? 'success' : 'danger'}" t-esc="statistics.sales.trend_str"/>
                                     </div>
                                     <div class="col text-center border-start border-light">
-                                        <span class="text-muted x-small d-block mb-1">Crecimiento</span>
-                                        <span class="fw-bold h5 mb-0 text-success" t-esc="statistics.sales.trend"/>
+                                        <span class="text-muted x-small d-block mb-1">Ticket medio</span>
+                                        <span class="fw-bold h5 mb-0" t-esc="statistics.sales.ticket_medio || '—'"/>
                                     </div>
                                 </div>
                             </div>
@@ -314,29 +383,49 @@
                         </div>
                             <div t-if="block.component === 'top_products'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
                             <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
-                            <div class="card border-0 shadow-sm rounded-dashboard p-4">
+                            <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h5 class="fw-bold mb-0">Top productos</h5>
-                                    <select class="form-select form-select-sm border-0 bg-light rounded-pill w-auto">
-                                        <option>Este mes</option>
-                                    </select>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button"
+                                                class="btn rounded-pill px-3"
+                                                t-att-class="state.topPeriod === 'week' ? 'btn-primary' : 'btn-light'"
+                                                t-on-click="() => this.onChangeTopPeriod('week')">Semana</button>
+                                        <button type="button"
+                                                class="btn rounded-pill px-3"
+                                                t-att-class="state.topPeriod === 'month' ? 'btn-primary' : 'btn-light'"
+                                                t-on-click="() => this.onChangeTopPeriod('month')">Mes</button>
+                                        <button type="button"
+                                                class="btn rounded-pill px-3"
+                                                t-att-class="state.topPeriod === 'year' ? 'btn-primary' : 'btn-light'"
+                                                t-on-click="() => this.onChangeTopPeriod('year')">Año</button>
+                                    </div>
                                 </div>
-                                <div class="vstack gap-3">
+                                <div class="vstack gap-4 flex-grow-1 justify-content-center">
                                     <t t-if="topProducts and topProducts.length">
                                         <t t-foreach="topProducts" t-as="product" t-key="product.id">
-                                            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-dashboard transition-300 hover-elevate">
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <div class="bg-white p-2 rounded-dashboard shadow-xs">
-                                                        <i class="fa fa-cube text-primary fa-lg"/>
+                                            <div class="xtd-top-product-row">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <div class="d-flex align-items-center gap-2 min-w-0">
+                                                        <span class="xtd-rank-badge" t-esc="product_index + 1"/>
+                                                        <span class="fw-semibold small text-truncate" t-esc="product.name"/>
                                                     </div>
-                                                    <span class="fw-bold small" t-esc="product.name"/>
+                                                    <div class="text-end flex-shrink-0 ms-2">
+                                                        <span class="fw-bold small" t-esc="product.amountFmt"/>
+                                                        <span class="text-muted x-small ms-1" t-esc="product.qty + ' uds'"/>
+                                                    </div>
                                                 </div>
-                                                <div class="text-end">
-                                                    <span class="d-block small fw-black" t-esc="product.amount"/>
-                                                    <span class="text-muted x-small" t-esc="product.qty + ' uds'"/>
+                                                <div class="xtd-bar-track">
+                                                    <div class="xtd-bar-fill" t-att-style="'width: ' + product.barWidth + '%'"/>
                                                 </div>
                                             </div>
                                         </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="text-center text-muted small py-4">
+                                            <i class="fa fa-inbox fa-2x d-block mb-2 opacity-50"/>
+                                            Sin datos en este periodo
+                                        </div>
                                     </t>
                                 </div>
                             </div>
@@ -346,10 +435,10 @@
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <h5 class="fw-bold mb-4">Estado de pedidos</h5>
                                 <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                                    <!-- Donut Chart Mockup using CSS -->
-                                    <div class="donut-chart mb-4">
-                                        <div class="donut-center d-flex flex-column align-items-center justify-content-center">
-                                            <span class="fw-black h4 mb-0"><t t-esc="statistics.orders.value"/></span>
+                                    <div class="donut-chart-container mb-4">
+                                        <canvas t-ref="orderStatusChart" class="xtd-donut-canvas"></canvas>
+                                        <div class="donut-center-label">
+                                            <span class="fw-black h4 mb-0" t-esc="donutTotal"/>
                                             <span class="text-muted x-small">Pedidos</span>
                                         </div>
                                     </div>

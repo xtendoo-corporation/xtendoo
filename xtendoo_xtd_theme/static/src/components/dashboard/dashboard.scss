@@ -80,28 +80,47 @@
         background-color: #F0F2F5;
     }
 
-    /* Estilos para el gráfico simulado inspirado en la imagen */
+    /* Chart containers */
     .chart-container {
-        height: 300px;
-        background: linear-gradient(180deg, rgba(255, 122, 0, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-        border-radius: 20px;
+        height: 280px;
+        background: linear-gradient(180deg, rgba(255, 122, 0, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+        border-radius: 16px;
         overflow: hidden;
+        min-height: 0;
     }
 
-    .xtd-fake-chart {
-        width: 100%;
-        height: 100%;
+    .xtd-chart-canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .donut-chart-container {
+        width: 170px;
+        height: 170px;
         position: relative;
-        .chart-line {
-            position: absolute;
-            bottom: 40px;
-            left: 0;
-            width: 100%;
-            height: 150px;
-            background: url("data:image/svg+xml,%3Csvg width='1000' height='200' viewBox='0 0 1000 200' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 150C50 140 100 120 150 100C200 80 250 140 300 130C350 120 400 60 450 60C500 60 550 120 600 110C650 100 700 40 750 60C800 80 850 160 900 140C950 120 1000 110 1050 110' stroke='%23FF7A00' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
-            background-size: cover;
-            filter: drop-shadow(0 10px 15px rgba(255, 122, 0, 0.3));
-        }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .xtd-donut-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .donut-center-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        background: white;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
     }
 
     .activity-item {
@@ -117,29 +136,31 @@
         transform: translateX(5px);
     }
 
-    /* Donut Chart Mockup */
-    .donut-chart {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        background: conic-gradient(
-            #FF7A00 0% 45%,
-            #6464FF 45% 75%,
-            #FFC107 75% 90%,
-            #DC3545 90% 100%
-        );
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    /* Skeleton Loading */
+    .xtd-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: xtd-skeleton-pulse 1.5s ease-in-out infinite;
+        border-radius: 8px;
+    }
 
-        .donut-center {
-            width: 100px;
-            height: 100px;
-            background: white;
-            border-radius: 50%;
-            z-index: 1;
-        }
+    .xtd-skeleton--icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+    }
+
+    .xtd-skeleton--text {
+        height: 14px;
+    }
+
+    .xtd-skeleton--chart {
+        height: 240px;
+    }
+
+    @keyframes xtd-skeleton-pulse {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
     }
 
     .status-dot {
@@ -432,6 +453,58 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+    }
+
+    .xtd-recent-list {
+        max-height: 160px;
+        overflow-y: auto;
+    }
+
+    .xtd-recent-row {
+        border-bottom: 1px solid #f0f0f0;
+        &:last-child { border-bottom: none; }
+    }
+
+    .xtd-top-product-row {
+        .xtd-rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 8px;
+            background: #151515;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .xtd-bar-track {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .xtd-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #FF7A00, #FFB347);
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        &:nth-child(2) .xtd-bar-fill {
+            background: linear-gradient(90deg, #6464FF, #8B8BFF);
+        }
+
+        &:nth-child(3) .xtd-bar-fill {
+            background: linear-gradient(90deg, #28A745, #5DD475);
+        }
+
+        &:nth-child(n+4) .xtd-bar-fill {
+            background: linear-gradient(90deg, #6c757d, #adb5bd);
         }
     }
 }

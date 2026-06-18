@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from dateutil.relativedelta import relativedelta
 from lxml import etree
 
 from odoo import api, fields, models
@@ -211,6 +212,156 @@ class XtdDashboardService(models.AbstractModel):
             lines_to_hide.write({"visible": False})
 
         return self.get_dashboard_layout()
+
+    @api.model
+    def get_dashboard_kpis(self):
+        today = fields.Date.today()
+        first_of_month = today.replace(day=1)
+        first_of_prev_month = (first_of_month - relativedelta(days=1)).replace(day=1)
+
+        kpis = {
+            "sales": {"value": 0, "trend": 0, "previous_value": 0, "label": "Ventas (mes)", "icon": "fa-money"},
+            "orders": {"value": 0, "trend": 0, "previous_value": 0, "label": "Pedidos", "icon": "fa-shopping-bag"},
+            "purchase_orders": {"value": 0, "trend": 0, "previous_value": 0, "label": "Pedidos de compra", "icon": "fa-truck"},
+            "invoiced": {"value": 0, "trend": 0, "previous_value": 0, "label": "Facturado (mes)", "icon": "fa-file-text-o"},
+        }
+
+        # Ventas facturadas (account.move)
+        try:
+            self.env["account.move"].check_access_rights("read")
+            cur_total = self.env["account.move"].read_group([
+                ("move_type", "=", "out_invoice"),
+                ("state", "=", "posted"),
+                ("invoice_date", ">=", first_of_month),
+            ], ["amount_total:sum"], [])
+            prev_total = self.env["account.move"].read_group([
+                ("move_type", "=", "out_invoice"),
+                ("state", "=", "posted"),
+                ("invoice_date", ">=", first_of_prev_month),
+                ("invoice_date", "<", first_of_month),
+            ], ["amount_total:sum"], [])
+            cur_val = cur_total[0]["amount_total"] or 0 if cur_total else 0
+            prev_val = prev_total[0]["amount_total"] or 0 if prev_total else 0
+            kpis["sales"]["value"] = cur_val
+            kpis["sales"]["previous_value"] = prev_val
+            kpis["sales"]["trend"] = self._calc_trend(cur_val, prev_val)
+            kpis["invoiced"]["value"] = cur_val
+            kpis["invoiced"]["previous_value"] = prev_val
+            kpis["invoiced"]["trend"] = self._calc_trend(cur_val, prev_val)
+        except Exception:
+            pass
+
+        # Pedidos de venta (sale.order)
+        try:
+            self.env["sale.order"].check_access_rights("read")
+            cur_count = self.env["sale.order"].search_count([
+                ("state", "in", ["sale", "done"]),
+                ("date_order", ">=", first_of_month),
+            ])
+            prev_count = self.env["sale.order"].search_count([
+                ("state", "in", ["sale", "done"]),
+                ("date_order", ">=", first_of_prev_month),
+                ("date_order", "<", first_of_month),
+            ])
+            kpis["orders"]["value"] = cur_count
+            kpis["orders"]["previous_value"] = prev_count
+            kpis["orders"]["trend"] = self._calc_trend(cur_count, prev_count)
+        except Exception:
+            pass
+
+        # Pedidos de compra (purchase.order)
+        try:
+            self.env["purchase.order"].check_access_rights("read")
+            cur_count = self.env["purchase.order"].search_count([
+                ("state", "in", ["purchase", "done"]),
+                ("date_order", ">=", first_of_month),
+            ])
+            prev_count = self.env["purchase.order"].search_count([
+                ("state", "in", ["purchase", "done"]),
+                ("date_order", ">=", first_of_prev_month),
+                ("date_order", "<", first_of_month),
+            ])
+            kpis["purchase_orders"]["value"] = cur_count
+            kpis["purchase_orders"]["previous_value"] = prev_count
+            kpis["purchase_orders"]["trend"] = self._calc_trend(cur_count, prev_count)
+        except Exception:
+            pass
+
+        return kpis
+
+    @api.model
+    def get_sales_chart_data(self):
+        today = fields.Date.today()
+        start_date = (today - relativedelta(years=1)).replace(day=1)
+
+        labels = []
+        sales_by_month = {}
+        orders_by_month = {}
+
+        # Ventas mensuales agrupadas
+        try:
+            self.env["account.move"].check_access_rights("read")
+            sales_data = self.env["account.move"].read_group([
+                ("move_type", "=", "out_invoice"),
+                ("state", "=", "posted"),
+                ("invoice_date", ">=", start_date),
+            ], ["amount_total:sum"], ["invoice_date:month"])
+            for item in sales_data:
+                raw = item["invoice_date:month"]
+                key = raw[:7] if isinstance(raw, str) else f"{raw['year']}-{str(raw['month']).zfill(2)}"
+                sales_by_month[key] = item["amount_total"] or 0
+        except Exception:
+            pass
+
+        # Pedidos mensuales agrupados
+        try:
+            self.env["sale.order"].check_access_rights("read")
+            orders_data = self.env["sale.order"].read_group([
+                ("state", "in", ["sale", "done"]),
+                ("date_order", ">=", start_date),
+            ], [], ["date_order:month"])
+            for item in orders_data:
+                raw = item["date_order:month"]
+                key = raw[:7] if isinstance(raw, str) else f"{raw['year']}-{str(raw['month']).zfill(2)}"
+                orders_by_month[key] = item["__count"] or 0
+        except Exception:
+            pass
+
+        sales_arr = []
+        orders_arr = []
+        current = start_date
+        while current <= today:
+            key = current.strftime("%Y-%m")
+            labels.append(current.strftime("%b %Y"))
+            sales_arr.append(float(sales_by_month.get(key, 0) or 0))
+            orders_arr.append(orders_by_month.get(key, 0) or 0)
+            current += relativedelta(months=1)
+
+        return {
+            "labels": labels,
+            "sales": sales_arr,
+            "orders_count": orders_arr,
+        }
+
+    def _calc_trend(self, current, previous):
+        if not previous:
+            return 100.0 if current else 0.0
+        return round(((current - previous) / previous) * 100, 1)
+
+    @api.model
+    def get_order_status_data(self):
+        try:
+            self.env["sale.order"].check_access_rights("read")
+            data = self.env["sale.order"].read_group(
+                [], ["state"], ["state"]
+            )
+            return [
+                {"state": item["state"], "count": item["__count"]}
+                for item in data
+                if item["__count"] > 0
+            ]
+        except Exception:
+            return []
 
     @api.model
     def get_block_builder_options(self, model_name=False):
