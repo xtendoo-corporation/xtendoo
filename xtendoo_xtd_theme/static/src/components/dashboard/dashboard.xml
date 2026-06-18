@@ -456,7 +456,7 @@
                                 </div>
                             </div>
                         </div>
-                            <div t-if="['generic_list', 'generic_calendar', 'generic_kanban'].includes(block.component)" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                             <div t-if="['generic_list', 'generic_calendar', 'generic_kanban'].includes(block.component)" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
                                 <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                                 <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -467,44 +467,67 @@
                                         <t t-if="getGenericBlockData(block).records.length">
                                             <t t-foreach="getGenericBlockData(block).records" t-as="record" t-key="record.id">
                                                 <button type="button" class="xtd-dashboard-kanban-card" t-on-click="() => this.openGenericRecord(block, record)">
-                                                    <span class="xtd-dashboard-kanban-card__title" t-esc="getGenericKanbanTitle(block, record)"/>
-                                                    <span t-foreach="getGenericKanbanDetailFields(block)" t-as="fieldName" t-key="fieldName" class="xtd-dashboard-kanban-card__line">
-                                                        <small t-esc="getGenericFieldLabel(block, fieldName)"/>
-                                                        <span t-esc="formatGenericValue(record[fieldName], block, fieldName)"/>
-                                                    </span>
+                                                    <div t-attf-class="xtd-dashboard-kanban-card__accent bg-#{getListAccentColor(record_index)}"/>
+                                                    <div class="xtd-dashboard-kanban-card__body">
+                                                        <span class="xtd-dashboard-kanban-card__title" t-esc="getGenericKanbanTitle(block, record)"/>
+                                                        <span t-foreach="getGenericKanbanDetailFields(block)" t-as="fieldName" t-key="fieldName" class="xtd-dashboard-kanban-card__line">
+                                                            <small class="text-muted fw-bold text-uppercase" t-esc="getGenericFieldLabel(block, fieldName)"/>
+                                                            <span t-if="getFieldType(block, fieldName) === 'selection'" t-att-class="'badge rounded-pill ' + getStateClass(record[fieldName])" t-esc="formatGenericValue(record[fieldName], block, fieldName)"/>
+                                                            <span t-else="" t-att-class="formatGenericValue(record[fieldName], block, fieldName) ? getFieldClass(block, fieldName) : 'text-muted'" t-esc="formatGenericValue(record[fieldName], block, fieldName) || '—'"/>
+                                                        </span>
+                                                    </div>
                                                 </button>
                                             </t>
                                         </t>
                                         <t t-else="">
-                                            <div class="text-muted small py-4">Sin datos</div>
+                                            <div class="text-center py-5">
+                                                <i class="fa fa-th-large fa-3x text-muted mb-3 opacity-25"/>
+                                                <p class="text-muted small">Sin datos</p>
+                                            </div>
                                         </t>
                                     </div>
-                                    <div t-else="" class="table-responsive">
-                                        <table class="table table-sm align-middle mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <t t-foreach="getGenericBlockData(block).fields" t-as="fieldName" t-key="fieldName">
-                                                        <th class="text-muted small" t-esc="getGenericFieldLabel(block, fieldName)"/>
-                                                    </t>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <t t-if="getGenericBlockData(block).records.length">
-                                                    <t t-foreach="getGenericBlockData(block).records" t-as="record" t-key="record.id">
-                                                        <tr class="xtd-dashboard-generic-row" t-on-click="() => this.openGenericRecord(block, record)">
-                                                            <t t-foreach="getGenericBlockData(block).fields" t-as="fieldName" t-key="fieldName">
-                                                                <td class="small" t-esc="formatGenericValue(record[fieldName], block, fieldName)"/>
+                                    <div t-elif="block.component === 'generic_list'" class="vstack gap-1">
+                                        <t t-if="getGenericBlockData(block).records.length">
+                                            <t t-foreach="getGenericBlockData(block).records" t-as="record" t-key="record.id">
+                                                <button type="button" class="xtd-feed-row" t-on-click="() => this.openGenericRecord(block, record)">
+                                                    <div t-attf-class="xtd-feed-dot bg-#{getListAccentColor(record_index)}"/>
+                                                    <div class="xtd-feed-body">
+                                                        <div class="xtd-feed-top">
+                                                            <span class="fw-bold small text-truncate" t-esc="getGenericKanbanTitle(block, record)"/>
+                                                            <div class="xtd-feed-extras">
+                                                                <t t-foreach="getGenericBlockData(block).fields" t-as="fieldName" t-key="fieldName">
+                                                                    <t t-if="!isFirstField(block, fieldName) &amp;&amp; getFieldType(block, fieldName) === 'selection'">
+                                                                        <span t-att-class="'badge rounded-pill ' + getStateClass(record[fieldName])" t-esc="formatGenericValue(record[fieldName], block, fieldName)"/>
+                                                                    </t>
+                                                                    <t t-elif="!isFirstField(block, fieldName) &amp;&amp; getFieldType(block, fieldName) === 'monetary'">
+                                                                        <span class="fw-bold x-small" t-esc="formatGenericValue(record[fieldName], block, fieldName)"/>
+                                                                    </t>
+                                                                </t>
+                                                            </div>
+                                                        </div>
+                                                        <div t-if="getGenericKanbanDetailFields(block).length" class="xtd-feed-details">
+                                                            <t t-foreach="getGenericKanbanDetailFields(block)" t-as="fieldName" t-key="fieldName">
+                                                                <t t-if="getFieldType(block, fieldName) !== 'selection' &amp;&amp; getFieldType(block, fieldName) !== 'monetary'">
+                                                                    <span class="x-small text-muted me-3">
+                                                                        <span class="fw-bold text-uppercase" t-esc="getGenericFieldLabel(block, fieldName)"/>
+                                                                        <t t-esc="' ' + formatGenericValue(record[fieldName], block, fieldName)"/>
+                                                                    </span>
+                                                                </t>
                                                             </t>
-                                                        </tr>
-                                                    </t>
-                                                </t>
-                                                <t t-else="">
-                                                    <tr>
-                                                        <td class="text-muted small py-4" t-att-colspan="getGenericBlockData(block).fields.length || 1">Sin datos</td>
-                                                    </tr>
-                                                </t>
-                                            </tbody>
-                                        </table>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="text-center py-5">
+                                                <i class="fa fa-list-ul fa-3x text-muted mb-3 opacity-25"/>
+                                                <p class="text-muted small">Sin datos</p>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <div t-else="">
+                                        <div class="text-muted small py-4 text-center">Bloque no disponible</div>
                                     </div>
                                 </div>
                             </div>

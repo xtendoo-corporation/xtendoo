@@ -389,14 +389,6 @@
         }
     }
 
-    .xtd-dashboard-generic-row {
-        cursor: pointer;
-
-        &:hover {
-            --bs-table-bg: rgba(244, 87, 0, 0.05);
-        }
-    }
-
     .xtd-dashboard-kanban-grid {
         display: grid;
         gap: 0.65rem;
@@ -455,6 +447,136 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+    }
+
+    // ── Feed row (generic_list) ─────────────────────────────
+    .xtd-feed-row {
+        align-items: flex-start;
+        background: transparent;
+        border: none;
+        border-radius: 16px;
+        color: #2f3337;
+        cursor: pointer;
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.6rem 0.75rem;
+        text-align: left;
+        transition: background 0.15s ease;
+        width: 100%;
+
+        &:hover {
+            background: rgba(244, 87, 0, 0.04);
+        }
+    }
+
+    .xtd-feed-dot {
+        border-radius: 50%;
+        flex: 0 0 10px;
+        height: 10px;
+        margin-top: 5px;
+        width: 10px;
+    }
+
+    .xtd-feed-body {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .xtd-feed-top {
+        align-items: center;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .xtd-feed-extras {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 0.3rem;
+    }
+
+    .xtd-feed-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 0.5rem;
+        margin-top: 0.15rem;
+    }
+
+    // ── Kanban card improvements ──────────────────────────────
+    .xtd-dashboard-kanban-card {
+        flex-direction: row !important;
+        gap: 0;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .xtd-dashboard-kanban-card__accent {
+        flex: 0 0 4px;
+        min-height: 100%;
+    }
+
+    .xtd-dashboard-kanban-card__body {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+        padding: 0.65rem 0.75rem;
+    }
+
+    .xtd-dashboard-kanban-card__line .badge {
+        flex: 0 0 auto;
+    }
+
+    .xtd-dashboard-kanban-card__title {
+        font-size: 0.85rem;
+    }
+
+    // ── Field type classes ──────────────────────────────────
+    .xtd-field-monetary {
+        color: #151515;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .xtd-field-numeric {
+        white-space: nowrap;
+    }
+
+    .xtd-field-date {
+        color: #6c757d;
+        font-size: 0.78rem;
+    }
+
+    .xtd-field-partner {
+        color: #495057;
+    }
+
+    // ── State badges ────────────────────────────────────────
+    .xtd-state-draft {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .xtd-state-pending {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .xtd-state-done {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .xtd-state-cancel {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .xtd-state-closed {
+        background: #e2e3e5;
+        color: #383d41;
     }
 
     .xtd-recent-list {

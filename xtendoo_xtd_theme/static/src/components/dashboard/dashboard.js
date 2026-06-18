@@ -625,6 +625,44 @@ export class XtdDashboard extends Component {
         return (this.getGenericBlockData(block).fields || []).slice(1);
     }
 
+    getFieldType(block, fieldName) {
+        if (!block || !fieldName) return "";
+        const types = this.getGenericBlockData(block).fieldTypes || {};
+        return types[fieldName] || "";
+    }
+
+    getFieldClass(block, fieldName) {
+        const type = this.getFieldType(block, fieldName);
+        if (type === "selection") return "xtd-field-badge";
+        if (type === "monetary") return "xtd-field-monetary";
+        if (type === "many2one") return "xtd-field-partner";
+        if (["float", "integer"].includes(type)) return "xtd-field-numeric";
+        if (["date", "datetime"].includes(type)) return "xtd-field-date";
+        return "";
+    }
+
+    getStateClass(value) {
+        if (!value) return "";
+        const raw = Array.isArray(value) ? String(value[0] || "") : String(value);
+        const v = raw.toLowerCase();
+        if (["draft", "new", "open"].includes(v)) return "xtd-state-draft";
+        if (["sent", "waiting", "pending"].includes(v)) return "xtd-state-pending";
+        if (["sale", "done", "paid", "posted", "confirmed", "purchase"].includes(v)) return "xtd-state-done";
+        if (["cancel", "cancelled", "rejected"].includes(v)) return "xtd-state-cancel";
+        if (["close", "closed"].includes(v)) return "xtd-state-closed";
+        return "";
+    }
+
+    isFirstField(block, fieldName) {
+        const fields = this.getGenericBlockData(block).fields || [];
+        return fields[0] === fieldName;
+    }
+
+    getListAccentColor(index) {
+        const colors = ["sales", "orders", "invoiced", "purchase_orders", "info", "success", "warning", "danger"];
+        return colors[(index || 0) % colors.length];
+    }
+
     async openBlockBuilder() {
         this.state.showBlockBuilder = true;
         this.state.newBlock = this._defaultNewBlock();
