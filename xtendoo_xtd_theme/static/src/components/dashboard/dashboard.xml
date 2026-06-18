@@ -14,7 +14,22 @@
                             <h2 class="fw-bold mb-1">Hola, <t t-esc="session.name"/></h2>
                             <p class="text-muted opacity-75">Aquí tienes un resumen de la actividad de tu empresa.</p>
                         </div>
-                        <div class="dropdown">
+                        <div t-if="canEditLayout" class="d-flex align-items-center gap-2">
+                            <t t-if="editingLayout">
+                                <button class="btn btn-light rounded-pill px-4 py-2" t-on-click="cancelLayoutEdition">
+                                    Cancelar
+                                </button>
+                                <button class="btn btn-primary rounded-pill px-4 py-2 shadow-sm" t-on-click="saveLayoutEdition">
+                                    Guardar dashboard
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <button class="btn btn-primary rounded-pill px-4 py-2 shadow-sm" t-on-click="startLayoutEdition">
+                                    Editar dashboard
+                                </button>
+                            </t>
+                        </div>
+                        <div t-else="" class="dropdown">
                             <button class="btn btn-primary dropdown-toggle rounded-pill px-4 py-2 shadow-sm" type="button" data-bs-toggle="dropdown">
                                 Acciones rápidas
                             </button>
@@ -24,33 +39,59 @@
                             </ul>
                         </div>
                     </div>
-                    <!-- KPI Cards -->
+                    <div t-if="editingLayout" class="xtd-dashboard-editor-bar mb-4">
+                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                            <div>
+                                <h6 class="fw-bold mb-1">Bloques disponibles</h6>
+                                <span class="text-muted small">Añade, quita y reordena los bloques visibles.</span>
+                            </div>
+                            <span class="badge rounded-pill bg-light text-dark" t-esc="state.layout.mode === 'user' ? 'Dashboard de usuario' : 'Dashboard global'"/>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <t t-if="availableDashboardBlocks.length">
+                                <t t-foreach="availableDashboardBlocks" t-as="availableBlock" t-key="availableBlock.key">
+                                    <button type="button" class="btn btn-light btn-sm rounded-pill" t-on-click="() => this.addDashboardBlock(availableBlock)">
+                                        <i class="fa fa-plus me-1"/>
+                                        <span t-esc="availableBlock.name"/>
+                                    </button>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <span class="text-muted small">Todos los bloques disponibles ya están visibles.</span>
+                            </t>
+                        </div>
+                    </div>
                     <div class="row g-4 mb-5">
-                        <t t-foreach="Object.keys(statistics)" t-as="key" t-key="key">
-                            <div class="col-12 col-md-6 col-xl-3">
-                                <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100 kpi-card cursor-pointer" t-on-click="() => this.onKpiClick(key)">
-                                    <div class="d-flex align-items-center mb-4">
-                                        <div t-attf-class="rounded-dashboard icon-box p-3 me-3 bg-#{key}-light text-#{key}">
-                                            <i t-attf-class="fa #{statistics[key].icon} fa-xl"/>
-                                        </div>
-                                        <span class="text-muted fw-bold small text-uppercase letter-spacing-1" t-esc="statistics[key].label"/>
-                                    </div>
-                                    <div class="mt-auto">
-                                        <h2 class="fw-black mb-2 kpi-value" t-esc="statistics[key].value"/>
-                                        <div t-attf-class="trend-badge d-inline-flex align-items-center px-2 py-1 rounded-pill text-#{statistics[key].trend.startsWith('+') ? 'success' : 'danger'}">
-                                            <i t-attf-class="fa fa-arrow-#{statistics[key].trend.startsWith('+') ? 'up' : 'down'} me-1 x-small"/>
-                                            <span class="fw-bold x-small" t-esc="statistics[key].trend"/>
-                                            <span class="text-muted fw-normal ms-2 x-small">vs mes anterior</span>
-                                        </div>
+                        <t t-foreach="dashboardBlocks" t-as="block" t-key="block.key">
+                            <t t-if="block.component === 'main_kpis'">
+                                <div t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                                    <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
+                                    <div class="row g-4">
+                                        <t t-foreach="Object.keys(statistics)" t-as="key" t-key="key">
+                                            <div class="col-12 col-md-6 col-xl-3">
+                                                <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100 kpi-card cursor-pointer" t-on-click="() => this.onKpiClick(key)">
+                                                    <div class="d-flex align-items-center mb-4">
+                                                        <div t-attf-class="rounded-dashboard icon-box p-3 me-3 bg-#{key}-light text-#{key}">
+                                                            <i t-attf-class="fa #{statistics[key].icon} fa-xl"/>
+                                                        </div>
+                                                        <span class="text-muted fw-bold small text-uppercase letter-spacing-1" t-esc="statistics[key].label"/>
+                                                    </div>
+                                                    <div class="mt-auto">
+                                                        <h2 class="fw-black mb-2 kpi-value" t-esc="statistics[key].value"/>
+                                                        <div t-attf-class="trend-badge d-inline-flex align-items-center px-2 py-1 rounded-pill text-#{statistics[key].trend.startsWith('+') ? 'success' : 'danger'}">
+                                                            <i t-attf-class="fa fa-arrow-#{statistics[key].trend.startsWith('+') ? 'up' : 'down'} me-1 x-small"/>
+                                                            <span class="fw-bold x-small" t-esc="statistics[key].trend"/>
+                                                            <span class="text-muted fw-normal ms-2 x-small">vs mes anterior</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
                                     </div>
                                 </div>
-                            </div>
-                        </t>
-                    </div>
-                    <!-- Main Seccion -->
-                    <div class="row g-4">
-                        <!-- Ventas Chart -->
-                        <div class="col-12 col-lg-8">
+                            </t>
+                            <div t-if="block.component === 'sales_chart'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-5">
                                     <h4 class="fw-bold mb-0">Ventas</h4>
@@ -84,8 +125,8 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Actividades -->
-                        <div class="col-12 col-lg-4">
+                            <div t-if="block.component === 'pending_activities'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <h4 class="fw-bold mb-5">Actividades pendientes</h4>
                                 <div class="vstack gap-4">
@@ -117,11 +158,8 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
-                    <!-- Bottom Row: Top Productos y Estado Pedidos -->
-                    <div class="row g-4 mt-4 mb-5">
-                        <!-- Top Productos -->
-                        <div class="col-12 col-lg-8">
+                            <div t-if="block.component === 'top_products'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h5 class="fw-bold mb-0">Top productos</h5>
@@ -149,8 +187,8 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Estado Pedidos (Pie Chart mockup) -->
-                        <div class="col-12 col-lg-4">
+                            <div t-if="block.component === 'order_status'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <h5 class="fw-bold mb-4">Estado de pedidos</h5>
                                 <div class="d-flex flex-column align-items-center justify-content-center h-100">
@@ -175,8 +213,32 @@
                                 </div>
                             </div>
                         </div>
+                        </t>
                     </div>
                 </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="xtendoo_xtd_theme.XtdDashboardBlockEditorControls">
+        <div t-if="editingLayout" class="xtd-dashboard-block-controls">
+            <span class="fw-bold small text-truncate" t-esc="block.name"/>
+            <div class="xtd-dashboard-block-controls__actions">
+                <button type="button" class="btn btn-light btn-sm" title="Más estrecho" t-on-click="() => this.resizeDashboardBlock(block, -1)">
+                    <i class="fa fa-chevron-left"/>
+                </button>
+                <button type="button" class="btn btn-light btn-sm" title="Subir" t-on-click="() => this.moveDashboardBlock(block, -1)">
+                    <i class="fa fa-chevron-up"/>
+                </button>
+                <button type="button" class="btn btn-light btn-sm" title="Bajar" t-on-click="() => this.moveDashboardBlock(block, 1)">
+                    <i class="fa fa-chevron-down"/>
+                </button>
+                <button type="button" class="btn btn-light btn-sm" title="Más ancho" t-on-click="() => this.resizeDashboardBlock(block, 1)">
+                    <i class="fa fa-chevron-right"/>
+                </button>
+                <button type="button" class="btn btn-light btn-sm text-danger" title="Quitar" t-on-click="() => this.removeDashboardBlock(block)">
+                    <i class="fa fa-times"/>
+                </button>
             </div>
         </div>
     </t>

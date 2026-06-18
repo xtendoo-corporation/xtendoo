@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_xtd_dashboard_block_user,xtd.dashboard.block.user,model_xtd_dashboard_block,base.group_user,1,0,0,0
+access_xtd_dashboard_layout_user,xtd.dashboard.layout.user,model_xtd_dashboard_layout,base.group_user,1,0,0,0
+access_xtd_dashboard_user_layout_user,xtd.dashboard.user.layout.user,model_xtd_dashboard_user_layout,base.group_user,1,1,1,1
+access_xtd_dashboard_block_admin,xtd.dashboard.block.admin,model_xtd_dashboard_block,base.group_system,1,1,1,1
+access_xtd_dashboard_layout_admin,xtd.dashboard.layout.admin,model_xtd_dashboard_layout,base.group_system,1,1,1,1
+access_xtd_dashboard_user_layout_admin,xtd.dashboard.user.layout.admin,model_xtd_dashboard_user_layout,base.group_system,1,1,1,1

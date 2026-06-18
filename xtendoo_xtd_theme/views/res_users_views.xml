@@ -12,6 +12,10 @@
                     string="Theme"
                     options="{'horizontal': true}"
                 />
+                <field
+                    name="xtd_use_custom_dashboard"
+                    string="Dashboard personalizado Xtd"
+                />
             </xpath>
         </field>
     </record>
@@ -27,6 +31,10 @@
                     widget="radio"
                     string="Theme"
                     options="{'horizontal': true}"
+                />
+                <field
+                    name="xtd_use_custom_dashboard"
+                    string="Dashboard personalizado Xtd"
                 />
             </xpath>
         </field>

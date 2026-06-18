@@ -21,3 +21,6 @@ class ResUsersSettings(models.Model):
         default=list,
         string="Xtd Sidebar App Order",
     )
+    xtd_use_custom_dashboard = fields.Boolean(
+        string="Use Custom Xtd Dashboard",
+    )

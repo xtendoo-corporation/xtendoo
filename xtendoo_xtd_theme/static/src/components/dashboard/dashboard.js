@@ -21,6 +21,9 @@ export class XtdDashboard extends Component {
             activities: [],
             topProducts: [],
             orderStatus: [],
+            layout: { mode: "global", can_customize: false, blocks: [] },
+            editingLayout: false,
+            draftBlocks: [],
             isSidebarHidden: document.body.classList.contains("xtd-sidebar-hidden"),
         });
 
@@ -37,6 +40,15 @@ export class XtdDashboard extends Component {
     get activities() { return this.state.activities; }
     get topProducts() { return this.state.topProducts; }
     get orderStatus() { return this.state.orderStatus; }
+    get dashboardBlocks() {
+        return this.state.editingLayout ? this.state.draftBlocks : (this.state.layout.blocks || []);
+    }
+    get canEditLayout() { return !!this.state.layout.can_edit; }
+    get editingLayout() { return this.state.editingLayout; }
+    get availableDashboardBlocks() {
+        const visibleKeys = new Set(this.state.draftBlocks.map((block) => block.key));
+        return (this.state.layout.available_blocks || []).filter((block) => !visibleKeys.has(block.key));
+    }
     get isSidebarHidden() { return this.state.isSidebarHidden; }
 
     async _fetchData() {
@@ -45,6 +57,15 @@ export class XtdDashboard extends Component {
         const dateStr = firstDayOfMonth.toISOString().split('T')[0];
 
         try {
+            this.state.layout = await this.orm.call(
+                "xtd.dashboard.service",
+                "get_dashboard_layout",
+                []
+            );
+            if (!this.state.layout.blocks?.length) {
+                this.state.layout = this._defaultLayout();
+            }
+
             // Ventas Reales (Facturas de cliente del mes actual)
             const salesData = await this.orm.call(
                 "account.move",
@@ -107,6 +128,7 @@ export class XtdDashboard extends Component {
         } catch (e) {
             console.error("Error al cargar datos reales, usando mockups:", e);
             // Fallback a datos simulados si los módulos (como sale/purchase) no están instalados
+            this.state.layout = this._defaultLayout();
             this.state.statistics = {
                 sales: { value: "24.350 €", trend: "+12.5%", label: "Ventas (mes)", icon: "fa-money" },
                 orders: { value: "18", trend: "+8.3%", label: "Pedidos", icon: "fa-shopping-bag" },
@@ -127,6 +149,103 @@ export class XtdDashboard extends Component {
             ];
             this.state.isSidebarHidden = document.body.classList.contains("xtd-sidebar-hidden");
         }
+    }
+
+    _defaultLayout() {
+        return {
+            mode: "global",
+            can_customize: false,
+            blocks: [
+                { key: "main_kpis", component: "main_kpis", size: "full", sequence: 10 },
+                { key: "sales_chart", component: "sales_chart", size: "large", sequence: 20 },
+                { key: "pending_activities", component: "pending_activities", size: "medium", sequence: 30 },
+                { key: "top_products", component: "top_products", size: "large", sequence: 40 },
+                { key: "order_status", component: "order_status", size: "medium", sequence: 50 },
+            ],
+        };
+    }
+
+    getBlockClass(block) {
+        const classesBySize = {
+            small: "col-12 col-md-6 col-xl-3",
+            medium: "col-12 col-lg-4",
+            large: "col-12 col-lg-8",
+            full: "col-12",
+        };
+        return classesBySize[block.size] || classesBySize.medium;
+    }
+
+    startLayoutEdition() {
+        if (!this.canEditLayout) {
+            return;
+        }
+        this.state.draftBlocks = this._cloneBlocks(this.state.layout.blocks || []);
+        this.state.editingLayout = true;
+    }
+
+    cancelLayoutEdition() {
+        this.state.draftBlocks = [];
+        this.state.editingLayout = false;
+    }
+
+    async saveLayoutEdition() {
+        if (!this.canEditLayout) {
+            return;
+        }
+        if (!this.state.draftBlocks.length) {
+            return;
+        }
+        this.state.layout = await this.orm.call(
+            "xtd.dashboard.service",
+            "save_dashboard_layout",
+            [this.state.draftBlocks]
+        );
+        this.state.draftBlocks = [];
+        this.state.editingLayout = false;
+    }
+
+    moveDashboardBlock(block, direction) {
+        const currentIndex = this.state.draftBlocks.findIndex((candidate) => candidate.key === block.key);
+        const nextIndex = currentIndex + direction;
+        if (currentIndex < 0 || nextIndex < 0 || nextIndex >= this.state.draftBlocks.length) {
+            return;
+        }
+        const blocks = [...this.state.draftBlocks];
+        const [movedBlock] = blocks.splice(currentIndex, 1);
+        blocks.splice(nextIndex, 0, movedBlock);
+        this.state.draftBlocks = blocks;
+    }
+
+    resizeDashboardBlock(block, direction) {
+        const sizes = ["small", "medium", "large", "full"];
+        const currentIndex = sizes.indexOf(block.size || "medium");
+        const nextIndex = currentIndex + direction;
+        if (nextIndex < 0 || nextIndex >= sizes.length) {
+            return;
+        }
+        this.state.draftBlocks = this.state.draftBlocks.map((candidate) => (
+            candidate.key === block.key
+                ? { ...candidate, size: sizes[nextIndex] }
+                : candidate
+        ));
+    }
+
+    removeDashboardBlock(block) {
+        this.state.draftBlocks = this.state.draftBlocks.filter((candidate) => candidate.key !== block.key);
+    }
+
+    addDashboardBlock(block) {
+        this.state.draftBlocks = [
+            ...this.state.draftBlocks,
+            this._cloneBlocks([block])[0],
+        ];
+    }
+
+    _cloneBlocks(blocks) {
+        return blocks.map((block) => ({
+            ...block,
+            config: { ...(block.config || {}) },
+        }));
     }
 
     async _fetchTopProducts() {

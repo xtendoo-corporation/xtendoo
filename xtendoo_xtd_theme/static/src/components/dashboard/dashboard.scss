@@ -159,4 +159,64 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
     }
+
+    .xtd-dashboard-editor-bar {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        box-shadow: 0 10px 28px rgba(21, 21, 21, 0.045);
+        padding: 1rem;
+    }
+
+    .xtd-dashboard-block-controls {
+        align-items: center;
+        background: #fff;
+        border: 1px solid rgba(244, 87, 0, 0.35);
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(21, 21, 21, 0.08);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: space-between;
+        min-height: 40px;
+        padding: 0.3rem 0.4rem 0.3rem 0.65rem;
+        position: absolute;
+        right: 1.25rem;
+        top: 0;
+        z-index: 10;
+
+        > span {
+            flex: 1 1 9rem;
+            min-width: 0;
+        }
+    }
+
+    .xtd-dashboard-block-controls__actions {
+        display: inline-flex;
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        justify-content: flex-end;
+        margin-left: auto;
+
+        .btn {
+            align-items: center;
+            display: inline-flex;
+            height: 30px;
+            justify-content: center;
+            padding: 0;
+            width: 30px;
+        }
+    }
+
+    .xtd-dashboard-block-controls + .card,
+    .xtd-dashboard-block-controls + .row {
+        outline: 1px solid rgba(244, 87, 0, 0.2);
+        outline-offset: 2px;
+    }
+
+    .xtd-dashboard-editable-block {
+        padding-top: 3rem;
+        position: relative;
+    }
 }

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="xtd_dashboard_block_kpis" model="xtd.dashboard.block">
+        <field name="name">KPIs principales</field>
+        <field name="technical_key">main_kpis</field>
+        <field name="block_type">kpi_grid</field>
+        <field name="component">main_kpis</field>
+        <field name="default_size">full</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="xtd_dashboard_block_sales_chart" model="xtd.dashboard.block">
+        <field name="name">Ventas</field>
+        <field name="technical_key">sales_chart</field>
+        <field name="block_type">chart</field>
+        <field name="component">sales_chart</field>
+        <field name="model_name">sale.order</field>
+        <field name="action_xmlid">sale.action_orders</field>
+        <field name="default_size">large</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="xtd_dashboard_block_activities" model="xtd.dashboard.block">
+        <field name="name">Actividades pendientes</field>
+        <field name="technical_key">pending_activities</field>
+        <field name="block_type">list</field>
+        <field name="component">pending_activities</field>
+        <field name="model_name">mail.activity</field>
+        <field name="action_xmlid">mail.mail_activity_action_view_tree</field>
+        <field name="default_size">medium</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="xtd_dashboard_block_top_products" model="xtd.dashboard.block">
+        <field name="name">Top productos</field>
+        <field name="technical_key">top_products</field>
+        <field name="block_type">list</field>
+        <field name="component">top_products</field>
+        <field name="model_name">sale.order.line</field>
+        <field name="default_size">large</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="xtd_dashboard_block_order_status" model="xtd.dashboard.block">
+        <field name="name">Estado de pedidos</field>
+        <field name="technical_key">order_status</field>
+        <field name="block_type">status</field>
+        <field name="component">order_status</field>
+        <field name="model_name">sale.order</field>
+        <field name="action_xmlid">sale.action_orders</field>
+        <field name="default_size">medium</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_kpis" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_kpis"/>
+        <field name="sequence">10</field>
+        <field name="size">full</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_sales_chart" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_sales_chart"/>
+        <field name="sequence">20</field>
+        <field name="size">large</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_activities" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_activities"/>
+        <field name="sequence">30</field>
+        <field name="size">medium</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_top_products" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_top_products"/>
+        <field name="sequence">40</field>
+        <field name="size">large</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_order_status" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_order_status"/>
+        <field name="sequence">50</field>
+        <field name="size">medium</field>
+    </record>
+</odoo>
