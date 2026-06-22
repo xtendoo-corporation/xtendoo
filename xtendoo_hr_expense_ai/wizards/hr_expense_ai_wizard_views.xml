@@ -37,4 +37,16 @@
             </form>
         </field>
     </record>
+    <record id="action_hr_expense_ai_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Gasto con IA</field>
+        <field name="res_model">hr.expense.ai.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_hr_expense_ai_wizard"
+              name="Importar con IA"
+              parent="hr_expense.menu_hr_expense_my_expenses"
+              action="action_hr_expense_ai_wizard"
+              sequence="15"/>
 </odoo>

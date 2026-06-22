@@ -43,7 +43,7 @@ class HrExpenseAIWizard(models.TransientModel):
     expense_id = fields.Many2one(
         "hr.expense",
         string="Expense",
-        required=True,
+        required=False,
         ondelete="cascade",
     )
     attachment_file = fields.Binary(
@@ -114,28 +114,69 @@ class HrExpenseAIWizard(models.TransientModel):
             raise UserError(_("Por favor, analice un documento primero."))
         ai_data = json.loads(self.ai_json_result)
         expense = self.expense_id
+        created_new = False
+        if not expense:
+            employee = self.env.user.employee_id
+            if not employee:
+                employee = self.env["hr.employee"].search([("user_id", "=", self.env.uid)], limit=1)
+            if not employee:
+                employee = self.env["hr.employee"].search([("company_id", "=", (self.env.company or self.env.user.company_id).id)], limit=1)
+
+            expense_vals = {
+                "name": ai_data.get("description") or "Nuevo Gasto IA",
+            }
+            if employee:
+                expense_vals["employee_id"] = employee.id
+
+            expense = self.env["hr.expense"].with_context(skip_compute_tax_ids=True).create(expense_vals)
+            created_new = True
+
         self._apply_to_expense(expense, ai_data)
+
+        if not expense.product_id:
+            fallback_product = self.env["product.product"].search([
+                ("can_be_expensed", "=", True)
+            ], limit=1)
+            if fallback_product:
+                expense.with_context(skip_compute_tax_ids=True).product_id = fallback_product.id
+
         self.env["ir.attachment"].create({
             "name": self.attachment_name or "expense_receipt",
             "datas": self.attachment_file,
             "res_model": "hr.expense",
             "res_id": expense.id,
         })
-        expense.write({
+        expense.with_context(skip_compute_tax_ids=True).write({
             "ai_document_type": ai_data.get("document_type", "expense"),
             "ai_processed": True,
             "ai_has_corrections": False,
         })
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": _("Importación IA Exitosa"),
-                "message": _("Los datos del gasto se han rellenado desde el documento."),
-                "type": "success",
-                "sticky": False,
-            },
-        }
+
+        if created_new:
+            return {
+                "name": _("Gasto Importado"),
+                "type": "ir.actions.act_window",
+                "res_model": "hr.expense",
+                "res_id": expense.id,
+                "view_mode": "form",
+                "target": "current",
+            }
+        else:
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": _("Importación IA Exitosa"),
+                    "message": _("Los datos del gasto se han rellenado desde el documento."),
+                    "type": "success",
+                    "sticky": False,
+                    "next": {
+                        "type": "ir.actions.client",
+                        "tag": "reload",
+                    },
+                },
+            }
+
     def _apply_to_expense(self, expense, ai_data: dict):
         vals = {}
         date_str = ai_data.get("date")
@@ -164,8 +205,94 @@ class HrExpenseAIWizard(models.TransientModel):
             ], limit=1)
             if product:
                 vals["product_id"] = product.id
+
+        # Map Supplier/Vendor without creating res.partner
+        supplier = ai_data.get("supplier")
+        if supplier:
+            name = supplier.get("name")
+            vat = supplier.get("vat")
+            partner = False
+            if vat:
+                clean_vat = re.sub(r'[^A-Z0-9]', '', vat.upper())
+                partner = self.env["res.partner"].search([("vat", "=", vat)], limit=1)
+                if not partner:
+                    partner = self.env["res.partner"].search([("vat", "ilike", clean_vat)], limit=1)
+            if not partner and name:
+                partner = self.env["res.partner"].search([("name", "ilike", name)], limit=1)
+
+            if partner:
+                vals["vendor_id"] = partner.id
+            else:
+                notes = []
+                if name:
+                    notes.append(f"Proveedor Detectado: {name}")
+                if vat:
+                    notes.append(f"NIF/CIF Detectado: {vat}")
+                if notes:
+                    current_desc = expense.description or ""
+                    new_notes = "\n".join(notes)
+                    vals["description"] = f"{current_desc}\n\n{new_notes}".strip()
+
+        # Map Taxes
+        total_amount = ai_data.get("total_amount")
+        tax_amount = ai_data.get("tax_amount")
+        if total_amount and tax_amount:
+            try:
+                total_amount = float(total_amount)
+                tax_amount = float(tax_amount)
+                tax = False
+                company = expense.company_id or self.env.company
+
+                # Formula A: Tax Included
+                untaxed_a = total_amount - tax_amount
+                rate_a = 0.0
+                rate_b = 0.0
+                if untaxed_a > 0:
+                    rate_a = round((tax_amount / untaxed_a) * 100, 1)
+                    tax = self.env["account.tax"].search([
+                        ("type_tax_use", "=", "purchase"),
+                        ("amount", "=", rate_a),
+                        ("company_id", "=", company.id),
+                    ], limit=1)
+                    if not tax:
+                        tax = self.env["account.tax"].search([
+                            ("type_tax_use", "=", "purchase"),
+                            ("amount", "=", round(rate_a)),
+                            ("company_id", "=", company.id),
+                        ], limit=1)
+
+                # Formula B: Tax Excluded (fallback)
+                if not tax and total_amount > 0:
+                    rate_b = round((tax_amount / total_amount) * 100, 1)
+                    tax = self.env["account.tax"].search([
+                        ("type_tax_use", "=", "purchase"),
+                        ("amount", "=", rate_b),
+                        ("company_id", "=", company.id),
+                    ], limit=1)
+                    if not tax:
+                        tax = self.env["account.tax"].search([
+                            ("type_tax_use", "=", "purchase"),
+                            ("amount", "=", round(rate_b)),
+                            ("company_id", "=", company.id),
+                        ], limit=1)
+
+                if not tax and (rate_a or rate_b):
+                    target_rate = rate_a if rate_a > 0.0 else rate_b
+                    if target_rate > 0.0:
+                        tax = self.env["account.tax"].create({
+                            "name": f"IVA Soportado {target_rate}%",
+                            "amount": target_rate,
+                            "type_tax_use": "purchase",
+                            "company_id": company.id,
+                        })
+
+                if tax:
+                    vals["tax_ids"] = [(6, 0, [tax.id])]
+            except (ValueError, TypeError):
+                pass
+
         if vals:
-            expense.write(vals)
+            expense.with_context(skip_compute_tax_ids=True).write(vals)
     def _prepare_files(self, file_content: bytes, mime_type: str) -> list:
         if mime_type == "application/pdf" and convert_from_bytes and Image and io:
             try:

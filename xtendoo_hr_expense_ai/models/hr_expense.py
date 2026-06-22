@@ -1,10 +1,23 @@
 # © 2026 Xtendoo
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import logging
-from odoo import models, fields, _
+from odoo import models, fields, api, _
 _logger = logging.getLogger(__name__)
 class HrExpense(models.Model):
     _inherit = "hr.expense"
+
+    name = fields.Char(
+        string="Description",
+        compute='_compute_name', precompute=True, store=True, readonly=False,
+        required=False,
+        copy=True,
+    )
+
+    @api.depends('product_id', 'company_id')
+    def _compute_tax_ids(self):
+        if self.env.context.get("skip_compute_tax_ids"):
+            return
+        super()._compute_tax_ids()
     ai_document_type = fields.Selection(
         selection=[
             ("expense", "Gasto"),
