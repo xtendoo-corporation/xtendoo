@@ -243,38 +243,45 @@ class HrExpenseAIWizard(models.TransientModel):
                 tax = False
                 company = expense.company_id or self.env.company
 
+                # Sort helper to find the standard tax
+                def find_best_tax(rate):
+                    taxes = self.env["account.tax"].search([
+                        ("type_tax_use", "=", "purchase"),
+                        ("amount", "=", rate),
+                        ("company_id", "=", company.id),
+                    ])
+                    if not taxes:
+                        taxes = self.env["account.tax"].search([
+                            ("type_tax_use", "=", "purchase"),
+                            ("amount", "=", round(rate)),
+                            ("company_id", "=", company.id),
+                        ])
+                    if not taxes:
+                        return False
+
+                    def tax_sort_key(t):
+                        name = (t.name or "").upper()
+                        penalty = 0
+                        if any(term in name for term in ["EX", "ISP", "RECARGO", "INTRA", "REVERSADO"]):
+                            penalty += 100
+                        if "S" in name or "SOPORTADO" in name:
+                            penalty -= 10
+                        return (penalty, len(name), t.id)
+
+                    return sorted(taxes, key=tax_sort_key)[0]
+
                 # Formula A: Tax Included
                 untaxed_a = total_amount - tax_amount
                 rate_a = 0.0
                 rate_b = 0.0
                 if untaxed_a > 0:
                     rate_a = round((tax_amount / untaxed_a) * 100, 1)
-                    tax = self.env["account.tax"].search([
-                        ("type_tax_use", "=", "purchase"),
-                        ("amount", "=", rate_a),
-                        ("company_id", "=", company.id),
-                    ], limit=1)
-                    if not tax:
-                        tax = self.env["account.tax"].search([
-                            ("type_tax_use", "=", "purchase"),
-                            ("amount", "=", round(rate_a)),
-                            ("company_id", "=", company.id),
-                        ], limit=1)
+                    tax = find_best_tax(rate_a)
 
                 # Formula B: Tax Excluded (fallback)
                 if not tax and total_amount > 0:
                     rate_b = round((tax_amount / total_amount) * 100, 1)
-                    tax = self.env["account.tax"].search([
-                        ("type_tax_use", "=", "purchase"),
-                        ("amount", "=", rate_b),
-                        ("company_id", "=", company.id),
-                    ], limit=1)
-                    if not tax:
-                        tax = self.env["account.tax"].search([
-                            ("type_tax_use", "=", "purchase"),
-                            ("amount", "=", round(rate_b)),
-                            ("company_id", "=", company.id),
-                        ], limit=1)
+                    tax = find_best_tax(rate_b)
 
                 if not tax and (rate_a or rate_b):
                     target_rate = rate_a if rate_a > 0.0 else rate_b
