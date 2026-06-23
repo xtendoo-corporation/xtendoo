@@ -242,6 +242,59 @@
                     </div>
                     <div t-else="" class="row g-4 mb-5">
                         <t t-foreach="dashboardBlocks" t-as="block" t-key="block.key">
+                            <t t-if="block.component === 'single_kpi'">
+                                <t t-set="kpiKey" t-value="block.config &amp;&amp; block.config.kpi_key"/>
+                                <div t-if="statistics[kpiKey]" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                                    <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
+                                    <div class="card border-0 shadow-sm rounded-dashboard h-100 kpi-card kpi-card--compact cursor-pointer" t-on-click="() => this.onKpiClick(kpiKey)">
+                                        <div class="kpi-card__summary">
+                                            <div class="d-flex align-items-start justify-content-between gap-2">
+                                                <div class="d-flex align-items-center min-w-0">
+                                                    <span t-attf-class="kpi-card__icon bg-#{kpiKey}-light text-#{kpiKey}">
+                                                        <i t-attf-class="fa #{statistics[kpiKey].icon}"/>
+                                                    </span>
+                                                    <span class="kpi-card__title text-truncate">
+                                                        <t t-esc="statistics[kpiKey].label"/>
+                                                        <span class="kpi-card__value">(<t t-esc="statistics[kpiKey].value"/>)</span>
+                                                    </span>
+                                                </div>
+                                                <button type="button"
+                                                        class="kpi-card__create"
+                                                        t-att-title="getKpiCreateTitle(kpiKey)"
+                                                        t-on-click.stop="() => this.createKpiRecord(kpiKey)">
+                                                    <span aria-hidden="true">+</span>
+                                                </button>
+                                            </div>
+                                            <div class="kpi-card__meta">
+                                                <t t-if="statistics[kpiKey].total">
+                                                    <span class="kpi-card__total" t-esc="statistics[kpiKey].total"/>
+                                                </t>
+                                                <span t-attf-class="kpi-card__trend text-#{statistics[kpiKey].trend >= 0 ? 'success' : 'danger'}">
+                                                    <i t-attf-class="fa fa-arrow-#{statistics[kpiKey].trend >= 0 ? 'up' : 'down'}"/>
+                                                    <span class="fw-bold" t-esc="statistics[kpiKey].trend_str"/>
+                                                    <span class="text-muted fw-normal" t-esc="kpiPeriodLabel"/>
+                                                </span>
+                                            </div>
+                                            <t t-if="state.recentItems[kpiKey] &amp;&amp; state.recentItems[kpiKey].length">
+                                                <div class="kpi-card__list xtd-recent-list">
+                                                    <t t-foreach="state.recentItems[kpiKey]" t-as="item" t-key="item.id">
+                                                        <div class="d-flex justify-content-between align-items-center xtd-recent-row kpi-card__row">
+                                                            <div class="text-truncate me-2">
+                                                                <span class="small fw-medium d-block text-truncate" t-esc="item.name"/>
+                                                                <span class="x-small text-muted" t-esc="Array.isArray(item.partner_id) ? item.partner_id[1] : ''"/>
+                                                            </div>
+                                                            <div class="text-end flex-shrink-0">
+                                                                <span class="small fw-bold d-block" t-esc="_formatCurrency(item.amount_total)"/>
+                                                                <span class="x-small text-muted" t-esc="item.invoice_date || item.date_order"/>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
                             <t t-if="block.component === 'main_kpis'">
                                 <div t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
                                     <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>

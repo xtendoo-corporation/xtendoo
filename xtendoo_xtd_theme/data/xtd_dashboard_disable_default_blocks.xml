@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Keep the default dashboard layout visible, but remove the grouped KPI
+        block and the generic starter library blocks from the editor.
+    -->
+    <record id="xtd_dashboard_block_kpis" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_kpi_sales" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_kpi_orders" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_kpi_purchase_orders" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_kpi_invoiced" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_sales_chart" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_activities" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_top_products" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_order_status" model="xtd.dashboard.block"><field name="active">True</field></record>
+    <record id="xtd_dashboard_block_sale_recent_quotes" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_sale_pending_delivery" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_sale_confirmed_orders" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_sale_recent_orders" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_sale_top_customers" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_account_unpaid_invoices" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_account_vendor_bills" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_account_recent_out" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_account_recent_in" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_account_recent_payments" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_purchase_rfq" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_purchase_pending_receipt" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_purchase_recent" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_purchase_rfq_month" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_stock_outgoing" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_stock_incoming" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_stock_low" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_stock_recent_moves" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_crm_pipeline" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_crm_leads" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_crm_won" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_crm_activities" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_hr_employees" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_hr_attendance" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_hr_open_attendance" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_hr_contracts" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_project_tasks" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_project_active" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_mrp_orders" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_pos_recent" model="xtd.dashboard.block"><field name="active">False</field></record>
+    <record id="xtd_dashboard_block_pos_sessions" model="xtd.dashboard.block"><field name="active">False</field></record>
+
+    <record id="xtd_dashboard_layout_kpis" model="xtd.dashboard.layout"><field name="visible">False</field></record>
+    <record id="xtd_dashboard_layout_kpi_sales" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+    <record id="xtd_dashboard_layout_kpi_orders" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+    <record id="xtd_dashboard_layout_kpi_purchase_orders" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+    <record id="xtd_dashboard_layout_kpi_invoiced" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+    <record id="xtd_dashboard_layout_sales_chart" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+    <record id="xtd_dashboard_layout_activities" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+    <record id="xtd_dashboard_layout_top_products" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+    <record id="xtd_dashboard_layout_order_status" model="xtd.dashboard.layout"><field name="visible">True</field></record>
+</odoo>

@@ -264,22 +264,24 @@ export class XtdDashboard extends Component {
 
         try {
             const [cur, prev] = await Promise.all([
-                this.orm.call("account.move", "read_group", [[
-                    ["move_type", "=", "out_invoice"], ["state", "=", "posted"],
+                readSum("account.move", [
+                    ["move_type", "=", "out_invoice"],
+                    ["state", "=", "posted"],
                     ["invoice_date", ">=", fmt(curStart)],
                     ["invoice_date", "<", fmt(endNext)],
-                ], ["amount_total:sum"], ["invoice_date:month"]]),
-                this.orm.call("account.move", "read_group", [[
-                    ["move_type", "=", "out_invoice"], ["state", "=", "posted"],
+                ], ["amount_total"]),
+                readSum("account.move", [
+                    ["move_type", "=", "out_invoice"],
+                    ["state", "=", "posted"],
                     ["invoice_date", ">=", fmt(prevStart)],
                     ["invoice_date", "<", fmt(prevEndNext)],
-                ], ["amount_total:sum"], ["invoice_date:month"]]),
+                ], ["amount_total"]),
             ]);
             kpis.invoiced = {
-                value: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                previous_value: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                total: cur.reduce((s, r) => s + (r.__count || 0), 0),
-                previous_total: prev.reduce((s, r) => s + (r.__count || 0), 0),
+                value: cur.length,
+                previous_value: prev.length,
+                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
+                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
                 label: "Facturado", icon: "fa-file-text-o",
             };
         } catch {
@@ -311,7 +313,9 @@ export class XtdDashboard extends Component {
         }
 
         for (const key of Object.keys(kpis)) {
-            kpis[key].trend = this._calcTrend(kpis[key].value, kpis[key].previous_value);
+            const trendValue = key === "invoiced" ? kpis[key].total : kpis[key].value;
+            const previousTrendValue = key === "invoiced" ? kpis[key].previous_total : kpis[key].previous_value;
+            kpis[key].trend = this._calcTrend(trendValue, previousTrendValue);
         }
 
         this.state.statistics = this._formatKpis(kpis);
@@ -481,13 +485,19 @@ export class XtdDashboard extends Component {
         return {
             mode: "global",
             can_customize: false,
+            can_edit: false,
+            can_edit_global: false,
             blocks: [
-                { key: "main_kpis", component: "main_kpis", size: "full", sequence: 10 },
+                { key: "kpi_sales", component: "single_kpi", size: "small", sequence: 10, config: { kpi_key: "sales" } },
+                { key: "kpi_orders", component: "single_kpi", size: "small", sequence: 11, config: { kpi_key: "orders" } },
+                { key: "kpi_purchase_orders", component: "single_kpi", size: "small", sequence: 12, config: { kpi_key: "purchase_orders" } },
+                { key: "kpi_invoiced", component: "single_kpi", size: "small", sequence: 13, config: { kpi_key: "invoiced" } },
                 { key: "sales_chart", component: "sales_chart", size: "large", sequence: 20 },
                 { key: "order_status", component: "order_status", size: "medium", sequence: 25 },
                 { key: "pending_activities", component: "pending_activities", size: "medium", sequence: 30 },
                 { key: "top_products", component: "top_products", size: "large", sequence: 40 },
             ],
+            available_blocks: [],
         };
     }
 
@@ -690,6 +700,7 @@ export class XtdDashboard extends Component {
             generic_kanban: "Kanban",
             generic_calendar: "Calendario",
             main_kpis: "KPIs",
+            single_kpi: "KPI",
             sales_chart: "Gráfico",
             pending_activities: "Lista",
             top_products: "Ranking",
@@ -868,8 +879,8 @@ export class XtdDashboard extends Component {
         const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
         const formatCurrency = (val) => val ? this._formatCurrency(val) : "0 €";
         const salesVal = toNum(kpis.sales?.value);
-        const invoicedVal = toNum(kpis.invoiced?.value);
-        const ticketMedio = salesVal > 0 ? this._formatCurrency(invoicedVal / salesVal) : "—";
+        const invoicedTotal = toNum(kpis.invoiced?.total);
+        const ticketMedio = salesVal > 0 ? this._formatCurrency(invoicedTotal / salesVal) : "—";
         return {
             sales: {
                 value: salesVal.toString(),
@@ -897,8 +908,8 @@ export class XtdDashboard extends Component {
                 icon: "fa-truck",
             },
             invoiced: {
-                value: formatCurrency(toNum(kpis.invoiced?.value)),
-                total: toNum(kpis.invoiced?.total).toString(),
+                value: toNum(kpis.invoiced?.value).toString(),
+                total: formatCurrency(toNum(kpis.invoiced?.total)),
                 trend: toNum(kpis.invoiced?.trend),
                 trend_str: this._formatTrend(kpis.invoiced?.trend),
                 label: kpis.invoiced?.label || "Facturado (mes)",
@@ -1106,6 +1117,56 @@ export class XtdDashboard extends Component {
 
     openAction(xmlid) {
         this.action.doAction(xmlid);
+    }
+
+    getKpiCreateTitle(key) {
+        const labels = {
+            sales: "Crear pedido de venta",
+            orders: "Crear presupuesto",
+            purchase_orders: "Crear compra",
+            invoiced: "Crear factura",
+        };
+        return labels[key] || "Crear";
+    }
+
+    createKpiRecord(key) {
+        const actions = {
+            sales: {
+                type: "ir.actions.act_window",
+                res_model: "sale.order",
+                views: [[false, "form"]],
+                target: "current",
+                context: {},
+                name: "Ventas",
+            },
+            orders: {
+                type: "ir.actions.act_window",
+                res_model: "sale.order",
+                views: [[false, "form"]],
+                target: "current",
+                context: {},
+                name: "Ventas",
+            },
+            purchase_orders: {
+                type: "ir.actions.act_window",
+                res_model: "purchase.order",
+                views: [[false, "form"]],
+                target: "current",
+                context: {},
+                name: "Compras",
+            },
+            invoiced: {
+                type: "ir.actions.act_window",
+                res_model: "account.move",
+                views: [[false, "form"]],
+                target: "current",
+                context: { default_move_type: "out_invoice" },
+                name: "Facturación",
+            },
+        }[key];
+        if (actions) {
+            this.action.doAction(actions, { clearBreadcrumbs: true });
+        }
     }
 
     onKpiClick(key) {

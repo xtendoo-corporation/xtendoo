@@ -13,6 +13,46 @@
         <field name="sequence">10</field>
     </record>
 
+    <record id="xtd_dashboard_block_kpi_sales" model="xtd.dashboard.block">
+        <field name="name">Pedidos venta</field>
+        <field name="technical_key">kpi_sales</field>
+        <field name="block_type">kpi_grid</field>
+        <field name="component">single_kpi</field>
+        <field name="default_size">small</field>
+        <field name="sequence">11</field>
+        <field name="config" eval="{'kpi_key': 'sales'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_kpi_orders" model="xtd.dashboard.block">
+        <field name="name">Presupuestos</field>
+        <field name="technical_key">kpi_orders</field>
+        <field name="block_type">kpi_grid</field>
+        <field name="component">single_kpi</field>
+        <field name="default_size">small</field>
+        <field name="sequence">12</field>
+        <field name="config" eval="{'kpi_key': 'orders'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_kpi_purchase_orders" model="xtd.dashboard.block">
+        <field name="name">Compras</field>
+        <field name="technical_key">kpi_purchase_orders</field>
+        <field name="block_type">kpi_grid</field>
+        <field name="component">single_kpi</field>
+        <field name="default_size">small</field>
+        <field name="sequence">13</field>
+        <field name="config" eval="{'kpi_key': 'purchase_orders'}"/>
+    </record>
+
+    <record id="xtd_dashboard_block_kpi_invoiced" model="xtd.dashboard.block">
+        <field name="name">Facturado</field>
+        <field name="technical_key">kpi_invoiced</field>
+        <field name="block_type">kpi_grid</field>
+        <field name="component">single_kpi</field>
+        <field name="default_size">small</field>
+        <field name="sequence">14</field>
+        <field name="config" eval="{'kpi_key': 'invoiced'}"/>
+    </record>
+
     <record id="xtd_dashboard_block_sales_chart" model="xtd.dashboard.block">
         <field name="name">Ventas</field>
         <field name="technical_key">sales_chart</field>
@@ -428,6 +468,30 @@
         <field name="block_id" ref="xtd_dashboard_block_kpis"/>
         <field name="sequence">10</field>
         <field name="size">full</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_kpi_sales" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_kpi_sales"/>
+        <field name="sequence">10</field>
+        <field name="size">small</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_kpi_orders" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_kpi_orders"/>
+        <field name="sequence">11</field>
+        <field name="size">small</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_kpi_purchase_orders" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_kpi_purchase_orders"/>
+        <field name="sequence">12</field>
+        <field name="size">small</field>
+    </record>
+
+    <record id="xtd_dashboard_layout_kpi_invoiced" model="xtd.dashboard.layout">
+        <field name="block_id" ref="xtd_dashboard_block_kpi_invoiced"/>
+        <field name="sequence">13</field>
+        <field name="size">small</field>
     </record>
 
     <record id="xtd_dashboard_layout_sales_chart" model="xtd.dashboard.layout">

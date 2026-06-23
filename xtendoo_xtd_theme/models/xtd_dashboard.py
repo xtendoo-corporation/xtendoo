@@ -179,7 +179,6 @@ class XtdDashboardService(models.AbstractModel):
             return self.get_dashboard_layout()
         if not blocks:
             return self.get_dashboard_layout()
-
         layout_model = self.env["xtd.dashboard.user.layout" if use_custom else "xtd.dashboard.layout"].sudo()
         domain = [("user_id", "=", user.id)] if use_custom else []
         existing_lines = layout_model.search(domain)

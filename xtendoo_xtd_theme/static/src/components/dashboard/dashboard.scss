@@ -72,6 +72,107 @@
         }
     }
 
+    .kpi-card--compact {
+        padding: 1.15rem 1.25rem;
+    }
+
+    .kpi-card__summary {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+    }
+
+    .kpi-card__icon {
+        align-items: center;
+        border-radius: 14px;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 32px;
+        justify-content: center;
+        margin-right: 0.65rem;
+        width: 32px;
+    }
+
+    .kpi-card__title {
+        color: #5f6673;
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .kpi-card__value {
+        color: #111827;
+        font-weight: 900;
+        margin-left: 0.2rem;
+        white-space: nowrap;
+    }
+
+    .kpi-card__total {
+        color: #111827;
+        font-size: 1.05rem;
+        font-weight: 900;
+        line-height: 1.15;
+        white-space: nowrap;
+    }
+
+    .kpi-card__create {
+        align-items: center;
+        background: #111827;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 28px;
+        justify-content: center;
+        transition: background-color 0.15s ease, transform 0.15s ease;
+        width: 28px;
+
+        span {
+            color: #fff;
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-top: -1px;
+        }
+
+        &:hover {
+            background: #000;
+            transform: scale(1.05);
+        }
+    }
+
+    .kpi-card__meta {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.65rem;
+        justify-content: space-between;
+        margin-top: 0.55rem;
+    }
+
+    .kpi-card__trend {
+        align-items: center;
+        display: inline-flex;
+        font-size: 0.72rem;
+        gap: 0.28rem;
+        line-height: 1.2;
+    }
+
+    .kpi-card__list {
+        border-top: 1px solid #E6E9EE;
+        margin-top: 0.85rem;
+        padding-top: 0.75rem;
+    }
+
+    .kpi-card__row {
+        padding: 0.2rem 0;
+    }
+
     .kpi-value {
         font-size: 1.75rem;
         letter-spacing: -0.5px;

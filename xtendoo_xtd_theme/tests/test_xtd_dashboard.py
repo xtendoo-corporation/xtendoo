@@ -10,21 +10,31 @@ class TestXtdDashboard(TransactionCase):
         cls.admin = cls.env.ref("base.user_admin").sudo()
 
     def test_default_dashboard_blocks_are_available(self):
-        blocks = self.env["xtd.dashboard.block"].search([])
+        blocks = self.env["xtd.dashboard.block"].with_context(active_test=False).search([])
 
         self.assertTrue(blocks)
         self.assertIn("main_kpis", blocks.mapped("technical_key"))
+        self.assertIn("kpi_sales", blocks.mapped("technical_key"))
+        self.assertIn("kpi_orders", blocks.mapped("technical_key"))
+        self.assertIn("kpi_purchase_orders", blocks.mapped("technical_key"))
+        self.assertIn("kpi_invoiced", blocks.mapped("technical_key"))
         self.assertIn("sales_chart", blocks.mapped("technical_key"))
         self.assertIn("pending_activities", blocks.mapped("technical_key"))
         self.assertIn("top_products", blocks.mapped("technical_key"))
         self.assertIn("order_status", blocks.mapped("technical_key"))
+        self.assertFalse(blocks.filtered(lambda block: block.technical_key == "main_kpis").active)
+        self.assertTrue(blocks.filtered(lambda block: block.technical_key == "kpi_sales").active)
+        self.assertFalse(blocks.filtered(lambda block: block.technical_key == "sale_recent_quotes").active)
 
     def test_dashboard_service_returns_global_layout_by_default(self):
         layout = self.env["xtd.dashboard.service"].get_dashboard_layout()
 
         self.assertEqual(layout["mode"], "global")
         self.assertTrue(layout["blocks"])
-        self.assertEqual(layout["blocks"][0]["component"], "main_kpis")
+        self.assertEqual(layout["blocks"][0]["component"], "single_kpi")
+        self.assertEqual(layout["blocks"][0]["config"]["kpi_key"], "sales")
+        self.assertNotIn("main_kpis", [block["key"] for block in layout["blocks"]])
+        self.assertNotIn("sale_recent_quotes", [block["key"] for block in layout["available_blocks"]])
 
     def test_user_custom_dashboard_flag_is_stored_in_user_settings(self):
         self.admin.xtd_use_custom_dashboard = True
