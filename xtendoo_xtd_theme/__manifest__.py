@@ -21,6 +21,7 @@
         "data/dashboard_data.xml",
         "data/xtd_dashboard_blocks.xml",
         "data/xtd_dashboard_disable_default_blocks.xml",
+        "data/xtd_dashboard_available_blocks.xml",
         "views/res_users_views.xml",
         "views/webclient_templates.xml",
         "views/dashboard_views.xml",

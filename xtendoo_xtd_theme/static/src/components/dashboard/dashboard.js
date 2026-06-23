@@ -80,7 +80,16 @@ export class XtdDashboard extends Component {
     get editingLayout() { return this.state.editingLayout; }
     get availableDashboardBlocks() {
         const visibleKeys = new Set(this.state.draftBlocks.map((block) => block.key));
-        return (this.state.layout.available_blocks || []).filter((block) => !visibleKeys.has(block.key));
+        const availableByKey = new Map();
+        for (const block of [
+            ...(this.state.layout.available_blocks || []),
+            ...(this.state.layout.blocks || []),
+        ]) {
+            if (block?.key && !visibleKeys.has(block.key)) {
+                availableByKey.set(block.key, block);
+            }
+        }
+        return [...availableByKey.values()].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
     }
     get isSidebarHidden() { return this.state.isSidebarHidden; }
     get filteredBuilderModels() {
@@ -458,7 +467,7 @@ export class XtdDashboard extends Component {
         try {
             const records = await this.orm.searchRead(
                 block.model,
-                config.domain || [],
+                this._resolveGenericDomain(config.domain || []),
                 fields,
                 { limit: config.limit || 5, order: config.date_field ? `${config.date_field} desc` : "id desc" }
             );
@@ -479,6 +488,15 @@ export class XtdDashboard extends Component {
                 date_field: config.date_field,
             };
         }
+    }
+
+    _resolveGenericDomain(domain) {
+        const today = new Date().toISOString().split("T")[0];
+        return (domain || []).map((term) => (
+            Array.isArray(term)
+                ? term.map((value) => value === "__today__" ? today : value)
+                : term
+        ));
     }
 
     _defaultLayout() {

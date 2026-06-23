@@ -36,6 +36,16 @@ class TestXtdDashboard(TransactionCase):
         self.assertNotIn("main_kpis", [block["key"] for block in layout["blocks"]])
         self.assertNotIn("sale_recent_quotes", [block["key"] for block in layout["available_blocks"]])
 
+    def test_optional_blocks_are_available_but_not_visible_by_default(self):
+        layout = self.env["xtd.dashboard.service"].get_dashboard_layout()
+        layout_keys = [block["key"] for block in layout["blocks"]]
+        available_keys = [block["key"] for block in layout["available_blocks"]]
+
+        self.assertNotIn("available_overdue_invoices", layout_keys)
+        self.assertIn("available_overdue_invoices", available_keys)
+        self.assertIn("available_stock_outgoing", available_keys)
+        self.assertIn("available_crm_opportunities", available_keys)
+
     def test_user_custom_dashboard_flag_is_stored_in_user_settings(self):
         self.admin.xtd_use_custom_dashboard = True
 

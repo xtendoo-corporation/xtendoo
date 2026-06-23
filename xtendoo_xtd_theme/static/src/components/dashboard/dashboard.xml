@@ -595,22 +595,22 @@
         <div t-if="editingLayout" class="xtd-dashboard-block-controls">
             <span class="fw-bold small text-truncate" t-esc="block.name"/>
             <div class="xtd-dashboard-block-controls__actions">
-                <button type="button" class="btn btn-light btn-sm" title="Más estrecho" t-on-click="() => this.resizeDashboardBlock(block, -1)">
+                <button type="button" class="btn btn-light btn-sm" title="Más estrecho" t-on-click.stop.prevent="() => this.resizeDashboardBlock(block, -1)">
                     <i class="fa fa-chevron-left"/>
                 </button>
-                <button type="button" class="btn btn-light btn-sm" title="Subir" t-on-click="() => this.moveDashboardBlock(block, -1)">
+                <button type="button" class="btn btn-light btn-sm" title="Subir" t-on-click.stop.prevent="() => this.moveDashboardBlock(block, -1)">
                     <i class="fa fa-chevron-up"/>
                 </button>
-                <button type="button" class="btn btn-light btn-sm" title="Bajar" t-on-click="() => this.moveDashboardBlock(block, 1)">
+                <button type="button" class="btn btn-light btn-sm" title="Bajar" t-on-click.stop.prevent="() => this.moveDashboardBlock(block, 1)">
                     <i class="fa fa-chevron-down"/>
                 </button>
-                <button type="button" class="btn btn-light btn-sm" title="Más ancho" t-on-click="() => this.resizeDashboardBlock(block, 1)">
+                <button type="button" class="btn btn-light btn-sm" title="Más ancho" t-on-click.stop.prevent="() => this.resizeDashboardBlock(block, 1)">
                     <i class="fa fa-chevron-right"/>
                 </button>
-                <button type="button" class="btn btn-light btn-sm text-danger" title="Quitar" t-on-click="() => this.removeDashboardBlock(block)">
+                <button type="button" class="btn btn-light btn-sm text-danger" title="Quitar" t-on-click.stop.prevent="() => this.removeDashboardBlock(block)">
                     <i class="fa fa-times"/>
                 </button>
-                <button t-if="block.can_delete" type="button" class="btn btn-light btn-sm text-danger" title="Eliminar bloque" t-on-click="() => this.deleteCustomBlock(block)">
+                <button t-if="block.can_delete" type="button" class="btn btn-light btn-sm text-danger" title="Eliminar bloque" t-on-click.stop.prevent="() => this.deleteCustomBlock(block)">
                     <i class="fa fa-trash"/>
                 </button>
             </div>
