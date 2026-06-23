@@ -778,3 +778,158 @@ body {
     background: rgba(255, 109, 45, 0.12) !important;
 }
 
+/* Xtd dashboard dark mode. Loaded only through web.assets_web_dark. */
+.o_xtd_dashboard {
+    background: #0f1117 !important;
+    color: #f4f6fb !important;
+
+    > .flex-grow-1,
+    .bg-light {
+        background: radial-gradient(circle at 18% 0%, rgba(255, 109, 45, 0.08), transparent 34%),
+            linear-gradient(180deg, #141823 0%, #0f1117 100%) !important;
+        color: #f4f6fb !important;
+    }
+
+    .xtd-dashboard-bg {
+        background: transparent !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .fw-bold,
+    .fw-medium,
+    .text-dark {
+        color: #f7f8fb !important;
+    }
+
+    .text-muted,
+    .x-small,
+    small {
+        color: #aeb6c5 !important;
+    }
+
+    .card {
+        background: #1b202b !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32) !important;
+        color: #f4f6fb !important;
+    }
+
+    .kpi-card {
+        background: linear-gradient(180deg, #202633 0%, #191e28 100%) !important;
+
+        &:hover {
+            box-shadow: 0 22px 46px rgba(0, 0, 0, 0.42) !important;
+        }
+    }
+
+    .kpi-card__title {
+        color: #d5dbea !important;
+    }
+
+    .kpi-card__value,
+    .kpi-card__total {
+        color: #ffffff !important;
+    }
+
+    .kpi-card__create {
+        background: #ff6d2d !important;
+        color: #111827 !important;
+
+        span {
+            color: #111827 !important;
+        }
+
+        &:hover {
+            background: #ff8754 !important;
+        }
+    }
+
+    .kpi-card__list,
+    .border-top {
+        border-color: rgba(255, 255, 255, 0.16) !important;
+    }
+
+    .xtd-recent-row {
+        border-color: rgba(255, 255, 255, 0.09) !important;
+
+        span:first-child {
+            color: #ffffff !important;
+        }
+    }
+
+    .bg-sales-light,
+    .bg-orders-light,
+    .bg-purchase_orders-light,
+    .bg-invoiced-light {
+        background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .text-sales { color: #ffb07f !important; }
+    .text-orders { color: #aeb4ff !important; }
+    .text-purchase_orders { color: #ff8f9b !important; }
+    .text-invoiced { color: #8ee2a2 !important; }
+
+    .chart-container {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    }
+
+    .btn-light {
+        background: #242b38 !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #dce3f1 !important;
+
+        &:hover,
+        &:focus {
+            background: #303848 !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .activity-item,
+    .hover-elevate {
+        background: transparent !important;
+        color: #f4f6fb !important;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.06) !important;
+            box-shadow: none !important;
+        }
+    }
+
+    .donut-center-label {
+        background: #171c26 !important;
+        color: #f4f6fb !important;
+    }
+
+    .xtd-dashboard-editor-bar,
+    .xtd-dashboard-builder,
+    .xtd-dashboard-block-preview,
+    .xtd-dashboard-preview-surface {
+        background: #1b202b !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f4f6fb !important;
+    }
+
+    .xtd-dashboard-library-item,
+    .xtd-dashboard-field-chip {
+        background: #202633 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f4f6fb !important;
+    }
+
+    .xtd-dashboard-library-item__main {
+        color: #f4f6fb !important;
+    }
+
+    .table {
+        --bs-table-bg: transparent;
+        --bs-table-color: #f4f6fb;
+        --bs-table-border-color: rgba(255, 255, 255, 0.12);
+    }
+}

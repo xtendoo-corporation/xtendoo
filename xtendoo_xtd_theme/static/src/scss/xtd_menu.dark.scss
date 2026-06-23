@@ -173,6 +173,105 @@
     border-color: var(--xtd-line) !important;
 }
 
+.o_app_menu_sidebar.xtd-sidebar-panel,
+.xtd-sidebar-panel {
+    background: linear-gradient(180deg, #151820 0%, #101217 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 18px 0 42px rgba(0, 0, 0, 0.32) !important;
+    color: #f4f6fb !important;
+
+    .o_sidebar_topbar {
+        background: rgba(255, 255, 255, 0.025) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    .o_burger_menu_content {
+        scrollbar-color: #ff6d2d rgba(255, 255, 255, 0.04);
+
+        &::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #ff6d2d;
+            border-radius: 999px;
+        }
+    }
+
+    .nav {
+        padding: 0.35rem 0.5rem 0.75rem !important;
+    }
+
+    .nav-link {
+        background: transparent !important;
+        border-radius: 10px !important;
+        color: #ffffff !important;
+        min-height: 2.75rem;
+        padding: 0.72rem 0.85rem !important;
+        transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+
+        &:link,
+        &:visited,
+        &.text-dark,
+        .fw-bold,
+        span {
+            color: #ffffff !important;
+        }
+
+        img {
+            filter: none;
+            opacity: 0.96;
+        }
+
+        &:hover,
+        &:focus {
+            background: rgba(255, 255, 255, 0.07) !important;
+            color: #ffffff !important;
+        }
+
+        &.active {
+            background: linear-gradient(90deg, rgba(255, 109, 45, 0.18), rgba(255, 109, 45, 0.06)) !important;
+            box-shadow: inset 3px 0 0 #ff6d2d !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .xtd-sidebar-settings {
+        background: #1b202b !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #d9e0ed !important;
+
+        i,
+        span {
+            color: inherit !important;
+        }
+
+        &:hover,
+        &:focus,
+        &.xtd-sidebar-settings--active {
+            background: rgba(255, 109, 45, 0.16) !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .xtd-sidebar-reorder-btn {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #f4f6fb !important;
+
+        &:hover,
+        &:focus {
+            background: rgba(255, 109, 45, 0.24) !important;
+            border-color: rgba(255, 109, 45, 0.42) !important;
+        }
+    }
+}
+
 .app-menu-container {
     background: linear-gradient(180deg, #171717 0%, #101010 100%) !important;
 }
@@ -223,3 +322,9 @@
     }
 }
 
+.o_app_menu_sidebar.xtd-sidebar-panel .o_burger_menu_content .nav-link,
+.o_app_menu_sidebar.xtd-sidebar-panel .o_burger_menu_content .nav-link.text-dark,
+.o_app_menu_sidebar.xtd-sidebar-panel .o_burger_menu_content .nav-link span,
+.o_app_menu_sidebar.xtd-sidebar-panel .o_burger_menu_content .nav-link .fw-bold {
+    color: #ffffff !important;
+}
