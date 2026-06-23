@@ -57,6 +57,6 @@
         name="Transferencias internas"
         sequence="65"
         action="action_xtendoo_stock_barcode_main_menu"
-        web_icon="xtendoo_stock_barcode,static/description/icon.png"
+        web_icon="xtendoo_stock_barcode,static/description/app_icon.png"
     />
 </odoo>
