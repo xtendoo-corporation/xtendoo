@@ -14,6 +14,7 @@
         "helpdesk_type",
         "mail_gateway_whatsapp_chatter",
         "mail_gateway_whatsapp_variables",
+        "xtendoo_whatsapp_audio_preview",
     ],
     "data": [
         "security/ir.model.access.csv",
@@ -27,13 +28,6 @@
         "views/helpdesk_ticket_views.xml",
         "views/helpdesk_dashboard_views.xml",
     ],
-    "assets": {
-        "web.assets_backend": [
-            "helpdesk_whatsapp_automation/static/src/js/audio_attachment.js",
-            "helpdesk_whatsapp_automation/static/src/xml/audio_attachment.xml",
-            "helpdesk_whatsapp_automation/static/src/css/audio_attachment.css",
-        ],
-    },
     "installable": True,
     "application": False,
 }

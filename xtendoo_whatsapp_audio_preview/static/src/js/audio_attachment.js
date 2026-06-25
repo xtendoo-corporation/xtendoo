@@ -18,13 +18,13 @@ const AUDIO_MIMETYPES = [
 
 patch(AttachmentList.prototype, {
     /**
-     * Check if an attachment is an audio file (e.g. WhatsApp voice message).
+     * Check if an attachment is an audio file, including WhatsApp voice notes.
      * @param {Object} attachment
      * @returns {boolean}
      */
     isAudioAttachment(attachment) {
         if (attachment.voice) {
-            // Already handled by the native VoicePlayer
+            // Native Odoo voice messages already use VoicePlayer.
             return false;
         }
         const mimetype = (attachment.mimetype || "").toLowerCase();

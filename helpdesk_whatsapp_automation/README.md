@@ -178,7 +178,8 @@ Esto incluye:
 Los archivos de audio recibidos por WhatsApp (notas de voz, audios `.ogg`, `.opus`,
 `.mp3`, etc.) se reproducen directamente dentro de Odoo con controles de reproducción
 nativos del navegador (play, pausa, barra de progreso), tanto en la conversación como en
-el chatter del ticket. No es necesario descargarlos.
+el chatter del ticket. No es necesario descargarlos. Esta funcionalidad se aporta desde
+el módulo independiente `xtendoo_whatsapp_audio_preview`.
 
 ### Bypass de Automatización
 
@@ -213,13 +214,11 @@ directamente a la conversación y se espejan al chatter del ticket existente.
 | `whatsapp_default_manager_id`  | `res.company`     | Many2one (res.users) | Manager por defecto para asignación              |
 | `incident_request_template_id` | `res.company`     | Many2one             | Plantilla de WhatsApp para solicitud             |
 
-### Assets (Frontend)
+### Dependencias Frontend
 
-| Archivo                               | Descripción                                |
-| ------------------------------------- | ------------------------------------------ |
-| `static/src/js/audio_attachment.js`   | Parche OWL para detectar adjuntos de audio |
-| `static/src/xml/audio_attachment.xml` | Template para renderizar `<audio>` inline  |
-| `static/src/css/audio_attachment.css` | Estilos del reproductor                    |
+| Módulo                             | Descripción                                        |
+| ---------------------------------- | -------------------------------------------------- |
+| `xtendoo_whatsapp_audio_preview`   | Renderiza audios de WhatsApp inline en el chatter  |
 
 ---
 

@@ -1,5 +1,6 @@
 /* Inline audio player for WhatsApp voice messages */
 .o-mail-AttachmentCard-audio audio {
+    min-width: 180px;
     height: 36px;
     border-radius: 20px;
 }
