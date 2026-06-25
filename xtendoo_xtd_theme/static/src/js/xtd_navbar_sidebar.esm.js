@@ -3,7 +3,7 @@
 import { NavBar } from "@web/webclient/navbar/navbar";
 import { AppsMenu } from "@web_responsive/components/apps_menu/apps_menu.esm";
 import { patch } from "@web/core/utils/patch";
-import { useBus } from "@web/core/utils/hooks";
+import { useBus, useService } from "@web/core/utils/hooks";
 import { user } from "@web/core/user";
 import { onMounted, useState } from "@odoo/owl";
 
@@ -23,7 +23,7 @@ patch(NavBar.prototype, {
 
         // Forzamos el estado interno para que el sidebar esté "abierto" en el DOM
         // y configurado para mostrar todas las aplicaciones.
-        this.state.isAppMenuSidebarOpened = true;
+        this.state.isAppMenuSidebarOpened = !this.ui.isSmall;
         this.state.isAllAppsMenuOpened = true;
         onMounted(() => {
             document.body.classList.add(XTD_SIDEBAR_HIDDEN_CLASS);
@@ -37,6 +37,26 @@ patch(NavBar.prototype, {
     toggleXtdSidebar() {
         this.xtdState.isSidebarVisible = !this.xtdState.isSidebarVisible;
         document.body.classList.toggle(XTD_SIDEBAR_HIDDEN_CLASS, !this.xtdState.isSidebarVisible);
+    },
+
+    _openAppMenuSidebar() {
+        super._openAppMenuSidebar(...arguments);
+        this._syncXtdMobileSidebarVisibility();
+    },
+
+    _closeAppMenuSidebar() {
+        super._closeAppMenuSidebar(...arguments);
+        this._syncXtdMobileSidebarVisibility();
+    },
+
+    _syncXtdMobileSidebarVisibility() {
+        if (!this.ui.isSmall) {
+            return;
+        }
+        document.body.classList.toggle(
+            XTD_SIDEBAR_HIDDEN_CLASS,
+            !this.state.isAppMenuSidebarOpened
+        );
     },
 
     onNavBarDropdownItemSelection(menu) {
@@ -88,8 +108,21 @@ patch(NavBar.prototype, {
 });
 
 patch(AppsMenu.prototype, {
+    setup() {
+        super.setup(...arguments);
+        this.ui = useState(useService("ui"));
+    },
+
     toggleXtdSidebar() {
         this.env.bus.trigger("XTD_SIDEBAR:TOGGLE");
+    },
+
+    onXtdAppsButtonClick() {
+        if (this.ui.isSmall) {
+            this.env.bus.trigger("APP_MENU:TOGGLE_SIDEBAR");
+            return;
+        }
+        this.goToXtdDashboard();
     },
 
     async goToXtdDashboard() {

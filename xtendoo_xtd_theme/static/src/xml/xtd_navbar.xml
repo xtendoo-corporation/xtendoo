@@ -16,8 +16,8 @@
         <xpath expr="//button[hasclass('o_grid_apps_menu__button')]" position="replace">
             <button
                 class="o_grid_apps_menu__button o_xtd_dashboard_home"
-                title="Inicio"
-                t-on-click.stop="goToXtdDashboard"
+                t-att-title="this.ui.isSmall ? 'Abrir menú' : 'Inicio'"
+                t-on-click.stop="onXtdAppsButtonClick"
             >
                 <img src="/xtendoo_xtd_theme/static/src/img/xtd_symbol.svg" alt="Xtd"/>
             </button>
@@ -47,7 +47,7 @@
                             <a t-att-href="getMenuItemHref(app)"
                                class="nav-link d-flex align-items-center gap-3 py-3 text-dark rounded-dashboard border-0"
                                t-att-class="{'active': menuService.getCurrentApp() === app}"
-                               t-on-click="() => { this.onNavBarDropdownItemSelection(app); }">
+                               t-on-click="() => { this.onNavBarDropdownItemSelection(app); this._closeAppMenuSidebar(); }">
                                 <img t-if="app.webIconData" t-att-src="app.webIconData" style="width: 24px; height: 24px;"/>
                                 <span class="fw-bold" t-out="app.name"/>
                                 <span t-if="xtdSidebarState.isReordering" class="xtd-sidebar-reorder ms-auto">

@@ -65,6 +65,23 @@ class TestXtdTheme(TransactionCase):
             assets,
         )
 
+    def test_xtd_theme_mobile_sidebar_toggle_is_preserved(self):
+        navbar_js = (
+            self.module_path
+            / "static"
+            / "src"
+            / "js"
+            / "xtd_navbar_sidebar.esm.js"
+        ).read_text(encoding="utf-8")
+        navbar_xml = (
+            self.module_path / "static" / "src" / "xml" / "xtd_navbar.xml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("APP_MENU:TOGGLE_SIDEBAR", navbar_js)
+        self.assertIn("_syncXtdMobileSidebarVisibility", navbar_js)
+        self.assertIn("this.state.isAppMenuSidebarOpened = !this.ui.isSmall", navbar_js)
+        self.assertIn("onXtdAppsButtonClick", navbar_xml)
+
     def test_xtd_theme_dark_assets_are_declared(self):
         manifest = get_manifest("xtendoo_xtd_theme")
         assets = manifest["assets"]["web.assets_web_dark"]
@@ -236,4 +253,3 @@ class TestXtdTheme(TransactionCase):
         manifest = get_manifest("xtendoo_xtd_theme")
         assets = manifest["assets"]["point_of_sale._assets_pos"]
         self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_pos.scss", assets)
-
