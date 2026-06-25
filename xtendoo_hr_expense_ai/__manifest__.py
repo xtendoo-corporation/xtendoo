@@ -20,6 +20,11 @@
     "external_dependencies": {
         "python": ["pdf2image"],
     },
+    "assets": {
+        "web.assets_backend": [
+            "xtendoo_hr_expense_ai/static/src/**/*",
+        ],
+    },
     "installable": True,
     "application": False,
     "auto_install": False,

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="xtendoo_hr_expense_ai.KanbanView" t-inherit="hr_expense.KanbanView" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o_button_upload_expense')][1]" position="before">
+            <button type="button" class="btn btn-secondary me-1" t-on-click="onClickImportAI">
+                Importar con IA
+            </button>
+        </xpath>
+    </t>
+</templates>

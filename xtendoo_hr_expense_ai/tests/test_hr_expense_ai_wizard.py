@@ -104,3 +104,33 @@ class TestHrExpenseAIWizard(TransactionCase):
         self.expense.write({"ai_processed": True, "ai_has_corrections": False})
         self.expense.write({"name": "MANUAL-CHANGE"})
         self.assertTrue(self.expense.ai_has_corrections)
+
+    @patch("odoo.addons.xtendoo_hr_expense_ai.wizards.hr_expense_ai_wizard.HrExpenseAIWizard._get_ai_provider")
+    def test_flow_analyze_and_apply_new_expense(self, mock_get_provider):
+        mock_provider = MagicMock()
+        mock_provider.send_prompt.return_value = AI_EXPENSE_RESPONSE
+        mock_get_provider.return_value = mock_provider
+
+        # Create wizard WITHOUT expense_id
+        wizard = self.env["hr.expense.ai.wizard"].create({
+            "attachment_file": self.attachment.datas,
+            "attachment_name": self.attachment.name,
+        })
+        wizard.action_analyze()
+
+        self.assertEqual(wizard.state, "preview")
+        self.assertTrue(wizard.ai_json_result)
+
+        action = wizard.action_apply()
+
+        # Check that it redirected to the new expense
+        self.assertEqual(action.get("res_model"), "hr.expense")
+        new_expense_id = action.get("res_id")
+        self.assertTrue(new_expense_id)
+
+        new_expense = self.env["hr.expense"].browse(new_expense_id)
+        self.assertEqual(new_expense.name, "Lunch meeting")
+        self.assertEqual(new_expense.total_amount_currency, 25.50)
+        self.assertEqual(str(new_expense.date), "2026-06-15")
+        self.assertTrue(new_expense.ai_processed)
+
