@@ -19,7 +19,7 @@ AI_EXPENSE_RESPONSE = json.dumps(
         "currency": "EUR",
         "total_amount": 25.50,
         "tax_amount": 2.55,
-        "product_hint": "Meals",
+        "product_hint": "Expensable Product",
     }
 )
 
@@ -94,6 +94,7 @@ class TestHrExpenseAIWizard(TransactionCase):
         self.assertEqual(self.expense.total_amount_currency, 25.50)
         self.assertEqual(str(self.expense.date), "2026-06-15")
         self.assertTrue(self.expense.ai_processed)
+        self.assertEqual(self.expense.product_id.id, self.product.id)
 
     def test_hr_expense_ai_fields_exist(self):
         self.assertIn("ai_document_type", self.expense._fields)
@@ -133,4 +134,5 @@ class TestHrExpenseAIWizard(TransactionCase):
         self.assertEqual(new_expense.total_amount_currency, 25.50)
         self.assertEqual(str(new_expense.date), "2026-06-15")
         self.assertTrue(new_expense.ai_processed)
+        self.assertEqual(new_expense.product_id.id, self.product.id)
 

@@ -75,8 +75,15 @@ class HrExpenseAIWizard(models.TransientModel):
             import mimetypes
             mime_type = mimetypes.guess_type(self.attachment_name)[0] or mime_type
         files = self._prepare_files(file_content, mime_type)
+        # Get expensable products as categories
+        expensable_products = self.env["product.product"].search([("can_be_expensed", "=", True)])
+        categories_str = ", ".join([f'"{p.name}"' for p in expensable_products])
+        prompt = PROMPTS["detect"]
+        if categories_str:
+            prompt += f"\nLas categorías de gasto válidas en nuestro sistema son únicamente las siguientes: [{categories_str}]. Por favor, selecciona la que mejor se adapte al gasto analizado y devuélvela exactamente en el campo 'product_hint'."
+
         try:
-            raw_text = ai_provider.send_prompt(PROMPTS["detect"], files=files)
+            raw_text = ai_provider.send_prompt(prompt, files=files)
         except Exception as exc:
             _logger.error("AI analysis failed: %s", exc, exc_info=True)
             raise UserError(_("AI analysis failed: %s") % str(exc)) from exc
@@ -201,8 +208,13 @@ class HrExpenseAIWizard(models.TransientModel):
         if product_hint:
             product = self.env["product.product"].search([
                 ("can_be_expensed", "=", True),
-                "|", ("name", "ilike", product_hint), ("default_code", "ilike", product_hint)
+                ("name", "=", product_hint)
             ], limit=1)
+            if not product:
+                product = self.env["product.product"].search([
+                    ("can_be_expensed", "=", True),
+                    "|", ("name", "ilike", product_hint), ("default_code", "ilike", product_hint)
+                ], limit=1)
             if product:
                 vals["product_id"] = product.id
 
