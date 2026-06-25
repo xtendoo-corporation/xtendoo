@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="ir_config_parameter_pwa_name" model="ir.config_parameter">
+        <field name="key">xtendoo_pwa_manifest.name</field>
+        <field name="value">Odoo WhatsApp Chat</field>
+    </record>
+    <record id="ir_config_parameter_pwa_short_name" model="ir.config_parameter">
+        <field name="key">xtendoo_pwa_manifest.short_name</field>
+        <field name="value">OdooChat</field>
+    </record>
+    <record id="ir_config_parameter_pwa_scope" model="ir.config_parameter">
+        <field name="key">xtendoo_pwa_manifest.scope</field>
+        <field name="value">/</field>
+    </record>
+    <record id="ir_config_parameter_pwa_start_url" model="ir.config_parameter">
+        <field name="key">xtendoo_pwa_manifest.start_url</field>
+        <field name="value">/odoo</field>
+    </record>
+    <record id="ir_config_parameter_pwa_display" model="ir.config_parameter">
+        <field name="key">xtendoo_pwa_manifest.display</field>
+        <field name="value">standalone</field>
+    </record>
+    <record id="ir_config_parameter_pwa_background_color" model="ir.config_parameter">
+        <field name="key">xtendoo_pwa_manifest.background_color</field>
+        <field name="value">#ffffff</field>
+    </record>
+    <record id="ir_config_parameter_pwa_theme_color" model="ir.config_parameter">
+        <field name="key">xtendoo_pwa_manifest.theme_color</field>
+        <field name="value">#075E54</field>
+    </record>
+</odoo>
