@@ -415,7 +415,6 @@ class AccountMove(models.Model):
                         "✅ Invoice data successfully imported from Gemini AI (%s mode)!"
                     )
                     % (_("Full") if not summary_mode else _("Summarized")),
-                    attachments=[(attachment.name, attachment.datas)],
                 )
 
                 return {
@@ -818,4 +817,3 @@ class AccountMove(models.Model):
             ],
             limit=1,
         )
-

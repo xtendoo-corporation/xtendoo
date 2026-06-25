@@ -226,7 +226,6 @@ class AccountMoveLine(models.Model):
                         "✅ Entry data successfully imported from Gemini AI (%s mode)!"
                     )
                     % (_("Full") if not summary_mode else _("Summarized")),
-                    attachments=[(attachment.name, attachment.datas)],
                 )
 
                 return {
@@ -563,4 +562,3 @@ Required structure:
             }
 
         return {'type': 'ir.actions.client', 'tag': 'reload'}
-
