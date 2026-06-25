@@ -82,6 +82,19 @@ class TestXtdTheme(TransactionCase):
         self.assertIn("this.state.isAppMenuSidebarOpened = !this.ui.isSmall", navbar_js)
         self.assertIn("onXtdAppsButtonClick", navbar_xml)
 
+        sidebar_scss = (
+            self.module_path
+            / "static"
+            / "src"
+            / "scss"
+            / "xtd_sidebar_toggle.scss"
+        ).read_text(encoding="utf-8")
+        self.assertIn("top: 0 !important;", sidebar_scss)
+        self.assertIn(
+            "padding-top: calc(var(--o-navbar-height, 50px) + 32px) !important;",
+            sidebar_scss,
+        )
+
     def test_xtd_theme_dark_assets_are_declared(self):
         manifest = get_manifest("xtendoo_xtd_theme")
         assets = manifest["assets"]["web.assets_web_dark"]

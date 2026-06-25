@@ -280,6 +280,8 @@ body.xtd-sidebar-hidden {
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         top: 0 !important;
         height: 100vh !important;
+        height: 100dvh !important;
+        padding-top: calc(var(--o-navbar-height, 50px) + 32px) !important;
 
         body.xtd-sidebar-hidden & {
             transform: translateX(-100%) !important;
