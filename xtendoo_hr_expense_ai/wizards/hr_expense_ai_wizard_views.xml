@@ -23,7 +23,7 @@
                         </group>
                         <notebook>
                             <page string="Datos Extraídos (JSON)">
-                                <field name="ai_json_result" widget="ace" options="{'mode': 'json'}"/>
+                                <field name="ai_json_result" widget="ace" options="{'mode': 'javascript'}"/>
                             </page>
                         </notebook>
                     </div>
