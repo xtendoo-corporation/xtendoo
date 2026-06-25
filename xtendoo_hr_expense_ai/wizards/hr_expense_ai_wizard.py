@@ -185,7 +185,9 @@ class HrExpenseAIWizard(models.TransientModel):
             }
 
     def _apply_to_expense(self, expense, ai_data: dict):
-        vals = {}
+        vals = {
+            "payment_mode": "company_account",
+        }
         date_str = ai_data.get("date")
         if date_str:
             try:

@@ -95,6 +95,7 @@ class TestHrExpenseAIWizard(TransactionCase):
         self.assertEqual(str(self.expense.date), "2026-06-15")
         self.assertTrue(self.expense.ai_processed)
         self.assertEqual(self.expense.product_id.id, self.product.id)
+        self.assertEqual(self.expense.payment_mode, "company_account")
 
     def test_hr_expense_ai_fields_exist(self):
         self.assertIn("ai_document_type", self.expense._fields)
@@ -135,4 +136,5 @@ class TestHrExpenseAIWizard(TransactionCase):
         self.assertEqual(str(new_expense.date), "2026-06-15")
         self.assertTrue(new_expense.ai_processed)
         self.assertEqual(new_expense.product_id.id, self.product.id)
+        self.assertEqual(new_expense.payment_mode, "company_account")
 
