@@ -1,0 +1,299 @@
+// Copyright 2026 Xtendoo
+// License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+
+$xtd-wa-green: #075e54;
+$xtd-wa-green-dark: #064c44;
+$xtd-wa-green-light: #128c7e;
+$xtd-wa-sent: #dcf8c6;
+$xtd-wa-received: #ffffff;
+$xtd-wa-wallpaper: #e5ddd5;
+$xtd-wa-sidebar: #f0f2f5;
+$xtd-wa-border: #d1d7db;
+$xtd-wa-text-muted: #667781;
+
+.o-mail-Discuss {
+    --xtd-wa-green: #{$xtd-wa-green};
+    --xtd-wa-green-dark: #{$xtd-wa-green-dark};
+    --xtd-wa-green-light: #{$xtd-wa-green-light};
+    --xtd-wa-sent: #{$xtd-wa-sent};
+    --xtd-wa-received: #{$xtd-wa-received};
+    --xtd-wa-wallpaper: #{$xtd-wa-wallpaper};
+    --xtd-wa-sidebar: #{$xtd-wa-sidebar};
+    --xtd-wa-border: #{$xtd-wa-border};
+    --xtd-wa-text-muted: #{$xtd-wa-text-muted};
+
+    background: var(--xtd-wa-wallpaper);
+
+    .o-mail-DiscussSidebar {
+        background: var(--xtd-wa-sidebar) !important;
+        border-color: var(--xtd-wa-border) !important;
+        box-shadow: 1px 0 0 rgba(17, 27, 33, 0.04);
+    }
+
+    .o-mail-DiscussSidebar,
+    .o-mail-DiscussSidebar .o-mail-discussSidebarBgColor {
+        --o-mail-DiscussSidebar-bgColor: var(--xtd-wa-sidebar);
+    }
+
+    .o-mail-DiscussSearch {
+        background: var(--xtd-wa-sidebar) !important;
+        border-bottom: 1px solid var(--xtd-wa-border);
+    }
+
+    .o-mail-DiscussSidebar-item,
+    .o-mail-DiscussSidebarChannel,
+    .o-mail-DiscussSidebarCategory-channel {
+        border-radius: 0;
+        min-height: 54px;
+        padding-block: 6px;
+        transition: background-color 120ms ease;
+
+        &:hover {
+            background-color: rgba(17, 27, 33, 0.06) !important;
+        }
+
+        &.o-active,
+        &[data-active] {
+            background-color: #e9edef !important;
+        }
+    }
+
+    .o-mail-DiscussContent-header,
+    .o-mail-Thread-header,
+    .o-mail-ChatWindow-header {
+        background: var(--xtd-wa-green) !important;
+        border-color: var(--xtd-wa-green-dark) !important;
+        color: #ffffff !important;
+
+        .btn,
+        button,
+        i,
+        .text-muted,
+        .text-600 {
+            color: rgba(255, 255, 255, 0.92) !important;
+        }
+    }
+
+    .o-mail-DiscussContent,
+    .o-mail-Thread {
+        background-color: var(--xtd-wa-wallpaper) !important;
+        background-image:
+            radial-gradient(rgba(17, 27, 33, 0.045) 1px, transparent 1px),
+            radial-gradient(rgba(17, 27, 33, 0.035) 1px, transparent 1px);
+        background-position: 0 0, 12px 12px;
+        background-size: 24px 24px;
+    }
+
+    .o-mail-DateSection,
+    .o-mail-Thread-newMessage {
+        align-self: center;
+        margin-block: 8px;
+    }
+
+    .o-mail-DateSection span,
+    .o-mail-Thread-newMessage span {
+        background: rgba(255, 255, 255, 0.92) !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+        color: var(--xtd-wa-text-muted) !important;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0;
+        padding: 5px 10px;
+    }
+
+    .o-mail-Message {
+        margin-block: 1px;
+        padding-inline: 10px;
+
+        &:hover {
+            background: transparent !important;
+        }
+    }
+
+    .o-mail-Message.o-xtd-wa-self {
+        .o-mail-Message-core {
+            margin-left: auto;
+        }
+
+        .o-mail-Message-textContent > .d-inline-block {
+            background: var(--xtd-wa-sent);
+        }
+
+        .o-mail-Message-body {
+            padding-right: 34px !important;
+        }
+
+        .o-mail-Message-seenContainer {
+            bottom: 3px;
+            color: #8a9a9f;
+            font-size: 11px;
+            line-height: 1;
+            right: 9px;
+        }
+    }
+
+    .o-mail-Message-core {
+        max-width: 760px;
+        width: 86%;
+    }
+
+    .o-mail-Message.o-mail-Message-squashed {
+        margin-top: 0;
+    }
+
+    .o-mail-Message-sidebar {
+        padding-top: 2px;
+    }
+
+    .o-mail-Message-avatarContainer,
+    .o-mail-Message-avatar {
+        border-radius: 50% !important;
+    }
+
+    .o-mail-Message-header {
+        margin-bottom: 2px !important;
+        padding-inline: 2px;
+
+        .o-mail-Message-author strong {
+            color: var(--xtd-wa-green-light);
+            font-size: 12px;
+        }
+
+        .o-mail-Message-date {
+            color: var(--xtd-wa-text-muted) !important;
+            font-size: 10px;
+        }
+    }
+
+    .o-mail-Message-contentContainer {
+        align-items: flex-start;
+    }
+
+    .o-mail-Message-content {
+        border-radius: 8px;
+    }
+
+    .o-mail-Message-textContent > .d-inline-block,
+    .o-mail-Message-body,
+    .o-mail-Message-bubble {
+        border-radius: 8px !important;
+    }
+
+    .o-mail-Message-body {
+        font-size: 14px;
+        line-height: 1.42;
+        padding: 6px 8px 5px !important;
+    }
+
+    .o-mail-Message-richBody p:last-child {
+        margin-bottom: 0;
+    }
+
+    .o-mail-Message-bubble {
+        border: 0 !important;
+        box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+
+        &.o-green,
+        &.o-blue,
+        &.o-orange {
+            background: var(--xtd-wa-sent) !important;
+            color: #111b21 !important;
+        }
+    }
+
+    .o-mail-Message:not(.o-xtd-wa-self) {
+        .o-mail-Message-textContent > .d-inline-block {
+            background: var(--xtd-wa-received);
+            box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+        }
+    }
+
+    .o-mail-Message-bubbleTail {
+        color: var(--xtd-wa-sent) !important;
+        top: 0;
+    }
+
+    .o-mail-Message-actions {
+        background: #ffffff;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 8px rgba(11, 20, 26, 0.18);
+        overflow: hidden;
+    }
+
+    .o-mail-Composer.o-discussApp,
+    .o-mail-Composer.o-chatWindow {
+        background: var(--xtd-wa-sidebar);
+        border-top: 1px solid var(--xtd-wa-border);
+        padding: 8px 14px !important;
+    }
+
+    .o-mail-Composer-inputContainer {
+        background: #ffffff !important;
+        border: 0 !important;
+        border-radius: 22px !important;
+        box-shadow: 0 1px 2px rgba(11, 20, 26, 0.08);
+        min-height: 42px;
+    }
+
+    .o-mail-Composer-input,
+    .o-mail-Composer-inputStyle,
+    .o-mail-Composer-bg {
+        background: transparent !important;
+    }
+
+    .o-mail-Composer-input {
+        min-height: 40px;
+        padding-block: 9px !important;
+    }
+
+    .o-mail-Composer-actions,
+    .o-mail-Composer-quickActions {
+        border-radius: 22px !important;
+    }
+
+    .o-mail-Composer-send {
+        background: var(--xtd-wa-green) !important;
+        border-radius: 50% !important;
+        color: #ffffff !important;
+        height: 36px;
+        margin-inline: 4px !important;
+        width: 36px;
+
+        &:disabled {
+            background: #c8d6d2 !important;
+            color: #ffffff !important;
+        }
+    }
+}
+
+.o-mail-ChatWindow {
+    border-radius: 8px 8px 0 0 !important;
+    overflow: hidden;
+
+    .o-mail-ChatWindow-header {
+        background: $xtd-wa-green !important;
+        color: #ffffff !important;
+    }
+
+    .o-mail-Thread {
+        background-color: $xtd-wa-wallpaper !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .o-mail-Discuss {
+        .o-mail-Message {
+            padding-inline: 6px;
+        }
+
+        .o-mail-Message-core {
+            max-width: 92%;
+        }
+
+        .o-mail-Composer.o-discussApp {
+            padding-inline: 8px !important;
+        }
+    }
+}

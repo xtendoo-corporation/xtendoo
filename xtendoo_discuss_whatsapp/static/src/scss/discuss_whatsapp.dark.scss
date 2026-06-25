@@ -1,0 +1,72 @@
+// Copyright 2026 Xtendoo
+// License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+
+.o-mail-Discuss {
+    --xtd-wa-green: #075e54;
+    --xtd-wa-green-dark: #053f39;
+    --xtd-wa-green-light: #25d366;
+    --xtd-wa-sent: #005c4b;
+    --xtd-wa-received: #202c33;
+    --xtd-wa-wallpaper: #0b141a;
+    --xtd-wa-sidebar: #111b21;
+    --xtd-wa-border: #2a3942;
+    --xtd-wa-text-muted: #8696a0;
+
+    color: #e9edef;
+
+    .o-mail-DiscussContent,
+    .o-mail-Thread {
+        background-image:
+            radial-gradient(rgba(233, 237, 239, 0.035) 1px, transparent 1px),
+            radial-gradient(rgba(233, 237, 239, 0.025) 1px, transparent 1px);
+    }
+
+    .o-mail-DiscussSidebar-item,
+    .o-mail-DiscussSidebarChannel,
+    .o-mail-DiscussSidebarCategory-channel {
+        &:hover {
+            background-color: #202c33 !important;
+        }
+
+        &.o-active,
+        &[data-active] {
+            background-color: #2a3942 !important;
+        }
+    }
+
+    .o-mail-DateSection span,
+    .o-mail-Thread-newMessage span,
+    .o-mail-Message-actions,
+    .o-mail-Composer-inputContainer {
+        background: #202c33 !important;
+        color: #d1d7db !important;
+    }
+
+    .o-mail-Message:not(.o-xtd-wa-self) {
+        .o-mail-Message-textContent > .d-inline-block {
+            background: var(--xtd-wa-received);
+            color: #e9edef;
+        }
+    }
+
+    .o-mail-Message.o-xtd-wa-self {
+        .o-mail-Message-textContent > .d-inline-block {
+            background: var(--xtd-wa-sent);
+            color: #e9edef;
+        }
+    }
+
+    .o-mail-Message-bubble {
+        &.o-green,
+        &.o-blue,
+        &.o-orange {
+            background: var(--xtd-wa-sent) !important;
+            color: #e9edef !important;
+        }
+    }
+
+    .o-mail-Composer.o-discussApp,
+    .o-mail-Composer.o-chatWindow {
+        background: var(--xtd-wa-sidebar);
+    }
+}
