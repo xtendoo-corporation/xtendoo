@@ -266,11 +266,106 @@ $xtd-wa-text-muted: #667781;
             color: #ffffff !important;
         }
     }
+
+    .o-mail-MessagingMenu.o-small {
+        background: var(--xtd-wa-wallpaper);
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+
+        .o-mail-DiscussContent {
+            min-height: 0;
+            overflow: hidden !important;
+        }
+
+        .o-mail-DiscussContent-header {
+            background: var(--xtd-wa-green) !important;
+            border: 0 !important;
+            box-shadow: 0 1px 2px rgba(11, 20, 26, 0.24);
+            color: #ffffff !important;
+            min-height: 52px;
+            order: 0;
+            padding: 6px 10px !important;
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 5;
+
+            .o-mail-DiscussContent-threadAvatar img {
+                border-radius: 50% !important;
+                height: 36px;
+                width: 36px;
+            }
+
+            .o-mail-DiscussContent-threadName,
+            .o-mail-DiscussContent-threadDescription,
+            .o-mail-DiscussContent-threadName input,
+            .o-mail-DiscussContent-threadDescription input {
+                color: #ffffff !important;
+            }
+
+            .o-mail-DiscussContent-threadName {
+                font-size: 15px !important;
+                line-height: 1.2;
+                max-width: 100%;
+            }
+
+            .o-mail-DiscussContent-headerActions button {
+                color: #ffffff !important;
+
+                &:hover,
+                &.o-isActive {
+                    background: rgba(255, 255, 255, 0.12) !important;
+                }
+            }
+        }
+
+        .o-mail-DiscussContent-main {
+            min-height: 0;
+        }
+    }
 }
 
 .o-mail-ChatWindow {
     border-radius: 8px 8px 0 0 !important;
     overflow: hidden;
+
+    &.o-mobile {
+        --xtd-wa-mobile-top-offset: calc(var(--o-navbar-height, 50px) + 44px);
+        border-radius: 0 !important;
+        bottom: 0 !important;
+        height: calc(100vh - var(--xtd-wa-mobile-top-offset)) !important;
+        height: calc(100dvh - var(--xtd-wa-mobile-top-offset)) !important;
+        top: var(--xtd-wa-mobile-top-offset) !important;
+
+        .o-mail-ChatWindow-header {
+            background: $xtd-wa-green !important;
+            border: 0 !important;
+            box-shadow: 0 1px 2px rgba(11, 20, 26, 0.24);
+            color: #ffffff !important;
+            display: flex !important;
+            flex: 0 0 52px !important;
+            min-height: 52px !important;
+            padding: 6px 8px !important;
+            position: relative;
+            z-index: 3;
+
+            .o-mail-ChatWindow-threadAvatar img {
+                border-radius: 50% !important;
+                height: 36px !important;
+                width: 36px !important;
+            }
+
+            .o-mail-ChatWindow-moreActions,
+            .btn,
+            button,
+            i,
+            span,
+            div {
+                color: #ffffff !important;
+            }
+        }
+    }
 
     .o-mail-ChatWindow-header {
         background: $xtd-wa-green !important;
