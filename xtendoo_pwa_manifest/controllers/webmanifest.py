@@ -1,6 +1,7 @@
 # Copyright 2026 Xtendoo
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from odoo import http
 from odoo.http import request
 
 from odoo.addons.web.controllers import webmanifest
@@ -34,3 +35,16 @@ class WebManifest(webmanifest.WebManifest):
         manifest = super()._get_webmanifest()
         manifest.update(self._get_pwa_values())
         return manifest
+
+    @http.route(
+        "/web/manifest.webmanifest",
+        type="http",
+        auth="public",
+        methods=["GET"],
+        readonly=True,
+    )
+    def webmanifest(self):
+        return request.make_json_response(
+            self._get_webmanifest(),
+            {"Content-Type": "application/manifest+json"},
+        )
