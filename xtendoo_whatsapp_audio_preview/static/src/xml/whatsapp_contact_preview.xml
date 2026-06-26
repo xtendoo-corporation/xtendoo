@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.Discuss" t-inherit-mode="extension">
+        <xpath expr="//AutoresizeInput[contains(@className, 'o-mail-Discuss-threadName')]" position="replace">
+            <div class="o-mail-WhatsappContactPreview-headerName d-flex flex-column overflow-hidden">
+                <AutoresizeInput
+                    className="'o-mail-Discuss-threadName fw-bolder flex-shrink-1 text-dark py-0 fs-4'"
+                    enabled="thread.is_editable or thread.channel_type === 'chat'"
+                    onValidate.bind="renameThread"
+                    value="thread.displayName"
+                />
+                <div t-if="thread.whatsapp_phone" class="o-mail-WhatsappContactPreview-meta d-flex align-items-center gap-1 text-muted small text-truncate">
+                    <i class="fa fa-whatsapp text-success" title="WhatsApp"/>
+                    <span class="text-truncate" t-esc="thread.whatsapp_phone"/>
+                    <t t-if="thread.whatsapp_odoo_contact_label">
+                        <span class="opacity-50">-</span>
+                        <i class="fa fa-address-book-o" title="Contacto Odoo"/>
+                        <span class="text-truncate" t-esc="thread.whatsapp_odoo_contact_label"/>
+                    </t>
+                    <span t-else="" class="text-warning">Sin contacto Odoo</span>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.DiscussSidebarChannel.main" t-inherit-mode="extension">
+        <xpath expr="//span[contains(@class, 'o-mail-DiscussSidebarChannel-itemName')]" position="replace">
+            <span t-if="!store.discuss.isSidebarCompact" class="o-mail-DiscussSidebarChannel-itemName o-mail-WhatsappContactPreview-sidebarName mx-2 text-truncate" t-att-class="thread.selfMember?.message_unread_counter > 0 and !thread.isMuted ? 'o-item-unread fw-bolder' : 'text-muted'">
+                <span class="text-truncate" t-esc="thread.displayName"/>
+                <span t-if="thread.whatsapp_phone" class="o-mail-WhatsappContactPreview-sidebarMeta text-truncate">
+                    <t t-esc="thread.whatsapp_phone"/>
+                    <t t-if="thread.whatsapp_odoo_contact_label"> - <t t-esc="thread.whatsapp_odoo_contact_label"/></t>
+                </span>
+            </span>
+        </xpath>
+    </t>
+</templates>

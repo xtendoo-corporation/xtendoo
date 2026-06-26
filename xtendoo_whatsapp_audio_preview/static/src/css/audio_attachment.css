@@ -13,3 +13,25 @@
 .o-mail-AttachmentCard-audio .fa-microphone {
     font-size: 1.2em;
 }
+
+.o-mail-WhatsappContactPreview-headerName {
+    min-width: 0;
+}
+
+.o-mail-WhatsappContactPreview-meta {
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.o-mail-WhatsappContactPreview-sidebarName {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.15;
+}
+
+.o-mail-WhatsappContactPreview-sidebarMeta {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 400;
+}
