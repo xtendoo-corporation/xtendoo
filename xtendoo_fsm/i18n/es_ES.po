@@ -1,0 +1,28 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* xtendoo_fsm
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+#. module: xtendoo_fsm
+#: model:ir.model,name:xtendoo_fsm.model_fsm_order
+msgid "Orden de Servicio FSM"
+msgstr "Orden de Servicio FSM"
+
+#. module: xtendoo_fsm
+#: model:ir.model,name:xtendoo_fsm.model_fsm_stage
+msgid "Etapa de Servicio FSM"
+msgstr "Etapa de Servicio FSM"
+
+#. module: xtendoo_fsm
+#: model:ir.model,name:xtendoo_fsm.model_fsm_tag
+msgid "Etiqueta de Servicio FSM"
+msgstr "Etiqueta de Servicio FSM"

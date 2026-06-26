@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista de árbol para etapas FSM -->
+        <record id="view_xtendoo_fsm_stage_tree" model="ir.ui.view">
+            <field name="name">fsm.stage.tree</field>
+            <field name="model">fsm.stage</field>
+            <field name="arch" type="xml">
+                <tree string="Etapas de Órdenes de Trabajo">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="is_default"/>
+                    <field name="is_closed"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista de formulario para etapas FSM -->
+        <record id="view_xtendoo_fsm_stage_form" model="ir.ui.view">
+            <field name="name">fsm.stage.form</field>
+            <field name="model">fsm.stage</field>
+            <field name="arch" type="xml">
+                <form string="Etapa de Orden de Trabajo">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" required="1"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="code" required="1"/>
+                                <field name="sequence"/>
+                                <field name="color" widget="color"/>
+                            </group>
+                            <group>
+                                <field name="is_default"/>
+                                <field name="is_closed"/>
+                                <field name="active"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+
+                        <group string="Descripción">
+                            <field name="description" nolabel="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

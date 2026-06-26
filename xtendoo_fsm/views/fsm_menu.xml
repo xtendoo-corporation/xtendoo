@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Menú principal FSM -->
+        <menuitem id="xtendoo_fsm_menu_main"
+                  name="Órdenes de Trabajo"
+                  action="action_xtendoo_fsm_order"
+                  web_icon="xtendoo_fsm,static/description/icon.png"
+                  groups="xtendoo_fsm.group_fsm_user"
+                  sequence="5"/>
+
+        <!-- Menú de órdenes - usar acciones universales -->
+        <menuitem id="xtendoo_fsm_menu_orders"
+                  name="Órdenes"
+                  parent="xtendoo_fsm_menu_main"
+                  sequence="10"/>
+
+        <menuitem id="xtendoo_fsm_menu_order_all"
+                  name="Todas las Órdenes"
+                  parent="xtendoo_fsm_menu_orders"
+                  action="action_xtendoo_fsm_order"
+                  sequence="10"/>
+
+
+        <!-- Menú de planificación -->
+        <menuitem id="xtendoo_fsm_menu_planning"
+                  name="Planificación"
+                  parent="xtendoo_fsm_menu_main"
+                  sequence="20"/>
+
+        <menuitem id="xtendoo_fsm_menu_calendar"
+                  name="Calendario"
+                  parent="xtendoo_fsm_menu_planning"
+                  action="action_xtendoo_fsm_order_calendar"
+                  sequence="10"/>
+
+        <menuitem id="xtendoo_fsm_menu_persons"
+                  name="Técnicos"
+                  parent="xtendoo_fsm_menu_planning"
+                  action="action_xtendoo_fsm_person"
+                  sequence="20"/>
+
+        <!-- Menú de configuración - usar acciones básicas -->
+        <menuitem id="xtendoo_fsm_menu_config"
+                  name="Configuración"
+                  parent="xtendoo_fsm_menu_main"
+                  sequence="90"/>
+
+        <menuitem id="xtendoo_fsm_menu_stages"
+                  name="Etapas"
+                  parent="xtendoo_fsm_menu_config"
+                  action="action_xtendoo_fsm_stage"
+                  sequence="10"/>
+
+        <menuitem id="xtendoo_fsm_menu_tags"
+                  name="Etiquetas"
+                  parent="xtendoo_fsm_menu_config"
+                  action="action_xtendoo_fsm_tag"
+                  sequence="20"/>
+
+    </data>
+</odoo>
