@@ -32,7 +32,7 @@
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_bank_statement_line_tree_pos"/>
         <field name="domain">[('pos_session_id', '!=', False)]</field>
-        <field name="context">{'search_default_pos_session_id': 1}</field>
+        <field name="context">{'search_default_group_by_session': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_empty_folder">
                 No hay movimientos de caja asociados a sesiones de PoS.
@@ -46,7 +46,7 @@
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_bank_statement_line_tree_pos_admin"/>
         <field name="domain">[('pos_session_id', '!=', False)]</field>
-        <field name="context">{'search_default_pos_session_id': 1}</field>
+        <field name="context">{'search_default_group_by_session': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_empty_folder">
                 No hay movimientos de caja asociados a sesiones de PoS.
