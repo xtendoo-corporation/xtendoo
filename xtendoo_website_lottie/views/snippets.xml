@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="s_xtd_lottie" name="Lottie Animation">
+        <section class="s_xtd_lottie py-5" data-snippet="xtendoo_website_lottie.s_xtd_lottie" data-name="Lottie Animation">
+            <div class="container text-center">
+                <div class="xtd-lottie xtd-lottie--medium"
+                     data-lottie-path="/xtendoo_website_lottie/static/src/lottie/example.json"
+                     data-lottie-loop="true"
+                     data-lottie-autoplay="true"
+                     data-lottie-renderer="svg">
+                </div>
+                <h3>Animación Lottie</h3>
+                <p>Animación vectorial ligera para la web.</p>
+            </div>
+        </section>
+    </template>
+
+    <template id="snippet_hook" inherit_id="website.snippets" name="Xtendoo Website Lottie Snippet">
+        <xpath expr="//snippets[@id='snippet_content']" position="inside">
+            <t t-snippet="xtendoo_website_lottie.s_xtd_lottie" string="Lottie Animation"/>
+        </xpath>
+    </template>
+</odoo>
