@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="xtd_action_recompute_days_selected" model="ir.actions.server">
+        <field name="name">Recalcular días con horario seleccionado</field>
+        <field name="model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="binding_model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_manager'))]"/>
+        <field name="code"><![CDATA[
+if records:
+    action = records.with_context(
+        tracking_disable=True,
+        mail_notrack=True,
+        mail_create_nosubscribe=True,
+    ).xtd_action_recompute_duration_with_calendar_mass()
+]]></field>
+    </record>
+
+    <record id="xtd_action_open_recompute_wizard" model="ir.actions.server">
+        <field name="name">Recalcular días (asistente)</field>
+        <field name="model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="binding_model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_manager'))]"/>
+        <field name="code"><![CDATA[
+if records:
+    action = records.xtd_action_open_recompute_wizard()
+]]></field>
+    </record>
+</odoo>

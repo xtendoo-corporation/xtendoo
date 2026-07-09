@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="xtd_hr_leave_view_form" model="ir.ui.view">
+        <field name="name">hr.leave.view.form.xtd.calendar.recompute</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="before">
+                <label for="xtd_calculation_calendar_id" string="Horario usado para el cálculo"/>
+                <div class="o_row">
+                    <field
+                        name="xtd_calculation_calendar_id"
+                        groups="base.group_user,!hr_holidays.group_hr_holidays_user"
+                        readonly="1"
+                        options="{'no_create': True}"
+                    />
+                    <field
+                        name="xtd_calculation_calendar_id"
+                        groups="hr_holidays.group_hr_holidays_user"
+                        options="{'no_create': True}"
+                    />
+                    <button
+                        name="xtd_action_recompute_duration_with_calendar_form"
+                        type="object"
+                        string="Recalcular días"
+                        class="btn btn-secondary ms-2"
+                        groups="hr_holidays.group_hr_holidays_manager"
+                        invisible="not id or state in ('cancel', 'refuse')"
+                    />
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="xtd_hr_leave_view_tree" model="ir.ui.view">
+        <field name="name">hr.leave.view.list.xtd.calendar.recompute</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='duration_display']" position="after">
+                <field name="xtd_calculation_calendar_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
