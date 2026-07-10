@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista lista pedidos: botón Subir -->
+    <record id="purchase_order_tree_inherit_gemini_upload" model="ir.ui.view">
+        <field name="name">purchase.order.tree.inherit.gemini.upload</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">file_upload_list</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista formulario: botones AI Scan y Enseñar a Gemini -->
+    <record id="purchase_order_form_inherit_gemini" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.gemini</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_import_gemini_full"
+                    string="AI Scan (Full)"
+                    type="object"
+                    class="oe_highlight"
+                    invisible="state != 'draft'" />
+                <button name="action_import_gemini_summarized"
+                    string="AI Scan (Summary)"
+                    type="object"
+                    invisible="state != 'draft'" />
+                <button name="action_teach_gemini"
+                    string="🎓 Enseñar a Gemini"
+                    type="object"
+                    class="btn-warning"
+                    invisible="not gemini_has_corrections or state != 'draft'"
+                    help="Guardar las correcciones manuales para que Gemini aprenda de ellas en futuras extracciones"
+                />
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Gemini AI" name="gemini_ai">
+                    <group>
+                        <group string="Instrucciones">
+                            <p class="text-muted">
+                                1. Adjunta un PDF o imagen del pedido del proveedor.<br />
+                                2. Pulsa <b>AI Scan (Full)</b> para importar todas las líneas.<br />
+                                3. Pulsa <b>AI Scan (Summary)</b> para agrupar por tipo de IVA.
+                            </p>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

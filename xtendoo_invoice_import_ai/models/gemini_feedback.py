@@ -152,7 +152,6 @@ class GeminiFeedback(models.Model):
         feedbacks = self.search(
             [
                 ("active", "=", True),
-                ("source_model", "=", "account.move"),
                 ("correct_lines_json", "!=", False),
                 ("correct_lines_json", "!=", ""),
             ],

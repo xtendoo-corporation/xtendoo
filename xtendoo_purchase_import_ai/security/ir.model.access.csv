@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gemini_feedback_purchase_user,gemini.feedback.purchase.user,xtendoo_invoice_import_ai.model_gemini_feedback,purchase.group_purchase_user,1,1,1,0
+access_gemini_feedback_purchase_manager,gemini.feedback.purchase.manager,xtendoo_invoice_import_ai.model_gemini_feedback,purchase.group_purchase_manager,1,1,1,1
+

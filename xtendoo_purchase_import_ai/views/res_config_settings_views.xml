@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_purchase_ai" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.purchase.ai</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='purchase_setting_container']" position="after">
+                <block title="AI Import Configuration" id="purchase_ai_import_setting_container">
+                    <setting string="Auto-scan Purchase Orders"
+                             help="Define how purchase order documents are automatically scanned using AI.">
+                        <field name="gemini_auto_scan_purchase"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
