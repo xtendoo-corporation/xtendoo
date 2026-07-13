@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 {
     'name': 'Xtendoo Backup Url',
-    'version': '16.0.1.0.0',
+    'version': "17.0.1.0.0",
     'category': 'Tools',
     "author": "Salvador Gonzalez, Xtendoo",
     'description': "Module to get database backup from url",

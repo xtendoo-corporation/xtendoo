@@ -17,114 +17,53 @@ class GestoolImport(models.TransientModel):
     _name = "gestool.import"
     _description = "Importador desde Gestool"
 
-    # data_file_agentes = fields.Binary(
-    #     string="File to Import",
-    #     required=False,
-    #     help="Get you data from Gestool.",
-    # )
-    # filename = fields.Char()
-    #
-    # data_file_partner = fields.Binary(
-    #     string="File to Import",
-    #     required=False,
-    #     help="Get you data from Gestool.",
-    # )
-    # filename = fields.Char()
-
-    data_file_atypical_rate = fields.Binary(
+    data_file_agentes = fields.Binary(
         string="File to Import",
         required=False,
         help="Get you data from Gestool.",
     )
     filename = fields.Char()
 
-    # data_file_category = fields.Binary(
-    #     string="File to Import",
-    #     required=False,
-    #     help="Get you data from Gestool.",
-    # )
-    # filename = fields.Char()
-    #
-    # data_file_product = fields.Binary(
-    #     string="File to Import",
-    #     required=False,
-    #     help="Get you data from Gestool.",
-    # )
-    # filename = fields.Char()
+    data_file_partner = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename = fields.Char()
+
+    data_file_category = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename = fields.Char()
+
+    data_file_product = fields.Binary(
+        string="File to Import",
+        required=False,
+        help="Get you data from Gestool.",
+    )
+    filename = fields.Char()
 
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
         self.ensure_one()
 
-        # data_file_agentes = b64decode(self.data_file_agentes)
-        # if data_file_agentes:
-        #     self._import_agentes(data_file_agentes)
-        #
-        # data_file_partner = b64decode(self.data_file_partner)
-        # if data_file_partner:
-        #     self._import_partner(data_file_partner)
+        data_file_agentes = b64decode(self.data_file_agentes)
+        if data_file_agentes:
+            self._import_agentes(data_file_agentes)
 
-        data_file_atypical_rate = b64decode(self.data_file_atypical_rate)
-        if data_file_atypical_rate:
-            self._import_atypical_rate(data_file_atypical_rate)
+        data_file_partner = b64decode(self.data_file_partner)
+        if data_file_partner:
+            self._import_partner(data_file_partner)
 
-        # data_file_category = b64decode(self.data_file_category)
-        # if data_file_category:
-        #     self._import_category(data_file_category)
-        #
-        # data_file_product = b64decode(self.data_file_product)
-        # if data_file_product:
-        #     self._import_product(data_file_product)
+        data_file_category = b64decode(self.data_file_category)
+        if data_file_category:
+            self._import_category(data_file_category)
 
-    def _import_atypical_rate(self, data_file_atypical_rate):
-        try:
-            csv_data = reader(StringIO(data_file_atypical_rate.decode("utf-8")))
-        except Exception:
-            raise UserError(_("Can not read the file"))
-
-        for row in csv_data:
-            print("--------------------Atipicas de clientes--------------------------")
-            self.parse_atypical_rate(row)
-        return
-
-    def parse_atypical_rate(self, row):
-        partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
-        product = self.env["product.template"].search([("default_code", "=", row[1]), ])
-
-        print("Cliente", row[0])
-        print("Articulo", row[1])
-
-        if product:
-            if partner:
-
-                # Comprobamos que no exista
-                headpricelist = self.env["product.pricelist"].search([("name", "=", partner.name), ])
-
-                # Metemos las cabeceras de las tarifas
-
-                if not headpricelist:
-                    headpricelist = self.env["product.pricelist"].sudo().create({
-                        "name": partner.name,
-                    })
-
-                # Metemos las lineas de las tarifas
-                self.env["product.pricelist.item"].sudo().create({
-                    "pricelist_id": headpricelist.id,
-                    "product_tmpl_id": product.id,
-                    'applied_on': "1_product",
-                    'compute_price': "fixed",
-                    'fixed_price': row[2],
-                })
-
-                # La aplicamos al cliente
-                partner.sudo().write({
-                    "property_product_pricelist": headpricelist,
-                })
-
-            else:
-                print("No existe el partner con código:", row[0])
-        else:
-            print("No existe el producto con código:", row[1])
+        data_file_product = b64decode(self.data_file_product)
+        if data_file_product:
+            self._import_product(data_file_product)
 
     def _import_partner(self, data_file_partner):
         try:
@@ -134,92 +73,92 @@ class GestoolImport(models.TransientModel):
 
         for row in csv_data:
             print("--------------------CLIENES--------------------------")
-            # self.parse_partner(row)
+            self.parse_partner(row)
         return
 
-    # def parse_partner(self, row):
-    #     partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
-    #
-    #     # country_id = self.env["res.country"].search([("name", "=", "España", ])
-    #     # if country_id:
-    #     #     country_id = country_id.id
-    #
-    #     state_id = self.env["res.country.state"].search([("name", "=", row[6].capitalize()), ])
-    #     if state_id:
-    #         state_id = state_id.id
-    #
-    #     # agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
-    #     # if agent_id:
-    #     #     agent_id = [(6, 0, [agent_id.id])]
-    #     # else:
-    #     #     agent_id = [(6, 0, [])]
-    #
-    #     print("/////////CLIENTE//////////")
-    #     print("partner", partner)
-    #     print("nombre:", row[1])
-    #     print("ref",row[0])
-    #     print("name",row[1])
-    #     print('street',row[3])
-    #     print('city',row[4])
-    #     print('zip',row[5])
-    #     print('phone',row[7])
-    #     print('mobile',row[8])
-    #     print('website',row[9])
-    #     print('email',row[10])
-    #     print('display_name',row[14])
-    #     print('company_name',row[15])
-    #     print('comment',row[17])
-    #     print('customer_rank',row[19])
-    #     print('supplier_rank',row[20])
-    #     print('company', row[25])
-    #     print('State', row[6].capitalize())
-    #     print('state_id', state_id)
-    #     print('DNI', row[2])
-    #     # print('country_id', country_id)
-    #
-    #     if partner:
-    #         partner.sudo().write({
-    #             "name": row[1],
-    #             'street': row[3],
-    #             'city': row[4],
-    #             'zip': row[5],
-    #             'phone': row[7],
-    #             'mobile': row[8],
-    #             'website': row[9],
-    #             'email': row[10],
-    #             'display_name': row[14],
-    #             'company_name': row[15],
-    #             'comment': row[17],
-    #             'state_id': state_id,
-    #             'vat': row[2],
-    #             'country_id': 68,
-    #             # 'agent_ids': agent_id,
-    #         })
-    #     else:
-    #         self.env["res.partner"].sudo().create({
-    #             "ref": row[0],
-    #             "name": row[1],
-    #             'street': row[3],
-    #             'city': row[4],
-    #             'zip': row[5],
-    #             'phone': row[7],
-    #             'mobile': row[8],
-    #             'website': row[9],
-    #             'email': row[10],
-    #             'display_name': row[14],
-    #             'company_name': row[15],
-    #             'is_company': 1,
-    #             'active': 1,
-    #             'comment': row[17],
-    #             'customer_rank': row[19],
-    #             'supplier_rank': row[20],
-    #             'company_id': 1,
-    #             'lang': "es_ES",
-    #             'state_id': state_id,
-    #             'vat': row[2],
-    #             'country_id': 68,
-    #             # 'agent_ids': agent_id,
-    #         })
+    def parse_partner(self, row):
+        partner = self.env["res.partner"].search([("ref", "=", row[0]), ])
+
+        # country_id = self.env["res.country"].search([("name", "=", "España", ])
+        # if country_id:
+        #     country_id = country_id.id
+
+        state_id = self.env["res.country.state"].search([("name", "=", row[6].capitalize()), ])
+        if state_id:
+            state_id = state_id.id
+
+        # agent_id = self.env["res.partner"].search([("name", "=", row[23]), ])
+        # if agent_id:
+        #     agent_id = [(6, 0, [agent_id.id])]
+        # else:
+        #     agent_id = [(6, 0, [])]
+
+        print("/////////CLIENTE//////////")
+        print("partner", partner)
+        print("nombre:", row[1])
+        print("ref",row[0])
+        print("name",row[1])
+        print('street',row[3])
+        print('city',row[4])
+        print('zip',row[5])
+        print('phone',row[7])
+        print('mobile',row[8])
+        print('website',row[9])
+        print('email',row[10])
+        print('display_name',row[14])
+        print('company_name',row[15])
+        print('comment',row[17])
+        print('customer_rank',row[19])
+        print('supplier_rank',row[20])
+        print('company', row[25])
+        print('State', row[6].capitalize())
+        print('state_id', state_id)
+        print('DNI', row[2])
+        # print('country_id', country_id)
+
+        if partner:
+            partner.sudo().write({
+                "name": row[1],
+                'street': row[3],
+                'city': row[4],
+                'zip': row[5],
+                'phone': row[7],
+                'mobile': row[8],
+                'website': row[9],
+                'email': row[10],
+                'display_name': row[14],
+                'company_name': row[15],
+                'comment': row[17],
+                'state_id': state_id,
+                'vat': row[2],
+                'country_id': 68,
+                # 'agent_ids': agent_id,
+            })
+        else:
+            self.env["res.partner"].sudo().create({
+                "ref": row[0],
+                "name": row[1],
+                'street': row[3],
+                'city': row[4],
+                'zip': row[5],
+                'phone': row[7],
+                'mobile': row[8],
+                'website': row[9],
+                'email': row[10],
+                'display_name': row[14],
+                'company_name': row[15],
+                'is_company': 1,
+                'active': 1,
+                'comment': row[17],
+                'customer_rank': row[19],
+                'supplier_rank': row[20],
+                'company_id': 1,
+                'lang': "es_ES",
+                'state_id': state_id,
+                'vat': row[2],
+                'country_id': 68,
+                # 'agent_ids': agent_id,
+            })
 
     def _import_category(self, data_file_category):
         try:
@@ -232,13 +171,13 @@ class GestoolImport(models.TransientModel):
             print("--------------------CATEGORY--------------------------")
         return
 
-    # def parse_categories(self, row):
-    #     category = self.env["product.category"].search([("name", "=", row[0]),])
-    #     if not category:
-    #         self.env["product.category"].create({
-    #             "name": row[0],
-    #             "parent_id" : 1,
-    #         })
+    def parse_categories(self, row):
+        category = self.env["product.category"].search([("name", "=", row[0]),])
+        if not category:
+            self.env["product.category"].create({
+                "name": row[0],
+                "parent_id" : 1,
+            })
 
     def _import_product(self, data_file_product):
         try:
@@ -248,45 +187,45 @@ class GestoolImport(models.TransientModel):
 
         for row in csv_data:
             print("--------------------PRODUCT--------------------------")
-            # self.parse_products(row)
+            self.parse_products(row)
         return
 
-    # def parse_products(self, row):
-    #     print("--------------------PRODUCT--------------------------")
-    #     print(row)
-    #
-    #     taxes_id = self.env["account.tax"].search([("name", "=", row[7]), ])
-    #     if taxes_id:
-    #         taxes_id = [(6, 0, [taxes_id.id])]
-    #     else:
-    #         taxes_id = [(6, 0, [])]
-    #
-    #     supplier_taxes_id = self.env["account.tax"].search([("name", "=", row[8]), ])
-    #     if supplier_taxes_id:
-    #         supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
-    #     else:
-    #         supplier_taxes_id = [(6, 0, [])]
-    #
-    #     product = self.env["product.template"].search([("name", "=", row[2]),])
-    #
-    #     if not product:
-    #         self.env["product.template"].create({
-    #             "name": row[2],
-    #             "list_price": row[5],
-    #             "standard_price": row[6],
-    #             "available_in_pos": 1,
-    #             "taxes_id": taxes_id,
-    #             "supplier_taxes_id": supplier_taxes_id,
-    #         })
-    #     else:
-    #         product.sudo().write({
-    #             "name": row[2],
-    #             "list_price": row[5],
-    #             "standard_price": row[6],
-    #             "available_in_pos": 1,
-    #             "taxes_id": taxes_id,
-    #             "supplier_taxes_id": supplier_taxes_id,
-    #         })
+    def parse_products(self, row):
+        print("--------------------PRODUCT--------------------------")
+        print(row)
+
+        taxes_id = self.env["account.tax"].search([("name", "=", row[7]), ])
+        if taxes_id:
+            taxes_id = [(6, 0, [taxes_id.id])]
+        else:
+            taxes_id = [(6, 0, [])]
+
+        supplier_taxes_id = self.env["account.tax"].search([("name", "=", row[8]), ])
+        if supplier_taxes_id:
+            supplier_taxes_id = [(6, 0, [supplier_taxes_id.id])]
+        else:
+            supplier_taxes_id = [(6, 0, [])]
+
+        product = self.env["product.template"].search([("name", "=", row[2]),])
+
+        if not product:
+            self.env["product.template"].create({
+                "name": row[2],
+                "list_price": row[5],
+                "standard_price": row[6],
+                "available_in_pos": 1,
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
+            })
+        else:
+            product.sudo().write({
+                "name": row[2],
+                "list_price": row[5],
+                "standard_price": row[6],
+                "available_in_pos": 1,
+                "taxes_id": taxes_id,
+                "supplier_taxes_id": supplier_taxes_id,
+            })
 
     def _import_agentes(self, data_file_agentes):
         try:

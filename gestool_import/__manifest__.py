@@ -1,10 +1,9 @@
 {
     "name": "Importation from gestool",
     "category": "Product",
-    "version": "16.0",
+    "version": "17.0.1.0.0",
     "depends": ["product"],
     "license": "AGPL-3",
-    "application": True,
     "description": """
         Wizard to Import from gestool.
         """,
@@ -14,4 +13,5 @@
         "views/gestool_import.xml"
     ],
     "installable": True,
+    "auto_install": True,
 }
