@@ -44,5 +44,8 @@
             # - core/common/mail_composer_send_dropdown.xml
             # - core/web/discuss_app_category_model_patch.esm.js (DiscussAppCategory not in Odoo 19)
         ],
+        "web.assets_unit_tests": [
+            "xtendoo_mail_gateway/static/tests/composer.test.js",
+        ],
     },
 }
