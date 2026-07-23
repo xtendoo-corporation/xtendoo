@@ -1,6 +1,6 @@
 {
     "name": "HR Attendance Phone",
-    "version": "1.0.0",
+    "version": "19.0.1.0.0",
     "category": "Human Resources/Attendances",
     "summary": "Registro de asistencia mediante teléfono y PIN en el modo quiosco",
     "description": """
@@ -21,7 +21,7 @@
     ],
     "assets": {
         "hr_attendance.assets_public_attendance": [
-            "xtendoo_hr_attendance_phone/static/src/js/attendance_phone.js",
+            "xtendoo_hr_attendance_phone/static/src/js/attendance_phone.esm.js",
             "xtendoo_hr_attendance_phone/static/src/xml/attendance_phone_modal.xml",
             "xtendoo_hr_attendance_phone/static/src/css/attendance_phone.css",
         ],

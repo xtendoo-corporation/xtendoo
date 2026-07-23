@@ -1,14 +1,14 @@
 /** @odoo-module **/
 
-import { Component, useState } from "@odoo/owl";
-import { rpc } from "@web/core/network/rpc";
-import { _t } from "@web/core/l10n/translation";
-import { patch } from "@web/core/utils/patch";
-import { useService } from "@web/core/utils/hooks";
+import {Component, useState} from "@odoo/owl";
+import {rpc} from "@web/core/network/rpc";
+import {_t} from "@web/core/l10n/translation";
+import {patch} from "@web/core/utils/patch";
+import {useService} from "@web/core/utils/hooks";
 // Importar usando la exportación por defecto
 import publicKiosk from "@hr_attendance/public_kiosk/public_kiosk_app";
 
-const { kioskAttendanceApp } = publicKiosk;
+const {kioskAttendanceApp} = publicKiosk;
 
 console.log("[ATTENDANCE_PHONE] Módulo cargado");
 
@@ -18,29 +18,32 @@ console.log("[ATTENDANCE_PHONE] Módulo cargado");
 const StorageManager = {
     setCredentials(phone, pin) {
         try {
-            localStorage.setItem('attendance_phone', phone);
-            localStorage.setItem('attendance_pin', pin);
+            localStorage.setItem("attendance_phone", phone);
+            localStorage.setItem("attendance_pin", pin);
             console.log("[ATTENDANCE_PHONE] ✅ Credenciales guardadas en localStorage");
         } catch (error) {
-            console.warn("[ATTENDANCE_PHONE] ⚠️ Error guardando en localStorage:", error);
+            console.warn(
+                "[ATTENDANCE_PHONE] ⚠️ Error guardando en localStorage:",
+                error
+            );
         }
     },
 
     getCredentials() {
         try {
-            const phone = localStorage.getItem('attendance_phone');
-            const pin = localStorage.getItem('attendance_pin');
-            return { phone, pin };
+            const phone = localStorage.getItem("attendance_phone");
+            const pin = localStorage.getItem("attendance_pin");
+            return {phone, pin};
         } catch (error) {
             console.warn("[ATTENDANCE_PHONE] ⚠️ Error leyendo localStorage:", error);
-            return { phone: null, pin: null };
+            return {phone: null, pin: null};
         }
     },
 
     clearCredentials() {
         try {
-            localStorage.removeItem('attendance_phone');
-            localStorage.removeItem('attendance_pin');
+            localStorage.removeItem("attendance_phone");
+            localStorage.removeItem("attendance_pin");
             console.log("[ATTENDANCE_PHONE] ✅ Credenciales borradas de localStorage");
         } catch (error) {
             console.warn("[ATTENDANCE_PHONE] ⚠️ Error limpiando localStorage:", error);
@@ -48,9 +51,9 @@ const StorageManager = {
     },
 
     hasCredentials() {
-        const { phone, pin } = this.getCredentials();
-        return !!(phone && pin);
-    }
+        const {phone, pin} = this.getCredentials();
+        return Boolean(phone && pin);
+    },
 };
 
 // Componente para la pantalla de asistencia por teléfono
@@ -58,12 +61,11 @@ export class KioskPhoneAttendance extends Component {
     static template = "xtendoo_hr_attendance_phone.kiosk_phone_screen";
 
     static props = {
-        token: { type: String },
-        companyId: { type: Number },
-        companyName: { type: String },
-        companyImageUrl: { type: String },
-        deviceTrackingEnabled: { type: Boolean, optional: true },
-        onAttendanceRegistered: { type: Function, optional: true },
+        token: {type: String},
+        companyId: {type: Number},
+        companyName: {type: String},
+        companyImageUrl: {type: String},
+        onAttendanceRegistered: {type: Function, optional: true},
     };
 
     setup() {
@@ -73,7 +75,7 @@ export class KioskPhoneAttendance extends Component {
         this.ui = useService("ui");
 
         // Recuperar credenciales guardadas
-        const { phone, pin } = StorageManager.getCredentials();
+        const {phone, pin} = StorageManager.getCredentials();
         const hasStoredCredentials = StorageManager.hasCredentials();
 
         this.state = useState({
@@ -85,10 +87,13 @@ export class KioskPhoneAttendance extends Component {
             // Estado del empleado (dentro/fuera)
             employeeStatus: null,
             statusMessage: "",
-            statusClass: ""
+            statusClass: "",
         });
 
-        console.log("[ATTENDANCE_PHONE] Componente configurado. Credenciales guardadas:", hasStoredCredentials);
+        console.log(
+            "[ATTENDANCE_PHONE] Componente configurado. Credenciales guardadas:",
+            hasStoredCredentials
+        );
 
         // Si hay teléfono guardado, consultar estado del empleado
         if (phone) {
@@ -109,47 +114,32 @@ export class KioskPhoneAttendance extends Component {
         console.log("[ATTENDANCE_PHONE] Consultando estado del empleado...");
 
         try {
-            const result = await rpc('/attendance/phone/status', {
-                phone: phone
+            const result = await rpc("/attendance/phone/status", {
+                phone: phone,
             });
 
             if (result.success) {
                 this.state.employeeStatus = result.status;
                 this.state.statusMessage = result.message;
                 this.state.statusClass = result.status_class;
-                console.log("[ATTENDANCE_PHONE] Estado del empleado:", result.status, "-", result.message);
+                console.log(
+                    "[ATTENDANCE_PHONE] Estado del empleado:",
+                    result.status,
+                    "-",
+                    result.message
+                );
             } else {
-                console.warn("[ATTENDANCE_PHONE] No se pudo obtener el estado:", result.error);
+                console.warn(
+                    "[ATTENDANCE_PHONE] No se pudo obtener el estado:",
+                    result.error
+                );
                 // No mostrar error, simplemente no mostrar banner
                 this.state.employeeStatus = null;
             }
-
         } catch (error) {
             console.warn("[ATTENDANCE_PHONE] Error consultando estado:", error);
             this.state.employeeStatus = null;
         }
-    }
-
-    /**
-     * Obtiene la posición actual si el seguimiento está habilitado
-     */
-    async getPosition() {
-        if (!this.props.deviceTrackingEnabled || !navigator.geolocation) {
-            return { latitude: null, longitude: null };
-        }
-
-        return new Promise((resolve) => {
-            navigator.geolocation.getCurrentPosition(
-                ({ coords: { latitude, longitude } }) => {
-                    resolve({ latitude, longitude });
-                },
-                (err) => {
-                    console.warn("[ATTENDANCE_PHONE] Error obteniendo geolocalización:", err);
-                    resolve({ latitude: null, longitude: null });
-                },
-                { enableHighAccuracy: true, timeout: 5000 }
-            );
-        });
     }
 
     get companyImageUrl() {
@@ -164,8 +154,8 @@ export class KioskPhoneAttendance extends Component {
         event.preventDefault();
 
         const form = event.target;
-        const phoneInput = form.querySelector('#main_phone_number');
-        const pinInput = form.querySelector('#main_pin_code');
+        const phoneInput = form.querySelector("#main_phone_number");
+        const pinInput = form.querySelector("#main_pin_code");
 
         if (!phoneInput || !pinInput) {
             console.error("[ATTENDANCE_PHONE] Inputs del formulario no encontrados");
@@ -176,20 +166,20 @@ export class KioskPhoneAttendance extends Component {
         const pin = pinInput.value.trim();
 
         console.log("[ATTENDANCE_PHONE] Datos del formulario:", {
-            phone: phone.substring(0, 3) + '***',
-            pin: '***'
+            phone: phone.substring(0, 3) + "***",
+            pin: "***",
         });
 
         // Validación básica
         if (!phone || !pin) {
             console.warn("[ATTENDANCE_PHONE] Campos requeridos vacíos");
-            this.showMessage(_t("Por favor complete todos los campos"), 'warning');
+            this.showMessage(_t("Por favor complete todos los campos"), "warning");
             return;
         }
 
         if (pin.length < 3) {
             console.warn("[ATTENDANCE_PHONE] PIN demasiado corto");
-            this.showMessage(_t("El PIN debe tener al menos 3 caracteres"), 'warning');
+            this.showMessage(_t("El PIN debe tener al menos 3 caracteres"), "warning");
             return;
         }
 
@@ -200,21 +190,17 @@ export class KioskPhoneAttendance extends Component {
         console.log("[ATTENDANCE_PHONE] Iniciando proceso de validación...");
 
         try {
-            const { latitude, longitude } = await this.getPosition();
-
-            const result = await rpc('/attendance/phone/validate', {
+            const result = await rpc("/attendance/phone/validate", {
                 phone: phone,
                 pin: pin,
                 token: this.props.token,
-                latitude: latitude,
-                longitude: longitude
             });
 
             console.log("[ATTENDANCE_PHONE] Respuesta del servidor:", {
                 success: result.success,
-                employee_id: result.employee_id || 'N/A',
-                employee_name: result.name || 'N/A',
-                error: result.error || 'N/A'
+                employee_id: result.employee_id || "N/A",
+                employee_name: result.name || "N/A",
+                error: result.error || "N/A",
             });
 
             if (result.success) {
@@ -224,14 +210,18 @@ export class KioskPhoneAttendance extends Component {
                 StorageManager.setCredentials(phone, pin);
 
                 // Mostrar mensaje de éxito con tipo de acción (Entrada/Salida)
-                const actionText = result.action_type === 'check_in' ? 'Entrada' : 'Salida';
+                const actionText =
+                    result.action_type === "check_in" ? "Entrada" : "Salida";
                 this.showMessage(
-                    _t("%(action)s registrada para %(name)s correctamente", { action: actionText, name: result.name }),
-                    'success'
+                    _t("%(action)s registrada para %(name)s correctamente", {
+                        action: actionText,
+                        name: result.name,
+                    }),
+                    "success"
                 );
 
                 // En lugar de resetear todo el formulario, solo limpiar el PIN
-                pinInput.value = '';
+                pinInput.value = "";
                 pinInput.focus();
 
                 // Callback opcional
@@ -247,24 +237,24 @@ export class KioskPhoneAttendance extends Component {
                         this.checkEmployeeStatus();
                     }
                 }, 3000);
-
             } else {
                 console.warn("[ATTENDANCE_PHONE] ❌ Validación fallida:", result.error);
                 this.showMessage(
                     result.error || _t("PIN o número de teléfono incorrecto"),
-                    'danger'
+                    "danger"
                 );
 
                 // Limpiar PIN por seguridad
-                pinInput.value = '';
+                pinInput.value = "";
                 pinInput.focus();
             }
-
         } catch (error) {
             console.error("[ATTENDANCE_PHONE] ❌ Error en la solicitud:", error);
             this.showMessage(
-                _t("Error de conexión. Verifique su conexión a internet e inténtelo nuevamente."),
-                'danger'
+                _t(
+                    "Error de conexión. Verifique su conexión a internet e inténtelo nuevamente."
+                ),
+                "danger"
             );
         } finally {
             this.state.isProcessing = false;
@@ -285,21 +275,21 @@ export class KioskPhoneAttendance extends Component {
         this.ui.block();
 
         try {
-            const { latitude, longitude } = await this.getPosition();
-
-            const result = await rpc('/attendance/phone/validate', {
+            const result = await rpc("/attendance/phone/validate", {
                 phone: phone,
                 pin: pin,
                 token: this.props.token,
-                latitude: latitude,
-                longitude: longitude
             });
 
             if (result.success) {
-                const actionText = result.action_type === 'check_in' ? 'Entrada' : 'Salida';
+                const actionText =
+                    result.action_type === "check_in" ? "Entrada" : "Salida";
                 this.showMessage(
-                    _t("%(action)s registrada para %(name)s correctamente", { action: actionText, name: result.name }),
-                    'success'
+                    _t("%(action)s registrada para %(name)s correctamente", {
+                        action: actionText,
+                        name: result.name,
+                    }),
+                    "success"
                 );
 
                 if (this.props.onAttendanceRegistered) {
@@ -312,36 +302,36 @@ export class KioskPhoneAttendance extends Component {
                     // Actualizar estado del empleado después del fichaje
                     this.checkEmployeeStatus();
                 }, 2000);
-
             } else {
-                this.showMessage(_t("Credenciales inválidas. Por favor ingrese nuevamente."), 'danger');
+                this.showMessage(
+                    _t("Credenciales inválidas. Por favor ingrese nuevamente."),
+                    "danger"
+                );
                 StorageManager.clearCredentials();
             }
-
         } catch (error) {
             console.error("[ATTENDANCE_PHONE] Error:", error);
-            this.showMessage(_t("Error de conexión"), 'danger');
+            this.showMessage(_t("Error de conexión"), "danger");
         } finally {
             this.state.isProcessing = false;
             this.ui.unblock();
         }
     }
 
-
     /**
      * Muestra un mensaje en el componente
      */
-    showMessage(message, type = 'info') {
-        console.log("[ATTENDANCE_PHONE] Mostrando mensaje:", { message, type });
+    showMessage(message, type = "info") {
+        console.log("[ATTENDANCE_PHONE] Mostrando mensaje:", {message, type});
         this.state.message = message;
         this.state.messageType = type;
 
         // También intentar mostrar notificación
         try {
-            if (this.notification && typeof this.notification.add === 'function') {
+            if (this.notification && typeof this.notification.add === "function") {
                 this.notification.add(message, {
                     type: type,
-                    sticky: type !== 'success'
+                    sticky: type !== "success",
                 });
             }
         } catch (error) {
@@ -355,22 +345,23 @@ export class KioskPhoneOnlyAttendance extends Component {
     static template = "xtendoo_hr_attendance_phone.kiosk_phone_only_screen";
 
     static props = {
-        token: { type: String },
-        companyId: { type: Number },
-        companyName: { type: String },
-        companyImageUrl: { type: String },
-        deviceTrackingEnabled: { type: Boolean, optional: true },
-        onAttendanceRegistered: { type: Function, optional: true },
+        token: {type: String},
+        companyId: {type: Number},
+        companyName: {type: String},
+        companyImageUrl: {type: String},
+        onAttendanceRegistered: {type: Function, optional: true},
     };
 
     setup() {
-        console.log("[ATTENDANCE_PHONE_ONLY] Setup del componente KioskPhoneOnlyAttendance");
+        console.log(
+            "[ATTENDANCE_PHONE_ONLY] Setup del componente KioskPhoneOnlyAttendance"
+        );
 
         this.notification = useService("notification");
         this.ui = useService("ui");
 
-        const { phone } = StorageManager.getCredentials();
-        const hasStoredPhone = !!phone;
+        const {phone} = StorageManager.getCredentials();
+        const hasStoredPhone = Boolean(phone);
 
         this.state = useState({
             isProcessing: false,
@@ -380,10 +371,13 @@ export class KioskPhoneOnlyAttendance extends Component {
             // Estado del empleado (dentro/fuera)
             employeeStatus: null,
             statusMessage: "",
-            statusClass: ""
+            statusClass: "",
         });
 
-        console.log("[ATTENDANCE_PHONE_ONLY] Componente configurado. Teléfono guardado:", hasStoredPhone);
+        console.log(
+            "[ATTENDANCE_PHONE_ONLY] Componente configurado. Teléfono guardado:",
+            hasStoredPhone
+        );
 
         // Si hay teléfono guardado, consultar estado del empleado
         if (phone) {
@@ -404,46 +398,35 @@ export class KioskPhoneOnlyAttendance extends Component {
         console.log("[ATTENDANCE_PHONE_ONLY] Consultando estado del empleado...");
 
         try {
-            const result = await rpc('/attendance/phone/status', {
-                phone: phone
+            const result = await rpc("/attendance/phone/status", {
+                phone: phone,
             });
 
             if (result.success) {
                 this.state.employeeStatus = result.status;
                 this.state.statusMessage = result.message;
                 this.state.statusClass = result.status_class;
-                console.log("[ATTENDANCE_PHONE_ONLY] Estado del empleado:", result.status, "-", result.message);
+                console.log(
+                    "[ATTENDANCE_PHONE_ONLY] Estado del empleado:",
+                    result.status,
+                    "-",
+                    result.message
+                );
             } else {
-                console.warn("[ATTENDANCE_PHONE_ONLY] No se pudo obtener el estado:", result.error);
+                console.warn(
+                    "[ATTENDANCE_PHONE_ONLY] No se pudo obtener el estado:",
+                    result.error
+                );
                 this.state.employeeStatus = null;
             }
-
         } catch (error) {
             console.warn("[ATTENDANCE_PHONE_ONLY] Error consultando estado:", error);
             this.state.employeeStatus = null;
         }
     }
 
-    /**
-     * Obtiene la posición actual si el seguimiento está habilitado
-     */
-    async getPosition() {
-        if (!this.props.deviceTrackingEnabled || !navigator.geolocation) {
-            return { latitude: null, longitude: null };
-        }
-
-        return new Promise((resolve) => {
-            navigator.geolocation.getCurrentPosition(
-                ({ coords: { latitude, longitude } }) => {
-                    resolve({ latitude, longitude });
-                },
-                (err) => {
-                    console.warn("[ATTENDANCE_PHONE_ONLY] Error obteniendo geolocalización:", err);
-                    resolve({ latitude: null, longitude: null });
-                },
-                { enableHighAccuracy: true, timeout: 5000 }
-            );
-        });
+    get companyImageUrl() {
+        return this.props.companyImageUrl;
     }
 
     async onSubmit(event) {
@@ -451,7 +434,7 @@ export class KioskPhoneOnlyAttendance extends Component {
         event.preventDefault();
 
         const form = event.target;
-        const phoneInput = form.querySelector('#phone_only_number');
+        const phoneInput = form.querySelector("#phone_only_number");
 
         if (!phoneInput) {
             console.error("[ATTENDANCE_PHONE_ONLY] Input no encontrado");
@@ -461,7 +444,7 @@ export class KioskPhoneOnlyAttendance extends Component {
         const phone = phoneInput.value.trim();
 
         if (!phone) {
-            this.showMessage(_t("Por favor ingrese su número de teléfono"), 'warning');
+            this.showMessage(_t("Por favor ingrese su número de teléfono"), "warning");
             return;
         }
 
@@ -469,25 +452,25 @@ export class KioskPhoneOnlyAttendance extends Component {
         this.ui.block();
 
         try {
-            const { latitude, longitude } = await this.getPosition();
-
-            const result = await rpc('/attendance/phone/validate_phone_only', {
+            const result = await rpc("/attendance/phone/validate_phone_only", {
                 phone: phone,
                 token: this.props.token,
-                latitude: latitude,
-                longitude: longitude
             });
 
             if (result.success) {
                 console.log("[ATTENDANCE_PHONE_ONLY] ✅ Asistencia registrada");
 
                 // Guardar teléfono automáticamente siempre
-                StorageManager.setCredentials(phone, 'phone_only');
+                StorageManager.setCredentials(phone, "phone_only");
 
-                const actionText = result.action_type === 'check_in' ? 'Entrada' : 'Salida';
+                const actionText =
+                    result.action_type === "check_in" ? "Entrada" : "Salida";
                 this.showMessage(
-                    _t("%(action)s registrada para %(name)s correctamente", { action: actionText, name: result.name }),
-                    'success'
+                    _t("%(action)s registrada para %(name)s correctamente", {
+                        action: actionText,
+                        name: result.name,
+                    }),
+                    "success"
                 );
 
                 if (this.props.onAttendanceRegistered) {
@@ -503,16 +486,20 @@ export class KioskPhoneOnlyAttendance extends Component {
                         this.checkEmployeeStatus();
                     }
                 }, 3000);
-
             } else {
-                console.warn("[ATTENDANCE_PHONE_ONLY] ❌ Validación fallida:", result.error);
-                this.showMessage(result.error || _t("Teléfono no reconocido"), 'danger');
+                console.warn(
+                    "[ATTENDANCE_PHONE_ONLY] ❌ Validación fallida:",
+                    result.error
+                );
+                this.showMessage(
+                    result.error || _t("Teléfono no reconocido"),
+                    "danger"
+                );
                 phoneInput.focus();
             }
-
         } catch (error) {
             console.error("[ATTENDANCE_PHONE_ONLY] Error:", error);
-            this.showMessage(_t("Error de conexión. Inténtelo nuevamente."), 'danger');
+            this.showMessage(_t("Error de conexión. Inténtelo nuevamente."), "danger");
         } finally {
             this.state.isProcessing = false;
             this.ui.unblock();
@@ -530,20 +517,20 @@ export class KioskPhoneOnlyAttendance extends Component {
         this.ui.block();
 
         try {
-            const { latitude, longitude } = await this.getPosition();
-
-            const result = await rpc('/attendance/phone/validate_phone_only', {
+            const result = await rpc("/attendance/phone/validate_phone_only", {
                 phone: phone,
                 token: this.props.token,
-                latitude: latitude,
-                longitude: longitude
             });
 
             if (result.success) {
-                const actionText = result.action_type === 'check_in' ? 'Entrada' : 'Salida';
+                const actionText =
+                    result.action_type === "check_in" ? "Entrada" : "Salida";
                 this.showMessage(
-                    _t("%(action)s registrada para %(name)s correctamente", { action: actionText, name: result.name }),
-                    'success'
+                    _t("%(action)s registrada para %(name)s correctamente", {
+                        action: actionText,
+                        name: result.name,
+                    }),
+                    "success"
                 );
 
                 // Permanecer y limpiar mensaje al rato
@@ -552,15 +539,16 @@ export class KioskPhoneOnlyAttendance extends Component {
                     // Actualizar estado del empleado después del fichaje
                     this.checkEmployeeStatus();
                 }, 2000);
-
             } else {
-                this.showMessage(_t("Teléfono no reconocido. Por favor ingrese nuevamente."), 'danger');
+                this.showMessage(
+                    _t("Teléfono no reconocido. Por favor ingrese nuevamente."),
+                    "danger"
+                );
                 StorageManager.clearCredentials();
             }
-
         } catch (error) {
             console.error("[ATTENDANCE_PHONE_ONLY] Error:", error);
-            this.showMessage(_t("Error de conexión"), 'danger');
+            this.showMessage(_t("Error de conexión"), "danger");
         } finally {
             this.state.isProcessing = false;
             this.ui.unblock();
@@ -571,16 +559,22 @@ export class KioskPhoneOnlyAttendance extends Component {
      * Muestra un mensaje en el componente
      */
 
-    showMessage(message, type = 'info') {
+    showMessage(message, type = "info") {
         this.state.message = message;
         this.state.messageType = type;
 
         try {
-            if (this.notification && typeof this.notification.add === 'function') {
-                this.notification.add(message, { type: type, sticky: type !== 'success' });
+            if (this.notification && typeof this.notification.add === "function") {
+                this.notification.add(message, {
+                    type: type,
+                    sticky: type !== "success",
+                });
             }
         } catch (error) {
-            console.warn("[ATTENDANCE_PHONE_ONLY] No se pudo mostrar notificación:", error);
+            console.warn(
+                "[ATTENDANCE_PHONE_ONLY] No se pudo mostrar notificación:",
+                error
+            );
         }
     }
 }
@@ -594,16 +588,15 @@ kioskAttendanceApp.components = {
 
 // Aplicar patch al kioskAttendanceApp
 patch(kioskAttendanceApp.prototype, {
-
     setup() {
         console.log("[ATTENDANCE_PHONE] Patch setup ejecutado");
         super.setup();
 
         // Manejar los modos 'phone' y 'phone_only'
-        if (this.props.kioskMode === 'phone') {
+        if (this.props.kioskMode === "phone") {
             console.log("[ATTENDANCE_PHONE] Modo teléfono + PIN detectado");
             this.state.active_display = "phone";
-        } else if (this.props.kioskMode === 'phone_only') {
+        } else if (this.props.kioskMode === "phone_only") {
             console.log("[ATTENDANCE_PHONE] Modo solo teléfono detectado");
             this.state.active_display = "phone_only";
         }
@@ -617,7 +610,7 @@ patch(kioskAttendanceApp.prototype, {
     async setSetting(mode) {
         console.log("[ATTENDANCE_PHONE] setSetting llamado con modo:", mode);
 
-        if (mode === 'phone' || mode === 'phone_only') {
+        if (mode === "phone" || mode === "phone_only") {
             console.log("[ATTENDANCE_PHONE] Configurando modo:", mode);
 
             try {
@@ -644,7 +637,15 @@ patch(kioskAttendanceApp.prototype, {
      */
     switchDisplay(screen) {
         console.log("[ATTENDANCE_PHONE] switchDisplay llamado con:", screen);
-        const displays = ["main", "greet", "manual", "pin", "settings", "phone", "phone_only"];
+        const displays = [
+            "main",
+            "greet",
+            "manual",
+            "pin",
+            "settings",
+            "phone",
+            "phone_only",
+        ];
         if (displays.includes(screen)) {
             this.state.active_display = screen;
         } else {
@@ -656,9 +657,15 @@ patch(kioskAttendanceApp.prototype, {
      * Override del método kioskReturn para manejar el regreso desde modos de teléfono
      */
     kioskReturn() {
-        console.log("[ATTENDANCE_PHONE] kioskReturn llamado, display actual:", this.state.active_display);
+        console.log(
+            "[ATTENDANCE_PHONE] kioskReturn llamado, display actual:",
+            this.state.active_display
+        );
 
-        if (this.state.active_display === "phone" || this.state.active_display === "phone_only") {
+        if (
+            this.state.active_display === "phone" ||
+            this.state.active_display === "phone_only"
+        ) {
             console.log("[ATTENDANCE_PHONE] Regresando a configuración");
             this.switchDisplay("settings");
             return;
@@ -669,7 +676,7 @@ patch(kioskAttendanceApp.prototype, {
 
     onPhoneAttendanceRegistered(result) {
         console.log("[ATTENDANCE_PHONE] Asistencia registrada, datos:", result);
-    }
+    },
 });
 
 console.log("[ATTENDANCE_PHONE] ✅ Módulo y patches inicializados correctamente");

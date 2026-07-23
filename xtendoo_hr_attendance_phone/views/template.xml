@@ -7,32 +7,59 @@
                     <div class="col-md-6">
                         <div class="card">
                             <div class="card-header bg-primary text-white text-center">
-                                <h3><i class="fa fa-phone me-2"></i>Registro de Asistencia por Teléfono</h3>
+                                <h3><i
+                                        class="fa fa-phone me-2"
+                                    />Registro de Asistencia por Teléfono</h3>
                             </div>
                             <div class="card-body">
                                 <form id="attendance_form">
                                     <div class="mb-4">
                                         <label for="phone_number" class="form-label">
-                                            <i class="fa fa-phone me-1"></i>Número de Teléfono
+                                            <i
+                                                class="fa fa-phone me-1"
+                                            />Número de Teléfono
                                         </label>
-                                        <input type="tel" id="phone_number" class="form-control form-control-lg"
-                                               placeholder="Ingrese su número de teléfono" required="required"/>
-                                        <div class="form-text">Formato: +34123456789 o 123456789</div>
+                                        <input
+                                            type="tel"
+                                            id="phone_number"
+                                            class="form-control form-control-lg"
+                                            placeholder="Ingrese su número de teléfono"
+                                            required="required"
+                                        />
+                                        <div
+                                            class="form-text"
+                                        >Formato: +34123456789 o 123456789</div>
                                     </div>
 
                                     <div class="mb-4">
                                         <label for="pin" class="form-label">
-                                            <i class="fa fa-lock me-1"></i>PIN de Empleado
+                                            <i class="fa fa-lock me-1" />PIN de Empleado
                                         </label>
-                                        <input type="password" id="pin" class="form-control form-control-lg"
-                                               placeholder="Ingrese su PIN" required="required" maxlength="6"/>
-                                        <div class="form-text">Ingrese su PIN personal de empleado</div>
+                                        <input
+                                            type="password"
+                                            id="pin"
+                                            class="form-control form-control-lg"
+                                            placeholder="Ingrese su PIN"
+                                            required="required"
+                                            maxlength="6"
+                                        />
+                                        <div
+                                            class="form-text"
+                                        >Ingrese su PIN personal de empleado</div>
                                     </div>
 
                                     <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
-                                            <i class="fa fa-check me-2"></i>Registrar Asistencia
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary btn-lg"
+                                        >
+                                            <span
+                                                class="spinner-border spinner-border-sm d-none me-2"
+                                                role="status"
+                                            />
+                                            <i
+                                                class="fa fa-check me-2"
+                                            />Registrar Asistencia
                                         </button>
                                     </div>
                                 </form>
@@ -52,22 +79,6 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     console.log("[ATTENDANCE_PHONE] Página de asistencia por teléfono cargada");
 
-                    async function getPosition() {
-                        if (!navigator.geolocation) {
-                            return { latitude: null, longitude: null };
-                        }
-                        return new Promise((resolve) => {
-                            navigator.geolocation.getCurrentPosition(
-                                ({ coords: { latitude, longitude } }) => resolve({ latitude, longitude }),
-                                (err) => {
-                                    console.warn("[ATTENDANCE_PHONE] Error geolocalización:", err);
-                                    resolve({ latitude: null, longitude: null });
-                                },
-                                { enableHighAccuracy: true, timeout: 5000 }
-                            );
-                        });
-                    }
-
                     const form = document.getElementById('attendance_form');
                     form.addEventListener('submit', async function(e) {
                         e.preventDefault();
@@ -83,8 +94,6 @@
                         spinner.classList.remove('d-none');
 
                         try {
-                            const { latitude, longitude } = await getPosition();
-
                             const response = await fetch('/attendance/phone/validate', {
                                 method: 'POST',
                                 headers: {
@@ -95,9 +104,7 @@
                                     method: 'call',
                                     params: {
                                         phone: phone,
-                                        pin: pin,
-                                        latitude: latitude,
-                                        longitude: longitude
+                                        pin: pin
                                     }
                                 })
                             });
@@ -127,7 +134,10 @@
     <template id="attendance_phone_mobile_page" name="Attendance Phone Mobile">
         <t t-call="web.layout">
             <t t-set="head">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+                />
             </t>
 
             <div class="mobile-container">
@@ -138,7 +148,11 @@
                     <div class="card-body-custom">
                         <!-- Tabs para cambiar entre modos -->
                         <div class="tab-buttons">
-                            <button type="button" class="tab-btn active" data-tab="attendance">
+                            <button
+                                type="button"
+                                class="tab-btn active"
+                                data-tab="attendance"
+                            >
                                 🕐 Fichar
                             </button>
                             <button type="button" class="tab-btn" data-tab="register">
@@ -147,7 +161,7 @@
                         </div>
 
                         <!-- Mensaje de estado -->
-                        <div id="message_container"></div>
+                        <div id="message_container" />
 
                         <!-- Tab: Registrar Asistencia -->
                         <div id="tab_attendance" class="tab-content active">
@@ -156,36 +170,63 @@
                                     <label class="form-label-custom">
                                         📞 Número de Teléfono
                                     </label>
-                                    <input type="tel" id="m_phone" class="form-control-custom"
-                                           placeholder="612345678" required="required"
-                                           autocomplete="tel"/>
-                                    <div class="help-text">Tu número de móvil registrado</div>
+                                    <input
+                                        type="tel"
+                                        id="m_phone"
+                                        class="form-control-custom"
+                                        placeholder="612345678"
+                                        required="required"
+                                        autocomplete="tel"
+                                    />
+                                    <div
+                                        class="help-text"
+                                    >Tu número de móvil registrado</div>
                                 </div>
 
                                 <div class="form-group-custom">
                                     <label class="form-label-custom">
                                         🔒 PIN
                                     </label>
-                                    <input type="password" id="m_pin" class="form-control-custom"
-                                           placeholder="••••••" required="required"
-                                           maxlength="6" inputmode="numeric"
-                                           autocomplete="current-password"
-                                           style="text-align: center; letter-spacing: 0.3em; font-size: 24px;"/>
+                                    <input
+                                        type="password"
+                                        id="m_pin"
+                                        class="form-control-custom"
+                                        placeholder="••••••"
+                                        required="required"
+                                        maxlength="6"
+                                        inputmode="numeric"
+                                        autocomplete="current-password"
+                                        style="text-align: center; letter-spacing: 0.3em; font-size: 24px;"
+                                    />
                                     <div class="help-text">Tu PIN personal</div>
                                 </div>
 
                                 <div class="form-group-custom">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <input type="checkbox" id="remember_credentials"
-                                               style="width: 18px; height: 18px; cursor: pointer;"/>
-                                        <label for="remember_credentials" style="cursor: pointer; margin: 0; font-size: 0.9rem;">
+                                    <div
+                                        style="display: flex; align-items: center; gap: 10px;"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            id="remember_credentials"
+                                            style="width: 18px; height: 18px; cursor: pointer;"
+                                        />
+                                        <label
+                                            for="remember_credentials"
+                                            style="cursor: pointer; margin: 0; font-size: 0.9rem;"
+                                        >
                                             Recordar mis datos en este dispositivo
                                         </label>
                                     </div>
-                                    <div class="help-text">Tus datos estarán seguros en tu dispositivo</div>
+                                    <div
+                                        class="help-text"
+                                    >Tus datos estarán seguros en tu dispositivo</div>
                                 </div>
 
-                                <button type="submit" id="btn_attendance" class="btn-primary-custom">
+                                <button
+                                    type="submit"
+                                    id="btn_attendance"
+                                    class="btn-primary-custom"
+                                >
                                     ✅ Registrar Entrada/Salida
                                 </button>
                             </form>
@@ -194,7 +235,7 @@
                         <!-- Tab: Registro Inicial (Primera vez) -->
                         <div id="tab_register" class="tab-content">
                             <div class="alert-custom alert-info">
-                                <strong>¿Primera vez?</strong><br/>
+                                <strong>¿Primera vez?</strong><br />
                                 Si ya tienes un PIN asignado pero aún no has registrado tu teléfono,
                                 ingresa tu PIN y el número desde el que quieres fichar.
                             </div>
@@ -204,30 +245,51 @@
                                     <label class="form-label-custom">
                                         🔒 Tu PIN asignado
                                     </label>
-                                    <input type="password" id="r_pin" class="form-control-custom"
-                                           placeholder="••••••" required="required"
-                                           maxlength="6" inputmode="numeric"
-                                           style="text-align: center; letter-spacing: 0.3em; font-size: 24px;"/>
-                                    <div class="help-text">El PIN que te proporcionó RRHH</div>
+                                    <input
+                                        type="password"
+                                        id="r_pin"
+                                        class="form-control-custom"
+                                        placeholder="••••••"
+                                        required="required"
+                                        maxlength="6"
+                                        inputmode="numeric"
+                                        style="text-align: center; letter-spacing: 0.3em; font-size: 24px;"
+                                    />
+                                    <div
+                                        class="help-text"
+                                    >El PIN que te proporcionó RRHH</div>
                                 </div>
 
                                 <div class="form-group-custom">
                                     <label class="form-label-custom">
                                         📞 Tu Número de Teléfono
                                     </label>
-                                    <input type="tel" id="r_phone" class="form-control-custom"
-                                           placeholder="612345678" required="required"
-                                           autocomplete="tel"/>
-                                    <div class="help-text">El número desde el que ficharás</div>
+                                    <input
+                                        type="tel"
+                                        id="r_phone"
+                                        class="form-control-custom"
+                                        placeholder="612345678"
+                                        required="required"
+                                        autocomplete="tel"
+                                    />
+                                    <div
+                                        class="help-text"
+                                    >El número desde el que ficharás</div>
                                 </div>
 
-                                <button type="submit" id="btn_register" class="btn-primary-custom">
+                                <button
+                                    type="submit"
+                                    id="btn_register"
+                                    class="btn-primary-custom"
+                                >
                                     📝 Registrar mi Teléfono
                                 </button>
                             </form>
                         </div>
 
-                        <div style="text-align: center; margin-top: 20px; color: #999; font-size: 0.85rem;">
+                        <div
+                            style="text-align: center; margin-top: 20px; color: #999; font-size: 0.85rem;"
+                        >
                             Si tienes problemas, contacta a RRHH
                         </div>
                     </div>
@@ -300,27 +362,13 @@
                     // Función para mostrar mensajes
                     function showMessage(text, type) {
                         const container = document.getElementById('message_container');
-                        container.innerHTML = '<div class="alert-custom alert-' + type + '">' + text + '</div>';
+                        container.innerHTML = '<div
+                    class="alert-custom alert-' + type + '"
+                >' + text + '</div>';
                     }
 
                     function hideMessage() {
                         document.getElementById('message_container').innerHTML = '';
-                    }
-
-                    async function getPosition() {
-                        if (!navigator.geolocation) {
-                            return { latitude: null, longitude: null };
-                        }
-                        return new Promise((resolve) => {
-                            navigator.geolocation.getCurrentPosition(
-                                ({ coords: { latitude, longitude } }) => resolve({ latitude, longitude }),
-                                (err) => {
-                                    console.warn("[ATTENDANCE_PHONE] Error geolocalización:", err);
-                                    resolve({ latitude: null, longitude: null });
-                                },
-                                { enableHighAccuracy: true, timeout: 5000 }
-                            );
-                        });
                     }
 
                     // Función para hacer peticiones JSON-RPC
@@ -369,16 +417,14 @@
                         }
 
                         btnAttendance.disabled = true;
-                        btnAttendance.innerHTML = '<span class="spinner"></span> Procesando...';
+                        btnAttendance.innerHTML = '<span
+                    class="spinner"
+                /> Procesando...';
 
                         try {
-                            const { latitude, longitude } = await getPosition();
-
                             const result = await rpcCall('/attendance/phone/validate', {
                                 phone: phone,
-                                pin: pin,
-                                latitude: latitude,
-                                longitude: longitude
+                                pin: pin
                             });
 
                             if (result.success) {
@@ -421,7 +467,9 @@
                         }
 
                         btnRegister.disabled = true;
-                        btnRegister.innerHTML = '<span class="spinner"></span> Registrando...';
+                        btnRegister.innerHTML = '<span
+                    class="spinner"
+                /> Registrando...';
 
                         try {
                             const result = await rpcCall('/attendance/phone/register', {
