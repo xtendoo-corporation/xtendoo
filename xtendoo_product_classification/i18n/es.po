@@ -1,0 +1,135 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* xtendoo_product_classification
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-12-07 09:41+0000\n"
+"PO-Revision-Date: 2020-12-07 09:41+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: xtendoo_product_classification
+#: model:ir.actions.act_window,name:xtendoo_product_classification.action_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_product__product_classification_id
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_template__product_classification_id
+#: model_terms:ir.ui.view,arch_db:xtendoo_product_classification.view_product_template_search_classification
+msgid "Classification"
+msgstr "Clasificación"
+
+#. module: xtendoo_product_classification
+#: model_terms:ir.ui.view,arch_db:xtendoo_product_classification.view_product_classification_form
+msgid "Classification Name"
+msgstr "Nombre de Clasificación"
+
+#. module: xtendoo_product_classification
+#: model:ir.actions.act_window,name:xtendoo_product_classification.action_open_classification_products
+msgid "Classification Products"
+msgstr "Clasificación de Productos"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__description
+#: model_terms:ir.ui.view,arch_db:xtendoo_product_classification.view_product_classification_form
+msgid "Description"
+msgstr "Descripción"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__display_name
+msgid "Display Name"
+msgstr "Nombre"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__id
+msgid "ID"
+msgstr ""
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification____last_update
+msgid "Last Modified on"
+msgstr "Última Modificación en"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__write_uid
+msgid "Last Updated by"
+msgstr "Última Fecha por"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__write_date
+msgid "Last Updated on"
+msgstr "Última Fecha en"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__products_count
+msgid "Number of products"
+msgstr "Número de productos"
+
+#. module: xtendoo_product_classification
+#: model:ir.actions.act_window,name:xtendoo_product_classification.action_open_single_product_classification
+#: model:ir.model,name:xtendoo_product_classification.model_product_classification
+#: model_terms:ir.ui.view,arch_db:xtendoo_product_classification.product_classification_search_form_view
+msgid "Product Classification"
+msgstr "Clasificación de Producto"
+
+#. module: xtendoo_product_classification
+#: model:ir.ui.menu,name:xtendoo_product_classification.menu_product_classification
+msgid "Product Classifications"
+msgstr "Clasificaciones de Productos"
+
+#. module: xtendoo_product_classification
+#: model:ir.model,name:xtendoo_product_classification.model_product_template
+msgid "Product Template"
+msgstr "Plantilla de producto"
+
+#. module: xtendoo_product_classification
+#: model_terms:ir.ui.view,arch_db:xtendoo_product_classification.view_product_classification_form
+msgid "Products"
+msgstr "Productos"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,help:xtendoo_product_classification.field_product_product__product_classification_id
+#: model:ir.model.fields,help:xtendoo_product_classification.field_product_template__product_classification_id
+msgid "Select a classification for this product"
+msgstr "Selecciona una clasificación para este producto"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,field_description:xtendoo_product_classification.field_product_classification__product_ids
+msgid "State Products"
+msgstr "Estado de Productos"
+
+#. module: xtendoo_product_classification
+#: model:ir.model.fields,help:xtendoo_product_classification.field_product_classification__sequence
+msgid "Used to order the Classification"
+msgstr "Order de Clasificación Usada"
+
+#. module: xtendoo_product_classification
+#: model_terms:ir.ui.view,arch_db:xtendoo_product_classification.view_product_classification_tree
+msgid "product.classification"
+msgstr ""
+
+
