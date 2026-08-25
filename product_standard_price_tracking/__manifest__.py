@@ -3,7 +3,7 @@
 {
     "name": "Product Standard Price Tracking",
     "summary": "Add tracking to partner standard price",
-    "version": "17.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Purchase",
     "author": "Xtendoo, Odoo Community Association (OCA), Camilo",
     "license": "AGPL-3",
