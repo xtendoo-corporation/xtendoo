@@ -26,16 +26,13 @@ class ProductClassification(models.Model):
 
     @api.depends("product_ids")
     def _compute_products_count(self):
-        data = self.env["product.template"].read_group(
+        data = self.env["product.template"]._read_group(
             [("product_classification_id", "in", self.ids)],
             ["product_classification_id"],
-            ["product_classification_id"],
+            ["__count"],
         )
         mapped_data = {
-            record["product_classification_id"][0]: record[
-                "product_classification_id_count"
-            ]
-            for record in data
+            classification.id: count for classification, count in data
         }
         for classification in self:
             classification.products_count = mapped_data.get(classification.id, 0)

@@ -5,13 +5,13 @@
         <field name="name">sale.order.tag.list</field>
         <field name="model">sale.order.tag</field>
         <field name="arch" type="xml">
-            <tree editable="top">
+            <list editable="top">
                 <field name="sequence" widget="handle" />
                 <field name="name" string="Nombre"/>
                 <field name="description" string="Descripción"/>
                 <field name="team_ids" widget="many2many_tags" string="Equipos de ventas"/>
                 <field name="company_id" string="Compañía"/>
-            </tree>
+            </list>
         </field>
     </record>
     <record id="sale_order_tag_form_view" model="ir.ui.view">
@@ -26,7 +26,7 @@
                             name="web_ribbon"
                             title="Archived"
                             bg_color="bg-danger"
-                            attrs="{'invisible': [('active', '=', True)]}"
+                            invisible="active"
                         />
                     </div>
                     <div class="oe_title">
@@ -49,7 +49,7 @@
     <record id="sale_order_tag_action" model="ir.actions.act_window">
         <field name="name">Etiquetas de pedidos de venta</field>
         <field name="res_model">sale.order.tag</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
     <menuitem
         name="Etiquetas de pedidos de venta"

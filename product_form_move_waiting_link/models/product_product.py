@@ -19,11 +19,11 @@ class ProductProduct(models.Model):
         if pick_type:
             domain.append(("picking_type_id", "=", pick_type[0].id))
 
-        order_lines = self.env["stock.move"].read_group(
-            domain, ["product_id", "product_uom_qty"], ["product_id"]
+        order_lines = self.env["stock.move"]._read_group(
+            domain, ["product_id"], ["product_uom_qty:sum"]
         )
         moved_data = {
-            data["product_id"][0]: data["product_uom_qty"] for data in order_lines
+            product.id: qty_sum for product, qty_sum in order_lines
         }
 
         self.move_product_qty = 0
