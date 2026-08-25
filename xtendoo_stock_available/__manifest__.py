@@ -20,7 +20,12 @@
     "data": [
         "views/product_template_view.xml",
         "views/product_product_view.xml",
-        "views/res_config_settings_views.xml",
+        # res_config_settings_views.xml usa el framework de ajustes antiguo
+        # (div data-key), sustituido en v17 por <app>/<block>/<setting>.
+        # Desactivado para este salto intermedio (no bloquea la migración
+        # de datos ni las funciones inmediately_usable_qty/purchase/report
+        # que dji usa); adaptar en la Fase 4 (versión 19.0 final).
+        # "views/res_config_settings_views.xml",
     ],
     "installable": True,
 }
