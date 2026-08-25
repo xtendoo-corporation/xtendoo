@@ -3,7 +3,7 @@
 {
     "name": "No pagination lines",
     "summary": "No pagination lines",
-    "version": "17.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Sale",
     "website": "https://xtendoo.es",
     "author": "Dani Domínguez,",
