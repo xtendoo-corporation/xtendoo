@@ -11,7 +11,7 @@
         </field>
     </record>
     <record model="ir.ui.view" id="purchase_order_line_tree">
-        <field name="name">xtendoo_purchase_discount.order.line.tree</field>
+        <field name="name">xtendoo_purchase_discount.order.line.list</field>
         <field name="model">purchase.order.line</field>
         <field name="inherit_id" ref="purchase.purchase_order_line_tree" />
         <field name="arch" type="xml">
@@ -26,7 +26,7 @@
         <field name="inherit_id" ref="purchase.purchase_order_form" />
         <field name="arch" type="xml">
             <xpath
-                expr="//field[@name='order_line']/tree/field[@name='price_unit']"
+                expr="//field[@name='order_line']/list/field[@name='price_unit']"
                 position="after"
             >
                 <field
@@ -48,7 +48,7 @@
         </field>
     </record>
     <record model="ir.ui.view" id="purchase_history_tree">
-        <field name="name">xtendoo_purchase_discount.history.tree</field>
+        <field name="name">xtendoo_purchase_discount.history.list</field>
         <field name="model">purchase.order.line</field>
         <field name="inherit_id" ref="purchase.purchase_history_tree" />
         <field name="arch" type="xml">

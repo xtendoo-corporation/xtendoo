@@ -16,7 +16,7 @@
     "GRAP,"
     "Odoo Community Association (OCA),"
     "Xtendoo",
-    "version": "17.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Purchase Management",
     "website": "https://github.com/OCA/purchase-workflow",
     "depends": ["purchase_stock"],
