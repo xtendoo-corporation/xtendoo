@@ -17,6 +17,7 @@ const express = require("express");
 const { SerialPort } = require("serialport");
 
 const app = express();
+app.use(express.json({ limit: "1mb" }));
 
 const BRIDGE_PORT = parseInt(process.env.BRIDGE_PORT || "3211", 10);
 const API_KEY = process.env.BRIDGE_API_KEY || "";
@@ -35,7 +36,7 @@ const OPEN_DRAWER_CMD = Buffer.from([0x1b, 0x70, 0x00, 0x19, 0xfa]);
 // Necesario para que el navegador del TPV (Odoo en cloud) pueda llamar al bridge LAN
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "x-api-key, Content-Type");
     // Preflight: responder 200 inmediatamente, sin pasar por auth
     if (req.method === "OPTIONS") {
@@ -69,6 +70,33 @@ function openDrawerSerial(portPath) {
     });
 }
 
+function sendRawSerial(portPath, rawBytes) {
+    return new Promise((resolve, reject) => {
+        const port = new SerialPort({ path: portPath, baudRate: 9600, autoOpen: false });
+        port.open((err) => {
+            if (err) return reject(err);
+            port.write(rawBytes, (writeErr) => {
+                port.close();
+                if (writeErr) return reject(writeErr);
+                resolve();
+            });
+        });
+    });
+}
+
+function getPrinterPort(printer) {
+    let portPath = PRINTER_PORTS[printer];
+    if (!portPath) {
+        const fallback = Object.values(PRINTER_PORTS)[0];
+        if (!fallback) {
+            throw new Error(`Impresora '${printer}' no configurada en el bridge`);
+        }
+        console.warn(`[bridge] Impresora '${printer}' no encontrada, usando: ${fallback}`);
+        portPath = fallback;
+    }
+    return portPath;
+}
+
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
 app.get("/health", (req, res) => {
@@ -79,18 +107,11 @@ app.get("/open-drawer", checkApiKey, async (req, res) => {
     const printer = (req.query.printer || "").trim();
     console.log(`[bridge] Solicitud de apertura — impresora: "${printer}"`);
 
-    let portPath = PRINTER_PORTS[printer];
-    if (!portPath) {
-        // Si no hay coincidencia exacta, usar el primer puerto disponible
-        const fallback = Object.values(PRINTER_PORTS)[0];
-        if (!fallback) {
-            return res.status(404).json({
-                ok: false,
-                error: `Impresora '${printer}' no configurada en el bridge`,
-            });
-        }
-        console.warn(`[bridge] Impresora '${printer}' no encontrada, usando: ${fallback}`);
-        portPath = fallback;
+    let portPath;
+    try {
+        portPath = getPrinterPort(printer);
+    } catch (err) {
+        return res.status(404).json({ ok: false, error: err.message });
     }
 
     try {
@@ -98,6 +119,34 @@ app.get("/open-drawer", checkApiKey, async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error(`[bridge] Error abriendo cajón en ${portPath}:`, err.message);
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+app.post("/print-raw", checkApiKey, async (req, res) => {
+    const printer = String(req.body?.printer || "").trim();
+    const hexBytes = String(req.body?.hex_bytes || "").trim();
+    console.log(`[bridge] Solicitud de impresion RAW — impresora: "${printer}"`);
+
+    if (!hexBytes) {
+        return res.status(400).json({ ok: false, error: "Falta el campo hex_bytes" });
+    }
+
+    let portPath;
+    try {
+        portPath = getPrinterPort(printer);
+    } catch (err) {
+        return res.status(404).json({ ok: false, error: err.message });
+    }
+
+    try {
+        const rawBytes = Buffer.from(
+            hexBytes.split(",").map((item) => parseInt(item.trim(), 16))
+        );
+        await sendRawSerial(portPath, rawBytes);
+        res.json({ ok: true, printer, bytesSent: rawBytes.length });
+    } catch (err) {
+        console.error(`[bridge] Error imprimiendo RAW en ${portPath}:`, err.message);
         res.status(500).json({ ok: false, error: err.message });
     }
 });

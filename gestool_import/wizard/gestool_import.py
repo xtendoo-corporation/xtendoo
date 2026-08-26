@@ -96,6 +96,7 @@ class GestoolImport(models.TransientModel):
     def import_file(self):
         """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
         self.ensure_one()
+        ticket_result = False
 
         # if self.data_file_agentes:
         #     data_file_agentes = b64decode(self.data_file_agentes)
@@ -130,7 +131,7 @@ class GestoolImport(models.TransientModel):
         if self.data_file_ticket:
             data_file_ticket = b64decode(self.data_file_ticket)
             if data_file_ticket:
-                self._import_ticket(data_file_ticket)
+                ticket_result = self._import_ticket(data_file_ticket)
 
         if self.data_file_supplier_info:
             data_file_supplier_info = b64decode(self.data_file_supplier_info)
@@ -142,7 +143,7 @@ class GestoolImport(models.TransientModel):
             if data_file_multiple_barcodes:
                 self._import_multiple_barcodes(data_file_multiple_barcodes)
 
-        return True
+        return ticket_result or True
     #
     #     if self.data_file_kits:
     #         data_file_kits = b64decode(self.data_file_kits)
@@ -511,73 +512,99 @@ class GestoolImport(models.TransientModel):
             # "supplier_taxes_id": supplier_taxes_id,
 
 
-    def _get_or_create_import_session(self):
-        """Obtiene o crea la sesión POS única de importación para la compañía activa.
-
-        Usa un pos.config exclusivo llamado 'importación gestool' para evitar
-        el error 'Otra sesión ya está abierta' al compartir config con otras sesiones.
-        """
-        company = self.env.company
-
-        # 1. Buscar sesión de importación ya existente y activa (cualquier estado no cerrado)
-        session = self.env['pos.session'].sudo().search([
-            ('config_id.name', '=', 'importación gestool'),
-            ('company_id', '=', company.id),
-            ('state', 'in', ('opening_control', 'opened')),
-        ], limit=1)
-
-        if session:
-            # Forzar estado 'opened' si hace falta y devolverla
-            if session.state != 'opened':
-                session.sudo().write({'state': 'opened'})
-            return session
-
-        # 2. Buscar o crear el pos.config exclusivo para importación
-        config = self.env['pos.config'].sudo().search([
-            ('name', '=', 'importación gestool'),
-            ('company_id', '=', company.id),
+    def _get_ticket_pos_config(self, pos_name):
+        """Resuelve de forma inequívoca el TPV indicado en la octava columna."""
+        pos_name = (pos_name or "").strip()
+        if not pos_name:
+            return self.env['pos.config'].browse()
+        configs = self.env['pos.config'].sudo().search([
+            ('name', '=', pos_name),
+            ('company_id', '=', self.env.company.id),
             ('active', '=', True),
-        ], limit=1)
+        ], limit=2)
+        return configs if len(configs) == 1 else self.env['pos.config'].browse()
 
-        if not config:
-            _logger.info(
-                "Creando pos.config 'importación gestool' para la compañía %s.",
-                company.name,
-            )
-            config = self.env['pos.config'].sudo().create({
-                'name': 'importación gestool',
-                'company_id': company.id,
-            })
-
-        # 3. Cerrar cualquier sesión previa en estado cerrado/rescatado para este config
-        #    (no hace falta, pero por si acaso aseguramos que no quede ninguna abierta)
-        stale = self.env['pos.session'].sudo().search([
-            ('config_id', '=', config.id),
-            ('state', 'not in', ('closed',)),
-        ])
-        if stale:
-            # Ya existe una sesión no cerrada para este config: reutilizarla
-            session = stale[0]
-            _logger.info(
-                "Reutilizando sesión existente (id=%s, state=%s) para config 'importación gestool'.",
-                session.id, session.state,
-            )
-        else:
-            # 4. Crear la sesión nueva
-            _logger.info(
-                "Creando sesión POS 'importación gestool' para la compañía %s.",
-                company.name,
-            )
-            session = self.env['pos.session'].sudo().create({
-                'config_id': config.id,
-                'user_id': self.env.uid,
-            })
-
-        # 5. Forzar estado 'opened'
-        if session.state != 'opened':
-            session.sudo().write({'state': 'opened'})
-
+    def _create_import_session(self, config):
+        """Crea y abre una sesión aislada 0000 para un TPV existente."""
+        config.ensure_one()
+        cash_method = self._ensure_import_cash_payment_method(config)
+        if not cash_method.journal_id.loss_account_id or not cash_method.journal_id.profit_account_id:
+            raise UserError(_(
+                "El diario de efectivo '%(journal)s' del punto de venta '%(pos)s' "
+                "debe tener configuradas las cuentas de pérdidas y ganancias para "
+                "poder cerrar automáticamente la sesión 0000.",
+                journal=cash_method.journal_id.name,
+                pos=config.name,
+            ))
+        session = self.env['pos.session'].sudo().create({
+            'config_id': config.id,
+            'user_id': self.env.uid,
+            'rescue': True,
+        })
+        session.set_opening_control(0.0, _("Importación Gestool"))
+        session.sudo().write({'name': '0000'})
+        _logger.info(
+            "Sesión 0000 creada y abierta para el TPV '%s' (id=%s).",
+            config.name, session.id,
+        )
         return session
+
+    def _close_import_session(self, session):
+        """Cuenta el efectivo teórico y cierra contablemente la sesión 0000."""
+        session.ensure_one()
+        cash_method = session.payment_method_ids.filtered('is_cash_count')[:1]
+        cash_payments = session.order_ids.payment_ids.filtered(
+            lambda payment: payment.payment_method_id == cash_method
+            and payment.pos_order_id.state in ('paid', 'invoiced', 'done')
+        )
+        counted_cash = (
+            session.cash_register_balance_start
+            + sum(session.statement_line_ids.mapped('amount'))
+            + sum(cash_payments.mapped('amount'))
+        )
+        session.post_closing_cash_details(counted_cash)
+        session.invalidate_recordset([
+            'cash_register_balance_end',
+            'cash_register_difference',
+        ])
+        result = session.close_session_from_ui()
+        if not result.get('successful') or session.state != 'closed':
+            raise UserError(_(
+                "No se pudo cerrar la sesión 0000 del punto de venta %(pos)s: %(reason)s",
+                pos=session.config_id.name,
+                reason=result.get('message') or _("motivo desconocido"),
+            ))
+        _logger.info(
+            "Sesión 0000 cerrada para el TPV '%s' (id=%s).",
+            session.config_id.name, session.id,
+        )
+
+    def _ensure_import_cash_payment_method(self, config):
+        """Devuelve el método de efectivo configurado en el TPV del CSV."""
+        config.ensure_one()
+        cash_method = config.payment_method_ids.filtered(
+            lambda method: method.active and method.journal_id.type == 'cash'
+        )[:1]
+        if cash_method:
+            return cash_method
+        raise UserError(_(
+            "El punto de venta '%s' no tiene configurado ningún método de pago en efectivo. "
+            "Configúralo antes de importar para no modificar una sesión de venta que pueda estar abierta.",
+            config.name,
+        ))
+
+    def _replace_order_payments_with_cash(self, pos_order, cash_method):
+        """Deja exactamente un pago en efectivo por el total del pedido."""
+        pos_order.ensure_one()
+        cash_method.ensure_one()
+        pos_order._clean_payment_lines()
+        pos_order.add_payment({
+            'pos_order_id': pos_order.id,
+            'payment_method_id': cash_method.id,
+            'amount': pos_order.amount_total,
+            'payment_date': pos_order.date_order,
+        })
+        return pos_order.payment_ids
 
     def _get_tax_by_amount(self, amount):
         """Busca el impuesto de tipo 'sale' cuyo porcentaje coincide con amount,
@@ -611,29 +638,149 @@ class GestoolImport(models.TransientModel):
             )
         return tax
 
+    def _get_ticket_product(self, product_code, env=None):
+        """Resuelve el producto de una línea Gestool en la compañía activa."""
+        env = env or self.env
+        product_code = (product_code or "").strip()
+        if not product_code:
+            return env['product.product'].browse()
+
+        company = env.company
+        return env['product.product'].search([
+            ('default_code', '=', product_code),
+            ('active', '=', True),
+            '|',
+            ('company_id', '=', company.id),
+            ('company_id', '=', False),
+        ], limit=1)
+
+    def _ticket_import_warning(
+        self, invalid_tickets, malformed_lines, invalid_pos_tickets=None,
+        mixed_pos_tickets=None,
+    ):
+        """Construye una notificación legible sin desbordar el cliente web."""
+        invalid_pos_tickets = invalid_pos_tickets or {}
+        mixed_pos_tickets = mixed_pos_tickets or {}
+        details = []
+        for reference, product_codes in list(invalid_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s: producto(s) %(products)s",
+                ticket=reference,
+                products=", ".join(sorted(product_codes)),
+            ))
+        if len(invalid_tickets) > 20:
+            details.append(_("… y %d ticket(s) más", len(invalid_tickets) - 20))
+        if malformed_lines:
+            details.append(_(
+                "Filas con formato incompleto omitidas: %s",
+                ", ".join(str(line) for line in malformed_lines[:20]),
+            ))
+        for reference, pos_name in list(invalid_pos_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s: punto de venta '%(pos)s' no encontrado o duplicado",
+                ticket=reference,
+                pos=pos_name or _("(vacío)"),
+            ))
+        for reference, pos_names in list(mixed_pos_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s: aparece en varios puntos de venta (%(points)s)",
+                ticket=reference,
+                points=", ".join(sorted(pos_names)),
+            ))
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _("Importación Gestool completada con avisos"),
+                'message': _(
+                    "Se omitieron ventas para no crear pedidos incompletos. "
+                    "Importa primero los productos indicados y vuelve a importar el CSV.\n%s",
+                    "\n".join(details),
+                ),
+                'type': 'warning',
+                'sticky': True,
+            },
+        }
+
     def _import_ticket(self, data_file_ticket):
         try:
             csv_data = list(reader(StringIO(data_file_ticket.decode("utf-8"))))
         except Exception:
             raise UserError(_("Can not read the file"))
 
-        session = self._get_or_create_import_session()
-        processed_order_ids = set()
+        data_rows = list(enumerate(csv_data[1:], start=2))
+        invalid_tickets = {}
+        invalid_pos_tickets = {}
+        mixed_pos_tickets = {}
+        malformed_lines = []
+        ticket_pos_names = {}
+        configs_by_name = {}
 
-        for index, row in enumerate(csv_data):
-            if index >= 1:
+        # Validar el fichero completo antes de crear pedidos. Si falla una línea,
+        # se omite su ticket entero para no generar una venta/factura parcial.
+        for line_number, row in data_rows:
+            if len(row) < 18 or not row[3].strip():
+                malformed_lines.append(line_number)
+                continue
+
+            ticket_reference = row[3].strip()
+            pos_name = row[7].strip()
+            ticket_pos_names.setdefault(ticket_reference, set()).add(pos_name)
+            if len(ticket_pos_names[ticket_reference]) > 1:
+                mixed_pos_tickets[ticket_reference] = ticket_pos_names[ticket_reference]
+
+            if pos_name not in configs_by_name:
+                configs_by_name[pos_name] = self._get_ticket_pos_config(pos_name)
+            if not configs_by_name[pos_name]:
+                invalid_pos_tickets[ticket_reference] = pos_name
+
+            product_code = row[15].strip() if len(row) > 15 else ""
+            if not self._get_ticket_product(product_code):
+                invalid_tickets.setdefault(ticket_reference, set()).add(
+                    product_code or _("(código vacío)")
+                )
+
+        valid_rows = [
+            row for _line_number, row in data_rows
+            if len(row) >= 18
+            and row[3].strip()
+            and row[3].strip() not in invalid_tickets
+            and row[3].strip() not in invalid_pos_tickets
+            and row[3].strip() not in mixed_pos_tickets
+        ]
+
+        rows_by_config = {}
+        for row in valid_rows:
+            config = configs_by_name[row[7].strip()]
+            rows_by_config.setdefault(config.id, []).append(row)
+
+        total_processed_orders = 0
+        for config_id, config_rows in rows_by_config.items():
+            config = self.env['pos.config'].sudo().browse(config_id)
+            session = self._create_import_session(config)
+            processed_order_ids = set()
+            for row in config_rows:
                 order = self.parse_ticket(row, session)
                 if order:
                     processed_order_ids.add(order.id)
 
-        _logger.info("Total pedidos a confirmar/facturar: %d", len(processed_order_ids))
+            for order_id in processed_order_ids:
+                pos_order = self.env['pos.order'].sudo().browse(order_id)
+                if pos_order.exists() and pos_order.state == 'draft':
+                    self._confirm_and_invoice_order(pos_order)
+            self._close_import_session(session)
+            total_processed_orders += len(processed_order_ids)
 
-        # Una vez procesadas todas las líneas, confirmar, pagar y facturar cada pedido
-        for order_id in processed_order_ids:
-            pos_order = self.env['pos.order'].sudo().browse(order_id)
-            if pos_order.exists() and pos_order.state == 'draft':
-                self._confirm_and_invoice_order(pos_order)
-        return
+        _logger.info("Total pedidos importados: %d", total_processed_orders)
+        if invalid_tickets or malformed_lines or invalid_pos_tickets or mixed_pos_tickets:
+            return self._ticket_import_warning(
+                invalid_tickets,
+                malformed_lines,
+                invalid_pos_tickets,
+                mixed_pos_tickets,
+            )
+        return True
 
     def parse_ticket(self, row, session):
 
@@ -642,7 +789,7 @@ class GestoolImport(models.TransientModel):
             row[9], row[3], row[15], row[17], row[16], row[18] if len(row) > 18 else 'N/A',
         )
 
-        company = self.env.company
+        company = session.company_id
 
         # Entorno con sudo y contexto de compañía correcta
         env = self.env(
@@ -651,10 +798,15 @@ class GestoolImport(models.TransientModel):
         )
 
         partner = env["res.partner"].search([("ref", "=", row[9])], limit=1)
-        product = env['product.product'].search([('default_code', '=', row[15])], limit=1)
+        product_code = row[15].strip()
+        product = self._get_ticket_product(product_code, env=env)
 
         if not product:
-            _logger.warning("Producto no encontrado con código: %s (pos_reference: %s)", row[15], row[3])
+            _logger.warning(
+                "Línea omitida: producto no encontrado con código '%s' (pos_reference: %s)",
+                product_code, row[3],
+            )
+            return False
 
         # Resolver impuesto por porcentaje desde row[18]
         tax_amount_raw = row[18] if len(row) > 18 else None
@@ -670,7 +822,7 @@ class GestoolImport(models.TransientModel):
         amount_total = round(amount_untaxed + line_tax, 2)
 
         line_vals = (0, 0, {
-            'product_id': product.id if product else False,
+            'product_id': product.id,
             'qty': qty,
             'price_unit': price_unit,
             'price_subtotal': amount_untaxed,
@@ -681,7 +833,7 @@ class GestoolImport(models.TransientModel):
 
         pos_order = env["pos.order"].search([
             ("pos_reference", "=", row[3]),
-            ("company_id", "=", company.id),
+            ("session_id", "=", session.id),
         ], limit=1)
 
         # Parsear fecha del ticket desde row[5]
@@ -733,53 +885,24 @@ class GestoolImport(models.TransientModel):
             context=dict(self.env.context, allowed_company_ids=[company.id], force_company=company.id),
         )
 
-        # 1. Buscar método de pago en efectivo del config de la sesión
-        # 'type' es computed no almacenado → filtrar por journal_id.type = 'cash'
-        cash_pm = env['pos.payment.method'].search([
-            ('config_ids', 'in', pos_order.config_id.id),
-            ('journal_id.type', '=', 'cash'),
-        ], limit=1)
-
-        if not cash_pm:
-            # Fallback: cualquier método de pago en efectivo de la compañía
-            cash_pm = env['pos.payment.method'].search([
-                ('company_id', '=', company.id),
-                ('journal_id.type', '=', 'cash'),
-            ], limit=1)
-
-        if not cash_pm:
-            _logger.error(
-                "No se encontró método de pago en efectivo para el pedido %s. "
-                "Asegúrate de que el pos.config 'importación gestool' tiene un método de pago en efectivo.",
-                pos_order.pos_reference,
-            )
-            return
+        # 1. La forma de pago del CSV se ignora siempre. El TPV de importación
+        # dispone de su propio método de efectivo y el pedido queda con un solo pago.
+        cash_pm = self._ensure_import_cash_payment_method(pos_order.config_id)
 
         _logger.info(
             "Usando método de pago '%s' (id=%s) para pedido %s",
             cash_pm.name, cash_pm.id, pos_order.pos_reference,
         )
 
-        # 2. Crear el pago en efectivo por el importe total del pedido
-        env['pos.payment'].create({
-            'pos_order_id': pos_order.id,
-            'payment_method_id': cash_pm.id,
-            'amount': pos_order.amount_total,
-            'payment_date': pos_order.date_order,
-            'company_id': company.id,
-        })
+        # 2. Sustituir cualquier pago previo por efectivo por el importe total.
+        pos_order = env['pos.order'].browse(pos_order.id)
+        self._replace_order_payments_with_cash(pos_order, cash_pm)
 
-        # 3. Actualizar amount_paid en el pedido
-        env['pos.order'].browse(pos_order.id).write({
-            'amount_paid': pos_order.amount_total,
-            'company_id': company.id,
-        })
-
-        # 4. Marcar el pedido como pagado
+        # 3. Marcar el pedido como pagado
         env['pos.order'].browse(pos_order.id).action_pos_order_paid()
         _logger.info("Pedido %s marcado como pagado (state=%s).", pos_order.pos_reference, pos_order.state)
 
-        # 5. Marcar para facturar y generar la factura
+        # 4. Marcar para facturar y generar la factura
         env['pos.order'].browse(pos_order.id).write({'to_invoice': True})
         env['pos.order'].browse(pos_order.id).with_context(generate_pdf=False)._generate_pos_order_invoice()
         _logger.info("Factura generada para el pedido %s (factura=%s).", pos_order.pos_reference, pos_order.account_move)

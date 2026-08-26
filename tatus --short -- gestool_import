@@ -1,0 +1,8 @@
+xtendoo_cash_drawer_windows_client/send-raw.ps1:3: trailing whitespace.
+[32m+[m[32m    [string]$DocName = "RawPrintJob",[m[41m[m
+xtendoo_cash_drawer_windows_client/send-raw.ps1:50: trailing whitespace.
+[32m+[m[32m    public static void SendBytesToPrinter(string printerName, byte[] bytes, string docName)[m[41m[m
+xtendoo_cash_drawer_windows_client/send-raw.ps1:60: trailing whitespace.
+[32m+[m[32m            di.pDocName = docName;[m[41m[m
+xtendoo_cash_drawer_windows_client/send-raw.ps1:116: trailing whitespace.
+[32m+[m[32m[RawPrinterHelper]::SendBytesToPrinter($PrinterName, $byteList, $DocName)[m[41m[m

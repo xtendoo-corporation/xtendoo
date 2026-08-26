@@ -33,7 +33,7 @@ CORS(
     app,
     resources={r"/*": {"origins": "*"}},
     allow_headers=["x-api-key", "Content-Type"],
-    methods=["GET", "OPTIONS"],
+    methods=["GET", "POST", "OPTIONS"],
 )
 
 # ── Configuración ─────────────────────────────────────────────────────────────
@@ -78,6 +78,47 @@ def _open_drawer_serial(port: str) -> dict:
         return {"ok": False, "error": str(exc)}
 
 
+def _send_raw_serial(port: str, raw_bytes: bytes) -> dict:
+    """Envía bytes RAW a la impresora serie."""
+    try:
+        import serial  # pyserial
+
+        with serial.Serial(port, baudrate=9600, timeout=2) as ser:
+            ser.write(raw_bytes)
+        logger.info("Trabajo RAW enviado vía serie en %s", port)
+        return {"ok": True, "bytesSent": len(raw_bytes)}
+    except ImportError:
+        return {
+            "ok": False,
+            "error": "pyserial no instalado. Ejecuta: pip install pyserial",
+        }
+    except Exception as exc:
+        logger.error("Error enviando bytes RAW en %s: %s", port, exc)
+        return {"ok": False, "error": str(exc)}
+
+
+def _resolve_printer_port(printer: str):
+    port = PRINTER_PORTS.get(printer)
+    if not port:
+        port = next(iter(PRINTER_PORTS.values()), None)
+        if not port:
+            return None, (
+                jsonify(
+                    {
+                        "ok": False,
+                        "error": f"Impresora '{printer}' no configurada en el bridge",
+                    }
+                ),
+                404,
+            )
+        logger.warning(
+            "Impresora '%s' no encontrada, usando puerto por defecto: %s",
+            printer,
+            port,
+        )
+    return port, None
+
+
 @app.route("/health", methods=["GET", "OPTIONS"])
 def health():
     return jsonify({"status": "ok"})
@@ -96,15 +137,40 @@ def open_drawer():
     printer = request.args.get("printer", "").strip()
     logger.info("Solicitud de apertura — impresora: %r", printer)
 
-    port = PRINTER_PORTS.get(printer)
-    if not port:
-        # Intenta con el primer puerto disponible si no hay coincidencia
-        port = next(iter(PRINTER_PORTS.values()), None)
-        if not port:
-            return jsonify({"ok": False, "error": f"Impresora '{printer}' no configurada en el bridge"}), 404
-        logger.warning("Impresora '%s' no encontrada, usando puerto por defecto: %s", printer, port)
+    port, error_response = _resolve_printer_port(printer)
+    if error_response:
+        return error_response
 
     result = _open_drawer_serial(port)
+    status = 200 if result["ok"] else 500
+    return jsonify(result), status
+
+
+@app.route("/print-raw", methods=["POST", "OPTIONS"])
+def print_raw():
+    if request.method == "OPTIONS":
+        return "", 200
+
+    auth_error = _check_api_key()
+    if auth_error:
+        return auth_error
+
+    payload = request.get_json(silent=True) or {}
+    printer = str(payload.get("printer", "")).strip()
+    hex_bytes = str(payload.get("hex_bytes", "")).strip()
+    if not hex_bytes:
+        return jsonify({"ok": False, "error": "Falta el campo hex_bytes"}), 400
+
+    port, error_response = _resolve_printer_port(printer)
+    if error_response:
+        return error_response
+
+    try:
+        raw_bytes = bytes(int(chunk.strip(), 16) for chunk in hex_bytes.split(",") if chunk.strip())
+    except ValueError:
+        return jsonify({"ok": False, "error": "hex_bytes contiene valores no válidos"}), 400
+
+    result = _send_raw_serial(port, raw_bytes)
     status = 200 if result["ok"] else 500
     return jsonify(result), status
 

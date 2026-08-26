@@ -356,6 +356,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.json({ limit: '1mb' }));
 
 app.use((req, res, next) => {
   applyPrivateNetworkHeaders(req, res);
@@ -438,7 +439,7 @@ function getPowerShellScriptPath() {
   return scriptPath;
 }
 
-function sendDrawerPulse(printerName) {
+function sendRawBytes(printerName, hexBytes, docName = 'RawPrintJob') {
   return new Promise((resolve, reject) => {
     let scriptPath;
 
@@ -448,23 +449,21 @@ function sendDrawerPulse(printerName) {
       return reject(err);
     }
 
-    // ESC p m t1 t2
-    // 1B 70 00 19 FA
-    const hexBytes = '1B,70,00,19,FA';
-
     const args = [
       '-NoProfile',
       '-ExecutionPolicy', 'Bypass',
       '-File', scriptPath,
-      '-HexBytes', hexBytes
+      '-HexBytes', hexBytes,
+      '-DocName', docName
     ];
 
     if (printerName && String(printerName).trim()) {
       args.push('-PrinterName', String(printerName).trim());
     }
 
-    logInfo('Lanzando PowerShell para abrir cajon', {
+    logInfo('Lanzando PowerShell para enviar bytes RAW', {
       printerName: printerName || null,
+      docName,
       scriptPath,
       command: 'powershell.exe',
       args
@@ -507,7 +506,7 @@ function sendDrawerPulse(printerName) {
 
       try {
         const parsed = JSON.parse(stdout.trim());
-        logInfo('Cajon abierto correctamente', {
+        logInfo('Trabajo RAW enviado correctamente', {
           printerName: parsed.printer,
           bytesSent: parsed.bytesSent
         });
@@ -522,6 +521,12 @@ function sendDrawerPulse(printerName) {
       }
     });
   });
+}
+
+function sendDrawerPulse(printerName) {
+  // ESC p m t1 t2
+  // 1B 70 00 19 FA
+  return sendRawBytes(printerName, '1B,70,00,19,FA', 'OpenDrawer');
 }
 
 app.get('/ping', (req, res) => {
@@ -564,11 +569,54 @@ async function openDrawerHandler(req, res) {
   }
 }
 
+async function printRawHandler(req, res) {
+  try {
+    const requestedPrinter = req.body.printer || DEFAULT_PRINTER || '';
+    const hexBytes = String(req.body.hex_bytes || '').trim();
+    const docName = String(req.body.doc_name || 'PDATicket').trim() || 'PDATicket';
+
+    if (!hexBytes) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Falta el campo hex_bytes'
+      });
+    }
+
+    logInfo('Solicitud de impresion RAW', {
+      requestId: req.requestId,
+      requestedPrinter: requestedPrinter || '(predeterminada del sistema)',
+      docName,
+      bytesLength: hexBytes.split(',').filter(Boolean).length
+    });
+
+    const result = await sendRawBytes(requestedPrinter, hexBytes, docName);
+
+    return res.status(200).json({
+      ok: true,
+      message: 'Ticket enviado correctamente',
+      printer: result.printer,
+      bytesSent: result.bytesSent
+    });
+  } catch (error) {
+    logError('Error al imprimir ticket RAW', {
+      requestId: req.requestId,
+      requestedPrinter: req.body.printer || DEFAULT_PRINTER || null,
+      error: error.message || 'Error desconocido'
+    });
+
+    return res.status(500).json({
+      ok: false,
+      error: error.message || 'Error enviando ticket RAW'
+    });
+  }
+}
+
 app.get('/health', healthHandler);
 app.post('/health', healthHandler);
 
 app.get('/open-drawer', validateApiKey, openDrawerHandler);
 app.post('/open-drawer', validateApiKey, openDrawerHandler);
+app.post('/print-raw', validateApiKey, printRawHandler);
 
 app.use((req, res) => {
   logWarn('Ruta no encontrada', {
@@ -652,6 +700,7 @@ function printBanner(proto, printerName) {
   console.log('------------------------------------------------------------');
   console.log(`  GET ${url}/ping`);
   console.log(`  GET|POST ${url}/open-drawer?api_key=<KEY>[&printer=<NOMBRE>]`);
+  console.log(`  POST     ${url}/print-raw   { printer, hex_bytes, doc_name }`);
   console.log('============================================================');
   console.log('');
 

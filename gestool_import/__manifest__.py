@@ -4,7 +4,7 @@
     "category": "Product",
     "version": "19.0.1.0.0",
     "depends": [
-        "product",
+        "point_of_sale",
     ],
     "license": "AGPL-3",
     "application": True,

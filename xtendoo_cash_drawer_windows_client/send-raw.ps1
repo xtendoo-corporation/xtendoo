@@ -1,5 +1,6 @@
 param(
     [string]$PrinterName,
+    [string]$DocName = "RawPrintJob",
     [Parameter(Mandatory=$true)]
     [string]$HexBytes
 )
@@ -46,7 +47,7 @@ public class RawPrinterHelper
     [DllImport("winspool.drv", SetLastError=true)]
     public static extern bool WritePrinter(IntPtr hPrinter, byte[] pBytes, int dwCount, out int dwWritten);
 
-    public static void SendBytesToPrinter(string printerName, byte[] bytes)
+    public static void SendBytesToPrinter(string printerName, byte[] bytes, string docName)
     {
         IntPtr hPrinter;
 
@@ -56,7 +57,7 @@ public class RawPrinterHelper
         try
         {
             DOCINFO di = new DOCINFO();
-            di.pDocName = "OpenDrawer";
+            di.pDocName = docName;
             di.pDataType = "RAW";
             di.pOutputFile = null;
 
@@ -112,7 +113,7 @@ $byteList = $HexBytes.Split(',') | ForEach-Object {
     [Convert]::ToByte($_.Trim(), 16)
 }
 
-[RawPrinterHelper]::SendBytesToPrinter($PrinterName, $byteList)
+[RawPrinterHelper]::SendBytesToPrinter($PrinterName, $byteList, $DocName)
 
 $result = @{
     printer   = $PrinterName
