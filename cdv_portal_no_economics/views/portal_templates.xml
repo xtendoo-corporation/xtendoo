@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Las tarjetas económicas del portal se inyectan por herencia dentro de los
+        mismos contenedores (portal_client_category, portal_alert_category...), por lo
+        que un xpath por contenedor casaría con la primera tarjeta encontrada. Para
+        ocultar exactamente cada tarjeta, la localizamos por su `url` única y le
+        añadimos un t-if que la esconde para el grupo "Portal sin datos económicos".
+    -->
+
+    <template id="portal_my_home_sale_no_economics"
+              inherit_id="sale.portal_my_home_sale">
+        <xpath expr="//t[@t-call='portal.portal_docs_entry'][t[@t-value=&quot;'/my/quotes'&quot;]]"
+               position="attributes">
+            <attribute name="t-if">not request.env.user.has_group('cdv_portal_no_economics.group_portal_no_economics')</attribute>
+        </xpath>
+        <xpath expr="//t[@t-call='portal.portal_docs_entry'][t[@t-value=&quot;'/my/orders'&quot;]]"
+               position="attributes">
+            <attribute name="t-if">not request.env.user.has_group('cdv_portal_no_economics.group_portal_no_economics')</attribute>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_invoice_no_economics"
+              inherit_id="account.portal_my_home_invoice">
+        <xpath expr="//t[@t-call='portal.portal_docs_entry'][t[@t-value=&quot;'/my/invoices?filterby=invoices'&quot;]]"
+               position="attributes">
+            <attribute name="t-if">not request.env.user.has_group('cdv_portal_no_economics.group_portal_no_economics')</attribute>
+        </xpath>
+        <xpath expr="//t[@t-call='portal.portal_docs_entry'][t[@t-value=&quot;'/my/invoices?filterby=bills'&quot;]]"
+               position="attributes">
+            <attribute name="t-if">not request.env.user.has_group('cdv_portal_no_economics.group_portal_no_economics')</attribute>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_payment_no_economics"
+              inherit_id="payment.portal_my_home_payment">
+        <xpath expr="//t[@t-call='portal.portal_docs_entry'][t[@t-value=&quot;'/my/payment_method'&quot;]]"
+               position="attributes">
+            <attribute name="t-if">(methods_allowing_tokenization or existing_tokens) and not request.env.user.has_group('cdv_portal_no_economics.group_portal_no_economics')</attribute>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_overdue_no_economics"
+              inherit_id="account_payment.portal_my_home_account_payment">
+        <xpath expr="//t[@t-call='portal.portal_docs_entry'][t[@t-value=&quot;'/my/invoices?filterby=overdue_invoices'&quot;]]"
+               position="attributes">
+            <attribute name="t-if">not request.env.user.has_group('cdv_portal_no_economics.group_portal_no_economics')</attribute>
+        </xpath>
+    </template>
+
+</odoo>

@@ -19,5 +19,5 @@ test("gateway composer forwards the focus event", () => {
     Composer.prototype.onFocusin.call(component, event);
 
     expect(propagationStopped).toBe(true);
-    expect(composer.isFocused).toBe(true);
+    expect(composer.isFocused).toBe(true);    
 });
