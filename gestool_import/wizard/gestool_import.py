@@ -17,6 +17,25 @@ class GestoolImport(models.TransientModel):
     _name = "gestool.import"
     _description = "Importador desde Gestool"
 
+    _IMPORT_FILE_SPECS = (
+        ("partner_attachment_ids", "data_file_partner", "filename_partner", "_import_partner"),
+        ("category_attachment_ids", "data_file_category", "filename_category", "_import_category"),
+        ("product_attachment_ids", "data_file_product", "filename_product", "_import_product"),
+        ("ticket_attachment_ids", "data_file_ticket", "filename_ticket", "_import_ticket"),
+        (
+            "supplier_info_attachment_ids",
+            "data_file_supplier_info",
+            "filename_supplier_info",
+            "_import_supplier_info",
+        ),
+        (
+            "multiple_barcodes_attachment_ids",
+            "data_file_multiple_barcodes",
+            "filename_multiple_barcodes",
+            "_import_multiple_barcodes",
+        ),
+    )
+
     # data_file_agentes = fields.Binary(
     #     string="File to Import",
     #     required=False,
@@ -30,6 +49,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_partner = fields.Char()
+    partner_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_partner_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de clientes/proveedores",
+        copy=False,
+    )
     #
     # data_file_bank = fields.Binary(
     #     string="Banks to Import",
@@ -51,6 +78,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_category = fields.Char()
+    category_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_category_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de categorías",
+        copy=False,
+    )
 
     data_file_product = fields.Binary(
         string="Product to Import",
@@ -58,6 +93,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_product = fields.Char()
+    product_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_product_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de productos",
+        copy=False,
+    )
 
     data_file_ticket = fields.Binary(
         string="Tickets header to import",
@@ -65,6 +108,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_ticket = fields.Char()
+    ticket_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_ticket_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de tickets",
+        copy=False,
+    )
 
     data_file_supplier_info = fields.Binary(
         string="Supplier Info to Import",
@@ -72,6 +123,14 @@ class GestoolImport(models.TransientModel):
         help="CSV con dos columnas: código de producto (default_code) y referencia del proveedor (ref).",
     )
     filename_supplier_info = fields.Char()
+    supplier_info_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_supplier_info_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de proveedores de producto",
+        copy=False,
+    )
 
     data_file_multiple_barcodes = fields.Binary(
         string="Multiples códigos de barras para importar",
@@ -79,6 +138,14 @@ class GestoolImport(models.TransientModel):
         help="CSV con dos columnas: código de producto (default_code) y código de barra.",
     )
     filename_multiple_barcodes = fields.Char()
+    multiple_barcodes_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_multiple_barcodes_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de códigos de barras",
+        copy=False,
+    )
     #
     # data_file_kits = fields.Binary(
     #     string="File to Import",
@@ -94,57 +161,73 @@ class GestoolImport(models.TransientModel):
     # )
     # filename_property = fields.Char()
 
+    def _iter_import_files(self, attachment_field, legacy_field, filename_field):
+        """Yield queued files in upload order, retaining the old binary API."""
+        for attachment in self[attachment_field].sorted("id"):
+            yield attachment.name, b64decode(attachment.datas or b"")
+
+        if self[legacy_field]:
+            yield self[filename_field] or _("Fichero sin nombre"), b64decode(
+                self[legacy_field]
+            )
+
     def import_file(self):
-        """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
+        """Import all selected files sequentially without stopping on errors."""
         self.ensure_one()
-        ticket_result = False
+        processed = 0
+        errors = []
+        warnings = []
 
-        # if self.data_file_agentes:
-        #     data_file_agentes = b64decode(self.data_file_agentes)
-        #     if data_file_agentes:
-        #         self._import_agentes(data_file_agentes)
+        for attachment_field, legacy_field, filename_field, method_name in (
+            self._IMPORT_FILE_SPECS
+        ):
+            for filename, file_data in self._iter_import_files(
+                attachment_field, legacy_field, filename_field
+            ):
+                if not file_data:
+                    errors.append(_("%(file)s: el fichero está vacío", file=filename))
+                    continue
 
-        if self.data_file_partner:
-            data_file_partner = b64decode(self.data_file_partner)
-            if data_file_partner:
-                self._import_partner(data_file_partner)
+                try:
+                    with self.env.cr.savepoint():
+                        result = getattr(self, method_name)(file_data)
+                except Exception as error:
+                    _logger.exception("Error importando el fichero Gestool %s", filename)
+                    errors.append(_("%(file)s: %(error)s", file=filename, error=error))
+                    continue
 
-    #     if self.data_file_bank:
-    #         data_file_bank = b64decode(self.data_file_bank)
-    #         if data_file_bank:
-    #             self._import_bank(data_file_bank)
-    #
-    #     if self.data_file_atypical:
-    #         data_file_atypical = b64decode(self.data_file_atypical)
-    #         if data_file_atypical:
-    #             self._import_atypical(data_file_atypical)
-    #
-        if self.data_file_category:
-            data_file_category = b64decode(self.data_file_category)
-            if data_file_category:
-                self._import_category(data_file_category)
+                processed += 1
+                if isinstance(result, dict) and result.get("params", {}).get("message"):
+                    warnings.append("%s: %s" % (
+                        filename,
+                        result["params"]["message"],
+                    ))
 
-        if self.data_file_product:
-            data_file_product = b64decode(self.data_file_product)
-            if data_file_product:
-                self._import_product(data_file_product)
+        if not processed and not errors:
+            raise UserError(_("Selecciona al menos un fichero para importar."))
 
-        if self.data_file_ticket:
-            data_file_ticket = b64decode(self.data_file_ticket)
-            if data_file_ticket:
-                ticket_result = self._import_ticket(data_file_ticket)
+        details = []
+        if processed:
+            details.append(_("Ficheros procesados: %s", processed))
+        if warnings:
+            details.append(_("Avisos:\n%s", "\n".join(warnings)))
+        if errors:
+            details.append(_("Errores:\n%s", "\n".join(errors)))
 
-        if self.data_file_supplier_info:
-            data_file_supplier_info = b64decode(self.data_file_supplier_info)
-            if data_file_supplier_info:
-                self._import_supplier_info(data_file_supplier_info)
-
-        if self.data_file_multiple_barcodes:
-            data_file_multiple_barcodes = b64decode(self.data_file_multiple_barcodes)
-            if data_file_multiple_barcodes:
-                self._import_multiple_barcodes(data_file_multiple_barcodes)
-
-        return ticket_result or True
+        notification_type = "danger" if errors else "warning" if warnings else "success"
+        result = {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Importación Gestool finalizada"),
+                "message": "\n\n".join(details),
+                "type": notification_type,
+                "sticky": bool(errors or warnings),
+            },
+        }
+        if not errors and not warnings:
+            result["params"]["next"] = {"type": "ir.actions.act_window_close"}
+        return result
     #
     #     if self.data_file_kits:
     #         data_file_kits = b64decode(self.data_file_kits)

@@ -1,6 +1,73 @@
+from base64 import b64encode
 from unittest.mock import patch
 
+from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
+
+
+class TestGestoolMultipleFileImport(TransactionCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.wizard = cls.env["gestool.import"].create({})
+
+    def _attachment(self, name, contents):
+        return self.env["ir.attachment"].create({
+            "name": name,
+            "datas": b64encode(contents),
+        })
+
+    def test_imports_multiple_files_sequentially(self):
+        first = self._attachment("clientes-01.csv", b"first")
+        second = self._attachment("clientes-02.csv", b"second")
+        self.wizard.partner_attachment_ids = [(6, 0, [second.id, first.id])]
+        imported = []
+
+        with patch.object(
+            type(self.wizard),
+            "_import_partner",
+            side_effect=lambda data: imported.append(data),
+        ):
+            result = self.wizard.import_file()
+
+        self.assertEqual(imported, [b"first", b"second"])
+        self.assertEqual(result["params"]["type"], "success")
+        self.assertIn("2", result["params"]["message"])
+
+    def test_continues_with_next_file_after_error(self):
+        first = self._attachment("clientes-error.csv", b"invalid")
+        second = self._attachment("clientes-ok.csv", b"valid")
+        self.wizard.partner_attachment_ids = [(6, 0, [first.id, second.id])]
+        imported = []
+
+        def import_partner(data):
+            if data == b"invalid":
+                raise UserError("CSV no válido")
+            imported.append(data)
+
+        with patch.object(
+            type(self.wizard), "_import_partner", side_effect=import_partner
+        ):
+            result = self.wizard.import_file()
+
+        self.assertEqual(imported, [b"valid"])
+        self.assertEqual(result["params"]["type"], "danger")
+        self.assertIn("clientes-error.csv", result["params"]["message"])
+
+    def test_keeps_legacy_single_binary_file_compatibility(self):
+        self.wizard.write({
+            "data_file_partner": b64encode(b"legacy"),
+            "filename_partner": "clientes-antiguo.csv",
+        })
+
+        with patch.object(type(self.wizard), "_import_partner") as import_partner:
+            self.wizard.import_file()
+
+        import_partner.assert_called_once_with(b"legacy")
+
+    def test_requires_at_least_one_file(self):
+        with self.assertRaisesRegex(UserError, "Selecciona al menos un fichero"):
+            self.wizard.import_file()
 
 
 class TestGestoolTicketImport(TransactionCase):
