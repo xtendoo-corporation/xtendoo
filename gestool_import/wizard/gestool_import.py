@@ -1,6 +1,7 @@
 import logging
 from base64 import b64decode
 from io import StringIO
+from math import isfinite
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -524,6 +525,44 @@ class GestoolImport(models.TransientModel):
         ], limit=2)
         return configs if len(configs) == 1 else self.env['pos.config'].browse()
 
+    def _get_import_pricelist(self, config, partner=None):
+        """Obtiene una tarifa válida sin alterar los precios recibidos del CSV."""
+        config.ensure_one()
+        company = config.company_id
+        currency = config.currency_id
+
+        candidates = config.pricelist_id
+        if partner:
+            candidates |= partner.with_company(company).property_product_pricelist
+        candidates |= config.available_pricelist_ids
+        pricelist = candidates.filtered(
+            lambda item: item.active
+            and item.currency_id == currency
+            and (not item.company_id or item.company_id == company)
+        )[:1]
+        if pricelist:
+            return pricelist
+
+        Pricelist = self.env['product.pricelist'].sudo().with_company(company)
+        base_domain = [
+            ('active', '=', True),
+            ('currency_id', '=', currency.id),
+        ]
+        pricelist = Pricelist.search(
+            base_domain + [('company_id', '=', company.id)], limit=1
+        ) or Pricelist.search(
+            base_domain + [('company_id', '=', False)], limit=1
+        )
+        if not pricelist:
+            raise UserError(_(
+                "No se ha encontrado una tarifa activa en %(currency)s para el "
+                "punto de venta '%(pos)s'. Configura una tarifa predeterminada "
+                "en el punto de venta antes de importar.",
+                currency=currency.display_name,
+                pos=config.name,
+            ))
+        return pricelist
+
     def _create_import_session(self, config):
         """Crea y abre una sesión aislada 0000 para un TPV existente."""
         config.ensure_one()
@@ -654,13 +693,33 @@ class GestoolImport(models.TransientModel):
             ('company_id', '=', False),
         ], limit=1)
 
+    def _parse_ticket_number(self, value, default, field_name):
+        """Convierte un dato numérico del CSV y rechaza marcadores no válidos."""
+        raw_value = (value or "").strip()
+        if not raw_value:
+            return default
+        try:
+            number = float(raw_value)
+        except (TypeError, ValueError):
+            number = None
+        if number is None or not isfinite(number):
+            raise UserError(_(
+                "Valor numérico inválido en %(field)s: '%(value)s'.",
+                field=field_name,
+                value=raw_value,
+            ))
+        return number
+
     def _ticket_import_warning(
         self, invalid_tickets, malformed_lines, invalid_pos_tickets=None,
-        mixed_pos_tickets=None,
+        mixed_pos_tickets=None, negative_tickets=None,
+        invalid_numeric_tickets=None,
     ):
         """Construye una notificación legible sin desbordar el cliente web."""
         invalid_pos_tickets = invalid_pos_tickets or {}
         mixed_pos_tickets = mixed_pos_tickets or {}
+        negative_tickets = negative_tickets or {}
+        invalid_numeric_tickets = invalid_numeric_tickets or {}
         details = []
         for reference, product_codes in list(invalid_tickets.items())[:20]:
             details.append(_(
@@ -687,6 +746,18 @@ class GestoolImport(models.TransientModel):
                 ticket=reference,
                 points=", ".join(sorted(pos_names)),
             ))
+        for reference, amount in list(negative_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s omitido: total negativo (%(amount)s)",
+                ticket=reference,
+                amount=amount,
+            ))
+        for reference, errors in list(invalid_numeric_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s omitido: valor(es) numérico(s) inválido(s): %(errors)s",
+                ticket=reference,
+                errors=", ".join(sorted(errors)),
+            ))
 
         return {
             'type': 'ir.actions.client',
@@ -694,8 +765,8 @@ class GestoolImport(models.TransientModel):
             'params': {
                 'title': _("Importación Gestool completada con avisos"),
                 'message': _(
-                    "Se omitieron ventas para no crear pedidos incompletos. "
-                    "Importa primero los productos indicados y vuelve a importar el CSV.\n%s",
+                    "Se omitieron ventas para evitar pedidos no válidos. "
+                    "Revisa los detalles antes de volver a importar el CSV.\n%s",
                     "\n".join(details),
                 ),
                 'type': 'warning',
@@ -713,8 +784,10 @@ class GestoolImport(models.TransientModel):
         invalid_tickets = {}
         invalid_pos_tickets = {}
         mixed_pos_tickets = {}
+        invalid_numeric_tickets = {}
         malformed_lines = []
         ticket_pos_names = {}
+        ticket_totals = {}
         configs_by_name = {}
 
         # Validar el fichero completo antes de crear pedidos. Si falla una línea,
@@ -741,6 +814,48 @@ class GestoolImport(models.TransientModel):
                     product_code or _("(código vacío)")
                 )
 
+            numbers = {}
+            for index, field_name, default in (
+                (16, _("precio"), 0.0),
+                (17, _("cantidad"), 1.0),
+            ):
+                try:
+                    numbers[index] = self._parse_ticket_number(
+                        row[index], default, field_name
+                    )
+                except UserError:
+                    invalid_numeric_tickets.setdefault(
+                        ticket_reference, set()
+                    ).add(_(
+                        "fila %(line)s, %(field)s '%(value)s'",
+                        line=line_number,
+                        field=field_name,
+                        value=(row[index] or "").strip(),
+                    ))
+            if ticket_reference in invalid_numeric_tickets:
+                continue
+
+            price_unit = numbers[16]
+            qty = numbers[17]
+            tax = self._get_tax_by_amount(row[18]) if len(row) > 18 and row[18] else False
+            tax_amount = float(tax.amount) if tax else 0.0
+            amount_untaxed = qty * price_unit
+            line_total = round(
+                amount_untaxed + amount_untaxed * tax_amount / 100, 2
+            )
+            ticket_totals[ticket_reference] = (
+                ticket_totals.get(ticket_reference, 0.0) + line_total
+            )
+
+        negative_tickets = {}
+        for reference, total in ticket_totals.items():
+            pos_names = ticket_pos_names.get(reference, set())
+            if len(pos_names) != 1:
+                continue
+            config = configs_by_name.get(next(iter(pos_names)))
+            if config and config.currency_id.compare_amounts(total, 0.0) < 0:
+                negative_tickets[reference] = config.currency_id.format(total)
+
         valid_rows = [
             row for _line_number, row in data_rows
             if len(row) >= 18
@@ -748,6 +863,8 @@ class GestoolImport(models.TransientModel):
             and row[3].strip() not in invalid_tickets
             and row[3].strip() not in invalid_pos_tickets
             and row[3].strip() not in mixed_pos_tickets
+            and row[3].strip() not in negative_tickets
+            and row[3].strip() not in invalid_numeric_tickets
         ]
 
         rows_by_config = {}
@@ -773,12 +890,17 @@ class GestoolImport(models.TransientModel):
             total_processed_orders += len(processed_order_ids)
 
         _logger.info("Total pedidos importados: %d", total_processed_orders)
-        if invalid_tickets or malformed_lines or invalid_pos_tickets or mixed_pos_tickets:
+        if (
+            invalid_tickets or malformed_lines or invalid_pos_tickets
+            or mixed_pos_tickets or negative_tickets or invalid_numeric_tickets
+        ):
             return self._ticket_import_warning(
                 invalid_tickets,
                 malformed_lines,
                 invalid_pos_tickets,
                 mixed_pos_tickets,
+                negative_tickets,
+                invalid_numeric_tickets,
             )
         return True
 
@@ -808,13 +930,15 @@ class GestoolImport(models.TransientModel):
             )
             return False
 
+        pricelist = self._get_import_pricelist(session.config_id, partner)
+
         # Resolver impuesto por porcentaje desde row[18]
         tax_amount_raw = row[18] if len(row) > 18 else None
         tax = self._get_tax_by_amount(tax_amount_raw) if tax_amount_raw else env['account.tax'].browse()
         tax_cmd = [(6, 0, [tax.id])] if tax else [(6, 0, [])]
 
-        qty = float(row[17]) if row[17] else 1.0
-        price_unit = float(row[16]) if row[16] else 0.0
+        qty = self._parse_ticket_number(row[17], 1.0, _("cantidad"))
+        price_unit = self._parse_ticket_number(row[16], 0.0, _("precio"))
         tax_amount = float(tax.amount) if tax else 0.0
 
         amount_untaxed = qty * price_unit
@@ -857,6 +981,7 @@ class GestoolImport(models.TransientModel):
                 "partner_id": partner.id if partner else False,
                 "session_id": session.id,
                 "company_id": company.id,
+                "pricelist_id": pricelist.id,
                 "date_order": date_order,
                 "amount_tax": line_tax,
                 "amount_total": amount_total,
