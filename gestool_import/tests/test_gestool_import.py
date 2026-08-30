@@ -1,6 +1,73 @@
+from base64 import b64encode
 from unittest.mock import patch
 
+from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
+
+
+class TestGestoolMultipleFileImport(TransactionCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.wizard = cls.env["gestool.import"].create({})
+
+    def _attachment(self, name, contents):
+        return self.env["ir.attachment"].create({
+            "name": name,
+            "datas": b64encode(contents),
+        })
+
+    def test_imports_multiple_files_sequentially(self):
+        first = self._attachment("clientes-01.csv", b"first")
+        second = self._attachment("clientes-02.csv", b"second")
+        self.wizard.partner_attachment_ids = [(6, 0, [second.id, first.id])]
+        imported = []
+
+        with patch.object(
+            type(self.wizard),
+            "_import_partner",
+            side_effect=lambda data: imported.append(data),
+        ):
+            result = self.wizard.import_file()
+
+        self.assertEqual(imported, [b"first", b"second"])
+        self.assertEqual(result["params"]["type"], "success")
+        self.assertIn("2", result["params"]["message"])
+
+    def test_continues_with_next_file_after_error(self):
+        first = self._attachment("clientes-error.csv", b"invalid")
+        second = self._attachment("clientes-ok.csv", b"valid")
+        self.wizard.partner_attachment_ids = [(6, 0, [first.id, second.id])]
+        imported = []
+
+        def import_partner(data):
+            if data == b"invalid":
+                raise UserError("CSV no válido")
+            imported.append(data)
+
+        with patch.object(
+            type(self.wizard), "_import_partner", side_effect=import_partner
+        ):
+            result = self.wizard.import_file()
+
+        self.assertEqual(imported, [b"valid"])
+        self.assertEqual(result["params"]["type"], "danger")
+        self.assertIn("clientes-error.csv", result["params"]["message"])
+
+    def test_keeps_legacy_single_binary_file_compatibility(self):
+        self.wizard.write({
+            "data_file_partner": b64encode(b"legacy"),
+            "filename_partner": "clientes-antiguo.csv",
+        })
+
+        with patch.object(type(self.wizard), "_import_partner") as import_partner:
+            self.wizard.import_file()
+
+        import_partner.assert_called_once_with(b"legacy")
+
+    def test_requires_at_least_one_file(self):
+        with self.assertRaisesRegex(UserError, "Selecciona al menos un fichero"):
+            self.wizard.import_file()
 
 
 class TestGestoolTicketImport(TransactionCase):
@@ -44,6 +111,15 @@ class TestGestoolTicketImport(TransactionCase):
             "property_account_income_id": income_account.id,
         })
         cls.product = template.product_variant_id
+        cls.partner = cls.env["res.partner"].create({
+            "name": "Cliente Gestool",
+            "ref": "CLIENTE-001",
+        })
+        cls.pricelist = cls.env["product.pricelist"].create({
+            "name": "Tarifa Gestool",
+            "currency_id": cls.env.company.currency_id.id,
+            "company_id": cls.env.company.id,
+        })
         cls.pos_configs = cls.env["pos.config"]
         for name in ("TPV Gestool Norte", "TPV Gestool Sur"):
             cash_method = cls.env["pos.config"]._create_cash_payment_method({
@@ -56,6 +132,7 @@ class TestGestoolTicketImport(TransactionCase):
                 "name": name,
                 "company_id": cls.env.company.id,
                 "payment_method_ids": [(6, 0, [cash_method.id])],
+                "pricelist_id": cls.pricelist.id,
             })
 
     @classmethod
@@ -109,6 +186,52 @@ class TestGestoolTicketImport(TransactionCase):
             orders_before,
         )
 
+    def test_masked_quantity_skips_complete_ticket_without_session(self):
+        header = ",".join(["cabecera"] * 19)
+        valid_line = self._ticket_row(reference="TICKET-CANTIDAD-INVALIDA")
+        invalid_line = self._ticket_row(reference="TICKET-CANTIDAD-INVALIDA")
+        invalid_line[17] = "******.**"
+        csv_data = "\n".join((
+            header,
+            ",".join(valid_line),
+            ",".join(invalid_line),
+        )).encode()
+
+        with patch.object(
+            type(self.wizard),
+            "_create_import_session",
+            side_effect=AssertionError("No debe abrir una sesión para números inválidos"),
+        ):
+            result = self.wizard._import_ticket(csv_data)
+
+        message = result["params"]["message"]
+        self.assertIn("TICKET-CANTIDAD-INVALIDA", message)
+        self.assertIn("cantidad '******.**'", message)
+        self.assertFalse(self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-CANTIDAD-INVALIDA"),
+        ]))
+
+    def test_invalid_number_does_not_block_valid_ticket(self):
+        header = ",".join(["cabecera"] * 19)
+        invalid_line = self._ticket_row(reference="TICKET-PRECIO-INVALIDO")
+        invalid_line[16] = "NaN"
+        valid_line = self._ticket_row(reference="TICKET-NUMERICO-VALIDO")
+
+        result = self.wizard._import_ticket("\n".join((
+            header,
+            ",".join(invalid_line),
+            ",".join(valid_line),
+        )).encode())
+
+        self.assertEqual(result["tag"], "display_notification")
+        self.assertIn("precio 'NaN'", result["params"]["message"])
+        self.assertFalse(self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-PRECIO-INVALIDO"),
+        ]))
+        self.assertTrue(self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-NUMERICO-VALIDO"),
+        ]))
+
     def test_import_session_has_cash_payment_method(self):
         session = self.wizard._create_import_session(self.pos_configs[0])
 
@@ -148,12 +271,127 @@ class TestGestoolTicketImport(TransactionCase):
         self.assertEqual(payments.amount, order.amount_total)
         self.assertEqual(order.amount_paid, order.amount_total)
 
+    def test_negative_order_is_reported_without_creating_session(self):
+        row = self._ticket_row(reference="TICKET-NEGATIVO")
+        row[17] = "-1"
+        header = ",".join(["cabecera"] * 19)
+
+        with patch.object(
+            type(self.wizard),
+            "_create_import_session",
+            side_effect=AssertionError("No debe abrir una sesión para ventas negativas"),
+        ):
+            result = self.wizard._import_ticket(
+                "\n".join((header, ",".join(row))).encode()
+            )
+
+        self.assertEqual(result["tag"], "display_notification")
+        self.assertIn("TICKET-NEGATIVO", result["params"]["message"])
+        self.assertIn("total negativo", result["params"]["message"])
+        self.assertFalse(self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-NEGATIVO"),
+        ]))
+
+    def test_multiline_negative_order_is_skipped_completely(self):
+        header = ",".join(["cabecera"] * 19)
+        positive_line = self._ticket_row(reference="TICKET-MULTILINEA-NEGATIVO")
+        negative_line = self._ticket_row(reference="TICKET-MULTILINEA-NEGATIVO")
+        negative_line[17] = "-2"
+        csv_data = "\n".join((
+            header,
+            ",".join(positive_line),
+            ",".join(negative_line),
+        )).encode()
+
+        with patch.object(
+            type(self.wizard),
+            "_create_import_session",
+            side_effect=AssertionError("No debe abrir una sesión para ventas negativas"),
+        ):
+            result = self.wizard._import_ticket(csv_data)
+
+        self.assertIn("TICKET-MULTILINEA-NEGATIVO", result["params"]["message"])
+        self.assertFalse(self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-MULTILINEA-NEGATIVO"),
+        ]))
+
+    def test_multiline_order_with_positive_total_is_imported(self):
+        header = ",".join(["cabecera"] * 19)
+        positive_line = self._ticket_row(reference="TICKET-MULTILINEA-POSITIVO")
+        positive_line[17] = "2"
+        negative_line = self._ticket_row(reference="TICKET-MULTILINEA-POSITIVO")
+        negative_line[17] = "-1"
+
+        result = self.wizard._import_ticket("\n".join((
+            header,
+            ",".join(positive_line),
+            ",".join(negative_line),
+        )).encode())
+        order = self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-MULTILINEA-POSITIVO"),
+        ])
+
+        self.assertTrue(result)
+        self.assertEqual(len(order), 1)
+        self.assertEqual(len(order.lines), 2)
+        self.assertGreater(order.amount_total, 0)
+
+    def test_negative_price_ticket_does_not_block_positive_ticket(self):
+        header = ",".join(["cabecera"] * 19)
+        negative_line = self._ticket_row(reference="TICKET-PRECIO-NEGATIVO")
+        negative_line[16] = "-10.00"
+        positive_line = self._ticket_row(reference="TICKET-VALIDO")
+
+        result = self.wizard._import_ticket("\n".join((
+            header,
+            ",".join(negative_line),
+            ",".join(positive_line),
+        )).encode())
+
+        self.assertEqual(result["tag"], "display_notification")
+        self.assertIn("TICKET-PRECIO-NEGATIVO", result["params"]["message"])
+        self.assertFalse(self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-PRECIO-NEGATIVO"),
+        ]))
+        self.assertTrue(self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-VALIDO"),
+        ]))
+
+    def test_positive_order_still_creates_customer_invoice(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+        order = self.wizard.parse_ticket(
+            self._ticket_row(reference="TICKET-POSITIVO"), session
+        )
+
+        self.wizard._confirm_and_invoice_order(order)
+
+        self.assertFalse(order.is_refund)
+        self.assertEqual(order.account_move.move_type, "out_invoice")
+        self.assertEqual(order.account_move.state, "posted")
+
     def test_get_ticket_pos_config_strips_name(self):
         config = self.wizard._get_ticket_pos_config(
             f"  {self.pos_configs[1].name}  "
         )
 
         self.assertEqual(config, self.pos_configs[1])
+
+    def test_order_uses_pos_default_pricelist(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+
+        order = self.wizard.parse_ticket(self._ticket_row(), session)
+
+        self.assertEqual(order.pricelist_id, self.pricelist)
+
+    def test_import_pricelist_falls_back_when_pos_has_no_default(self):
+        config = self.pos_configs[0]
+        config.pricelist_id = False
+
+        pricelist = self.wizard._get_import_pricelist(config)
+
+        self.assertTrue(pricelist)
+        self.assertEqual(pricelist.currency_id, config.currency_id)
+        self.assertIn(pricelist.company_id, (config.company_id, self.env["res.company"]))
 
     def test_unknown_pos_is_reported_without_creating_session(self):
         header = ",".join(["cabecera"] * 19)

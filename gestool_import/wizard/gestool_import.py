@@ -1,6 +1,7 @@
 import logging
 from base64 import b64decode
 from io import StringIO
+from math import isfinite
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -16,6 +17,25 @@ class GestoolImport(models.TransientModel):
     _name = "gestool.import"
     _description = "Importador desde Gestool"
 
+    _IMPORT_FILE_SPECS = (
+        ("partner_attachment_ids", "data_file_partner", "filename_partner", "_import_partner"),
+        ("category_attachment_ids", "data_file_category", "filename_category", "_import_category"),
+        ("product_attachment_ids", "data_file_product", "filename_product", "_import_product"),
+        ("ticket_attachment_ids", "data_file_ticket", "filename_ticket", "_import_ticket"),
+        (
+            "supplier_info_attachment_ids",
+            "data_file_supplier_info",
+            "filename_supplier_info",
+            "_import_supplier_info",
+        ),
+        (
+            "multiple_barcodes_attachment_ids",
+            "data_file_multiple_barcodes",
+            "filename_multiple_barcodes",
+            "_import_multiple_barcodes",
+        ),
+    )
+
     # data_file_agentes = fields.Binary(
     #     string="File to Import",
     #     required=False,
@@ -29,6 +49,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_partner = fields.Char()
+    partner_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_partner_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de clientes/proveedores",
+        copy=False,
+    )
     #
     # data_file_bank = fields.Binary(
     #     string="Banks to Import",
@@ -50,6 +78,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_category = fields.Char()
+    category_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_category_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de categorías",
+        copy=False,
+    )
 
     data_file_product = fields.Binary(
         string="Product to Import",
@@ -57,6 +93,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_product = fields.Char()
+    product_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_product_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de productos",
+        copy=False,
+    )
 
     data_file_ticket = fields.Binary(
         string="Tickets header to import",
@@ -64,6 +108,14 @@ class GestoolImport(models.TransientModel):
         help="Get you data from Gestool.",
     )
     filename_ticket = fields.Char()
+    ticket_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_ticket_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de tickets",
+        copy=False,
+    )
 
     data_file_supplier_info = fields.Binary(
         string="Supplier Info to Import",
@@ -71,6 +123,14 @@ class GestoolImport(models.TransientModel):
         help="CSV con dos columnas: código de producto (default_code) y referencia del proveedor (ref).",
     )
     filename_supplier_info = fields.Char()
+    supplier_info_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_supplier_info_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de proveedores de producto",
+        copy=False,
+    )
 
     data_file_multiple_barcodes = fields.Binary(
         string="Multiples códigos de barras para importar",
@@ -78,6 +138,14 @@ class GestoolImport(models.TransientModel):
         help="CSV con dos columnas: código de producto (default_code) y código de barra.",
     )
     filename_multiple_barcodes = fields.Char()
+    multiple_barcodes_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="gestool_import_multiple_barcodes_attachment_rel",
+        column1="wizard_id",
+        column2="attachment_id",
+        string="Ficheros de códigos de barras",
+        copy=False,
+    )
     #
     # data_file_kits = fields.Binary(
     #     string="File to Import",
@@ -93,57 +161,73 @@ class GestoolImport(models.TransientModel):
     # )
     # filename_property = fields.Char()
 
+    def _iter_import_files(self, attachment_field, legacy_field, filename_field):
+        """Yield queued files in upload order, retaining the old binary API."""
+        for attachment in self[attachment_field].sorted("id"):
+            yield attachment.name, b64decode(attachment.datas or b"")
+
+        if self[legacy_field]:
+            yield self[filename_field] or _("Fichero sin nombre"), b64decode(
+                self[legacy_field]
+            )
+
     def import_file(self):
-        """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
+        """Import all selected files sequentially without stopping on errors."""
         self.ensure_one()
-        ticket_result = False
+        processed = 0
+        errors = []
+        warnings = []
 
-        # if self.data_file_agentes:
-        #     data_file_agentes = b64decode(self.data_file_agentes)
-        #     if data_file_agentes:
-        #         self._import_agentes(data_file_agentes)
+        for attachment_field, legacy_field, filename_field, method_name in (
+            self._IMPORT_FILE_SPECS
+        ):
+            for filename, file_data in self._iter_import_files(
+                attachment_field, legacy_field, filename_field
+            ):
+                if not file_data:
+                    errors.append(_("%(file)s: el fichero está vacío", file=filename))
+                    continue
 
-        if self.data_file_partner:
-            data_file_partner = b64decode(self.data_file_partner)
-            if data_file_partner:
-                self._import_partner(data_file_partner)
+                try:
+                    with self.env.cr.savepoint():
+                        result = getattr(self, method_name)(file_data)
+                except Exception as error:
+                    _logger.exception("Error importando el fichero Gestool %s", filename)
+                    errors.append(_("%(file)s: %(error)s", file=filename, error=error))
+                    continue
 
-    #     if self.data_file_bank:
-    #         data_file_bank = b64decode(self.data_file_bank)
-    #         if data_file_bank:
-    #             self._import_bank(data_file_bank)
-    #
-    #     if self.data_file_atypical:
-    #         data_file_atypical = b64decode(self.data_file_atypical)
-    #         if data_file_atypical:
-    #             self._import_atypical(data_file_atypical)
-    #
-        if self.data_file_category:
-            data_file_category = b64decode(self.data_file_category)
-            if data_file_category:
-                self._import_category(data_file_category)
+                processed += 1
+                if isinstance(result, dict) and result.get("params", {}).get("message"):
+                    warnings.append("%s: %s" % (
+                        filename,
+                        result["params"]["message"],
+                    ))
 
-        if self.data_file_product:
-            data_file_product = b64decode(self.data_file_product)
-            if data_file_product:
-                self._import_product(data_file_product)
+        if not processed and not errors:
+            raise UserError(_("Selecciona al menos un fichero para importar."))
 
-        if self.data_file_ticket:
-            data_file_ticket = b64decode(self.data_file_ticket)
-            if data_file_ticket:
-                ticket_result = self._import_ticket(data_file_ticket)
+        details = []
+        if processed:
+            details.append(_("Ficheros procesados: %s", processed))
+        if warnings:
+            details.append(_("Avisos:\n%s", "\n".join(warnings)))
+        if errors:
+            details.append(_("Errores:\n%s", "\n".join(errors)))
 
-        if self.data_file_supplier_info:
-            data_file_supplier_info = b64decode(self.data_file_supplier_info)
-            if data_file_supplier_info:
-                self._import_supplier_info(data_file_supplier_info)
-
-        if self.data_file_multiple_barcodes:
-            data_file_multiple_barcodes = b64decode(self.data_file_multiple_barcodes)
-            if data_file_multiple_barcodes:
-                self._import_multiple_barcodes(data_file_multiple_barcodes)
-
-        return ticket_result or True
+        notification_type = "danger" if errors else "warning" if warnings else "success"
+        result = {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Importación Gestool finalizada"),
+                "message": "\n\n".join(details),
+                "type": notification_type,
+                "sticky": bool(errors or warnings),
+            },
+        }
+        if not errors and not warnings:
+            result["params"]["next"] = {"type": "ir.actions.act_window_close"}
+        return result
     #
     #     if self.data_file_kits:
     #         data_file_kits = b64decode(self.data_file_kits)
@@ -524,6 +608,44 @@ class GestoolImport(models.TransientModel):
         ], limit=2)
         return configs if len(configs) == 1 else self.env['pos.config'].browse()
 
+    def _get_import_pricelist(self, config, partner=None):
+        """Obtiene una tarifa válida sin alterar los precios recibidos del CSV."""
+        config.ensure_one()
+        company = config.company_id
+        currency = config.currency_id
+
+        candidates = config.pricelist_id
+        if partner:
+            candidates |= partner.with_company(company).property_product_pricelist
+        candidates |= config.available_pricelist_ids
+        pricelist = candidates.filtered(
+            lambda item: item.active
+            and item.currency_id == currency
+            and (not item.company_id or item.company_id == company)
+        )[:1]
+        if pricelist:
+            return pricelist
+
+        Pricelist = self.env['product.pricelist'].sudo().with_company(company)
+        base_domain = [
+            ('active', '=', True),
+            ('currency_id', '=', currency.id),
+        ]
+        pricelist = Pricelist.search(
+            base_domain + [('company_id', '=', company.id)], limit=1
+        ) or Pricelist.search(
+            base_domain + [('company_id', '=', False)], limit=1
+        )
+        if not pricelist:
+            raise UserError(_(
+                "No se ha encontrado una tarifa activa en %(currency)s para el "
+                "punto de venta '%(pos)s'. Configura una tarifa predeterminada "
+                "en el punto de venta antes de importar.",
+                currency=currency.display_name,
+                pos=config.name,
+            ))
+        return pricelist
+
     def _create_import_session(self, config):
         """Crea y abre una sesión aislada 0000 para un TPV existente."""
         config.ensure_one()
@@ -654,13 +776,33 @@ class GestoolImport(models.TransientModel):
             ('company_id', '=', False),
         ], limit=1)
 
+    def _parse_ticket_number(self, value, default, field_name):
+        """Convierte un dato numérico del CSV y rechaza marcadores no válidos."""
+        raw_value = (value or "").strip()
+        if not raw_value:
+            return default
+        try:
+            number = float(raw_value)
+        except (TypeError, ValueError):
+            number = None
+        if number is None or not isfinite(number):
+            raise UserError(_(
+                "Valor numérico inválido en %(field)s: '%(value)s'.",
+                field=field_name,
+                value=raw_value,
+            ))
+        return number
+
     def _ticket_import_warning(
         self, invalid_tickets, malformed_lines, invalid_pos_tickets=None,
-        mixed_pos_tickets=None,
+        mixed_pos_tickets=None, negative_tickets=None,
+        invalid_numeric_tickets=None,
     ):
         """Construye una notificación legible sin desbordar el cliente web."""
         invalid_pos_tickets = invalid_pos_tickets or {}
         mixed_pos_tickets = mixed_pos_tickets or {}
+        negative_tickets = negative_tickets or {}
+        invalid_numeric_tickets = invalid_numeric_tickets or {}
         details = []
         for reference, product_codes in list(invalid_tickets.items())[:20]:
             details.append(_(
@@ -687,6 +829,18 @@ class GestoolImport(models.TransientModel):
                 ticket=reference,
                 points=", ".join(sorted(pos_names)),
             ))
+        for reference, amount in list(negative_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s omitido: total negativo (%(amount)s)",
+                ticket=reference,
+                amount=amount,
+            ))
+        for reference, errors in list(invalid_numeric_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s omitido: valor(es) numérico(s) inválido(s): %(errors)s",
+                ticket=reference,
+                errors=", ".join(sorted(errors)),
+            ))
 
         return {
             'type': 'ir.actions.client',
@@ -694,8 +848,8 @@ class GestoolImport(models.TransientModel):
             'params': {
                 'title': _("Importación Gestool completada con avisos"),
                 'message': _(
-                    "Se omitieron ventas para no crear pedidos incompletos. "
-                    "Importa primero los productos indicados y vuelve a importar el CSV.\n%s",
+                    "Se omitieron ventas para evitar pedidos no válidos. "
+                    "Revisa los detalles antes de volver a importar el CSV.\n%s",
                     "\n".join(details),
                 ),
                 'type': 'warning',
@@ -713,8 +867,10 @@ class GestoolImport(models.TransientModel):
         invalid_tickets = {}
         invalid_pos_tickets = {}
         mixed_pos_tickets = {}
+        invalid_numeric_tickets = {}
         malformed_lines = []
         ticket_pos_names = {}
+        ticket_totals = {}
         configs_by_name = {}
 
         # Validar el fichero completo antes de crear pedidos. Si falla una línea,
@@ -741,6 +897,48 @@ class GestoolImport(models.TransientModel):
                     product_code or _("(código vacío)")
                 )
 
+            numbers = {}
+            for index, field_name, default in (
+                (16, _("precio"), 0.0),
+                (17, _("cantidad"), 1.0),
+            ):
+                try:
+                    numbers[index] = self._parse_ticket_number(
+                        row[index], default, field_name
+                    )
+                except UserError:
+                    invalid_numeric_tickets.setdefault(
+                        ticket_reference, set()
+                    ).add(_(
+                        "fila %(line)s, %(field)s '%(value)s'",
+                        line=line_number,
+                        field=field_name,
+                        value=(row[index] or "").strip(),
+                    ))
+            if ticket_reference in invalid_numeric_tickets:
+                continue
+
+            price_unit = numbers[16]
+            qty = numbers[17]
+            tax = self._get_tax_by_amount(row[18]) if len(row) > 18 and row[18] else False
+            tax_amount = float(tax.amount) if tax else 0.0
+            amount_untaxed = qty * price_unit
+            line_total = round(
+                amount_untaxed + amount_untaxed * tax_amount / 100, 2
+            )
+            ticket_totals[ticket_reference] = (
+                ticket_totals.get(ticket_reference, 0.0) + line_total
+            )
+
+        negative_tickets = {}
+        for reference, total in ticket_totals.items():
+            pos_names = ticket_pos_names.get(reference, set())
+            if len(pos_names) != 1:
+                continue
+            config = configs_by_name.get(next(iter(pos_names)))
+            if config and config.currency_id.compare_amounts(total, 0.0) < 0:
+                negative_tickets[reference] = config.currency_id.format(total)
+
         valid_rows = [
             row for _line_number, row in data_rows
             if len(row) >= 18
@@ -748,6 +946,8 @@ class GestoolImport(models.TransientModel):
             and row[3].strip() not in invalid_tickets
             and row[3].strip() not in invalid_pos_tickets
             and row[3].strip() not in mixed_pos_tickets
+            and row[3].strip() not in negative_tickets
+            and row[3].strip() not in invalid_numeric_tickets
         ]
 
         rows_by_config = {}
@@ -773,12 +973,17 @@ class GestoolImport(models.TransientModel):
             total_processed_orders += len(processed_order_ids)
 
         _logger.info("Total pedidos importados: %d", total_processed_orders)
-        if invalid_tickets or malformed_lines or invalid_pos_tickets or mixed_pos_tickets:
+        if (
+            invalid_tickets or malformed_lines or invalid_pos_tickets
+            or mixed_pos_tickets or negative_tickets or invalid_numeric_tickets
+        ):
             return self._ticket_import_warning(
                 invalid_tickets,
                 malformed_lines,
                 invalid_pos_tickets,
                 mixed_pos_tickets,
+                negative_tickets,
+                invalid_numeric_tickets,
             )
         return True
 
@@ -808,13 +1013,15 @@ class GestoolImport(models.TransientModel):
             )
             return False
 
+        pricelist = self._get_import_pricelist(session.config_id, partner)
+
         # Resolver impuesto por porcentaje desde row[18]
         tax_amount_raw = row[18] if len(row) > 18 else None
         tax = self._get_tax_by_amount(tax_amount_raw) if tax_amount_raw else env['account.tax'].browse()
         tax_cmd = [(6, 0, [tax.id])] if tax else [(6, 0, [])]
 
-        qty = float(row[17]) if row[17] else 1.0
-        price_unit = float(row[16]) if row[16] else 0.0
+        qty = self._parse_ticket_number(row[17], 1.0, _("cantidad"))
+        price_unit = self._parse_ticket_number(row[16], 0.0, _("precio"))
         tax_amount = float(tax.amount) if tax else 0.0
 
         amount_untaxed = qty * price_unit
@@ -857,6 +1064,7 @@ class GestoolImport(models.TransientModel):
                 "partner_id": partner.id if partner else False,
                 "session_id": session.id,
                 "company_id": company.id,
+                "pricelist_id": pricelist.id,
                 "date_order": date_order,
                 "amount_tax": line_tax,
                 "amount_total": amount_total,

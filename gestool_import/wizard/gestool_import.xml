@@ -16,14 +16,12 @@
 <!--                />-->
 <!--                <field name="filename_agentes" invisible="1" />-->
 <!--                <br/>-->
-                <h5>Seleccione fichero de Clientes/Proveedores</h5>
+                <h5>Seleccione uno o varios ficheros de Clientes/Proveedores</h5>
                 <!--clientes-->
                 <field
-                    name="data_file_partner"
-                    filename="filename_partner"
-                    placeholder="Choose a file to import..."
+                    name="partner_attachment_ids"
+                    widget="many2many_binary"
                 />
-                <field name="filename_partner" invisible="1" />
                 <br/>
 <!--                <h5>Seleccione fichero de bancos de Clientes/Proveedores</h5>-->
 <!--                &lt;!&ndash;clientes&ndash;&gt;-->
@@ -43,49 +41,39 @@
 <!--                />-->
 <!--                <field name="filename_atypical" invisible="1" />-->
                 <br/>
-                <h5>Seleccione fichero de Categorías</h5>
+                <h5>Seleccione uno o varios ficheros de Categorías</h5>
                 <!--categorias-->
                 <field
-                    name="data_file_category"
-                    filename="filename_category"
-                    placeholder="Choose a file to import..."
+                    name="category_attachment_ids"
+                    widget="many2many_binary"
                 />
-                <field name="filename_category" invisible="1" />
                 <br/>
-                <h5>Seleccione fichero de Productos</h5>
+                <h5>Seleccione uno o varios ficheros de Productos</h5>
                 <!--articulos-->
                 <field
-                    name="data_file_product"
-                    filename="filename_product"
-                    placeholder="Choose a file to import..."
+                    name="product_attachment_ids"
+                    widget="many2many_binary"
                 />
-                <field name="filename_product" invisible="1" />
                 <br/>
-                <h5>Seleccione fichero de tickets</h5>
+                <h5>Seleccione uno o varios ficheros de tickets</h5>
                 <!--Tickets-->
                 <field
-                    name="data_file_ticket"
-                    filename="filename_ticket"
-                    placeholder="Choose a file to import..."
+                    name="ticket_attachment_ids"
+                    widget="many2many_binary"
                 />
-                <field name="filename_ticket" invisible="1" />
                 <br/>
-                <h5>Seleccione fichero de Proveedores de producto</h5>
+                <h5>Seleccione uno o varios ficheros de Proveedores de producto</h5>
                 <!--Proveedores de producto: default_code ; ref_proveedor-->
                 <field
-                    name="data_file_supplier_info"
-                    filename="filename_supplier_info"
-                    placeholder="Choose a file to import..."
+                    name="supplier_info_attachment_ids"
+                    widget="many2many_binary"
                 />
-                <field name="filename_supplier_info" invisible="1" />
                 <br/>
-                <h5>Seleccione fichero de multiples códigos de barras de producto</h5>
+                <h5>Seleccione uno o varios ficheros de múltiples códigos de barras de producto</h5>
                 <field
-                    name="data_file_multiple_barcodes"
-                    filename="filename_multiple_barcodes"
-                    placeholder="Choose a file to import..."
+                    name="multiple_barcodes_attachment_ids"
+                    widget="many2many_binary"
                 />
-                <field name="filename_multiple_barcodes" invisible="1" />
                 <br/>
 <!--                <h5>Seleccione fichero de Lista de materiales</h5>-->
 <!--                &lt;!&ndash;Listas de materiales&ndash;&gt;-->
@@ -107,7 +95,7 @@
                 <footer>
                     <button
                         name="import_file"
-                        string="Importar"
+                        string="Importar todos"
                         type="object"
                         class="btn-primary"
                     />
