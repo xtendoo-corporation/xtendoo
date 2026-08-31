@@ -480,3 +480,58 @@ class TestGestoolTicketImport(TransactionCase):
         self.assertEqual(set(orders.config_id.ids), set(self.pos_configs.ids))
         self.assertEqual(set(orders.session_id.mapped("state")), {"closed"})
 
+
+class TestGestoolBarcodeImport(TransactionCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.wizard = cls.env["gestool.import"].create({})
+        cls.template = cls.env["product.template"].create({
+            "name": "Producto códigos Gestool",
+            "default_code": "GESTOOL-BARCODE-001",
+        })
+        cls.product = cls.template.product_variant_id
+
+    def test_normalize_excel_integer_without_losing_string_zeroes(self):
+        self.assertEqual(
+            self.wizard._normalize_import_value(155507.0),
+            "155507",
+        )
+        self.assertEqual(
+            self.wizard._normalize_import_value("00155507"),
+            "00155507",
+        )
+
+    def test_parse_barcode_creates_and_ignores_duplicates(self):
+        row = ["GESTOOL-BARCODE-001", "155507"]
+
+        self.assertEqual(self.wizard.parse_multiple_barcodes(row), "created")
+        self.assertEqual(self.wizard.parse_multiple_barcodes(row), "existing")
+        self.assertEqual(
+            self.env["product.barcode"].search_count([
+                ("name", "=", "155507"),
+                ("product_id", "=", self.product.id),
+            ]),
+            1,
+        )
+
+    def test_parse_barcode_ignores_code_assigned_to_another_product(self):
+        other_template = self.env["product.template"].create({
+            "name": "Otro producto Gestool",
+            "default_code": "GESTOOL-BARCODE-002",
+        })
+        self.env["product.barcode"].create({
+            "name": "999999",
+            "product_id": other_template.product_variant_id.id,
+            "product_tmpl_id": other_template.id,
+        })
+
+        self.assertEqual(
+            self.wizard.parse_multiple_barcodes(
+                ["GESTOOL-BARCODE-001", "999999"]
+            ),
+            "conflict",
+        )
+        self.assertFalse(self.product.barcode_ids.filtered(
+            lambda barcode: barcode.name == "999999"
+        ))

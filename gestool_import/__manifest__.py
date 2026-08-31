@@ -5,6 +5,7 @@
     "version": "19.0.1.1.0",
     "depends": [
         "point_of_sale",
+        "product_multi_barcode",
     ],
     "license": "AGPL-3",
     "application": True,

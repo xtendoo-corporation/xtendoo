@@ -1,7 +1,9 @@
 import logging
 from base64 import b64decode
+from decimal import Decimal, InvalidOperation
 from io import StringIO
 from math import isfinite
+import re
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -135,7 +137,7 @@ class GestoolImport(models.TransientModel):
     data_file_multiple_barcodes = fields.Binary(
         string="Multiples códigos de barras para importar",
         required=False,
-        help="CSV con dos columnas: código de producto (default_code) y código de barra.",
+        help="CSV o XLS con dos columnas: referencia y código de barras.",
     )
     filename_multiple_barcodes = fields.Char()
     multiple_barcodes_attachment_ids = fields.Many2many(
@@ -1194,32 +1196,103 @@ class GestoolImport(models.TransientModel):
             )
 
     def _import_multiple_barcodes(self, data_file_multiple_barcodes):
-        """Importa la relación de códigos de barras de un producto desde un CSV.
+        """Importa relaciones de códigos de barras desde CSV o Excel XLS.
 
-        Columnas del CSV:
-            0 - default_code  (código interno del producto)
-            1 - Código de barras
+        La primera fila de Excel es la cabecera. En cada fila posterior, la
+        columna A es ``default_code`` y la B es el código de barras.
         """
-        try:
-            csv_data = reader(StringIO(data_file_multiple_barcodes.decode("utf-8")))
-        except Exception:
-            raise UserError(_("No se puede leer el fichero de códigos de barras"))
+        is_xls = data_file_multiple_barcodes.startswith(b"\xd0\xcf\x11\xe0")
+        if is_xls:
+            rows = self._read_xls_barcodes(data_file_multiple_barcodes)
+        else:
+            try:
+                rows = reader(StringIO(data_file_multiple_barcodes.decode("utf-8")))
+            except (UnicodeDecodeError, TypeError):
+                raise UserError(_("No se puede leer el fichero de códigos de barras"))
 
         company = self.env.company
+        counters = {
+            "created": 0,
+            "existing": 0,
+            "conflict": 0,
+            "missing_product": 0,
+            "invalid": 0,
+        }
         _logger.info(
             "======== Importación de códigos de barras | Compañía: %s (id=%s) ========",
             company.name, company.id,
         )
 
-        for index, row in enumerate(csv_data):
+        for index, row in enumerate(rows, start=2 if is_xls else 1):
+            if not is_xls and index == 1 and self._is_barcode_header(row):
+                continue
             if len(row) < 2:
                 _logger.warning("Fila %d ignorada (menos de 2 columnas): %s", index, row)
+                counters["invalid"] += 1
                 continue
-            _logger.info(
-                "-------- Código de barras: default_code=%s, barcode=%s --------",
-                row[0], row[1],
-            )
-            self.parse_multiple_barcodes(row, company)
+            result = self.parse_multiple_barcodes(row, company)
+            counters[result] += 1
+
+        return {
+            "params": {
+                "message": _(
+                    "Creados: %(created)s | Ya existentes: %(existing)s | "
+                    "Conflictos ignorados: %(conflict)s | Productos no encontrados: "
+                    "%(missing_product)s | Filas inválidas: %(invalid)s",
+                    **counters,
+                )
+            }
+        }
+
+    @staticmethod
+    def _is_barcode_header(row):
+        """Detecta la cabecera habitual del fichero de códigos."""
+        header = [str(value).strip().lower() for value in row[:2]]
+        return header in (
+            ["referencia", "codigo_barras"],
+            ["referencia", "código_barras"],
+            ["default_code", "barcode"],
+        )
+
+    def _read_xls_barcodes(self, file_data):
+        """Devuelve las dos primeras columnas de un XLS, omitiendo la cabecera."""
+        try:
+            import xlrd
+        except ImportError as error:
+            _logger.exception("No se puede leer el Excel de códigos de barras")
+            raise UserError(_("No se puede leer el fichero XLS de códigos de barras")) from error
+
+        try:
+            workbook = xlrd.open_workbook(file_contents=file_data)
+            sheet = workbook.sheet_by_index(0)
+        except (TypeError, ValueError, IndexError, xlrd.biffh.XLRDError) as error:
+            _logger.exception("No se puede leer el Excel de códigos de barras")
+            raise UserError(_("No se puede leer el fichero XLS de códigos de barras")) from error
+
+        rows = []
+        for row_index in range(1, sheet.nrows):
+            rows.append([
+                self._normalize_import_value(sheet.cell_value(row_index, column))
+                for column in (0, 1)
+            ])
+        return rows
+
+    @staticmethod
+    def _normalize_import_value(value):
+        """Normaliza números de Excel sin perder ceros iniciales en cadenas."""
+        if value is None:
+            return ""
+        text = str(value).strip()
+        if not text:
+            return ""
+        if isinstance(value, float) or re.fullmatch(r"\d+\.00+", text):
+            try:
+                decimal_value = Decimal(text)
+            except InvalidOperation:
+                return text
+            if decimal_value == decimal_value.to_integral_value():
+                return str(decimal_value.quantize(Decimal("1")))
+        return text
 
     def parse_multiple_barcodes(self, row, company=None):
         """Crea o verifica códigos de barras adicionales para un producto en product.barcode.
@@ -1232,8 +1305,8 @@ class GestoolImport(models.TransientModel):
         if company is None:
             company = self.env.company
 
-        product_code = row[0].strip()
-        barcode = row[1].strip()
+        product_code = self._normalize_import_value(row[0])
+        barcode = self._normalize_import_value(row[1])
 
         _logger.info(
             "Procesando: default_code='%s', barcode='%s' | Compañía: %s (id=%s)",
@@ -1245,7 +1318,7 @@ class GestoolImport(models.TransientModel):
                 "Fila ignorada: default_code='%s', barcode='%s' (valores vacíos).",
                 product_code, barcode,
             )
-            return
+            return "invalid"
 
         # Buscar el producto por código interno filtrando por compañía
         product_tmpl = self.env["product.template"].search(
@@ -1262,7 +1335,7 @@ class GestoolImport(models.TransientModel):
                 "Producto no encontrado con default_code='%s' en la compañía '%s' (id=%s). Fila omitida.",
                 product_code, company.name, company.id,
             )
-            return
+            return "missing_product"
 
         # Obtener la variante del producto
         product = product_tmpl.product_variant_ids[:1]
@@ -1270,7 +1343,7 @@ class GestoolImport(models.TransientModel):
             _logger.warning(
                 "El producto '%s' no tiene variantes. Fila omitida.", product_code
             )
-            return
+            return "invalid"
 
         # Comprobar si el código de barras ya existe en product.barcode
         existing = self.env["product.barcode"].search(
@@ -1282,7 +1355,7 @@ class GestoolImport(models.TransientModel):
                 barcode, existing.id, existing.product_id.display_name,
                 existing.company_id.name or "sin compañía",
             )
-            return
+            return "existing" if existing.product_id == product else "conflict"
 
         # Crear el registro en product.barcode
         self.env["product.barcode"].sudo().create({
@@ -1294,6 +1367,7 @@ class GestoolImport(models.TransientModel):
             "Código de barras creado: '%s' → producto '%s' (id=%s) | Compañía: %s (id=%s).",
             barcode, product_code, product_tmpl.id, company.name, company.id,
         )
+        return "created"
 
     # def _import_property(self, data_file_property):
     #     try:
