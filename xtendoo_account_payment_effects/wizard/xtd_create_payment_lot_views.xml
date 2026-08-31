@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="xtd_account_payment_lot_create_wizard_view" model="ir.ui.view">
+        <field name="name">xtd.account.payment.lot.create.wizard.form</field>
+        <field name="model">xtd.account.payment.lot.create.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Crear lote de depósito/remesa">
+                <group>
+                    <group>
+                        <field name="company_id" invisible="1" />
+                        <field name="date" string="Fecha de depósito/remesa" />
+                        <field name="journal_id" string="Diario" />
+                        <field name="payment_method_line_id" string="Método de pago" />
+                        <field name="currency_id" string="Moneda" />
+                    </group>
+                    <group>
+                        <field name="payment_count" string="Efectos" />
+                        <field name="amount_total" string="Total" />
+                        <field name="description" string="Descripción" />
+                    </group>
+                </group>
+                <group string="Pagos seleccionados">
+                    <field name="payment_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="name" />
+                            <field name="payment_reference" string="Referencia" />
+                            <field name="partner_id" string="Cliente" />
+                            <field name="date" string="Fecha" />
+                            <field name="xtd_effect_due_date" string="Vencimiento" optional="show" />
+                            <field name="amount" string="Importe" />
+                            <field name="currency_id" column_invisible="1" />
+                        </list>
+                    </field>
+                </group>
+                <footer>
+                    <button
+                        name="action_create_lot"
+                        type="object"
+                        string="Crear lote"
+                        class="btn btn-primary"
+                    />
+                    <button string="Descartar" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
+

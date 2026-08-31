@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="account_payment_method_line_form_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.method.line.form.xtd.effects</field>
+        <field name="model">account.payment.method.line</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_method_line_form" />
+        <field name="arch" type="xml">
+            <group name="payment_order_options" position="after">
+                <group name="xtd_effect_options" string="Collection Effects">
+                    <field name="xtd_manage_effects" />
+                    <field
+                        name="xtd_effect_reference_required"
+                        invisible="not xtd_manage_effects"
+                    />
+                    <field
+                        name="xtd_effect_due_date_required"
+                        invisible="not xtd_manage_effects"
+                    />
+                </group>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_account_payment_method_line_tree_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.method.line.list.xtd.effects</field>
+        <field name="model">account.payment.method.line</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.view_account_payment_method_line_tree" />
+        <field name="arch" type="xml">
+            <field name="payment_order_ok" position="after">
+                <field name="xtd_manage_effects" optional="show" />
+            </field>
+        </field>
+    </record>
+
+    <record id="account_payment_method_line_search_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.method.line.search.xtd.effects</field>
+        <field name="model">account.payment.method.line</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_method_line_search" />
+        <field name="arch" type="xml">
+            <filter name="payment_order_ko" position="after">
+                <separator />
+                <filter
+                    name="xtd_manage_effects"
+                    string="Collection Effects"
+                    domain="[('xtd_manage_effects', '=', True)]"
+                />
+            </filter>
+        </field>
+    </record>
+</odoo>
+

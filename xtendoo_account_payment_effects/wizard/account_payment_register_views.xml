@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_account_payment_register_form_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.register.form.xtd.effects</field>
+        <field name="model">account.payment.register</field>
+        <field name="inherit_id" ref="account.view_account_payment_register_form" />
+        <field name="arch" type="xml">
+            <group name="group2" position="inside">
+                <field name="xtd_manage_effects" invisible="1" />
+                <field name="xtd_effect_reference_required" invisible="1" />
+                <field name="xtd_effect_due_date_required" invisible="1" />
+                <field
+                    name="xtd_payment_reference"
+                    invisible="not xtd_manage_effects"
+                    required="xtd_manage_effects and xtd_effect_reference_required"
+                />
+                <field
+                    name="xtd_effect_due_date"
+                    invisible="not xtd_manage_effects"
+                    required="xtd_manage_effects and xtd_effect_due_date_required"
+                />
+            </group>
+        </field>
+    </record>
+</odoo>
+

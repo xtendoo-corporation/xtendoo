@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="bank_statement_line_form_reconcile_view_xtd_effects" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.reconcile.xtd.effects</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="inherit_id" ref="account_reconcile_oca.bank_statement_line_form_reconcile_view" />
+        <field name="arch" type="xml">
+            <page name="reconcile_line" position="after">
+                <page name="xtd_payment_lots" string="Lotes de cobro" invisible="is_reconciled">
+                    <group>
+                        <field
+                            name="xtd_payment_lot_id"
+                            options="{'no_create': True, 'no_open': True}"
+                            placeholder="Seleccione un lote para añadir todas las líneas pendientes de los efectos"
+                        />
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>
+

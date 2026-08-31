@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_account_payment_form_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.form.xtd.effects</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.view_account_payment_form" />
+        <field name="arch" type="xml">
+            <field name="payment_reference" position="attributes">
+                <attribute name="invisible">not xtd_manage_effects and not payment_reference</attribute>
+                <attribute name="required">xtd_manage_effects and xtd_effect_reference_required</attribute>
+            </field>
+            <group name="group2" position="inside">
+                <field name="xtd_manage_effects" invisible="1" />
+                <field name="xtd_effect_reference_required" invisible="1" />
+                <field name="xtd_effect_due_date_required" invisible="1" />
+                <field name="xtd_effect_status" invisible="1" />
+                <field
+                    name="xtd_effect_due_date"
+                    invisible="not xtd_manage_effects"
+                    required="xtd_manage_effects and xtd_effect_due_date_required"
+                />
+            </group>
+        </field>
+    </record>
+
+    <record id="xtd_account_payment_effect_tree" model="ir.ui.view">
+        <field name="name">account.payment.list.xtd.effects</field>
+        <field name="model">account.payment</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="date" string="Fecha recepción" />
+                <field name="partner_id" string="Cliente" />
+                <field name="payment_reference" string="Referencia" />
+                <field name="payment_method_line_id" string="Método de pago" />
+                <field name="xtd_effect_due_date" string="Vencimiento" optional="show" />
+                <field name="invoice_ids" widget="many2many_tags" optional="show" />
+                <field name="amount" sum="Total" />
+                <field name="currency_id" column_invisible="1" />
+                <field name="payment_lot_id" optional="show" string="Lote" />
+                <field name="state" widget="badge" />
+                <field name="xtd_effect_status" widget="badge" optional="show" />
+                <field name="is_matched" optional="show" string="Conciliado con banco" />
+            </list>
+        </field>
+    </record>
+
+    <record id="xtd_account_payment_effect_search" model="ir.ui.view">
+        <field name="name">account.payment.search.xtd.effects</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search" />
+        <field name="arch" type="xml">
+            <search position="inside">
+                <field name="payment_reference" />
+                <field name="payment_method_line_id" />
+                <field name="xtd_effect_due_date" />
+                <field name="payment_lot_id" />
+                <separator />
+                <filter
+                    name="xtd_collection_effects"
+                    string="Efectos de cobro"
+                    domain="[('payment_type', '=', 'inbound'), ('partner_type', '=', 'customer'), ('payment_method_line_id.xtd_manage_effects', '=', True)]"
+                />
+                <filter
+                    name="xtd_pending"
+                    string="Pendientes de conciliación"
+                    domain="[('is_matched', '=', False), ('state', 'not in', ('draft', 'canceled', 'rejected'))]"
+                />
+                <filter
+                    name="xtd_portfolio"
+                    string="En cartera"
+                    domain="[('payment_lot_id', '=', False), ('is_matched', '=', False), ('state', 'not in', ('draft', 'canceled', 'rejected'))]"
+                />
+                <filter
+                    name="xtd_deposited"
+                    string="Depositados"
+                    domain="[('payment_lot_id', '!=', False), ('is_matched', '=', False), ('state', 'not in', ('draft', 'canceled', 'rejected'))]"
+                />
+                <filter
+                    name="xtd_collected"
+                    string="Cobrados"
+                    domain="[('is_matched', '=', True)]"
+                />
+                <filter
+                    name="xtd_rejected"
+                    string="Devueltos"
+                    domain="[('state', '=', 'rejected')]"
+                />
+                <filter
+                    name="xtd_canceled"
+                    string="Cancelados"
+                    domain="[('state', '=', 'canceled')]"
+                />
+                <separator />
+                <filter
+                    name="xtd_due_overdue"
+                    string="Vencidos"
+                    domain="[('xtd_effect_due_date', '&lt;', context_today())]"
+                />
+                <filter
+                    name="xtd_due_today"
+                    string="Vencen hoy"
+                    domain="[('xtd_effect_due_date', '=', context_today())]"
+                />
+                <filter
+                    name="xtd_due_upcoming"
+                    string="Próximos vencimientos"
+                    domain="[('xtd_effect_due_date', '&gt;', context_today()), ('xtd_effect_due_date', '&lt;=', context_today() + datetime.timedelta(days=30))]"
+                />
+                <filter
+                    name="xtd_due_missing"
+                    string="Sin vencimiento"
+                    domain="[('xtd_effect_due_date', '=', False)]"
+                />
+                <group name="groupby" position="inside">
+                    <filter name="xtd_group_partner" string="Cliente" context="{'group_by': 'partner_id'}" />
+                    <filter name="xtd_group_method" string="Método de pago" context="{'group_by': 'payment_method_line_id'}" />
+                    <filter name="xtd_group_due_date" string="Vencimiento" context="{'group_by': 'xtd_effect_due_date'}" />
+                    <filter name="xtd_group_journal" string="Diario" context="{'group_by': 'journal_id'}" />
+                    <filter name="xtd_group_lot" string="Lote" context="{'group_by': 'payment_lot_id'}" />
+                    <filter name="xtd_group_date" string="Fecha recepción" context="{'group_by': 'date'}" />
+                    <filter name="xtd_group_state" string="Estado del pago" context="{'group_by': 'state'}" />
+                    <filter name="xtd_group_company" string="Compañía" context="{'group_by': 'company_id'}" groups="base.group_multi_company" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="xtd_account_payment_effect_action" model="ir.actions.act_window">
+        <field name="name">Efectos en cartera</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="xtd_account_payment_effect_tree" />
+        <field name="search_view_id" ref="xtd_account_payment_effect_search" />
+        <field name="domain">[('payment_type', '=', 'inbound'), ('partner_type', '=', 'customer'), ('payment_method_line_id.xtd_manage_effects', '=', True)]</field>
+        <field name="context">{'search_default_xtd_pending': 1, 'search_default_xtd_collection_effects': 1, 'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registre primero los cheques, pagarés u otros efectos desde la factura o desde pagos existentes.
+            </p>
+            <p>
+                Esta vista sirve para consultar y seleccionar efectos ya registrados para agruparlos en un lote de depósito o remesa.
+            </p>
+        </field>
+    </record>
+
+    <record id="xtd_create_payment_lot_wizard_action" model="ir.actions.act_window">
+        <field name="name">Crear lote de depósito/remesa</field>
+        <field name="res_model">xtd.account.payment.lot.create.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="account.model_account_payment" />
+        <field name="binding_view_types">list</field>
+    </record>
+</odoo>
+

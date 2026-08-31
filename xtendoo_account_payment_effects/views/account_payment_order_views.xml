@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="account_payment_order_form_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.order.form.xtd.effects</field>
+        <field name="model">account.payment.order</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(account_payment_batch_oca.account_payment_line_create_action)d']" position="attributes">
+                <attribute name="invisible">state != 'draft' or xtd_source_type == 'existing_payments'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='%(account_payment_batch_oca.account_payment_line_create_action)d']" position="after">
+                <button
+                    name="action_import_accounting_entries"
+                    type="object"
+                    string="Xtd importar apuntes contables"
+                    class="oe_highlight"
+                    invisible="not payment_method_line_id.xtd_manage_effects or state not in ('draft','open','generated','uploaded')"
+                />
+            </xpath>
+            <xpath expr="//button[@name='draft2open']" position="attributes">
+                <attribute name="invisible">state != 'draft' or xtd_source_type == 'existing_payments'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='open2generated']" position="attributes">
+                <attribute name="invisible">state != 'open' or xtd_source_type == 'existing_payments'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='generated2uploaded']" position="attributes">
+                <attribute name="invisible">state != 'generated' or xtd_source_type == 'existing_payments'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="invisible">state == 'cancel' or xtd_source_type == 'existing_payments'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='cancel2draft']" position="after">
+                <button
+                    name="action_cancel"
+                    type="object"
+                    string="Cancel Lot"
+                    confirm="Are you sure you want to cancel this lot?"
+                    invisible="state == 'cancel' or xtd_source_type != 'existing_payments'"
+                    groups="account.group_account_manager"
+                />
+            </xpath>
+            <field name="payment_method_line_id" position="after">
+                <field name="xtd_source_type" readonly="1" />
+            </field>
+            <page name="payment-lines" position="attributes">
+                <attribute name="invisible">state == 'draft' or xtd_source_type == 'existing_payments'</attribute>
+            </page>
+
+            <xpath expr="//page[@name='payment-lots']" position="after">
+                <page string="Apuntes contables importados">
+                    <field name="xtd_accounting_line_ids" nolabel="1" readonly="1"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_xtd_payment_order_line_tree" model="ir.ui.view">
+        <field name="name">xtd.payment.order.line.tree</field>
+        <field name="model">xtd.payment.order.line</field>
+        <field name="arch" type="xml">
+            <list string="Apuntes contables importados" create="0" edit="0" delete="0">
+                <field name="source_type"/>
+                <field name="payment_id"/>
+                <field name="move_line_id"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="due_date"/>
+                <field name="amount"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="account_payment_order_tree_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.order.list.xtd.effects</field>
+        <field name="model">account.payment.order</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_order_tree" />
+        <field name="arch" type="xml">
+            <field name="payment_method_line_id" position="after">
+                <field name="xtd_source_type" optional="show" />
+            </field>
+        </field>
+    </record>
+
+    <record id="account_payment_order_search_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.order.search.xtd.effects</field>
+        <field name="model">account.payment.order</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_order_search" />
+        <field name="arch" type="xml">
+            <group name="groupby" position="before">
+                <filter
+                    name="xtd_effect_methods"
+                    string="Métodos de efectos"
+                    domain="[('payment_method_line_id.xtd_manage_effects', '=', True)]"
+                />
+                <filter
+                    name="xtd_existing_payments"
+                    string="Pagos existentes"
+                    domain="[('xtd_source_type', '=', 'existing_payments')]"
+                />
+            </group>
+            <group name="groupby" position="inside">
+                <filter name="xtd_source_type_groupby" string="Origen" context="{'group_by': 'xtd_source_type'}" />
+            </group>
+        </field>
+    </record>
+
+    <record id="xtd_account_payment_effect_order_action" model="ir.actions.act_window">
+        <field name="name">Remesas de efectos</field>
+        <field name="res_model">account.payment.order</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('payment_type', '=', 'inbound'), ('payment_method_line_id.xtd_manage_effects', '=', True)]</field>
+        <field name="context">{'default_payment_type': 'inbound', 'search_default_xtd_effect_methods': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree una remesa o depósito para un método de efectos.
+            </p>
+            <p>
+                Desde la orden podrá seleccionar facturas o apuntes pendientes del método de pago mediante el flujo estándar de OCA,
+                o agrupar pagos existentes con el flujo Xtendoo.
+            </p>
+        </field>
+    </record>
+</odoo>
+
+

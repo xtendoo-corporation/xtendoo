@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <menuitem
+        id="xtd_account_payment_effect_menu"
+        name="Efectos en cartera"
+        parent="account.menu_finance_receivables"
+        action="xtd_account_payment_effect_action"
+        sequence="18"
+        groups="account.group_account_user"
+    />
+    <menuitem
+        id="xtd_account_payment_effect_order_menu"
+        name="Remesas de efectos"
+        parent="account.menu_finance_receivables"
+        action="xtd_account_payment_effect_order_action"
+        sequence="19"
+        groups="account.group_account_user"
+    />
+</odoo>
+

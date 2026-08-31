@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="account_payment_lot_form_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.lot.form.xtd.effects</field>
+        <field name="model">account.payment.lot</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_lot_form" />
+        <field name="arch" type="xml">
+            <form position="inside">
+                <header>
+                    <button
+                        name="xtd_action_cancel_lot"
+                        type="object"
+                        string="Cancelar lote"
+                        class="btn-secondary"
+                        invisible="xtd_source_type != 'existing_payments' or state == 'cancel' or xtd_is_matched"
+                        groups="account.group_account_manager"
+                    />
+                </header>
+            </form>
+            <group name="main" position="inside">
+                <field name="xtd_source_type" invisible="1" />
+                <field name="xtd_is_matched" />
+            </group>
+        </field>
+    </record>
+
+    <record id="account_payment_lot_list_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.lot.list.xtd.effects</field>
+        <field name="model">account.payment.lot</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_lot_list" />
+        <field name="arch" type="xml">
+            <field name="payment_count" position="after">
+                <field name="xtd_is_matched" optional="show" />
+            </field>
+        </field>
+    </record>
+
+    <record id="account_payment_lot_search_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.lot.search.xtd.effects</field>
+        <field name="model">account.payment.lot</field>
+        <field name="inherit_id" ref="account_payment_batch_oca.account_payment_lot_search" />
+        <field name="arch" type="xml">
+            <filter name="date" position="before">
+                <filter
+                    name="xtd_pending_reconcile"
+                    string="Pendientes de conciliación"
+                    domain="[('xtd_is_matched', '=', False)]"
+                />
+                <filter
+                    name="xtd_matched"
+                    string="Conciliados"
+                    domain="[('xtd_is_matched', '=', True)]"
+                />
+                <separator />
+            </filter>
+        </field>
+    </record>
+</odoo>
+
