@@ -198,6 +198,17 @@ class GestoolImport(models.TransientModel):
                     errors.append(_("%(file)s: %(error)s", file=filename, error=error))
                     continue
 
+                # Confirmar cada fichero en cuanto termina de procesarse, en vez
+                # de dejarlo todo en la transacción abierta del wizard. Sin esto,
+                # si un fichero posterior tarda demasiado y el worker se recicla
+                # por --limit-time-cpu, se deshacen TAMBIÉN los ficheros previos
+                # ya procesados con éxito en la misma llamada (visto en
+                # producción real en parafarmacias-del-sur, 2026-09-02: un
+                # import con varios ficheros perdió el trabajo completo por el
+                # límite de CPU a mitad del último fichero). Con el commit aquí,
+                # una interrupción posterior solo pierde el fichero en curso.
+                self.env.cr.commit()
+
                 processed += 1
                 if isinstance(result, dict) and result.get("params", {}).get("message"):
                     warnings.append("%s: %s" % (
