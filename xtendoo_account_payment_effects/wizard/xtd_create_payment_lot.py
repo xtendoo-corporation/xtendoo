@@ -88,8 +88,6 @@ class XtdCreatePaymentLotWizard(models.TransientModel):
                 "payment_method_line_id": self.payment_method_line_id.id,
                 "company_id": self.company_id.id,
                 "journal_id": self.journal_id.id,
-                "date_prefered": "fixed",
-                "date_scheduled": self.date,
                 "description": self.description,
                 "xtd_source_type": "existing_payments",
             }

@@ -63,6 +63,7 @@ class TestExistingPaymentLot(XtdAccountPaymentEffectsCommon):
         alt_currency = self.env.ref("base.EUR")
         if alt_currency == self.company.currency_id:
             alt_currency = self.env.ref("base.USD")
+        alt_currency.sudo().write({"active": True})
         invoice_eur = self._create_invoice(self.partner_a, 100.0)
         payment_eur = self._register_effect_payment(
             invoice_eur,

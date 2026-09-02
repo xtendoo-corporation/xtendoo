@@ -138,6 +138,7 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
                 "country_id": cls.company.account_fiscal_country_id.id,
             }
         )
+        cls.env.user.write({"company_ids": [Command.link(company.id)]})
         cls._use_chart_template(company)
         company_data = cls.collect_company_accounting_data(company)
         company_data["default_journal_bank"].suspense_account_id = (
@@ -170,7 +171,10 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
                 "bank_account_link": "fixed",
                 "payment_account_id": cls.env[
                     "account.chart.template"
-                ].ref("account_journal_payment_debit_account_id").id,
+                ]
+                .with_company(company_data["company"])
+                .ref("account_journal_payment_debit_account_id")
+                .id,
                 "xtd_manage_effects": True,
                 "xtd_effect_reference_required": True,
                 "xtd_effect_due_date_required": due_date_required,

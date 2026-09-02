@@ -1,6 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_xtd_account_payment_lot_create_wizard_user,xtd.account.payment.lot.create.wizard user,model_xtd_account_payment_lot_create_wizard,account.group_account_user,1,1,1,1
 access_xtd_account_payment_lot_create_wizard_manager,xtd.account.payment.lot.create.wizard manager,model_xtd_account_payment_lot_create_wizard,account.group_account_manager,1,1,1,1
-
-access_xtd_payment_order_line_user,xtd.payment.order.line user,model_xtd_payment_order_line,account.group_account_user,1,1,1,1
-access_xtd_payment_order_line_manager,xtd.payment.order.line manager,model_xtd_payment_order_line,account.group_account_manager,1,1,1,1
