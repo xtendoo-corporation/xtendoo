@@ -662,15 +662,7 @@ class GestoolImport(models.TransientModel):
     def _create_import_session(self, config):
         """Crea y abre una sesión aislada 0000 para un TPV existente."""
         config.ensure_one()
-        cash_method = self._ensure_import_cash_payment_method(config)
-        if not cash_method.journal_id.loss_account_id or not cash_method.journal_id.profit_account_id:
-            raise UserError(_(
-                "El diario de efectivo '%(journal)s' del punto de venta '%(pos)s' "
-                "debe tener configuradas las cuentas de pérdidas y ganancias para "
-                "poder cerrar automáticamente la sesión 0000.",
-                journal=cash_method.journal_id.name,
-                pos=config.name,
-            ))
+        self._ensure_import_payment_method(config)
         session = self.env['pos.session'].sudo().create({
             'config_id': config.id,
             'user_id': self.env.uid,
@@ -714,32 +706,61 @@ class GestoolImport(models.TransientModel):
             session.config_id.name, session.id,
         )
 
-    def _ensure_import_cash_payment_method(self, config):
-        """Devuelve el método de efectivo configurado en el TPV del CSV."""
+    def _ensure_import_payment_method(self, config):
+        """Devuelve un método no efectivo para no alterar el arqueo de caja."""
         config.ensure_one()
-        cash_method = config.payment_method_ids.filtered(
+        payment_method = config.payment_method_ids.filtered(
+            lambda method: method.active
+            and method.name == 'Gestool - %s' % config.name
+            and method.journal_id.type != 'cash'
+        )[:1]
+        if payment_method:
+            return payment_method
+
+        company = config.company_id
+        journal = self.env['account.journal'].sudo().search([
+            ('name', '=', 'Gestool - %s' % config.name),
+            ('type', '=', 'bank'),
+            ('company_id', '=', company.id),
+        ], limit=1)
+        if not journal:
+            journal = self.env['account.journal'].sudo().create({
+                'name': 'Gestool - %s' % config.name,
+                'code': 'G%04d' % (config.id % 10000),
+                'type': 'bank',
+                'company_id': company.id,
+            })
+
+        return self.env['pos.payment.method'].sudo().create({
+            'name': 'Gestool - %s' % config.name,
+            'company_id': company.id,
+            'journal_id': journal.id,
+            'config_ids': [(4, config.id)],
+        })
+
+    def _ensure_import_cash_payment_method(self, config):
+        """Compatibilidad con integraciones que consultan el método de efectivo."""
+        config.ensure_one()
+        return config.payment_method_ids.filtered(
             lambda method: method.active and method.journal_id.type == 'cash'
         )[:1]
-        if cash_method:
-            return cash_method
-        raise UserError(_(
-            "El punto de venta '%s' no tiene configurado ningún método de pago en efectivo. "
-            "Configúralo antes de importar para no modificar una sesión de venta que pueda estar abierta.",
-            config.name,
-        ))
 
-    def _replace_order_payments_with_cash(self, pos_order, cash_method):
-        """Deja exactamente un pago en efectivo por el total del pedido."""
+    def _replace_order_payments(self, pos_order, payment_method):
+        """Deja exactamente un pago no efectivo por el total del pedido."""
         pos_order.ensure_one()
-        cash_method.ensure_one()
+        payment_method.ensure_one()
         pos_order._clean_payment_lines()
         pos_order.add_payment({
             'pos_order_id': pos_order.id,
-            'payment_method_id': cash_method.id,
+            'payment_method_id': payment_method.id,
             'amount': pos_order.amount_total,
             'payment_date': pos_order.date_order,
         })
         return pos_order.payment_ids
+
+    def _replace_order_payments_with_cash(self, pos_order, cash_method):
+        """Compatibilidad con llamadas antiguas; no se usa para importar tickets."""
+        return self._replace_order_payments(pos_order, cash_method)
 
     def _get_tax_by_amount(self, amount):
         """Busca el impuesto de tipo 'sale' cuyo porcentaje coincide con amount,
@@ -1121,18 +1142,18 @@ class GestoolImport(models.TransientModel):
             context=dict(self.env.context, allowed_company_ids=[company.id], force_company=company.id),
         )
 
-        # 1. La forma de pago del CSV se ignora siempre. El TPV de importación
-        # dispone de su propio método de efectivo y el pedido queda con un solo pago.
-        cash_pm = self._ensure_import_cash_payment_method(pos_order.config_id)
+        # 1. La forma de pago del CSV se ignora siempre. El método de importación
+        # no es efectivo para no alterar los importes de las cajas abiertas.
+        payment_method = self._ensure_import_payment_method(pos_order.config_id)
 
         _logger.info(
             "Usando método de pago '%s' (id=%s) para pedido %s",
-            cash_pm.name, cash_pm.id, pos_order.pos_reference,
+            payment_method.name, payment_method.id, pos_order.pos_reference,
         )
 
-        # 2. Sustituir cualquier pago previo por efectivo por el importe total.
+        # 2. Sustituir cualquier pago previo por el importe total importado.
         pos_order = env['pos.order'].browse(pos_order.id)
-        self._replace_order_payments_with_cash(pos_order, cash_pm)
+        self._replace_order_payments(pos_order, payment_method)
 
         # 3. Marcar el pedido como pagado
         env['pos.order'].browse(pos_order.id).action_pos_order_paid()

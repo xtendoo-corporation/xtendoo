@@ -244,6 +244,14 @@ class TestGestoolTicketImport(TransactionCase):
         self.assertEqual(session.state, "opened")
         self.assertTrue(session.rescue)
 
+    def test_import_payment_method_is_not_cash(self):
+        payment_method = self.wizard._ensure_import_payment_method(
+            self.pos_configs[0]
+        )
+
+        self.assertNotEqual(payment_method.journal_id.type, "cash")
+        self.assertEqual(payment_method.config_ids, self.pos_configs[0])
+
     def test_existing_non_cash_payment_is_replaced_with_cash(self):
         session = self.wizard._create_import_session(self.pos_configs[0])
         order = self.wizard.parse_ticket(self._ticket_row(), session)
