@@ -978,11 +978,26 @@ class GestoolImport(models.TransientModel):
                 if order:
                     processed_order_ids.add(order.id)
 
-            for order_id in processed_order_ids:
+            for index, order_id in enumerate(processed_order_ids, start=1):
                 pos_order = self.env['pos.order'].sudo().browse(order_id)
                 if pos_order.exists() and pos_order.state == 'draft':
                     self._confirm_and_invoice_order(pos_order)
+                # Confirmar cada 10 pedidos, no solo al terminar el fichero
+                # entero. Un fichero de un único TPV puede contener miles de
+                # tickets y tardar más CPU de la que --limit-time-cpu permite
+                # aunque el límite ya se haya subido una vez (visto en
+                # producción real en parafarmacias-del-sur, 2026-09-02: con
+                # --limit-time-cpu=3600 seguía matando el worker a mitad de
+                # fichero). Con este commit periódico, una interrupción
+                # posterior solo pierde como mucho los últimos 9 pedidos, no
+                # el fichero completo. Aviso: si la interrupción cae justo
+                # aquí, la sesión 0000 de este TPV puede quedar abierta sin
+                # cerrar (los pedidos ya confirmados/facturados persisten
+                # igualmente) — revisar manualmente en ese caso.
+                if index % 10 == 0:
+                    self.env.cr.commit()
             self._close_import_session(session)
+            self.env.cr.commit()
             total_processed_orders += len(processed_order_ids)
 
         _logger.info("Total pedidos importados: %d", total_processed_orders)
