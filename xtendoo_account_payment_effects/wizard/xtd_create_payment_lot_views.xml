@@ -19,7 +19,7 @@
                         <field name="description" string="Descripción" />
                     </group>
                 </group>
-                <group string="Pagos seleccionados">
+                <group string="Pagos seleccionados" col="1">
                     <field name="payment_ids" nolabel="1" readonly="1">
                         <list>
                             <field name="name" />
@@ -38,11 +38,16 @@
                         type="object"
                         string="Crear lote"
                         class="btn btn-primary"
+                        data-hotkey="q"
                     />
-                    <button string="Descartar" class="btn-secondary" special="cancel" />
+                    <button
+                        string="Descartar"
+                        class="btn btn-secondary"
+                        special="cancel"
+                        data-hotkey="x"
+                    />
                 </footer>
             </form>
         </field>
     </record>
 </odoo>
-

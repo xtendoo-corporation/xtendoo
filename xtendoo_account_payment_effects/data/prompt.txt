@@ -1,0 +1,2504 @@
+# PROMPT DE DESARROLLO
+
+## Módulo: `xtendoo_account_payment_effects`
+
+Actúa como **desarrollador senior experto en Odoo 19.0 Community, contabilidad de Odoo y módulos OCA**, con especial atención a compatibilidad futura, integridad contable, arquitectura ORM y mínimo código propio.
+
+Debes desarrollar un módulo nuevo para **Odoo 19.0 Community** llamado:
+
+`xtendoo_account_payment_effects`
+
+El módulo debe permitir gestionar **efectos de cobro recibidos de clientes**, inicialmente:
+
+* Cheques.
+* Pagarés.
+
+Pero la arquitectura debe ser **genérica y configurable**, de forma que en el futuro puedan utilizarse otros métodos de cobro similares sin modificar código.
+
+El objetivo principal es reproducir y mejorar para Community el flujo de **Customer Batch Payment / Batch Deposit** de Odoo Enterprise, pero **sin copiar código Enterprise**, reutilizando al máximo las funcionalidades ya proporcionadas por Odoo Community y OCA.
+
+---
+
+# 1. PRINCIPIO FUNDAMENTAL
+
+NO desarrollar un sistema de lotes desde cero.
+
+Debes heredar y reutilizar al máximo:
+
+## OCA/bank-payment-alternative — rama 19.0
+
+Especialmente:
+
+`account_payment_base_oca`
+
+y:
+
+`account_payment_batch_oca`
+
+Este último ya proporciona:
+
+* `account.payment.order`
+* `account.payment.line`
+* `account.payment.lot`
+* relación entre `account.payment` y `account.payment.order`
+* relación entre `account.payment` y `account.payment.lot`
+* Payment Orders
+* Debit Orders
+* agrupación de pagos
+* importe total del lote
+* número de pagos del lote
+* diario
+* compañía
+* moneda
+* fecha
+* estados de la orden
+* secuencias
+* vistas
+* seguridad
+* integración con métodos de pago
+
+No duplicar ninguno de estos conceptos.
+
+El nuevo módulo XTD debe ser una **extensión limpia de OCA**.
+
+---
+
+# 2. PROHIBICIONES ARQUITECTÓNICAS
+
+Está expresamente prohibido:
+
+1. Modificar directamente archivos de OCA.
+2. Hacer fork de `account_payment_batch_oca` para cambiar su comportamiento.
+3. Copiar código de Odoo Enterprise.
+4. Depender de `account_batch_payment` Enterprise.
+5. Crear un modelo alternativo de Batch Payment si `account.payment.lot` ya resuelve esa función.
+6. Duplicar información existente en `account.payment`.
+7. Crear estados contables paralelos innecesarios.
+8. Modificar contabilidad mediante SQL.
+9. Borrar, cancelar o recrear pagos ya existentes al meterlos en un lote.
+10. Crear nuevos asientos por el mero hecho de introducir un pago existente en un lote.
+11. Reconciliar otra vez factura contra pago al crear el lote.
+12. Hardcodear IDs de diarios, cuentas, empresas, métodos de pago o monedas.
+13. Hardcodear el nombre `"Cheque"` o `"Pagaré"` para decidir la lógica funcional.
+14. Alterar el comportamiento normal de `account_payment_batch_oca` para órdenes creadas desde facturas pendientes.
+15. Usar monkey patches.
+16. Añadir JavaScript salvo que sea estrictamente necesario para integración con la interfaz de conciliación OCA.
+
+Todo debe hacerse mediante herencia ORM estándar de Odoo.
+
+---
+
+# 3. REGLA DE NOMENCLATURA
+
+Todos los campos nuevos desarrollados específicamente por Xtendoo deben llevar prefijo:
+
+`xtd_`
+
+Ejemplos:
+
+`xtd_effect_due_date`
+
+`xtd_manage_effects`
+
+`xtd_source_type`
+
+No renombrar campos estándar ni campos OCA.
+
+---
+
+# 4. OBJETIVO FUNCIONAL
+
+Queremos soportar el siguiente circuito completo:
+
+```text
+FACTURA DE CLIENTE
+        │
+        ▼
+Pendiente de pago
+        │
+        │ cliente entrega cheque/pagaré
+        ▼
+REGISTRAR PAGO
+        │
+        ▼
+account.payment
+        │
+        ▼
+Factura = EN PROCESO DE PAGO
+        │
+        ▼
+EFECTO EN CARTERA
+        │
+        │ posteriormente se lleva/remesa al banco
+        ▼
+PAYMENT LOT
+        │
+        ▼
+EFECTO DEPOSITADO / REMESADO
+        │
+        │ banco realiza un único abono
+        ▼
+MOVIMIENTO BANCARIO
+        │
+        ▼
+Conciliar movimiento contra Payment Lot
+        │
+        ▼
+Todos los pagos del lote quedan matched
+        │
+        ▼
+Factura(s) = PAGADAS
+```
+
+Este comportamiento es obligatorio.
+
+---
+
+# 5. CONCEPTO CONTABLE
+
+Cuando recibimos un cheque o pagaré:
+
+**NO significa todavía que el dinero esté disponible en banco.**
+
+Por tanto:
+
+```text
+Factura
+    ↓
+Registrar pago
+    ↓
+Cuenta transitoria / outstanding receipts
+    ↓
+Factura = En proceso de pago
+```
+
+El importe permanece en una cuenta transitoria hasta la conciliación bancaria.
+
+Ejemplo conceptual:
+
+```text
+Recepción cheque:
+
+Cobros pendientes / Cheques       1.000
+        a Cliente 430                    1.000
+```
+
+Posteriormente:
+
+```text
+Ingreso bancario:
+
+572 Banco                          1.000
+        a Cobros pendientes / Cheques    1.000
+```
+
+No generar estas líneas manualmente.
+
+Se debe utilizar el funcionamiento estándar de:
+
+* `account.payment`
+* `payment_method_line_id`
+* `payment_account_id`
+* `outstanding_account_id`
+* conciliación de Odoo
+
+---
+
+# 6. ESTADO DE LA FACTURA: REQUISITO CRÍTICO
+
+Este requisito es imprescindible.
+
+Después de registrar el cheque o pagaré contra la factura:
+
+```text
+Factura = En proceso de pago
+```
+
+NO debe pasar directamente a:
+
+```text
+Pagada
+```
+
+La factura solo debe convertirse en:
+
+```text
+Pagada
+```
+
+cuando el `account.payment` quede efectivamente conciliado/matched con el movimiento bancario.
+
+En Odoo 19 `account.payment` ya dispone de:
+
+```text
+state:
+- draft
+- in_process
+- paid
+- canceled
+- rejected
+```
+
+y también de:
+
+```text
+is_reconciled
+is_matched
+```
+
+Debes respetarlos.
+
+### Diferencia fundamental
+
+`is_reconciled` y `is_matched` NO significan lo mismo.
+
+Después de registrar el cheque contra la factura puede ocurrir:
+
+```text
+is_reconciled = True
+```
+
+porque el pago está conciliado contra la cuenta a cobrar de la factura.
+
+Pero:
+
+```text
+is_matched = False
+```
+
+porque todavía no está conciliado contra el movimiento bancario.
+
+Para decidir si un efecto está pendiente de ingresar en banco debe utilizarse fundamentalmente:
+
+```text
+is_matched
+```
+
+NO `is_reconciled`.
+
+---
+
+# 7. COMMUNITY 19 Y ESTADO `in_payment`
+
+Antes de desarrollar, inspecciona el código real de la instalación Odoo 19.0.
+
+Debes comprobar:
+
+```python
+account.move._get_invoice_in_payment_state()
+```
+
+El comportamiento requerido es:
+
+```python
+return "in_payment"
+```
+
+cuando existe un pago registrado pero aún pendiente de conciliación bancaria.
+
+Actualmente este comportamiento existía en OCA mediante `account_in_payment` en versiones anteriores.
+
+No debes asumir que dicho módulo está disponible para 19.0.
+
+Si en la instalación objetivo no existe ningún módulo que proporcione correctamente `in_payment`, implementar en este módulo XTD la mínima extensión necesaria sobre:
+
+`account.move`
+
+utilizando el hook oficial:
+
+`_get_invoice_in_payment_state()`
+
+No copiar código Enterprise.
+
+No crear un campo de estado alternativo en la factura.
+
+Utilizar siempre `payment_state` estándar.
+
+---
+
+# 8. MÉTODOS DE PAGO: CHEQUE, PAGARÉ Y OTROS
+
+No programar:
+
+```python
+if payment_method.name == "Cheque":
+```
+
+ni:
+
+```python
+if payment_method.name == "Pagaré":
+```
+
+La solución debe ser configurable.
+
+Extender:
+
+`account.payment.method.line`
+
+con campos similares a:
+
+```python
+xtd_manage_effects = fields.Boolean(
+    string="Manage as Collection Effect"
+)
+
+xtd_effect_reference_required = fields.Boolean(
+    string="Effect Reference Required"
+)
+
+xtd_effect_due_date_required = fields.Boolean(
+    string="Effect Due Date Required"
+)
+```
+
+Los nombres finales pueden ajustarse siguiendo las convenciones Odoo, pero siempre con prefijo `xtd_`.
+
+Ejemplo de configuración:
+
+### Cheque
+
+```text
+Método: Cheque
+Gestionar como efecto: Sí
+Referencia obligatoria: Sí
+Vencimiento obligatorio: No
+```
+
+### Pagaré
+
+```text
+Método: Pagaré
+Gestionar como efecto: Sí
+Referencia obligatoria: Sí
+Vencimiento obligatorio: Sí
+```
+
+En el futuro podríamos configurar:
+
+```text
+Letra de cambio
+Efectivo a depositar
+Otros efectos
+```
+
+sin modificar código.
+
+---
+
+# 9. NO DUPLICAR INFORMACIÓN DE `account.payment`
+
+Odoo 19 ya tiene:
+
+```text
+payment_method_line_id
+payment_method_id
+payment_reference
+date
+state
+partner_bank_id
+journal_id
+partner_id
+amount
+currency_id
+is_reconciled
+is_matched
+```
+
+Por tanto NO crear persistentemente:
+
+```text
+xtd_effect_type
+```
+
+porque el tipo se obtiene mediante:
+
+`payment_method_line_id`
+
+NO crear:
+
+```text
+xtd_effect_number
+```
+
+porque ya existe:
+
+`payment_reference`
+
+El propio campo `payment_reference` estándar está pensado para referencias como número de cheque.
+
+NO crear:
+
+```text
+xtd_effect_received_date
+```
+
+porque la fecha de recepción puede representarse mediante:
+
+`date`
+
+NO crear:
+
+```text
+xtd_effect_bank
+```
+
+salvo que posteriormente exista un requisito explícito para guardar el banco librado/emisor diferente del diario o cuenta bancaria existente.
+
+NO crear un estado persistente independiente como fuente de verdad si puede deducirse de:
+
+```text
+state
+is_matched
+payment_lot_id
+```
+
+---
+
+# 10. ÚNICO DATO DE EFECTO QUE SÍ FALTA
+
+Añadir a:
+
+`account.payment`
+
+el campo:
+
+```python
+xtd_effect_due_date = fields.Date(
+    string="Effect Due Date",
+    tracking=True,
+)
+```
+
+Este campo será especialmente importante para pagarés.
+
+Debe mostrarse únicamente cuando:
+
+```text
+payment_method_line_id.xtd_manage_effects = True
+```
+
+y será obligatorio cuando:
+
+```text
+payment_method_line_id.xtd_effect_due_date_required = True
+```
+
+---
+
+# 11. REGISTRAR PAGO DESDE UNA FACTURA
+
+El flujo habitual será:
+
+```text
+Factura
+→ Registrar pago
+```
+
+Por tanto no basta con modificar el formulario de `account.payment`.
+
+Debes extender también:
+
+`account.payment.register`
+
+para permitir introducir los datos necesarios cuando el pago se genera desde el wizard de facturas.
+
+Al seleccionar un método configurado como efecto:
+
+mostrar:
+
+```text
+Referencia del efecto
+Fecha de vencimiento
+```
+
+La referencia introducida en el wizard debe terminar en:
+
+```text
+account.payment.payment_reference
+```
+
+NO crear un campo persistente alternativo para el número del cheque/pagaré.
+
+Si el wizard estándar de Odoo 19 no expone directamente `payment_reference`, puedes utilizar un campo transient XTD en `account.payment.register` exclusivamente como entrada:
+
+```text
+xtd_payment_reference
+```
+
+y transferirlo a:
+
+```text
+account.payment.payment_reference
+```
+
+al crear el pago.
+
+Es aceptable crear ese campo en el TransientModel porque no duplica datos persistentes.
+
+Igualmente:
+
+```text
+account.payment.register.xtd_effect_due_date
+```
+
+debe transferirse a:
+
+```text
+account.payment.xtd_effect_due_date
+```
+
+Utilizar los hooks oficiales de Odoo 19 para preparar los valores de `account.payment`.
+
+No sobreescribir métodos completos cuando exista un hook más pequeño.
+
+---
+
+# 12. VALIDACIONES AL REGISTRAR EFECTOS
+
+Para métodos con:
+
+```text
+xtd_manage_effects = True
+```
+
+validar:
+
+### Referencia
+
+Si:
+
+```text
+xtd_effect_reference_required = True
+```
+
+debe existir:
+
+```text
+payment_reference
+```
+
+Mensaje:
+
+```text
+Debe indicar la referencia o número del efecto para el método de pago "Pagaré".
+```
+
+### Vencimiento
+
+Si:
+
+```text
+xtd_effect_due_date_required = True
+```
+
+debe existir:
+
+```text
+xtd_effect_due_date
+```
+
+Mensaje:
+
+```text
+Debe indicar la fecha de vencimiento del efecto.
+```
+
+No hardcodear esta obligación exclusivamente para pagarés.
+
+---
+
+# 13. EFECTOS EN CARTERA
+
+Crear una entrada de menú, preferiblemente:
+
+```text
+Contabilidad
+→ Clientes
+→ Efectos en cartera
+```
+
+No crear un modelo nuevo.
+
+Debe ser una acción sobre:
+
+`account.payment`
+
+con dominio equivalente a:
+
+```text
+payment_type = inbound
+partner_type = customer
+payment_method_line_id.xtd_manage_effects = True
+is_matched = False
+```
+
+y excluyendo cuando proceda:
+
+```text
+draft
+canceled
+rejected
+```
+
+La vista debe mostrar como mínimo:
+
+```text
+Fecha recepción
+Cliente
+Referencia
+Método de pago
+Vencimiento
+Factura(s)
+Importe
+Moneda
+Lote
+Estado del pago
+Estado de conciliación bancaria
+```
+
+La referencia debe ser:
+
+`payment_reference`
+
+El método:
+
+`payment_method_line_id`
+
+El vencimiento:
+
+`xtd_effect_due_date`
+
+---
+
+# 14. ESTADO FUNCIONAL DEL EFECTO
+
+No crear una segunda máquina de estados independiente.
+
+La situación funcional debe poder interpretarse así:
+
+## En cartera
+
+```text
+payment_method_line_id.xtd_manage_effects = True
+payment_lot_id = False
+is_matched = False
+state no cancelado/rechazado
+```
+
+## Depositado / remesado
+
+```text
+payment_lot_id != False
+is_matched = False
+```
+
+## Cobrado
+
+```text
+is_matched = True
+```
+
+## Devuelto
+
+```text
+state = rejected
+```
+
+## Cancelado
+
+```text
+state = canceled
+```
+
+Si para facilitar filtros y vistas resulta muy conveniente un campo calculado:
+
+```text
+xtd_effect_status
+```
+
+puede crearse, pero:
+
+* debe ser `compute`
+* debe ser readonly
+* nunca debe ser fuente de verdad
+* debe derivarse exclusivamente de campos estándar/OCA
+* no debe permitir cambios manuales
+
+Valores posibles:
+
+```text
+portfolio
+deposited
+collected
+rejected
+canceled
+```
+
+Preferir filtros basados directamente en campos existentes si no es necesario este campo.
+
+---
+
+# 15. NUEVO FLUJO: CREAR LOTES DESDE PAGOS EXISTENTES
+
+Este es el principal desarrollo del módulo.
+
+Actualmente `account_payment_batch_oca` trabaja fundamentalmente:
+
+```text
+Facturas pendientes
+        ↓
+Payment/Debit Order
+        ↓
+payment lines
+        ↓
+Confirmar
+        ↓
+crear account.payment
+        ↓
+crear account.payment.lot
+```
+
+Necesitamos añadir también:
+
+```text
+account.payment YA EXISTENTES
+        ↓
+seleccionarlos
+        ↓
+crear Payment/Debit Order XTD
+        ↓
+crear account.payment.lot
+        ↓
+asignar pagos existentes al lot
+```
+
+SIN recrearlos.
+
+---
+
+# 16. ACCIÓN SOBRE `account.payment`
+
+Desde:
+
+```text
+Contabilidad
+→ Clientes
+→ Efectos en cartera
+```
+
+el usuario podrá seleccionar:
+
+```text
+☑ PAY/2026/0001   CH-4587       1.000 €
+☑ PAY/2026/0002   CH-8912         500 €
+☑ PAY/2026/0003   CH-9981         750 €
+```
+
+y ejecutar:
+
+```text
+Acción
+→ Crear lote de depósito/remesa
+```
+
+Abrir un wizard XTD.
+
+Nombre técnico sugerido:
+
+`xtd.account.payment.lot.create.wizard`
+
+o siguiendo las convenciones habituales del proyecto.
+
+---
+
+# 17. WIZARD PARA CREAR LOTE
+
+El wizard debe mostrar:
+
+```text
+Fecha de depósito/remesa
+Diario
+Método de pago
+Moneda
+Número de efectos
+Importe total
+Descripción / referencia
+Pagos seleccionados
+```
+
+Los valores homogéneos deben venir precargados.
+
+Ejemplo:
+
+```text
+Crear lote de cobro
+
+Fecha depósito:      28/08/2026
+Diario:              Santander
+Forma de pago:       Cheque
+Moneda:              EUR
+Efectos:             3
+Total:               2.250,00 €
+Descripción:         Ingreso cheques 28/08/2026
+```
+
+Botón:
+
+```text
+Crear lote
+```
+
+---
+
+# 18. VALIDACIONES DEL LOTE
+
+Antes de crear el lote, comprobar TODOS los pagos.
+
+Deben cumplir:
+
+1. Ser pagos existentes.
+2. Ser `payment_type = inbound`.
+3. Ser pagos de cliente.
+4. Tener un método configurado con `xtd_manage_effects = True`.
+5. No estar en `draft`.
+6. No estar `canceled`.
+7. No estar `rejected`.
+8. No estar conciliados con banco:
+
+```text
+is_matched = False
+```
+
+9. No tener ya:
+
+```text
+payment_lot_id
+```
+
+10. No tener ya otra:
+
+```text
+payment_order_id
+```
+
+salvo que sea una situación explícitamente soportada.
+11. Pertenecer a la misma compañía.
+12. Tener la misma moneda.
+13. Pertenecer al mismo diario o configuración compatible.
+14. Tener el mismo `payment_method_line_id`.
+15. Tener importe positivo.
+16. Tener referencia si el método la exige.
+17. Tener vencimiento si el método lo exige.
+
+Por seguridad, inicialmente:
+
+**NO mezclar Cheques y Pagarés en el mismo lote.**
+
+En realidad la regla será:
+
+```text
+un Payment Lot = un payment_method_line_id
+```
+
+No depender del nombre del método.
+
+Si hay métodos diferentes:
+
+```text
+No se pueden incluir en el mismo lote pagos con diferentes métodos de cobro.
+```
+
+---
+
+# 19. CREACIÓN DEL `account.payment.order`
+
+No crear un nuevo modelo de cabecera.
+
+Utilizar:
+
+`account.payment.order`
+
+Añadir únicamente un campo para distinguir el origen.
+
+Por ejemplo:
+
+```python
+xtd_source_type = fields.Selection(
+    selection=[
+        ("oca", "Pending Transactions"),
+        ("existing_payments", "Existing Payments"),
+    ],
+    default="oca",
+    required=True,
+    copy=False,
+)
+```
+
+No alterar el flujo estándar cuando:
+
+```text
+xtd_source_type = oca
+```
+
+El nuevo flujo usará:
+
+```text
+xtd_source_type = existing_payments
+```
+
+---
+
+# 20. CREACIÓN DEL `account.payment.lot`
+
+Utilizar directamente:
+
+`account.payment.lot`
+
+Recordar que OCA ya tiene:
+
+```text
+name
+order_id
+payment_type
+state
+company_id
+journal_id
+date
+currency_id
+amount
+payment_ids
+payment_count
+```
+
+No duplicarlos.
+
+Crear el `account.payment.lot` asociado a la nueva `account.payment.order`.
+
+Usar las secuencias y convenciones de OCA siempre que sea posible.
+
+Ejemplo:
+
+```text
+DEB/2026/0045
+    ↓
+DEB/2026/0045/LOT1
+```
+
+---
+
+# 21. ASIGNAR PAGOS EXISTENTES
+
+Los `account.payment` seleccionados ya existen.
+
+NO ejecutar:
+
+```text
+account.payment.create()
+```
+
+NO generar nuevos pagos.
+
+NO crear nuevos asientos.
+
+NO modificar importes.
+
+NO modificar factura.
+
+NO reconciliar factura otra vez.
+
+Simplemente asignar mediante ORM:
+
+```text
+payment_order_id
+payment_lot_id
+```
+
+a los pagos existentes.
+
+Conceptualmente:
+
+```python
+payments.write({
+    "payment_order_id": order.id,
+    "payment_lot_id": lot.id,
+})
+```
+
+Adaptar el código real a las restricciones de Odoo/OCA.
+
+---
+
+# 22. PROBLEMA CRÍTICO: MÉTODOS OCA QUE PUEDEN BORRAR PAGOS
+
+Esto debe recibir especial atención.
+
+`account_payment_batch_oca` fue diseñado suponiendo que los pagos asociados a una orden fueron **creados por esa propia orden**.
+
+Por tanto existen métodos OCA que pueden:
+
+* eliminar pagos
+* pasarlos a borrador
+* cancelarlos
+* crear nuevos pagos
+
+Esto sería peligroso para nuestro flujo.
+
+Debes revisar especialmente:
+
+```text
+draft2open()
+cancel2draft()
+action_cancel()
+open2generated()
+generated2uploaded()
+unlink()
+```
+
+y cualquier otro método que:
+
+```text
+self.payment_ids.unlink()
+```
+
+o:
+
+```text
+self.payment_ids.action_draft()
+```
+
+o:
+
+```text
+self.payment_ids.action_cancel()
+```
+
+---
+
+# 23. COMPORTAMIENTO DE SEGURIDAD PARA PAGOS EXISTENTES
+
+Cuando:
+
+```text
+xtd_source_type = existing_payments
+```
+
+NUNCA se deben:
+
+* eliminar los pagos
+* cancelar los pagos
+* volver a borrador los pagos
+* recrear los pagos
+* reconciliar nuevamente sus facturas
+
+Cancelar un lote XTD debe significar:
+
+```text
+desvincular pagos del payment_lot
+desvincular pagos del payment_order
+cancelar/eliminar la estructura de lote si procede
+```
+
+pero:
+
+```text
+account.payment permanece intacto
+factura permanece En proceso de pago
+asiento permanece intacto
+```
+
+si todavía no está conciliado con banco.
+
+Este requisito debe tener pruebas automáticas específicas.
+
+---
+
+# 24. ESTADO DE LA ORDEN XTD
+
+Para el flujo de pagos existentes no llamar al `draft2open()` estándar de OCA si este genera pagos.
+
+Implementar un método específico, por ejemplo:
+
+```text
+xtd_create_from_existing_payments()
+```
+
+o un nombre siguiendo convenciones Odoo.
+
+La acción:
+
+```text
+Crear lote de depósito
+```
+
+representa que los efectos se están remesando/depositando en el banco.
+
+La orden creada debe quedar en un estado compatible con la lógica de conciliación OCA.
+
+Revisar los estados existentes:
+
+```text
+draft
+open
+generated
+uploaded
+cancel
+```
+
+Preferentemente reutilizar:
+
+```text
+uploaded
+```
+
+para indicar que el lote ya ha sido depositado/remesado y está esperando conciliación bancaria, si esto resulta compatible con `account_payment_batch_oca`.
+
+No crear un estado nuevo si no es imprescindible.
+
+Documentar claramente la decisión.
+
+---
+
+# 25. CONCILIACIÓN BANCARIA
+
+Este es el segundo objetivo principal.
+
+Ejemplo:
+
+Payment Lot:
+
+```text
+LOT/2026/0027
+
+CH-001       1.000 €
+CH-002         500 €
+CH-003         750 €
+--------------------
+TOTAL         2.250 €
+```
+
+Banco:
+
+```text
+28/08/2026
+INGRESO CHEQUES
++2.250 €
+```
+
+Queremos poder seleccionar:
+
+```text
+LOT/2026/0027
+```
+
+desde la conciliación bancaria y que se añadan automáticamente como contrapartidas todos los pagos del lote.
+
+---
+
+# 26. USAR COMO REFERENCIA EL DISEÑO OCA EXISTENTE
+
+Existe en versiones anteriores de OCA:
+
+`account_payment_batch_oca_reconcile`
+
+No copiarlo ciegamente.
+
+Analizar su arquitectura y adaptar únicamente la lógica compatible con Odoo/OCA 19.
+
+Su estrategia relevante es:
+
+```text
+account.payment.lot
+    ↓
+payment_ids
+    ↓
+payments no is_matched
+    ↓
+payment._seek_for_lines()
+    ↓
+liquidity lines
+    ↓
+añadir todas como contrapartida
+```
+
+Este es el enfoque correcto.
+
+Implementar en 19.0 un método equivalente a:
+
+```python
+account.payment.lot._get_move_lines_to_reconcile()
+```
+
+si no existe ya.
+
+Debe devolver las líneas de liquidez reconciliables de los pagos del lote que todavía:
+
+```text
+is_matched = False
+```
+
+---
+
+# 27. DEPENDENCIA DE CONCILIACIÓN
+
+El módulo debe estar diseñado para trabajar con:
+
+`account_reconcile_oca`
+
+de OCA para Odoo 19 Community.
+
+Dependencias propuestas:
+
+```python
+"depends": [
+    "account_payment_batch_oca",
+    "account_reconcile_oca",
+]
+```
+
+Revisar primero las dependencias reales instaladas.
+
+No añadir dependencias redundantes que ya sean transitivas.
+
+---
+
+# 28. INTEGRACIÓN CON `account.bank.statement.line`
+
+Extender mediante herencia:
+
+`account.bank.statement.line`
+
+para permitir seleccionar un:
+
+`account.payment.lot`
+
+en la interfaz de conciliación OCA.
+
+La interfaz debería tener una sección/pestaña similar a:
+
+```text
+Payment Lots / Lotes de cobro
+```
+
+y permitir seleccionar:
+
+```text
+LOT/2026/0027    2.250 €
+```
+
+Cuando se selecciona:
+
+* obtener los pagos pendientes del lote
+* obtener sus líneas de liquidez
+* añadirlas a la conciliación
+* dejar que el motor estándar/OCA complete la conciliación
+
+No implementar un motor contable alternativo.
+
+---
+
+# 29. RESULTADO DE LA CONCILIACIÓN
+
+Después de conciliar correctamente el lote:
+
+Cada:
+
+`account.payment`
+
+debe terminar con:
+
+```text
+is_matched = True
+```
+
+y el estado estándar correspondiente:
+
+```text
+paid
+```
+
+cuando proceda.
+
+Las facturas relacionadas deben pasar automáticamente de:
+
+```text
+En proceso de pago
+```
+
+a:
+
+```text
+Pagada
+```
+
+No escribir manualmente:
+
+```python
+invoice.payment_state = "paid"
+```
+
+Esto debe producirse mediante conciliación contable estándar.
+
+---
+
+# 30. ESTADO DEL PAYMENT LOT
+
+OCA 19 no debe modificarse innecesariamente.
+
+Si `account.payment.lot` no tiene un indicador completo de conciliación, se puede añadir:
+
+```python
+xtd_is_matched = fields.Boolean(
+    compute=...,
+    store=True,
+)
+```
+
+Su significado debe ser:
+
+```text
+TODOS los payment_ids están is_matched = True
+```
+
+No basta con que uno de ellos esté conciliado.
+
+Conceptualmente:
+
+```python
+lot.xtd_is_matched = (
+    bool(lot.payment_ids)
+    and all(payment.is_matched for payment in lot.payment_ids)
+)
+```
+
+Debe reaccionar cuando cambia:
+
+```text
+payment_ids.is_matched
+```
+
+Añadir filtros:
+
+```text
+Pendientes de conciliar
+Conciliados
+```
+
+---
+
+# 31. EFECTOS EN CARTERA Y EFECTOS DEPOSITADOS
+
+La vista de efectos debe permitir distinguir fácilmente:
+
+### En cartera
+
+```text
+payment_lot_id = False
+is_matched = False
+```
+
+### Depositados / remesados
+
+```text
+payment_lot_id != False
+is_matched = False
+```
+
+### Cobrados
+
+```text
+is_matched = True
+```
+
+Añadir filtros y agrupaciones por:
+
+* cliente
+* método de pago
+* vencimiento
+* diario
+* lote
+* fecha
+* estado
+* compañía
+
+---
+
+# 32. PAGARÉS Y VENCIMIENTOS
+
+Para pagarés debe poder verse fácilmente:
+
+```text
+PAGARÉS EN CARTERA
+
+Referencia     Cliente       Vencimiento      Importe
+PAG-001        Cliente A     15/09/2026       2.500 €
+PAG-002        Cliente B     15/09/2026       1.200 €
+PAG-003        Cliente C     30/09/2026       4.000 €
+```
+
+Añadir filtros útiles:
+
+```text
+Vencidos
+Vencen hoy
+Próximos vencimientos
+Sin vencimiento
+```
+
+No hardcodear que todos los efectos tienen vencimiento.
+
+---
+
+# 33. UN CHEQUE PARA VARIAS FACTURAS
+
+Debe respetarse el comportamiento estándar de Odoo.
+
+Un `account.payment` puede estar relacionado con varias facturas del mismo cliente.
+
+Ejemplo:
+
+```text
+Cheque CH-001 = 3.000 €
+
+FAC/001 = 1.000
+FAC/002 = 2.000
+```
+
+Debe poder introducirse en un lote como un único `account.payment`.
+
+No crear tres efectos.
+
+---
+
+# 34. VARIOS CHEQUES PARA UNA FACTURA
+
+También debe funcionar:
+
+```text
+FAC/001 = 3.000 €
+
+CH-001 = 1.000
+CH-002 = 2.000
+```
+
+Debe haber:
+
+```text
+2 account.payment
+```
+
+y ambos podrán entrar posteriormente en uno o varios lotes.
+
+Respetar siempre el residual estándar de la factura.
+
+---
+
+# 35. PAGOS PARCIALES
+
+No romper pagos parciales.
+
+Si el efecto no cubre toda la factura:
+
+* conservar el residual
+* mantener el `payment_state` estándar adecuado
+* no forzar `paid`
+* no forzar `in_payment` si el comportamiento estándar determina otro estado por existir residual
+
+Las pruebas deben cubrir pagos parciales.
+
+---
+
+# 36. MULTICOMPAÑÍA
+
+Todo debe respetar:
+
+`company_id`
+
+No permitir un lote con pagos de diferentes compañías.
+
+Usar:
+
+```text
+check_company=True
+```
+
+cuando proceda.
+
+No utilizar `sudo()` salvo justificación concreta.
+
+---
+
+# 37. MULTIMONEDA
+
+Inicialmente un mismo lote debe contener una única moneda.
+
+Si se seleccionan pagos en distintas monedas:
+
+```text
+No se pueden incluir pagos con diferentes monedas en el mismo lote.
+```
+
+Reutilizar:
+
+`account.payment.lot.currency_id`
+
+No crear un segundo campo de moneda.
+
+---
+
+# 38. DIARIO
+
+Inicialmente todos los pagos de un lote deben ser compatibles con el mismo diario.
+
+No mover automáticamente pagos entre diarios.
+
+No cambiar `journal_id` de pagos existentes.
+
+Si los pagos seleccionados pertenecen a diarios incompatibles:
+
+mostrar error.
+
+---
+
+# 39. CUENTAS TRANSITORIAS
+
+No crear campos nuevos para cuentas de cheques/pagarés.
+
+Utilizar:
+
+`account.payment.method.line.payment_account_id`
+
+y la infraestructura estándar:
+
+`outstanding_account_id`
+
+La configuración puede ser, por ejemplo:
+
+```text
+Cheque
+payment_account_id → Cheques en cartera
+
+Pagaré
+payment_account_id → Pagarés en cartera
+```
+
+Pero no hardcodear códigos contables.
+
+No crear automáticamente cuentas contables sin necesidad.
+
+Documentar cómo configurarlas.
+
+---
+
+# 40. EFECTOS DEVUELTOS
+
+Debe contemplarse un flujo de efectos rechazados/devueltos.
+
+Odoo 19 ya dispone de:
+
+```text
+state = rejected
+```
+
+No crear:
+
+```text
+xtd_state = returned
+```
+
+Si un cheque/pagaré todavía no está conciliado con banco:
+
+permitir utilizar el mecanismo estándar de rechazo del pago, si existe y es correcto.
+
+Si el efecto ya está conciliado con un movimiento bancario:
+
+NUNCA:
+
+* borrar la conciliación silenciosamente
+* borrar asientos
+* cancelar directamente el pago
+
+Debe existir un proceso contablemente seguro:
+
+```text
+deshacer/revertir conciliación bancaria
+        ↓
+marcar/rechazar pago mediante ORM estándar
+        ↓
+factura recupera saldo pendiente
+```
+
+Antes de implementar, analizar las APIs oficiales de Odoo 19.
+
+No hacer SQL.
+
+No borrar `account.partial.reconcile` directamente.
+
+Si esta operación requiere un wizard, implementarlo.
+
+---
+
+# 41. CANCELACIÓN DE UN LOTE XTD
+
+Debe existir la posibilidad de corregir un lote creado por error siempre que todavía no esté conciliado.
+
+Si:
+
+```text
+xtd_is_matched = False
+```
+
+permitir:
+
+```text
+Cancelar lote
+```
+
+Esto debe:
+
+1. quitar `payment_lot_id` de los pagos
+2. quitar `payment_order_id` cuando corresponda
+3. eliminar/cancelar el lot/order XTD según diseño
+4. dejar intactos los pagos
+5. dejar intactos los asientos
+6. dejar intactas las conciliaciones factura-pago
+7. mantener las facturas en `in_payment`
+
+Si algún pago del lote está `is_matched = True`:
+
+bloquear:
+
+```text
+No se puede cancelar el lote porque contiene pagos ya conciliados con movimientos bancarios.
+```
+
+---
+
+# 42. NO ROMPER EL FLUJO OCA ORIGINAL
+
+Este es un criterio de aceptación obligatorio.
+
+Después de instalar el módulo XTD debe seguir funcionando exactamente igual:
+
+```text
+Debit Order normal
+→ seleccionar facturas pendientes
+→ confirmar
+→ OCA crea pagos
+→ OCA crea lots
+→ generar fichero si corresponde
+→ subir/procesar
+```
+
+El comportamiento XTD solo debe activarse cuando:
+
+```text
+xtd_source_type = existing_payments
+```
+
+Toda sobrescritura de métodos OCA debe hacer:
+
+```python
+if record.xtd_source_type == "existing_payments":
+    # comportamiento XTD
+else:
+    return super()
+```
+
+cuando corresponda.
+
+---
+
+# 43. SEGURIDAD
+
+Reutilizar grupos estándar/OCA en la medida posible.
+
+Como mínimo:
+
+Usuarios contables deben poder:
+
+* consultar efectos
+* crear lotes
+
+Responsables contables deben poder:
+
+* cancelar lotes
+* gestionar correcciones delicadas
+
+No crear grupos nuevos salvo necesidad real.
+
+Aplicar ACLs y record rules coherentes con compañía.
+
+---
+
+# 44. EXPERIENCIA DE USUARIO
+
+El usuario no debería necesitar entender técnicamente:
+
+`account.payment.order`
+
+ni:
+
+`account.payment.lot`
+
+El flujo debe resultar natural:
+
+```text
+1. Recibo cheque.
+2. Registro pago.
+3. Veo factura "En proceso de pago".
+4. Cheque aparece en "Efectos en cartera".
+5. Selecciono cheques que llevo al banco.
+6. Pulso "Crear lote de depósito".
+7. Aparece el lote.
+8. Llega ingreso bancario.
+9. Selecciono el lote en conciliación.
+10. Conciliar.
+11. Facturas quedan pagadas.
+```
+
+---
+
+# 45. EJEMPLO FUNCIONAL COMPLETO — CHEQUES
+
+Crear:
+
+```text
+FAC/001 Cliente A   1.000 €
+FAC/002 Cliente B     500 €
+FAC/003 Cliente C     750 €
+```
+
+Registrar:
+
+```text
+PAY/001
+Método: Cheque
+Referencia: CH-001
+Importe: 1.000 €
+
+PAY/002
+Método: Cheque
+Referencia: CH-002
+Importe: 500 €
+
+PAY/003
+Método: Cheque
+Referencia: CH-003
+Importe: 750 €
+```
+
+Después:
+
+```text
+FAC/001 = En proceso de pago
+FAC/002 = En proceso de pago
+FAC/003 = En proceso de pago
+```
+
+y:
+
+```text
+PAY/001.is_matched = False
+PAY/002.is_matched = False
+PAY/003.is_matched = False
+```
+
+En cartera:
+
+```text
+CH-001   Cliente A   1.000
+CH-002   Cliente B     500
+CH-003   Cliente C     750
+```
+
+Seleccionarlos.
+
+Crear:
+
+```text
+Payment Order
+Payment Lot
+```
+
+Total:
+
+```text
+2.250 €
+```
+
+No debe crearse ningún `account.payment` nuevo.
+
+Posteriormente importar movimiento:
+
+```text
+BANCO
+Ingreso cheques
++2.250 €
+```
+
+Seleccionar el Payment Lot.
+
+Conciliar.
+
+Resultado:
+
+```text
+PAY/001.is_matched = True
+PAY/002.is_matched = True
+PAY/003.is_matched = True
+```
+
+y:
+
+```text
+FAC/001 = Pagada
+FAC/002 = Pagada
+FAC/003 = Pagada
+```
+
+---
+
+# 46. EJEMPLO FUNCIONAL COMPLETO — PAGARÉ
+
+Factura:
+
+```text
+FAC/010
+Cliente D
+4.500 €
+```
+
+Registrar:
+
+```text
+Método: Pagaré
+Referencia: PAG-4587
+Fecha recepción: 26/08/2026
+Vencimiento: 30/09/2026
+Importe: 4.500 €
+```
+
+Resultado:
+
+```text
+FAC/010 = En proceso de pago
+```
+
+Pagaré:
+
+```text
+En cartera
+Referencia: PAG-4587
+Vencimiento: 30/09/2026
+```
+
+Cuando se remesa:
+
+```text
+Crear lote
+```
+
+Después:
+
+```text
+Banco
+ABONO EFECTOS
++4.500 €
+```
+
+Conciliar con lot.
+
+Resultado:
+
+```text
+FAC/010 = Pagada
+```
+
+---
+
+# 47. PRUEBAS AUTOMÁTICAS OBLIGATORIAS
+
+Crear una batería completa de tests.
+
+## Test 1 — Registrar cheque
+
+* crear factura cliente
+* contabilizar
+* registrar pago Cheque
+* comprobar referencia
+* comprobar que existe un solo `account.payment`
+* comprobar factura `in_payment`
+* comprobar `is_matched = False`
+
+## Test 2 — Registrar pagaré
+
+* método con vencimiento obligatorio
+* sin vencimiento → error
+* con vencimiento → pago válido
+
+## Test 3 — Referencia obligatoria
+
+* método con referencia obligatoria
+* pago sin `payment_reference`
+* debe fallar
+
+## Test 4 — Crear lote desde tres pagos existentes
+
+Antes:
+
+```text
+3 account.payment
+```
+
+Después:
+
+```text
+3 account.payment
+```
+
+NO 6.
+
+Comprobar:
+
+```text
+payment_order_id
+payment_lot_id
+payment_count = 3
+amount = suma
+```
+
+## Test 5 — No nuevos asientos
+
+Contar `account.move` antes y después de crear lote.
+
+Crear lote no debe generar movimientos contables nuevos asociados a esos pagos.
+
+## Test 6 — Pago ya en lote
+
+Intentar introducir un pago con `payment_lot_id`.
+
+Debe fallar.
+
+## Test 7 — Pago ya matched
+
+Intentar introducir pago:
+
+```text
+is_matched = True
+```
+
+Debe fallar.
+
+## Test 8 — Mezclar compañías
+
+Debe fallar.
+
+## Test 9 — Mezclar monedas
+
+Debe fallar.
+
+## Test 10 — Mezclar métodos
+
+Cheque + Pagaré.
+
+Debe fallar.
+
+## Test 11 — Cancelar lote no cancela pagos
+
+Crear lote XTD.
+
+Cancelar.
+
+Comprobar:
+
+```text
+account.payment siguen existiendo
+no canceled
+no draft
+move_id permanece
+invoice continúa in_payment
+payment_lot_id eliminado
+```
+
+## Test 12 — Protección `cancel2draft`
+
+Ejecutar cualquier transición relevante sobre una orden XTD.
+
+Comprobar que nunca borra pagos preexistentes.
+
+## Test 13 — Protección `action_cancel`
+
+Igual.
+
+Los pagos preexistentes deben permanecer intactos.
+
+## Test 14 — Flujo OCA original
+
+Crear Debit Order estándar desde facturas pendientes.
+
+Debe seguir funcionando exactamente como antes.
+
+## Test 15 — Conciliación lote
+
+Crear 3 cheques:
+
+```text
+1000 + 500 + 750
+```
+
+Crear lote:
+
+```text
+2250
+```
+
+Crear/importar línea bancaria:
+
+```text
+2250
+```
+
+Conciliar.
+
+Comprobar:
+
+```text
+todos is_matched
+lot xtd_is_matched
+facturas paid
+```
+
+## Test 16 — Una factura varios pagos
+
+Debe funcionar.
+
+## Test 17 — Un pago varias facturas
+
+Debe funcionar si Odoo estándar lo admite.
+
+## Test 18 — Pago parcial
+
+No debe forzar factura a `paid`.
+
+## Test 19 — Pagaré vencido
+
+Debe poder existir en cartera.
+
+El filtro de vencidos debe encontrarlo.
+
+## Test 20 — Lote parcialmente conciliado
+
+No debe considerarse:
+
+```text
+xtd_is_matched = True
+```
+
+hasta que TODOS sus pagos estén matched.
+
+## Test 21 — Intento de cancelar lote conciliado
+
+Debe bloquearse.
+
+## Test 22 — Efecto rechazado
+
+Comprobar que se usa el estado estándar:
+
+```text
+rejected
+```
+
+y que no quedan incoherencias contables.
+
+---
+
+# 48. ESTRUCTURA PROPUESTA DEL MÓDULO
+
+Orientativamente:
+
+```text
+xtendoo_account_payment_effects/
+│
+├── __init__.py
+├── __manifest__.py
+│
+├── models/
+│   ├── __init__.py
+│   ├── account_move.py
+│   ├── account_payment.py
+│   ├── account_payment_method_line.py
+│   ├── account_payment_order.py
+│   ├── account_payment_lot.py
+│   └── account_bank_statement_line.py
+│
+├── wizard/
+│   ├── __init__.py
+│   ├── account_payment_register.py
+│   ├── xtd_create_payment_lot.py
+│   └── xtd_create_payment_lot_views.xml
+│
+├── views/
+│   ├── account_payment_views.xml
+│   ├── account_payment_method_line_views.xml
+│   ├── account_payment_order_views.xml
+│   ├── account_payment_lot_views.xml
+│   ├── account_bank_statement_line_views.xml
+│   └── menus.xml
+│
+├── security/
+│   └── ir.model.access.csv
+│
+├── tests/
+│   ├── __init__.py
+│   ├── common.py
+│   ├── test_effect_payment.py
+│   ├── test_existing_payment_lot.py
+│   ├── test_lot_reconcile.py
+│   └── test_lot_cancel.py
+│
+├── i18n/
+│   └── es.po
+│
+└── README.rst
+```
+
+Adapta esta estructura si encuentras una arquitectura mejor, pero mantén separación clara de responsabilidades.
+
+---
+
+# 49. MANIFEST
+
+Versión inicial:
+
+```text
+19.0.1.0.0
+```
+
+Licencia compatible con dependencias OCA, preferentemente:
+
+```text
+AGPL-3
+```
+
+Dependencias mínimas necesarias.
+
+No añadir Enterprise.
+
+---
+
+# 50. README OBLIGATORIO
+
+Documentar:
+
+1. Objetivo del módulo.
+2. Dependencias.
+3. Configuración.
+4. Cómo crear método Cheque.
+5. Cómo crear método Pagaré.
+6. Cómo configurar cuentas de cobros pendientes.
+7. Cómo registrar cheque desde factura.
+8. Cómo registrar pagaré.
+9. Cómo consultar efectos en cartera.
+10. Cómo crear lote.
+11. Cómo conciliar lote.
+12. Cómo cancelar lote.
+13. Cómo tratar efecto devuelto.
+14. Limitaciones.
+15. Diferencia entre:
+
+* `is_reconciled`
+* `is_matched`
+
+16. Explicar por qué la factura está:
+
+* En proceso de pago antes del banco.
+* Pagada después de la conciliación bancaria.
+
+---
+
+# 51. TRADUCCIONES
+
+Código fuente y strings base siguiendo convenciones Odoo/OCA.
+
+Añadir traducción española para términos visibles:
+
+```text
+Efectos en cartera
+Crear lote de depósito
+Cheque
+Pagaré
+Fecha de vencimiento
+Referencia del efecto
+Depositado
+Cobrado
+Devuelto
+Pendiente de conciliación
+```
+
+No introducir textos sin `_()` en Python cuando sean traducibles.
+
+---
+
+# 52. CALIDAD DEL CÓDIGO
+
+Seguir estándares OCA:
+
+* ORM de Odoo.
+* `Command`.
+* `check_company`.
+* `@api.depends`.
+* constraints.
+* métodos pequeños.
+* evitar duplicación.
+* no usar SQL salvo que exista una justificación extraordinaria de rendimiento.
+* no usar `sudo()` innecesariamente.
+* no hacer `write()` dentro de bucles si puede hacerse en batch.
+* soportar múltiples registros.
+* evitar singleton errors.
+* respetar multi-company.
+* tests independientes.
+* pre-commit compatible.
+* ruff/pylint OCA.
+* XML limpio.
+* no usar `attrs` obsoletos incompatibles con Odoo 19.
+* utilizar sintaxis de vistas propia de Odoo 19.
+
+---
+
+# 53. REVISAR EL CÓDIGO REAL ANTES DE PROGRAMAR
+
+Antes de implementar:
+
+1. Abrir el código de Odoo 19:
+
+```text
+addons/account/models/account_payment.py
+addons/account/models/account_move.py
+addons/account/wizard/account_payment_register.py
+```
+
+2. Abrir en OCA 19:
+
+```text
+account_payment_base_oca
+account_payment_batch_oca
+account_reconcile_oca
+```
+
+3. Revisar especialmente:
+
+```text
+account.payment.order
+account.payment.lot
+account.payment
+account.payment.line
+account.bank.statement.line
+```
+
+4. Revisar los módulos históricos:
+
+```text
+account_payment_batch_oca_reconcile
+account_in_payment
+```
+
+solo como referencia conceptual.
+
+NO copiar automáticamente código 18.0 a 19.0.
+
+Adaptarlo a las APIs reales de 19.0.
+
+---
+
+# 54. CRITERIO DE MÍNIMO DESARROLLO
+
+Antes de crear cualquier campo o método nuevo, hacer esta pregunta:
+
+> ¿Ya existe esta información o comportamiento en Odoo 19 o account_payment_batch_oca?
+
+Si existe:
+
+**reutilizarlo.**
+
+Ejemplos:
+
+```text
+Número del cheque
+→ payment_reference
+
+Fecha recepción
+→ date
+
+Tipo de efecto
+→ payment_method_line_id
+
+Importe
+→ amount
+
+Cliente
+→ partner_id
+
+Moneda
+→ currency_id
+
+Diario
+→ journal_id
+
+Pago conciliado con banco
+→ is_matched
+
+Estado contable
+→ state
+
+Orden
+→ payment_order_id
+
+Lote
+→ payment_lot_id
+
+Total lote
+→ account.payment.lot.amount
+
+Nº pagos
+→ account.payment.lot.payment_count
+```
+
+Solo crear realmente lo que falta.
+
+---
+
+# 55. RESULTADO FINAL ESPERADO
+
+Al terminar quiero poder hacer exactamente esto:
+
+```text
+FACTURA
+FAC/2026/0158
+1.250 €
+Pendiente
+```
+
+Recibo cheque:
+
+```text
+Registrar pago
+
+Método: Cheque
+Referencia: CH-458763
+Importe: 1.250 €
+```
+
+Resultado:
+
+```text
+FAC/2026/0158
+EN PROCESO DE PAGO
+```
+
+El cheque aparece:
+
+```text
+Efectos en cartera
+
+CH-458763
+Cliente
+1.250 €
+```
+
+Después selecciono:
+
+```text
+CH-458763
+CH-872412
+CH-938122
+```
+
+Acción:
+
+```text
+Crear lote de depósito
+```
+
+Resultado:
+
+```text
+LOT/2026/0027
+
+3 cheques
+4.350 €
+```
+
+Las facturas continúan:
+
+```text
+EN PROCESO DE PAGO
+```
+
+El banco importa:
+
+```text
+INGRESO CHEQUES
++4.350 €
+```
+
+En conciliación selecciono:
+
+```text
+LOT/2026/0027
+```
+
+Odoo incorpora automáticamente los pagos del lote.
+
+Pulso:
+
+```text
+Conciliar
+```
+
+Resultado final:
+
+```text
+Payment Lot = conciliado
+Payments = matched / paid
+Facturas = PAGADAS
+```
+
+Sin:
+
+* duplicar pagos
+* duplicar asientos
+* modificar OCA
+* copiar Enterprise
+* crear una contabilidad paralela
+
+---
+
+# 56. ENTREGA ESPERADA
+
+No quiero solo una explicación.
+
+Debes entregar el módulo completo y funcional para Odoo 19.0 Community.
+
+Antes de considerar terminado el trabajo:
+
+1. revisar todo el código;
+2. ejecutar tests;
+3. corregir errores;
+4. comprobar instalación desde cero;
+5. comprobar actualización del módulo;
+6. comprobar flujo OCA original;
+7. comprobar flujo XTD;
+8. comprobar conciliación bancaria;
+9. comprobar estado `in_payment`;
+10. comprobar paso final a `paid`;
+11. comprobar cheques;
+12. comprobar pagarés;
+13. comprobar cancelación segura;
+14. comprobar que ningún pago preexistente pueda ser eliminado accidentalmente por acciones heredadas de OCA.
+
+Si durante el desarrollo detectas que alguna de las hipótesis de este documento no coincide con la API real de Odoo 19/OCA 19, **no inventes campos ni fuerces el diseño**.
+
+Analiza primero la implementación existente y adapta el desarrollo conservando estos requisitos funcionales y estos principios:
+
+**máximo aprovechamiento de Odoo/OCA, mínimo código XTD, integridad contable absoluta y compatibilidad futura.**

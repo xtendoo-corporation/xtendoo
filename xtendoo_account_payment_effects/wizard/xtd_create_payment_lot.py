@@ -101,5 +101,3 @@ class XtdCreatePaymentLotWizard(models.TransientModel):
             "target": "current",
             "context": {"account_payment_lot_main_view": True},
         }
-
-

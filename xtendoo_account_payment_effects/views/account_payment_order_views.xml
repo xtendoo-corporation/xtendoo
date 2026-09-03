@@ -8,6 +8,21 @@
             <xpath expr="//button[@name='%(account_payment_batch_oca.account_payment_line_create_action)d']" position="attributes">
                 <attribute name="invisible">state != 'draft' or xtd_source_type == 'existing_payments'</attribute>
             </xpath>
+            <xpath expr="//button[@name='%(account_payment_batch_oca.account_payment_line_create_action)d']" position="after">
+                <button
+                    name="xtd_action_import_existing_payments"
+                    type="object"
+                    string="Importar pagos existentes"
+                    invisible="state != 'draft' or not xtd_manage_effects_method"
+                />
+                <button
+                    name="xtd_action_confirm_existing_payments"
+                    type="object"
+                    string="Confirmar pagos"
+                    class="oe_highlight"
+                    invisible="state != 'draft' or xtd_source_type != 'existing_payments' or not xtd_existing_payment_ids"
+                />
+            </xpath>
             <xpath expr="//button[@name='draft2open']" position="attributes">
                 <attribute name="invisible">state != 'draft' or xtd_source_type == 'existing_payments'</attribute>
             </xpath>
@@ -17,25 +32,65 @@
             <xpath expr="//button[@name='generated2uploaded']" position="attributes">
                 <attribute name="invisible">state != 'generated' or xtd_source_type == 'existing_payments'</attribute>
             </xpath>
-            <xpath expr="//button[@name='action_cancel']" position="attributes">
-                <attribute name="invisible">state == 'cancel' or xtd_source_type == 'existing_payments'</attribute>
-            </xpath>
-            <xpath expr="//button[@name='cancel2draft']" position="after">
-                <button
-                    name="action_cancel"
-                    type="object"
-                    string="Cancel Lot"
-                    confirm="Are you sure you want to cancel this lot?"
-                    invisible="state == 'cancel' or xtd_source_type != 'existing_payments'"
-                    groups="account.group_account_manager"
-                />
-            </xpath>
             <field name="payment_method_line_id" position="after">
                 <field name="xtd_source_type" readonly="1" />
+                <field name="xtd_manage_effects_method" invisible="1" />
             </field>
-            <page name="payment-lines" position="attributes">
-                <attribute name="invisible">state == 'draft' or xtd_source_type == 'existing_payments'</attribute>
-            </page>
+            <field name="journal_id" position="attributes">
+                <attribute name="invisible">xtd_manage_effects_method</attribute>
+            </field>
+            <field name="journal_id" position="after">
+                <field
+                    name="xtd_bank_journal_id"
+                    string="Diario de banco"
+                    invisible="not xtd_manage_effects_method"
+                    readonly="state != 'draft'"
+                />
+            </field>
+            <xpath
+                expr="//page[@name='payment-lines'][field[@name='payment_line_ids']]"
+                position="attributes"
+            >
+                <attribute name="invisible">xtd_source_type == 'existing_payments'</attribute>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page
+                    name="xtd_existing_payments"
+                    string="Pagos existentes"
+                    invisible="xtd_source_type != 'existing_payments' or state != 'draft'"
+                >
+                    <group>
+                        <field name="xtd_deposit_date" readonly="state != 'draft'" />
+                    </group>
+                    <field
+                        name="xtd_existing_payment_ids"
+                        nolabel="1"
+                        readonly="state != 'draft'"
+                        domain="[
+                            ('payment_type', '=', 'inbound'),
+                            ('partner_type', '=', 'customer'),
+                            ('payment_lot_id', '=', False),
+                            ('payment_order_id', '=', False),
+                            ('is_matched', '=', False),
+                            ('state', 'not in', ['draft', 'canceled', 'rejected']),
+                            ('company_id', '=', company_id),
+                            ('journal_id', '=', journal_id),
+                            ('payment_method_line_id.xtd_manage_effects', '=', True),
+                        ]"
+                    >
+                        <list>
+                            <field name="name" />
+                            <field name="payment_reference" string="Referencia" />
+                            <field name="partner_id" string="Cliente" />
+                            <field name="payment_method_line_id" string="Método" />
+                            <field name="date" string="Fecha" />
+                            <field name="xtd_effect_due_date" string="Vencimiento" optional="show" />
+                            <field name="amount" string="Importe" sum="Total" />
+                            <field name="currency_id" column_invisible="1" />
+                        </list>
+                    </field>
+                </page>
+            </xpath>
         </field>
     </record>
 
@@ -85,7 +140,7 @@
             </p>
             <p>
                 Desde la orden podrá seleccionar facturas o apuntes pendientes del método de pago mediante el flujo estándar de OCA,
-                o agrupar pagos existentes con el flujo Xtendoo.
+                o usar "Importar pagos existentes" para agrupar pagos ya registrados con ese mismo diario.
             </p>
         </field>
     </record>

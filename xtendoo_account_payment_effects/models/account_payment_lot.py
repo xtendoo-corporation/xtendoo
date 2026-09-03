@@ -1,5 +1,4 @@
 from odoo import api, fields, models
-from odoo.exceptions import UserError
 
 
 class AccountPaymentLot(models.Model):
@@ -33,15 +32,4 @@ class AccountPaymentLot(models.Model):
                     lambda line: line.account_id.reconcile and not line.reconciled
                 )
         return move_lines
-
-    def xtd_action_cancel_lot(self):
-        self.ensure_one()
-        if self.xtd_source_type != "existing_payments":
-            raise UserError(
-                self.env._(
-                    "Only lots created from existing payments can be canceled from here."
-                )
-            )
-        self.order_id.action_cancel()
-        return True
 

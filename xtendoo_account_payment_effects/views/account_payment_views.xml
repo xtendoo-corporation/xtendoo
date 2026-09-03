@@ -148,6 +148,7 @@
         <field name="res_model">xtd.account.payment.lot.create.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
+        <field name="context">{'dialog_size': 'large'}</field>
         <field name="binding_model_id" ref="account.model_account_payment" />
         <field name="binding_view_types">list</field>
     </record>

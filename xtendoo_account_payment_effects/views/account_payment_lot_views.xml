@@ -5,22 +5,24 @@
         <field name="model">account.payment.lot</field>
         <field name="inherit_id" ref="account_payment_batch_oca.account_payment_lot_form" />
         <field name="arch" type="xml">
-            <form position="inside">
-                <header>
-                    <button
-                        name="xtd_action_cancel_lot"
-                        type="object"
-                        string="Cancelar lote"
-                        class="btn-secondary"
-                        invisible="xtd_source_type != 'existing_payments' or state == 'cancel' or xtd_is_matched"
-                        groups="account.group_account_manager"
-                    />
-                </header>
-            </form>
             <group name="main" position="inside">
                 <field name="xtd_source_type" invisible="1" />
                 <field name="xtd_is_matched" />
             </group>
+            <field name="payment_ids" position="inside">
+                <list create="0" delete="0">
+                    <field name="date" string="Fecha" />
+                    <field name="name" string="Número" />
+                    <field name="journal_id" string="Diario" />
+                    <field name="payment_method_line_id" string="Método de pago" />
+                    <field name="partner_id" string="Cliente" />
+                    <field name="amount" string="Importe" />
+                    <field name="currency_id" column_invisible="1" />
+                    <field name="xtd_effect_status" string="Estado del efecto" widget="badge" />
+                    <field name="state" string="Estado del pago" optional="hide" />
+                    <field name="is_matched" string="Conciliado" optional="hide" />
+                </list>
+            </field>
         </field>
     </record>
 

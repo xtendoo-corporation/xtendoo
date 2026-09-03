@@ -148,19 +148,29 @@ class AccountPayment(models.Model):
                 self.env._("You can only include payments with a strictly positive amount.")
             )
         self._xtd_validate_effect_payment_data()
-        if len(self.journal_id) > 1:
-            raise UserError(
-                self.env._(
-                    "You cannot include payments with different journals in the same lot."
-                )
-            )
-        if len(self.payment_method_line_id) > 1:
-            raise UserError(
-                self.env._(
-                    "You cannot include payments with different collection methods in the same lot."
-                )
-            )
         return True
+
+    def _xtd_check_not_matched_for_destructive_action(self):
+        matched_effects = self.filtered(
+            lambda pay: pay.xtd_manage_effects and pay.is_matched
+        )
+        if matched_effects:
+            raise UserError(
+                self.env._(
+                    "You cannot reject or cancel a collection effect that is "
+                    "already matched with a bank transaction. Reverse the bank "
+                    "matching first with an offsetting bank statement line and "
+                    "reconcile it, then reject or cancel the payment."
+                )
+            )
+
+    def action_reject(self):
+        self._xtd_check_not_matched_for_destructive_action()
+        return super().action_reject()
+
+    def action_cancel(self):
+        self._xtd_check_not_matched_for_destructive_action()
+        return super().action_cancel()
 
     def _xtd_get_effect_lot_vals(self):
         self._xtd_validate_for_effect_lot()

@@ -67,6 +67,33 @@ class TestLotCancel(XtdAccountPaymentEffectsCommon):
         self.assertEqual(payment.state, "rejected")
         self.assertEqual(payment.xtd_effect_status, "rejected")
 
+    def test_reject_matched_effect_is_blocked(self):
+        invoice, payment, lot, _order = self._create_xtd_lot()
+        statement_line = self._create_statement_line(1000.0)
+        self._select_lot_in_reconcile_form(statement_line, lot)
+        statement_line.reconcile_bank_line()
+        payment.invalidate_recordset()
+        invoice.invalidate_recordset()
+        self.assertTrue(payment.is_matched)
+        payment.is_sent = True
+        with self.assertRaises(UserError):
+            payment.action_reject()
+
+    def test_cancel_matched_effect_is_blocked(self):
+        invoice, payment, lot, _order = self._create_xtd_lot()
+        statement_line = self._create_statement_line(1000.0)
+        self._select_lot_in_reconcile_form(statement_line, lot)
+        statement_line.reconcile_bank_line()
+        payment.invalidate_recordset()
+        invoice.invalidate_recordset()
+        self.assertTrue(payment.is_matched)
+        move_id = payment.move_id
+        with self.assertRaises(UserError):
+            payment.action_cancel()
+        payment.invalidate_recordset()
+        self.assertEqual(payment.move_id, move_id)
+        self.assertTrue(payment.is_matched)
+
     def test_original_oca_flow_still_works(self):
         payment_method = self.env["account.payment.method"].sudo().create(
             {
