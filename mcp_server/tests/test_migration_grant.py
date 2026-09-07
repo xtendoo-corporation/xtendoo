@@ -34,7 +34,7 @@ class TestMigrationGrant(common.TransactionCase):
 
     def setUp(self):
         super().setUp()
-        self.group = self.env.ref("xtendoo_mcp_server.group_mcp_user")
+        self.group = self.env.ref("mcp_server.group_mcp_user")
         self.suffix = str(int(time.time() * 1000))[-6:]
         self.client = (
             self.env["mcp.oauth.client"]

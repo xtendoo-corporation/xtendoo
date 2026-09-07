@@ -68,7 +68,7 @@
     </template>
 
     <template id="oauth_consent" name="MCP OAuth Consent">
-        <t t-call="xtendoo_mcp_server.oauth_layout">
+        <t t-call="mcp_server.oauth_layout">
             <h1 class="h5 fw-semibold mb-2 text-center">Authorize access</h1>
             <p class="text-muted mb-4">
                 <strong><t t-out="client_label" /></strong>
@@ -165,17 +165,17 @@
                 Signed in as <t t-out="user_name" />.
                 <a t-att-href="switch_user_url">Not you?</a>
             </div>
-            <t t-call="xtendoo_mcp_server.oauth_footer" />
+            <t t-call="mcp_server.oauth_footer" />
         </t>
     </template>
 
     <template id="oauth_authorize_error" name="MCP OAuth Authorize Error">
-        <t t-call="xtendoo_mcp_server.oauth_layout">
+        <t t-call="mcp_server.oauth_layout">
             <h1 class="h5 mb-3 text-center">Authorization request rejected</h1>
             <p class="text-muted text-center mb-0">
                 <t t-out="error_description" />
             </p>
-            <t t-call="xtendoo_mcp_server.oauth_footer" />
+            <t t-call="mcp_server.oauth_footer" />
         </t>
     </template>
 </odoo>

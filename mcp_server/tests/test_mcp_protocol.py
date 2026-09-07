@@ -20,7 +20,7 @@ from ..controllers.mcp_route import MCP_MAX_CONTENT_LENGTH
 from ..models import ir_http
 from .test_helpers import create_test_user, grant_mcp_access
 
-# Must match xtendoo_mcp_server/controllers/mcp.py.
+# Must match mcp_server/controllers/mcp.py.
 PREFERRED_PROTOCOL_VERSION = "2025-11-25"
 SERVER_NAME = "much-mcp-server"
 
@@ -57,7 +57,7 @@ class TestMcpProtocol(common.HttpCase):
         )
 
         # Enable MCP globally and drop any stale cached toggle value.
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
     # ------------------------------------------------------------------
@@ -202,9 +202,9 @@ class TestMcpProtocol(common.HttpCase):
     # Origin validation (2025-11-25: permissive default + admin allowlist)
     # ------------------------------------------------------------------
     def _set_allowed_origins(self, value):
-        """Set the ``xtendoo_mcp_server.allowed_origins`` param and flush the caches."""
+        """Set the ``mcp_server.allowed_origins`` param and flush the caches."""
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.allowed_origins", value
+            "mcp_server.allowed_origins", value
         )
         utils.clear_mcp_caches()
 
@@ -426,7 +426,7 @@ class TestMcpProtocol(common.HttpCase):
         # dispatch (its 429 would otherwise pre-empt the audit path we exercise);
         # the audit throttle is the failure mode under test.
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.enable_rate_limiting", "False"
+            "mcp_server.enable_rate_limiting", "False"
         )
         mcp._audit_write_limiter.clear()
         attempts = mcp._AUDIT_WRITE_MAX + 5
@@ -450,7 +450,7 @@ class TestMcpProtocol(common.HttpCase):
         )
         self.assertEqual(recorded, mcp._AUDIT_WRITE_MAX)
 
-    @mute_logger("odoo.addons.xtendoo_mcp_server.controllers.mcp")
+    @mute_logger("odoo.addons.mcp_server.controllers.mcp")
     def test_tool_call_survives_audit_write_failure(self):
         """A model_access audit-write error must not break a successful tool call.
 
@@ -585,7 +585,7 @@ class TestMcpProtocol(common.HttpCase):
         this mirrors the rate-limit path, which also uses -32000.
         """
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "False")
+        params.set_param("mcp_server.enabled", "False")
         utils.clear_mcp_caches()
         try:
             response = self._post_rpc(
@@ -596,7 +596,7 @@ class TestMcpProtocol(common.HttpCase):
             self.assertEqual(error["code"], -32000)
             self.assertIn("disabled globally", error["message"])
         finally:
-            params.set_param("xtendoo_mcp_server.enabled", "True")
+            params.set_param("mcp_server.enabled", "True")
             utils.clear_mcp_caches()
 
     # ------------------------------------------------------------------

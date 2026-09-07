@@ -68,7 +68,7 @@ def _sanitize_or_log(
 
 
 def is_mcp_enabled() -> bool:
-    """Whether MCP is globally enabled (``xtendoo_mcp_server.enabled``, default off).
+    """Whether MCP is globally enabled (``mcp_server.enabled``, default off).
 
     Delegates to the @ormcache-d ``mcp.enabled.model._get_mcp_enabled()``, so the
     value is served from the registry cache and invalidated cross-worker on any
@@ -85,7 +85,7 @@ def is_mcp_enabled() -> bool:
 
 
 def get_allowed_origins() -> tuple:
-    """Parsed ``xtendoo_mcp_server.allowed_origins`` browser-Origin allowlist.
+    """Parsed ``mcp_server.allowed_origins`` browser-Origin allowlist.
 
     Comma-separated Origin values (``scheme://host[:port]``), normalized to
     lowercase with trailing slashes stripped. An empty/unset parameter returns
@@ -106,7 +106,7 @@ def get_allowed_origins() -> tuple:
 
 
 def is_oauth_enabled(env: Environment) -> bool:
-    """Whether the OAuth 2.1 front door is enabled (``xtendoo_mcp_server.enable_oauth``).
+    """Whether the OAuth 2.1 front door is enabled (``mcp_server.enable_oauth``).
 
     Enabled by default -- an unset parameter counts as enabled -- so OAuth is
     available as soon as MCP itself is enabled; set the parameter to any value
@@ -421,7 +421,7 @@ def get_allowed_xmlrpc_methods() -> List[str]:
 def get_mcp_server_version() -> str:
     """Return the current MCP server version from the module's manifest."""
     try:
-        manifest = modules.module.get_manifest("xtendoo_mcp_server")
+        manifest = modules.module.get_manifest("mcp_server")
         version = manifest.get("version", "1.0.0")
         return version
     except Exception as e:

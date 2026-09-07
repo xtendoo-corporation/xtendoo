@@ -281,9 +281,9 @@ class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
         )
 
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "True")
-        params.set_param("xtendoo_mcp_server.enable_logging", "True")
-        params.set_param("xtendoo_mcp_server.enable_oauth", "True")
+        params.set_param("mcp_server.enabled", "True")
+        params.set_param("mcp_server.enable_logging", "True")
+        params.set_param("mcp_server.enable_oauth", "True")
         utils.clear_mcp_caches()
 
         # OAuth audience the AS derives from the request host (RFC 8707); a token's
@@ -455,8 +455,8 @@ class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
     # Exception inside the action code -> sanitized isError + rollback
     # ------------------------------------------------------------------
     @mute_logger(
-        "odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer",
-        "odoo.addons.xtendoo_mcp_server.controllers.mcp",
+        "odoo.addons.mcp_server.controllers.error_sanitizer",
+        "odoo.addons.mcp_server.controllers.mcp",
     )
     def test_action_exception_rolls_back_and_is_error(self):
         """An action that creates a record then raises: sanitized isError + rollback."""
@@ -487,8 +487,8 @@ class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
     # to a sudo() exec keeps every echo/entitled-write test green but fails here.
     # ------------------------------------------------------------------
     @mute_logger(
-        "odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer",
-        "odoo.addons.xtendoo_mcp_server.controllers.mcp",
+        "odoo.addons.mcp_server.controllers.error_sanitizer",
+        "odoo.addons.mcp_server.controllers.mcp",
     )
     def test_action_runs_under_caller_acls_not_sudo(self):
         """Authorized caller + code touching a forbidden model -> access-denied isError.
@@ -526,8 +526,8 @@ class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
     # a false "completed successfully".
     # ------------------------------------------------------------------
     @mute_logger(
-        "odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer",
-        "odoo.addons.xtendoo_mcp_server.controllers.mcp",
+        "odoo.addons.mcp_server.controllers.error_sanitizer",
+        "odoo.addons.mcp_server.controllers.mcp",
     )
     def test_action_flipped_to_non_code_after_create_fails_loud(self):
         """A tool whose action is non-code at call time yields a clean isError.
@@ -711,7 +711,7 @@ class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
         """A live OAuth token bound to a portal user is refused with 403.
 
         Even a token whose action group_ids would authorize the wrapped tool:
-        the per-user MCP opt-in gate (xtendoo_mcp_server.group_mcp_user) runs before any
+        the per-user MCP opt-in gate (mcp_server.group_mcp_user) runs before any
         tool dispatch, and portal users cannot be members. 403 -- not 401 --
         so a spec-following client surfaces the error instead of looping
         through a re-auth that would only mint another refused token.

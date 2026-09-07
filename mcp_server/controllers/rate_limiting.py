@@ -105,7 +105,7 @@ _api_limiter = SlidingWindowLimiter(RATE_LIMIT_WINDOW_MINUTES * 60)
 
 
 def is_rate_limiting_enabled():
-    """Whether the ``xtendoo_mcp_server.enable_rate_limiting`` master switch is on.
+    """Whether the ``mcp_server.enable_rate_limiting`` master switch is on.
 
     Disabled by default. The limiter is an in-memory per-worker counter, so it
     is best-effort abuse protection rather than a strict global cap; admins opt
@@ -114,13 +114,13 @@ def is_rate_limiting_enabled():
     return (
         request.env["ir.config_parameter"]
         .sudo()  # sudo: read a global config flag, not user-scoped data.
-        .get_param("xtendoo_mcp_server.enable_rate_limiting", "False")
+        .get_param("mcp_server.enable_rate_limiting", "False")
         == "True"
     )
 
 
 def get_request_limit():
-    """Get request limit from system parameter `xtendoo_mcp_server.request_limit`.
+    """Get request limit from system parameter `mcp_server.request_limit`.
 
     Default is 300 requests per minute per user; 0 means unlimited.
     """
@@ -128,7 +128,7 @@ def get_request_limit():
         limit = int(
             request.env["ir.config_parameter"]
             .sudo()
-            .get_param("xtendoo_mcp_server.request_limit", DEFAULT_REQUEST_LIMIT)
+            .get_param("mcp_server.request_limit", DEFAULT_REQUEST_LIMIT)
         )
         # 0 means unlimited, don't enforce minimum
         if limit == 0:

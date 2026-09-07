@@ -568,7 +568,7 @@ class McpToolsWrite(models.AbstractModel):
             # this path has no size limit, so a huge id list is a large IN(...) +
             # unbounded result serialization. Reuse the read cap for consistency.
             max_ids = (
-                self._mcp_int_config("xtendoo_mcp_server.max_limit", MAX_LIMIT) or MAX_LIMIT
+                self._mcp_int_config("mcp_server.max_limit", MAX_LIMIT) or MAX_LIMIT
             )
             if len(record_ids) > max_ids:
                 raise UserError(

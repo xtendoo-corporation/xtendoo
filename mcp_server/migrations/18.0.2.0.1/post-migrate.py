@@ -1,6 +1,6 @@
 """Grant the MCP User access group to users with existing MCP activity.
 
-Membership in ``xtendoo_mcp_server.group_mcp_user`` is required on every MCP surface.
+Membership in ``mcp_server.group_mcp_user`` is required on every MCP surface.
 Active internal users with prior MCP activity -- an ``mcp``-scope API key, an
 OAuth token, or an MCP audit-log entry recording a completed operation --
 receive the group automatically so their integrations keep working; for
@@ -41,7 +41,7 @@ _ACTIVITY_QUERIES = (
 
 def migrate(cr, version):
     env = api.Environment(cr, SUPERUSER_ID, {})
-    group = env.ref("xtendoo_mcp_server.group_mcp_user", raise_if_not_found=False)
+    group = env.ref("mcp_server.group_mcp_user", raise_if_not_found=False)
     if group is None:
         return
 

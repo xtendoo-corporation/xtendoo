@@ -17,14 +17,14 @@ class TestModelSelectionUI(HttpCase):
             "MCP Admin User",
             "mcp_admin",
             password=TEST_PASSWORD,
-            group_ids=[(6, 0, [self.env.ref("xtendoo_mcp_server.group_mcp_admin").id])],
+            group_ids=[(6, 0, [self.env.ref("mcp_server.group_mcp_admin").id])],
         )
 
     def test_model_list_view(self):
         """Test that the model list view loads correctly."""
         self.authenticate("mcp_admin", TEST_PASSWORD)
 
-        response = self.url_open("/web#action=xtendoo_mcp_server.action_mcp_enabled_models")
+        response = self.url_open("/web#action=mcp_server.action_mcp_enabled_models")
         self.assertEqual(response.status_code, 200)
 
     def test_model_form_view(self):
@@ -61,7 +61,7 @@ class TestModelSelectionUI(HttpCase):
         self.authenticate("mcp_admin", TEST_PASSWORD)
 
         response = self.url_open(
-            "/web#action=xtendoo_mcp_server.action_mcp_model_selection_wizard"
+            "/web#action=mcp_server.action_mcp_model_selection_wizard"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -86,7 +86,7 @@ class TestModelSelectionUI(HttpCase):
         wizard = (
             self.env["mcp.model.selection.wizard"]
             .with_user(
-                self.env.ref("xtendoo_mcp_server.group_mcp_admin").users[0]
+                self.env.ref("mcp_server.group_mcp_admin").users[0]
             )  # Run as MCP Admin
             .create(
                 {

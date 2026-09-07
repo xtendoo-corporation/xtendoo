@@ -14,14 +14,14 @@ from .test_helpers import create_test_user
 class TestMCPLogging(TransactionCase):
     def setUp(self):
         super().setUp()
-        # Logging is on by default (xtendoo_mcp_server.enable_logging) and there is no
+        # Logging is on by default (mcp_server.enable_logging) and there is no
         # test-mode skip guard, so log_event records whenever enabled.
         self.MCPLog = self.env["mcp.log"]
         self.test_user = create_test_user(
             self.env, "Test MCP User", "test_mcp_user", email="test_mcp@example.com"
         )
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.enable_logging", "True"
+            "mcp_server.enable_logging", "True"
         )
 
     def _backdate_log(self, log, when):
@@ -158,7 +158,7 @@ class TestMCPLogging(TransactionCase):
 
         Pins production behaviour: there is no test-mode skip guard, so a plain
         ``mcp.log`` recordset (no ``test_mcp_logging`` context) still writes a row
-        whenever ``xtendoo_mcp_server.enable_logging`` is on. Guards against reintroducing
+        whenever ``mcp_server.enable_logging`` is on. Guards against reintroducing
         a test-mode gate that would silently drop audit rows.
         """
         log = (
@@ -174,7 +174,7 @@ class TestMCPLogging(TransactionCase):
     def test_logging_disabled(self):
         """Test that logging is skipped when disabled."""
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.enable_logging", "False"
+            "mcp_server.enable_logging", "False"
         )
 
         log = self.MCPLog.log_event(
@@ -267,7 +267,7 @@ class TestMCPLogging(TransactionCase):
         self._clear_logs()
         # Set retention to 7 days in config
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.log_retention_days", "7"
+            "mcp_server.log_retention_days", "7"
         )
 
         old_log = self.MCPLog.create({"event_type": "auth_success"})
@@ -350,7 +350,7 @@ class TestMCPLogging(TransactionCase):
         # is INSERTed -- a genuine database error, not a pre-flight Python one.
         bad_user_id = 2147483000
         with mute_logger(
-            "odoo.addons.xtendoo_mcp_server.models.mcp_log", "odoo.sql_db"
+            "odoo.addons.mcp_server.models.mcp_log", "odoo.sql_db"
         ):
             result = self.MCPLog.log_event(
                 "model_access",

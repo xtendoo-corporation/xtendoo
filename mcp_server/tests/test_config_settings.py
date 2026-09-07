@@ -28,20 +28,20 @@ class TestConfigSettings(TransactionCase):
 
         # Check that the values were saved to the system parameters
         param_obj = self.env["ir.config_parameter"].sudo()
-        self.assertEqual(param_obj.get_param("xtendoo_mcp_server.enabled"), "True")
-        self.assertEqual(param_obj.get_param("xtendoo_mcp_server.request_limit"), "100")
-        self.assertEqual(param_obj.get_param("xtendoo_mcp_server.enable_logging"), "True")
-        self.assertEqual(param_obj.get_param("xtendoo_mcp_server.enable_rate_limiting"), "True")
+        self.assertEqual(param_obj.get_param("mcp_server.enabled"), "True")
+        self.assertEqual(param_obj.get_param("mcp_server.request_limit"), "100")
+        self.assertEqual(param_obj.get_param("mcp_server.enable_logging"), "True")
+        self.assertEqual(param_obj.get_param("mcp_server.enable_rate_limiting"), "True")
 
     def test_default_values(self):
         """Test that default values are set correctly when not specified."""
         # Clear any existing parameters
         param_obj = self.env["ir.config_parameter"].sudo()
         params = [
-            "xtendoo_mcp_server.enabled",
-            "xtendoo_mcp_server.request_limit",
-            "xtendoo_mcp_server.enable_logging",
-            "xtendoo_mcp_server.enable_rate_limiting",
+            "mcp_server.enabled",
+            "mcp_server.request_limit",
+            "mcp_server.enable_logging",
+            "mcp_server.enable_rate_limiting",
         ]
         for param in params:
             param_obj.set_param(param, "")
@@ -69,14 +69,14 @@ class TestConfigSettings(TransactionCase):
 
         # Check that the value was saved correctly
         param_obj = self.env["ir.config_parameter"].sudo()
-        self.assertEqual(param_obj.get_param("xtendoo_mcp_server.request_limit"), "0")
+        self.assertEqual(param_obj.get_param("mcp_server.request_limit"), "0")
 
     def test_load_settings(self):
         """Test that settings are loaded from system parameters."""
         # Set some values in system parameters
         param_obj = self.env["ir.config_parameter"].sudo()
-        param_obj.set_param("xtendoo_mcp_server.enabled", "False")
-        param_obj.set_param("xtendoo_mcp_server.request_limit", "200")
+        param_obj.set_param("mcp_server.enabled", "False")
+        param_obj.set_param("mcp_server.request_limit", "200")
 
         # Create settings and check they load from params
         settings = self.Settings.create({})
@@ -97,7 +97,7 @@ class TestConfigSettings(TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             # Enable via Settings, then prime the cache with the enabled value.
             create_test_config_settings(self.env, mcp_enabled=True).execute()
             self.assertTrue(utils.is_mcp_enabled())
@@ -125,34 +125,34 @@ class TestConfigSettings(TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
-            # master kill-switch (xtendoo_mcp_server.enabled, default off)
-            param_obj.set_param("xtendoo_mcp_server.enabled", "False")
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
+            # master kill-switch (mcp_server.enabled, default off)
+            param_obj.set_param("mcp_server.enabled", "False")
             self.assertFalse(utils.is_mcp_enabled())  # prime cache = False
-            param_obj.set_param("xtendoo_mcp_server.enabled", "True")  # direct, no clear
+            param_obj.set_param("mcp_server.enabled", "True")  # direct, no clear
             self.assertTrue(utils.is_mcp_enabled())
-            param_obj.set_param("xtendoo_mcp_server.enabled", "False")
+            param_obj.set_param("mcp_server.enabled", "False")
             self.assertFalse(utils.is_mcp_enabled())
 
-            # OAuth front-door switch (xtendoo_mcp_server.enable_oauth, default on)
-            param_obj.set_param("xtendoo_mcp_server.enable_oauth", "True")
+            # OAuth front-door switch (mcp_server.enable_oauth, default on)
+            param_obj.set_param("mcp_server.enable_oauth", "True")
             self.assertTrue(utils.is_oauth_enabled(self.env))  # prime cache = True
-            param_obj.set_param("xtendoo_mcp_server.enable_oauth", "False")
+            param_obj.set_param("mcp_server.enable_oauth", "False")
             self.assertFalse(utils.is_oauth_enabled(self.env))
-            param_obj.set_param("xtendoo_mcp_server.enable_oauth", "True")
+            param_obj.set_param("mcp_server.enable_oauth", "True")
             self.assertTrue(utils.is_oauth_enabled(self.env))
 
-            # Origin allowlist (xtendoo_mcp_server.allowed_origins, default empty)
-            param_obj.set_param("xtendoo_mcp_server.allowed_origins", "")
+            # Origin allowlist (mcp_server.allowed_origins, default empty)
+            param_obj.set_param("mcp_server.allowed_origins", "")
             self.assertEqual(utils.get_allowed_origins(), ())  # prime cache = ()
-            param_obj.set_param("xtendoo_mcp_server.allowed_origins", "https://claude.ai")
+            param_obj.set_param("mcp_server.allowed_origins", "https://claude.ai")
             self.assertEqual(utils.get_allowed_origins(), ("https://claude.ai",))
-            param_obj.set_param("xtendoo_mcp_server.allowed_origins", "")
+            param_obj.set_param("mcp_server.allowed_origins", "")
             self.assertEqual(utils.get_allowed_origins(), ())
 
     def test_settings_ui_display(self):
         """Test that settings UI view loads correctly."""
-        view_id = self.env.ref("xtendoo_mcp_server.res_config_settings_view_form_mcp")
+        view_id = self.env.ref("mcp_server.res_config_settings_view_form_mcp")
         self.assertTrue(view_id, "Settings view not found")
 
         # Try to load the view to check for errors

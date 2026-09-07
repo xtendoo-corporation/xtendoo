@@ -40,7 +40,7 @@ from ..tools.uri_schema import build_attachment_uri, build_field_uri
 from .mcp_mixin import _BINARY_FIELD_TYPES, mcp_tool
 
 # Pagination fallback defaults. The live values come from the MCP settings
-# (``xtendoo_mcp_server.default_limit`` / ``xtendoo_mcp_server.max_limit``); these apply only
+# (``mcp_server.default_limit`` / ``mcp_server.max_limit``); these apply only
 # when the corresponding setting is unset.
 DEFAULT_LIMIT = 10
 MAX_LIMIT = 100
@@ -52,7 +52,7 @@ MAX_LIMIT = 100
 MAX_OFFSET_PAGES = 1000
 
 # Fallback for the maximum number of related records rendered inline by
-# ``get_record`` (live value: ``xtendoo_mcp_server.max_related_items``). Kept low: each
+# ``get_record`` (live value: ``mcp_server.max_related_items``). Kept low: each
 # shown collection costs one extra name-resolution read, and larger ones just
 # collapse to a count plus a search hint.
 DEFAULT_MAX_RELATED_ITEMS = 3
@@ -148,8 +148,8 @@ class McpToolsRead(models.AbstractModel):
         always wins (a Default set above the Maximum still returns at most
         Maximum rows).
         """
-        default_limit = self._mcp_int_config("xtendoo_mcp_server.default_limit", DEFAULT_LIMIT)
-        max_limit = self._mcp_int_config("xtendoo_mcp_server.max_limit", MAX_LIMIT)
+        default_limit = self._mcp_int_config("mcp_server.default_limit", DEFAULT_LIMIT)
+        max_limit = self._mcp_int_config("mcp_server.max_limit", MAX_LIMIT)
         if default_limit <= 0:
             default_limit = DEFAULT_LIMIT
         if max_limit <= 0:
@@ -225,7 +225,7 @@ class McpToolsRead(models.AbstractModel):
         fields = self._coerce_fields(fields)
         if fields is None:
             max_fields = self._mcp_int_config(
-                "xtendoo_mcp_server.max_smart_fields", DEFAULT_MAX_SMART_FIELDS
+                "mcp_server.max_smart_fields", DEFAULT_MAX_SMART_FIELDS
             )
             return "smart_defaults", get_smart_default_fields(
                 fields_metadata, max_fields=max_fields
@@ -400,7 +400,7 @@ class McpToolsRead(models.AbstractModel):
         )
 
         max_related_items = self._mcp_int_config(
-            "xtendoo_mcp_server.max_related_items", DEFAULT_MAX_RELATED_ITEMS
+            "mcp_server.max_related_items", DEFAULT_MAX_RELATED_ITEMS
         )
         related_summaries = self._resolve_related_summaries(
             data, fields_metadata, max_related_items

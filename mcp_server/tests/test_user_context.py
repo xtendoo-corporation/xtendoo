@@ -26,7 +26,7 @@ from odoo.tests import common, tagged
 from ..controllers import rate_limiting, utils
 from .test_helpers import create_test_user, grant_mcp_access
 
-# Must match xtendoo_mcp_server/controllers/mcp.py.
+# Must match mcp_server/controllers/mcp.py.
 PREFERRED_PROTOCOL_VERSION = "2025-11-25"
 
 
@@ -54,7 +54,7 @@ class TestUserContext(common.HttpCase):
         self.api_key = self._mint_key(self.mcp_user, "Context Key")
 
         # Enable MCP globally and drop any stale cached toggle value.
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
     # ------------------------------------------------------------------

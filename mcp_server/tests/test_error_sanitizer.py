@@ -33,7 +33,7 @@ class TestErrorSanitizerUnit(common.TransactionCase):
         ):
             self.assertEqual(error_sanitizer.sanitize_exception(exc), exc.args[0])
 
-    @mute_logger("odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer")
+    @mute_logger("odoo.addons.mcp_server.controllers.error_sanitizer")
     def test_non_safe_exception_is_genericized(self):
         """A non-safe exception collapses to exactly the generic message."""
         result = error_sanitizer.sanitize_exception(
@@ -47,7 +47,7 @@ class TestErrorSanitizerUnit(common.TransactionCase):
         """A traceback-shaped string is reduced and scrubbed of all internals."""
         raw = (
             "Traceback (most recent call last):\n"
-            '  File "/opt/odoo/addons/xtendoo_mcp_server/foo.py", line 123, in bar\n'
+            '  File "/opt/odoo/addons/mcp_server/foo.py", line 123, in bar\n'
             "    cr.execute(sql)\n"
             '  File "/usr/lib/python3/dist-packages/psycopg2/__init__.py", '
             "line 9, in execute\n"
@@ -115,7 +115,7 @@ class TestErrorSanitizerEndpoint(common.HttpCase):
             "rpc", "Sanitizer Key", datetime.now() + timedelta(days=30)
         )
 
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
     def _post_rpc(self, body):
@@ -140,8 +140,8 @@ class TestErrorSanitizerEndpoint(common.HttpCase):
         return payload["result"]
 
     @mute_logger(
-        "odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer",
-        "odoo.addons.xtendoo_mcp_server.controllers.mcp",
+        "odoo.addons.mcp_server.controllers.error_sanitizer",
+        "odoo.addons.mcp_server.controllers.mcp",
     )
     def test_non_safe_tool_error_returns_generic_text(self):
         """A tool raising a non-safe RuntimeError yields the generic isError text.

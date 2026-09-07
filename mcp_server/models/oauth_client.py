@@ -116,7 +116,7 @@ class OauthClient(models.Model, ClientMixin):
         user could toggle any client (e.g. re-enable one an admin disabled for
         incident response). Checked against the *real* user before any sudo().
         """
-        if not self.env.user.has_group("xtendoo_mcp_server.group_mcp_admin"):
+        if not self.env.user.has_group("mcp_server.group_mcp_admin"):
             raise AccessError(
                 _("Only MCP administrators may change OAuth client status.")
             )

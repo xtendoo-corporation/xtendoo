@@ -89,7 +89,7 @@ class MCPLog(models.Model):
         if (
             self.env["ir.config_parameter"]
             .sudo()  # sudo: read a global config flag, not user-scoped data.
-            .get_param("xtendoo_mcp_server.enable_logging", "True")
+            .get_param("mcp_server.enable_logging", "True")
             != "True"
         ):
             return self.env["mcp.log"]
@@ -311,7 +311,7 @@ class MCPLog(models.Model):
             days = int(
                 self.env["ir.config_parameter"]
                 .sudo()  # sudo: read a global config value, not user-scoped data.
-                .get_param("xtendoo_mcp_server.log_retention_days", "30")
+                .get_param("mcp_server.log_retention_days", "30")
             )
 
         if days <= 0:

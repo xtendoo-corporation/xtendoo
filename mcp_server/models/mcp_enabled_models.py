@@ -129,29 +129,29 @@ class McpEnabledModel(models.Model):
     @api.model
     @tools.ormcache()
     def _get_mcp_enabled(self):
-        """Global MCP enable switch (``xtendoo_mcp_server.enabled``, default off)."""
+        """Global MCP enable switch (``mcp_server.enabled``, default off)."""
         return (
             self.env["ir.config_parameter"]
             .sudo()  # sudo: admin-managed global enable switch, not user data
-            .get_param("xtendoo_mcp_server.enabled", "False")
+            .get_param("mcp_server.enabled", "False")
             == "True"
         )
 
     @api.model
     @tools.ormcache()
     def _get_oauth_enabled(self):
-        """OAuth front-door switch (``xtendoo_mcp_server.enable_oauth``, default on)."""
+        """OAuth front-door switch (``mcp_server.enable_oauth``, default on)."""
         return (
             self.env["ir.config_parameter"]
             .sudo()  # sudo: admin-managed OAuth enable switch, not user data
-            .get_param("xtendoo_mcp_server.enable_oauth", "True")
+            .get_param("mcp_server.enable_oauth", "True")
             == "True"
         )
 
     @api.model
     @tools.ormcache()
     def _get_allowed_origins(self):
-        """Parsed browser-Origin allowlist (``xtendoo_mcp_server.allowed_origins``).
+        """Parsed browser-Origin allowlist (``mcp_server.allowed_origins``).
 
         Comma-separated Origins normalized to lowercase with trailing slashes
         stripped; an empty/unset param yields an empty tuple (Origin validation
@@ -160,7 +160,7 @@ class McpEnabledModel(models.Model):
         raw = (
             self.env["ir.config_parameter"]
             .sudo()  # sudo: admin-managed system param, not user data
-            .get_param("xtendoo_mcp_server.allowed_origins", "")
+            .get_param("mcp_server.allowed_origins", "")
         )
         return tuple(
             entry.strip().rstrip("/").lower()

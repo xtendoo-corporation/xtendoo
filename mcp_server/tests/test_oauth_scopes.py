@@ -90,8 +90,8 @@ class TestOAuthScopes(UrlOpenCompatMixin, common.HttpCase):
         self.redirect_uri = "http://127.0.0.1:8765/callback"
 
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "True")
-        params.set_param("xtendoo_mcp_server.enable_oauth", "True")
+        params.set_param("mcp_server.enabled", "True")
+        params.set_param("mcp_server.enable_oauth", "True")
         # res.partner fully CRUD-enabled via MCP so the create tool reaches the
         # ORM once the scope gate allows it (and stays gated when it doesn't).
         self._enable_model(
@@ -334,7 +334,7 @@ class TestOAuthScopes(UrlOpenCompatMixin, common.HttpCase):
         ``mcp.log`` row with ``event_type='permission_denied'`` for the denied tool.
         """
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.enable_logging", "True"
+            "mcp_server.enable_logging", "True"
         )
         access_token = self._run_flow(grant_write=False)["access_token"]
 

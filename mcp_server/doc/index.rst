@@ -56,10 +56,10 @@ Server Settings
 ~~~~~~~~~~~~~~~
 
 Settings > MCP Server holds the master switch plus: **Allow OAuth 2.1 login** (on by
-default; system parameter ``xtendoo_mcp_server.enable_oauth``), rate limiting and its request
+default; system parameter ``mcp_server.enable_oauth``), rate limiting and its request
 limit, audit logging and its retention, the default/maximum record limits for tool
 responses, and an optional **Allowed Browser Origins** allowlist (system parameter
-``xtendoo_mcp_server.allowed_origins``; empty by default = any Origin accepted, when set a
+``mcp_server.allowed_origins``; empty by default = any Origin accepted, when set a
 browser request from another Origin is refused with HTTP 403 — native clients send no
 Origin header and are never affected).
 
@@ -81,7 +81,7 @@ automatically. Portal users cannot be members (the group implies Internal User).
 On upgrade, the group is granted automatically to active internal users with
 existing MCP activity (an ``mcp``-scope API key, an OAuth token, or an audit-log
 entry recording a completed MCP operation). The audit-log signal only reaches users
-active within ``xtendoo_mcp_server.log_retention_days`` (default 30) -- the daily cleanup cron
+active within ``mcp_server.log_retention_days`` (default 30) -- the daily cleanup cron
 deletes older entries -- so users connecting with a global or ``rpc``-scope API key on
 a longer cadence must be assigned the group manually.
 

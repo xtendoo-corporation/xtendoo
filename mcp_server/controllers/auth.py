@@ -70,7 +70,7 @@ def _log_auth_failure(error_message, api_key_used=True, user_id=None):
 # Audit-log reason recorded when a valid credential resolves a user outside
 # the MCP access group; shared by every door so the rows stay greppable.
 MCP_GROUP_DENIED_MESSAGE = (
-    "User is not a member of the MCP User group (xtendoo_mcp_server.group_mcp_user)"
+    "User is not a member of the MCP User group (mcp_server.group_mcp_user)"
 )
 
 
@@ -105,7 +105,7 @@ def user_has_mcp_access(user):
     ``user`` may be any singleton ``res.users`` record.
     """
     user_su = user.sudo()  # sudo: membership read only, no user bound yet
-    group = user_su.env.ref("xtendoo_mcp_server.group_mcp_user", raise_if_not_found=False)
+    group = user_su.env.ref("mcp_server.group_mcp_user", raise_if_not_found=False)
     # Membership via ``groups_id``: implied memberships are materialized into
     # it on write (``UsersImplied``/``GroupsImplied`` in core), so a plain m2m
     # read sees a grant/revocation on the next request with no per-user cache

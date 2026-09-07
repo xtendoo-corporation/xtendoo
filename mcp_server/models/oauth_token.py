@@ -291,7 +291,7 @@ class OauthToken(models.Model, TokenMixin):
         no ``ir.model.access`` pre-check, so without this guard any authenticated
         user could reach the ``sudo()`` below and revoke arbitrary tokens.
         """
-        if not self.env.user.has_group("xtendoo_mcp_server.group_mcp_admin"):
+        if not self.env.user.has_group("mcp_server.group_mcp_admin"):
             raise AccessError(_("Only MCP administrators may revoke OAuth tokens."))
         self.sudo()._revoke()  # sudo: sanctioned admin revoke; model ACL is read-only
 

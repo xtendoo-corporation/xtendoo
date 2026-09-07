@@ -29,7 +29,7 @@ from odoo.tests import common, tagged
 from ..controllers import auth, rate_limiting, utils
 from .test_helpers import create_test_user, grant_mcp_access
 
-# Must match xtendoo_mcp_server/controllers/mcp.py.
+# Must match mcp_server/controllers/mcp.py.
 PREFERRED_PROTOCOL_VERSION = "2025-11-25"
 
 
@@ -67,7 +67,7 @@ class TestApiKeyScope(common.HttpCase):
         )
 
         # Enable MCP globally and drop any stale cached toggle value.
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
     def _post_rpc(self, body, api_key):
@@ -168,7 +168,7 @@ class TestApiKeyScope(common.HttpCase):
         mock_request = MagicMock()
         mock_request.env = self.env
         with patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.auth.request", mock_request
+            "odoo.addons.mcp_server.controllers.auth.request", mock_request
         ):
             self.assertFalse(
                 auth.get_user_from_api_key(

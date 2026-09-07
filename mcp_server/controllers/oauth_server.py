@@ -526,7 +526,7 @@ def _require_oauth_enabled(method):
 
     The whole OAuth surface -- the two discovery documents and the
     ``authorize``/``token``/``register`` endpoints -- is gated on BOTH the global
-    MCP switch AND the opt-in ``xtendoo_mcp_server.enable_oauth`` switch. When either is
+    MCP switch AND the opt-in ``mcp_server.enable_oauth`` switch. When either is
     off the authorization server is not exposed at all: a bare 404 that reveals
     nothing about the AS (and never serves it). API-key auth is unaffected.
     """
@@ -697,7 +697,7 @@ OAUTH_MAX_CONTENT_LENGTH = 256 * 1024  # 256 KiB
 
 # Dynamic client registration is unauthenticated, so it carries its own fixed
 # per-IP abuse cap. This is deliberately NOT the general MCP request limiter:
-# that one is disabled when xtendoo_mcp_server.request_limit=0 (an admin choosing
+# that one is disabled when mcp_server.request_limit=0 (an admin choosing
 # "unlimited API"), which must never switch off the registration cap. In-memory
 # => per worker (effective N x cap across N workers); move to a shared store if a
 # hard global cap is ever required.
@@ -768,7 +768,7 @@ def _render_authorize_error(description):
     shown to the resource owner instead so no open-redirect surface is exposed.
     """
     response = request.render(
-        "xtendoo_mcp_server.oauth_authorize_error", {"error_description": description}
+        "mcp_server.oauth_authorize_error", {"error_description": description}
     )
     response.status_code = 400
     return _security_headers(response)
@@ -820,7 +820,7 @@ def _render_consent(grant):
         },
         "csrf_token": request.csrf_token(),
     }
-    response = request.render("xtendoo_mcp_server.oauth_consent", qcontext)
+    response = request.render("mcp_server.oauth_consent", qcontext)
     return _security_headers(response)
 
 

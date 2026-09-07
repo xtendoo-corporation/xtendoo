@@ -154,7 +154,7 @@ class TestSmartFields(common.TransactionCase):
         # the gate resolves via ``env`` (the enabled-model row set up above); the
         # per-model allow_read flag is still enforced.
         with patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.utils.is_mcp_enabled",
+            "odoo.addons.mcp_server.controllers.utils.is_mcp_enabled",
             return_value=True,
         ), patch.object(
             mcp_tools_read, "is_sensitive_field_name", lambda name: name == "comment"

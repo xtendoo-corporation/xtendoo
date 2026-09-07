@@ -1,8 +1,8 @@
 """Shared ``mcp.log`` audit-write scaffolding.
 
-Both the native ``/mcp`` audits (:mod:`~odoo.addons.xtendoo_mcp_server.controllers.mcp`)
+Both the native ``/mcp`` audits (:mod:`~odoo.addons.mcp_server.controllers.mcp`)
 and the legacy auth-failure audit
-(:mod:`~odoo.addons.xtendoo_mcp_server.controllers.auth`) must persist an ``mcp.log`` row
+(:mod:`~odoo.addons.mcp_server.controllers.auth`) must persist an ``mcp.log`` row
 even when the request transaction is later rolled back on error -- so in
 PRODUCTION they open an INDEPENDENT registry cursor and explicitly commit it.
 

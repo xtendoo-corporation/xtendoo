@@ -200,14 +200,14 @@ def grant_mcp_access(*users):
     """ADD the MCP access group to ``users`` (keeps their existing groups).
 
     Every MCP door (native ``/mcp`` bearer, REST, XML-RPC proxy, OAuth
-    authorize/token) requires membership in ``xtendoo_mcp_server.group_mcp_user``, so
+    authorize/token) requires membership in ``mcp_server.group_mcp_user``, so
     HTTP-driving fixtures grant it on top of whatever groups the test scenario
     itself is about. A ``(4, id)`` link -- never ``(6, 0, ...)`` -- so a fixture
     pinned to specific groups (bare internal, partner manager, ...) keeps its
     intended Odoo ACL surface.
     """
     for user in users:
-        group = user.env.ref("xtendoo_mcp_server.group_mcp_user")
+        group = user.env.ref("mcp_server.group_mcp_user")
         user.write({users_groups_field(user.env): [(4, group.id)]})
 
 

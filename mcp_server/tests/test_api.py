@@ -48,7 +48,7 @@ class TestMCPCommonController(HttpCase):
         from ..controllers import utils
 
         # Enable MCP globally by default
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
     def test_common_controller_mcp_disabled(self):
@@ -56,7 +56,7 @@ class TestMCPCommonController(HttpCase):
         from ..controllers import utils
 
         # Disable MCP globally
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "False")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "False")
         utils.clear_mcp_caches()
 
         request_data = xmlrpclib.dumps((), "version", allow_none=1)
@@ -92,7 +92,7 @@ class TestMCPCommonController(HttpCase):
         self.assertEqual(result[0][0], {"server_version": "16.0"})
         mock_dispatch.assert_called_once_with("version", ())
 
-    @mute_logger("odoo.addons.xtendoo_mcp_server.controllers.api")
+    @mute_logger("odoo.addons.mcp_server.controllers.api")
     @patch("odoo.service.common.dispatch")
     def test_common_controller_exception(self, mock_dispatch):
         """Test exception handling in common controller."""
@@ -118,7 +118,7 @@ class TestMCPDatabaseController(HttpCase):
         from ..controllers import utils
 
         # Enable MCP globally by default
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
     def test_db_controller_mcp_disabled(self):
@@ -126,7 +126,7 @@ class TestMCPDatabaseController(HttpCase):
         from ..controllers import utils
 
         # Disable MCP globally
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "False")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "False")
         utils.clear_mcp_caches()
 
         request_data = xmlrpclib.dumps((), "list", allow_none=1)
@@ -160,7 +160,7 @@ class TestMCPDatabaseController(HttpCase):
         self.assertEqual(result[0][0], ["test_db1", "test_db2"])
         mock_dispatch.assert_called_once_with("list", ())
 
-    @mute_logger("odoo.addons.xtendoo_mcp_server.controllers.api")
+    @mute_logger("odoo.addons.mcp_server.controllers.api")
     @patch("odoo.service.db.dispatch")
     def test_db_controller_exception(self, mock_dispatch):
         """Test exception handling in database controller."""
@@ -185,7 +185,7 @@ class TestMCPObjectController(HttpCase):
         from ..controllers import utils
 
         # Enable MCP globally by default
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
     def test_object_controller_mcp_disabled(self):
@@ -193,7 +193,7 @@ class TestMCPObjectController(HttpCase):
         from ..controllers import utils
 
         # Disable MCP globally
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "False")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "False")
         utils.clear_mcp_caches()
 
         params = ("test_db", 1, "password", "res.users", "search", [])
@@ -216,7 +216,7 @@ class TestMCPObjectController(HttpCase):
         from ..controllers import utils
 
         # Ensure MCP is enabled
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
         params = ("test_db", 1, "password", "res.users", "search")
@@ -239,7 +239,7 @@ class TestMCPObjectController(HttpCase):
         from ..controllers import utils
 
         # Ensure MCP is enabled
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
         utils.clear_mcp_caches()
 
         params = ("test_db", 1)  # Not enough params for execute_kw
@@ -273,7 +273,7 @@ class TestMCPObjectController(HttpCase):
         self.assertEqual(cm.exception.faultCode, 400)
         self.assertIn("Insufficient parameters", cm.exception.faultString)
 
-    @patch("odoo.addons.xtendoo_mcp_server.controllers.utils.sanitize_model_name")
+    @patch("odoo.addons.mcp_server.controllers.utils.sanitize_model_name")
     def test_mcp_object_dispatch_invalid_model_name(self, mock_sanitize):
         """Test _mcp_object_dispatch validates model names."""
         mock_sanitize.side_effect = ValueError("Invalid model name")

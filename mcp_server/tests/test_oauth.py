@@ -76,11 +76,11 @@ class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
 
         # Enable MCP globally and expose res.partner (read) for the tool call.
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "True")
+        params.set_param("mcp_server.enabled", "True")
         # OAuth is on by default; set it explicitly here so the suite is
         # independent of the global default, then clear the caches that gate the
         # endpoints.
-        params.set_param("xtendoo_mcp_server.enable_oauth", "True")
+        params.set_param("mcp_server.enable_oauth", "True")
         self._enable_model("base.model_res_partner", allow_read=True)
         utils.clear_mcp_caches()
 
@@ -466,16 +466,16 @@ class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
         exercised by the authorize tests above (200) and was verified on a
         website-installed database. Runs without website installed.
         """
-        layout = self.env.ref("xtendoo_mcp_server.oauth_layout")
+        layout = self.env.ref("mcp_server.oauth_layout")
         self.assertIn('t-call="web.layout"', layout.arch)
         for banned in ("web.login_layout", "web.frontend_layout"):
             self.assertNotIn(banned, layout.arch)
         for tmpl_id in (
-            "xtendoo_mcp_server.oauth_consent",
-            "xtendoo_mcp_server.oauth_authorize_error",
+            "mcp_server.oauth_consent",
+            "mcp_server.oauth_authorize_error",
         ):
             arch = self.env.ref(tmpl_id).arch
-            self.assertIn('t-call="xtendoo_mcp_server.oauth_layout"', arch)
+            self.assertIn('t-call="mcp_server.oauth_layout"', arch)
             self.assertNotIn("web.login_layout", arch)
 
     def test_pkce_plain_method_is_rejected(self):
@@ -985,7 +985,7 @@ class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
             authorization_code=SimpleNamespace(resource=False),  # code bound none
         )
         with patch(
-            "odoo.addons.xtendoo_mcp_server.models.oauth_token.resource_url",
+            "odoo.addons.mcp_server.models.oauth_token.resource_url",
             return_value="https://example.test/mcp",
         ):
             audience, _family = (
@@ -1010,7 +1010,7 @@ class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
             authorization_code=None,  # neither an auth-code nor a refresh grant
         )
         with patch(
-            "odoo.addons.xtendoo_mcp_server.models.oauth_token.resource_url",
+            "odoo.addons.mcp_server.models.oauth_token.resource_url",
             return_value="https://example.test/mcp",
         ):
             audience, _family = (
@@ -1544,7 +1544,7 @@ class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
         """Registration is capped per IP independently of the API request limit."""
         # Even with the general API limit disabled, the DCR cap still applies.
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.request_limit", "0"
+            "mcp_server.request_limit", "0"
         )
         oauth_server._dcr_limiter.clear()
         body = {
@@ -1576,7 +1576,7 @@ class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
 class TestOAuthDisabled(UrlOpenCompatMixin, common.HttpCase):
     """OAuth front door explicitly OFF: endpoints 404, tokens refused.
 
-    ``xtendoo_mcp_server.enable_oauth`` can be turned off, so with MCP enabled but OAuth off
+    ``mcp_server.enable_oauth`` can be turned off, so with MCP enabled but OAuth off
     the whole authorization server (discovery + authorize/token/register) must be
     unreachable (404) and OAuth access tokens must not authenticate ``/mcp``
     -- while ordinary rpc-scope API-key auth keeps working untouched.
@@ -1608,9 +1608,9 @@ class TestOAuthDisabled(UrlOpenCompatMixin, common.HttpCase):
         self.redirect_uri = "http://127.0.0.1:8765/callback"
 
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "True")
+        params.set_param("mcp_server.enabled", "True")
         # OAuth explicitly OFF -- the whole OAuth front door must be closed.
-        params.set_param("xtendoo_mcp_server.enable_oauth", "False")
+        params.set_param("mcp_server.enable_oauth", "False")
         self._enable_model("base.model_res_partner", allow_read=True)
         utils.clear_mcp_caches()
 
@@ -1646,7 +1646,7 @@ class TestOAuthDisabled(UrlOpenCompatMixin, common.HttpCase):
     def test_oauth_available_by_default_when_param_unset(self):
         """OAuth is on by default: an unset enable_oauth parameter counts as on."""
         params = self.env["ir.config_parameter"].sudo()
-        params.search([("key", "=", "xtendoo_mcp_server.enable_oauth")]).unlink()
+        params.search([("key", "=", "mcp_server.enable_oauth")]).unlink()
         utils.clear_mcp_caches()
         self.assertTrue(utils.is_oauth_enabled(self.env))
         resp = self.url_open(
@@ -1735,7 +1735,7 @@ class TestOAuthDisabled(UrlOpenCompatMixin, common.HttpCase):
     def test_reenabling_oauth_restores_the_front_door(self):
         """Turning enable_oauth back on re-exposes registration (spot check)."""
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enable_oauth", "True")
+        params.set_param("mcp_server.enable_oauth", "True")
         utils.clear_mcp_caches()
 
         response = self.url_open(

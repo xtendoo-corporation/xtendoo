@@ -26,7 +26,7 @@ test-cursor cookie travels with it -- required for the audit's independent curso
 (a ``TestCursor`` under HttpCase) to open and commit.
 
 Note: ``mcp.log`` has no test-mode skip guard, so rows are logged whenever
-``xtendoo_mcp_server.enable_logging`` is on; here we assert on the persisted rows.
+``mcp_server.enable_logging`` is on; here we assert on the persisted rows.
 """
 
 import json
@@ -116,8 +116,8 @@ class TestMcpWriteTools(common.HttpCase):
         )
 
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "True")
-        params.set_param("xtendoo_mcp_server.enable_logging", "True")
+        params.set_param("mcp_server.enabled", "True")
+        params.set_param("mcp_server.enable_logging", "True")
         utils.clear_mcp_caches()
 
     # ------------------------------------------------------------------
@@ -207,7 +207,7 @@ class TestMcpWriteTools(common.HttpCase):
             side_effect=SerializationFailure("could not serialize access")
         )
         with mute_logger(
-            "odoo.addons.xtendoo_mcp_server.controllers.mcp_dispatcher",
+            "odoo.addons.mcp_server.controllers.mcp_dispatcher",
             "odoo.http",
             "odoo.service.model",
         ), patch.object(mixin_cls, "_resolve_model", boom):
@@ -320,7 +320,7 @@ class TestMcpWriteTools(common.HttpCase):
         reuses ``max_limit`` and trips regardless of whether the ids exist.
         """
         self._set_method_calls(True)
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.max_limit", "5")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.max_limit", "5")
 
         result = self._call_tool(
             "call_model_method",
@@ -788,13 +788,13 @@ class TestMcpWriteTools(common.HttpCase):
         uid = self.mcp_user.id
         dbname = self.env.cr.dbname
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.request_limit", "11"
+            "mcp_server.request_limit", "11"
         )
 
         mock_request = MagicMock()
         mock_request.env = self.env
         with patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.rate_limiting.request", mock_request
+            "odoo.addons.mcp_server.controllers.rate_limiting.request", mock_request
         ):
             for _ in range(10):
                 rate_limiting.record_api_request(uid, dbname)
@@ -862,8 +862,8 @@ class TestMcpWriteTools(common.HttpCase):
     # Savepoint rollback: mutate-then-raise leaves NO partial row
     # ------------------------------------------------------------------
     @mute_logger(
-        "odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer",
-        "odoo.addons.xtendoo_mcp_server.controllers.mcp",
+        "odoo.addons.mcp_server.controllers.error_sanitizer",
+        "odoo.addons.mcp_server.controllers.mcp",
         "odoo.sql_db",
     )
     def test_create_record_savepoint_rolls_back_partial_writes(self):
@@ -910,8 +910,8 @@ class TestMcpWriteTools(common.HttpCase):
         self.assertFalse(orphan, "savepoint must roll back the partial parent insert")
 
     @mute_logger(
-        "odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer",
-        "odoo.addons.xtendoo_mcp_server.controllers.mcp",
+        "odoo.addons.mcp_server.controllers.error_sanitizer",
+        "odoo.addons.mcp_server.controllers.mcp",
     )
     def test_savepoint_rolls_back_valid_write_on_non_db_error(self):
         """The controller savepoint rolls back a VALID write when the tool raises.
@@ -965,8 +965,8 @@ class TestMcpWriteTools(common.HttpCase):
         )
 
     @mute_logger(
-        "odoo.addons.xtendoo_mcp_server.controllers.error_sanitizer",
-        "odoo.addons.xtendoo_mcp_server.controllers.mcp",
+        "odoo.addons.mcp_server.controllers.error_sanitizer",
+        "odoo.addons.mcp_server.controllers.mcp",
     )
     def test_malformed_tool_return_rolls_back_and_is_error(self):
         """A tool returning a non-dict after a valid write -> isError + rollback.

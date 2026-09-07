@@ -125,10 +125,10 @@ class TestMcpReadTools(common.HttpCase):
         )
 
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "True")
+        params.set_param("mcp_server.enabled", "True")
         # Logging on so the resources/read audit-row test can assert the
         # persisted mcp.log entry.
-        params.set_param("xtendoo_mcp_server.enable_logging", "True")
+        params.set_param("mcp_server.enable_logging", "True")
         utils.clear_mcp_caches()
 
     # ------------------------------------------------------------------
@@ -270,14 +270,14 @@ class TestMcpReadTools(common.HttpCase):
     def test_tool_limit_settings_are_honored(self):
         """The configurable tool limits clamp page size and smart-field count.
 
-        Lowering ``xtendoo_mcp_server.default_limit`` and ``xtendoo_mcp_server.max_smart_fields``
+        Lowering ``mcp_server.default_limit`` and ``mcp_server.max_smart_fields``
         must change the live behaviour of search_records end-to-end (proving the
         settings are read at runtime, not the baked-in fallbacks). Config is set
         inside the rolled-back test transaction, so no teardown restore is needed.
         """
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.default_limit", "3")
-        params.set_param("xtendoo_mcp_server.max_smart_fields", "5")
+        params.set_param("mcp_server.default_limit", "3")
+        params.set_param("mcp_server.max_smart_fields", "5")
         utils.clear_mcp_caches()
 
         # Ensure there are more partners than the lowered default page size.
@@ -308,8 +308,8 @@ class TestMcpReadTools(common.HttpCase):
         must clamp back to the module defaults instead.
         """
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.default_limit", "0")
-        params.set_param("xtendoo_mcp_server.max_limit", "0")
+        params.set_param("mcp_server.default_limit", "0")
+        params.set_param("mcp_server.max_limit", "0")
         mixin = self.env["mcp.mixin"]
 
         # An explicit (even huge) limit is capped to MAX_LIMIT, never left at 0.
@@ -330,8 +330,8 @@ class TestMcpReadTools(common.HttpCase):
         source, so the promise cannot drift from the behaviour.
         """
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.default_limit", "500")
-        params.set_param("xtendoo_mcp_server.max_limit", "100")
+        params.set_param("mcp_server.default_limit", "500")
+        params.set_param("mcp_server.max_limit", "100")
         mixin = self.env["mcp.mixin"]
 
         # No / zero / negative limit uses the default, clamped down to the max.
@@ -408,7 +408,7 @@ class TestMcpReadTools(common.HttpCase):
     def test_get_record_large_x2many_collapses_to_count_and_hint(self):
         """An x2many collection above the cap collapses to a count + search hint."""
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.max_related_items", "2")
+        params.set_param("mcp_server.max_related_items", "2")
         parent = self.env["res.partner"].create({"name": "Collapse Parent"})
         self.env["res.partner"].create(
             [{"name": f"Child {i}", "parent_id": parent.id} for i in range(3)]
@@ -489,7 +489,7 @@ class TestMcpReadTools(common.HttpCase):
         self._enable_model("base.model_res_partner_category", allow_read=True)
         utils.clear_mcp_caches()
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.max_related_items", "1"
+            "mcp_server.max_related_items", "1"
         )
         tags = self.env["res.partner.category"].create([{"name": "M1"}, {"name": "M2"}])
         partner = self.env["res.partner"].create(
@@ -511,7 +511,7 @@ class TestMcpReadTools(common.HttpCase):
         self._disable_model("base.model_res_partner_category")
         utils.clear_mcp_caches()
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtendoo_mcp_server.max_related_items", "1"
+            "mcp_server.max_related_items", "1"
         )
         tags = self.env["res.partner.category"].create([{"name": "N1"}, {"name": "N2"}])
         partner = self.env["res.partner"].create(

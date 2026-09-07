@@ -79,7 +79,7 @@ class TestMcpMainController(common.HttpCase):
             existing_users_model.sudo().unlink()
 
         # Enable MCP globally
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
 
     def test_health_check_success(self):
         """Test health check endpoint when MCP is enabled"""
@@ -93,7 +93,7 @@ class TestMcpMainController(common.HttpCase):
 
     def test_health_check_disabled(self):
         """Test health check when MCP is disabled"""
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "False")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "False")
 
         response = self.url_open("/mcp/health")
         self.assertEqual(response.status_code, 503)
@@ -104,7 +104,7 @@ class TestMcpMainController(common.HttpCase):
 
     def test_all_endpoints_disabled_when_mcp_disabled(self):
         """Test that all MCP endpoints return errors when MCP is globally disabled"""
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "False")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "False")
         headers = {"X-API-Key": self.api_key}
 
         # Test system info
@@ -241,7 +241,7 @@ class TestMcpMainController(common.HttpCase):
 
     def test_mcp_disabled_globally(self):
         """Test endpoints return 503 when MCP is disabled globally"""
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "False")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "False")
         headers = {"X-API-Key": self.api_key}
 
         # Test multiple endpoints return same error

@@ -11,7 +11,7 @@
                     class="app_settings_block"
                     data-string="MCP Server"
                     string="MCP Server"
-                    data-key="xtendoo_mcp_server"
+                    data-key="mcp_server"
                 >
                     <h2>MCP Server Configuration</h2>
                     <div class="row mt16 o_settings_container" id="mcp_settings">
@@ -34,7 +34,7 @@
                                 <div class="content-group" invisible="not mcp_enabled">
                                     <div>
                                         <button
-                                            name="%(xtendoo_mcp_server.action_mcp_enabled_models)d"
+                                            name="%(mcp_server.action_mcp_enabled_models)d"
                                             icon="oi-arrow-right"
                                             type="action"
                                             string="Manage MCP Available Models"
@@ -43,7 +43,7 @@
                                     </div>
                                     <div class="mt8">
                                         <button
-                                            name="%(xtendoo_mcp_server.action_mcp_custom_tool)d"
+                                            name="%(mcp_server.action_mcp_custom_tool)d"
                                             icon="oi-arrow-right"
                                             type="action"
                                             string="Manage Custom Tools"
@@ -104,7 +104,7 @@
                                     <div class="row mt16">
                                         <div class="col-12">
                                             <button
-                                                name="%(xtendoo_mcp_server.action_mcp_logs)d"
+                                                name="%(mcp_server.action_mcp_logs)d"
                                                 icon="oi-arrow-right"
                                                 type="action"
                                                 string="View MCP Logs"
@@ -189,7 +189,7 @@
                                 >
                                     <div>
                                         <button
-                                            name="%(xtendoo_mcp_server.action_mcp_oauth_clients)d"
+                                            name="%(mcp_server.action_mcp_oauth_clients)d"
                                             icon="oi-arrow-right"
                                             type="action"
                                             string="Manage OAuth Clients"
@@ -198,7 +198,7 @@
                                     </div>
                                     <div class="mt8">
                                         <button
-                                            name="%(xtendoo_mcp_server.action_mcp_oauth_tokens)d"
+                                            name="%(mcp_server.action_mcp_oauth_tokens)d"
                                             icon="oi-arrow-right"
                                             type="action"
                                             string="Manage OAuth Tokens"

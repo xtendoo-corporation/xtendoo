@@ -31,7 +31,7 @@ class TestMcpUtils(common.TransactionCase):
         )
 
         # Enable MCP globally
-        self.env["ir.config_parameter"].sudo().set_param("xtendoo_mcp_server.enabled", "True")
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.enabled", "True")
 
         # Create or get existing test enabled model for res.partner
         partner_model_id = self.env.ref("base.model_res_partner").id
@@ -89,9 +89,9 @@ class TestMcpUtils(common.TransactionCase):
         """
         mock_request = MagicMock()
         mock_request.env = self.env
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             params = self.env["ir.config_parameter"].sudo()
-            params.set_param("xtendoo_mcp_server.enabled", "True")
+            params.set_param("mcp_server.enabled", "True")
             utils.clear_mcp_caches()
             self.assertTrue(utils.is_mcp_enabled())  # primes the ormcache -> True
 
@@ -140,17 +140,17 @@ class TestMcpUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             # Test when enabled
             self.env["ir.config_parameter"].sudo().set_param(
-                "xtendoo_mcp_server.enabled", "True"
+                "mcp_server.enabled", "True"
             )
             utils.clear_mcp_caches()
             self.assertTrue(utils.is_mcp_enabled())
 
             # Test when disabled
             self.env["ir.config_parameter"].sudo().set_param(
-                "xtendoo_mcp_server.enabled", "False"
+                "mcp_server.enabled", "False"
             )
             utils.clear_mcp_caches()
             self.assertFalse(utils.is_mcp_enabled())
@@ -160,7 +160,7 @@ class TestMcpUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             # Test enabled model
             self.assertTrue(utils.is_model_mcp_enabled(self.env, "res.partner"))
 
@@ -175,7 +175,7 @@ class TestMcpUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             # Test allowed operations on res.partner
             self.assertTrue(
                 utils.check_model_operation_allowed(self.env, "res.partner", "read")
@@ -200,7 +200,7 @@ class TestMcpUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             models = utils.get_enabled_models(self.env)
 
             # Should be a list
@@ -220,7 +220,7 @@ class TestMcpUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             # Test enabled model
             ops = utils.get_model_allowed_operations(self.env, "res.partner")
             self.assertTrue(ops["read"])
@@ -260,7 +260,7 @@ class TestMcpUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             # Allowed operations
             self.assertTrue(utils.check_mcp_access(self.env, "res.partner", "search"))
             self.assertTrue(utils.check_mcp_access(self.env, "res.partner", "create"))
@@ -308,7 +308,7 @@ class TestMcpUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             info = utils.get_system_info(self.env)
 
             # Check required fields
@@ -336,11 +336,11 @@ class TestMcpUtils(common.TransactionCase):
         """
         mock_request = MagicMock()
         mock_request.env = self.env
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.utils.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.utils.request", mock_request):
             params = self.env["ir.config_parameter"].sudo()
-            params.set_param("xtendoo_mcp_server.enabled", "True")
-            params.set_param("xtendoo_mcp_server.enable_oauth", "True")
-            params.set_param("xtendoo_mcp_server.allowed_origins", "https://a.example.com")
+            params.set_param("mcp_server.enabled", "True")
+            params.set_param("mcp_server.enable_oauth", "True")
+            params.set_param("mcp_server.allowed_origins", "https://a.example.com")
             self.env.registry.clear_cache()
             self.assertTrue(utils.is_mcp_enabled())
             self.assertTrue(utils.is_oauth_enabled(self.env))
@@ -349,9 +349,9 @@ class TestMcpUtils(common.TransactionCase):
             )
 
             # Flip every switch and invalidate exactly the way the write path does.
-            params.set_param("xtendoo_mcp_server.enabled", "False")
-            params.set_param("xtendoo_mcp_server.enable_oauth", "False")
-            params.set_param("xtendoo_mcp_server.allowed_origins", "https://b.example.com")
+            params.set_param("mcp_server.enabled", "False")
+            params.set_param("mcp_server.enable_oauth", "False")
+            params.set_param("mcp_server.allowed_origins", "https://b.example.com")
             self.env.registry.clear_cache()
             self.assertFalse(utils.is_mcp_enabled())
             self.assertFalse(utils.is_oauth_enabled(self.env))
@@ -397,8 +397,8 @@ class TestAuthAndResponseUtils(common.TransactionCase):
         # auth-failure row via audit.write_audit_row, which reads its own module's
         # ``request`` proxy.
         with patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.auth.request", mock_request
-        ), patch("odoo.addons.xtendoo_mcp_server.controllers.audit.request", mock_request):
+            "odoo.addons.mcp_server.controllers.auth.request", mock_request
+        ), patch("odoo.addons.mcp_server.controllers.audit.request", mock_request):
             # Valid key
             user = self.auth.get_user_from_api_key(self.valid_api_key)
             self.assertEqual(user.id, self.test_user.id)
@@ -415,7 +415,7 @@ class TestAuthAndResponseUtils(common.TransactionCase):
         mock_request = MagicMock()
         mock_request.env = self.env
 
-        with patch("odoo.addons.xtendoo_mcp_server.controllers.auth.request", mock_request):
+        with patch("odoo.addons.mcp_server.controllers.auth.request", mock_request):
             user = self.auth.validate_api_key(mock_http_request)
             self.assertEqual(user.id, self.test_user.id)
 
@@ -441,7 +441,7 @@ class TestAuthAndResponseUtils(common.TransactionCase):
             return "reached-handler"
 
         with patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.auth.request", mock_request
+            "odoo.addons.mcp_server.controllers.auth.request", mock_request
         ), patch.object(
             self.auth, "validate_api_key", return_value=None
         ), patch.object(
@@ -449,7 +449,7 @@ class TestAuthAndResponseUtils(common.TransactionCase):
         ), patch.object(
             self.auth, "_log_auth_failure"
         ) as mock_log, patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.response_utils.error_response",
+            "odoo.addons.mcp_server.controllers.response_utils.error_response",
             return_value="401",
         ):
             result = _endpoint()
@@ -476,7 +476,7 @@ class TestAuthAndResponseUtils(common.TransactionCase):
         mock_request.make_json_response = MagicMock()
 
         with patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.response_utils.request", mock_request
+            "odoo.addons.mcp_server.controllers.response_utils.request", mock_request
         ):
             self.response_utils.success_response(test_data)
 
@@ -493,7 +493,7 @@ class TestAuthAndResponseUtils(common.TransactionCase):
         mock_request.make_json_response = MagicMock()
 
         with patch(
-            "odoo.addons.xtendoo_mcp_server.controllers.response_utils.request", mock_request
+            "odoo.addons.mcp_server.controllers.response_utils.request", mock_request
         ):
             self.response_utils.error_response("Test error", "E400", 400)
 

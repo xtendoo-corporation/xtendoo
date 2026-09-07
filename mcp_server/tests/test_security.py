@@ -18,7 +18,7 @@ class TestMcpSecurity(common.TransactionCase):
             "MCP User",
             "mcp_user",
             email="mcp_user@example.com",
-            group_ids=[(6, 0, [self.env.ref("xtendoo_mcp_server.group_mcp_user").id])],
+            group_ids=[(6, 0, [self.env.ref("mcp_server.group_mcp_user").id])],
         )
 
         # Create a user in the MCP Admin group
@@ -27,7 +27,7 @@ class TestMcpSecurity(common.TransactionCase):
             "MCP Admin",
             "mcp_admin",
             email="mcp_admin@example.com",
-            group_ids=[(6, 0, [self.env.ref("xtendoo_mcp_server.group_mcp_admin").id])],
+            group_ids=[(6, 0, [self.env.ref("mcp_server.group_mcp_admin").id])],
         )
 
         # Create a regular user without MCP access
@@ -287,7 +287,7 @@ class TestMcpSecurity(common.TransactionCase):
         """Test MCP Admin can access settings menu but MCP User cannot"""
         # Try to find the MCP menu by ref first
         try:
-            menu_root = self.env.ref("xtendoo_mcp_server.mcp_menu_technical")
+            menu_root = self.env.ref("mcp_server.mcp_menu_technical")
         except ValueError:
             # Fallback to search
             menu_root = self.env["ir.ui.menu"].search([("name", "=", "MCP")], limit=1)
@@ -295,8 +295,8 @@ class TestMcpSecurity(common.TransactionCase):
         if not menu_root:
             self.skipTest("Menu 'MCP' not found, skipping test")
 
-        mcp_admin_group = self.env.ref("xtendoo_mcp_server.group_mcp_admin")
-        mcp_user_group = self.env.ref("xtendoo_mcp_server.group_mcp_user")
+        mcp_admin_group = self.env.ref("mcp_server.group_mcp_admin")
+        mcp_user_group = self.env.ref("mcp_server.group_mcp_user")
 
         self.assertIn(
             mcp_admin_group,
@@ -408,7 +408,7 @@ class TestMcpSecurity(common.TransactionCase):
                 "state": "code",
                 "code": "mcp['result'] = {'ok': True}",
                 "groups_id": [
-                    (6, 0, [self.env.ref("xtendoo_mcp_server.group_mcp_admin").id])
+                    (6, 0, [self.env.ref("mcp_server.group_mcp_admin").id])
                 ],
             }
         )

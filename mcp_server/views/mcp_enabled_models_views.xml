@@ -7,7 +7,7 @@
             <list string="MCP Enabled Models">
                 <header>
                     <button
-                        name="%(xtendoo_mcp_server.action_mcp_model_selection_wizard)d"
+                        name="%(mcp_server.action_mcp_model_selection_wizard)d"
                         type="action"
                         string="Select Multiple Models"
                         class="btn btn-primary"

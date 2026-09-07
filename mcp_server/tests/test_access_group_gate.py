@@ -1,6 +1,6 @@
 """Per-user MCP access-group gate on every door.
 
-Membership in ``xtendoo_mcp_server.group_mcp_user`` is required to use MCP at all:
+Membership in ``mcp_server.group_mcp_user`` is required to use MCP at all:
 the native ``/mcp`` bearer door (API key AND OAuth token), the X-API-Key /
 session REST routes, the XML-RPC proxy, the OAuth consent screen and the
 token grants. A VALID credential whose user is not a member is refused with
@@ -31,7 +31,7 @@ from .test_helpers import (
 )
 from .test_oauth import _code_challenge, _sha256_hex
 
-# Must match xtendoo_mcp_server/controllers/mcp.py.
+# Must match mcp_server/controllers/mcp.py.
 PREFERRED_PROTOCOL_VERSION = "2025-11-25"
 
 
@@ -76,9 +76,9 @@ class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
         self.key_ingroup = self._mint_key(self.user_ingroup, "Gate Member Key")
 
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("xtendoo_mcp_server.enabled", "True")
-        params.set_param("xtendoo_mcp_server.enable_oauth", "True")
-        params.set_param("xtendoo_mcp_server.enable_logging", "True")
+        params.set_param("mcp_server.enabled", "True")
+        params.set_param("mcp_server.enable_oauth", "True")
+        params.set_param("mcp_server.enable_logging", "True")
         self._enable_model("base.model_res_partner", allow_read=True)
         utils.clear_mcp_caches()
 
@@ -116,7 +116,7 @@ class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
 
     def _remove_mcp_group(self, user):
         """UNLINK the MCP access group from ``user`` (default groups stay)."""
-        group = self.env.ref("xtendoo_mcp_server.group_mcp_user")
+        group = self.env.ref("mcp_server.group_mcp_user")
         user.write({users_groups_field(self.env): [(3, group.id)]})
 
     def _post_rpc(self, api_key, body=None):
@@ -230,7 +230,7 @@ class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
         credential use time, after the gate warmed on a prior request.
         """
         self.assertEqual(self._post_rpc(self.key_ingroup).status_code, 200)
-        group = self.env.ref("xtendoo_mcp_server.group_mcp_user").sudo()
+        group = self.env.ref("mcp_server.group_mcp_user").sudo()
         field = "user_ids" if "user_ids" in group._fields else "users"
         group.write({field: [(3, self.user_ingroup.id)]})
         self.assertEqual(self._post_rpc(self.key_ingroup).status_code, 403)
@@ -502,7 +502,7 @@ class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
         # which core materializes into the user's groups on write.
         groups = admin[users_groups_field(self.env)]
         self.assertIn(self.env.ref("base.group_system"), groups)
-        self.assertIn(self.env.ref("xtendoo_mcp_server.group_mcp_user"), groups)
+        self.assertIn(self.env.ref("mcp_server.group_mcp_user"), groups)
         key = self._mint_key(admin, "Sysadmin Key")
         self.assertEqual(self._post_rpc(key).status_code, 200)
 

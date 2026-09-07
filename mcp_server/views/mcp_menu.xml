@@ -4,7 +4,7 @@
         id="mcp_menu_technical"
         name="MCP"
         parent="base.menu_custom"
-        groups="xtendoo_mcp_server.group_mcp_admin"
+        groups="mcp_server.group_mcp_admin"
     />
 
     <menuitem
@@ -13,7 +13,7 @@
         parent="mcp_menu_technical"
         action="action_mcp_enabled_models"
         sequence="10"
-        groups="xtendoo_mcp_server.group_mcp_admin"
+        groups="mcp_server.group_mcp_admin"
     />
 
     <menuitem
@@ -22,7 +22,7 @@
         parent="mcp_menu_technical"
         action="action_mcp_logs"
         sequence="20"
-        groups="xtendoo_mcp_server.group_mcp_admin"
+        groups="mcp_server.group_mcp_admin"
     />
 
     <menuitem
@@ -31,7 +31,7 @@
         parent="mcp_menu_technical"
         action="action_mcp_oauth_clients"
         sequence="30"
-        groups="xtendoo_mcp_server.group_mcp_admin"
+        groups="mcp_server.group_mcp_admin"
     />
 
     <menuitem
@@ -40,7 +40,7 @@
         parent="mcp_menu_technical"
         action="action_mcp_oauth_tokens"
         sequence="40"
-        groups="xtendoo_mcp_server.group_mcp_admin"
+        groups="mcp_server.group_mcp_admin"
     />
 
     <menuitem
@@ -49,6 +49,6 @@
         parent="mcp_menu_technical"
         action="action_mcp_custom_tool"
         sequence="50"
-        groups="xtendoo_mcp_server.group_mcp_admin"
+        groups="mcp_server.group_mcp_admin"
     />
 </odoo>

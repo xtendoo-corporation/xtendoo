@@ -89,7 +89,7 @@ installation and the server's `import OpenSSL`. `packaging` lets Odoo parse the 
 Install them into the Python environment that runs Odoo:
 
 ```bash
-pip install -r xtendoo_mcp_server/requirements.txt
+pip install -r mcp_server/requirements.txt
 # or explicitly:
 pip install "authlib>=1.6.12,<1.7.0" defusedxml packaging
 ```
@@ -100,7 +100,7 @@ a `requirements.txt` inside an addon folder is ignored. Reference the module's f
 your repo-root `requirements.txt`:
 
 ```
--r path/to/xtendoo_mcp_server/requirements.txt
+-r path/to/mcp_server/requirements.txt
 ```
 
 or copy its lines there verbatim.
@@ -177,7 +177,7 @@ anything are removed.
 
 The OAuth front door is **enabled by default** whenever MCP is enabled. To accept API
 keys only, turn off **Allow OAuth 2.1 login** in **Settings > MCP Server** (system
-parameter `xtendoo_mcp_server.enable_oauth`).
+parameter `mcp_server.enable_oauth`).
 
 ### Option 2: API key (Bearer token)
 
@@ -527,7 +527,7 @@ log (`mcp.log`).
 1. Download the module
 2. Copy to Odoo addons
    ```bash
-   cp -r xtendoo_mcp_server /path/to/odoo/addons/
+   cp -r mcp_server /path/to/odoo/addons/
    ```
 3. Update the module list:
    - Navigate to Apps in Odoo
@@ -587,7 +587,7 @@ Internal User), so portal accounts can never connect to MCP.
 > **Upgrading:** users with existing MCP activity (an **MCP only** API key, an OAuth
 > token, or an audit-log entry recording a completed MCP operation) are added to the
 > group automatically; assign it manually for anyone else. The audit-log signal only
-> reaches users active within `xtendoo_mcp_server.log_retention_days` (default 30) — the daily
+> reaches users active within `mcp_server.log_retention_days` (default 30) — the daily
 > cleanup cron deletes older entries — so users connecting with a global or `rpc`-scope
 > API key on a longer cadence will need the group assigned manually.
 
@@ -726,9 +726,9 @@ MCP-specific XML-RPC endpoints with enhanced access control (used by the
 # Run all MCP module tests
 /path/to/odoo-bin \
   -d your_database \
-  -u xtendoo_mcp_server \
+  -u mcp_server \
   --test-enable \
-  --test-tags /xtendoo_mcp_server \
+  --test-tags /mcp_server \
   --stop-after-init
 ```
 
@@ -748,7 +748,7 @@ MCP-specific XML-RPC endpoints with enhanced access control (used by the
 <summary>OAuth Login Fails or Keeps Re-Prompting</summary>
 
 - Confirm MCP is enabled (Settings > MCP Server) **and** the **Allow OAuth 2.1 login**
-  switch is on (system parameter `xtendoo_mcp_server.enable_oauth`)
+  switch is on (system parameter `mcp_server.enable_oauth`)
 - The authorize/consent screen requires a normal Odoo login for the connecting user —
   check the user is active and can log into the web client
 - Check whether the token was revoked or its client deactivated under **Settings >
