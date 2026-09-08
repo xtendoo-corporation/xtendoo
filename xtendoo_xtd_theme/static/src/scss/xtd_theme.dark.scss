@@ -69,6 +69,22 @@ body {
     color: inherit !important;
 }
 
+.o_web_client .text-success:is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
+    color: #75d69c !important;
+}
+
+.o_web_client .text-warning:is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
+    color: #ffd166 !important;
+}
+
+.o_web_client .text-danger:is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
+    color: #ff8585 !important;
+}
+
+.o_web_client .text-muted:is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
+    color: #a7adb8 !important;
+}
+
 .o_main_navbar,
 .o_control_panel,
 .o_search_panel,

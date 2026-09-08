@@ -216,6 +216,23 @@ class TestXtdTheme(TransactionCase):
         self.assertIn('.o_web_client :is(.btn-primary,.btn-danger,.btn-success,.btn-warning,.btn-info,.o_form_button_save,.o_list_button_add,.o_control_panel .o-kanban-button-new)', content)
         self.assertIn('color:inherit!important', content)
 
+    def test_xtd_theme_preserves_presence_status_icon_colors(self):
+        theme_scss = (
+            self.module_path / "static" / "src" / "scss" / "xtd_theme.scss"
+        ).read_text(encoding="utf-8")
+        dark_theme_scss = (
+            self.module_path / "static" / "src" / "scss" / "xtd_theme.dark.scss"
+        ).read_text(encoding="utf-8")
+
+        for status_class in (
+            "text-success",
+            "text-warning",
+            "text-danger",
+            "text-muted",
+        ):
+            self.assertIn(f".o_web_client .{status_class}", theme_scss)
+            self.assertIn(f".o_web_client .{status_class}", dark_theme_scss)
+
     def test_xtd_theme_dark_icons_keep_readable_contrast(self):
         dark_theme_scss = self.module_path / "static" / "src" / "scss" / "xtd_theme.dark.scss"
         content = dark_theme_scss.read_text(encoding="utf-8")
