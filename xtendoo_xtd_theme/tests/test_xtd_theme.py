@@ -95,6 +95,17 @@ class TestXtdTheme(TransactionCase):
             sidebar_scss,
         )
 
+    def test_xtd_sidebar_stays_above_action_controls(self):
+        sidebar_scss = (
+            self.module_path
+            / "static"
+            / "src"
+            / "scss"
+            / "xtd_sidebar_toggle.scss"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("z-index: 1200 !important;", sidebar_scss)
+
     def test_xtd_login_layout_styles_are_scoped_to_login_page(self):
         login_scss = (
             self.module_path

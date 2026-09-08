@@ -14,7 +14,7 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px));
     height: calc(100vh - #{$xtd-sidebar-menu-top-offset}) !important;
     transform: translateX(0) !important;
     transition: width 0.3s ease !important;
-    z-index: 1000 !important;
+    z-index: 1200 !important;
     border-right: 1px solid #e9ecef;
     background-color: #ffffff !important;
     visibility: visible !important;
