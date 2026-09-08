@@ -14,9 +14,12 @@ patch(NavBar.prototype, {
     setup() {
         super.setup(...arguments);
         this.xtdState = useState({
-            // Siempre expandido en escritorio: debe verse permanentemente para
-            // poder cambiar de aplicación sin necesidad de hacer hover.
-            isSidebarVisible: true,
+            // Colapsado (solo iconos) por defecto; se expande al pasar el
+            // cursor por encima (ver xtd_sidebar_toggle.scss, :hover sobre
+            // body.xtd-sidebar-hidden .xtd-sidebar-panel). Que colapse no
+            // significa que desaparezca: eso lo garantiza _closeAppMenuSidebar
+            // más abajo, que es un estado del core totalmente independiente.
+            isSidebarVisible: false,
         });
         this.xtdSidebarState = useState({
             isReordering: false,
@@ -28,9 +31,9 @@ patch(NavBar.prototype, {
         this.state.isAppMenuSidebarOpened = !this.ui.isSmall;
         this.state.isAllAppsMenuOpened = true;
         onMounted(() => {
-            // En móvil el sidebar es un overlay que debe arrancar cerrado; en
-            // escritorio arranca siempre expandido (nunca colapsado a iconos).
-            document.body.classList.toggle(XTD_SIDEBAR_HIDDEN_CLASS, this.ui.isSmall);
+            // Colapsado por defecto tanto en escritorio (icon-rail, se
+            // expande con :hover) como en móvil (overlay cerrado).
+            document.body.classList.add(XTD_SIDEBAR_HIDDEN_CLASS);
         });
 
         useBus(this.env.bus, "XTD_SIDEBAR:TOGGLE", () => {
