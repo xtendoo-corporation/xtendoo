@@ -1,6 +1,9 @@
 $xtd-sidebar-width: 280px;
 $xtd-sidebar-collapsed-width: 76px;
-$xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px) + 14px);
+// --o-navbar-height la fija xtd_navbar_sidebar.esm.js con un ResizeObserver
+// sobre la navbar real (no viene definida por Odoo en esta versión); 50px es
+// solo el valor de reserva por si el JS aún no ha corrido.
+$xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px));
 
 .xtd-sidebar-panel {
     width: $xtd-sidebar-width !important;

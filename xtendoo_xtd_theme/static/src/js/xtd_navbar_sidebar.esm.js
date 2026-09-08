@@ -5,7 +5,7 @@ import { AppsMenu } from "@web_responsive/components/apps_menu/apps_menu.esm";
 import { patch } from "@web/core/utils/patch";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { user } from "@web/core/user";
-import { onMounted, useState } from "@odoo/owl";
+import { onMounted, onWillUnmount, useState } from "@odoo/owl";
 
 const XTD_DASHBOARD_MENU_XMLID = "xtendoo_xtd_theme.menu_xtd_dashboard";
 const XTD_SIDEBAR_HIDDEN_CLASS = "xtd-sidebar-hidden";
@@ -34,6 +34,29 @@ patch(NavBar.prototype, {
             // Colapsado por defecto tanto en escritorio (icon-rail, se
             // expande con :hover) como en móvil (overlay cerrado).
             document.body.classList.add(XTD_SIDEBAR_HIDDEN_CLASS);
+
+            // Odoo no define --o-navbar-height en esta versión. El sidebar
+            // (xtd_sidebar_toggle.scss) la usa para saber dónde empezar
+            // debajo de la navbar; sin ella caía siempre a un valor de
+            // reserva que no coincidía con la altura real (dejaba un hueco
+            // visible, sobre todo en apps con doble fila de menú tipo
+            // Ventas). La medimos de verdad y la mantenemos al día con un
+            // ResizeObserver, para que valga tanto con navbar de una fila
+            // como de dos.
+            const navbarEl = document.querySelector(".o_main_navbar");
+            if (navbarEl) {
+                this._xtdNavbarResizeObserver = new ResizeObserver(() => {
+                    document.documentElement.style.setProperty(
+                        "--o-navbar-height",
+                        `${navbarEl.offsetHeight}px`
+                    );
+                });
+                this._xtdNavbarResizeObserver.observe(navbarEl);
+            }
+        });
+
+        onWillUnmount(() => {
+            this._xtdNavbarResizeObserver?.disconnect();
         });
 
         useBus(this.env.bus, "XTD_SIDEBAR:TOGGLE", () => {
