@@ -50,6 +50,13 @@ patch(NavBar.prototype, {
 
     _closeAppMenuSidebar() {
         super._closeAppMenuSidebar(...arguments);
+        // El core cierra isAppMenuSidebarOpened al seleccionar cualquier menú
+        // (_onMenuClicked) o desde nuestro propio template al cambiar de app.
+        // En escritorio el sidebar es persistente y nunca debe cerrarse: lo
+        // reabrimos inmediatamente pase lo que pase por aquí.
+        if (!this.ui.isSmall) {
+            this.state.isAppMenuSidebarOpened = true;
+        }
         this._syncXtdMobileSidebarVisibility();
     },
 
