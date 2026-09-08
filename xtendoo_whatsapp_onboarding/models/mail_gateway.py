@@ -3,6 +3,7 @@
 
 import logging
 import uuid
+from contextlib import contextmanager
 
 import requests
 
@@ -285,7 +286,9 @@ class MailGateway(models.Model):
         config = self._whatsapp_onboarding_get_meta_config()
         try:
             phone_info = self._whatsapp_onboarding_fetch_phone_info(
-                self.whatsapp_from_phone, self.token, config
+                self.whatsapp_from_phone,
+                config["system_user_token"] or self.token,
+                config,
             )
             self.write(
                 {
@@ -311,7 +314,12 @@ class MailGateway(models.Model):
         if self.whatsapp_onboarding_state != "connected":
             return True
         waba_id = self.whatsapp_account_id
-        token = self.token
+        token = False
+        try:
+            token = self._whatsapp_onboarding_get_meta_config()["system_user_token"]
+        except UserError:
+            pass
+        token = token or self.token
         if waba_id and token:
             try:
                 self._whatsapp_onboarding_unsubscribe_app(waba_id, token)
@@ -338,6 +346,14 @@ class MailGateway(models.Model):
         _logger.info("[WhatsApp Onboarding] Desconectado (gateway=%s)", self.id)
         return True
 
+    def button_import_whatsapp_template(self):
+        # Prefer Xtendoo's central, non-expiring token (if configured) over
+        # the client's own stored token when syncing templates. See
+        # _whatsapp_onboarding_effective_token().
+        self.ensure_one()
+        with self._whatsapp_onboarding_effective_token():
+            return super().button_import_whatsapp_template()
+
     # ------------------------------------------------------------------
     # Configuration
     # ------------------------------------------------------------------
@@ -349,6 +365,13 @@ class MailGateway(models.Model):
         graph_version = (
             icp.get_param("xtendoo_whatsapp_onboarding.meta_graph_version")
             or DEFAULT_GRAPH_VERSION
+        )
+        # Optional: Xtendoo's own long-lived System User token. When set, it
+        # is preferred over the per-client token obtained during Embedded
+        # Signup (which may expire, e.g. the 60-day Configuration template)
+        # for every Graph API call made *after* onboarding completes.
+        system_user_token = icp.get_param(
+            "xtendoo_whatsapp_onboarding.meta_system_user_token"
         )
         if not app_id or not app_secret or not config_id:
             raise UserError(
@@ -363,6 +386,7 @@ class MailGateway(models.Model):
             "app_secret": app_secret,
             "config_id": config_id,
             "graph_version": graph_version,
+            "system_user_token": system_user_token or False,
         }
 
     # ------------------------------------------------------------------
@@ -534,6 +558,43 @@ class MailGateway(models.Model):
         if isinstance(err, UserError):
             return str(err)
         return str(err) or type(err).__name__
+
+    @contextmanager
+    def _whatsapp_onboarding_effective_token(self):
+        """Make `self.token` resolve to Xtendoo's central, non-expiring
+        System User token (if configured) for the duration of this context,
+        WITHOUT ever writing it to the database.
+
+        `mail.gateway.token` has a `unique(token)` SQL constraint (one row
+        per client), so the same central token can never be persisted into
+        more than one gateway's `token` column. Instead, the value is
+        poked directly into the ORM cache right before delegating to the
+        OCA send/template-import methods, which read `gateway.token` for
+        the Graph API Authorization header, and restored immediately
+        afterwards (success or failure) so nothing else in this request
+        ever observes the substituted value. Any write to `token` still
+        pending flush (e.g. the client's own token, just saved by
+        action_save_meta_credentials) is flushed to the DB *first*, so it
+        is never silently discarded by the temporary cache override. When
+        no central token is configured, this is a no-op and the client's
+        own stored token (from Embedded Signup) is used, same as before.
+        """
+        self.ensure_one()
+        system_user_token = False
+        if self.gateway_type == "whatsapp":
+            system_user_token = self.env["ir.config_parameter"].sudo().get_param(
+                "xtendoo_whatsapp_onboarding.meta_system_user_token"
+            )
+        if not system_user_token:
+            yield
+            return
+        self.flush_recordset(["token"])
+        original_token = self.token
+        self.env.cache.set(self, self._fields["token"], system_user_token)
+        try:
+            yield
+        finally:
+            self.env.cache.set(self, self._fields["token"], original_token)
 
     def _whatsapp_onboarding_notification(self, message, warning=False):
         return {

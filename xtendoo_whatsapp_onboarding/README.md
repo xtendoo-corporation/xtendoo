@@ -83,9 +83,36 @@ se registra en logs y el campo se muestra como contraseña en la UI.
 ID de la configuración de "Facebook Login for Business" usada para el
 Embedded Signup (`xtendoo_whatsapp_onboarding.meta_config_id`). Se obtiene
 en el Meta App Dashboard → Facebook Login for Business → Configurations.
-Vuestra app ya tiene una plantilla creada ("...con token de caducidad de 60
-días"): **verificar antes de producción** si genera un token que caduca a
-los 60 días o no (ver sección 18, limitación conocida).
+La plantilla "...con token de caducidad de 60 días" **confirma explícitamente
+en su propio diálogo de creación** ("El identificador caduca en 60 días")
+que el `access_token` obtenido en el intercambio del `code` de ESA
+Configuration caduca a los 60 días. Ver sección 8bis para cómo se evita que
+esto obligue al cliente a reconectar.
+
+### 8bis. Token central de Xtendoo (recomendado, evita reconexiones)
+`xtendoo_whatsapp_onboarding.meta_system_user_token` — **opcional**. Un
+token de un System User de la propia Business Manager de Xtendoo (Business
+Settings → Users → System Users → Generate token), generado **sin** marcar
+la opción de caducidad de 60 días (por defecto un System User token no
+caduca).
+
+Si se rellena, el módulo lo usa **en vez de** el token del cliente (el de
+60 días) para todas las llamadas a Meta que ocurren *después* del alta:
+envío de mensajes (`mail_gateway_whatsapp._send`, sobrescrito por este
+módulo) y sincronización de plantillas (`button_import_whatsapp_template`,
+también sobrescrito). El token de 60 días obtenido en el `code exchange`
+solo se usa de forma transitoria durante el propio alta (suscribir el
+webhook, leer el número) y sigue siendo lo que se guarda en el campo
+`token` del `mail.gateway` de cada cliente — nunca se sustituye ese campo
+por el token central, porque `mail.gateway.token` tiene una restricción de
+base de datos que exige que sea **único por registro**; guardar el mismo
+valor en dos clientes distintos rompería esa restricción en el segundo. La
+sustitución se hace en memoria justo antes de cada llamada a Meta (nunca se
+escribe en la base de datos), así que la unicidad del campo no se ve
+afectada aunque haya muchos clientes conectados con el mismo token central.
+
+Si se deja vacío, cada cliente sigue usando su propio token de 60 días tal
+cual (comportamiento sin este parámetro).
 
 ### 9. Redirect URLs / Dominios
 El dominio desde el que se abre el popup de Odoo debe estar dado de alta en
@@ -103,10 +130,12 @@ webhook aunque el signup se complete correctamente.
 
 ### 11. Permisos
 `whatsapp_business_management`, `whatsapp_business_messaging` en la
-Configuration del Embedded Signup. **Pendiente de verificar manualmente**:
-que ambos permisos estén en *Advanced Access* (no solo *Standard*) en el
-Dashboard de Meta — es un requisito de Meta para operar sobre WABAs de
-terceros como Tech Provider, y no es derivable desde el código.
+Configuration del Embedded Signup. **Verificado en el Dashboard real de la
+app**: la sección "Revisión de la aplicación y verificación de acceso"
+confirma "Ahora puedes usar esta aplicación en producción. No es necesario
+que añadas manualmente a los usuarios a la aplicación para pruebas" — es
+decir, los permisos ya están en el nivel de acceso necesario para clientes
+externos reales, no solo para cuentas de prueba.
 
 ## 12. Flujo de onboarding
 
@@ -168,18 +197,16 @@ al cliente). De `GET /{phone_number_id}`: `display_phone_number` y
 
 ## 17. Limitaciones actuales
 
-- **Duración real del token no verificada empíricamente.** La
-  Configuration de Meta usada actualmente se llama "...con token de
-  caducidad de 60 días". No hay evidencia real (ver
-  `FASE0_EVIDENCIAS_META.md` en la raíz del proyecto, aún sin rellenar) de
-  si el token BISU final caduca a los 60 días o no. Hasta confirmarlo con
-  `GET /debug_token`, este módulo **no implementa renovación automática de
-  token** — si caduca, el estado pasará a `error` en el primer `Resync` o
-  envío fallido y habrá que repetir el Embedded Signup.
-- **Advanced Access no verificado.** No se puede confirmar desde código si
-  `whatsapp_business_management`/`whatsapp_business_messaging` están en
-  Advanced Access en el Dashboard de Meta; es un requisito de Meta para
-  Tech Providers que opera sobre WABAs de clientes.
+- **Duración del token de 60 días: confirmada por el propio diálogo de Meta**
+  al crear la Configuration ("El identificador caduca en 60 días"). Se
+  soluciona configurando `xtendoo_whatsapp_onboarding.meta_system_user_token`
+  (ver sección 8bis): con ese parámetro relleno, el token de 60 días del
+  cliente deja de usarse para el envío/plantillas (solo se usa de forma
+  transitoria durante el alta), así que ningún cliente necesita reconectar.
+  Si se deja vacío, sigue aplicando la limitación: el estado pasará a
+  `error` en el primer `Resync` o envío fallido tras los 60 días y habrá
+  que repetir el Embedded Signup para ese cliente.
+- **Advanced Access: verificado en el Dashboard real** — ver sección 11.
 - La verificación de que el `access_token` obtenido realmente tiene permiso
   sobre el `waba_id`/`phone_number_id` indicados por el frontend se delega
   por completo en las respuestas de error de la propia Graph API (si no
@@ -190,9 +217,13 @@ al cliente). De `GET /{phone_number_id}`: `display_phone_number` y
 
 ## 18. Qué queda pendiente para la siguiente fase
 
-- Confirmar duración real del token y, si caduca, implementar el mecanismo
-  de renovación correcto (Fase 4 del plan original).
-- Verificar Advanced Access y Business Verification de la app de Xtendoo.
+- Generar el System User token de Xtendoo (sin caducidad de 60 días) y
+  rellenar `xtendoo_whatsapp_onboarding.meta_system_user_token` para dejar
+  de depender del token de 60 días por cliente.
+- Confirmar Business Verification / límites de incorporación de Tech
+  Provider de la app de Xtendoo (sección "Verificación de la empresa" del
+  Dashboard menciona límites — pendiente de revisar el enlace "Más
+  información sobre los límites de incorporación").
 - Mensajería, conversaciones, plantillas, campañas: fuera de alcance,
   ya cubiertas por `mail_gateway_whatsapp` y módulos relacionados.
 - Posible menú/asistente de configuración más guiado para el cliente final.

@@ -18,6 +18,7 @@ from odoo.tests import TransactionCase, tagged
 
 REQUESTS_TARGET = "odoo.addons.xtendoo_whatsapp_onboarding.models.mail_gateway.requests"
 LOGGER_NAME = "odoo.addons.xtendoo_whatsapp_onboarding.models.mail_gateway"
+TEMPLATE_REQUESTS_TARGET = "odoo.addons.mail_gateway_whatsapp.models.mail_gateway.requests"
 
 
 def _mock_response(json_data, status_code=200, raise_error=False):
@@ -359,7 +360,86 @@ class TestWhatsappOnboarding(TransactionCase):
         self.assertEqual(count, 1)
         self.assertEqual(result_1["res_id"], result_2["res_id"])
 
-        # A company that already has one (setUpClass's self.gateway) must
-        # get that same record back, not a second one.
+        # A company that already has one (setUpClass's self.gateway, or any
+        # other pre-existing whatsapp gateway for the default company) must
+        # never get a second one created.
+        before_count = Gateway.search_count(
+            [
+                ("gateway_type", "=", "whatsapp"),
+                ("company_id", "=", self.env.company.id),
+            ]
+        )
         existing_result = Gateway.action_get_or_create_whatsapp_gateway()
-        self.assertEqual(existing_result["res_id"], self.gateway.id)
+        after_count = Gateway.search_count(
+            [
+                ("gateway_type", "=", "whatsapp"),
+                ("company_id", "=", self.env.company.id),
+            ]
+        )
+        self.assertEqual(after_count, before_count)
+        self.assertIn(
+            existing_result["res_id"],
+            Gateway.search(
+                [
+                    ("gateway_type", "=", "whatsapp"),
+                    ("company_id", "=", self.env.company.id),
+                ]
+            ).ids,
+        )
+
+    # 17. Central Xtendoo System User token preferred over the client's own -
+    def _connect_gateway(self, gateway=None, token="TOKEN-CLIENT-1"):
+        gateway = gateway or self.gateway
+        session = self._start_signup(gateway)
+        self._patch_graph(exchange=_mock_response({"access_token": token}))
+        gateway.action_save_meta_credentials(
+            session, "auth-code", waba_id="waba-central-test", phone_number_id="phone-1"
+        )
+        return gateway
+
+    def test_17_central_token_used_for_template_import_when_configured(self):
+        self._connect_gateway()
+        self.env["ir.config_parameter"].sudo().set_param(
+            "xtendoo_whatsapp_onboarding.meta_system_user_token", "CENTRAL-TOKEN-XYZ"
+        )
+        with patch(TEMPLATE_REQUESTS_TARGET) as mock_requests:
+            mock_requests.get.return_value = _mock_response({"data": []})
+            self.gateway.button_import_whatsapp_template()
+            used_headers = mock_requests.get.call_args.kwargs["headers"]
+            self.assertEqual(used_headers["Authorization"], "Bearer CENTRAL-TOKEN-XYZ")
+
+        # The per-client token stored in the DB must be untouched: the
+        # unique(token) SQL constraint means the shared central token can
+        # never be written into more than one gateway's `token` column.
+        self.assertEqual(self.gateway.token, "TOKEN-CLIENT-1")
+
+    def test_17b_client_token_used_when_no_central_token_configured(self):
+        self._connect_gateway()
+        self.env["ir.config_parameter"].sudo().set_param(
+            "xtendoo_whatsapp_onboarding.meta_system_user_token", ""
+        )
+        with patch(TEMPLATE_REQUESTS_TARGET) as mock_requests:
+            mock_requests.get.return_value = _mock_response({"data": []})
+            self.gateway.button_import_whatsapp_template()
+            used_headers = mock_requests.get.call_args.kwargs["headers"]
+            self.assertEqual(used_headers["Authorization"], "Bearer TOKEN-CLIENT-1")
+
+    def test_17c_central_token_does_not_break_uniqueness_across_clients(self):
+        # Two different clients connected while a central token is
+        # configured must still end up with two distinct, valid `token`
+        # values in the DB (each client's own), never the same shared one.
+        self.env["ir.config_parameter"].sudo().set_param(
+            "xtendoo_whatsapp_onboarding.meta_system_user_token", "CENTRAL-TOKEN-XYZ"
+        )
+        self._connect_gateway(token="TOKEN-CLIENT-1")
+        other_gateway = self.env["mail.gateway"].create(
+            {"name": "Other Client - WhatsApp", "gateway_type": "whatsapp"}
+        )
+        session = self._start_signup(other_gateway)
+        self._patch_graph(exchange=_mock_response({"access_token": "TOKEN-CLIENT-2"}))
+        other_gateway.action_save_meta_credentials(
+            session, "auth-code", waba_id="waba-other", phone_number_id="phone-other"
+        )
+        self.assertEqual(self.gateway.token, "TOKEN-CLIENT-1")
+        self.assertEqual(other_gateway.token, "TOKEN-CLIENT-2")
+        self.assertNotEqual(self.gateway.token, other_gateway.token)

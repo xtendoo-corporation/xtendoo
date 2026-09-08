@@ -31,6 +31,18 @@ class ResConfigSettings(models.TransientModel):
         default="21.0",
         help="Meta Graph API version used for all onboarding requests.",
     )
+    xtendoo_whatsapp_meta_system_user_token = fields.Char(
+        string="Xtendoo System User Token (no expiry)",
+        help=(
+            "Optional. A long-lived System User access token from Xtendoo's "
+            "own Meta Business Manager (Business Settings > Users > System "
+            "Users), generated WITHOUT the '60 days' expiry option. When "
+            "set, it is used instead of each client's own Embedded Signup "
+            "token for sending messages and importing templates, so clients "
+            "never need to reconnect when their per-signup token expires. "
+            "Leave empty to keep using each client's own token as-is."
+        ),
+    )
 
     @api.model
     def get_values(self):
@@ -48,6 +60,9 @@ class ResConfigSettings(models.TransientModel):
             ),
             xtendoo_whatsapp_meta_graph_version=icp.get_param(
                 "xtendoo_whatsapp_onboarding.meta_graph_version", default="21.0"
+            ),
+            xtendoo_whatsapp_meta_system_user_token=icp.get_param(
+                "xtendoo_whatsapp_onboarding.meta_system_user_token", default=""
             ),
         )
         return res
@@ -70,4 +85,8 @@ class ResConfigSettings(models.TransientModel):
         icp.set_param(
             "xtendoo_whatsapp_onboarding.meta_graph_version",
             self.xtendoo_whatsapp_meta_graph_version or "21.0",
+        )
+        icp.set_param(
+            "xtendoo_whatsapp_onboarding.meta_system_user_token",
+            self.xtendoo_whatsapp_meta_system_user_token or "",
         )

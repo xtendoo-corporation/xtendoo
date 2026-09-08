@@ -41,6 +41,16 @@
                             Meta Graph API version used for all onboarding requests.
                         </div>
                     </setting>
+                    <setting id="xtendoo_whatsapp_meta_system_user_token_setting">
+                        <field name="xtendoo_whatsapp_meta_system_user_token" password="True" />
+                        <label for="xtendoo_whatsapp_meta_system_user_token" string="Xtendoo System User Token (no expiry)" />
+                        <div class="text-muted">
+                            Optional. A long-lived System User token from Xtendoo's own Business
+                            Manager, generated WITHOUT the 60-day expiry option. When set, it is
+                            used instead of each client's own Embedded Signup token, so clients
+                            never need to reconnect when their per-signup token expires.
+                        </div>
+                    </setting>
                 </block>
             </xpath>
         </field>
