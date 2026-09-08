@@ -5,7 +5,7 @@ body.xtd_login_body {
     overflow: hidden !important;
 }
 
-#wrapwrap {
+body.xtd_login_body #wrapwrap {
     background-color: #FDF5ED !important;
     display: flex !important;
     align-items: center !important;
@@ -14,7 +14,7 @@ body.xtd_login_body {
     width: 100% !important;
 }
 
-main {
+body.xtd_login_body main {
     flex: 1 !important;
     display: flex !important;
     align-items: center !important;

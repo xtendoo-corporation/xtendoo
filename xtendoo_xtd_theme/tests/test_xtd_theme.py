@@ -95,6 +95,20 @@ class TestXtdTheme(TransactionCase):
             sidebar_scss,
         )
 
+    def test_xtd_login_layout_styles_are_scoped_to_login_page(self):
+        login_scss = (
+            self.module_path
+            / "static"
+            / "src"
+            / "scss"
+            / "xtd_login.scss"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("body.xtd_login_body #wrapwrap", login_scss)
+        self.assertIn("body.xtd_login_body main", login_scss)
+        self.assertNotIn("\n#wrapwrap {", login_scss)
+        self.assertNotIn("\nmain {", login_scss)
+
     def test_xtd_theme_dark_assets_are_declared(self):
         manifest = get_manifest("xtendoo_xtd_theme")
         assets = manifest["assets"]["web.assets_web_dark"]
