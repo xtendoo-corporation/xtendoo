@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.xtendoo.whatsapp.onboarding</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='companies']" position="after">
+                <block
+                    title="WhatsApp Embedded Signup (Xtendoo)"
+                    name="xtendoo_whatsapp_onboarding_block"
+                    groups="base.group_system"
+                >
+                    <setting id="xtendoo_whatsapp_meta_app_id_setting">
+                        <field name="xtendoo_whatsapp_meta_app_id" placeholder="1234567890123456" />
+                        <label for="xtendoo_whatsapp_meta_app_id" string="Meta App ID" />
+                        <div class="text-muted">
+                            Xtendoo's Meta App ID. Configured once, shared by all clients.
+                        </div>
+                    </setting>
+                    <setting id="xtendoo_whatsapp_meta_app_secret_setting">
+                        <field name="xtendoo_whatsapp_meta_app_secret" password="True" />
+                        <label for="xtendoo_whatsapp_meta_app_secret" string="Meta App Secret" />
+                        <div class="text-muted">
+                            Used server-side only to exchange the Embedded Signup
+                            authorization code for a token. Never exposed to the browser.
+                        </div>
+                    </setting>
+                    <setting id="xtendoo_whatsapp_meta_config_id_setting">
+                        <field name="xtendoo_whatsapp_meta_config_id" />
+                        <label for="xtendoo_whatsapp_meta_config_id" string="Embedded Signup Configuration ID" />
+                        <div class="text-muted">
+                            Configuration ID of the "Facebook Login for Business" configuration
+                            used for WhatsApp Embedded Signup.
+                        </div>
+                    </setting>
+                    <setting id="xtendoo_whatsapp_meta_graph_version_setting">
+                        <field name="xtendoo_whatsapp_meta_graph_version" placeholder="21.0" />
+                        <label for="xtendoo_whatsapp_meta_graph_version" string="Graph API Version" />
+                        <div class="text-muted">
+                            Meta Graph API version used for all onboarding requests.
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

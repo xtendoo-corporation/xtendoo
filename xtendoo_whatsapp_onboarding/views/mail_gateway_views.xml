@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="mail_gateway_view_form" model="ir.ui.view">
+        <field name="name">mail.gateway.form.inherit.xtendoo.whatsapp.onboarding</field>
+        <field name="model">mail.gateway</field>
+        <field name="inherit_id" ref="mail_gateway.mail_gateway_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field
+                    name="whatsapp_onboarding_state"
+                    widget="statusbar"
+                    statusbar_visible="draft,connecting,connected"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+                <button
+                    type="object"
+                    name="action_open_embedded_signup"
+                    string="Connect WhatsApp"
+                    class="btn-primary"
+                    icon="fa-whatsapp"
+                    invisible="gateway_type != 'whatsapp' or whatsapp_onboarding_state in ('connecting', 'connected')"
+                />
+                <button
+                    type="object"
+                    name="action_resync"
+                    string="Resync"
+                    icon="fa-refresh"
+                    invisible="gateway_type != 'whatsapp' or whatsapp_onboarding_state != 'connected'"
+                />
+                <button
+                    type="object"
+                    name="action_disconnect"
+                    string="Disconnect"
+                    icon="fa-chain-broken"
+                    confirm="Are you sure you want to disconnect this WhatsApp number? It will stop sending and receiving messages from Odoo."
+                    invisible="gateway_type != 'whatsapp' or whatsapp_onboarding_state != 'connected'"
+                />
+            </xpath>
+            <xpath expr="//field[@name='token']" position="attributes">
+                <attribute name="groups">base.group_system</attribute>
+            </xpath>
+            <field name="webhook_user_id" position="after">
+                <field
+                    name="whatsapp_account_id"
+                    string="WABA ID"
+                    readonly="1"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+                <field
+                    name="whatsapp_from_phone"
+                    string="Phone Number ID"
+                    readonly="1"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+                <field
+                    name="whatsapp_onboarding_phone_display"
+                    string="WhatsApp Number"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+                <field
+                    name="whatsapp_onboarding_business_id"
+                    string="Business Portfolio ID"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+                <field name="whatsapp_security_key" invisible="gateway_type != 'whatsapp'" />
+                <field name="whatsapp_version" invisible="gateway_type != 'whatsapp'" />
+                <field
+                    name="whatsapp_onboarding_connected_date"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+                <field
+                    name="whatsapp_onboarding_last_sync_date"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+                <field
+                    name="whatsapp_onboarding_last_error"
+                    invisible="gateway_type != 'whatsapp' or whatsapp_onboarding_state != 'error'"
+                />
+            </field>
+        </field>
+    </record>
+</odoo>
