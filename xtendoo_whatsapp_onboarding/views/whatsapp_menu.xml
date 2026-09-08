@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Single entry point: no list, no "create a gateway" form to fill in.
+         Clicking the menu finds (or silently creates) the current
+         company's WhatsApp gateway and opens it directly on the
+         "Connect WhatsApp" screen. Technical admins who need to browse
+         gateways of every type still have the generic "Gateway" menu
+         from the mail_gateway module. -->
+    <record id="mail_gateway_whatsapp_onboarding_server_action" model="ir.actions.server">
+        <field name="name">WhatsApp</field>
+        <field name="model_id" ref="xtendoo_mail_gateway.model_mail_gateway" />
+        <field name="state">code</field>
+        <field name="code">action = model.action_get_or_create_whatsapp_gateway()</field>
+    </record>
+    <record id="mail_gateway_whatsapp_onboarding_menu" model="ir.ui.menu">
+        <field name="name">WhatsApp</field>
+        <field name="parent_id" ref="base.menu_email" />
+        <field name="action" ref="mail_gateway_whatsapp_onboarding_server_action" />
+        <field name="sequence" eval="17" />
+    </record>
+</odoo>
