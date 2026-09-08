@@ -229,6 +229,8 @@ class TestXtdTheme(TransactionCase):
             "text-warning",
             "text-danger",
             "text-muted",
+            "o-yellow",
+            "text-700",
         ):
             self.assertIn(f".o_web_client .{status_class}", theme_scss)
             self.assertIn(f".o_web_client .{status_class}", dark_theme_scss)
