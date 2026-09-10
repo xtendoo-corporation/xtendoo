@@ -3,22 +3,24 @@
     <record id="view_account_payment_form_xtd_effects" model="ir.ui.view">
         <field name="name">account.payment.form.xtd.effects</field>
         <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account_payment_batch_oca.view_account_payment_form" />
+        <field name="inherit_id" ref="account.view_account_payment_form" />
         <field name="arch" type="xml">
-            <field name="payment_reference" position="attributes">
-                <attribute name="invisible">not xtd_manage_effects and not payment_reference</attribute>
-                <attribute name="required">xtd_manage_effects and xtd_effect_reference_required</attribute>
-            </field>
             <group name="group2" position="inside">
                 <field name="xtd_manage_effects" invisible="1" />
                 <field name="xtd_effect_reference_required" invisible="1" />
                 <field name="xtd_effect_due_date_required" invisible="1" />
                 <field name="xtd_effect_status" invisible="1" />
                 <field
+                    name="payment_reference"
+                    invisible="not xtd_manage_effects and not payment_reference"
+                    required="xtd_manage_effects and xtd_effect_reference_required"
+                />
+                <field
                     name="xtd_effect_due_date"
                     invisible="not xtd_manage_effects"
                     required="xtd_manage_effects and xtd_effect_due_date_required"
                 />
+                <field name="xtd_remesa_id" invisible="not xtd_remesa_id" readonly="1" />
             </group>
         </field>
     </record>
@@ -36,7 +38,7 @@
                 <field name="invoice_ids" widget="many2many_tags" optional="show" />
                 <field name="amount" sum="Total" />
                 <field name="currency_id" column_invisible="1" />
-                <field name="payment_lot_id" optional="show" string="Lote" />
+                <field name="xtd_remesa_id" optional="show" string="Remesa" />
                 <field name="state" widget="badge" />
                 <field name="xtd_effect_status" widget="badge" optional="show" />
                 <field name="is_matched" optional="show" string="Conciliado con banco" />
@@ -53,7 +55,7 @@
                 <field name="payment_reference" />
                 <field name="payment_method_line_id" />
                 <field name="xtd_effect_due_date" />
-                <field name="payment_lot_id" />
+                <field name="xtd_remesa_id" />
                 <separator />
                 <filter
                     name="xtd_collection_effects"
@@ -68,12 +70,12 @@
                 <filter
                     name="xtd_portfolio"
                     string="En cartera"
-                    domain="[('payment_lot_id', '=', False), ('is_matched', '=', False), ('state', 'not in', ('draft', 'canceled', 'rejected'))]"
+                    domain="[('xtd_remesa_id', '=', False), ('is_matched', '=', False), ('state', 'not in', ('draft', 'canceled', 'rejected'))]"
                 />
                 <filter
                     name="xtd_deposited"
                     string="Depositados"
-                    domain="[('payment_lot_id', '!=', False), ('is_matched', '=', False), ('state', 'not in', ('draft', 'canceled', 'rejected'))]"
+                    domain="[('xtd_remesa_id', '!=', False), ('is_matched', '=', False), ('state', 'not in', ('draft', 'canceled', 'rejected'))]"
                 />
                 <filter
                     name="xtd_collected"
@@ -116,7 +118,7 @@
                     <filter name="xtd_group_method" string="Método de pago" context="{'group_by': 'payment_method_line_id'}" />
                     <filter name="xtd_group_due_date" string="Vencimiento" context="{'group_by': 'xtd_effect_due_date'}" />
                     <filter name="xtd_group_journal" string="Diario" context="{'group_by': 'journal_id'}" />
-                    <filter name="xtd_group_lot" string="Lote" context="{'group_by': 'payment_lot_id'}" />
+                    <filter name="xtd_group_remesa" string="Remesa" context="{'group_by': 'xtd_remesa_id'}" />
                     <filter name="xtd_group_date" string="Fecha recepción" context="{'group_by': 'date'}" />
                     <filter name="xtd_group_state" string="Estado del pago" context="{'group_by': 'state'}" />
                     <filter name="xtd_group_company" string="Compañía" context="{'group_by': 'company_id'}" groups="base.group_multi_company" />
@@ -138,14 +140,14 @@
                 Registre primero los cheques, pagarés u otros efectos desde la factura o desde pagos existentes.
             </p>
             <p>
-                Esta vista sirve para consultar y seleccionar efectos ya registrados para agruparlos en un lote de depósito o remesa.
+                Esta vista sirve para consultar y seleccionar efectos ya registrados para agruparlos en una remesa de depósito.
             </p>
         </field>
     </record>
 
-    <record id="xtd_create_payment_lot_wizard_action" model="ir.actions.act_window">
-        <field name="name">Crear lote de depósito/remesa</field>
-        <field name="res_model">xtd.account.payment.lot.create.wizard</field>
+    <record id="xtd_create_payment_remesa_wizard_action" model="ir.actions.act_window">
+        <field name="name">Crear remesa</field>
+        <field name="res_model">xtd.account.payment.remesa.create.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
         <field name="context">{'dialog_size': 'large'}</field>
@@ -153,4 +155,3 @@
         <field name="binding_view_types">list</field>
     </record>
 </odoo>
-

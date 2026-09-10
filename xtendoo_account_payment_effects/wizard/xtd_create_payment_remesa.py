@@ -1,11 +1,10 @@
 from odoo import api, fields, models
 from odoo.fields import Command
-from odoo.tools.misc import format_date
 
 
-class XtdCreatePaymentLotWizard(models.TransientModel):
-    _name = "xtd.account.payment.lot.create.wizard"
-    _description = "Create Payment Lot From Existing Payments"
+class XtdCreatePaymentRemesaWizard(models.TransientModel):
+    _name = "xtd.account.payment.remesa.create.wizard"
+    _description = "Create Remesa From Existing Payments"
 
     payment_ids = fields.Many2many(
         comodel_name="account.payment",
@@ -37,12 +36,11 @@ class XtdCreatePaymentLotWizard(models.TransientModel):
         readonly=True,
     )
     date = fields.Date(
-        string="Deposit/Remittance Date",
+        string="Fecha de remesa",
         required=True,
         default=fields.Date.context_today,
     )
-    description = fields.Char(string="Description")
-    payment_count = fields.Integer(compute="_compute_totals", string="Effects")
+    payment_count = fields.Integer(compute="_compute_totals", string="Efectos")
     amount_total = fields.Monetary(
         compute="_compute_totals",
         currency_field="currency_id",
@@ -53,7 +51,7 @@ class XtdCreatePaymentLotWizard(models.TransientModel):
     def _compute_totals(self):
         for wizard in self:
             wizard.payment_count = len(wizard.payment_ids)
-            wizard.amount_total = sum(list(wizard.payment_ids.mapped("amount")))
+            wizard.amount_total = sum(wizard.payment_ids.mapped("amount"))
 
     @api.model
     def default_get(self, fields_list):
@@ -63,41 +61,34 @@ class XtdCreatePaymentLotWizard(models.TransientModel):
         payments = self.env["account.payment"].browse(
             self.env.context.get("active_ids", [])
         ).exists()
-        vals = payments._xtd_get_effect_lot_vals()
-        default_date = res.get("date") or fields.Date.context_today(self)
+        payments._xtd_validate_for_remesa()
         res.update(
             {
                 "payment_ids": [Command.set(payments.ids)],
-                "company_id": vals["company_id"],
-                "journal_id": vals["journal_id"],
-                "payment_method_line_id": vals["payment_method_line_id"],
-                "currency_id": vals["currency_id"],
-                "description": self.env._(
-                    "Deposit/Remittance %s", format_date(self.env, default_date)
-                ),
+                "company_id": payments[0].company_id.id,
+                "journal_id": payments[0].journal_id.id,
+                "payment_method_line_id": payments[0].payment_method_line_id.id,
+                "currency_id": payments[0].currency_id.id,
             }
         )
         return res
 
-    def action_create_lot(self):
+    def action_create_remesa(self):
         self.ensure_one()
-        self.payment_ids._xtd_validate_for_effect_lot()
-        order = self.env["account.payment.order"].create(
+        self.payment_ids._xtd_validate_for_remesa()
+        remesa = self.env["account.payment.remesa"].create(
             {
-                "payment_type": "inbound",
-                "payment_method_line_id": self.payment_method_line_id.id,
+                "date": self.date,
                 "company_id": self.company_id.id,
                 "journal_id": self.journal_id.id,
-                "description": self.description,
-                "xtd_source_type": "existing_payments",
+                "payment_method_line_id": self.payment_method_line_id.id,
+                "payment_ids": [Command.set(self.payment_ids.ids)],
             }
         )
-        lot = order.xtd_create_from_existing_payments(self.payment_ids, self.date)
         return {
             "type": "ir.actions.act_window",
-            "res_model": "account.payment.lot",
+            "res_model": "account.payment.remesa",
             "views": [(False, "form")],
-            "res_id": lot.id,
+            "res_id": remesa.id,
             "target": "current",
-            "context": {"account_payment_lot_main_view": True},
         }

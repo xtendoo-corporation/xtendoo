@@ -12,7 +12,7 @@
         id="xtd_account_payment_effect_order_menu"
         name="Remesas de efectos"
         parent="account.menu_finance_receivables"
-        action="xtd_account_payment_effect_order_action"
+        action="account_payment_remesa_action"
         sequence="19"
         groups="account.group_account_user"
     />

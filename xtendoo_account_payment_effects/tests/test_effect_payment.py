@@ -96,7 +96,27 @@ class TestEffectPayment(XtdAccountPaymentEffectsCommon):
         self.assertEqual(invoice_1.payment_state, "in_payment")
         self.assertEqual(invoice_2.payment_state, "in_payment")
 
-    def test_manage_effect_method_configuration_constraints(self):
+    def test_manage_effect_requires_inbound(self):
+        outbound_method = self.env["account.payment.method"].sudo().create(
+            {
+                "name": "Broken Outbound",
+                "code": "xtd_broken_outbound",
+                "payment_type": "outbound",
+            }
+        )
+        with self.assertRaises(ValidationError):
+            self.env["account.payment.method.line"].create(
+                {
+                    "name": "Broken Effect Method",
+                    "journal_id": self.bank_journal.id,
+                    "payment_method_id": outbound_method.id,
+                    "company_id": self.company.id,
+                    "xtd_manage_effects": True,
+                    "payment_account_id": self.inbound_payment_method_line.payment_account_id.id,
+                }
+            )
+
+    def test_manage_effect_requires_outstanding_account(self):
         with self.assertRaises(ValidationError):
             self.env["account.payment.method.line"].create(
                 {
@@ -104,11 +124,8 @@ class TestEffectPayment(XtdAccountPaymentEffectsCommon):
                     "journal_id": self.bank_journal.id,
                     "payment_method_id": self.check_method.payment_method_id.id,
                     "company_id": self.company.id,
-                    "selectable": True,
-                    "payment_order_ok": False,
-                    "bank_account_link": "fixed",
                     "xtd_manage_effects": True,
-                    "payment_account_id": self.inbound_payment_method_line.payment_account_id.id,
+                    "payment_account_id": False,
                 }
             )
 

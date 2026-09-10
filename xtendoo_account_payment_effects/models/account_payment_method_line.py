@@ -21,13 +21,7 @@ class AccountPaymentMethodLine(models.Model):
         "payment method line.",
     )
 
-    @api.constrains(
-        "xtd_manage_effects",
-        "payment_order_ok",
-        "bank_account_link",
-        "payment_account_id",
-        "selectable",
-    )
+    @api.constrains("xtd_manage_effects", "payment_method_id", "payment_account_id")
     def _check_xtd_manage_effects_configuration(self):
         for line in self.filtered("xtd_manage_effects"):
             if line.payment_type != "inbound":
@@ -35,30 +29,6 @@ class AccountPaymentMethodLine(models.Model):
                     self.env._(
                         "Payment method '%(method)s' can only manage collection "
                         "effects when its payment type is Inbound.",
-                        method=line.display_name,
-                    )
-                )
-            if not line.payment_order_ok:
-                raise ValidationError(
-                    self.env._(
-                        "Payment method '%(method)s' must be selectable on "
-                        "payment/debit orders to manage collection effects.",
-                        method=line.display_name,
-                    )
-                )
-            if not line.selectable:
-                raise ValidationError(
-                    self.env._(
-                        "Payment method '%(method)s' must be selectable on "
-                        "partners/invoices to manage collection effects.",
-                        method=line.display_name,
-                    )
-                )
-            if line.bank_account_link != "fixed":
-                raise ValidationError(
-                    self.env._(
-                        "Payment method '%(method)s' must use a fixed bank account "
-                        "link to manage collection effects.",
                         method=line.display_name,
                     )
                 )
@@ -70,5 +40,14 @@ class AccountPaymentMethodLine(models.Model):
                         method=line.display_name,
                     )
                 )
-
-
+            if not line.payment_account_id.reconcile:
+                raise ValidationError(
+                    self.env._(
+                        "The outstanding receipt account of '%(method)s' "
+                        "('%(account)s') must be reconcilable, otherwise payments "
+                        "flip to 'Paid' immediately and never wait for the remesa "
+                        "to be confirmed.",
+                        method=line.display_name,
+                        account=line.payment_account_id.display_name,
+                    )
+                )

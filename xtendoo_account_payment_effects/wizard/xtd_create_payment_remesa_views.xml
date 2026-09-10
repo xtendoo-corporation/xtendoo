@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-    <record id="xtd_account_payment_lot_create_wizard_view" model="ir.ui.view">
-        <field name="name">xtd.account.payment.lot.create.wizard.form</field>
-        <field name="model">xtd.account.payment.lot.create.wizard</field>
+    <record id="xtd_account_payment_remesa_create_wizard_view" model="ir.ui.view">
+        <field name="name">xtd.account.payment.remesa.create.wizard.form</field>
+        <field name="model">xtd.account.payment.remesa.create.wizard</field>
         <field name="arch" type="xml">
-            <form string="Crear lote de depósito/remesa">
+            <form string="Crear remesa">
                 <group>
                     <group>
                         <field name="company_id" invisible="1" />
-                        <field name="date" string="Fecha de depósito/remesa" />
+                        <field name="date" />
                         <field name="journal_id" string="Diario" />
                         <field name="payment_method_line_id" string="Método de pago" />
                         <field name="currency_id" string="Moneda" />
@@ -16,7 +16,6 @@
                     <group>
                         <field name="payment_count" string="Efectos" />
                         <field name="amount_total" string="Total" />
-                        <field name="description" string="Descripción" />
                     </group>
                 </group>
                 <group string="Pagos seleccionados" col="1">
@@ -34,9 +33,9 @@
                 </group>
                 <footer>
                     <button
-                        name="action_create_lot"
+                        name="action_create_remesa"
                         type="object"
-                        string="Crear lote"
+                        string="Crear remesa"
                         class="btn btn-primary"
                         data-hotkey="q"
                     />

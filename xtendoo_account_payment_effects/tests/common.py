@@ -1,5 +1,5 @@
 from odoo import Command
-from odoo.tests import Form, tagged
+from odoo.tests import tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -15,15 +15,6 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
         cls.bank_journal.suspense_account_id = (
             cls.company.account_journal_suspense_account_id
         )
-        cls.env.user.write(
-            {
-                "group_ids": [
-                    Command.link(
-                        cls.env.ref("account_payment_batch_oca.group_account_payment").id
-                    )
-                ]
-            }
-        )
         cls.check_method = cls._create_effect_method(
             name="Customer Check",
             code="xtd_manual_check",
@@ -36,24 +27,21 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
         )
 
     @classmethod
-    def _create_effect_method(cls, name, code, due_date_required=False):
+    def _create_effect_method(cls, name, code, due_date_required=False, journal=None):
+        journal = journal or cls.bank_journal
         method = cls.env["account.payment.method"].sudo().create(
             {
                 "name": name,
                 "code": code,
                 "payment_type": "inbound",
-                "payment_order_ok": True,
             }
         )
         return cls.env["account.payment.method.line"].create(
             {
                 "name": name,
-                "journal_id": cls.bank_journal.id,
+                "journal_id": journal.id,
                 "payment_method_id": method.id,
                 "company_id": cls.company.id,
-                "selectable": True,
-                "payment_order_ok": True,
-                "bank_account_link": "fixed",
                 "payment_account_id": cls.inbound_payment_method_line.payment_account_id.id,
                 "xtd_manage_effects": True,
                 "xtd_effect_reference_required": True,
@@ -104,31 +92,32 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
                 "group_payment": group_payment,
                 "currency_id": (currency or invoices[0].currency_id).id,
                 "payment_method_line_id": payment_method_line.id,
-                "journal_id": self.bank_journal.id,
+                "journal_id": payment_method_line.journal_id.id,
                 "xtd_payment_reference": payment_reference,
                 "xtd_effect_due_date": due_date,
             }
         )
         return wizard._create_payments()
 
-    def _create_statement_line(self, amount, date=False):
-        statement = self.env["account.bank.statement"].create(
+    def _create_remesa(self, payments, date="2026-08-28"):
+        payments = payments.filtered(lambda pay: not pay.xtd_remesa_id)
+        return self.env["account.payment.remesa"].create(
             {
-                "journal_id": self.bank_journal.id,
-                "date": date or "2026-08-28",
-                "name": "XTD-STMT",
+                "date": date,
+                "company_id": payments[0].company_id.id,
+                "journal_id": payments[0].journal_id.id,
+                "payment_method_line_id": payments[0].payment_method_line_id.id,
+                "payment_ids": [Command.set(payments.ids)],
             }
         )
-        return self.env["account.bank.statement.line"].create(
-            {
-                "name": "XTD-STMT-LINE",
-                "payment_ref": "BANK DEPOSIT",
-                "journal_id": self.bank_journal.id,
-                "statement_id": statement.id,
-                "amount": amount,
-                "date": date or "2026-08-28",
-            }
-        )
+
+    def _create_remesa_from_wizard(self, payments, date="2026-08-28"):
+        wizard = self.env["xtd.account.payment.remesa.create.wizard"].with_context(
+            active_model="account.payment",
+            active_ids=payments.ids,
+        ).create({"date": date})
+        action = wizard.action_create_remesa()
+        return self.env["account.payment.remesa"].browse(action["res_id"])
 
     @classmethod
     def _create_company_data(cls, name="Other Company"):
@@ -155,7 +144,6 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
                 "name": name,
                 "code": code,
                 "payment_type": "inbound",
-                "payment_order_ok": True,
             }
         )
         return cls.env["account.payment.method.line"].with_company(
@@ -166,9 +154,6 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
                 "journal_id": company_data["default_journal_bank"].id,
                 "payment_method_id": method.id,
                 "company_id": company_data["company"].id,
-                "selectable": True,
-                "payment_order_ok": True,
-                "bank_account_link": "fixed",
                 "payment_account_id": cls.env[
                     "account.chart.template"
                 ]
@@ -239,22 +224,3 @@ class XtdAccountPaymentEffectsCommon(AccountTestInvoicingCommon):
             )
         )
         return wizard._create_payments()
-
-    def _create_lot_from_payments(self, payments, date="2026-08-28"):
-        wizard = self.env["xtd.account.payment.lot.create.wizard"].with_context(
-            active_model="account.payment",
-            active_ids=payments.ids,
-        ).create({"date": date})
-        wizard.action_create_lot()
-        return payments.payment_lot_id
-
-    def _select_lot_in_reconcile_form(self, statement_line, lot):
-        with Form(
-            statement_line,
-            view="account_reconcile_oca.bank_statement_line_form_reconcile_view",
-        ) as form:
-            form.xtd_payment_lot_id = lot
-
-
-
-

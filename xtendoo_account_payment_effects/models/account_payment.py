@@ -15,6 +15,12 @@ class AccountPayment(models.Model):
         related="payment_method_line_id.xtd_effect_due_date_required"
     )
     xtd_effect_due_date = fields.Date(string="Effect Due Date", tracking=True)
+    xtd_remesa_id = fields.Many2one(
+        comodel_name="account.payment.remesa",
+        string="Remesa",
+        copy=False,
+        tracking=True,
+    )
     xtd_effect_status = fields.Selection(
         selection=[
             ("portfolio", "In Portfolio"),
@@ -27,7 +33,7 @@ class AccountPayment(models.Model):
         string="Effect Status",
     )
 
-    @api.depends("xtd_manage_effects", "payment_lot_id", "is_matched", "state")
+    @api.depends("xtd_manage_effects", "xtd_remesa_id", "xtd_remesa_id.state", "is_matched", "state")
     def _compute_xtd_effect_status(self):
         for payment in self:
             status = False
@@ -38,7 +44,7 @@ class AccountPayment(models.Model):
                     status = "canceled"
                 elif payment.is_matched:
                     status = "collected"
-                elif payment.payment_lot_id:
+                elif payment.xtd_remesa_id:
                     status = "deposited"
                 else:
                     status = "portfolio"
@@ -81,18 +87,18 @@ class AccountPayment(models.Model):
             if payment.xtd_effect_due_date_required and not payment.xtd_effect_due_date:
                 raise UserError(self.env._("You must set the effect due date."))
 
-    def _xtd_validate_for_effect_lot(self):
+    def _xtd_validate_for_remesa(self):
         if not self:
             raise UserError(self.env._("You must select at least one payment."))
         wrong_payment_type = self.filtered(lambda pay: pay.payment_type != "inbound")
         if wrong_payment_type:
             raise UserError(
-                self.env._("Only inbound payments can be included in a collection lot.")
+                self.env._("Only inbound payments can be included in a remesa.")
             )
         wrong_partner_type = self.filtered(lambda pay: pay.partner_type != "customer")
         if wrong_partner_type:
             raise UserError(
-                self.env._("Only customer payments can be included in a collection lot.")
+                self.env._("Only customer payments can be included in a remesa.")
             )
         unmanaged = self.filtered(lambda pay: not pay.xtd_manage_effects)
         if unmanaged:
@@ -102,44 +108,38 @@ class AccountPayment(models.Model):
                     "collection effect."
                 )
             )
-        invalid_state = self.filtered(lambda pay: pay.state in ("draft", "canceled", "rejected"))
+        invalid_state = self.filtered(lambda pay: pay.state in ("canceled", "rejected"))
         if invalid_state:
             raise UserError(
                 self.env._(
-                    "Draft, canceled or rejected payments cannot be included in a "
-                    "collection lot."
+                    "Canceled or rejected payments cannot be included in a remesa."
                 )
             )
         matched = self.filtered("is_matched")
         if matched:
             raise UserError(
-                self.env._(
-                    "Matched payments cannot be included in a collection lot."
-                )
+                self.env._("Matched payments cannot be included in a remesa.")
             )
-        already_in_lot = self.filtered("payment_lot_id")
-        if already_in_lot:
+        already_in_remesa = self.filtered(
+            lambda pay: pay.xtd_remesa_id and pay.xtd_remesa_id not in self.xtd_remesa_id
+        )
+        if already_in_remesa:
             raise UserError(
-                self.env._("You cannot include a payment that is already assigned to a lot.")
-            )
-        already_in_order = self.filtered("payment_order_id")
-        if already_in_order:
-            raise UserError(
-                self.env._(
-                    "You cannot include a payment that is already assigned to a "
-                    "payment/debit order."
-                )
+                self.env._("You cannot include a payment that is already assigned to "
+                            "another remesa.")
             )
         if len(self.company_id) > 1:
             raise UserError(
                 self.env._(
-                    "You cannot include payments from different companies in the same lot."
+                    "You cannot include payments from different companies in the same "
+                    "remesa."
                 )
             )
         if len(self.currency_id) > 1:
             raise UserError(
                 self.env._(
-                    "You cannot include payments with different currencies in the same lot."
+                    "You cannot include payments with different currencies in the same "
+                    "remesa."
                 )
             )
         non_positive = self.filtered(lambda pay: pay.amount <= 0)
@@ -171,18 +171,3 @@ class AccountPayment(models.Model):
     def action_cancel(self):
         self._xtd_check_not_matched_for_destructive_action()
         return super().action_cancel()
-
-    def _xtd_get_effect_lot_vals(self):
-        self._xtd_validate_for_effect_lot()
-        payments = self.sorted(key=lambda pay: (pay.date or fields.Date.today(), pay.id))
-        return {
-            "company_id": payments[0].company_id.id,
-            "currency_id": payments[0].currency_id.id,
-            "journal_id": payments[0].journal_id.id,
-            "payment_method_line_id": payments[0].payment_method_line_id.id,
-            "payment_count": len(payments),
-            "amount_total": sum(payments.mapped("amount")),
-        }
-
-
-
