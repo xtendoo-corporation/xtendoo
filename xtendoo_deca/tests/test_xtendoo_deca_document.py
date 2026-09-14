@@ -19,10 +19,14 @@ class TestXtendooDecaDocument(TransactionCase):
         cls.cargador = cls.env['res.partner'].create({
             'name': 'Cargador Contractual Test',
             'vat': 'ES00000000T',
+            'street': 'Calle Test 1',
+            'city': 'Huelva',
+            'zip': '21000',
         })
         cls.transportista = cls.env['res.partner'].create({
             'name': 'Transportista Efectivo Test',
             'vat': 'ES11111111H',
+            'is_transportista': True,
         })
         cls.customer = cls.env['res.partner'].create({'name': 'Cliente destino Test'})
         cls.product = cls.env['product.product'].create({
@@ -67,6 +71,8 @@ class TestXtendooDecaDocument(TransactionCase):
         doc = self.picking.deca_document_ids
         self.assertEqual(doc.state, 'generated')
         self.assertEqual(doc.cargador_nif, 'ES00000000T')
+        self.assertTrue(doc.cargador_domicilio,
+                         'El domicilio del cargador es obligatorio (art. 6.a Orden FOM/2861/2012)')
         self.assertEqual(doc.transportista_nif, 'ES11111111H')
         # 10 unidades x 2.5 kg/ud
         self.assertAlmostEqual(doc.mercancia_peso, 25.0)
@@ -87,6 +93,55 @@ class TestXtendooDecaDocument(TransactionCase):
         self.picking.deca_cargador_partner_id = False
         with self.assertRaises(UserError):
             self.picking.action_generar_deca()
+
+    def test_articulated_vehicle_trailer_plate(self):
+        """Art. 6.f) Orden FOM/2861/2012: conjuntos articulados deben
+        identificar también la matrícula del remolque/semirremolque."""
+        self.picking.deca_matricula_remolque = 'R-9999-XYZ'
+        self.picking.action_generar_deca()
+        doc = self.picking.deca_document_ids
+        self.assertEqual(doc.matricula_remolque, 'R-9999-XYZ')
+
+    def test_action_generar_deca_blocks_zero_weight(self):
+        """Art. 6.d) Orden FOM/2861/2012: el peso es un dato obligatorio;
+        si el maestro de artículos no tiene peso informado no se debe
+        generar un DeCA con 0 kg."""
+        product_sin_peso = self.env['product.product'].create({
+            'name': 'Producto sin peso',
+            'is_storable': True,
+            'weight': 0.0,
+        })
+        picking = self._create_picking(qty=5.0)
+        picking.move_ids.unlink()
+        self.env['stock.move'].create({
+            'name': product_sin_peso.name,
+            'picking_id': picking.id,
+            'product_id': product_sin_peso.id,
+            'product_uom_qty': 5.0,
+            'product_uom': product_sin_peso.uom_id.id,
+            'location_id': picking.location_id.id,
+            'location_dest_id': picking.location_dest_id.id,
+        })
+        with self.assertRaises(UserError):
+            picking.action_generar_deca()
+
+    def test_transportista_field_only_shows_flagged_partners(self):
+        """El selector de transportista efectivo debe filtrar por el check
+        'is_transportista' en res.partner, para no listar todos los
+        contactos."""
+        expected_domain = [('is_transportista', '=', True)]
+        self.assertEqual(
+            self.picking._fields['deca_transportista_partner_id'].domain,
+            expected_domain)
+        self.assertEqual(
+            self.env['xtendoo.deca.document']._fields['transportista_partner_id'].domain,
+            expected_domain)
+        no_transportista = self.env['res.partner'].create({
+            'name': 'Contacto cualquiera (no transportista)',
+        })
+        matches = self.env['res.partner'].search(expected_domain)
+        self.assertIn(self.transportista, matches)
+        self.assertNotIn(no_transportista, matches)
 
     def test_two_pickings_get_different_tokens(self):
         picking2 = self._create_picking(qty=3.0)
@@ -148,12 +203,15 @@ class TestXtendooDecaDocument(TransactionCase):
 
     # -- URL pública / QR -----------------------------------------------
 
-    def test_public_url_uses_configured_protocol(self):
+    def test_public_url_forces_https_even_if_base_url_is_http(self):
+        """Apartado Tercero.1: la URL debe comenzar necesariamente por
+        'https://', incluso si 'web.base.url' está configurado en HTTP
+        (p. ej. detrás de un proxy que termina el TLS)."""
         self.env['ir.config_parameter'].sudo().set_param(
             'web.base.url', 'http://odoo-interno.local:8069')
         self.picking.action_generar_deca()
         doc = self.picking.deca_document_ids
-        self.assertTrue(doc.qr_url.startswith('http://odoo-interno.local:8069/deca/'))
+        self.assertTrue(doc.qr_url.startswith('https://odoo-interno.local:8069/deca/'))
 
     def test_get_barcode_src_format(self):
         self.picking.action_generar_deca()
@@ -170,6 +228,21 @@ class TestXtendooDecaDocument(TransactionCase):
             'name': 'Usuario Stock Test',
             'login': 'deca_stock_user_test',
             'groups_id': [(6, 0, [stock_user_group.id])],
+        })
+        self.picking.action_generar_deca()
+        doc = self.picking.deca_document_ids
+        with self.assertRaises(AccessError):
+            doc.with_user(test_user).unlink()
+
+    def test_stock_manager_cannot_unlink_deca_document(self):
+        """Apartado Segundo.4: los ficheros deben conservarse al menos un
+        año, por lo que ni siquiera el responsable de inventario debe
+        poder borrar el registro/adjunto desde la interfaz."""
+        stock_manager_group = self.env.ref('stock.group_stock_manager')
+        test_user = self.env['res.users'].create({
+            'name': 'Responsable Stock Test',
+            'login': 'deca_stock_manager_test',
+            'groups_id': [(6, 0, [stock_manager_group.id])],
         })
         self.picking.action_generar_deca()
         doc = self.picking.deca_document_ids

@@ -23,6 +23,7 @@
                             <field name="deca_cargador_partner_id"/>
                             <field name="deca_transportista_partner_id"/>
                             <field name="deca_matricula_vehiculo"/>
+                            <field name="deca_matricula_remolque"/>
                             <field name="deca_autorizacion_especial"/>
                         </group>
                         <group string="Observaciones">

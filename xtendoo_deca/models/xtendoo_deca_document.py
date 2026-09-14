@@ -5,8 +5,10 @@ from datetime import timedelta
 
 from werkzeug.urls import url_quote
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+
+MAX_PDF_SIZE = 5 * 1024 * 1024  # 5 MB (apartado Segundo.1 Resolución BOE-A-2026-12784)
 
 
 class XtendooDecaDocument(models.Model):
@@ -28,8 +30,12 @@ class XtendooDecaDocument(models.Model):
         help='Persona física o jurídica que contrata directamente con el '
              'transportista efectivo el transporte del envío.')
     cargador_nif = fields.Char(string='NIF cargador', required=True)
+    cargador_domicilio = fields.Char(
+        string='Domicilio del cargador',
+        help='Dato exigido por el art. 6.a) de la Orden FOM/2861/2012.')
     transportista_partner_id = fields.Many2one(
         'res.partner', string='Transportista efectivo', required=True,
+        domain=[('is_transportista', '=', True)],
         help='Titular de la autorización a cuyo amparo se realiza '
              'materialmente el transporte.')
     transportista_nif = fields.Char(string='NIF transportista', required=True)
@@ -37,7 +43,14 @@ class XtendooDecaDocument(models.Model):
     destino = fields.Char(string='Destino del envío', required=True)
     mercancia_naturaleza = fields.Text(string='Naturaleza de la mercancía', required=True)
     mercancia_peso = fields.Float(string='Peso (kg)')
-    matricula_vehiculo = fields.Char(string='Matrícula del vehículo')
+    matricula_vehiculo = fields.Char(
+        string='Matrícula del vehículo',
+        help='Matrícula del vehículo o, si se trata de un conjunto '
+             'articulado, del vehículo tractor (art. 6.f Orden FOM/2861/2012).')
+    matricula_remolque = fields.Char(
+        string='Matrícula del remolque/semirremolque',
+        help='Exigida por el art. 6.f) de la Orden FOM/2861/2012 cuando el '
+             'transporte se realiza con un conjunto articulado.')
     autorizacion_especial = fields.Char(string='Autorización especial de circulación')
     fecha_servicio = fields.Datetime(string='Fecha de realización del transporte', required=True)
     observaciones = fields.Text(string='Observaciones')
@@ -73,13 +86,20 @@ class XtendooDecaDocument(models.Model):
         return docs
 
     def _get_public_base_url(self):
-        """Return the configured public URL, including its protocol."""
+        """Return the configured public URL, always over HTTPS.
+
+        El apartado Tercero.1 de la Resolución de 5 de junio de 2026
+        (BOE-A-2026-12784) exige que la URL del DeCA comience
+        necesariamente por "https://", con independencia de cómo esté
+        configurado "web.base.url" (p. ej. detrás de un proxy que termina
+        el TLS y expone Odoo internamente en HTTP).
+        """
         base_url = self.env['ir.config_parameter'].sudo().get_param(
             'web.base.url',
         ) or ''
-        if not base_url.startswith(('http://', 'https://')):
-            base_url = 'https://' + base_url.lstrip('/')
-        return base_url.rstrip('/')
+        if '://' in base_url:
+            base_url = base_url.split('://', 1)[1]
+        return 'https://' + base_url.strip('/')
 
     def get_barcode_src(self):
         """Fuente de imagen para el código QR, usando el generador de
@@ -94,6 +114,11 @@ class XtendooDecaDocument(models.Model):
             doc.qr_url = '%s/deca/%s' % (doc._get_public_base_url(), doc.token)
             pdf_content, _report_type = self.env['ir.actions.report']._render_qweb_pdf(
                 'xtendoo_deca.action_report_xtendoo_deca', doc.ids)
+            if len(pdf_content) > MAX_PDF_SIZE:
+                raise UserError(_(
+                    'El PDF del DeCA ocupa %.2f MB, por encima del máximo de 5 MB '
+                    'exigido por el apartado Segundo.1 de la Resolución '
+                    'BOE-A-2026-12784.') % (len(pdf_content) / (1024 * 1024)))
             doc.write({
                 'pdf_file': base64.b64encode(pdf_content),
                 'pdf_filename': '%s.pdf' % (doc.name or 'DeCA').replace('/', '_'),

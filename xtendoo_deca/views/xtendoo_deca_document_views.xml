@@ -24,6 +24,7 @@
                             <field name="company_id" groups="base.group_multi_company"/>
                             <field name="cargador_partner_id"/>
                             <field name="cargador_nif"/>
+                            <field name="cargador_domicilio"/>
                             <field name="transportista_partner_id"/>
                             <field name="transportista_nif"/>
                         </group>
@@ -32,6 +33,7 @@
                             <field name="destino"/>
                             <field name="fecha_servicio"/>
                             <field name="matricula_vehiculo"/>
+                            <field name="matricula_remolque"/>
                             <field name="autorizacion_especial"/>
                         </group>
                     </group>

@@ -26,6 +26,10 @@
                                 <td><span t-field="doc.cargador_nif"/></td>
                             </tr>
                             <tr>
+                                <td><strong>Domicilio del cargador</strong></td>
+                                <td colspan="3"><span t-field="doc.cargador_domicilio"/></td>
+                            </tr>
+                            <tr>
                                 <td><strong>Transportista efectivo</strong></td>
                                 <td><span t-field="doc.transportista_partner_id.display_name"/></td>
                                 <td><strong>NIF</strong></td>
@@ -42,6 +46,10 @@
                                 <td><span t-field="doc.matricula_vehiculo"/></td>
                                 <td><strong>Autorización especial</strong></td>
                                 <td><span t-field="doc.autorizacion_especial"/></td>
+                            </tr>
+                            <tr t-if="doc.matricula_remolque">
+                                <td><strong>Matrícula del remolque/semirremolque</strong></td>
+                                <td colspan="3"><span t-field="doc.matricula_remolque"/></td>
                             </tr>
                         </table>
                         <h4>Naturaleza y peso de la mercancía transportada</h4>

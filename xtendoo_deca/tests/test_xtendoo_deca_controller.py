@@ -14,7 +14,8 @@ class TestXtendooDecaController(HttpCase):
         cargador = cls.env['res.partner'].create({
             'name': 'Cargador HTTP Test', 'vat': 'ES00000001T'})
         transportista = cls.env['res.partner'].create({
-            'name': 'Transportista HTTP Test', 'vat': 'ES00000002T'})
+            'name': 'Transportista HTTP Test', 'vat': 'ES00000002T',
+            'is_transportista': True})
         customer = cls.env['res.partner'].create({'name': 'Cliente HTTP Test'})
         product = cls.env['product.product'].create({
             'name': 'Producto HTTP DeCA', 'is_storable': True, 'weight': 1.0})

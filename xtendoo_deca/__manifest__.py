@@ -58,6 +58,7 @@ Fuera de alcance de esta primera versión (ver hoja de ruta en el proyecto):
         'report/deca_report_actions.xml',
         'views/xtendoo_deca_document_views.xml',
         'views/stock_picking_views.xml',
+        'views/res_partner_views.xml',
     ],
     'installable': True,
     'application': False,

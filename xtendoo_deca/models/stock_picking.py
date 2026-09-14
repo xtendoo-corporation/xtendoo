@@ -17,9 +17,17 @@ class StockPicking(models.Model):
              'propia compañía). Art. 6.a) Orden FOM/2861/2012.')
     deca_transportista_partner_id = fields.Many2one(
         'res.partner', string='Transportista efectivo (DeCA)',
+        domain=[('is_transportista', '=', True)],
         help='Empresa de transporte que realiza materialmente el porte. '
-             'Art. 6.b) Orden FOM/2861/2012.')
-    deca_matricula_vehiculo = fields.Char(string='Matrícula del vehículo (DeCA)')
+             'Solo se muestran los contactos marcados como "Transportista '
+             'efectivo" (art. 6.b) Orden FOM/2861/2012).')
+    deca_matricula_vehiculo = fields.Char(
+        string='Matrícula del vehículo (DeCA)',
+        help='Vehículo o, si es un conjunto articulado, vehículo tractor.')
+    deca_matricula_remolque = fields.Char(
+        string='Matrícula del remolque/semirremolque (DeCA)',
+        help='Solo si el transporte se realiza con un conjunto articulado '
+             '(art. 6.f Orden FOM/2861/2012).')
     deca_autorizacion_especial = fields.Char(string='Autorización especial de circulación (DeCA)')
     deca_observaciones = fields.Text(string='Observaciones (DeCA)')
 
@@ -50,19 +58,27 @@ class StockPicking(models.Model):
         if not self.deca_cargador_partner_id:
             raise UserError(
                 'Indique el cargador contractual (DeCA) antes de generar el documento.')
+        mercancia_peso = self._deca_get_mercancia_peso()
+        if not mercancia_peso and any(self.move_ids.mapped('product_uom_qty')):
+            raise UserError(
+                'El peso total de la mercancía es 0 kg. Revise que los '
+                'artículos del albarán tengan informado su peso (kg), dato '
+                'exigido por el art. 6.d) de la Orden FOM/2861/2012.')
         doc = self.env['xtendoo.deca.document'].create({
             'picking_id': self.id,
             'company_id': self.company_id.id,
             'cargador_partner_id': self.deca_cargador_partner_id.id,
             'cargador_nif': self.deca_cargador_partner_id.vat or '',
+            'cargador_domicilio': self.deca_cargador_partner_id.contact_address or '',
             'transportista_partner_id': self.deca_transportista_partner_id.id,
             'transportista_nif': self.deca_transportista_partner_id.vat or '',
             'origen': (self.picking_type_id.warehouse_id.partner_id.display_name
                        or self.location_id.display_name),
             'destino': self.partner_id.display_name or self.location_dest_id.display_name,
             'mercancia_naturaleza': self._deca_get_mercancia_naturaleza(),
-            'mercancia_peso': self._deca_get_mercancia_peso(),
+            'mercancia_peso': mercancia_peso,
             'matricula_vehiculo': self.deca_matricula_vehiculo,
+            'matricula_remolque': self.deca_matricula_remolque,
             'autorizacion_especial': self.deca_autorizacion_especial,
             'fecha_servicio': self.scheduled_date,
             'observaciones': self.deca_observaciones,
