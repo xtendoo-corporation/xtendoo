@@ -226,6 +226,16 @@ class AccountPaymentRemesa(models.Model):
         self.write({"state": "confirmed", "statement_line_id": statement_line.id})
         return True
 
+    def action_view_move(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "account.move",
+            "view_mode": "form",
+            "res_id": self.move_id.id,
+            "target": "current",
+        }
+
     def action_draft(self):
         self.ensure_one()
         if self.state != "confirmed":

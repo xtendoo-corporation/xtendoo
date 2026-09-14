@@ -29,6 +29,19 @@
                     <field name="state" widget="statusbar" />
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_move"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-book"
+                            invisible="not move_id"
+                        >
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Asiento contable</span>
+                            </div>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1" />
@@ -49,7 +62,7 @@
                             <field name="payment_count" />
                             <field name="amount_total" />
                             <field name="statement_line_id" invisible="not statement_line_id" />
-                            <field name="move_id" invisible="not move_id" />
+                            <field name="move_id" invisible="1" />
                         </group>
                     </group>
                     <notebook>

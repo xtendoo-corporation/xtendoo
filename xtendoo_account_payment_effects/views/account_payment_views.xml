@@ -12,16 +12,30 @@
                 <field name="xtd_effect_status" invisible="1" />
                 <field
                     name="payment_reference"
+                    string="Referencia"
                     invisible="not xtd_manage_effects and not payment_reference"
                     required="xtd_manage_effects and xtd_effect_reference_required"
                 />
                 <field
                     name="xtd_effect_due_date"
+                    string="Vencimiento"
                     invisible="not xtd_manage_effects"
                     required="xtd_manage_effects and xtd_effect_due_date_required"
                 />
                 <field name="xtd_remesa_id" invisible="not xtd_remesa_id" readonly="1" />
             </group>
+        </field>
+    </record>
+
+    <record id="view_account_payment_tree_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.list.xtd.effects.fields</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree" />
+        <field name="arch" type="xml">
+            <field name="payment_method_line_id" position="after">
+                <field name="payment_reference" string="Referencia" optional="show" />
+                <field name="xtd_effect_due_date" string="Vencimiento" optional="show" />
+            </field>
         </field>
     </record>
 
