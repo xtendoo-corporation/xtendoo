@@ -4,65 +4,76 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-call="web.external_layout">
-                    <div class="page">
+                    <div class="page o_report_deca">
                         <h2>Documento electrónico de Control Administrativo (DeCA)</h2>
-                        <p>
-                            Documento de control administrativo exigible para la realización de
-                            transporte público de mercancías por carretera (Orden FOM/2861/2012,
-                            de 13 de diciembre; Resolución de 5 de junio de 2026 de la Dirección
-                            General de Transporte por Carretera y Ferrocarril, BOE-A-2026-12784).
+                        <h5 class="text-muted"><span t-field="doc.name"/></h5>
+                        <p class="text-muted">
+                            <small>
+                                Documento de control administrativo exigible para la realización de
+                                transporte público de mercancías por carretera (Orden FOM/2861/2012,
+                                de 13 de diciembre; Resolución de 5 de junio de 2026 de la Dirección
+                                General de Transporte por Carretera y Ferrocarril, BOE-A-2026-12784).
+                            </small>
                         </p>
-                        <table class="table table-sm o_report_deca_table">
-                            <tr>
-                                <td><strong>Referencia</strong></td>
-                                <td><span t-field="doc.name"/></td>
-                                <td><strong>Fecha de realización</strong></td>
-                                <td><span t-field="doc.fecha_servicio"/></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Cargador contractual</strong></td>
-                                <td><span t-field="doc.cargador_partner_id.display_name"/></td>
-                                <td><strong>NIF</strong></td>
-                                <td><span t-field="doc.cargador_nif"/></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Domicilio del cargador</strong></td>
-                                <td colspan="3"><span t-field="doc.cargador_domicilio"/></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Transportista efectivo</strong></td>
-                                <td><span t-field="doc.transportista_partner_id.display_name"/></td>
-                                <td><strong>NIF</strong></td>
-                                <td><span t-field="doc.transportista_nif"/></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Origen</strong></td>
-                                <td><span t-field="doc.origen"/></td>
-                                <td><strong>Destino</strong></td>
-                                <td><span t-field="doc.destino"/></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Matrícula del vehículo</strong></td>
-                                <td><span t-field="doc.matricula_vehiculo"/></td>
-                                <td><strong>Autorización especial</strong></td>
-                                <td><span t-field="doc.autorizacion_especial"/></td>
-                            </tr>
-                            <tr t-if="doc.matricula_remolque">
-                                <td><strong>Matrícula del remolque/semirremolque</strong></td>
-                                <td colspan="3"><span t-field="doc.matricula_remolque"/></td>
-                            </tr>
-                        </table>
-                        <h4>Naturaleza y peso de la mercancía transportada</h4>
-                        <p style="white-space: pre-line;"><span t-field="doc.mercancia_naturaleza"/></p>
-                        <p><strong>Peso total: </strong><span t-field="doc.mercancia_peso"/> kg</p>
-                        <t t-if="doc.observaciones">
-                            <h4>Observaciones</h4>
-                            <p style="white-space: pre-line;"><span t-field="doc.observaciones"/></p>
-                        </t>
-                        <div class="text-center mt-4">
-                            <img t-att-src="doc.get_barcode_src()" style="width:140px;height:140px;"/>
-                            <p><small t-esc="doc.qr_url"/></p>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <h5>Cargador</h5>
+                                <div><span t-field="doc.cargador_partner_id.display_name"/></div>
+                                <div>NIF: <span t-field="doc.cargador_nif"/></div>
+                                <div t-if="doc.cargador_domicilio" style="white-space: pre-line;">
+                                    <span t-field="doc.cargador_domicilio"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h5>Transportista efectivo</h5>
+                                <div><span t-field="doc.transportista_partner_id.display_name"/></div>
+                                <div>NIF: <span t-field="doc.transportista_nif"/></div>
+                            </div>
                         </div>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <h5>Envío</h5>
+                                <div><strong>Origen: </strong><span t-field="doc.origen"/></div>
+                                <div><strong>Destino: </strong><span t-field="doc.destino"/></div>
+                                <div><strong>Fecha de transporte: </strong><span t-field="doc.fecha_servicio"/></div>
+                            </div>
+                            <div class="col-6">
+                                <h5>Mercancía</h5>
+                                <div style="white-space: pre-line;"><span t-field="doc.mercancia_naturaleza"/></div>
+                                <div class="mt-2"><strong>Peso total: </strong><span t-field="doc.mercancia_peso"/> kg</div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <h5>Vehículo</h5>
+                                <t t-if="doc.matricula_remolque">
+                                    <div>Matrícula tractora: <span t-field="doc.matricula_vehiculo"/></div>
+                                    <div>Matrícula remolque: <span t-field="doc.matricula_remolque"/></div>
+                                </t>
+                                <t t-else="">
+                                    <div>Matrícula: <span t-field="doc.matricula_vehiculo"/></div>
+                                </t>
+                                <div t-if="doc.autorizacion_especial">
+                                    Autorización especial: <span t-field="doc.autorizacion_especial"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h5>Verificación</h5>
+                                <img t-att-src="doc.get_barcode_src()" style="width:120px;height:120px;"/>
+                                <div><small t-esc="doc.qr_url"/></div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4" t-if="doc.observaciones">
+                            <div class="col-12">
+                                <h5>Observaciones</h5>
+                                <div style="white-space: pre-line;"><span t-field="doc.observaciones"/></div>
+                            </div>
+                        </div>
+
                         <p class="text-muted mt-4">
                             <small>
                                 Documento generado electrónicamente el
