@@ -85,7 +85,7 @@ class XtendooDecaDocument(models.Model):
         """Fuente de imagen para el código QR, usando el generador de
         códigos de barras nativo de Odoo (sin dependencias externas)."""
         self.ensure_one()
-        return '/report/barcode/?type=QR&value=%s&width=200&height=200' % url_quote(self.qr_url or '')
+        return '/report/barcode/?barcode_type=QR&value=%s&width=200&height=200' % url_quote(self.qr_url or '')
 
     def _generate_pdf(self):
         for doc in self:

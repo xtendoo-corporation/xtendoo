@@ -159,7 +159,7 @@ class TestXtendooDecaDocument(TransactionCase):
         self.picking.action_generar_deca()
         doc = self.picking.deca_document_ids
         src = doc.get_barcode_src()
-        self.assertIn('type=QR', src)
+        self.assertIn('barcode_type=QR', src)
         self.assertIn('value=', src)
 
     # -- Seguridad --------------------------------------------------------
