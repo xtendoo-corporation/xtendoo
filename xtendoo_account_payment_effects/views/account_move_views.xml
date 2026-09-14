@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--
+        account_payment_base_oca hides the native (already translated)
+        preferred_payment_method_line_id field and re-adds it with a
+        hardcoded English string="Payment Method", and that module ships
+        no Spanish translation. We fix the label here instead of patching
+        the OCA module, so the fix travels with our own repo/deploys.
+    -->
+    <record id="view_move_form_xtd_payment_method_i18n" model="ir.ui.view">
+        <field name="name">account.move.form.xtd.payment.method.i18n</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account_payment_base_oca.view_move_form" />
+        <field name="arch" type="xml">
+            <xpath
+                expr="//field[@name='preferred_payment_method_line_id'][contains(@domain, 'selectable')]"
+                position="attributes"
+            >
+                <attribute name="string">Método de pago</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_report_search_xtd_payment_method_i18n" model="ir.ui.view">
+        <field name="name">account.invoice.report.search.xtd.payment.method.i18n</field>
+        <field name="model">account.invoice.report</field>
+        <field name="inherit_id" ref="account_payment_base_oca.view_account_invoice_report_search" />
+        <field name="arch" type="xml">
+            <filter name="payment_method_line_groupby" position="attributes">
+                <attribute name="string">Método de pago</attribute>
+            </filter>
+        </field>
+    </record>
+</odoo>

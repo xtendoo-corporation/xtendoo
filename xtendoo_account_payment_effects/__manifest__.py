@@ -8,6 +8,7 @@
     "category": "Accounting",
     "depends": [
         "account",
+        "account_payment_base_oca",
     ],
     "data": [
         "security/ir.model.access.csv",
@@ -15,6 +16,7 @@
         "views/account_payment_method_line_views.xml",
         "views/account_payment_views.xml",
         "views/account_payment_remesa_views.xml",
+        "views/account_move_views.xml",
         "views/menus.xml",
         "wizard/account_payment_register_views.xml",
         "wizard/xtd_create_payment_remesa_views.xml",
