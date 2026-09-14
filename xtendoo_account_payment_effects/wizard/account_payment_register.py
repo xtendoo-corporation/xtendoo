@@ -14,8 +14,8 @@ class AccountPaymentRegister(models.TransientModel):
     xtd_effect_due_date_required = fields.Boolean(
         related="payment_method_line_id.xtd_effect_due_date_required"
     )
-    xtd_payment_reference = fields.Char(string="Effect Reference")
-    xtd_effect_due_date = fields.Date(string="Effect Due Date")
+    xtd_payment_reference = fields.Char(string="Referencia del efecto")
+    xtd_effect_due_date = fields.Date(string="Fecha de vencimiento del efecto")
 
     def _xtd_validate_effect_fields(self):
         self.ensure_one()

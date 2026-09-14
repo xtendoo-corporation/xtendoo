@@ -22,6 +22,7 @@ class AccountPaymentRemesa(models.Model):
     )
     company_id = fields.Many2one(
         comodel_name="res.company",
+        string="Compañía",
         required=True,
         default=lambda self: self.env.company,
     )
@@ -56,8 +57,10 @@ class AccountPaymentRemesa(models.Model):
         compute="_compute_currency_id",
         store=True,
     )
-    payment_count = fields.Integer(compute="_compute_totals")
-    amount_total = fields.Monetary(compute="_compute_totals", currency_field="currency_id")
+    payment_count = fields.Integer(compute="_compute_totals", string="Efectos")
+    amount_total = fields.Monetary(
+        compute="_compute_totals", currency_field="currency_id", string="Importe total"
+    )
     state = fields.Selection(
         selection=[("draft", "Borrador"), ("confirmed", "Confirmada")],
         default="draft",
@@ -70,6 +73,11 @@ class AccountPaymentRemesa(models.Model):
         string="Apunte de banco",
         readonly=True,
         copy=False,
+    )
+    move_id = fields.Many2one(
+        comodel_name="account.move",
+        string="Asiento contable",
+        related="statement_line_id.move_id",
     )
 
     @api.depends("journal_id", "company_id")

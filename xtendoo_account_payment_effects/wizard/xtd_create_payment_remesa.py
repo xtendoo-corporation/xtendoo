@@ -8,24 +8,25 @@ class XtdCreatePaymentRemesaWizard(models.TransientModel):
 
     payment_ids = fields.Many2many(
         comodel_name="account.payment",
-        string="Selected Payments",
+        string="Pagos seleccionados",
         readonly=True,
     )
     company_id = fields.Many2one(
         comodel_name="res.company",
+        string="Compañía",
         required=True,
         readonly=True,
     )
     journal_id = fields.Many2one(
         comodel_name="account.journal",
-        string="Bank Journal",
+        string="Diario de banco",
         required=True,
         readonly=True,
         check_company=True,
     )
     payment_method_line_id = fields.Many2one(
         comodel_name="account.payment.method.line",
-        string="Payment Method",
+        string="Método de pago",
         required=True,
         readonly=True,
         check_company=True,

@@ -14,7 +14,7 @@ class AccountPayment(models.Model):
     xtd_effect_due_date_required = fields.Boolean(
         related="payment_method_line_id.xtd_effect_due_date_required"
     )
-    xtd_effect_due_date = fields.Date(string="Effect Due Date", tracking=True)
+    xtd_effect_due_date = fields.Date(string="Fecha de vencimiento del efecto", tracking=True)
     xtd_remesa_id = fields.Many2one(
         comodel_name="account.payment.remesa",
         string="Remesa",
@@ -23,14 +23,14 @@ class AccountPayment(models.Model):
     )
     xtd_effect_status = fields.Selection(
         selection=[
-            ("portfolio", "In Portfolio"),
-            ("deposited", "Deposited"),
-            ("collected", "Collected"),
-            ("rejected", "Rejected"),
-            ("canceled", "Canceled"),
+            ("portfolio", "En cartera"),
+            ("deposited", "Depositado"),
+            ("collected", "Cobrado"),
+            ("rejected", "Rechazado"),
+            ("canceled", "Cancelado"),
         ],
         compute="_compute_xtd_effect_status",
-        string="Effect Status",
+        string="Estado del efecto",
     )
 
     @api.depends("xtd_manage_effects", "xtd_remesa_id", "xtd_remesa_id.state", "is_matched", "state")

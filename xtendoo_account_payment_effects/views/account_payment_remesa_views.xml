@@ -49,6 +49,7 @@
                             <field name="payment_count" />
                             <field name="amount_total" />
                             <field name="statement_line_id" invisible="not statement_line_id" />
+                            <field name="move_id" invisible="not move_id" />
                         </group>
                     </group>
                     <notebook>

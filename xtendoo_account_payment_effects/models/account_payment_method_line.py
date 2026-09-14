@@ -6,17 +6,17 @@ class AccountPaymentMethodLine(models.Model):
     _inherit = "account.payment.method.line"
 
     xtd_manage_effects = fields.Boolean(
-        string="Manage as Collection Effect",
+        string="Efecto de cobro",
         help="Use this payment method line to manage customer collection effects "
         "such as checks, promissory notes or similar instruments.",
     )
     xtd_effect_reference_required = fields.Boolean(
-        string="Effect Reference Required",
+        string="Referencia obligatoria",
         help="Require a reference/number when registering a payment with this "
         "payment method line.",
     )
     xtd_effect_due_date_required = fields.Boolean(
-        string="Effect Due Date Required",
+        string="Vencimiento obligatorio",
         help="Require an effect due date when registering a payment with this "
         "payment method line.",
     )
