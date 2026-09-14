@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_deca" model="ir.ui.view">
+        <field name="name">stock.picking.form.deca</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_generar_deca" type="object" string="Generar DeCA"
+                        class="oe_stat_button" icon="fa-truck"
+                        invisible="deca_document_count > 0"/>
+                <button name="%(action_xtendoo_deca_document)d" type="action"
+                        class="oe_stat_button" icon="fa-file-pdf-o"
+                        context="{'search_default_picking_id': id}"
+                        invisible="deca_document_count == 0">
+                    <field name="deca_document_count" widget="statinfo" string="DeCA"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="DeCA" name="deca">
+                    <group>
+                        <group string="Datos del transporte (Orden FOM/2861/2012)">
+                            <field name="deca_cargador_partner_id"/>
+                            <field name="deca_transportista_partner_id"/>
+                            <field name="deca_matricula_vehiculo"/>
+                            <field name="deca_matricula_remolque"/>
+                            <field name="deca_autorizacion_especial"/>
+                        </group>
+                        <group string="Observaciones">
+                            <field name="deca_observaciones"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
