@@ -94,6 +94,41 @@ class TestXtendooDecaDocument(TransactionCase):
         with self.assertRaises(UserError):
             self.picking.action_generar_deca()
 
+    def test_action_generar_deca_requires_transportista_nif(self):
+        """Art. 6.b) Orden FOM/2861/2012: el NIF del transportista es dato
+        obligatorio."""
+        self.transportista.vat = False
+        with self.assertRaises(UserError):
+            self.picking.action_generar_deca()
+
+    def test_action_generar_deca_requires_cargador_nif(self):
+        """Art. 6.a) Orden FOM/2861/2012: el NIF del cargador es dato
+        obligatorio."""
+        self.cargador.vat = False
+        with self.assertRaises(UserError):
+            self.picking.action_generar_deca()
+
+    def test_action_generar_deca_requires_cargador_domicilio(self):
+        """Art. 6.a) Orden FOM/2861/2012: el domicilio del cargador es dato
+        obligatorio."""
+        self.cargador.write({'street': False, 'city': False, 'zip': False})
+        with self.assertRaises(UserError):
+            self.picking.action_generar_deca()
+
+    def test_action_generar_deca_requires_matricula(self):
+        """Art. 6.f) Orden FOM/2861/2012: la matrícula del vehículo es dato
+        obligatorio."""
+        self.picking.deca_matricula_vehiculo = False
+        with self.assertRaises(UserError):
+            self.picking.action_generar_deca()
+
+    def test_action_generar_deca_requires_mercancia_lines(self):
+        """Art. 6.d) Orden FOM/2861/2012: sin líneas de mercancía no hay
+        naturaleza ni peso que declarar."""
+        self.picking.move_ids.unlink()
+        with self.assertRaises(UserError):
+            self.picking.action_generar_deca()
+
     def test_articulated_vehicle_trailer_plate(self):
         """Art. 6.f) Orden FOM/2861/2012: conjuntos articulados deben
         identificar también la matrícula del remolque/semirremolque."""

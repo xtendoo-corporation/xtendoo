@@ -31,7 +31,7 @@ class XtendooDecaDocument(models.Model):
              'transportista efectivo el transporte del envío.')
     cargador_nif = fields.Char(string='NIF cargador', required=True)
     cargador_domicilio = fields.Char(
-        string='Domicilio del cargador',
+        string='Domicilio del cargador', required=True,
         help='Dato exigido por el art. 6.a) de la Orden FOM/2861/2012.')
     transportista_partner_id = fields.Many2one(
         'res.partner', string='Transportista efectivo', required=True,
@@ -44,7 +44,7 @@ class XtendooDecaDocument(models.Model):
     mercancia_naturaleza = fields.Text(string='Naturaleza de la mercancía', required=True)
     mercancia_peso = fields.Float(string='Peso (kg)')
     matricula_vehiculo = fields.Char(
-        string='Matrícula del vehículo',
+        string='Matrícula del vehículo', required=True,
         help='Matrícula del vehículo o, si se trata de un conjunto '
              'articulado, del vehículo tractor (art. 6.f Orden FOM/2861/2012).')
     matricula_remolque = fields.Char(

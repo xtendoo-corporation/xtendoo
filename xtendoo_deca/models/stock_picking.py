@@ -51,15 +51,42 @@ class StockPicking(models.Model):
         )
 
     def action_generar_deca(self):
+        """Valida que estén presentes todos los datos exigidos por el
+        art. 6 de la Orden FOM/2861/2012 antes de generar el DeCA, para no
+        emitir un documento legalmente incompleto."""
         self.ensure_one()
         if not self.deca_transportista_partner_id:
             raise UserError(
                 'Indique el transportista efectivo (DeCA) antes de generar el documento.')
+        if not self.deca_transportista_partner_id.vat:
+            raise UserError(
+                'El transportista efectivo "%s" no tiene NIF informado, dato '
+                'exigido por el art. 6.b) de la Orden FOM/2861/2012.'
+                % self.deca_transportista_partner_id.display_name)
         if not self.deca_cargador_partner_id:
             raise UserError(
                 'Indique el cargador contractual (DeCA) antes de generar el documento.')
+        if not self.deca_cargador_partner_id.vat:
+            raise UserError(
+                'El cargador contractual "%s" no tiene NIF informado, dato '
+                'exigido por el art. 6.a) de la Orden FOM/2861/2012.'
+                % self.deca_cargador_partner_id.display_name)
+        if not (self.deca_cargador_partner_id.contact_address or '').strip():
+            raise UserError(
+                'El cargador contractual "%s" no tiene domicilio informado '
+                '(calle, ciudad...), dato exigido por el art. 6.a) de la '
+                'Orden FOM/2861/2012.' % self.deca_cargador_partner_id.display_name)
+        if not self.deca_matricula_vehiculo:
+            raise UserError(
+                'Indique la matrícula del vehículo (DeCA), dato obligatorio '
+                'exigido por el art. 6.f) de la Orden FOM/2861/2012.')
+        if not any(self.move_ids.mapped('product_uom_qty')):
+            raise UserError(
+                'El albarán no tiene líneas de mercancía con cantidad, dato '
+                '(naturaleza y peso) exigido por el art. 6.d) de la Orden '
+                'FOM/2861/2012.')
         mercancia_peso = self._deca_get_mercancia_peso()
-        if not mercancia_peso and any(self.move_ids.mapped('product_uom_qty')):
+        if not mercancia_peso:
             raise UserError(
                 'El peso total de la mercancía es 0 kg. Revise que los '
                 'artículos del albarán tengan informado su peso (kg), dato '
@@ -69,7 +96,7 @@ class StockPicking(models.Model):
             'company_id': self.company_id.id,
             'cargador_partner_id': self.deca_cargador_partner_id.id,
             'cargador_nif': self.deca_cargador_partner_id.vat or '',
-            'cargador_domicilio': self.deca_cargador_partner_id.contact_address or '',
+            'cargador_domicilio': (self.deca_cargador_partner_id.contact_address or '').strip(),
             'transportista_partner_id': self.deca_transportista_partner_id.id,
             'transportista_nif': self.deca_transportista_partner_id.vat or '',
             'origen': (self.picking_type_id.warehouse_id.partner_id.display_name

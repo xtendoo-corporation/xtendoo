@@ -12,7 +12,8 @@ class TestXtendooDecaController(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         cargador = cls.env['res.partner'].create({
-            'name': 'Cargador HTTP Test', 'vat': 'ES00000001T'})
+            'name': 'Cargador HTTP Test', 'vat': 'ES00000001T',
+            'street': 'Calle HTTP Test 1', 'city': 'Sevilla', 'zip': '41001'})
         transportista = cls.env['res.partner'].create({
             'name': 'Transportista HTTP Test', 'vat': 'ES00000002T',
             'is_transportista': True})
@@ -27,6 +28,7 @@ class TestXtendooDecaController(HttpCase):
             'location_dest_id': picking_type_out.default_location_dest_id.id,
             'deca_cargador_partner_id': cargador.id,
             'deca_transportista_partner_id': transportista.id,
+            'deca_matricula_vehiculo': '0000HTT',
         })
         cls.env['stock.move'].create({
             'name': product.name,
