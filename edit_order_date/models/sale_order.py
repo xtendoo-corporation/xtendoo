@@ -30,12 +30,11 @@ class SaleOrder(models.Model):
     def write(self, values):
         """Supering the write function for making the order_date field
          readonly for particular user group"""
-        result = super().write(values)
-        if self.state == 'sale':
-            if 'date_order' in values and values[
-                'date_order'] != self.date_order \
-                    and not self.env.user.has_group(
-                    'edit_order_date.edit_order_date_group_user'):
-                raise UserError(
-                    _("You have no access to change 'Order Date'"))
-        return result
+        if 'date_order' in values and not self.env.user.has_group(
+                'edit_order_date.edit_order_date_group_user'):
+            for order in self:
+                if order.state == 'sale' \
+                        and values['date_order'] != order.date_order:
+                    raise UserError(
+                        _("You have no access to change 'Order Date'"))
+        return super().write(values)
