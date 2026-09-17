@@ -51,6 +51,28 @@
                             never need to reconnect when their per-signup token expires.
                         </div>
                     </setting>
+                    <setting id="xtendoo_whatsapp_relay_register_url_setting">
+                        <field name="xtendoo_whatsapp_relay_register_url" placeholder="https://xtdeoo.es/xtendoo_whatsapp_relay/register" />
+                        <label for="xtendoo_whatsapp_relay_register_url" string="Relay Register URL" />
+                        <div class="text-muted">
+                            Meta only allows one Callback URL for the whole app: incoming
+                            messages for every client arrive at Xtendoo's own webhook first.
+                            This registers this client's phone number so Xtendoo's relay
+                            forwards its messages here. Leave empty to only be able to send.
+                        </div>
+                    </setting>
+                    <setting id="xtendoo_whatsapp_relay_unregister_url_setting">
+                        <field name="xtendoo_whatsapp_relay_unregister_url" placeholder="https://xtdeoo.es/xtendoo_whatsapp_relay/unregister" />
+                        <label for="xtendoo_whatsapp_relay_unregister_url" string="Relay Unregister URL" />
+                    </setting>
+                    <setting id="xtendoo_whatsapp_relay_api_key_setting">
+                        <field name="xtendoo_whatsapp_relay_api_key" password="True" />
+                        <label for="xtendoo_whatsapp_relay_api_key" string="Relay API Key" />
+                        <div class="text-muted">
+                            Shared secret for the relay endpoints above. Must match what
+                            Xtendoo configured on its own relay.
+                        </div>
+                    </setting>
                 </block>
             </xpath>
         </field>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="xtendoo_whatsapp_relay_client_view_list" model="ir.ui.view">
+        <field name="name">xtendoo.whatsapp.relay.client.list</field>
+        <field name="model">xtendoo.whatsapp.relay.client</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" />
+                <field name="phone_number_id" />
+                <field name="waba_id" />
+                <field name="webhook_url" />
+                <field name="active" />
+                <field name="last_relay_date" />
+                <field name="last_relay_error" optional="hide" />
+            </list>
+        </field>
+    </record>
+
+    <record id="xtendoo_whatsapp_relay_client_view_form" model="ir.ui.view">
+        <field name="name">xtendoo.whatsapp.relay.client.form</field>
+        <field name="model">xtendoo.whatsapp.relay.client</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="phone_number_id" />
+                        <field name="waba_id" />
+                        <field name="webhook_url" />
+                        <field name="webhook_secret" password="True" />
+                        <field name="active" />
+                    </group>
+                    <group>
+                        <field name="registered_date" />
+                        <field name="last_relay_date" />
+                        <field name="last_relay_error" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="xtendoo_whatsapp_relay_client_act_window" model="ir.actions.act_window">
+        <field name="name">WhatsApp Relay Clients</field>
+        <field name="res_model">xtendoo.whatsapp.relay.client</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <record id="xtendoo_whatsapp_relay_client_menu" model="ir.ui.menu">
+        <field name="name">WhatsApp Relay Clients</field>
+        <field name="parent_id" ref="base.menu_email" />
+        <field name="action" ref="xtendoo_whatsapp_relay_client_act_window" />
+        <field name="sequence" eval="18" />
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]" />
+    </record>
+</odoo>

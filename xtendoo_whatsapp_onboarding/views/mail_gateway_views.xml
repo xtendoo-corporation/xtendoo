@@ -39,6 +39,22 @@
             <xpath expr="//field[@name='token']" position="attributes">
                 <attribute name="groups">base.group_system</attribute>
             </xpath>
+            <!-- These base buttons assume one gateway = one dedicated Meta
+                 webhook you register by hand. In this multi-tenant setup
+                 Meta only accepts a single Callback URL for the whole app
+                 (Xtendoo's own relay), so per-client "integration" happens
+                 automatically via the relay registration call, not via
+                 these buttons: hide them for onboarding-managed gateways
+                 so nobody clicks something that can never do anything. -->
+            <xpath expr="//button[@name='set_webhook']" position="attributes">
+                <attribute name="invisible">not can_set_webhook or integrated_webhook_state or gateway_type == 'whatsapp'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='update_webhook']" position="attributes">
+                <attribute name="invisible">not can_set_webhook or integrated_webhook_state != 'integrated' or gateway_type == 'whatsapp'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='remove_webhook']" position="attributes">
+                <attribute name="invisible">not integrated_webhook_state or gateway_type == 'whatsapp'</attribute>
+            </xpath>
             <field name="webhook_user_id" position="after">
                 <field
                     name="whatsapp_account_id"

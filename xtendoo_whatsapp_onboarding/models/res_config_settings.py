@@ -43,6 +43,29 @@ class ResConfigSettings(models.TransientModel):
             "Leave empty to keep using each client's own token as-is."
         ),
     )
+    xtendoo_whatsapp_relay_register_url = fields.Char(
+        string="Relay Register URL",
+        help=(
+            "Full URL of Xtendoo's own production Odoo relay endpoint, e.g. "
+            "https://xtdeoo.es/xtendoo_whatsapp_relay/register. Meta only "
+            "allows a single Callback URL for the whole app, so every "
+            "client's incoming messages arrive there first and get "
+            "forwarded here. Required to actually receive messages; leave "
+            "empty to only be able to send."
+        ),
+    )
+    xtendoo_whatsapp_relay_unregister_url = fields.Char(
+        string="Relay Unregister URL",
+        help="Same host as the register URL, e.g. .../xtendoo_whatsapp_relay/unregister.",
+    )
+    xtendoo_whatsapp_relay_api_key = fields.Char(
+        string="Relay API Key",
+        help=(
+            "Shared secret sent as the X-Xtendoo-Relay-Key header when "
+            "registering/unregistering with the relay. Must match the key "
+            "configured on Xtendoo's relay (xtendoo_whatsapp_webhook_relay)."
+        ),
+    )
 
     @api.model
     def get_values(self):
@@ -63,6 +86,15 @@ class ResConfigSettings(models.TransientModel):
             ),
             xtendoo_whatsapp_meta_system_user_token=icp.get_param(
                 "xtendoo_whatsapp_onboarding.meta_system_user_token", default=""
+            ),
+            xtendoo_whatsapp_relay_register_url=icp.get_param(
+                "xtendoo_whatsapp_onboarding.relay_register_url", default=""
+            ),
+            xtendoo_whatsapp_relay_unregister_url=icp.get_param(
+                "xtendoo_whatsapp_onboarding.relay_unregister_url", default=""
+            ),
+            xtendoo_whatsapp_relay_api_key=icp.get_param(
+                "xtendoo_whatsapp_onboarding.relay_api_key", default=""
             ),
         )
         return res
@@ -89,4 +121,16 @@ class ResConfigSettings(models.TransientModel):
         icp.set_param(
             "xtendoo_whatsapp_onboarding.meta_system_user_token",
             self.xtendoo_whatsapp_meta_system_user_token or "",
+        )
+        icp.set_param(
+            "xtendoo_whatsapp_onboarding.relay_register_url",
+            self.xtendoo_whatsapp_relay_register_url or "",
+        )
+        icp.set_param(
+            "xtendoo_whatsapp_onboarding.relay_unregister_url",
+            self.xtendoo_whatsapp_relay_unregister_url or "",
+        )
+        icp.set_param(
+            "xtendoo_whatsapp_onboarding.relay_api_key",
+            self.xtendoo_whatsapp_relay_api_key or "",
         )
