@@ -20,4 +20,27 @@
             </xpath>
         </field>
     </record>
+    <record id="view_account_payment_method_line_form_xtd_effects" model="ir.ui.view">
+        <field name="name">account.payment.method.line.form.xtd.effects</field>
+        <field name="model">account.payment.method.line</field>
+        <field
+            name="inherit_id"
+            ref="account_payment_base_oca.account_payment_method_line_form"
+        />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_account_id']" position="after">
+                <field name="xtd_manage_effects" string="Efecto de cobro" />
+                <field
+                    name="xtd_effect_reference_required"
+                    string="Referencia obligatoria"
+                    invisible="not xtd_manage_effects"
+                />
+                <field
+                    name="xtd_effect_due_date_required"
+                    string="Vencimiento obligatorio"
+                    invisible="not xtd_manage_effects"
+                />
+            </xpath>
+        </field>
+    </record>
 </odoo>
