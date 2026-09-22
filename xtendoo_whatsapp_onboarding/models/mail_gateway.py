@@ -420,6 +420,24 @@ class MailGateway(models.Model):
         response.raise_for_status()
         return response.json()
 
+    def _whatsapp_onboarding_get_own_webhook_url(self):
+        """Builds this gateway's own webhook URL directly from
+        `web.base.url`, WITHOUT going through `mail.gateway._get_webhook_url()`.
+
+        That base method is self-referential: it appends
+        "/gateway/<type>/<key>/update" onto `self.webhook_url` when that
+        field is already set, but `webhook_url` is itself computed BY
+        calling `_get_webhook_url()`. The first time it runs (nothing
+        cached yet) it's correct, but calling it again afterwards (e.g.
+        after the form already rendered `webhook_url` once) doubles the
+        path: ".../update/gateway/whatsapp/<key>/update", which Meta then
+        rejects with a 404 when verifying the override URL. Building it
+        fresh here every time sidesteps that caching bug entirely.
+        """
+        self.ensure_one()
+        base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
+        return f"{base_url}/gateway/{self.gateway_type}/{self.webhook_key}/update"
+
     def _whatsapp_onboarding_subscribe_app(self, waba_id, access_token, config):
         """Subscribes the app to the client's WABA AND points Meta's
         webhook delivery for that WABA directly at this gateway's own
@@ -438,7 +456,7 @@ class MailGateway(models.Model):
         response = requests.post(
             endpoint,
             data={
-                "override_callback_uri": self._get_webhook_url(),
+                "override_callback_uri": self._whatsapp_onboarding_get_own_webhook_url(),
                 "verify_token": self.whatsapp_security_key,
             },
             headers={"Authorization": f"Bearer {access_token}"},

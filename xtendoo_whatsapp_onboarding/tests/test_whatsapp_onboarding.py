@@ -473,10 +473,46 @@ class TestWhatsappOnboarding(TransactionCase):
         )
         self.assertEqual(
             captured["data"]["override_callback_uri"],
-            self.gateway._get_webhook_url(),
+            self.gateway._whatsapp_onboarding_get_own_webhook_url(),
         )
         self.assertEqual(
             captured["data"]["verify_token"], self.gateway.whatsapp_security_key
+        )
+
+    def test_18a_webhook_url_is_not_doubled_if_computed_beforehand(self):
+        # Regression test: mail.gateway._get_webhook_url() is
+        # self-referential (appends the path onto its own cached
+        # `webhook_url` field), so calling it a second time after the
+        # field was already computed once (e.g. by opening the form,
+        # simulated here by just reading it) doubles the path. This is
+        # exactly what happened against Escudero in production: Meta
+        # rejected the override URL with a 404 because of the doubled
+        # path. _whatsapp_onboarding_get_own_webhook_url() must sidestep
+        # this by never relying on the cached `webhook_url` field.
+        _ = self.gateway.webhook_url  # forces mail.gateway's own compute/cache
+        session = self._start_signup()
+        mock_requests = self._patch_graph(
+            exchange=_mock_response({"access_token": "TOKEN-1"})
+        )
+        original_post_side_effect = mock_requests.post.side_effect
+        captured = {}
+
+        def post_side_effect(url, data=None, headers=None, timeout=None):
+            if "subscribed_apps" in url:
+                captured["data"] = data
+                return _mock_response({"success": True})
+            return original_post_side_effect(url, headers=headers, timeout=timeout)
+
+        mock_requests.post.side_effect = post_side_effect
+
+        self.gateway.action_save_meta_credentials(
+            session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
+        )
+        url = captured["data"]["override_callback_uri"]
+        self.assertEqual(
+            url.count("/gateway/whatsapp/"),
+            1,
+            "the webhook path must not be duplicated: %s" % url,
         )
 
     def test_18b_connecting_arms_pending_state_for_real_meta_verification(self):
@@ -530,7 +566,7 @@ class TestWhatsappOnboarding(TransactionCase):
 
         self.assertEqual(
             captured["data"]["override_callback_uri"],
-            self.gateway._get_webhook_url(),
+            self.gateway._whatsapp_onboarding_get_own_webhook_url(),
         )
         self.assertEqual(
             captured["data"]["verify_token"], self.gateway.whatsapp_security_key
