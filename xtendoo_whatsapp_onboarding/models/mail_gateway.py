@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import logging
+import threading
 import uuid
 from contextlib import contextmanager
 
@@ -455,20 +456,42 @@ class MailGateway(models.Model):
         # with the hub.challenge handshake. mail_gateway's controller only
         # looks up gateways in state "pending" for that GET
         # (GatewayController.post_update, unmodified) - and that callback
-        # is a *separate* incoming HTTP request/DB transaction, so it can
-        # only see "pending" if it's actually committed to the database
-        # *before* we call Meta. A plain self.write() here would only
-        # become visible once this whole request finishes - too late, and
-        # exactly what caused Meta to receive "{}" instead of the
-        # challenge against Escudero. Using a separate cursor (like
-        # _whatsapp_onboarding_set_error) commits it immediately.
-        gateway_id = self.id
-        with self.env.registry.cursor() as new_cr:
-            new_env = api.Environment(new_cr, self.env.uid, self.env.context)
-            new_env["mail.gateway"].browse(gateway_id).write(
-                {"integrated_webhook_state": "pending"}
-            )
-        self.invalidate_recordset(["integrated_webhook_state"])
+        # is a *separate* incoming HTTP request, so it can only see
+        # "pending" if it's actually committed to the database *before* we
+        # call Meta. A plain self.write() here would only become visible
+        # once this whole request finishes - too late, and exactly what
+        # caused Meta to receive "{}" instead of the challenge against
+        # Escudero.
+        #
+        # A *separate cursor* (the pattern used for
+        # _whatsapp_onboarding_set_error) looked like the right fix but
+        # isn't: it writes to the same row this same request already read
+        # and will write to again later (the final "connected" write).
+        # Against a real, already-committed row that's a genuine
+        # concurrent-update conflict - Postgres raised "could not
+        # serialize access due to concurrent update", Odoo's automatic
+        # retry re-ran the whole request, and the retry re-exchanged the
+        # (single-use, already consumed) authorization code, which Meta
+        # then rejected outright. The Meta-side connection had actually
+        # succeeded on the first pass; the retry threw it away.
+        #
+        # Committing on THIS SAME transaction instead avoids that
+        # conflict entirely (no competing transaction, nothing to
+        # serialize against) while still being durably visible to Meta's
+        # callback. In tests, no real external caller needs this
+        # visibility, and actually committing would permanently leak the
+        # test's own fixture data into the target DB - skip it there.
+        self.write({"integrated_webhook_state": "pending"})
+        if not getattr(threading.current_thread(), "testing", False):
+            # Odoo's own TransactionCase forbids cr.commit()/rollback()
+            # unconditionally for the whole run (registry.in_test_mode()
+            # is an HttpCase-only concept and stays False for plain
+            # TransactionCase; config['test_enable'] isn't reliably
+            # populated here either). The test runner sets `.testing =
+            # True` on its own thread for the exact duration of the
+            # suite (odoo/tests/loader.py, service/server.py) - that's
+            # the one signal that's actually accurate here.
+            self.env.cr.commit()
 
         endpoint = self._whatsapp_onboarding_graph_url(
             f"{waba_id}/subscribed_apps", config
