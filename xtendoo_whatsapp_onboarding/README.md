@@ -153,6 +153,24 @@ cada cliente desde un único servidor central. Se descartó al confirmar que
 el mecanismo de webhook overrides de Meta resuelve lo mismo de forma nativa
 y más simple, sin servidor intermedio.)
 
+### 10bis. Registro del número en la Cloud API (obligatorio, aparte de `subscribed_apps`)
+Después de `subscribed_apps`, el módulo llama a `POST
+/{phone_number_id}/register` (`whatsapp_onboarding_pin` como parámetro
+`pin`) — https://developers.facebook.com/documentation/business-messaging/whatsapp/business-phone-numbers/registration.
+Es un paso **obligatorio y separado**: sin él, el número aparece
+"conectado" en Odoo y en el WABA, pero el cliente no puede enviar ni
+recibir mensajes de verdad (así lo confirma la propia documentación de
+Meta para Tech Providers). Se detectó porque en el WhatsApp Manager del
+cliente (business.facebook.com, vista con SU cuenta) aparecía la tarea
+"Vinculando número de teléfono... contacta con Xtendoo" sin completar.
+
+El PIN de verificación en dos pasos (6 dígitos) lo genera y guarda Odoo
+automáticamente por cada gateway (`whatsapp_onboarding_pin`, campo
+protegido como contraseña, solo visible para `base.group_system`) — Meta
+no expone ningún endpoint para recuperarlo después, solo para resetearlo
+manualmente desde WhatsApp Manager, así que este campo es el único
+registro que queda de él.
+
 ### 11. Permisos
 `whatsapp_business_management`, `whatsapp_business_messaging` en la
 Configuration del Embedded Signup. **Verificado en el Dashboard real de la

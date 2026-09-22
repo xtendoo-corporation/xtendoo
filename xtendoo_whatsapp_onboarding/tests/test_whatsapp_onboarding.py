@@ -56,7 +56,9 @@ class TestWhatsappOnboarding(TransactionCase):
         action = gateway.action_open_embedded_signup()
         return action["params"]["session"]
 
-    def _patch_graph(self, exchange=None, subscribe=None, phone=None, fallback=None):
+    def _patch_graph(
+        self, exchange=None, subscribe=None, phone=None, fallback=None, register=None
+    ):
         patcher = patch(REQUESTS_TARGET)
         mock_requests = patcher.start()
         self.addCleanup(patcher.stop)
@@ -75,6 +77,8 @@ class TestWhatsappOnboarding(TransactionCase):
         def post_side_effect(url, data=None, headers=None, timeout=None):
             if "subscribed_apps" in url:
                 return subscribe or _mock_response({"success": True})
+            if url.endswith("/register"):
+                return register or _mock_response({"success": True})
             raise AssertionError("unexpected POST call: %s" % url)
 
         mock_requests.get.side_effect = get_side_effect
@@ -108,9 +112,11 @@ class TestWhatsappOnboarding(TransactionCase):
         self.assertEqual(self.gateway.whatsapp_from_phone, "phone-1")
         self.assertEqual(self.gateway.token, "TOKEN-ABC")
         self.assertTrue(self.gateway.whatsapp_onboarding_subscribed)
+        pin = self.gateway.whatsapp_onboarding_pin
         for record in log_ctx.output:
             self.assertNotIn("TOKEN-ABC", record)
             self.assertNotIn("s3cr3t", record)
+            self.assertNotIn(pin, record)
 
     # 3. Callback inválido (sin code) ---------------------------------------
     def test_03_save_meta_credentials_invalid_code(self):
@@ -571,4 +577,49 @@ class TestWhatsappOnboarding(TransactionCase):
             captured["data"]["verify_token"], self.gateway.whatsapp_security_key
         )
         self.assertEqual(self.gateway.integrated_webhook_state, "pending")
+
+    # 19. Cloud API phone number registration (POST /{phone_id}/register) --
+    # https://developers.facebook.com/documentation/business-messaging/whatsapp/business-phone-numbers/registration
+    # Required in addition to subscribed_apps: without it the number looks
+    # connected but can't actually send/receive messages.
+    def test_19_connect_registers_phone_number_with_own_pin(self):
+        session = self._start_signup()
+        mock_requests = self._patch_graph(
+            exchange=_mock_response({"access_token": "TOKEN-1"})
+        )
+        captured = {}
+        original_post_side_effect = mock_requests.post.side_effect
+
+        def post_side_effect(url, data=None, headers=None, timeout=None):
+            if url.endswith("/register"):
+                captured["data"] = data
+                captured["url"] = url
+                return _mock_response({"success": True})
+            return original_post_side_effect(url, headers=headers, timeout=timeout)
+
+        mock_requests.post.side_effect = post_side_effect
+
+        self.gateway.action_save_meta_credentials(
+            session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
+        )
+        self.assertIn("phone-1/register", captured["url"])
+        self.assertEqual(captured["data"]["messaging_product"], "whatsapp")
+        self.assertEqual(captured["data"]["pin"], self.gateway.whatsapp_onboarding_pin)
+        self.assertEqual(self.gateway.whatsapp_onboarding_state, "connected")
+
+    def test_19b_register_failure_marks_connection_as_error(self):
+        session = self._start_signup()
+        self._patch_graph(
+            exchange=_mock_response({"access_token": "TOKEN-1"}),
+            register=_mock_response(
+                {"error": {"message": "Invalid pin", "code": 100}},
+                status_code=400,
+                raise_error=True,
+            ),
+        )
+        with self.assertRaises(UserError) as ctx:
+            self.gateway.action_save_meta_credentials(
+                session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
+            )
+        self.assertIn("Invalid pin", str(ctx.exception))
 
