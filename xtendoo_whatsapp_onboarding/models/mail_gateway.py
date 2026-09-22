@@ -450,6 +450,26 @@ class MailGateway(models.Model):
         verify_token exactly like the app-level Callback URL is.
         """
         self.ensure_one()
+        # Meta verifies the override URL SYNCHRONOUSLY as part of this very
+        # POST call: before responding, it calls back to our GET handler
+        # with the hub.challenge handshake. mail_gateway's controller only
+        # looks up gateways in state "pending" for that GET
+        # (GatewayController.post_update, unmodified) - and that callback
+        # is a *separate* incoming HTTP request/DB transaction, so it can
+        # only see "pending" if it's actually committed to the database
+        # *before* we call Meta. A plain self.write() here would only
+        # become visible once this whole request finishes - too late, and
+        # exactly what caused Meta to receive "{}" instead of the
+        # challenge against Escudero. Using a separate cursor (like
+        # _whatsapp_onboarding_set_error) commits it immediately.
+        gateway_id = self.id
+        with self.env.registry.cursor() as new_cr:
+            new_env = api.Environment(new_cr, self.env.uid, self.env.context)
+            new_env["mail.gateway"].browse(gateway_id).write(
+                {"integrated_webhook_state": "pending"}
+            )
+        self.invalidate_recordset(["integrated_webhook_state"])
+
         endpoint = self._whatsapp_onboarding_graph_url(
             f"{waba_id}/subscribed_apps", config
         )
@@ -471,13 +491,6 @@ class MailGateway(models.Model):
                     "Business Account."
                 )
             )
-        # Mirrors what the base mail.gateway "Integrate Webhook" button
-        # does locally: the controller only looks up "pending" gateways
-        # when Meta calls back to verify the override URL
-        # (GET .../update with hub.challenge). Meta flips this to
-        # "integrated" itself once that handshake succeeds
-        # (mail_gateway_whatsapp._receive_get_update, unmodified).
-        self.write({"integrated_webhook_state": "pending"})
         return payload
 
     def _whatsapp_onboarding_unsubscribe_app(self, waba_id, access_token):
