@@ -246,14 +246,21 @@ class MailGateway(models.Model):
                     self.id,
                 )
 
-            self._whatsapp_onboarding_subscribe_app(
-                resolved_waba_id, access_token, config
-            )
-            _logger.info(
-                "[WhatsApp Onboarding] Webhook configurado (gateway=%s)", self.id
-            )
+            # Written BEFORE calling Meta (subscribe_app, below), on
+            # purpose: that call synchronously triggers Meta's own
+            # verification GET against this same gateway - a genuinely
+            # concurrent request that writes to this same row
+            # (integrated_webhook_state) and commits on its own. If our
+            # request still had a write of its own pending against this
+            # row *after* that point, Postgres (REPEATABLE READ) would
+            # see it as a conflicting concurrent update and abort with
+            # "could not serialize access" - which is exactly what
+            # happened against Escudero: Odoo's automatic retry then
+            # re-ran this whole method with the same (single-use, already
+            # consumed) authorization code, and Meta rejected it outright
+            # even though the connection had actually succeeded. Nothing
+            # of ours may touch this row again after subscribe_app runs.
             _logger.info("[WhatsApp Onboarding] Token procesado (gateway=%s)", self.id)
-
             self.write(
                 {
                     "token": access_token,
@@ -269,6 +276,13 @@ class MailGateway(models.Model):
                     "whatsapp_onboarding_subscribed": True,
                     "whatsapp_onboarding_last_error": False,
                 }
+            )
+
+            self._whatsapp_onboarding_subscribe_app(
+                resolved_waba_id, access_token, config
+            )
+            _logger.info(
+                "[WhatsApp Onboarding] Webhook configurado (gateway=%s)", self.id
             )
             _logger.info("[WhatsApp Onboarding] Completado (gateway=%s)", self.id)
         except Exception as err:
@@ -294,14 +308,11 @@ class MailGateway(models.Model):
             phone_info = self._whatsapp_onboarding_fetch_phone_info(
                 self.whatsapp_from_phone, access_token, config
             )
-            # Re-applies the webhook override too (not just at connect
-            # time): lets a gateway connected before this mechanism existed
-            # (e.g. one still pointing nowhere, or still relying on a
-            # since-removed relay) start receiving messages directly with
-            # a single Resync click, no need to redo Embedded Signup.
-            self._whatsapp_onboarding_subscribe_app(
-                self.whatsapp_account_id, access_token, config
-            )
+            # Written BEFORE subscribe_app on purpose - see the identical
+            # comment in action_save_meta_credentials: subscribe_app calls
+            # Meta, which synchronously calls us back to verify the
+            # webhook, concurrently writing to this same row. Nothing of
+            # ours may still write to it afterwards in this request.
             self.write(
                 {
                     "whatsapp_onboarding_phone_display": phone_info.get(
@@ -311,6 +322,14 @@ class MailGateway(models.Model):
                     "whatsapp_onboarding_last_sync_date": fields.Datetime.now(),
                     "whatsapp_onboarding_last_error": False,
                 }
+            )
+            # Re-applies the webhook override too (not just at connect
+            # time): lets a gateway connected before this mechanism existed
+            # (e.g. one still pointing nowhere, or still relying on a
+            # since-removed relay) start receiving messages directly with
+            # a single Resync click, no need to redo Embedded Signup.
+            self._whatsapp_onboarding_subscribe_app(
+                self.whatsapp_account_id, access_token, config
             )
             _logger.info("[WhatsApp Onboarding] Sincronizado (gateway=%s)", self.id)
         except Exception as err:
