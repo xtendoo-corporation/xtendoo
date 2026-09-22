@@ -1,7 +1,6 @@
 # Copyright 2026 Xtendoo
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-import json
 import logging
 import uuid
 from contextlib import contextmanager
@@ -271,7 +270,6 @@ class MailGateway(models.Model):
                 }
             )
             _logger.info("[WhatsApp Onboarding] Completado (gateway=%s)", self.id)
-            self._whatsapp_onboarding_register_with_relay()
         except Exception as err:
             self._whatsapp_onboarding_set_error(err)
             if isinstance(err, UserError):
@@ -290,11 +288,18 @@ class MailGateway(models.Model):
         if self.whatsapp_onboarding_state != "connected":
             raise UserError(_("Connect WhatsApp before syncing."))
         config = self._whatsapp_onboarding_get_meta_config()
+        access_token = config["system_user_token"] or self.token
         try:
             phone_info = self._whatsapp_onboarding_fetch_phone_info(
-                self.whatsapp_from_phone,
-                config["system_user_token"] or self.token,
-                config,
+                self.whatsapp_from_phone, access_token, config
+            )
+            # Re-applies the webhook override too (not just at connect
+            # time): lets a gateway connected before this mechanism existed
+            # (e.g. one still pointing nowhere, or still relying on a
+            # since-removed relay) start receiving messages directly with
+            # a single Resync click, no need to redo Embedded Signup.
+            self._whatsapp_onboarding_subscribe_app(
+                self.whatsapp_account_id, access_token, config
             )
             self.write(
                 {
@@ -307,11 +312,6 @@ class MailGateway(models.Model):
                 }
             )
             _logger.info("[WhatsApp Onboarding] Sincronizado (gateway=%s)", self.id)
-            # Lets an already-connected gateway register with the relay
-            # after the fact (e.g. once Xtendoo configures the relay URLs),
-            # without repeating the whole Embedded Signup.
-            if self._whatsapp_onboarding_get_relay_config():
-                self._whatsapp_onboarding_register_with_relay()
         except Exception as err:
             self._whatsapp_onboarding_set_error(err)
             raise UserError(
@@ -341,7 +341,6 @@ class MailGateway(models.Model):
                     "local.",
                     self.id,
                 )
-        self._whatsapp_onboarding_unregister_from_relay()
         self.write(
             {
                 "token": str(uuid.uuid4()),
@@ -401,101 +400,6 @@ class MailGateway(models.Model):
             "system_user_token": system_user_token or False,
         }
 
-    def _whatsapp_onboarding_get_relay_config(self):
-        """Optional: Xtendoo's own production relay, needed to actually
-        *receive* messages (Meta only allows one Callback URL for the whole
-        app, shared by every client). Returns False if not configured;
-        never raises, since a client can still send messages without it.
-        """
-        icp = self.env["ir.config_parameter"].sudo()
-        register_url = icp.get_param("xtendoo_whatsapp_onboarding.relay_register_url")
-        unregister_url = icp.get_param(
-            "xtendoo_whatsapp_onboarding.relay_unregister_url"
-        )
-        api_key = icp.get_param("xtendoo_whatsapp_onboarding.relay_api_key")
-        if not register_url or not unregister_url or not api_key:
-            return False
-        return {
-            "register_url": register_url,
-            "unregister_url": unregister_url,
-            "api_key": api_key,
-        }
-
-    def _whatsapp_onboarding_register_with_relay(self):
-        """Best-effort: never raises. A failure here must not undo an
-        otherwise successful Meta connection (the client can still send
-        messages); it only means incoming messages won't reach this Odoo
-        until the registration is retried (e.g. via Resync).
-        """
-        self.ensure_one()
-        relay = self._whatsapp_onboarding_get_relay_config()
-        if not relay:
-            _logger.info(
-                "[WhatsApp Onboarding] Relay no configurado, se omite el "
-                "registro (gateway=%s)",
-                self.id,
-            )
-            return
-        try:
-            response = requests.post(
-                relay["register_url"],
-                data=json.dumps(
-                    {
-                        "phone_number_id": self.whatsapp_from_phone,
-                        "waba_id": self.whatsapp_account_id,
-                        "name": self.display_name,
-                        "webhook_url": self._get_webhook_url(),
-                        "webhook_secret": self.webhook_secret,
-                    }
-                ).encode(),
-                headers={
-                    "Content-Type": "application/json",
-                    "X-Xtendoo-Relay-Key": relay["api_key"],
-                },
-                timeout=REQUEST_TIMEOUT,
-            )
-            response.raise_for_status()
-            self.write({"integrated_webhook_state": "integrated"})
-            _logger.info(
-                "[WhatsApp Onboarding] Registrado en el relay (gateway=%s)", self.id
-            )
-        except Exception:
-            _logger.warning(
-                "[WhatsApp Onboarding] No se pudo registrar en el relay de "
-                "Xtendoo (gateway=%s); el envio de mensajes funciona pero "
-                "no se recibiran mensajes entrantes hasta reintentarlo.",
-                self.id,
-            )
-
-    def _whatsapp_onboarding_unregister_from_relay(self):
-        """Best-effort: never raises."""
-        self.ensure_one()
-        relay = self._whatsapp_onboarding_get_relay_config()
-        if not relay or not self.whatsapp_from_phone:
-            return
-        try:
-            response = requests.post(
-                relay["unregister_url"],
-                data=json.dumps(
-                    {"phone_number_id": self.whatsapp_from_phone}
-                ).encode(),
-                headers={
-                    "Content-Type": "application/json",
-                    "X-Xtendoo-Relay-Key": relay["api_key"],
-                },
-                timeout=REQUEST_TIMEOUT,
-            )
-            response.raise_for_status()
-            _logger.info(
-                "[WhatsApp Onboarding] Baja del relay (gateway=%s)", self.id
-            )
-        except Exception:
-            _logger.warning(
-                "[WhatsApp Onboarding] No se pudo dar de baja en el relay de "
-                "Xtendoo (gateway=%s)",
-                self.id,
-            )
-
     # ------------------------------------------------------------------
     # Meta Graph API calls (server-to-server only)
     # ------------------------------------------------------------------
@@ -517,11 +421,26 @@ class MailGateway(models.Model):
         return response.json()
 
     def _whatsapp_onboarding_subscribe_app(self, waba_id, access_token, config):
+        """Subscribes the app to the client's WABA AND points Meta's
+        webhook delivery for that WABA directly at this gateway's own
+        webhook URL (Meta "webhook override" mechanism), instead of at
+        Xtendoo's single app-level Callback URL.
+
+        https://developers.facebook.com/documentation/business-messaging/whatsapp/webhooks/override/
+        No relay/central server is needed: Meta delivers messages for this
+        WABA straight to this client's Odoo, verified with its own
+        verify_token exactly like the app-level Callback URL is.
+        """
+        self.ensure_one()
         endpoint = self._whatsapp_onboarding_graph_url(
             f"{waba_id}/subscribed_apps", config
         )
         response = requests.post(
             endpoint,
+            data={
+                "override_callback_uri": self._get_webhook_url(),
+                "verify_token": self.whatsapp_security_key,
+            },
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=REQUEST_TIMEOUT,
         )
@@ -534,6 +453,13 @@ class MailGateway(models.Model):
                     "Business Account."
                 )
             )
+        # Mirrors what the base mail.gateway "Integrate Webhook" button
+        # does locally: the controller only looks up "pending" gateways
+        # when Meta calls back to verify the override URL
+        # (GET .../update with hub.challenge). Meta flips this to
+        # "integrated" itself once that handshake succeeds
+        # (mail_gateway_whatsapp._receive_get_update, unmodified).
+        self.write({"integrated_webhook_state": "pending"})
         return payload
 
     def _whatsapp_onboarding_unsubscribe_app(self, waba_id, access_token):

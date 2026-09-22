@@ -120,26 +120,38 @@ esa Configuration, en **Allowed Domains** y **Valid OAuth Redirect URIs**
 del producto Facebook Login for Business.
 
 ### 10. Webhooks
-El **Callback URL es único a nivel de app** (no por cliente), se configura
-una sola vez en el Meta App Dashboard apuntando al Odoo **de Xtendoo**, no
-al de cada cliente (`<url-xtendoo>/gateway/whatsapp/<webhook_key>/update`).
-El onboarding, por cada cliente, hace `POST /{waba_id}/subscribed_apps`
-para que los eventos de esa WABA lleguen a ese callback único. Sin ese paso
-(que este módulo sí automatiza) los mensajes de un cliente conectado no
-llegarían a ningún sitio aunque el signup se complete correctamente.
+Meta permite **sobrescribir la Callback URL por WABA** ("webhook
+overrides"), no solo tener una única URL compartida por toda la app:
+https://developers.facebook.com/documentation/business-messaging/whatsapp/webhooks/override/
 
-Como Meta solo entrega a esa única URL, para que los mensajes de CADA
-cliente lleguen a SU PROPIO Odoo hace falta el módulo
-**`xtendoo_whatsapp_webhook_relay`**, instalado en el Odoo de Xtendoo, que
-reenvía cada evento entrante al cliente correcto según su
-`phone_number_id`. Este módulo (`xtendoo_whatsapp_onboarding`) se registra
-automáticamente ahí en cuanto el cliente conecta (`POST
-.../xtendoo_whatsapp_relay/register`) y se da de baja al desconectar
-(`.../unregister`) — configurable en Ajustes generales: **Relay Register
-URL**, **Relay Unregister URL**, **Relay API Key**. Si se dejan vacíos, el
-cliente puede seguir enviando mensajes con normalidad, pero no recibirá
-los entrantes hasta que se configure. Ver el README de
-`xtendoo_whatsapp_webhook_relay` para el despliegue del lado Xtendoo.
+`_whatsapp_onboarding_subscribe_app()` hace `POST
+/{waba_id}/subscribed_apps` con `override_callback_uri` (la URL de webhook
+propia de ESE cliente, `mail.gateway._get_webhook_url()`) y `verify_token`
+(`whatsapp_security_key` de ese mismo gateway). Con eso, Meta entrega los
+mensajes de esa WABA **directamente al Odoo del cliente**, sin pasar por
+ningún servidor intermedio de Xtendoo.
+
+Justo después, el gateway queda en `integrated_webhook_state = "pending"`
+— el controlador de `mail_gateway` (`GatewayController.post_update`, GET,
+sin modificar) solo encuentra gateways en ese estado cuando Meta llama a
+verificar la URL con el handshake `hub.challenge`/`hub.verify_token`; al
+verificarse correctamente pasa a `"integrated"` automáticamente, sin
+ninguna acción manual (los botones "Integrate/Update/Remove Webhook" del
+módulo base quedan ocultos para gateways de onboarding porque este flujo
+ya los sustituye).
+
+**No hace falta ningún servidor/relé central**: cada cliente recibe sus
+propios mensajes en su propio Odoo. Únicos eventos que siguen sin poder
+sobrescribirse por WABA (irían a la Callback URL de la app, no cubiertos
+todavía por este módulo porque está fuera de alcance en esta fase):
+actualizaciones de estado de plantillas y algunos eventos de cuenta — no
+afectan al envío/recepción de mensajes normal.
+
+(Una versión anterior de este módulo usaba un módulo relé
+`xtendoo_whatsapp_webhook_relay` para reenviar manualmente los mensajes de
+cada cliente desde un único servidor central. Se descartó al confirmar que
+el mecanismo de webhook overrides de Meta resuelve lo mismo de forma nativa
+y más simple, sin servidor intermedio.)
 
 ### 11. Permisos
 `whatsapp_business_management`, `whatsapp_business_messaging` en la

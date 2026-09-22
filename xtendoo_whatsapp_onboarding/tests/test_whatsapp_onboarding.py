@@ -8,7 +8,6 @@ Meta errors, missing WABA/phone/token, expired token, retry, duplicates
 (WABA and stale/duplicate callback), multi-company isolation, missing
 permissions, disconnection and the full state machine.
 """
-import json
 import uuid
 from unittest.mock import MagicMock, patch
 
@@ -73,7 +72,7 @@ class TestWhatsappOnboarding(TransactionCase):
                 return fallback or _mock_response({"data": []})
             return phone or _mock_response({"display_phone_number": "+34 600 000 000"})
 
-        def post_side_effect(url, headers=None, timeout=None):
+        def post_side_effect(url, data=None, headers=None, timeout=None):
             if "subscribed_apps" in url:
                 return subscribe or _mock_response({"success": True})
             raise AssertionError("unexpected POST call: %s" % url)
@@ -445,34 +444,26 @@ class TestWhatsappOnboarding(TransactionCase):
         self.assertEqual(other_gateway.token, "TOKEN-CLIENT-2")
         self.assertNotEqual(self.gateway.token, other_gateway.token)
 
-    # 18. Relay registration (xtendoo_whatsapp_webhook_relay integration) ---
-    def _set_relay_config(self):
-        icp = self.env["ir.config_parameter"].sudo()
-        icp.set_param(
-            "xtendoo_whatsapp_onboarding.relay_register_url",
-            "https://xtendoo.example/xtendoo_whatsapp_relay/register",
-        )
-        icp.set_param(
-            "xtendoo_whatsapp_onboarding.relay_unregister_url",
-            "https://xtendoo.example/xtendoo_whatsapp_relay/unregister",
-        )
-        icp.set_param("xtendoo_whatsapp_onboarding.relay_api_key", "RELAY-KEY-1")
-
-    def test_18_relay_registration_sets_integrated_on_success(self):
-        self._set_relay_config()
+    # 18. Meta webhook override: no central relay needed to receive -------
+    # Meta's WhatsApp Cloud API lets an app override the webhook Callback
+    # URL per WABA (POST /{waba_id}/subscribed_apps with
+    # override_callback_uri + verify_token), instead of only ever
+    # delivering to the single app-level Callback URL. So each connected
+    # client gets its messages delivered straight to its own Odoo — no
+    # central Xtendoo relay/registry is needed for message traffic.
+    # https://developers.facebook.com/documentation/business-messaging/whatsapp/webhooks/override/
+    def test_18_subscribe_sets_webhook_override_to_own_url(self):
         session = self._start_signup()
         mock_requests = self._patch_graph(
             exchange=_mock_response({"access_token": "TOKEN-1"})
         )
         original_post_side_effect = mock_requests.post.side_effect
+        captured = {}
 
         def post_side_effect(url, data=None, headers=None, timeout=None):
-            if url == "https://xtendoo.example/xtendoo_whatsapp_relay/register":
-                self.assertEqual(headers.get("X-Xtendoo-Relay-Key"), "RELAY-KEY-1")
-                payload = json.loads(data)
-                self.assertEqual(payload["phone_number_id"], "phone-1")
-                self.assertEqual(payload["waba_id"], "waba-1")
-                return _mock_response({"ok": True})
+            if "subscribed_apps" in url:
+                captured["data"] = data
+                return _mock_response({"success": True})
             return original_post_side_effect(url, headers=headers, timeout=timeout)
 
         mock_requests.post.side_effect = post_side_effect
@@ -480,84 +471,69 @@ class TestWhatsappOnboarding(TransactionCase):
         self.gateway.action_save_meta_credentials(
             session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
         )
-        self.assertEqual(self.gateway.whatsapp_onboarding_state, "connected")
-        self.assertEqual(self.gateway.integrated_webhook_state, "integrated")
-
-    def test_18b_relay_registration_failure_does_not_break_connection(self):
-        self._set_relay_config()
-        session = self._start_signup()
-        mock_requests = self._patch_graph(
-            exchange=_mock_response({"access_token": "TOKEN-1"})
+        self.assertEqual(
+            captured["data"]["override_callback_uri"],
+            self.gateway._get_webhook_url(),
         )
-        original_post_side_effect = mock_requests.post.side_effect
-
-        def post_side_effect(url, data=None, headers=None, timeout=None):
-            if url == "https://xtendoo.example/xtendoo_whatsapp_relay/register":
-                raise requests.ConnectionError("relay unreachable")
-            return original_post_side_effect(url, headers=headers, timeout=timeout)
-
-        mock_requests.post.side_effect = post_side_effect
-
-        # Must NOT raise: relay registration is best-effort.
-        self.gateway.action_save_meta_credentials(
-            session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
+        self.assertEqual(
+            captured["data"]["verify_token"], self.gateway.whatsapp_security_key
         )
-        self.assertEqual(self.gateway.whatsapp_onboarding_state, "connected")
-        self.assertFalse(self.gateway.integrated_webhook_state)
 
-    def test_18c_relay_unregister_called_on_disconnect(self):
-        self._set_relay_config()
-        session = self._start_signup()
-        mock_requests = self._patch_graph(
-            exchange=_mock_response({"access_token": "TOKEN-1"})
-        )
-        original_post_side_effect = mock_requests.post.side_effect
-        register_calls = []
-        unregister_calls = []
-
-        def post_side_effect(url, data=None, headers=None, timeout=None):
-            if url == "https://xtendoo.example/xtendoo_whatsapp_relay/register":
-                register_calls.append(json.loads(data))
-                return _mock_response({"ok": True})
-            if url == "https://xtendoo.example/xtendoo_whatsapp_relay/unregister":
-                unregister_calls.append(json.loads(data))
-                return _mock_response({"ok": True})
-            return original_post_side_effect(url, headers=headers, timeout=timeout)
-
-        mock_requests.post.side_effect = post_side_effect
-        self.gateway.action_save_meta_credentials(
-            session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
-        )
-        self.assertEqual(len(register_calls), 1)
-
-        self.gateway.action_disconnect()
-        self.assertEqual(len(unregister_calls), 1)
-        self.assertEqual(unregister_calls[0]["phone_number_id"], "phone-1")
-
-    def test_18d_resync_registers_with_relay_for_already_connected_gateway(self):
-        # Connect WITHOUT relay config (simulates an already-connected
-        # client, like a gateway that connected before the relay existed).
+    def test_18b_connecting_arms_pending_state_for_real_meta_verification(self):
+        # mail_gateway's controller only looks up gateways in state
+        # "pending" when Meta calls back with the hub.challenge
+        # verification handshake for the override URL
+        # (GatewayController.post_update, GET branch, unmodified). Without
+        # arming this, Meta's real verification could never find this
+        # gateway and it would stay stuck, never turning "integrated".
         session = self._start_signup()
         self._patch_graph(exchange=_mock_response({"access_token": "TOKEN-1"}))
         self.gateway.action_save_meta_credentials(
             session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
         )
-        self.assertFalse(self.gateway.integrated_webhook_state)
+        self.assertEqual(self.gateway.integrated_webhook_state, "pending")
+        bot_data = self.env["mail.gateway"]._get_gateway(
+            self.gateway.webhook_key, gateway_type="whatsapp", state="pending"
+        )
+        self.assertTrue(
+            bot_data, "the real controller must be able to find this gateway"
+        )
 
-        # Relay gets configured afterwards; Resync alone must be enough.
-        self._set_relay_config()
+    def test_18c_resync_reapplies_webhook_override_for_already_connected_gateway(
+        self,
+    ):
+        # Simulates a gateway connected before this mechanism existed (e.g.
+        # Escudero): already "connected" but never armed for verification.
+        # A single Resync must be enough to start receiving messages
+        # directly, without repeating Embedded Signup.
+        self.gateway.write(
+            {
+                "whatsapp_onboarding_state": "connected",
+                "whatsapp_account_id": "waba-1",
+                "whatsapp_from_phone": "phone-1",
+                "token": "TOKEN-OLD",
+                "integrated_webhook_state": False,
+            }
+        )
         mock_requests = self._patch_graph()
-        register_calls = []
+        captured = {}
 
         def post_side_effect(url, data=None, headers=None, timeout=None):
-            if url == "https://xtendoo.example/xtendoo_whatsapp_relay/register":
-                register_calls.append(json.loads(data))
-                return _mock_response({"ok": True})
+            if "subscribed_apps" in url:
+                captured["data"] = data
+                return _mock_response({"success": True})
             raise AssertionError("unexpected POST call: %s" % url)
 
         mock_requests.post.side_effect = post_side_effect
+
         self.gateway.action_resync()
 
-        self.assertEqual(len(register_calls), 1)
-        self.assertEqual(register_calls[0]["phone_number_id"], "phone-1")
-        self.assertEqual(self.gateway.integrated_webhook_state, "integrated")
+        self.assertEqual(
+            captured["data"]["override_callback_uri"],
+            self.gateway._get_webhook_url(),
+        )
+        self.assertEqual(
+            captured["data"]["verify_token"], self.gateway.whatsapp_security_key
+        )
+        self.assertEqual(self.gateway.integrated_webhook_state, "pending")
+
