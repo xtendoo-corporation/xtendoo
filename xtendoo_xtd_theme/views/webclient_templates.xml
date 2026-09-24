@@ -46,7 +46,7 @@
         </xpath>
         <!-- Títulos Bienvenido -->
         <xpath expr="//div[hasclass('oe_structure')][1]" position="after">
-            <div class="text-start mb-4 position-relative">
+            <div class="xtd-login-heading text-center mb-4 position-relative">
                 <h2>Bienvenido</h2>
                 <p class="subtitle mb-2">Inicia sesión para continuar</p>
                 <!-- Punto de anclaje para el botón de elegir usuario -->

@@ -120,6 +120,42 @@ class TestXtdTheme(TransactionCase):
         self.assertNotIn("\n#wrapwrap {", login_scss)
         self.assertNotIn("\nmain {", login_scss)
 
+    def test_xtd_login_and_apps_menu_have_mobile_layout_rules(self):
+        login_scss = (
+            self.module_path
+            / "static"
+            / "src"
+            / "scss"
+            / "xtd_login.scss"
+        ).read_text(encoding="utf-8")
+        menu_scss = (
+            self.module_path
+            / "static"
+            / "src"
+            / "scss"
+            / "xtd_menu.scss"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("@media (max-width: 767.98px)", login_scss)
+        self.assertIn("box-sizing: border-box !important;", login_scss)
+        self.assertIn("max-height: calc(100dvh - 32px) !important;", login_scss)
+        self.assertIn("width: 100vw !important;", menu_scss)
+        self.assertIn("max-width: 100vw !important;", menu_scss)
+
+    def test_xtd_login_heading_is_centered(self):
+        templates = self.env.ref("xtendoo_xtd_theme.login_xtd")
+        login_scss = (
+            self.module_path
+            / "static"
+            / "src"
+            / "scss"
+            / "xtd_login.scss"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("xtd-login-heading", templates.arch_db)
+        self.assertIn(".xtd-login-heading", login_scss)
+        self.assertIn("text-align: center !important;", login_scss)
+
     def test_xtd_theme_dark_assets_are_declared(self):
         manifest = get_manifest("xtendoo_xtd_theme")
         assets = manifest["assets"]["web.assets_web_dark"]
