@@ -217,8 +217,6 @@ export class PosOrderListController extends ListController {
                     await this.actionService.doAction("point_of_sale.action_pos_config_kanban");
                 },
                 close: () => {
-                    // Recargar la lista para reflejar cambios
-                    this.model.load();
                     removeDialog();
                 },
             });
