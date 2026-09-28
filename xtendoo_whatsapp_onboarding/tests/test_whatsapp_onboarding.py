@@ -669,6 +669,9 @@ class TestWhatsappOnboarding(TransactionCase):
         }
         vals = service._get_channel_vals(self.gateway, "34600000000", update)
         self.assertEqual(vals["gateway_id"], self.gateway.id)
+        # No blank channel title: falls back to the phone number so the
+        # conversation is still identifiable in the UI.
+        self.assertEqual(vals.get("name"), "34600000000")
 
     def test_21b_incoming_contact_with_profile_keeps_name(self):
         service = self.env["mail.gateway.whatsapp"]
