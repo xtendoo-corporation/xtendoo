@@ -225,7 +225,7 @@ class AlarmManager(models.AbstractModel):
                 for var in template.variable_ids:
                     # Try to extract from event
                     val = ''
-                    if var.field_type == 'field' and var.field_name:
+                    if var.field_name:
                         try:
                             v = event
                             for p in var.field_name.split('.'):
