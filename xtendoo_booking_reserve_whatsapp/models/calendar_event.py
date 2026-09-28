@@ -44,8 +44,10 @@ class CalendarEvent(models.Model):
         """Compute formatted date/time strings for WhatsApp messages."""
         import pytz
 
-        # Obtener timezone del usuario o de la empresa, por defecto Madrid
-        tz_name = self.env.context.get('tz') or self.env.user.tz or self.env.company.tz or 'Europe/Madrid'
+        # Obtener timezone del usuario, por defecto Madrid.
+        # res.company no tiene campo tz en Odoo estándar (solo lo añaden
+        # ciertos módulos de localización no instalados aquí).
+        tz_name = self.env.context.get('tz') or self.env.user.tz or 'Europe/Madrid'
         user_tz = pytz.timezone(tz_name)
 
         for event in self:

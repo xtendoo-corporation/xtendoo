@@ -684,3 +684,34 @@ class TestWhatsappOnboarding(TransactionCase):
         vals = service._get_channel_vals(self.gateway, "34600000000", update)
         self.assertEqual(vals.get("name"), "Jane Doe")
 
+    # 22. Tipo de mensaje no soportado por WhatsApp -------------------------
+    def test_22_unsupported_message_type_posts_visible_notice(self):
+        # Real production case (Escudero): a WhatsApp voice note / view-once
+        # photo / poll etc. arrives as type="unsupported" with no text and
+        # no handled media key, so the base _process_update() never posts
+        # anything and the conversation looks silently broken. We must
+        # leave a visible note instead of leaving it empty.
+        service = self.env["mail.gateway.whatsapp"]
+        update = {
+            "contacts": [{"wa_id": "34600000001"}],
+            "messages": [
+                {
+                    "from": "34600000001",
+                    "id": "wamid.unsupported",
+                    "timestamp": "1690000000",
+                    "type": "unsupported",
+                    "errors": [
+                        {"code": 131051, "title": "Unsupported message type"}
+                    ],
+                }
+            ],
+        }
+        chat = service._get_channel(
+            self.gateway, "34600000001", update, force_create=True
+        )
+        service._process_update(chat, update["messages"][0], update)
+        messages = self.env["mail.message"].search(
+            [("model", "=", "discuss.channel"), ("res_id", "=", chat.id)]
+        )
+        self.assertTrue(any("no soportado" in (m.body or "") for m in messages))
+

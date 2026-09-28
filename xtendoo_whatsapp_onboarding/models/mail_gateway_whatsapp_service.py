@@ -3,9 +3,17 @@
 
 import logging
 
-from odoo import models
+from odoo import _, models
 
 _logger = logging.getLogger(__name__)
+
+UNSUPPORTED_TYPE_NOTICE = (
+    "⚠️ Se ha recibido un mensaje de WhatsApp de un tipo no soportado por "
+    "la API de WhatsApp Business (por ejemplo: nota de voz o foto de "
+    "\"ver una vez\", encuestas, stickers animados...). WhatsApp no "
+    "entrega el contenido de estos mensajes a través de la API; pide al "
+    "remitente que lo reenvíe como texto, imagen o documento normal."
+)
 
 
 class MailGatewayWhatsappService(models.AbstractModel):
@@ -48,14 +56,16 @@ class MailGatewayWhatsappService(models.AbstractModel):
         # mail_gateway_whatsapp._process_update() only extracts a body from
         # "text" or from a fixed set of media types (image/audio/video/
         # document/sticker) plus "location". Any other incoming message
-        # type (button quick-reply, interactive reply, reaction, shared
-        # contact...) silently ends up with an empty body, so the channel
-        # gets created but no message is ever posted into it. Log the
-        # message type/shape (never its content) so an empty-looking
-        # conversation can be diagnosed from a real payload instead of
-        # guessed at.
+        # type (button quick-reply, interactive reply, WhatsApp's own
+        # "unsupported" type for voice notes/view-once media/polls/etc.)
+        # silently ends up with an empty body, so the channel gets created
+        # but no message is ever posted into it - the conversation just
+        # looks broken/empty with no explanation. Log the message
+        # type/shape (never its content) for diagnosis, and leave a
+        # visible note in the channel instead of silence.
         handled_media = ("text", "image", "audio", "video", "document", "sticker", "location")
-        if not any(message.get(key) for key in handled_media):
+        is_unhandled = not any(message.get(key) for key in handled_media)
+        if is_unhandled:
             _logger.warning(
                 "[WhatsApp] Incoming message type not handled by "
                 "_process_update, body will be empty: type=%s keys=%s "
@@ -64,4 +74,11 @@ class MailGatewayWhatsappService(models.AbstractModel):
                 list(message.keys()),
                 chat.gateway_id.id,
             )
-        return super()._process_update(chat, message, value)
+        result = super()._process_update(chat, message, value)
+        if is_unhandled:
+            chat.sudo().message_post(
+                body=_(UNSUPPORTED_TYPE_NOTICE),
+                message_type="notification",
+                subtype_xmlid="mail.mt_note",
+            )
+        return result
