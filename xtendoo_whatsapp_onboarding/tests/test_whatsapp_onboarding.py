@@ -654,3 +654,30 @@ class TestWhatsappOnboarding(TransactionCase):
         self.gateway.action_resync()
         self.assertEqual(self.gateway.webhook_secret, "s3cr3t")
 
+    # 21. Contacto entrante sin "profile" ------------------------------------
+    def test_21_incoming_contact_without_profile_does_not_crash(self):
+        # Real Meta payloads don't always include a "profile" key on a
+        # contacts[] entry (e.g. a number with no known WhatsApp display
+        # name yet). mail_gateway_whatsapp._get_channel_vals() does
+        # contact["profile"]["name"] unconditionally and crashes with a
+        # KeyError, dropping the incoming message with a 500. Our override
+        # must tolerate this without raising.
+        service = self.env["mail.gateway.whatsapp"]
+        update = {
+            "contacts": [{"wa_id": "34600000000"}],
+            "messages": [{"from": "34600000000"}],
+        }
+        vals = service._get_channel_vals(self.gateway, "34600000000", update)
+        self.assertEqual(vals["gateway_id"], self.gateway.id)
+
+    def test_21b_incoming_contact_with_profile_keeps_name(self):
+        service = self.env["mail.gateway.whatsapp"]
+        update = {
+            "contacts": [
+                {"wa_id": "34600000000", "profile": {"name": "Jane Doe"}}
+            ],
+            "messages": [{"from": "34600000000"}],
+        }
+        vals = service._get_channel_vals(self.gateway, "34600000000", update)
+        self.assertEqual(vals.get("name"), "Jane Doe")
+
