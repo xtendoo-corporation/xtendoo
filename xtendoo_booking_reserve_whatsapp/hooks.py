@@ -19,7 +19,7 @@ def post_init_hook(env):
         'gateway_id': gateway.id,
         'category': 'utility',
         'language': 'es_ES',
-        'status': 'approved',
+        'state': 'approved',
         'body': 'Hola, su solicitud de cita ha sido APROBADA. Le esperamos.',
         'variable_ids': []
     }
@@ -34,7 +34,7 @@ def post_init_hook(env):
         'gateway_id': gateway.id,
         'category': 'utility',
         'language': 'es_ES',
-        'status': 'approved',
+        'state': 'approved',
         'body': 'Lamentamos informarle que su solicitud de cita ha sido RECHAZADA. Contacte con nosotros.',
         'variable_ids': []
     }
@@ -53,8 +53,8 @@ def post_init_hook(env):
             'language': 'es_ES',
             'body': 'Hola, le recordamos su cita: {{1}} el {{2}}. ¡Gracias!',
             'variable_ids': [
-                (0, 0, {'name': '{{1}}', 'line_type': 'body', 'field_type': 'field', 'field_name': 'name', 'demo_value': 'Cita Médica'}),
-                (0, 0, {'name': '{{2}}', 'line_type': 'body', 'field_type': 'field', 'field_name': 'start', 'demo_value': '2023-10-25 10:00'}),
+                (0, 0, {'name': '{{1}}', 'line_type': 'body', 'field_name': 'name', 'sample_value': 'Cita Médica'}),
+                (0, 0, {'name': '{{2}}', 'line_type': 'body', 'field_name': 'start', 'sample_value': '2023-10-25 10:00'}),
             ]
         }
         calendar_template = env['mail.whatsapp.template'].search([
