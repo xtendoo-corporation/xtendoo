@@ -19,13 +19,6 @@ UNSUPPORTED_TYPE_NOTICE = (
 class MailGatewayWhatsappService(models.AbstractModel):
     _inherit = "mail.gateway.whatsapp"
 
-    def _send(self, gateway, *args, **kwargs):
-        # Prefer Xtendoo's central, non-expiring token (if configured) over
-        # the client's own stored token when sending messages. See
-        # mail.gateway._whatsapp_onboarding_effective_token().
-        with gateway._whatsapp_onboarding_effective_token():
-            return super()._send(gateway, *args, **kwargs)
-
     def _get_channel_vals(self, gateway, token, update):
         # mail_gateway_whatsapp._get_channel_vals() does
         # contact["profile"]["name"] unconditionally, but Meta's webhook

@@ -132,15 +132,18 @@ class ResourceBooking(models.Model):
         else:
             _logger.info("   │  ✓ Template 'Recordatorio Cita Whatsapp' encontrado (ID: %s)", reminder_template.id)
 
-        _logger.info("   │  → Buscando alarmas WhatsApp configuradas...")
-        # Buscar alarmas WhatsApp configuradas
-        whatsapp_alarms = self.env['calendar.alarm'].search([
-            ('alarm_type', '=', 'whatsapp'),
-            ('whatsapp_template_id', '!=', False)
-        ])
+        _logger.info("   │  → Buscando alarmas WhatsApp configuradas en el tipo de cita '%s'...", self.type_id.name)
+        # Solo enviar recordatorio WhatsApp si el TIPO DE CITA lo tiene
+        # configurado explícitamente (mismo criterio que usa el módulo base
+        # para sus propios recordatorios por email: type_id.alarm_ids).
+        # Antes se adjuntaban TODAS las alarmas whatsapp del sistema a
+        # CUALQUIER cita, sin importar el tipo.
+        whatsapp_alarms = self.type_id.alarm_ids.filtered(
+            lambda alarm: alarm.alarm_type == 'whatsapp' and alarm.whatsapp_template_id
+        )
 
         if not whatsapp_alarms:
-            _logger.warning("   │  ⚠ No hay alarmas WhatsApp configuradas. El evento se creará sin recordatorios WhatsApp.")
+            _logger.info("   │  ℹ El tipo de cita '%s' no tiene alarma WhatsApp configurada. No se enviará recordatorio.", self.type_id.name)
         else:
             _logger.info("   │  ✓ Encontradas %d alarmas WhatsApp para asignar al evento", len(whatsapp_alarms))
             for alarm in whatsapp_alarms:
