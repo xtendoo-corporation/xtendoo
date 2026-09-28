@@ -623,3 +623,34 @@ class TestWhatsappOnboarding(TransactionCase):
             )
         self.assertIn("Invalid pin", str(ctx.exception))
 
+    # 20. webhook_secret must be Meta's real App Secret, not a random UUID -
+    # Meta always signs x-hub-signature-256 with the App Secret of the
+    # subscribed app, even for messages delivered to a webhook override
+    # URL - there is no per-client/per-WABA signing secret. mail_gateway's
+    # own (unmodified) _verify_update() expects `webhook_secret` to BE
+    # that value, or it can never validate a real incoming message.
+    def test_20_connect_sets_webhook_secret_to_app_secret(self):
+        session = self._start_signup()
+        self._patch_graph(exchange=_mock_response({"access_token": "TOKEN-1"}))
+        self.gateway.action_save_meta_credentials(
+            session, "auth-code", waba_id="waba-1", phone_number_id="phone-1"
+        )
+        self.assertEqual(self.gateway.webhook_secret, "s3cr3t")
+
+    def test_20b_resync_fixes_up_webhook_secret_for_already_connected_gateway(self):
+        # Simulates a gateway connected before this fix existed (e.g.
+        # Escudero): already "connected" with a stale, random
+        # webhook_secret that could never validate a real message.
+        self.gateway.write(
+            {
+                "whatsapp_onboarding_state": "connected",
+                "whatsapp_account_id": "waba-1",
+                "whatsapp_from_phone": "phone-1",
+                "token": "TOKEN-OLD",
+                "webhook_secret": str(uuid.uuid4()),
+            }
+        )
+        self._patch_graph()
+        self.gateway.action_resync()
+        self.assertEqual(self.gateway.webhook_secret, "s3cr3t")
+

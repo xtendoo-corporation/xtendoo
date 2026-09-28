@@ -171,6 +171,20 @@ no expone ningún endpoint para recuperarlo después, solo para resetearlo
 manualmente desde WhatsApp Manager, así que este campo es el único
 registro que queda de él.
 
+### 10ter. `webhook_secret` debe ser el App Secret de Meta, no un valor aleatorio
+Confirmado contra documentación oficial: Meta firma **siempre** la
+cabecera `x-hub-signature-256` de cada webhook con el **App Secret de la
+aplicación**, sea cual sea la URL de destino (la Callback URL por defecto
+o una `override_callback_uri`) — no existe ningún secreto de firma por
+WABA/cliente. `mail_gateway_whatsapp._verify_update()` (sin modificar)
+calcula el HMAC contra `gateway.webhook_secret`, así que ese campo tiene
+que contener literalmente el App Secret de Xtendoo, no un valor aleatorio
+por cliente. Por eso `action_save_meta_credentials`/`action_resync`
+escriben `webhook_secret = <App Secret de Xtendoo>` (el mismo que ya usa
+`_whatsapp_onboarding_get_meta_config()` para el intercambio del `code`).
+No es una exposición nueva: cada Odoo de cliente ya guarda ese App Secret
+localmente para poder hacer el intercambio del `code` por su cuenta.
+
 ### 11. Permisos
 `whatsapp_business_management`, `whatsapp_business_messaging` en la
 Configuration del Embedded Signup. **Verificado en el Dashboard real de la
