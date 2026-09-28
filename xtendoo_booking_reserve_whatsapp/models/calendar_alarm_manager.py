@@ -241,11 +241,15 @@ class AlarmManager(models.AbstractModel):
             for key, val in replacements.items():
                 body = body.replace(key, val)
 
-            # Send message via channel with context for variable extraction
+            # Send message via channel with context for variable extraction.
+            # mail_whatsapp_template.prepare_value_to_send() reads
+            # context["default_res_id"] (falls back to "res_id") to resolve
+            # the record for template variables - NOT active_id/active_model.
+            # Passing the wrong keys leaves its local `record` unset and
+            # crashes with UnboundLocalError deep inside the OCA send path.
             channel.with_context(
                 whatsapp_template_id=template.id,
-                active_id=event.id,           # Pass event ID for variable extraction
-                active_model='calendar.event'  # Pass the model name
+                default_res_id=event.id,
             ).message_post(
                 body=body,
                 message_type='comment',
