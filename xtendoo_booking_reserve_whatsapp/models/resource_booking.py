@@ -53,7 +53,15 @@ class ResourceBooking(models.Model):
                 if not booking.start or not booking.stop:
                     _logger.info("   │  ⚠️ start/stop se perdieron al eliminar meeting_id - Restaurando...")
                     _logger.info("   │     Restaurando start=%s, stop=%s", saved_start, saved_stop)
-                    booking.with_context(no_mail_to_attendees=True).write({
+                    # syncing_booking_ids evita que resource_booking._sync_meeting()
+                    # (que corre tras cualquier write) vuelva a auto-crear un
+                    # calendar.event fantasma al ver start/stop con valor y
+                    # meeting_id vacío. Ese segundo evento fantasma es el que
+                    # causaba el recordatorio WhatsApp duplicado.
+                    booking.with_context(
+                        no_mail_to_attendees=True,
+                        syncing_booking_ids=booking.ids,
+                    ).write({
                         'start': saved_start,
                         'stop': saved_stop,
                     })
@@ -188,6 +196,14 @@ class ResourceBooking(models.Model):
                 mail_auto_delete=True,
             ).sudo().create(event_vals)
             self.calendar_event_id = event.id
+
+            # Enlazar también como meeting_id: si se deja vacío, la próxima
+            # vez que se escriba algo en el booking (p.ej. reprogramar la
+            # cita), resource_booking._sync_meeting() del módulo base verá
+            # start/stop con valor y meeting_id vacío, y creará OTRO
+            # calendar.event fantasma con la misma alarma WhatsApp,
+            # reproduciendo el envío duplicado más adelante.
+            self.with_context(syncing_booking_ids=self.ids).write({'meeting_id': event.id})
 
             _logger.info("   │  ✓ Evento de calendario creado: ID %s", event.id)
             _logger.info("   │     - Start: %s", event.start)
