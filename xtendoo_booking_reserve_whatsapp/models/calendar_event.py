@@ -10,6 +10,16 @@ _logger = logging.getLogger(__name__)
 class CalendarEvent(models.Model):
     _inherit = 'calendar.event'
 
+    whatsapp_notified_alarm_ids = fields.Many2many(
+        'calendar.alarm',
+        'calendar_event_whatsapp_alarm_notified_rel',
+        'event_id', 'alarm_id',
+        string='WhatsApp Alarms Already Notified',
+        copy=False,
+        help="Alarmas WhatsApp que ya han enviado su recordatorio para este evento, "
+             "para evitar reenvíos duplicados en cada ejecución del cron.",
+    )
+
     # Campos computados para formatear fecha/hora para WhatsApp
     start_time = fields.Char(
         string='Start Time',

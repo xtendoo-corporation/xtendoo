@@ -52,6 +52,7 @@ class AlarmManager(models.AbstractModel):
                 ('start', '>=', notification_start),
                 ('start', '<=', notification_end),
                 ('stop', '>', now),  # Event not ended yet
+                ('whatsapp_notified_alarm_ids', 'not in', alarm.id),  # Not already notified for this alarm
             ])
 
             # Filter events where the alarm should trigger
@@ -156,8 +157,16 @@ class AlarmManager(models.AbstractModel):
 
                 _logger.info("    ✓ Enviando recordatorios a: %s", ', '.join(partners.mapped('name')))
 
+                sent_to_any = False
                 for partner in partners:
-                    self._send_whatsapp_event_reminder(event, partner, alarm.whatsapp_template_id)
+                    if self._send_whatsapp_event_reminder(event, partner, alarm.whatsapp_template_id):
+                        sent_to_any = True
+
+                if sent_to_any:
+                    # Mark this alarm as already notified for this event so the next
+                    # cron run (or another trigger firing in the same window) doesn't
+                    # resend the same reminder.
+                    event.write({'whatsapp_notified_alarm_ids': [(4, alarm.id)]})
 
                 # Schedule next reminder if it's a recurring event
                 if event.recurrence_id:
@@ -173,10 +182,13 @@ class AlarmManager(models.AbstractModel):
         _logger.info("=" * 80)
 
     def _send_whatsapp_event_reminder(self, event, partner, template):
-        """Send a single WhatsApp reminder for an event."""
+        """Send a single WhatsApp reminder for an event.
+
+        Returns True if the message was actually sent, False otherwise.
+        """
         if not template:
             _logger.warning("No template provided for WhatsApp reminder. Skipping.")
-            return
+            return False
 
         # Validate partner has phone number
         if not partner.mobile and not partner.phone:
@@ -184,7 +196,7 @@ class AlarmManager(models.AbstractModel):
                 "Partner '%s' (ID: %s) has no phone number. Skipping WhatsApp reminder.",
                 partner.name, partner.id
             )
-            return
+            return False
 
         try:
             # Obtener gateway desde el template
@@ -195,7 +207,7 @@ class AlarmManager(models.AbstractModel):
                     "No WhatsApp gateway found in template. Cannot send reminder for event '%s' (ID: %s).",
                     event.name, event.id
                 )
-                return
+                return False
 
             # Using the logic from our booking_request override (adapted for event/partner context)
             # Try to get channel using partner's phone numbers
@@ -208,7 +220,7 @@ class AlarmManager(models.AbstractModel):
                     "Could not create WhatsApp channel for partner '%s' (ID: %s). Skipping.",
                     partner.name, partner.id
                 )
-                return
+                return False
 
             # Render body (simplified manual replacement for events)
             body = template.body
@@ -261,9 +273,11 @@ class AlarmManager(models.AbstractModel):
                 "WhatsApp reminder sent to '%s' (ID: %s) for event '%s' (ID: %s)",
                 partner.name, partner.id, event.name, event.id
             )
+            return True
 
         except Exception as e:
             _logger.error(
                 "Failed to send WhatsApp reminder to '%s' (ID: %s) for event '%s' (ID: %s): %s",
                 partner.name, partner.id, event.name, event.id, str(e)
             )
+            return False
