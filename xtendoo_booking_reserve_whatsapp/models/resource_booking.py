@@ -195,15 +195,21 @@ class ResourceBooking(models.Model):
                 mail_create_nothread=True,
                 mail_auto_delete=True,
             ).sudo().create(event_vals)
-            self.calendar_event_id = event.id
 
-            # Enlazar también como meeting_id: si se deja vacío, la próxima
-            # vez que se escriba algo en el booking (p.ej. reprogramar la
-            # cita), resource_booking._sync_meeting() del módulo base verá
-            # start/stop con valor y meeting_id vacío, y creará OTRO
-            # calendar.event fantasma con la misma alarma WhatsApp,
-            # reproduciendo el envío duplicado más adelante.
-            self.with_context(syncing_booking_ids=self.ids).write({'meeting_id': event.id})
+            # calendar_event_id y meeting_id se escriben JUNTOS y con
+            # syncing_booking_ids: cualquier write() sobre resource.booking
+            # (aunque sea de un campo sin relación, como calendar_event_id)
+            # dispara resource_booking._sync_meeting() del módulo base. Si
+            # meeting_id estuviera vacío en ese momento (aunque sea un
+            # instante, p.ej. escribiendo calendar_event_id primero y
+            # meeting_id después), _sync_meeting() vería start/stop con
+            # valor y meeting_id vacío y crearía OTRO calendar.event
+            # fantasma con la misma alarma WhatsApp, reproduciendo el envío
+            # duplicado.
+            self.with_context(syncing_booking_ids=self.ids).write({
+                'calendar_event_id': event.id,
+                'meeting_id': event.id,
+            })
 
             _logger.info("   │  ✓ Evento de calendario creado: ID %s", event.id)
             _logger.info("   │     - Start: %s", event.start)

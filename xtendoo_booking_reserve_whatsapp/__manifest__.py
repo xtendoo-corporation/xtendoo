@@ -1,6 +1,6 @@
 {
     "name": "Xtendoo Booking Reserve - WhatsApp Integration",
-    "version": "18.0.1.0.2",
+    "version": "18.0.1.0.3",
     "category": "Social",
     "summary": "WhatsApp integration for Booking Reserve",
     "author": "Xtendoo",
