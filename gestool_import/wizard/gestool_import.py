@@ -845,6 +845,7 @@ class GestoolImport(models.TransientModel):
         self, invalid_tickets, malformed_lines, invalid_pos_tickets=None,
         mixed_pos_tickets=None, negative_tickets=None,
         invalid_numeric_tickets=None, failed_tickets=None,
+        duplicate_tickets=None,
     ):
         """Construye una notificación legible sin desbordar el cliente web."""
         invalid_pos_tickets = invalid_pos_tickets or {}
@@ -852,6 +853,7 @@ class GestoolImport(models.TransientModel):
         negative_tickets = negative_tickets or {}
         invalid_numeric_tickets = invalid_numeric_tickets or {}
         failed_tickets = failed_tickets or {}
+        duplicate_tickets = duplicate_tickets or {}
         details = []
         for reference, product_codes in list(invalid_tickets.items())[:20]:
             details.append(_(
@@ -899,6 +901,21 @@ class GestoolImport(models.TransientModel):
         if len(failed_tickets) > 20:
             details.append(_(
                 "… y %d ticket(s) más con error", len(failed_tickets) - 20
+            ))
+        if duplicate_tickets:
+            details.append(_(
+                "%d ticket(s) descartado(s) por estar ya importados:",
+                len(duplicate_tickets),
+            ))
+        for reference, order_name in list(duplicate_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s ya importado (pedido %(order)s)",
+                ticket=reference,
+                order=order_name,
+            ))
+        if len(duplicate_tickets) > 20:
+            details.append(_(
+                "… y %d ticket(s) más ya importados", len(duplicate_tickets) - 20
             ))
 
         return {
@@ -998,6 +1015,10 @@ class GestoolImport(models.TransientModel):
             if config and config.currency_id.compare_amounts(total, 0.0) < 0:
                 negative_tickets[reference] = config.currency_id.format(total)
 
+        duplicate_tickets = self._find_already_imported_tickets(
+            data_rows, ticket_pos_names, configs_by_name
+        )
+
         valid_rows = [
             row for _line_number, row in data_rows
             if len(row) >= 18
@@ -1007,6 +1028,7 @@ class GestoolImport(models.TransientModel):
             and row[3].strip() not in mixed_pos_tickets
             and row[3].strip() not in negative_tickets
             and row[3].strip() not in invalid_numeric_tickets
+            and row[3].strip() not in duplicate_tickets
         ]
 
         rows_by_config = {}
@@ -1056,7 +1078,7 @@ class GestoolImport(models.TransientModel):
         if (
             invalid_tickets or malformed_lines or invalid_pos_tickets
             or mixed_pos_tickets or negative_tickets or invalid_numeric_tickets
-            or failed_tickets
+            or failed_tickets or duplicate_tickets
         ):
             return self._ticket_import_warning(
                 invalid_tickets,
@@ -1066,8 +1088,51 @@ class GestoolImport(models.TransientModel):
                 negative_tickets,
                 invalid_numeric_tickets,
                 failed_tickets,
+                duplicate_tickets,
             )
         return True
+
+    def _find_already_imported_tickets(
+        self, data_rows, ticket_pos_names, configs_by_name
+    ):
+        """Return the tickets that already exist in their target point of sale.
+
+        A ticket is a duplicate when a non-cancelled order with the same
+        receipt number already exists in the same point of sale, e.g. because
+        the same CSV (or an overlapping one) was imported before. The result
+        maps each ticket reference to the name of the existing order.
+        """
+        config_by_ticket = {}
+        for reference, pos_names in ticket_pos_names.items():
+            if len(pos_names) != 1:
+                continue
+            config = configs_by_name.get(next(iter(pos_names)))
+            if config:
+                config_by_ticket[reference] = config
+        if not config_by_ticket:
+            return {}
+
+        # parse_ticket guarda la referencia tal cual viene en el CSV, así que
+        # se busca también el valor sin normalizar.
+        searched_references = set(config_by_ticket)
+        searched_references.update(
+            row[3] for _line_number, row in data_rows
+            if len(row) > 3 and row[3].strip() in config_by_ticket
+        )
+        existing_orders = self.env['pos.order'].sudo().search([
+            ('pos_reference', 'in', list(searched_references)),
+            ('config_id', 'in', list({
+                config.id for config in config_by_ticket.values()
+            })),
+            ('state', '!=', 'cancel'),
+        ])
+
+        duplicate_tickets = {}
+        for order in existing_orders:
+            reference = order.pos_reference.strip()
+            if config_by_ticket.get(reference) == order.config_id:
+                duplicate_tickets.setdefault(reference, order.name)
+        return duplicate_tickets
 
     def _import_ticket_order(self, ticket_rows, session):
         """Import, pay and invoice one ticket atomically.

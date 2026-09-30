@@ -651,6 +651,122 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
         self.assertNotIn("TICKET-20", message)
         self.assertIn("1 ticket(s) más con error", message)
 
+    def _import_tickets_without_invoice(self, csv_data):
+        with patch.object(
+            type(self.wizard),
+            "_confirm_and_invoice_order",
+            autospec=True,
+            side_effect=self._pay_without_invoice,
+        ):
+            return self.wizard._import_ticket(csv_data)
+
+    def _orders(self, reference):
+        return self.env["pos.order"].search([("pos_reference", "=", reference)])
+
+    def test_reimporting_same_csv_discards_already_imported_tickets(self):
+        csv_data = self._ticket_csv("TICKET-DUP")
+        self.assertIs(self._import_tickets_without_invoice(csv_data), True)
+        first_order = self._orders("TICKET-DUP")
+
+        with patch.object(
+            type(self.wizard), "_create_import_session"
+        ) as create_session:
+            result = self._import_tickets_without_invoice(csv_data)
+
+        self.assertEqual(self._orders("TICKET-DUP"), first_order)
+        create_session.assert_not_called()
+        message = result["params"]["message"]
+        self.assertIn("1 ticket(s) descartado(s) por estar ya importados", message)
+        self.assertIn(
+            f"Ticket TICKET-DUP ya importado (pedido {first_order.name})", message
+        )
+
+    def test_mixed_csv_imports_only_new_tickets(self):
+        self._import_tickets_without_invoice(self._ticket_csv("TICKET-VIEJO"))
+
+        result = self._import_tickets_without_invoice(
+            self._ticket_csv("TICKET-VIEJO", "TICKET-NUEVO")
+        )
+
+        self.assertEqual(len(self._orders("TICKET-VIEJO")), 1)
+        self.assertEqual(len(self._orders("TICKET-NUEVO")), 1)
+        self.assertIn("TICKET-VIEJO ya importado", result["params"]["message"])
+        self.assertNotIn("TICKET-NUEVO", result["params"]["message"])
+
+    def test_same_reference_in_another_pos_is_not_a_duplicate(self):
+        north, south = self.pos_configs
+        header = ",".join(["cabecera"] * 19)
+        self._import_tickets_without_invoice("\n".join((
+            header,
+            ",".join(self._ticket_row(reference="TICKET-COMUN", pos_name=north.name)),
+        )).encode())
+
+        result = self._import_tickets_without_invoice("\n".join((
+            header,
+            ",".join(self._ticket_row(reference="TICKET-COMUN", pos_name=south.name)),
+        )).encode())
+
+        self.assertIs(result, True)
+        self.assertEqual(
+            set(self._orders("TICKET-COMUN").config_id.ids), set(self.pos_configs.ids)
+        )
+
+    def test_cancelled_order_does_not_block_reimport(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+        cancelled = self.wizard.parse_ticket(
+            self._ticket_row(reference="TICKET-ANULADO"), session
+        )
+        cancelled.action_pos_order_cancel()
+        self.assertEqual(cancelled.state, "cancel")
+
+        result = self._import_tickets_without_invoice(
+            self._ticket_csv("TICKET-ANULADO")
+        )
+
+        self.assertIs(result, True)
+        self.assertEqual(len(self._orders("TICKET-ANULADO")), 2)
+
+    def test_duplicate_detection_matches_unstripped_stored_reference(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+        existing = self.wizard.parse_ticket(
+            self._ticket_row(reference=" TICKET-ESPACIOS "), session
+        )
+
+        duplicates = self.wizard._find_already_imported_tickets(
+            [(2, self._ticket_row(reference=" TICKET-ESPACIOS "))],
+            {"TICKET-ESPACIOS": {self.pos_configs[0].name}},
+            {self.pos_configs[0].name: self.pos_configs[0]},
+        )
+
+        self.assertEqual(duplicates, {"TICKET-ESPACIOS": existing.name})
+
+    def test_find_duplicates_ignores_tickets_without_single_known_pos(self):
+        duplicates = self.wizard._find_already_imported_tickets(
+            [],
+            {
+                "TICKET-MIXTO": {"TPV A", "TPV B"},
+                "TICKET-SIN-TPV": {"TPV inexistente"},
+            },
+            {"TPV inexistente": self.env["pos.config"]},
+        )
+
+        self.assertEqual(duplicates, {})
+
+    def test_warning_truncates_duplicate_tickets(self):
+        duplicate_tickets = {
+            f"TICKET-{number:02d}": f"Pedido {number}" for number in range(21)
+        }
+
+        result = self.wizard._ticket_import_warning(
+            {}, [], duplicate_tickets=duplicate_tickets
+        )
+
+        message = result["params"]["message"]
+        self.assertIn("21 ticket(s) descartado(s)", message)
+        self.assertIn("TICKET-19", message)
+        self.assertNotIn("TICKET-20", message)
+        self.assertIn("1 ticket(s) más ya importados", message)
+
 
 class TestGestoolBarcodeImport(TransactionCase):
     @classmethod
