@@ -205,6 +205,14 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
         row[18] = "21"
         return row
 
+    def test_order_env_uses_session_company_without_force_company(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+
+        order = self.wizard.parse_ticket(self._ticket_row(), session)
+
+        self.assertEqual(order.env.company, session.company_id)
+        self.assertNotIn("force_company", order.env.context)
+
     def test_get_ticket_product_strips_code(self):
         product = self.wizard._get_ticket_product("  GESTOOL-001  ")
 

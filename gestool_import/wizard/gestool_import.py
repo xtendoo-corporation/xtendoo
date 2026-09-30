@@ -1096,7 +1096,7 @@ class GestoolImport(models.TransientModel):
         # Entorno con sudo y contexto de compañía correcta
         env = self.env(
             su=True,
-            context=dict(self.env.context, allowed_company_ids=[company.id], force_company=company.id),
+            context=dict(self.env.context, allowed_company_ids=[company.id]),
         )
 
         partner = env["res.partner"].search([("ref", "=", row[9])], limit=1)
@@ -1187,7 +1187,7 @@ class GestoolImport(models.TransientModel):
         # Entorno con sudo y contexto de compañía correcta
         env = self.env(
             su=True,
-            context=dict(self.env.context, allowed_company_ids=[company.id], force_company=company.id),
+            context=dict(self.env.context, allowed_company_ids=[company.id]),
         )
 
         # 1. La forma de pago del CSV se ignora siempre. El método de importación

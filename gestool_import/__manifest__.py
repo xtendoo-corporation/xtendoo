@@ -2,7 +2,7 @@
     "name": "Importation from gestool",
     'author': 'Xtendoo',
     "category": "Product",
-    "version": "19.0.1.1.1",
+    "version": "19.0.1.1.2",
     "depends": [
         "point_of_sale",
         "product_multi_barcode",
