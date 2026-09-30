@@ -173,6 +173,14 @@ class GestoolImport(models.TransientModel):
                 self[legacy_field]
             )
 
+    def _commit_import_progress(self):
+        """Persist the work done so far so a later failure cannot undo it."""
+        self.env.cr.commit()
+
+    def _rollback_import_progress(self):
+        """Discard the uncommitted work of the file that has just failed."""
+        self.env.cr.rollback()
+
     def import_file(self):
         """Import all selected files sequentially without stopping on errors."""
         self.ensure_one()
@@ -190,11 +198,17 @@ class GestoolImport(models.TransientModel):
                     errors.append(_("%(file)s: el fichero está vacío", file=filename))
                     continue
 
+                # No se envuelve el fichero en un savepoint: el importador de
+                # tickets confirma la transacción periódicamente y un COMMIT
+                # destruye cualquier savepoint abierto, dejando la transacción
+                # abortada para todos los ficheros siguientes. Como cada fichero
+                # correcto se confirma al terminar, un ROLLBACK aquí solo
+                # descarta el trabajo pendiente del fichero que ha fallado.
                 try:
-                    with self.env.cr.savepoint():
-                        result = getattr(self, method_name)(file_data)
+                    result = getattr(self, method_name)(file_data)
                 except Exception as error:
                     _logger.exception("Error importando el fichero Gestool %s", filename)
+                    self._rollback_import_progress()
                     errors.append(_("%(file)s: %(error)s", file=filename, error=error))
                     continue
 
@@ -207,7 +221,7 @@ class GestoolImport(models.TransientModel):
                 # import con varios ficheros perdió el trabajo completo por el
                 # límite de CPU a mitad del último fichero). Con el commit aquí,
                 # una interrupción posterior solo pierde el fichero en curso.
-                self.env.cr.commit()
+                self._commit_import_progress()
 
                 processed += 1
                 if isinstance(result, dict) and result.get("params", {}).get("message"):
@@ -830,13 +844,14 @@ class GestoolImport(models.TransientModel):
     def _ticket_import_warning(
         self, invalid_tickets, malformed_lines, invalid_pos_tickets=None,
         mixed_pos_tickets=None, negative_tickets=None,
-        invalid_numeric_tickets=None,
+        invalid_numeric_tickets=None, failed_tickets=None,
     ):
         """Construye una notificación legible sin desbordar el cliente web."""
         invalid_pos_tickets = invalid_pos_tickets or {}
         mixed_pos_tickets = mixed_pos_tickets or {}
         negative_tickets = negative_tickets or {}
         invalid_numeric_tickets = invalid_numeric_tickets or {}
+        failed_tickets = failed_tickets or {}
         details = []
         for reference, product_codes in list(invalid_tickets.items())[:20]:
             details.append(_(
@@ -874,6 +889,16 @@ class GestoolImport(models.TransientModel):
                 "Ticket %(ticket)s omitido: valor(es) numérico(s) inválido(s): %(errors)s",
                 ticket=reference,
                 errors=", ".join(sorted(errors)),
+            ))
+        for reference, error in list(failed_tickets.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s omitido por error al importarlo: %(error)s",
+                ticket=reference,
+                error=error,
+            ))
+        if len(failed_tickets) > 20:
+            details.append(_(
+                "… y %d ticket(s) más con error", len(failed_tickets) - 20
             ))
 
         return {
@@ -990,19 +1015,25 @@ class GestoolImport(models.TransientModel):
             rows_by_config.setdefault(config.id, []).append(row)
 
         total_processed_orders = 0
+        failed_tickets = {}
         for config_id, config_rows in rows_by_config.items():
             config = self.env['pos.config'].sudo().browse(config_id)
             session = self._create_import_session(config)
-            processed_order_ids = set()
+            rows_by_ticket = {}
             for row in config_rows:
-                order = self.parse_ticket(row, session)
-                if order:
-                    processed_order_ids.add(order.id)
+                rows_by_ticket.setdefault(row[3].strip(), []).append(row)
 
-            for index, order_id in enumerate(processed_order_ids, start=1):
-                pos_order = self.env['pos.order'].sudo().browse(order_id)
-                if pos_order.exists() and pos_order.state == 'draft':
-                    self._confirm_and_invoice_order(pos_order)
+            for index, (reference, ticket_rows) in enumerate(
+                rows_by_ticket.items(), start=1
+            ):
+                try:
+                    if self._import_ticket_order(ticket_rows, session):
+                        total_processed_orders += 1
+                except Exception as error:
+                    _logger.exception(
+                        "Error importando el ticket Gestool %s", reference
+                    )
+                    failed_tickets[reference] = str(error)
                 # Confirmar cada 10 pedidos, no solo al terminar el fichero
                 # entero. Un fichero de un único TPV puede contener miles de
                 # tickets y tardar más CPU de la que --limit-time-cpu permite
@@ -1011,20 +1042,21 @@ class GestoolImport(models.TransientModel):
                 # --limit-time-cpu=3600 seguía matando el worker a mitad de
                 # fichero). Con este commit periódico, una interrupción
                 # posterior solo pierde como mucho los últimos 9 pedidos, no
-                # el fichero completo. Aviso: si la interrupción cae justo
+                # el fichero completo. El commit queda siempre fuera del
+                # savepoint de cada pedido. Aviso: si la interrupción cae justo
                 # aquí, la sesión 0000 de este TPV puede quedar abierta sin
                 # cerrar (los pedidos ya confirmados/facturados persisten
                 # igualmente) — revisar manualmente en ese caso.
                 if index % 10 == 0:
-                    self.env.cr.commit()
+                    self._commit_import_progress()
             self._close_import_session(session)
-            self.env.cr.commit()
-            total_processed_orders += len(processed_order_ids)
+            self._commit_import_progress()
 
         _logger.info("Total pedidos importados: %d", total_processed_orders)
         if (
             invalid_tickets or malformed_lines or invalid_pos_tickets
             or mixed_pos_tickets or negative_tickets or invalid_numeric_tickets
+            or failed_tickets
         ):
             return self._ticket_import_warning(
                 invalid_tickets,
@@ -1033,8 +1065,24 @@ class GestoolImport(models.TransientModel):
                 mixed_pos_tickets,
                 negative_tickets,
                 invalid_numeric_tickets,
+                failed_tickets,
             )
         return True
+
+    def _import_ticket_order(self, ticket_rows, session):
+        """Import, pay and invoice one ticket atomically.
+
+        Every ticket runs in its own savepoint: if any of its lines, its payment
+        or its invoice fails, only that ticket is rolled back and the caller can
+        continue with the rest of the file.
+        """
+        with self.env.cr.savepoint():
+            pos_order = False
+            for row in ticket_rows:
+                pos_order = self.parse_ticket(row, session) or pos_order
+            if pos_order and pos_order.state == 'draft':
+                self._confirm_and_invoice_order(pos_order)
+        return pos_order
 
     def parse_ticket(self, row, session):
 

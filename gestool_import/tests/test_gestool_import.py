@@ -5,7 +5,21 @@ from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
 
 
-class TestGestoolMultipleFileImport(TransactionCase):
+class GestoolTransactionMixin:
+    """Tests cannot COMMIT/ROLLBACK the test cursor: record the calls instead."""
+
+    def setUp(self):
+        super().setUp()
+        wizard_class = type(self.env["gestool.import"])
+        self.commit_mock = self.startPatcher(
+            patch.object(wizard_class, "_commit_import_progress")
+        )
+        self.rollback_mock = self.startPatcher(
+            patch.object(wizard_class, "_rollback_import_progress")
+        )
+
+
+class TestGestoolMultipleFileImport(GestoolTransactionMixin, TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -53,6 +67,19 @@ class TestGestoolMultipleFileImport(TransactionCase):
         self.assertEqual(imported, [b"valid"])
         self.assertEqual(result["params"]["type"], "danger")
         self.assertIn("clientes-error.csv", result["params"]["message"])
+        self.rollback_mock.assert_called_once_with()
+        self.commit_mock.assert_called_once_with()
+
+    def test_commits_each_successful_file(self):
+        first = self._attachment("clientes-01.csv", b"first")
+        second = self._attachment("clientes-02.csv", b"second")
+        self.wizard.partner_attachment_ids = [(6, 0, [first.id, second.id])]
+
+        with patch.object(type(self.wizard), "_import_partner"):
+            self.wizard.import_file()
+
+        self.assertEqual(self.commit_mock.call_count, 2)
+        self.rollback_mock.assert_not_called()
 
     def test_keeps_legacy_single_binary_file_compatibility(self):
         self.wizard.write({
@@ -70,7 +97,7 @@ class TestGestoolMultipleFileImport(TransactionCase):
             self.wizard.import_file()
 
 
-class TestGestoolTicketImport(TransactionCase):
+class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -110,10 +137,37 @@ class TestGestoolTicketImport(TransactionCase):
             "default_code": "GESTOOL-001",
             "property_account_income_id": income_account.id,
         })
+        # Sin plan contable instalado no hay diario de ventas ni cuenta a
+        # cobrar para facturar los pedidos: se crean para aislar los tests.
+        if not cls.env["account.journal"].search([
+            ("type", "=", "sale"),
+            ("company_id", "=", cls.env.company.id),
+        ], limit=1):
+            cls.env["account.journal"].create({
+                "name": "Ventas Gestool",
+                "code": "GVEN",
+                "type": "sale",
+                "company_id": cls.env.company.id,
+                "default_account_id": income_account.id,
+            })
+        receivable_account = cls.env["account.account"].create({
+            "code": "GESTOOL.RECEIVABLE",
+            "name": "Clientes Gestool",
+            "account_type": "asset_receivable",
+            "reconcile": True,
+        })
+        if not cls.env.company.transfer_account_id:
+            cls.env.company.transfer_account_id = cls.env["account.account"].create({
+                "code": "GESTOOL.TRANSFER",
+                "name": "Transferencias internas Gestool",
+                "account_type": "asset_current",
+                "reconcile": True,
+            })
         cls.product = template.product_variant_id
         cls.partner = cls.env["res.partner"].create({
             "name": "Cliente Gestool",
             "ref": "CLIENTE-001",
+            "property_account_receivable_id": receivable_account.id,
         })
         cls.pricelist = cls.env["product.pricelist"].create({
             "name": "Tarifa Gestool",
@@ -487,6 +541,107 @@ class TestGestoolTicketImport(TransactionCase):
         self.assertEqual(orders.session_id.mapped("name"), ["0000", "0000"])
         self.assertEqual(set(orders.config_id.ids), set(self.pos_configs.ids))
         self.assertEqual(set(orders.session_id.mapped("state")), {"closed"})
+
+    @staticmethod
+    def _pay_without_invoice(wizard, order):
+        cash_method = wizard._ensure_import_cash_payment_method(order.config_id)
+        wizard._replace_order_payments_with_cash(order, cash_method)
+        order.action_pos_order_paid()
+
+    def _ticket_csv(self, *references):
+        header = ",".join(["cabecera"] * 19)
+        rows = [
+            ",".join(self._ticket_row(reference=reference))
+            for reference in references
+        ]
+        return "\n".join((header, *rows)).encode()
+
+    def test_failed_order_is_rolled_back_without_blocking_the_rest(self):
+        def confirm_or_fail(wizard, order):
+            if order.pos_reference == "TICKET-FALLA":
+                order.write({"amount_paid": 999.0})
+                raise UserError("Factura no válida")
+            self._pay_without_invoice(wizard, order)
+
+        with patch.object(
+            type(self.wizard),
+            "_confirm_and_invoice_order",
+            autospec=True,
+            side_effect=confirm_or_fail,
+        ):
+            result = self.wizard._import_ticket(
+                self._ticket_csv("TICKET-ANTES", "TICKET-FALLA", "TICKET-DESPUES")
+            )
+
+        orders = self.env["pos.order"].search([
+            ("pos_reference", "in", (
+                "TICKET-ANTES", "TICKET-FALLA", "TICKET-DESPUES",
+            )),
+        ])
+        self.assertEqual(
+            set(orders.mapped("pos_reference")),
+            {"TICKET-ANTES", "TICKET-DESPUES"},
+        )
+        self.assertFalse(
+            orders.filtered(lambda order: order.state == "draft"),
+            "Los pedidos válidos deben quedar pagados",
+        )
+        self.assertEqual(orders.session_id.state, "closed")
+        self.assertEqual(result["params"]["type"], "warning")
+        self.assertIn("TICKET-FALLA", result["params"]["message"])
+        self.assertIn("Factura no válida", result["params"]["message"])
+
+    def test_multiline_ticket_is_confirmed_once_inside_its_savepoint(self):
+        header = ",".join(["cabecera"] * 19)
+        first_line = ",".join(self._ticket_row(reference="TICKET-MULTI"))
+        second_line = ",".join(self._ticket_row(reference="TICKET-MULTI"))
+
+        with patch.object(
+            type(self.wizard),
+            "_confirm_and_invoice_order",
+            autospec=True,
+            side_effect=self._pay_without_invoice,
+        ) as confirm:
+            self.wizard._import_ticket(
+                "\n".join((header, first_line, second_line)).encode()
+            )
+
+        order = self.env["pos.order"].search([
+            ("pos_reference", "=", "TICKET-MULTI"),
+        ])
+        self.assertEqual(len(order), 1)
+        self.assertEqual(len(order.lines), 2)
+        confirm.assert_called_once()
+
+    def test_commits_every_ten_orders_and_after_closing_session(self):
+        references = [f"TICKET-{number:02d}" for number in range(1, 12)]
+
+        with patch.object(
+            type(self.wizard),
+            "_confirm_and_invoice_order",
+            autospec=True,
+            side_effect=self._pay_without_invoice,
+        ):
+            result = self.wizard._import_ticket(self._ticket_csv(*references))
+
+        self.assertIs(result, True)
+        # 1 commit tras el décimo pedido + 1 tras cerrar la sesión 0000.
+        self.assertEqual(self.commit_mock.call_count, 2)
+        self.rollback_mock.assert_not_called()
+
+    def test_warning_truncates_failed_tickets(self):
+        failed_tickets = {
+            f"TICKET-{number:02d}": "error" for number in range(21)
+        }
+
+        result = self.wizard._ticket_import_warning(
+            {}, [], failed_tickets=failed_tickets
+        )
+
+        message = result["params"]["message"]
+        self.assertIn("TICKET-19", message)
+        self.assertNotIn("TICKET-20", message)
+        self.assertIn("1 ticket(s) más con error", message)
 
 
 class TestGestoolBarcodeImport(TransactionCase):
