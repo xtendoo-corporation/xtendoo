@@ -767,6 +767,215 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
         self.assertNotIn("TICKET-20", message)
         self.assertIn("1 ticket(s) más ya importados", message)
 
+    def _import_copies(self, csv_data, copies, invoice=True):
+        """Import ``csv_data`` ``copies`` times, as the module used to allow."""
+        with patch.object(
+            type(self.wizard), "_find_already_imported_orders", return_value={}
+        ):
+            for _copy in range(copies):
+                if invoice:
+                    self.wizard._import_ticket(csv_data)
+                else:
+                    self._import_tickets_without_invoice(csv_data)
+
+    def _use_cash_import_method(self):
+        wizard_class = type(self.wizard)
+        return patch.object(
+            wizard_class,
+            "_ensure_import_payment_method",
+            autospec=True,
+            side_effect=lambda wizard, config: (
+                wizard._ensure_import_cash_payment_method(config)
+            ),
+        )
+
+    def _assert_pos_receivable_reconciled(self, sessions):
+        pos_account = self.env.company.account_default_pos_receivable_account_id
+        lines = sessions.move_id.line_ids.filtered(
+            lambda line: line.account_id == pos_account
+        )
+        self.assertTrue(lines)
+        self.assertTrue(all(lines.mapped("reconciled")))
+
+    def test_reimport_removes_bank_copies_of_closed_sessions(self):
+        csv_data = self._ticket_csv("TICKET-TRIPLE")
+        self._import_copies(csv_data, 3)
+        copies = self._orders("TICKET-TRIPLE").sorted("id")
+        self.assertEqual(len(copies), 3)
+        kept, surplus = copies[0], copies[1:]
+        surplus_invoices = surplus.account_move
+        surplus_payment_moves = surplus.payment_ids.account_move_id
+        surplus_sessions = surplus.session_id
+
+        result = self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-TRIPLE"), kept)
+        self.assertEqual(kept.account_move.payment_state, "paid")
+        self.assertFalse(surplus.exists())
+        self.assertFalse(surplus_invoices.exists())
+        self.assertFalse(surplus_payment_moves.exists())
+        adjustments = self.env["account.payment"].search([
+            ("pos_session_id", "in", surplus_sessions.ids),
+            ("payment_type", "=", "outbound"),
+        ])
+        self.assertEqual(len(adjustments), 2)
+        self.assertEqual(adjustments.mapped("amount"), [kept.amount_total] * 2)
+        self.assertFalse(adjustments.filtered(
+            lambda payment: payment.state in ("draft", "canceled")
+        ))
+        self._assert_pos_receivable_reconciled(surplus_sessions)
+        message = result["params"]["message"]
+        self.assertIn(
+            "2 copia(s) duplicada(s) eliminada(s) de 1 ticket(s)", message
+        )
+        self.assertIn(f"TICKET-TRIPLE ya importado (pedido {kept.name})", message)
+
+    def test_reimport_removes_cash_copies_of_closed_sessions(self):
+        csv_data = self._ticket_csv("TICKET-CAJA")
+        with self._use_cash_import_method():
+            self._import_copies(csv_data, 2)
+        kept, surplus = self._orders("TICKET-CAJA").sorted("id")
+        cash_journal = kept.payment_ids.payment_method_id.journal_id
+        self.assertEqual(cash_journal.type, "cash")
+        surplus_session = surplus.session_id
+
+        self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-CAJA"), kept)
+        adjustment = self.env["account.bank.statement.line"].search([
+            ("pos_session_id", "=", surplus_session.id),
+            ("amount", "<", 0),
+        ])
+        self.assertEqual(adjustment.journal_id, cash_journal)
+        self.assertAlmostEqual(adjustment.amount, -kept.amount_total)
+        session_lines = self.env["account.bank.statement.line"].search([
+            ("pos_session_id", "in", (kept.session_id | surplus_session).ids),
+        ])
+        self.assertAlmostEqual(
+            sum(session_lines.mapped("amount")), kept.amount_total
+        )
+        self._assert_pos_receivable_reconciled(surplus_session)
+
+    def test_copy_in_closed_session_is_kept_over_older_open_copy(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+        open_copy = self.wizard.parse_ticket(
+            self._ticket_row(reference="TICKET-ABIERTA"), session
+        )
+        self.wizard._confirm_and_invoice_order(open_copy)
+        open_invoice = open_copy.account_move
+        csv_data = self._ticket_csv("TICKET-ABIERTA")
+        self._import_copies(csv_data, 1)
+        closed_copy = self._orders("TICKET-ABIERTA") - open_copy
+
+        self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-ABIERTA"), closed_copy)
+        self.assertFalse(open_invoice.exists())
+        self.assertFalse(self.env["account.payment"].search([
+            ("pos_session_id", "=", session.id),
+        ]))
+        self.assertEqual(session.state, "opened")
+
+    def test_copy_with_different_total_is_reported_not_removed(self):
+        csv_data = self._ticket_csv("TICKET-DISTINTO")
+        self._import_copies(csv_data, 1, invoice=False)
+        different_row = self._ticket_row(reference="TICKET-DISTINTO")
+        different_row[16] = "20.00"
+        self._import_copies(
+            "\n".join((",".join(["cabecera"] * 19), ",".join(different_row))).encode(),
+            1,
+            invoice=False,
+        )
+        first, second = self._orders("TICKET-DISTINTO").sorted("id")
+
+        result = self._import_tickets_without_invoice(csv_data)
+
+        self.assertEqual(self._orders("TICKET-DISTINTO"), first | second)
+        self.assertIn(
+            f"Ticket TICKET-DISTINTO: copia(s) {second.name} con fecha o importe"
+            " distintos",
+            result["params"]["message"],
+        )
+
+    def test_uninvoiced_copy_of_closed_session_is_not_removed(self):
+        csv_data = self._ticket_csv("TICKET-SIN-FACTURA")
+        self._import_copies(csv_data, 2, invoice=False)
+        copies = self._orders("TICKET-SIN-FACTURA")
+
+        result = self._import_tickets_without_invoice(csv_data)
+
+        self.assertEqual(self._orders("TICKET-SIN-FACTURA"), copies)
+        message = result["params"]["message"]
+        self.assertIn(
+            "TICKET-SIN-FACTURA: no se pudieron eliminar sus copias", message
+        )
+        self.assertIn("no está facturado", message)
+        self.assertNotIn("eliminada(s)", message)
+
+    def test_failed_cleanup_is_rolled_back_per_session(self):
+        csv_data = self._ticket_csv("TICKET-ERROR-LIMPIEZA", "TICKET-LIMPIO")
+        self._import_copies(csv_data, 2)
+        self.commit_mock.reset_mock()
+        original_remove = type(self.wizard)._remove_session_duplicate_orders
+
+        def remove_or_fail(wizard, session, orders):
+            references = orders.mapped("pos_reference")
+            original_remove(wizard, session, orders)
+            if "TICKET-ERROR-LIMPIEZA" in references:
+                raise UserError("Fallo al limpiar")
+
+        with patch.object(
+            type(self.wizard),
+            "_remove_session_duplicate_orders",
+            autospec=True,
+            side_effect=remove_or_fail,
+        ):
+            result = self.wizard._import_ticket(csv_data)
+
+        # Ambos tickets están en la misma sesión: se deshace la sesión entera.
+        self.assertEqual(len(self._orders("TICKET-ERROR-LIMPIEZA")), 2)
+        self.assertEqual(len(self._orders("TICKET-LIMPIO")), 2)
+        self.assertIn("Fallo al limpiar", result["params"]["message"])
+        self.commit_mock.assert_not_called()
+
+    def test_payment_move_without_pos_line_is_rejected(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+        order = self.wizard.parse_ticket(self._ticket_row(), session)
+        self.wizard._confirm_and_invoice_order(order)
+
+        with self.assertRaisesRegex(UserError, "línea de cobro TPV"):
+            self.wizard._get_payment_move_pos_line(order.account_move)
+
+    def test_adjustment_requires_payment_method_journal(self):
+        session = self.wizard._create_import_session(self.pos_configs[0])
+        pay_later = self.env["pos.payment.method"].create({
+            "name": "Crédito Gestool",
+            "company_id": self.env.company.id,
+        })
+
+        with self.assertRaisesRegex(UserError, "no tiene diario"):
+            self.wizard._create_duplicate_adjustment(
+                session,
+                pay_later,
+                self.env.company.account_default_pos_receivable_account_id,
+                10.0,
+            )
+
+    def test_warning_truncates_duplicate_cleanup_details(self):
+        tickets = [f"TICKET-{number:02d}" for number in range(21)]
+
+        result = self.wizard._ticket_import_warning(
+            {}, [],
+            removed_copies=dict.fromkeys(tickets, 2),
+            conflicting_copies={ticket: ["Pedido"] for ticket in tickets},
+            cleanup_errors=dict.fromkeys(tickets, "error"),
+        )
+
+        message = result["params"]["message"]
+        self.assertIn("42 copia(s) duplicada(s) eliminada(s) de 21", message)
+        self.assertIn("1 ticket(s) más con copias distintas", message)
+        self.assertIn("1 ticket(s) más cuyas copias no se pudieron eliminar", message)
+
 
 class TestGestoolBarcodeImport(TransactionCase):
     @classmethod

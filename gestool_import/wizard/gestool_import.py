@@ -845,7 +845,8 @@ class GestoolImport(models.TransientModel):
         self, invalid_tickets, malformed_lines, invalid_pos_tickets=None,
         mixed_pos_tickets=None, negative_tickets=None,
         invalid_numeric_tickets=None, failed_tickets=None,
-        duplicate_tickets=None,
+        duplicate_tickets=None, removed_copies=None, conflicting_copies=None,
+        cleanup_errors=None,
     ):
         """Construye una notificación legible sin desbordar el cliente web."""
         invalid_pos_tickets = invalid_pos_tickets or {}
@@ -854,6 +855,9 @@ class GestoolImport(models.TransientModel):
         invalid_numeric_tickets = invalid_numeric_tickets or {}
         failed_tickets = failed_tickets or {}
         duplicate_tickets = duplicate_tickets or {}
+        removed_copies = removed_copies or {}
+        conflicting_copies = conflicting_copies or {}
+        cleanup_errors = cleanup_errors or {}
         details = []
         for reference, product_codes in list(invalid_tickets.items())[:20]:
             details.append(_(
@@ -916,6 +920,37 @@ class GestoolImport(models.TransientModel):
         if len(duplicate_tickets) > 20:
             details.append(_(
                 "… y %d ticket(s) más ya importados", len(duplicate_tickets) - 20
+            ))
+        if removed_copies:
+            details.append(_(
+                "%(copies)d copia(s) duplicada(s) eliminada(s) de %(tickets)d"
+                " ticket(s), dejando un único pedido por ticket.",
+                copies=sum(removed_copies.values()),
+                tickets=len(removed_copies),
+            ))
+        for reference, order_names in list(conflicting_copies.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s: copia(s) %(orders)s con fecha o importe"
+                " distintos; no se eliminan, revísalas a mano",
+                ticket=reference,
+                orders=", ".join(order_names),
+            ))
+        if len(conflicting_copies) > 20:
+            details.append(_(
+                "… y %d ticket(s) más con copias distintas",
+                len(conflicting_copies) - 20,
+            ))
+        for reference, error in list(cleanup_errors.items())[:20]:
+            details.append(_(
+                "Ticket %(ticket)s: no se pudieron eliminar sus copias"
+                " duplicadas: %(error)s",
+                ticket=reference,
+                error=error,
+            ))
+        if len(cleanup_errors) > 20:
+            details.append(_(
+                "… y %d ticket(s) más cuyas copias no se pudieron eliminar",
+                len(cleanup_errors) - 20,
             ))
 
         return {
@@ -1015,8 +1050,15 @@ class GestoolImport(models.TransientModel):
             if config and config.currency_id.compare_amounts(total, 0.0) < 0:
                 negative_tickets[reference] = config.currency_id.format(total)
 
-        duplicate_tickets = self._find_already_imported_tickets(
+        existing_orders = self._find_already_imported_orders(
             data_rows, ticket_pos_names, configs_by_name
+        )
+        duplicate_tickets = {
+            reference: orders[0].name
+            for reference, orders in existing_orders.items()
+        }
+        removed_copies, conflicting_copies, cleanup_errors = (
+            self._remove_duplicate_copies(existing_orders)
         )
 
         valid_rows = [
@@ -1089,6 +1131,9 @@ class GestoolImport(models.TransientModel):
                 invalid_numeric_tickets,
                 failed_tickets,
                 duplicate_tickets,
+                removed_copies,
+                conflicting_copies,
+                cleanup_errors,
             )
         return True
 
@@ -1100,7 +1145,24 @@ class GestoolImport(models.TransientModel):
         A ticket is a duplicate when a non-cancelled order with the same
         receipt number already exists in the same point of sale, e.g. because
         the same CSV (or an overlapping one) was imported before. The result
-        maps each ticket reference to the name of the existing order.
+        maps each ticket reference to the name of the order that is kept.
+        """
+        existing_orders = self._find_already_imported_orders(
+            data_rows, ticket_pos_names, configs_by_name
+        )
+        return {
+            reference: orders[0].name
+            for reference, orders in existing_orders.items()
+        }
+
+    def _find_already_imported_orders(
+        self, data_rows, ticket_pos_names, configs_by_name
+    ):
+        """Map each already imported ticket to its existing orders.
+
+        The orders of every ticket are sorted so that the copy to keep comes
+        first: copies in closed sessions before copies in sessions that are
+        still open, then the oldest one.
         """
         config_by_ticket = {}
         for reference, pos_names in ticket_pos_names.items():
@@ -1127,12 +1189,211 @@ class GestoolImport(models.TransientModel):
             ('state', '!=', 'cancel'),
         ])
 
-        duplicate_tickets = {}
+        orders_by_ticket = {}
         for order in existing_orders:
             reference = order.pos_reference.strip()
             if config_by_ticket.get(reference) == order.config_id:
-                duplicate_tickets.setdefault(reference, order.name)
-        return duplicate_tickets
+                orders_by_ticket.setdefault(reference, []).append(order)
+        return {
+            reference: self.env['pos.order'].sudo().concat(*sorted(
+                orders,
+                key=lambda order: (
+                    order.session_id.state != 'closed',
+                    order.create_date,
+                    order.id,
+                ),
+            ))
+            for reference, orders in orders_by_ticket.items()
+        }
+
+    @staticmethod
+    def _is_identical_copy(kept_order, order):
+        return (
+            kept_order.date_order == order.date_order
+            and not kept_order.currency_id.compare_amounts(
+                kept_order.amount_total, order.amount_total
+            )
+        )
+
+    def _remove_duplicate_copies(self, existing_orders):
+        """Keep one order per already imported ticket and delete the others.
+
+        Only copies with the same date and total as the kept order are
+        deleted; copies that differ are reported so they can be reviewed by
+        hand, because the receipt number may have been reused legitimately.
+        Copies are removed session by session, each one in its own savepoint.
+        Returns the number of copies removed and the conflicting copies per
+        ticket, plus the error of every ticket whose cleanup failed.
+        """
+        surplus_by_session = {}
+        reference_by_order = {}
+        conflicting_copies = {}
+        for reference, orders in existing_orders.items():
+            kept_order = orders[0]
+            for order in orders[1:]:
+                if not self._is_identical_copy(kept_order, order):
+                    conflicting_copies.setdefault(reference, []).append(
+                        order.name
+                    )
+                    continue
+                session = order.session_id
+                surplus_by_session[session] = (
+                    surplus_by_session.get(session, order.browse()) | order
+                )
+                reference_by_order[order.id] = reference
+
+        removed_copies = {}
+        cleanup_errors = {}
+        for session, orders in surplus_by_session.items():
+            references = [reference_by_order[order_id] for order_id in orders.ids]
+            try:
+                with self.env.cr.savepoint():
+                    self._remove_session_duplicate_orders(session, orders)
+            except Exception as error:
+                _logger.exception(
+                    "Error eliminando copias Gestool duplicadas de %s",
+                    session.name,
+                )
+                for reference in references:
+                    cleanup_errors[reference] = str(error)
+                continue
+            for reference in references:
+                removed_copies[reference] = removed_copies.get(reference, 0) + 1
+            self._commit_import_progress()
+        return removed_copies, conflicting_copies, cleanup_errors
+
+    def _remove_session_duplicate_orders(self, session, orders):
+        """Delete duplicated orders of one session with their accounting.
+
+        The invoice and the payment entries of every order are unreconciled
+        and deleted. When the session is already closed, its closing entry
+        still expects those payments, so an adjustment mirroring the way the
+        session booked them is created and reconciled in their place: a
+        negative statement line for cash methods, or an outbound payment
+        for bank methods.
+        """
+        session_closed = session.state == 'closed' and session.move_id
+        payment_moves = orders.payment_ids.account_move_id
+        adjustments = {}
+        counterpart_lines = self.env['account.move.line']
+        if session_closed:
+            self._check_duplicate_orders_removable(orders)
+            for payment_move in payment_moves:
+                pos_line = self._get_payment_move_pos_line(payment_move)
+                key = (
+                    payment_move.pos_payment_ids[:1].payment_method_id,
+                    pos_line.account_id,
+                )
+                adjustments[key] = adjustments.get(key, 0.0) + pos_line.balance
+                counterpart_lines |= (
+                    pos_line.matched_debit_ids.debit_move_id
+                    | pos_line.matched_credit_ids.credit_move_id
+                )
+
+        moves = orders.account_move | payment_moves
+        moves.line_ids.remove_move_reconcile()
+        moves.filtered(lambda move: move.state == 'posted').button_draft()
+        moves.with_context(force_delete=True).unlink()
+        # pos.order.write prohibe devolver un pedido pagado a "cancel" y solo
+        # se pueden borrar pedidos cancelados. Su contabilidad ya se ha
+        # deshecho arriba, así que se cancela por SQL y se borra con el ORM,
+        # que sigue aplicando el resto de comprobaciones y cascadas.
+        orders.flush_recordset()
+        self.env.cr.execute(
+            "UPDATE pos_order SET state = 'cancel' WHERE id IN %s",
+            [tuple(orders.ids)],
+        )
+        orders.invalidate_recordset(['state'])
+        orders.unlink()
+
+        for (payment_method, account), balance in adjustments.items():
+            if session.currency_id.is_zero(balance):
+                continue
+            adjustment_lines = self._create_duplicate_adjustment(
+                session, payment_method, account, balance
+            )
+            (adjustment_lines | counterpart_lines.exists().filtered(
+                lambda line: line.account_id == account and not line.reconciled
+            )).reconcile()
+
+    def _check_duplicate_orders_removable(self, orders):
+        for order in orders:
+            payments_without_move = order.payment_ids.filtered(
+                lambda payment: not payment.account_move_id
+                and not payment.is_change
+                and payment.payment_method_id.type != 'pay_later'
+                and not order.currency_id.is_zero(payment.amount)
+            )
+            if not order.account_move or payments_without_move:
+                raise UserError(_(
+                    "El pedido %s no está facturado con sus pagos contabilizados;"
+                    " no se puede eliminar automáticamente de una sesión cerrada.",
+                    order.name,
+                ))
+
+    @staticmethod
+    def _get_payment_move_pos_line(payment_move):
+        pos_account = payment_move.company_id.account_default_pos_receivable_account_id
+        pos_line = payment_move.line_ids.filtered(
+            lambda line: line.account_id == pos_account
+        )
+        if len(pos_line) != 1:
+            raise UserError(_(
+                "No se encuentra la línea de cobro TPV del asiento %s.",
+                payment_move.name,
+            ))
+        return pos_line
+
+    def _create_duplicate_adjustment(self, session, payment_method, account, balance):
+        """Cancel ``balance`` of the payments booked by a closed session."""
+        journal = payment_method.journal_id
+        if not journal:
+            raise UserError(_(
+                "El método de pago %s no tiene diario.", payment_method.name
+            ))
+        label = _("Anulación de tickets Gestool duplicados en %s", session.name)
+        date = session.move_id.date
+        if payment_method.type == 'cash':
+            statement_line = self.env['account.bank.statement.line'].sudo().with_context(
+                no_retrieve_partner=True
+            ).create({
+                'date': date,
+                'payment_ref': label,
+                'pos_session_id': session.id,
+                'journal_id': journal.id,
+                'counterpart_account_id': account.id,
+                'amount': -balance,
+            })
+            adjustment_move = statement_line.move_id
+        else:
+            session_payment = self.env['account.payment'].sudo().search([
+                ('pos_session_id', '=', session.id),
+                ('pos_payment_method_id', '=', payment_method.id),
+            ], limit=1)
+            outstanding_account = (
+                session_payment.outstanding_account_id
+                or payment_method.outstanding_account_id
+            )
+            payment = self.env['account.payment'].sudo().with_context(
+                pos_payment=True
+            ).create({
+                'amount': abs(balance),
+                'date': date,
+                'journal_id': journal.id,
+                'force_outstanding_account_id': outstanding_account.id,
+                'destination_account_id': account.id,
+                'memo': label,
+                'pos_payment_method_id': payment_method.id,
+                'pos_session_id': session.id,
+                'company_id': session.company_id.id,
+                'payment_type': 'outbound' if balance > 0 else 'inbound',
+            })
+            session._ensure_payment_outstanding_account(payment, -balance)
+            payment.action_post()
+            adjustment_move = payment.move_id
+        return adjustment_move.line_ids.filtered(
+            lambda line: line.account_id == account
+        )
 
     def _import_ticket_order(self, ticket_rows, session):
         """Import, pay and invoice one ticket atomically.
