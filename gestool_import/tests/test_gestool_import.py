@@ -637,6 +637,69 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
         self.assertEqual(self.commit_mock.call_count, 2)
         self.rollback_mock.assert_not_called()
 
+    def _two_pos_csv(self):
+        header = ",".join(["cabecera"] * 19)
+        north = ",".join(self._ticket_row(
+            reference="TICKET-NORTE", pos_name=self.pos_configs[0].name,
+        ))
+        south = ",".join(self._ticket_row(
+            reference="TICKET-SUR", pos_name=self.pos_configs[1].name,
+        ))
+        return "\n".join((header, north, south)).encode()
+
+    def test_session_open_error_skips_only_that_pos(self):
+        wizard_class = type(self.wizard)
+        create_session = wizard_class._create_import_session
+        failing_config = self.pos_configs[0]
+
+        def create_or_fail(wizard, config):
+            if config == failing_config:
+                raise UserError("Sesión bloqueada")
+            return create_session(wizard, config)
+
+        with patch.object(
+            wizard_class, "_create_import_session",
+            autospec=True, side_effect=create_or_fail,
+        ):
+            result = self._import_tickets_without_invoice(self._two_pos_csv())
+
+        self.assertFalse(self._orders("TICKET-NORTE"))
+        south = self._orders("TICKET-SUR")
+        self.assertEqual(len(south), 1)
+        self.assertEqual(south.session_id.state, "closed")
+        message = result["params"]["message"]
+        self.assertIn(f"TPV {failing_config.name}: error en su sesión 0000", message)
+        self.assertIn("Sesión bloqueada", message)
+        self.assertIn("TICKET-NORTE omitido por error", message)
+
+    def test_session_close_error_keeps_orders_and_continues(self):
+        wizard_class = type(self.wizard)
+        close_session = wizard_class._close_import_session
+        failing_config = self.pos_configs[0]
+
+        def close_or_fail(wizard, session):
+            if session.config_id == failing_config:
+                session.write({"opening_notes": "cierre parcial"})
+                raise UserError("Descuadre de caja")
+            return close_session(wizard, session)
+
+        with patch.object(
+            wizard_class, "_close_import_session",
+            autospec=True, side_effect=close_or_fail,
+        ):
+            result = self._import_tickets_without_invoice(self._two_pos_csv())
+
+        north = self._orders("TICKET-NORTE")
+        south = self._orders("TICKET-SUR")
+        self.assertEqual(len(north), 1)
+        self.assertEqual(north.state, "paid")
+        self.assertEqual(north.session_id.state, "opened")
+        self.assertNotEqual(north.session_id.opening_notes, "cierre parcial")
+        self.assertEqual(south.session_id.state, "closed")
+        message = result["params"]["message"]
+        self.assertIn(f"TPV {failing_config.name}: error en su sesión 0000", message)
+        self.assertIn("Descuadre de caja", message)
+
     def test_warning_truncates_failed_tickets(self):
         failed_tickets = {
             f"TICKET-{number:02d}": "error" for number in range(21)
@@ -875,6 +938,38 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
             ("pos_session_id", "=", session.id),
         ]))
         self.assertEqual(session.state, "opened")
+
+    def test_copy_outside_import_session_is_kept_over_import_copy(self):
+        csv_data = self._ticket_csv("TICKET-REAL")
+        self._import_copies(csv_data, 2)
+        older_copy, import_copy = self._orders("TICKET-REAL").sorted("id")
+        import_session = import_copy.session_id
+        older_copy.session_id.name = "POS/2026/00001"
+
+        self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-REAL"), older_copy)
+        self.assertFalse(import_copy.exists())
+        self._assert_pos_receivable_reconciled(import_session)
+
+    def test_copies_outside_import_session_are_reported_not_removed(self):
+        csv_data = self._ticket_csv("TICKET-TIENDA")
+        self._import_copies(csv_data, 2)
+        first, second = self._orders("TICKET-TIENDA").sorted("id")
+        first.session_id.name = "POS/2026/00001"
+        second.session_id.name = "POS/2026/00002"
+
+        result = self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-TIENDA"), first | second)
+        self.assertIn(
+            f"Ticket TICKET-TIENDA: copia(s) {second.name} con fecha o importe"
+            " distintos o fuera de una sesión 0000",
+            result["params"]["message"],
+        )
+        self.assertNotIn(
+            "copia(s) duplicada(s) eliminada(s)", result["params"]["message"]
+        )
 
     def test_copy_with_different_total_is_reported_not_removed(self):
         csv_data = self._ticket_csv("TICKET-DISTINTO")

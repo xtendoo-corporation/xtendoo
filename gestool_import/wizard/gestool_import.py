@@ -19,6 +19,8 @@ class GestoolImport(models.TransientModel):
     _name = "gestool.import"
     _description = "Importador desde Gestool"
 
+    _IMPORT_SESSION_NAME = "0000"
+
     _IMPORT_FILE_SPECS = (
         ("partner_attachment_ids", "data_file_partner", "filename_partner", "_import_partner"),
         ("category_attachment_ids", "data_file_category", "filename_category", "_import_category"),
@@ -683,7 +685,7 @@ class GestoolImport(models.TransientModel):
             'rescue': True,
         })
         session.set_opening_control(0.0, _("Importación Gestool"))
-        session.sudo().write({'name': '0000'})
+        session.sudo().write({'name': self._IMPORT_SESSION_NAME})
         _logger.info(
             "Sesión 0000 creada y abierta para el TPV '%s' (id=%s).",
             config.name, session.id,
@@ -846,7 +848,7 @@ class GestoolImport(models.TransientModel):
         mixed_pos_tickets=None, negative_tickets=None,
         invalid_numeric_tickets=None, failed_tickets=None,
         duplicate_tickets=None, removed_copies=None, conflicting_copies=None,
-        cleanup_errors=None,
+        cleanup_errors=None, session_errors=None,
     ):
         """Construye una notificación legible sin desbordar el cliente web."""
         invalid_pos_tickets = invalid_pos_tickets or {}
@@ -858,7 +860,14 @@ class GestoolImport(models.TransientModel):
         removed_copies = removed_copies or {}
         conflicting_copies = conflicting_copies or {}
         cleanup_errors = cleanup_errors or {}
+        session_errors = session_errors or {}
         details = []
+        for pos_name, error in session_errors.items():
+            details.append(_(
+                "TPV %(pos)s: error en su sesión 0000, revísala a mano: %(error)s",
+                pos=pos_name,
+                error=error,
+            ))
         for reference, product_codes in list(invalid_tickets.items())[:20]:
             details.append(_(
                 "Ticket %(ticket)s: producto(s) %(products)s",
@@ -931,7 +940,8 @@ class GestoolImport(models.TransientModel):
         for reference, order_names in list(conflicting_copies.items())[:20]:
             details.append(_(
                 "Ticket %(ticket)s: copia(s) %(orders)s con fecha o importe"
-                " distintos; no se eliminan, revísalas a mano",
+                " distintos o fuera de una sesión 0000; no se eliminan,"
+                " revísalas a mano",
                 ticket=reference,
                 orders=", ".join(order_names),
             ))
@@ -1080,12 +1090,25 @@ class GestoolImport(models.TransientModel):
 
         total_processed_orders = 0
         failed_tickets = {}
+        session_errors = {}
         for config_id, config_rows in rows_by_config.items():
             config = self.env['pos.config'].sudo().browse(config_id)
-            session = self._create_import_session(config)
             rows_by_ticket = {}
             for row in config_rows:
                 rows_by_ticket.setdefault(row[3].strip(), []).append(row)
+            try:
+                with self.env.cr.savepoint():
+                    session = self._create_import_session(config)
+            except Exception as error:
+                _logger.exception(
+                    "Error creando la sesión 0000 del TPV %s", config.name
+                )
+                session_errors[config.name] = str(error)
+                for reference in rows_by_ticket:
+                    failed_tickets[reference] = _(
+                        "no se pudo abrir la sesión 0000 del TPV %s", config.name
+                    )
+                continue
 
             for index, (reference, ticket_rows) in enumerate(
                 rows_by_ticket.items(), start=1
@@ -1113,14 +1136,23 @@ class GestoolImport(models.TransientModel):
                 # igualmente) — revisar manualmente en ese caso.
                 if index % 10 == 0:
                     self._commit_import_progress()
-            self._close_import_session(session)
+            try:
+                with self.env.cr.savepoint():
+                    self._close_import_session(session)
+            except Exception as error:
+                # Los pedidos ya importados se conservan; la sesión queda
+                # abierta para cerrarla a mano y se sigue con el siguiente TPV.
+                _logger.exception(
+                    "Error cerrando la sesión 0000 del TPV %s", config.name
+                )
+                session_errors[config.name] = str(error)
             self._commit_import_progress()
 
         _logger.info("Total pedidos importados: %d", total_processed_orders)
         if (
             invalid_tickets or malformed_lines or invalid_pos_tickets
             or mixed_pos_tickets or negative_tickets or invalid_numeric_tickets
-            or failed_tickets or duplicate_tickets
+            or failed_tickets or duplicate_tickets or session_errors
         ):
             return self._ticket_import_warning(
                 invalid_tickets,
@@ -1134,6 +1166,7 @@ class GestoolImport(models.TransientModel):
                 removed_copies,
                 conflicting_copies,
                 cleanup_errors,
+                session_errors,
             )
         return True
 
@@ -1161,8 +1194,9 @@ class GestoolImport(models.TransientModel):
         """Map each already imported ticket to its existing orders.
 
         The orders of every ticket are sorted so that the copy to keep comes
-        first: copies in closed sessions before copies in sessions that are
-        still open, then the oldest one.
+        first: copies outside the import sessions before the ones inside
+        them, then copies in closed sessions before copies in sessions that
+        are still open, then the oldest one.
         """
         config_by_ticket = {}
         for reference, pos_names in ticket_pos_names.items():
@@ -1198,6 +1232,7 @@ class GestoolImport(models.TransientModel):
             reference: self.env['pos.order'].sudo().concat(*sorted(
                 orders,
                 key=lambda order: (
+                    self._is_import_session(order.session_id),
                     order.session_id.state != 'closed',
                     order.create_date,
                     order.id,
@@ -1205,6 +1240,9 @@ class GestoolImport(models.TransientModel):
             ))
             for reference, orders in orders_by_ticket.items()
         }
+
+    def _is_import_session(self, session):
+        return session.name == self._IMPORT_SESSION_NAME
 
     @staticmethod
     def _is_identical_copy(kept_order, order):
@@ -1218,9 +1256,11 @@ class GestoolImport(models.TransientModel):
     def _remove_duplicate_copies(self, existing_orders):
         """Keep one order per already imported ticket and delete the others.
 
-        Only copies with the same date and total as the kept order are
-        deleted; copies that differ are reported so they can be reviewed by
-        hand, because the receipt number may have been reused legitimately.
+        Only copies inside an import session (0000) with the same date and
+        total as the kept order are deleted; any other copy is reported so it
+        can be reviewed by hand, because orders of the real sessions must
+        never be touched and the receipt number may have been reused
+        legitimately.
         Copies are removed session by session, each one in its own savepoint.
         Returns the number of copies removed and the conflicting copies per
         ticket, plus the error of every ticket whose cleanup failed.
@@ -1231,7 +1271,10 @@ class GestoolImport(models.TransientModel):
         for reference, orders in existing_orders.items():
             kept_order = orders[0]
             for order in orders[1:]:
-                if not self._is_identical_copy(kept_order, order):
+                if not (
+                    self._is_import_session(order.session_id)
+                    and self._is_identical_copy(kept_order, order)
+                ):
                     conflicting_copies.setdefault(reference, []).append(
                         order.name
                     )
