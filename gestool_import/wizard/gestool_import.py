@@ -20,6 +20,8 @@ class GestoolImport(models.TransientModel):
     _description = "Importador desde Gestool"
 
     _IMPORT_SESSION_NAME = "0000"
+    _CLEANUP_BEFORE_PARAM = "gestool_import.duplicate_cleanup_before"
+    _CLEANUP_BEFORE_DEFAULT = "2026-08-01"
 
     _IMPORT_FILE_SPECS = (
         ("partner_attachment_ids", "data_file_partner", "filename_partner", "_import_partner"),
@@ -939,9 +941,9 @@ class GestoolImport(models.TransientModel):
             ))
         for reference, order_names in list(conflicting_copies.items())[:20]:
             details.append(_(
-                "Ticket %(ticket)s: copia(s) %(orders)s con fecha o importe"
-                " distintos o fuera de una sesión 0000; no se eliminan,"
-                " revísalas a mano",
+                "Ticket %(ticket)s: copia(s) %(orders)s no eliminada(s) (fecha"
+                " o importe distintos, fuera de una sesión 0000 o posterior al"
+                " límite de limpieza); revísalas a mano",
                 ticket=reference,
                 orders=", ".join(order_names),
             ))
@@ -1244,6 +1246,20 @@ class GestoolImport(models.TransientModel):
     def _is_import_session(self, session):
         return session.name == self._IMPORT_SESSION_NAME
 
+    def _get_duplicate_cleanup_limit(self):
+        """Return the date from which duplicated copies are never deleted."""
+        value = self.env['ir.config_parameter'].sudo().get_param(
+            self._CLEANUP_BEFORE_PARAM, self._CLEANUP_BEFORE_DEFAULT
+        )
+        return fields.Datetime.to_datetime(value)
+
+    def _is_removable_copy(self, kept_order, order, cleanup_limit):
+        return (
+            self._is_import_session(order.session_id)
+            and order.date_order < cleanup_limit
+            and self._is_identical_copy(kept_order, order)
+        )
+
     @staticmethod
     def _is_identical_copy(kept_order, order):
         return (
@@ -1256,11 +1272,12 @@ class GestoolImport(models.TransientModel):
     def _remove_duplicate_copies(self, existing_orders):
         """Keep one order per already imported ticket and delete the others.
 
-        Only copies inside an import session (0000) with the same date and
-        total as the kept order are deleted; any other copy is reported so it
-        can be reviewed by hand, because orders of the real sessions must
-        never be touched and the receipt number may have been reused
-        legitimately.
+        Only copies inside an import session (0000), dated before the cleanup
+        limit (system parameter ``gestool_import.duplicate_cleanup_before``,
+        2026-08-01 by default) and with the same date and total as the kept
+        order are deleted. Any other copy is reported so it can be reviewed
+        by hand: orders of the real sessions and recent sales must never be
+        touched, and the receipt number may have been reused legitimately.
         Copies are removed session by session, each one in its own savepoint.
         Returns the number of copies removed and the conflicting copies per
         ticket, plus the error of every ticket whose cleanup failed.
@@ -1268,13 +1285,11 @@ class GestoolImport(models.TransientModel):
         surplus_by_session = {}
         reference_by_order = {}
         conflicting_copies = {}
+        cleanup_limit = self._get_duplicate_cleanup_limit()
         for reference, orders in existing_orders.items():
             kept_order = orders[0]
             for order in orders[1:]:
-                if not (
-                    self._is_import_session(order.session_id)
-                    and self._is_identical_copy(kept_order, order)
-                ):
+                if not self._is_removable_copy(kept_order, order, cleanup_limit):
                     conflicting_copies.setdefault(reference, []).append(
                         order.name
                     )

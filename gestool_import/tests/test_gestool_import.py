@@ -196,7 +196,7 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
     ):
         row = [""] * 19
         row[3] = reference
-        row[5] = "24/08/2026"
+        row[5] = "24/07/2026"
         row[7] = pos_name or cls.pos_configs[0].name
         row[9] = "CLIENTE-001"
         row[15] = product_code
@@ -963,13 +963,52 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
 
         self.assertEqual(self._orders("TICKET-TIENDA"), first | second)
         self.assertIn(
-            f"Ticket TICKET-TIENDA: copia(s) {second.name} con fecha o importe"
-            " distintos o fuera de una sesión 0000",
+            f"Ticket TICKET-TIENDA: copia(s) {second.name} no eliminada(s)",
             result["params"]["message"],
         )
         self.assertNotIn(
             "copia(s) duplicada(s) eliminada(s)", result["params"]["message"]
         )
+
+    def _import_dated_copies(self, reference, date, copies):
+        row = self._ticket_row(reference=reference)
+        row[5] = date
+        csv_data = "\n".join((",".join(["cabecera"] * 19), ",".join(row)))
+        self._import_copies(csv_data.encode(), copies)
+        return csv_data.encode()
+
+    def test_copies_from_cleanup_limit_are_reported_not_removed(self):
+        csv_data = self._import_dated_copies("TICKET-AGOSTO", "01/08/2026", 2)
+        first, second = self._orders("TICKET-AGOSTO").sorted("id")
+
+        result = self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-AGOSTO"), first | second)
+        self.assertIn(
+            f"Ticket TICKET-AGOSTO: copia(s) {second.name} no eliminada(s)",
+            result["params"]["message"],
+        )
+
+    def test_copies_before_cleanup_limit_are_removed(self):
+        csv_data = self._import_dated_copies("TICKET-JULIO", "31/07/2026", 2)
+        kept, surplus = self._orders("TICKET-JULIO").sorted("id")
+
+        self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-JULIO"), kept)
+        self.assertFalse(surplus.exists())
+
+    def test_cleanup_limit_can_be_changed_by_system_parameter(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "gestool_import.duplicate_cleanup_before", "2026-09-01"
+        )
+        csv_data = self._import_dated_copies("TICKET-PARAM", "15/08/2026", 2)
+        kept, surplus = self._orders("TICKET-PARAM").sorted("id")
+
+        self.wizard._import_ticket(csv_data)
+
+        self.assertEqual(self._orders("TICKET-PARAM"), kept)
+        self.assertFalse(surplus.exists())
 
     def test_copy_with_different_total_is_reported_not_removed(self):
         csv_data = self._ticket_csv("TICKET-DISTINTO")
@@ -987,8 +1026,7 @@ class TestGestoolTicketImport(GestoolTransactionMixin, TransactionCase):
 
         self.assertEqual(self._orders("TICKET-DISTINTO"), first | second)
         self.assertIn(
-            f"Ticket TICKET-DISTINTO: copia(s) {second.name} con fecha o importe"
-            " distintos",
+            f"Ticket TICKET-DISTINTO: copia(s) {second.name} no eliminada(s)",
             result["params"]["message"],
         )
 
