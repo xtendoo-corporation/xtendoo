@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0) -->
+<odoo>
+
+    <!-- Amount with the currency symbol in its configured position. -->
+    <template id="amount">
+        <t t-if="currency['position']">
+            <span
+                t-out="amount"
+                t-options="{'widget': 'float', 'precision': currency['precision']}"
+            >0.00</span><span t-out="currency['symbol']">€</span>
+        </t>
+        <t t-else="">
+            <span t-out="currency['symbol']">€</span><span
+                t-out="amount"
+                t-options="{'widget': 'float', 'precision': currency['precision']}"
+            >0.00</span>
+        </t>
+    </template>
+
+    <!-- Product table: one line per product, no barcodes. -->
+    <template id="product_table">
+        <table
+            class="table table-sm table-borderless mb-1"
+            style="table-layout: fixed; width: 100%; font-size: 0.85rem;"
+        >
+            <thead>
+                <tr class="border-bottom border-dark">
+                    <th style="width: 13%;">Ref.</th>
+                    <th>Product</th>
+                    <th class="text-end" style="width: 10%;">Qty</th>
+                    <th class="text-end" style="width: 13%;">Untaxed</th>
+                    <th class="text-end" style="width: 13%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    t-foreach="product_lines"
+                    t-as="line"
+                    class="border-bottom"
+                    style="page-break-inside: avoid;"
+                >
+                    <td
+                        class="text-nowrap"
+                        style="overflow: hidden; text-overflow: ellipsis;"
+                    ><span t-out="line['default_code']">000000</span></td>
+                    <td
+                        class="text-nowrap"
+                        style="overflow: hidden; text-overflow: ellipsis;"
+                    ><span t-out="line['name']">Product</span></td>
+                    <td class="text-end text-nowrap">
+                        <span
+                            t-out="line['quantity']"
+                            t-options="{'widget': 'float', 'decimal_precision': 'Product Unit of Measure'}"
+                        >1</span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <t t-call="xtendoo_pos_sale_details_report.amount">
+                            <t t-set="amount" t-value="line['base_amount']" />
+                        </t>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <t t-call="xtendoo_pos_sale_details_report.amount">
+                            <t t-set="amount" t-value="line['total_amount']" />
+                        </t>
+                    </td>
+                </tr>
+                <tr class="fw-bold border-top border-dark">
+                    <td colspan="2">
+                        Total (<span t-out="len(product_lines)">0</span> products)
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <span
+                            t-out="sum(line['quantity'] for line in product_lines)"
+                            t-options="{'widget': 'float', 'decimal_precision': 'Product Unit of Measure'}"
+                        >0</span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <t t-call="xtendoo_pos_sale_details_report.amount">
+                            <t
+                                t-set="amount"
+                                t-value="sum(line['base_amount'] for line in product_lines)"
+                            />
+                        </t>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <t t-call="xtendoo_pos_sale_details_report.amount">
+                            <t
+                                t-set="amount"
+                                t-value="sum(line['total_amount'] for line in product_lines)"
+                            />
+                        </t>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+
+    <template
+        id="pos_session_sales_details"
+        inherit_id="point_of_sale.pos_session_sales_details"
+    >
+        <!--
+            Payments by method, all sessions aggregated, with number of
+            payments, amount and percentage. The "payments" id is kept so
+            other modules using it as an anchor keep working.
+        -->
+        <xpath expr="//div[@id='payments']" position="replace">
+            <div t-if="xtendoo_payment_methods" id="payments" style="page-break-inside: avoid;">
+                <h6 class="bg-secondary p-1 fw-bold">Payments by method</h6>
+                <table class="table table-sm table-borderless">
+                    <thead>
+                        <tr class="border-bottom border-dark">
+                            <th>Payment method</th>
+                            <th class="text-end" style="width: 15%;">Payments</th>
+                            <th class="text-end" style="width: 20%;">Amount</th>
+                            <th class="text-end" style="width: 12%;">%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            t-foreach="xtendoo_payment_methods"
+                            t-as="payment_method"
+                            class="border-bottom"
+                        >
+                            <td class="fw-bold"><span t-out="payment_method['name']">Cash</span></td>
+                            <td class="text-end"><span t-out="payment_method['count']">0</span></td>
+                            <td class="text-end">
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="payment_method['amount']" />
+                                </t>
+                            </td>
+                            <td class="text-end">
+                                <span
+                                    t-out="payment_method['percentage']"
+                                    t-options="{'widget': 'float', 'precision': 1}"
+                                >0.0</span>%
+                            </td>
+                        </tr>
+                        <tr class="fw-bold fs-5 border-top border-dark">
+                            <td>Total collected</td>
+                            <td class="text-end"><span t-out="xtendoo_payment_totals['count']">0</span></td>
+                            <td class="text-end">
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="xtendoo_payment_totals['amount']" />
+                                </t>
+                            </td>
+                            <td class="text-end">100%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </xpath>
+
+        <!-- Session summary and payments at the top of the report. -->
+        <xpath expr="//div[@id='sales']" position="before">
+            <div id="xtendoo_summary" style="page-break-inside: avoid;">
+                <h6 class="bg-secondary p-1 fw-bold">Session summary</h6>
+                <table class="table table-sm table-bordered text-center mb-3">
+                    <tbody>
+                        <tr class="small text-muted">
+                            <td>Total sales</td>
+                            <td>Orders</td>
+                            <td>Average order</td>
+                            <td>Untaxed amount</td>
+                            <td>Taxes</td>
+                            <td t-if="xtendoo_summary['refund_count']">Refunds</td>
+                        </tr>
+                        <tr class="fw-bold fs-5">
+                            <td>
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="xtendoo_summary['total']" />
+                                </t>
+                            </td>
+                            <td><span t-out="xtendoo_summary['order_count']">0</span></td>
+                            <td>
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="xtendoo_summary['average_ticket']" />
+                                </t>
+                            </td>
+                            <td>
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="xtendoo_summary['base_amount']" />
+                                </t>
+                            </td>
+                            <td>
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="xtendoo_summary['tax_amount']" />
+                                </t>
+                            </td>
+                            <td t-if="xtendoo_summary['refund_count']">
+                                <span t-out="xtendoo_summary['refund_count']">0</span> /
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="xtendoo_summary['refund_amount']" />
+                                </t>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <xpath expr="//div[@id='payments']" position="move" />
+        </xpath>
+
+        <!-- Sales: one line per product, no categories or barcodes. -->
+        <xpath expr="//div[@id='sales']" position="replace">
+            <div t-if="xtendoo_products" id="sales">
+                <h6 class="bg-secondary p-1 fw-bold">Sales by product</h6>
+                <t t-call="xtendoo_pos_sale_details_report.product_table">
+                    <t t-set="product_lines" t-value="xtendoo_products" />
+                </t>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[@id='refunds']" position="replace">
+            <div t-if="xtendoo_refund_products" id="refunds">
+                <h6 class="bg-secondary p-1 fw-bold">Refunds by product</h6>
+                <t t-call="xtendoo_pos_sale_details_report.product_table">
+                    <t t-set="product_lines" t-value="xtendoo_refund_products" />
+                </t>
+            </div>
+        </xpath>
+
+        <!-- Invoices: summary instead of the full list. -->
+        <xpath expr="//div[@id='invoices']" position="replace">
+            <div
+                t-if="xtendoo_invoice_summary['count']"
+                id="invoices"
+                style="page-break-inside: avoid;"
+            >
+                <h6 class="bg-secondary p-1 fw-bold">Invoices</h6>
+                <table class="table table-sm table-borderless">
+                    <tbody>
+                        <tr class="border-bottom">
+                            <td>Number of invoices</td>
+                            <td class="text-end"><span t-out="xtendoo_invoice_summary['count']">0</span></td>
+                        </tr>
+                        <tr class="border-bottom" t-if="xtendoo_invoice_summary['first']">
+                            <td>From / to</td>
+                            <td class="text-end">
+                                <span t-out="xtendoo_invoice_summary['first']">A/0001</span>
+                                <t t-if="xtendoo_invoice_summary['last'] != xtendoo_invoice_summary['first']">
+                                    – <span t-out="xtendoo_invoice_summary['last']">A/0002</span>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td>Total invoiced</td>
+                            <td class="text-end">
+                                <t t-call="xtendoo_pos_sale_details_report.amount">
+                                    <t t-set="amount" t-value="xtendoo_invoice_summary['total']" />
+                                </t>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

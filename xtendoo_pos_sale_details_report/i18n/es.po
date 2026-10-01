@@ -1,0 +1,171 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* xtendoo_pos_sale_details_report
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-01 19:06+0000\n"
+"PO-Revision-Date: 2026-10-01 19:06+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "A/0001"
+msgstr ""
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "A/0002"
+msgstr ""
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Amount"
+msgstr "Importe"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Average order"
+msgstr "Ticket medio"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Cash"
+msgstr "Efectivo"
+
+#. module: xtendoo_pos_sale_details_report
+#: model:ir.model.fields,field_description:xtendoo_pos_sale_details_report.field_report_point_of_sale_report_saledetails__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "From / to"
+msgstr "Desde / hasta"
+
+#. module: xtendoo_pos_sale_details_report
+#: model:ir.model.fields,field_description:xtendoo_pos_sale_details_report.field_report_point_of_sale_report_saledetails__id
+msgid "ID"
+msgstr "ID"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Invoices"
+msgstr "Facturas"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Number of invoices"
+msgstr "Número de facturas"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Orders"
+msgstr "Nº de tickets"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Payment method"
+msgstr "Forma de pago"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Payments"
+msgstr "Nº cobros"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Payments by method"
+msgstr "Cobros por forma de pago"
+
+#. module: xtendoo_pos_sale_details_report
+#: model:ir.model,name:xtendoo_pos_sale_details_report.model_report_point_of_sale_report_saledetails
+msgid "Point of Sale Details"
+msgstr "Detalles del punto de venta"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.product_table
+msgid "Product"
+msgstr "Producto"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.product_table
+msgid "Qty"
+msgstr "Cant."
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.product_table
+msgid "Ref."
+msgstr "Ref."
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Refunds"
+msgstr "Devoluciones"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Refunds by product"
+msgstr "Devoluciones por producto"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Sales by product"
+msgstr "Ventas por producto"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Session summary"
+msgstr "Resumen de la sesión"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Taxes"
+msgstr "Impuestos"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.product_table
+msgid "Total"
+msgstr "Total"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.product_table
+msgid "Total ("
+msgstr "Total ("
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Total collected"
+msgstr "Total cobrado"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Total invoiced"
+msgstr "Total facturado"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Total sales"
+msgstr "Total vendido"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.product_table
+msgid "Untaxed"
+msgstr "Base"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.pos_session_sales_details
+msgid "Untaxed amount"
+msgstr "Base imponible"
+
+#. module: xtendoo_pos_sale_details_report
+#: model_terms:ir.ui.view,arch_db:xtendoo_pos_sale_details_report.product_table
+msgid "products)"
+msgstr "productos)"
