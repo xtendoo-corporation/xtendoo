@@ -39,7 +39,16 @@ class MailWhatsappTemplate(models.Model):
         if json_data.get("status", "").lower() == "approved":
             vals["is_supported"] = True
         if vals.get("button_ids"):
-            vals["button_ids"] = self._match_import_buttons(vals["button_ids"])
+            # Callers may use the empty model, so fall back to looking the
+            # existing template up by its Meta id to re-pair buttons.
+            template = self or self.with_context(active_test=False).search(
+                [
+                    ("gateway_id", "=", gateway.id),
+                    ("template_uid", "=", json_data.get("id")),
+                ],
+                limit=1,
+            )
+            vals["button_ids"] = template._match_import_buttons(vals["button_ids"])
         return vals
 
     def _match_import_buttons(self, button_commands):
