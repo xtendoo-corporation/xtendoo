@@ -27,7 +27,6 @@ class MailWhatsappTemplate(models.Model):
     ], string="Tipo de Confirmación", default='button',
        help="Tipo de respuesta esperada para activar la plantilla de confirmación")
 
-    @api.model
     def _prepare_values_to_import(self, gateway, json_data):
         # OCA pairs existing buttons by name only and breaks (singleton error)
         # when several share the text. ``self`` is only used there for
