@@ -3,7 +3,7 @@
 
 {
     "name": "Mail Gateway WhatsApp - Template Variables",
-    "version": "18.0.1.9.0",
+    "version": "18.0.1.10.0",
     "category": "Social",
     "summary": "Add support for template variables, buttons, attachments and auto-confirmation flow in WhatsApp messages",
     "author": "Xtendoo",
