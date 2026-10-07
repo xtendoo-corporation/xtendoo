@@ -41,6 +41,7 @@
         'views/attendance_keyword_config_views.xml',
         'views/hr_employee_geolocation_views.xml',
         'views/hr_attendance_views.xml',
+        'views/whatsapp_message_status_views.xml',
     ],
     'installable': True,
     'auto_install': False,

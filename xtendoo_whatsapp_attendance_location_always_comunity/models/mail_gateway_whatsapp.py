@@ -19,6 +19,23 @@ class MailGatewayWhatsappAttendanceLocationAlways(models.AbstractModel):
     """
     _inherit = "mail.gateway.whatsapp"
 
+    def _receive_update(self, gateway, update):
+        """Registra los estados (sent/delivered/read/failed) que Meta envía por webhook."""
+        if update:
+            try:
+                for entry in update.get("entry", []):
+                    for change in entry.get("changes", []):
+                        if change.get("field") != "messages":
+                            continue
+                        value = change.get("value", {})
+                        if value.get("statuses"):
+                            self.env["whatsapp.message.status"]._register_statuses(
+                                gateway, value
+                            )
+            except Exception:
+                _logger.exception("Error registrando estados de WhatsApp")
+        return super()._receive_update(gateway, update)
+
     def _process_update(self, chat, message, value):
         """
         Override del método _process_update para interceptar mensajes de asistencia

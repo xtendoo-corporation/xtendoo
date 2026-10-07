@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_payment_method_view_form_inherit_pos_redsys" model="ir.ui.view">
+        <field name="name">pos.payment.method.form.inherit.redsys</field>
+        <field name="model">pos.payment.method</field>
+        <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='use_payment_terminal']" position="after">
+                <field name="redsys_merchant_code" invisible="use_payment_terminal != 'redsys'" required="use_payment_terminal == 'redsys'"/>
+                <field name="redsys_terminal_number" invisible="use_payment_terminal != 'redsys'" required="use_payment_terminal == 'redsys'"/>
+                <field name="redsys_agent_url" invisible="use_payment_terminal != 'redsys'" required="use_payment_terminal == 'redsys'"/>
+                <field name="redsys_test_mode" invisible="use_payment_terminal != 'redsys'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

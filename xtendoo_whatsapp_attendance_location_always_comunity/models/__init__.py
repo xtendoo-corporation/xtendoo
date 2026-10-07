@@ -5,3 +5,4 @@ from . import attendance_keyword_config
 from . import hr_employee_geolocation
 from . import mail_gateway_whatsapp
 
+from . import whatsapp_message_status
