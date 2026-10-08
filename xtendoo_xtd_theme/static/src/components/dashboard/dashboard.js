@@ -5,6 +5,7 @@ import { registry } from "@web/core/registry";
 import { session } from "@web/session";
 import { user } from "@web/core/user";
 import { loadBundle } from "@web/core/assets";
+import { browser } from "@web/core/browser/browser";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
 import { deserializeDateTime, serializeDateTime } from "@web/core/l10n/dates";
@@ -41,6 +42,8 @@ export class XtdDashboard extends Component {
             orderStatus: [],
             chartData: null,
             loading: true,
+            // Animación de entrada de las tarjetas: solo en la primera carga.
+            intro: true,
             layout: { mode: "global", can_customize: false, blocks: [] },
             editingLayout: false,
             draftBlocks: [],
@@ -129,6 +132,7 @@ export class XtdDashboard extends Component {
             this._resetData();
         } finally {
             this.state.loading = false;
+            browser.setTimeout(() => { this.state.intro = false; }, 1500);
         }
     }
 
@@ -918,7 +922,19 @@ export class XtdDashboard extends Component {
                     {
                         label: _t("Pedidos de venta"),
                         data: rawData.orders_count,
-                        backgroundColor: orange,
+                        // Degradado vertical de naranja a naranja claro; sin área de
+                        // dibujo todavía (primer pase) se usa el naranja liso.
+                        backgroundColor: (context) => {
+                            const { chart } = context;
+                            const area = chart.chartArea;
+                            if (!area) {
+                                return orange;
+                            }
+                            const gradient = chart.ctx.createLinearGradient(0, area.bottom, 0, area.top);
+                            gradient.addColorStop(0, orange);
+                            gradient.addColorStop(1, "#ff9a5c");
+                            return gradient;
+                        },
                         borderRadius: 6,
                         borderSkipped: false,
                     },
@@ -927,6 +943,9 @@ export class XtdDashboard extends Component {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                    ? false
+                    : { duration: 700, easing: "easeOutCubic" },
                 categoryPercentage: 0.75,
                 barPercentage: 0.9,
                 maxBarThickness: 22,
@@ -935,7 +954,24 @@ export class XtdDashboard extends Component {
                     legend: {
                         position: "top",
                         align: "end",
-                        labels: { usePointStyle: true, pointStyle: "rectRounded", boxWidth: 8, padding: 16, font: { size: 11 }, color: muted },
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: "rectRounded",
+                            boxWidth: 8,
+                            padding: 16,
+                            font: { size: 11 },
+                            color: muted,
+                            // La muestra de la leyenda usa el naranja liso (las barras llevan degradado).
+                            generateLabels: (chart) => {
+                                const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                                for (const label of labels) {
+                                    if (label.datasetIndex === 1) {
+                                        label.fillStyle = orange;
+                                    }
+                                }
+                                return labels;
+                            },
+                        },
                     },
                     tooltip: {
                         backgroundColor: "#151515",

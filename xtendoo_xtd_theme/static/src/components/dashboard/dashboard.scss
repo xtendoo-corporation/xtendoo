@@ -65,11 +65,17 @@
 
     .kpi-card {
         overflow: visible;
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s ease;
         &:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.06) !important;
+            transform: translateY(-3px);
+            box-shadow: 0 0 0 1px rgba(244, 87, 0, 0.16), 0 14px 30px rgba(21, 21, 21, 0.08) !important;
         }
+    }
+
+    // En edición las tarjetas no se mueven (se arrastran y se miden).
+    .xtd-dashboard-editable-block .kpi-card:hover {
+        box-shadow: none !important;
+        transform: none;
     }
 
     .kpi-card--compact {
@@ -692,5 +698,51 @@
         &:hover {
             background: #d94e00 !important;
         }
+    }
+}
+
+
+// ---------- Fondo y entrada suaves ----------
+// Resplandor de marca muy tenue en las esquinas superiores (el oscuro tiene el suyo).
+.o_xtd_dashboard .xtd-dashboard-bg {
+    background:
+        radial-gradient(900px 420px at 100% 0%, rgba(244, 87, 0, 0.07), transparent 65%),
+        radial-gradient(700px 380px at 0% 0%, rgba(74, 8, 35, 0.045), transparent 65%);
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+}
+
+// Las tarjetas aparecen subiendo y desvaneciéndose, escalonadas. Solo en la
+// primera carga: la clase se retira desde JS para que no se repita al editar.
+@keyframes xtd-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.o_xtd_dashboard.xtd-dashboard-intro .row > [data-block-key] {
+    animation: xtd-rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+
+    @for $i from 1 through 12 {
+        &:nth-child(#{$i}) {
+            animation-delay: #{($i - 1) * 55}ms;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_xtd_dashboard.xtd-dashboard-intro .row > [data-block-key] {
+        animation: none;
+    }
+
+    .o_xtd_dashboard .kpi-card {
+        transition: none;
     }
 }

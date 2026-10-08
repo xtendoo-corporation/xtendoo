@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="xtendoo_xtd_theme.XtdDashboard">
-        <div class="o_xtd_dashboard d-flex h-100 overflow-hidden">
+        <div class="o_xtd_dashboard d-flex h-100 overflow-hidden" t-att-class="{'xtd-dashboard-intro': state.intro}">
             <!-- Eliminado el Sidebar interno cableado -->
 
             <!-- Main Content Area -->
