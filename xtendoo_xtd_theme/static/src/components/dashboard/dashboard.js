@@ -915,7 +915,7 @@ export class XtdDashboard extends Component {
                     {
                         label: _t("Presupuestos"),
                         data: rawData.quotations,
-                        backgroundColor: "rgba(244, 87, 0, 0.28)",
+                        backgroundColor: this._cssVar("--xtd-series-secondary", "rgba(244, 87, 0, 0.28)"),
                         borderRadius: 6,
                         borderSkipped: false,
                     },

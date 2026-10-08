@@ -1,14 +1,14 @@
 .o_main_navbar {
-    background: #171717 !important;
+    background: var(--xtd-deep) !important;
     border-bottom: 0 !important;
     position: relative;
     --NavBar-menuToggle-color: var(--xtd-ink);
     --NavBar-brand-color: var(--xtd-ink);
     --NavBar-entry-color--active: var(--xtd-burgundy);
-    --NavBar-entry-borderColor-active: rgba(255, 155, 123, 0.28);
-    --NavBar-entry-backgroundColor--active: rgba(255, 155, 123, 0.12);
-    --NavBar-entry-backgroundColor--hover: #262a36;
-    --NavBar-entry-backgroundColor--focus: #262a36;
+    --NavBar-entry-borderColor-active: rgba(255, 169, 135, 0.28);
+    --NavBar-entry-backgroundColor--active: rgba(255, 169, 135, 0.12);
+    --NavBar-entry-backgroundColor--hover: var(--xtd-surface-hover);
+    --NavBar-entry-backgroundColor--focus: var(--xtd-surface-hover);
 
     .o_menu_brand,
     .o_nav_entry,
@@ -169,16 +169,16 @@
 }
 
 .o_app_menu_sidebar {
-    background: #171717 !important;
+    background: var(--xtd-deep) !important;
     border-color: var(--xtd-line) !important;
 }
 
 .o_app_menu_sidebar.xtd-sidebar-panel,
 .xtd-sidebar-panel {
-    background: linear-gradient(180deg, #151820 0%, #101217 100%) !important;
+    background: linear-gradient(180deg, var(--xtd-deep) 0%, var(--xtd-deep) 100%) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: 18px 0 42px rgba(0, 0, 0, 0.32) !important;
-    color: #f4f6fb !important;
+    color: var(--xtd-ink) !important;
 
     .o_sidebar_topbar {
         background: rgba(255, 255, 255, 0.025) !important;
@@ -187,7 +187,7 @@
     }
 
     .o_burger_menu_content {
-        scrollbar-color: #ff6d2d rgba(255, 255, 255, 0.04);
+        scrollbar-color: var(--xtd-orange) rgba(255, 255, 255, 0.04);
 
         &::-webkit-scrollbar {
             width: 8px;
@@ -198,7 +198,7 @@
         }
 
         &::-webkit-scrollbar-thumb {
-            background: #ff6d2d;
+            background: var(--xtd-orange);
             border-radius: 999px;
         }
     }
@@ -235,16 +235,16 @@
         }
 
         &.active {
-            background: linear-gradient(90deg, rgba(255, 109, 45, 0.18), rgba(255, 109, 45, 0.06)) !important;
-            box-shadow: inset 3px 0 0 #ff6d2d !important;
+            background: linear-gradient(90deg, rgba(255, 122, 61, 0.18), rgba(255, 122, 61, 0.06)) !important;
+            box-shadow: inset 3px 0 0 var(--xtd-orange) !important;
             color: #ffffff !important;
         }
     }
 
     .xtd-sidebar-settings {
-        background: #1b202b !important;
+        background: var(--xtd-surface) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-        color: #d9e0ed !important;
+        color: var(--xtd-ink) !important;
 
         i,
         span {
@@ -254,7 +254,7 @@
         &:hover,
         &:focus,
         &.xtd-sidebar-settings--active {
-            background: rgba(255, 109, 45, 0.16) !important;
+            background: rgba(255, 122, 61, 0.16) !important;
             color: #ffffff !important;
         }
     }
@@ -262,18 +262,18 @@
     .xtd-sidebar-reorder-btn {
         background: rgba(255, 255, 255, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #f4f6fb !important;
+        color: var(--xtd-ink) !important;
 
         &:hover,
         &:focus {
-            background: rgba(255, 109, 45, 0.24) !important;
-            border-color: rgba(255, 109, 45, 0.42) !important;
+            background: rgba(255, 122, 61, 0.24) !important;
+            border-color: rgba(255, 122, 61, 0.42) !important;
         }
     }
 }
 
 .app-menu-container {
-    background: linear-gradient(180deg, #171717 0%, #101010 100%) !important;
+    background: linear-gradient(180deg, var(--xtd-deep) 0%, var(--xtd-deep) 100%) !important;
 }
 
 .o-app-menu-item {
@@ -295,7 +295,7 @@
     }
 
     &.active {
-        background: rgba(255, 109, 45, 0.12) !important;
+        background: rgba(255, 122, 61, 0.12) !important;
 
         .o-app-menu-item__name {
             color: var(--xtd-orange) !important;
@@ -306,7 +306,7 @@
 .o_grid_apps_menu .search-container {
     .search-input,
     .search-item {
-        background: #171717 !important;
+        background: var(--xtd-deep) !important;
         border-color: rgba(247, 245, 242, 0.08) !important;
         box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3) !important;
     }

@@ -293,7 +293,9 @@
     .xtd-dashboard-block-controls {
         cursor: grab;
         align-items: center;
-        background: #fff;
+        // Variables del tema para que valga también en oscuro (antes #fff fijo).
+        background: var(--xtd-surface, #fff);
+        color: var(--xtd-ink, #151515);
         border: 1px solid rgba(244, 87, 0, 0.35);
         border-radius: 8px;
         display: flex;

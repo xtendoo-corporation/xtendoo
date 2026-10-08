@@ -1,22 +1,27 @@
 :root {
-    --xtd-orange: #ff6d2d;
-    --xtd-burgundy: #ff9b7b;
-    --xtd-ink: #f7f5f2;
-    --xtd-paper: #171717;
-    --xtd-line: #303030;
-    --xtd-muted: #b8b1ba;
-    --xtd-deep: #1b1d26;
-    --xtd-surface: #262a36;
-    --xtd-surface-soft: #20232c;
-    --xtd-surface-hover: #2f3441;
-    --xtd-link: #9fc7ff;
+    // Paleta oscura cálida: carbón con matiz cálido (nada de azulados que
+    // choquen con el naranja y el burdeos de la marca) y elevación por tono.
+    --xtd-orange: #ff7a3d;
+    --xtd-burgundy: #ffa987;
+    --xtd-ink: #ece9e4;
+    --xtd-paper: #141414;
+    --xtd-line: #2e2e32;
+    --xtd-line-strong: #3a3a3f;
+    --xtd-muted: #9d978f;
+    --xtd-deep: #141414;
+    --xtd-surface: #1d1d20;
+    --xtd-surface-soft: #18181a;
+    --xtd-surface-hover: #27272b;
+    --xtd-link: #ffa987;
+    // Serie secundaria de los gráficos (en claro es un naranja translúcido).
+    --xtd-series-secondary: #7d746b;
     --o-brand-primary: var(--xtd-orange);
     --o-brand-odoo: #2a1117;
-    --o-brand-secondary: #f7f5f2;
+    --o-brand-secondary: #ece9e4;
 }
 
 body {
-    background: #101010;
+    background: var(--xtd-deep);
     color: var(--xtd-ink);
 }
 
@@ -35,21 +40,21 @@ body {
 .o_control_panel .btn.btn-primary {
     background: var(--o-brand-primary) !important;
     border-color: var(--o-brand-primary) !important;
-    color: #101010 !important;
+    color: var(--xtd-deep) !important;
     box-shadow: none !important;
 
     &:hover,
     &:focus,
     &.active {
-        background: #ff8754 !important;
-        border-color: #ff8754 !important;
-        color: #101010 !important;
+        background: #ff9560 !important;
+        border-color: #ff9560 !important;
+        color: var(--xtd-deep) !important;
     }
 
     &:disabled,
     &.disabled {
-        background: rgba(255, 109, 45, 0.28) !important;
-        border-color: rgba(255, 109, 45, 0.28) !important;
+        background: rgba(255, 122, 61, 0.28) !important;
+        border-color: rgba(255, 122, 61, 0.28) !important;
         color: rgba(16, 16, 16, 0.7) !important;
         opacity: 1 !important;
     }
@@ -82,7 +87,7 @@ body {
 }
 
 .o_web_client .text-muted:is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
-    color: #a7adb8 !important;
+    color: var(--xtd-muted) !important;
 }
 
 .o_web_client .o-yellow:is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
@@ -90,7 +95,7 @@ body {
 }
 
 .o_web_client .text-700:is(.fa, .oi, [class^="fa-"], [class*=" fa-"], [class^="oi-"], [class*=" oi-"]) {
-    color: #a7adb8 !important;
+    color: var(--xtd-muted) !important;
 }
 
 .o_main_navbar,
@@ -106,7 +111,7 @@ body {
 }
 
 .o_control_panel {
-    border-bottom: 1px solid #3c3e4b !important;
+    border-bottom: 1px solid var(--xtd-line-strong) !important;
 
     .o_control_panel_main,
     .o_control_panel_navigation,
@@ -120,7 +125,7 @@ body {
     .o_notification {
         --Notification__background-color: var(--xtd-surface) !important;
         background: var(--xtd-surface) !important;
-        border: 1px solid #3c3e4b !important;
+        border: 1px solid var(--xtd-line-strong) !important;
         border-radius: 0.65rem !important;
         box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32) !important;
         color: var(--xtd-ink) !important;
@@ -132,7 +137,7 @@ body {
     .o_notification_buttons {
         background: transparent !important;
         color: var(--xtd-ink) !important;
-        border-color: #3c3e4b !important;
+        border-color: var(--xtd-line-strong) !important;
     }
 
     .o_notification_content,
@@ -158,7 +163,7 @@ body {
 
         &:hover,
         &:focus {
-            color: #cfe1ff !important;
+            color: var(--xtd-ink) !important;
         }
     }
 }
@@ -175,7 +180,7 @@ body {
     .o_field_widget .o_kanban_renderer .o-kanban-button-new {
         align-self: stretch !important;
         background: var(--xtd-surface-soft) !important;
-        border: 1px solid #3c3e4b !important;
+        border: 1px solid var(--xtd-line-strong) !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         color: var(--xtd-link) !important;
@@ -195,8 +200,8 @@ body {
         &:focus,
         &:active {
             background: var(--xtd-surface) !important;
-            border-color: #4c5566 !important;
-            color: #cfe1ff !important;
+            border-color: var(--xtd-line-strong) !important;
+            color: var(--xtd-ink) !important;
         }
     }
 
@@ -253,21 +258,21 @@ body {
 
     .o_form_sheet {
         background: var(--xtd-surface) !important;
-        border-color: #3c3e4b !important;
+        border-color: var(--xtd-line-strong) !important;
         color: var(--xtd-ink) !important;
         box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24) !important;
     }
 
     .o_form_statusbar {
         background: var(--xtd-deep) !important;
-        border-bottom: 1px solid #3c3e4b !important;
+        border-bottom: 1px solid var(--xtd-line-strong) !important;
         box-shadow: none !important;
     }
 
     .o_field_statusbar > .o_statusbar_status {
-        --o-statusbar-border: #3c3e4b !important;
+        --o-statusbar-border: var(--xtd-line-strong) !important;
         --o-statusbar-background-active: var(--xtd-surface) !important;
-        --o-statusbar-border-active: #4a4d5c !important;
+        --o-statusbar-border-active: var(--xtd-line-strong) !important;
         --o-statusbar-background-hover: var(--xtd-surface-hover) !important;
     }
 
@@ -310,7 +315,7 @@ body {
 
         &:hover,
         &:focus {
-            color: #cfe1ff !important;
+            color: var(--xtd-ink) !important;
         }
     }
 
@@ -323,13 +328,13 @@ body {
     }
 
     .o_notebook {
-        --Notebook__link-border-color--active: #3c3e4b !important;
-        --Notebook__link-border-color--hover: #3c3e4b !important;
+        --Notebook__link-border-color--active: var(--xtd-line-strong) !important;
+        --Notebook__link-border-color--hover: var(--xtd-line-strong) !important;
         --Notebook__link-border-top-color--active: var(--o-brand-primary) !important;
 
         .nav {
             background: transparent !important;
-            border-bottom: 1px solid #3c3e4b !important;
+            border-bottom: 1px solid var(--xtd-line-strong) !important;
         }
 
         .nav-link {
@@ -345,8 +350,8 @@ body {
 
             &.active {
                 background: var(--xtd-surface) !important;
-                border-color: #3c3e4b #3c3e4b var(--xtd-surface) !important;
-                box-shadow: inset 0 2px 0 rgba(255, 155, 123, 0.9) !important;
+                border-color: var(--xtd-line-strong) var(--xtd-line-strong) var(--xtd-surface) !important;
+                box-shadow: inset 0 2px 0 rgba(255, 169, 135, 0.9) !important;
                 color: var(--xtd-burgundy) !important;
             }
         }
@@ -355,17 +360,17 @@ body {
     .o-mail-Form-chatter,
     .o-mail-Chatter {
         background: var(--xtd-surface) !important;
-        border-top: 1px solid #3c3e4b !important;
+        border-top: 1px solid var(--xtd-line-strong) !important;
         color: var(--xtd-ink) !important;
     }
 
     .o-mail-Chatter-top {
         background: var(--xtd-surface) !important;
-        border-bottom: 1px solid #3c3e4b !important;
+        border-bottom: 1px solid var(--xtd-line-strong) !important;
         box-shadow: none !important;
 
         &.shadow-sm {
-            background-image: linear-gradient(90deg, transparent, rgba(38, 42, 54, 0.96), transparent) !important;
+            background-image: linear-gradient(90deg, transparent, rgba(29, 29, 32, 0.96), transparent) !important;
         }
     }
 
@@ -380,22 +385,22 @@ body {
     .o-mail-Chatter-logNote,
     .o-mail-Chatter-activity {
         background: var(--xtd-surface-soft) !important;
-        border-color: #3c3e4b !important;
+        border-color: var(--xtd-line-strong) !important;
         color: var(--xtd-ink) !important;
 
         &:hover,
         &:focus,
         &.active {
             background: var(--xtd-surface-hover) !important;
-            border-color: #4a4d5c !important;
+            border-color: var(--xtd-line-strong) !important;
             color: #ffffff !important;
         }
     }
 
     .o-mail-Chatter-sendMessage.active,
     .o-mail-Chatter-logNote.active {
-        background: rgba(255, 109, 45, 0.18) !important;
-        border-color: rgba(255, 109, 45, 0.35) !important;
+        background: rgba(255, 122, 61, 0.18) !important;
+        border-color: rgba(255, 122, 61, 0.35) !important;
         color: var(--xtd-ink) !important;
     }
 
@@ -429,7 +434,7 @@ body {
 
     .o-mail-Message.o-card {
         background: var(--xtd-surface-soft) !important;
-        border: 1px solid #3c3e4b !important;
+        border: 1px solid var(--xtd-line-strong) !important;
         border-radius: 0.5rem !important;
     }
 
@@ -437,13 +442,13 @@ body {
     .o-mail-Message-date,
     .o-mail-Message-trackingOld,
     .o-mail-Message-trackingField {
-        color: #aeb3bc !important;
+        color: var(--xtd-muted) !important;
         opacity: 1 !important;
     }
 
     .o-mail-Message-trackingSeparator,
     .o-mail-Message .text-600 {
-        color: #8b8f9a !important;
+        color: var(--xtd-muted) !important;
     }
 
     .o-mail-Message-trackingNew,
@@ -470,8 +475,8 @@ body {
     .o-mail-Chatter hr,
     .o-mail-Chatter .dropdown-divider,
     .o-mail-Chatter separator {
-        border-color: #3c3e4b !important;
-        color: #8b8f9a !important;
+        border-color: var(--xtd-line-strong) !important;
+        color: var(--xtd-muted) !important;
     }
 
     .o-mail-Form-chatter .btn-link,
@@ -519,7 +524,7 @@ body {
         th {
             background: var(--xtd-deep) !important;
             color: var(--xtd-ink) !important;
-            border-bottom: 1px solid #3c3e4b !important;
+            border-bottom: 1px solid var(--xtd-line-strong) !important;
             box-shadow: none !important;
 
             &:hover,
@@ -568,7 +573,7 @@ body {
         td {
             background: transparent !important;
             color: var(--xtd-ink) !important;
-            border-top-color: #3c3e4b !important;
+            border-top-color: var(--xtd-line-strong) !important;
 
             a:not(.btn) {
                 color: inherit !important;
@@ -589,7 +594,7 @@ body {
     > tr > th {
         background: var(--xtd-deep) !important;
         color: #d1d1d1 !important;
-        border-top: 1px solid #3c3e4b !important;
+        border-top: 1px solid var(--xtd-line-strong) !important;
         box-shadow: none !important;
     }
 }
@@ -650,7 +655,7 @@ body {
 .oe_login_form .form-control,
 .o_database_list .form-control {
     background: var(--xtd-surface-soft) !important;
-    border-color: #3c3e4b !important;
+    border-color: var(--xtd-line-strong) !important;
 }
 
 .o_control_panel .btn-secondary,
@@ -659,21 +664,21 @@ body {
 .o_control_panel .o_cp_switch_buttons .btn,
 .o_control_panel .o_cp_pager .btn {
     background: var(--xtd-surface-soft) !important;
-    border-color: #3c3e4b !important;
+    border-color: var(--xtd-line-strong) !important;
     color: var(--xtd-ink) !important;
 
     &:hover,
     &:focus,
     &.active {
         background: var(--xtd-surface-hover) !important;
-        border-color: #4a4d5c !important;
+        border-color: var(--xtd-line-strong) !important;
         color: #ffffff !important;
     }
 }
 
 .o_searchview {
     background: var(--xtd-surface-soft) !important;
-    border: 1px solid #3c3e4b !important;
+    border: 1px solid var(--xtd-line-strong) !important;
     box-shadow: none !important;
 
     .o_searchview_input {
@@ -688,7 +693,7 @@ body {
     .o_searchview_facet {
         --SearchBar-facet-background: var(--xtd-surface) !important;
         background: var(--xtd-surface) !important;
-        border-color: #3c3e4b !important;
+        border-color: var(--xtd-line-strong) !important;
         color: var(--xtd-ink) !important;
     }
 
@@ -703,7 +708,7 @@ body {
 .o_popover,
 .o-dropdown--menu {
     background: var(--xtd-surface-soft) !important;
-    border-color: #3c3e4b !important;
+    border-color: var(--xtd-line-strong) !important;
     color: var(--xtd-ink) !important;
 }
 
@@ -711,8 +716,8 @@ body {
     --Kanban-background: var(--xtd-deep) !important;
     --KanbanGroup-background: var(--xtd-deep) !important;
     --KanbanGroup-grouped-bg: var(--xtd-deep) !important;
-    --KanbanColumn__highlight-background: rgba(255, 109, 45, 0.12) !important;
-    --KanbanColumn__highlight-border: rgba(255, 109, 45, 0.35) !important;
+    --KanbanColumn__highlight-background: rgba(255, 122, 61, 0.12) !important;
+    --KanbanColumn__highlight-border: rgba(255, 122, 61, 0.35) !important;
     --KanbanColumn__highlight-selected: rgba(106, 181, 251, 0.14) !important;
     background: var(--xtd-deep) !important;
 }
@@ -726,7 +731,7 @@ body {
 .o_kanban_renderer .o_kanban_quick_create,
 .o_kanban_renderer .o_kanban_record.o-kanban-button-new {
     background: var(--xtd-surface) !important;
-    border-color: #3c3e4b !important;
+    border-color: var(--xtd-line-strong) !important;
     color: var(--xtd-ink) !important;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
 }
@@ -781,7 +786,7 @@ body {
 .badge.text-bg-light,
 .badge.bg-light,
 .o_tag_badge.o_badge_color_0 {
-    background: #3c3e4b !important;
+    background: var(--xtd-line-strong) !important;
     color: var(--xtd-ink) !important;
 }
 
@@ -791,7 +796,7 @@ body {
 }
 
 .o-mail-ActivityListPopover > .btn {
-    background: #171717 !important;
+    background: var(--xtd-deep) !important;
     border-top-color: var(--xtd-line) !important;
     color: var(--xtd-ink) !important;
 }
@@ -799,19 +804,19 @@ body {
 .o_field_invalid:not(:focus-within).o_input,
 .o_field_invalid:not(:focus-within) > .o_input,
 .o_data_row.o_selected_row > .o_data_cell.o_invalid_cell:not(.o_readonly_modifier):not(:focus-within) {
-    background: rgba(255, 109, 45, 0.12) !important;
+    background: rgba(255, 122, 61, 0.12) !important;
 }
 
 /* Xtd dashboard dark mode. Loaded only through web.assets_web_dark. */
 .o_xtd_dashboard {
-    background: #0f1117 !important;
-    color: #f4f6fb !important;
+    background: var(--xtd-deep) !important;
+    color: var(--xtd-ink) !important;
 
     > .flex-grow-1,
     .bg-light {
-        background: radial-gradient(circle at 18% 0%, rgba(255, 109, 45, 0.08), transparent 34%),
-            linear-gradient(180deg, #141823 0%, #0f1117 100%) !important;
-        color: #f4f6fb !important;
+        background: radial-gradient(900px 380px at 100% 0%, rgba(255, 122, 61, 0.06), transparent 65%),
+            var(--xtd-deep) !important;
+        color: var(--xtd-ink) !important;
     }
 
     .xtd-dashboard-bg {
@@ -827,24 +832,24 @@ body {
     .fw-bold,
     .fw-medium,
     .text-dark {
-        color: #f7f8fb !important;
+        color: var(--xtd-ink) !important;
     }
 
     .text-muted,
     .x-small,
     small {
-        color: #aeb6c5 !important;
+        color: var(--xtd-muted) !important;
     }
 
     .card {
-        background: #1b202b !important;
-        border: 1px solid rgba(255, 255, 255, 0.07) !important;
-        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32) !important;
-        color: #f4f6fb !important;
+        background: var(--xtd-surface) !important;
+        border: 1px solid var(--xtd-line) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+        color: var(--xtd-ink) !important;
     }
 
     .kpi-card {
-        background: linear-gradient(180deg, #202633 0%, #191e28 100%) !important;
+        background: var(--xtd-surface) !important;
 
         &:hover {
             box-shadow: 0 22px 46px rgba(0, 0, 0, 0.42) !important;
@@ -852,7 +857,7 @@ body {
     }
 
     .kpi-card__title {
-        color: #d5dbea !important;
+        color: var(--xtd-ink) !important;
     }
 
     .kpi-card__value,
@@ -861,15 +866,15 @@ body {
     }
 
     .kpi-card__create {
-        background: #ff6d2d !important;
-        color: #111827 !important;
+        background: var(--xtd-orange) !important;
+        color: #141414 !important;
 
         span {
-            color: #111827 !important;
+            color: #141414 !important;
         }
 
         &:hover {
-            background: #ff8754 !important;
+            background: #ff9560 !important;
         }
     }
 
@@ -899,18 +904,18 @@ body {
     .text-invoiced { color: #8ee2a2 !important; }
 
     .chart-container {
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)) !important;
-        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        background: transparent !important;
+        border: 0 !important;
     }
 
     .btn-light {
-        background: #242b38 !important;
+        background: var(--xtd-surface-hover) !important;
         border-color: rgba(255, 255, 255, 0.12) !important;
-        color: #dce3f1 !important;
+        color: var(--xtd-ink) !important;
 
         &:hover,
         &:focus {
-            background: #303848 !important;
+            background: var(--xtd-surface-hover) !important;
             color: #ffffff !important;
         }
     }
@@ -918,7 +923,7 @@ body {
     .activity-item,
     .hover-elevate {
         background: transparent !important;
-        color: #f4f6fb !important;
+        color: var(--xtd-ink) !important;
 
         &:hover {
             background: rgba(255, 255, 255, 0.06) !important;
@@ -927,33 +932,33 @@ body {
     }
 
     .donut-center-label {
-        background: #171c26 !important;
-        color: #f4f6fb !important;
+        background: var(--xtd-surface-soft) !important;
+        color: var(--xtd-ink) !important;
     }
 
     .xtd-dashboard-editor-bar,
     .xtd-dashboard-builder,
     .xtd-dashboard-block-preview,
     .xtd-dashboard-preview-surface {
-        background: #1b202b !important;
+        background: var(--xtd-surface) !important;
         border-color: rgba(255, 255, 255, 0.1) !important;
-        color: #f4f6fb !important;
+        color: var(--xtd-ink) !important;
     }
 
     .xtd-dashboard-library-item,
     .xtd-dashboard-field-chip {
-        background: #202633 !important;
+        background: var(--xtd-surface) !important;
         border-color: rgba(255, 255, 255, 0.1) !important;
-        color: #f4f6fb !important;
+        color: var(--xtd-ink) !important;
     }
 
     .xtd-dashboard-library-item__main {
-        color: #f4f6fb !important;
+        color: var(--xtd-ink) !important;
     }
 
     .table {
         --bs-table-bg: transparent;
-        --bs-table-color: #f4f6fb;
+        --bs-table-color: var(--xtd-ink);
         --bs-table-border-color: rgba(255, 255, 255, 0.12);
     }
 }

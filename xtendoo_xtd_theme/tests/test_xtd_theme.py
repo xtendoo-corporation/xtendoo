@@ -292,8 +292,8 @@ class TestXtdTheme(TransactionCase):
         dark_theme_scss = self.module_path / "static" / "src" / "scss" / "xtd_theme.dark.scss"
         content = dark_theme_scss.read_text(encoding="utf-8")
 
-        self.assertIn("--xtd-deep: #1b1d26;", content)
-        self.assertIn("--xtd-surface: #262a36;", content)
+        self.assertIn("--xtd-deep: #141414;", content)
+        self.assertIn("--xtd-surface: #1d1d20;", content)
         self.assertIn(".o_web_client > .o_action_manager,", content)
         self.assertIn(".o_list_button_add,", content)
         self.assertIn("background: var(--o-brand-primary) !important;", content)

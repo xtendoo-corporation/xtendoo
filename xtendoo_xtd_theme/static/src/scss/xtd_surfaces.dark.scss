@@ -83,3 +83,31 @@
     background: rgba(255, 109, 45, 0.28) !important;
     color: var(--xtd-ink) !important;
 }
+
+
+// ---------- Chips y pastillas ----------
+// Los colores pastel de Odoo (estados, etiquetas, categorías) deslumbran sobre
+// fondo oscuro: se atenúan sin cambiar su tono.
+.o_web_client {
+    .o_tag,
+    .badge.rounded-pill,
+    .o_field_badge,
+    .o_list_renderer .badge,
+    .o_kanban_renderer .o_tag {
+        filter: brightness(0.8) saturate(0.9);
+    }
+
+    // Burbujas del chatter (verde/azul pastel con texto oscuro).
+    .o-mail-Message-bubble {
+        filter: brightness(0.82) saturate(0.9);
+    }
+
+    // Texto de las vistas vacías ("Cree una oportunidad..."): salía negro sobre oscuro.
+    .o_view_nocontent,
+    .o_view_nocontent .o_nocontent_help,
+    .o_view_nocontent h1,
+    .o_view_nocontent h2,
+    .o_view_nocontent p {
+        color: var(--xtd-ink) !important;
+    }
+}
