@@ -7,14 +7,14 @@
             <!-- Main Content Area -->
             <div class="flex-grow-1 overflow-auto bg-light position-relative">
                 <div class="xtd-dashboard-bg"/>
-                <div class="container-fluid p-5 position-relative z-index-1">
+                <div class="container-fluid p-4 p-xl-5 pt-4 position-relative z-index-1">
                     <!-- ...existing code... -->
-                    <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                            <h2 class="fw-bold mb-1">Hola, <t t-esc="session.name"/></h2>
+                            <h2 class="fw-bold mb-1">Hola, <t t-esc="userFirstName"/></h2>
                             <p class="text-muted opacity-75">Aquí tienes un resumen de la actividad de tu empresa.</p>
                         </div>
-                        <div t-if="canEditLayout" class="d-flex align-items-center gap-2">
+                        <div t-if="canEditLayout" class="d-none d-md-flex align-items-center gap-2">
                             <t t-if="editingLayout">
                                 <span t-if="isLayoutDirty" class="badge rounded-pill text-bg-warning">Cambios sin guardar</span>
                                 <button class="btn btn-light rounded-pill px-4 py-2" t-on-click="cancelLayoutEdition">
@@ -97,11 +97,12 @@
                                                 <t t-if="statistics[kpiKey].total">
                                                     <span class="kpi-card__total" t-esc="statistics[kpiKey].total"/>
                                                 </t>
-                                                <span t-attf-class="kpi-card__trend text-#{statistics[kpiKey].trend >= 0 ? 'success' : 'danger'}">
+                                                <span t-if="statistics[kpiKey].hasTrend" t-attf-class="kpi-card__trend text-#{statistics[kpiKey].trend >= 0 ? 'success' : 'danger'}">
                                                     <i t-attf-class="fa fa-arrow-#{statistics[kpiKey].trend >= 0 ? 'up' : 'down'}"/>
                                                     <span class="fw-bold" t-esc="statistics[kpiKey].trend_str"/>
                                                     <span class="text-muted fw-normal" t-esc="kpiPeriodLabel"/>
                                                 </span>
+                                                <span t-else="" class="kpi-card__trend text-muted" title="Sin datos en este periodo">—</span>
                                             </div>
                                             <t t-if="state.recentItems[kpiKey] &amp;&amp; state.recentItems[kpiKey].length">
                                                 <div class="kpi-card__list xtd-recent-list">
@@ -211,20 +212,16 @@
                                 </div>
                                 <div class="row g-0 mt-auto pt-4 border-top">
                                     <div class="col text-center">
-                                        <span class="text-muted x-small d-block mb-1">Total ventas</span>
-                                        <span class="fw-bold h5 mb-0" t-esc="statistics.sales.value"/>
+                                        <span class="text-muted x-small d-block mb-1">Presupuestos</span>
+                                        <span class="fw-bold h5 mb-0" t-esc="chartSummary.quotations"/>
                                     </div>
                                     <div class="col text-center border-start border-light">
                                         <span class="text-muted x-small d-block mb-1">Pedidos</span>
-                                        <span class="fw-bold h5 mb-0" t-esc="statistics.orders.value"/>
+                                        <span class="fw-bold h5 mb-0" t-esc="chartSummary.orders"/>
                                     </div>
                                     <div class="col text-center border-start border-light">
-                                        <span class="text-muted x-small d-block mb-1">Crecimiento</span>
-                                        <span class="fw-bold h5 mb-0" t-attf-class="text-#{statistics.sales.trend >= 0 ? 'success' : 'danger'}" t-esc="statistics.sales.trend_str"/>
-                                    </div>
-                                    <div class="col text-center border-start border-light">
-                                        <span class="text-muted x-small d-block mb-1">Ticket medio</span>
-                                        <span class="fw-bold h5 mb-0" t-esc="statistics.sales.ticket_medio || '—'"/>
+                                        <span class="text-muted x-small d-block mb-1">Conversión</span>
+                                        <span class="fw-bold h5 mb-0" t-esc="chartSummary.conversion"/>
                                     </div>
                                 </div>
                             </div>
@@ -232,7 +229,7 @@
                             <div t-if="block.component === 'pending_activities'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                             <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
-                                <h4 class="fw-bold mb-5">Actividades pendientes</h4>
+                                <h4 class="fw-bold mb-4">Actividades pendientes</h4>
                                 <div class="vstack gap-4">
                                     <t t-if="activities and activities.length">
                                         <t t-foreach="activities" t-as="activity" t-key="activity.id">
@@ -251,9 +248,9 @@
                                         </t>
                                     </t>
                                     <t t-else="">
-                                        <div class="text-center py-5">
-                                            <i class="fa fa-check-circle-o fa-4x text-success mb-3 opacity-25"/>
-                                            <p class="text-muted">¡Todo al día!</p>
+                                        <div class="text-center py-4 my-auto">
+                                            <i class="fa fa-check-circle-o fa-3x text-success mb-2 opacity-50"/>
+                                            <p class="text-muted small mb-0">¡Todo al día!</p>
                                         </div>
                                     </t>
                                 </div>

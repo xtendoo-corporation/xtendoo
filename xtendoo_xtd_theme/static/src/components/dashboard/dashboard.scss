@@ -185,7 +185,6 @@
     /* Chart containers */
     .chart-container {
         height: 280px;
-        background: linear-gradient(180deg, rgba(255, 122, 0, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
         border-radius: 16px;
         overflow: hidden;
         min-height: 0;
@@ -268,10 +267,12 @@
     .status-dot {
         width: 8px;
         height: 8px;
-        &.bg-sale { background-color: #FF7A00 !important; }
-        &.bg-sent { background-color: #6464FF !important; }
-        &.bg-draft { background-color: #FFC107 !important; }
-        &.bg-cancel { background-color: #DC3545 !important; }
+        // Misma paleta que el donut (statusColors en dashboard.js).
+        &.bg-sale { background-color: #f45700 !important; }
+        &.bg-sent { background-color: #8b6f9c !important; }
+        &.bg-draft { background-color: #f4b183 !important; }
+        &.bg-done { background-color: #2f9e6e !important; }
+        &.bg-cancel { background-color: #c0392b !important; }
     }
 
     .hover-elevate {
@@ -342,7 +343,18 @@
     }
 
     .xtd-dashboard-editable-block {
+        display: flex;
+        flex-direction: column;
         position: relative;
+
+        // La barra de edición ocupa su propio alto: la tarjeta toma el resto
+        // (con h-100 se desbordaba sobre la fila siguiente).
+        > .card,
+        > .row {
+            flex: 1 1 auto;
+            height: auto !important;
+        }
+
         transition: opacity 0.15s ease, transform 0.15s ease;
 
         &.xtd-dashboard-block-dragging {
@@ -653,6 +665,32 @@
 
         &:nth-child(n+4) .xtd-bar-fill {
             background: linear-gradient(90deg, #6c757d, #adb5bd);
+        }
+    }
+}
+
+
+// ---------- Acento de marca en el dashboard ----------
+// El tema usa el negro como primario global; aquí los botones de acción y los
+// periodos activos llevan el naranja de marca.
+.o_xtd_dashboard {
+    .btn-primary {
+        --bs-btn-bg: var(--xtd-orange, #f45700);
+        --bs-btn-border-color: var(--xtd-orange, #f45700);
+        --bs-btn-color: #fff;
+        --bs-btn-hover-bg: #d94e00;
+        --bs-btn-hover-border-color: #d94e00;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-active-bg: #bf4500;
+        --bs-btn-active-border-color: #bf4500;
+        --bs-btn-active-color: #fff;
+    }
+
+    .kpi-card__create {
+        background: var(--xtd-orange, #f45700) !important;
+
+        &:hover {
+            background: #d94e00 !important;
         }
     }
 }

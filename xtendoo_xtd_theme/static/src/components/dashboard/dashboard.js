@@ -27,6 +27,7 @@ export class XtdDashboard extends Component {
         this.orm = useService("orm");
         this.dialog = useService("dialog");
         this.session = session;
+        this.userFirstName = (user.name || "").split(" ")[0];
 
         this.currencyCode = session.currency_code || "EUR";
         this.salesChartRef = useRef("salesChart");
@@ -144,8 +145,11 @@ export class XtdDashboard extends Component {
         this.state.orderStatus = [];
     }
 
+    // null = no hay comparación significativa (periodo en curso sin datos): se
+    // muestra "sin datos" en lugar de un -100% que alarma sin aportar nada.
     _calcTrend(current, previous) {
-        if (!previous) return current ? 100.0 : 0.0;
+        if (!current) return null;
+        if (!previous) return 100.0;
         return Math.round(((current - previous) / previous) * 100 * 10) / 10;
     }
 
@@ -786,6 +790,19 @@ export class XtdDashboard extends Component {
         }
     }
 
+    // Métricas del mismo periodo que el gráfico (no las del mes de las tarjetas).
+    get chartSummary() {
+        const data = this.state.chartData;
+        const quotations = (data?.quotations || []).reduce((a, b) => a + b, 0);
+        const orders = (data?.orders_count || []).reduce((a, b) => a + b, 0);
+        const total = quotations + orders;
+        return {
+            quotations,
+            orders,
+            conversion: total ? `${Math.round((orders / total) * 100)}%` : "—",
+        };
+    }
+
     get donutTotal() {
         return this.state.orderStatus.reduce((sum, s) => sum + (s.count || 0), 0);
     }
@@ -806,6 +823,7 @@ export class XtdDashboard extends Component {
                 value: salesVal.toString(),
                 total: formatCurrency(toNum(kpis.sales?.total)),
                 trend: toNum(kpis.sales?.trend),
+                hasTrend: kpis.sales?.trend !== null && kpis.sales?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.sales?.trend),
                 label: kpis.sales?.label || "Pedidos venta",
                 icon: "fa-shopping-bag",
@@ -815,6 +833,7 @@ export class XtdDashboard extends Component {
                 value: toNum(kpis.orders?.value).toString(),
                 total: formatCurrency(toNum(kpis.orders?.total)),
                 trend: toNum(kpis.orders?.trend),
+                hasTrend: kpis.orders?.trend !== null && kpis.orders?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.orders?.trend),
                 label: kpis.orders?.label || "Presupuestos",
                 icon: "fa-file-text-o",
@@ -823,6 +842,7 @@ export class XtdDashboard extends Component {
                 value: toNum(kpis.purchase_orders?.value).toString(),
                 total: formatCurrency(toNum(kpis.purchase_orders?.total)),
                 trend: toNum(kpis.purchase_orders?.trend),
+                hasTrend: kpis.purchase_orders?.trend !== null && kpis.purchase_orders?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.purchase_orders?.trend),
                 label: kpis.purchase_orders?.label || "Pedidos de compra",
                 icon: "fa-truck",
@@ -831,6 +851,7 @@ export class XtdDashboard extends Component {
                 value: toNum(kpis.invoiced?.value).toString(),
                 total: formatCurrency(toNum(kpis.invoiced?.total)),
                 trend: toNum(kpis.invoiced?.trend),
+                hasTrend: kpis.invoiced?.trend !== null && kpis.invoiced?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.invoiced?.trend),
                 label: kpis.invoiced?.label || "Facturado (mes)",
                 icon: "fa-file-text-o",
@@ -839,9 +860,13 @@ export class XtdDashboard extends Component {
     }
 
     _formatTrend(trend) {
-        if (trend === undefined || trend === null) return "0%";
+        if (trend === undefined || trend === null) return "—";
         const sign = trend >= 0 ? "+" : "";
         return `${sign}${trend}%`;
+    }
+
+    _cssVar(name, fallback) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
     }
 
     _renderCharts() {
@@ -872,58 +897,45 @@ export class XtdDashboard extends Component {
 
         if (!canvas || !data?.labels?.length) return;
         const ctx = canvas.getContext("2d");
-
-        const gradient = ctx.createLinearGradient(0, 0, 200, 0);
-        gradient.addColorStop(0, "rgba(255, 122, 0, 0.25)");
-        gradient.addColorStop(1, "rgba(255, 122, 0, 0)");
-
         const rawData = this.state.chartData;
+        const orange = this._cssVar("--xtd-orange", "#f45700");
+        const muted = this._cssVar("--xtd-muted", "#8b8790");
+        const line = this._cssVar("--xtd-line", "#dedbd6");
 
+        // Barras agrupadas: con pocos datos una curva suavizada inventa picos y valles.
         this._chartInstances.sales = new Chart(ctx, {
-            type: "line",
+            type: "bar",
             data: {
                 labels: rawData.labels,
                 datasets: [
                     {
                         label: _t("Presupuestos"),
                         data: rawData.quotations,
-                        borderColor: "#FFC107",
-                        backgroundColor: "rgba(255, 193, 7, 0.08)",
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: "#FFC107",
-                        pointBorderColor: "#fff",
-                        pointBorderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        borderWidth: 2,
-                        borderDash: [5, 3],
+                        backgroundColor: "rgba(244, 87, 0, 0.28)",
+                        borderRadius: 6,
+                        borderSkipped: false,
                     },
                     {
                         label: _t("Pedidos de venta"),
                         data: rawData.orders_count,
-                        borderColor: "#6464FF",
-                        backgroundColor: "rgba(100, 100, 255, 0.08)",
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: "#6464FF",
-                        pointBorderColor: "#fff",
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        borderWidth: 3,
+                        backgroundColor: orange,
+                        borderRadius: 6,
+                        borderSkipped: false,
                     },
                 ],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                categoryPercentage: 0.75,
+                barPercentage: 0.9,
+                maxBarThickness: 22,
                 interaction: { mode: "index", intersect: false },
                 plugins: {
                     legend: {
                         position: "top",
                         align: "end",
-                        labels: { usePointStyle: true, boxWidth: 8, padding: 16, font: { size: 11 } },
+                        labels: { usePointStyle: true, pointStyle: "rectRounded", boxWidth: 8, padding: 16, font: { size: 11 }, color: muted },
                     },
                     tooltip: {
                         backgroundColor: "#151515",
@@ -939,16 +951,15 @@ export class XtdDashboard extends Component {
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { font: { size: 10 }, color: "#8b8790" },
+                        border: { display: false },
+                        ticks: { font: { size: 10 }, color: muted },
                     },
                     y: {
                         position: "left",
-                        grid: { color: "rgba(0,0,0,0.05)" },
-                        ticks: {
-                            font: { size: 10 },
-                            color: "#8b8790",
-                            precision: 0,
-                        },
+                        beginAtZero: true,
+                        border: { display: false },
+                        grid: { color: line },
+                        ticks: { font: { size: 10 }, color: muted, precision: 0 },
                     },
                 },
             },
@@ -967,7 +978,7 @@ export class XtdDashboard extends Component {
                 return;
             }
             if (statuses?.length) {
-                const statusColors = { sale: "#FF7A00", sent: "#6464FF", draft: "#FFC107", cancel: "#DC3545", done: "#28A745" };
+                const statusColors = { sale: "#f45700", sent: "#8b6f9c", draft: "#f4b183", cancel: "#c0392b", done: "#2f9e6e" };
                 this._chartInstances.orderStatus.data.labels = statuses.map((s) => s.label);
                 this._chartInstances.orderStatus.data.datasets[0].data = statuses.map((s) => s.count);
                 this._chartInstances.orderStatus.data.datasets[0].backgroundColor = statuses.map((s) => statusColors[s.state] || "#6c757d");
@@ -979,7 +990,7 @@ export class XtdDashboard extends Component {
         if (!canvas || !statuses?.length) return;
         const ctx = canvas.getContext("2d");
 
-        const statusColors = { sale: "#FF7A00", sent: "#6464FF", draft: "#FFC107", cancel: "#DC3545", done: "#28A745" };
+        const statusColors = { sale: "#f45700", sent: "#8b6f9c", draft: "#f4b183", cancel: "#c0392b", done: "#2f9e6e" };
 
         this._chartInstances.orderStatus = new Chart(ctx, {
             type: "doughnut",
@@ -988,7 +999,7 @@ export class XtdDashboard extends Component {
                 datasets: [{
                     data: statuses.map((s) => s.count),
                     backgroundColor: statuses.map((s) => statusColors[s.state] || "#6c757d"),
-                    borderColor: "#fff",
+                    borderColor: getComputedStyle(canvas.closest(".card") || canvas).backgroundColor,
                     borderWidth: 3,
                     hoverOffset: 8,
                 }],

@@ -1,0 +1,85 @@
+// Superficies que el tema oscuro aún dejaba claras (detectadas con una sonda
+// que busca fondos casi blancos en modo oscuro): Ajustes, adjuntos del chatter,
+// Discuss, casillas marcadas y día seleccionado del minicalendario.
+
+// ---------- Ajustes ----------
+.o_web_client .o_base_settings_view {
+    .settings_tab,
+    .settings,
+    .o_setting_container,
+    .o_form_renderer .settings {
+        background: var(--xtd-deep) !important;
+        color: var(--xtd-ink);
+    }
+
+    .settings_tab {
+        border-color: var(--xtd-line) !important;
+
+        .tab {
+            color: var(--xtd-muted) !important;
+
+            &:hover {
+                background: var(--xtd-surface-hover) !important;
+                color: var(--xtd-ink) !important;
+            }
+
+            &.selected,
+            &.current {
+                background: var(--xtd-surface) !important;
+                color: var(--xtd-ink) !important;
+            }
+        }
+    }
+
+    .app_settings_block > h2,
+    .settingSearchHeader,
+    .settings h2 {
+        background: var(--xtd-surface-soft) !important;
+        color: var(--xtd-ink) !important;
+    }
+
+    .o_field_color {
+        background: transparent !important;
+    }
+}
+
+// ---------- Chatter: adjuntos y "..." ----------
+.o-mail-AttachmentContainer,
+.o-mail-AttachmentCard-info {
+    background: var(--xtd-surface) !important;
+    border-color: var(--xtd-line) !important;
+    color: var(--xtd-ink);
+}
+
+.o-mail-Attachment-hover {
+    background: var(--xtd-surface-soft) !important;
+}
+
+.o-mail-ellipsis.badge {
+    background: var(--xtd-surface-hover) !important;
+    color: var(--xtd-ink) !important;
+}
+
+// ---------- Discuss ----------
+.o-mail-DiscussSearch-inputContainer,
+.o-mail-DiscussSearch-inputContainer input,
+.o-mail-ImStatus {
+    background: var(--xtd-surface) !important;
+    color: var(--xtd-ink);
+}
+
+.o-mail-DiscussContent-core {
+    background: var(--xtd-deep) !important;
+}
+
+// ---------- Casillas marcadas: naranja con la marca blanca visible ----------
+.o_web_client .form-check-input:checked {
+    background-color: var(--xtd-orange) !important;
+    border-color: var(--xtd-orange) !important;
+}
+
+// ---------- Minicalendario: día seleccionado ----------
+.o_datetime_picker .o_date_item_cell.o_selected {
+    background: rgba(255, 109, 45, 0.28) !important;
+    color: var(--xtd-ink) !important;
+}

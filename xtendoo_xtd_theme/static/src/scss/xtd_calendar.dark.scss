@@ -1,0 +1,156 @@
+// Calendario en modo oscuro. El tema oscuro cubría listas y kanban con reglas
+// sueltas, pero no el calendario: fondo, rejilla, cabecera y minicalendario
+// salían blancos (texto claro sobre blanco = invisible).
+
+.o_calendar_container,
+.o_calendar_container.bg-view,
+.o_calendar_container .o_calendar_header,
+.o_calendar_container .o_sidebar_toggler,
+.o_calendar_renderer,
+.o_calendar_sidebar_container,
+.o_calendar_sidebar {
+    background: var(--xtd-deep) !important;
+    color: var(--xtd-ink);
+}
+
+.o_calendar_container {
+    .o_calendar_header,
+    .o_sidebar_toggler {
+        border-color: var(--xtd-line) !important;
+    }
+
+    .o_calendar_header h5 {
+        color: var(--xtd-ink) !important;
+    }
+}
+
+.o_calendar_renderer {
+    --o-cw-border-color: var(--xtd-line);
+
+    .o_calendar_widget {
+        --fc-page-bg-color: var(--xtd-deep);
+        --fc-neutral-bg-color: var(--xtd-surface-soft);
+        --fc-neutral-text-color: var(--xtd-muted);
+        --fc-border-color: var(--xtd-line);
+        --fc-today-bg-color: transparent;
+
+        &,
+        .fc-scrollgrid,
+        .fc-scrollgrid table,
+        .fc-scroller-harness,
+        .fc-scroller,
+        th,
+        td,
+        .fc-timegrid-axis,
+        .fc-timegrid-axis-frame,
+        .fc-col-header,
+        .fc-col-header-cell {
+            background: transparent !important;
+            border-color: var(--xtd-line) !important;
+        }
+
+        .fc-col-header-cell .o_cw_day_name,
+        .fc-timegrid-slot-label-cushion,
+        .fc-col-header-cell a {
+            color: var(--xtd-muted);
+        }
+
+        .fc-col-header-cell .o_cw_day_number,
+        .fc-daygrid-day-number {
+            color: var(--xtd-ink);
+        }
+
+        .fc-day-today .o_cw_day_number,
+        .fc-day-today .fc-daygrid-day-number {
+            color: #fff;
+        }
+
+        .fc-day-today .o_cw_day_name {
+            color: var(--xtd-orange);
+        }
+
+        .o_calendar_disabled {
+            background: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        .fc-timegrid-divider.fc-cell-shaded {
+            background: var(--xtd-line) !important;
+        }
+
+        .fc-daygrid-day-frame,
+        .fc-scrollgrid-section-body td {
+            background: transparent;
+        }
+
+        .fc-event {
+            --fc-event-text-color: var(--xtd-ink);
+
+            .fc-event-main,
+            .o_event_title {
+                color: var(--xtd-ink);
+            }
+        }
+
+        .fc-more-popover,
+        .fc-popover {
+            background: var(--xtd-surface) !important;
+            color: var(--xtd-ink);
+        }
+    }
+}
+
+// Minicalendario y filtros del panel lateral.
+.o_calendar_sidebar_container {
+    border-color: var(--xtd-line) !important;
+
+    .o_datetime_picker {
+        background: transparent !important;
+        color: var(--xtd-ink);
+
+        .o_date_item_cell,
+        .o_datetime_button,
+        .o_date_item_cell.o_out_of_range,
+        .o_day_of_week_cell,
+        .o_week_number_cell {
+            color: var(--xtd-ink);
+        }
+
+        .o_date_item_cell.o_out_of_range {
+            color: var(--xtd-muted);
+        }
+
+        .o_picker_header .btn,
+        .o_previous,
+        .o_next {
+            color: var(--xtd-ink);
+        }
+    }
+
+    .o_calendar_filter_item,
+    .o_cw_filter_label,
+    .o_calendar_filter .o_calendar_filter_item {
+        color: var(--xtd-ink);
+    }
+
+    .o_calendar_filter,
+    .o_calendar_filter .o_calendar_filter_items,
+    .o_autocomplete--dropdown-menu {
+        background: transparent;
+        color: var(--xtd-ink);
+    }
+
+    input {
+        background: transparent;
+        color: var(--xtd-ink);
+    }
+
+    .form-check-input {
+        background-color: var(--xtd-surface);
+        border-color: var(--xtd-line);
+
+        &:checked {
+            background-color: var(--xtd-orange);
+            border-color: var(--xtd-orange);
+        }
+    }
+}

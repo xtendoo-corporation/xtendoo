@@ -44,7 +44,7 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px));
         scrollbar-width: thin;
 
         &::-webkit-scrollbar {
-            width: 10px;
+            width: 6px;
         }
 
         &::-webkit-scrollbar-track {
@@ -305,12 +305,12 @@ body.xtd-no-sidebar {
 // Flecha del borde para contraer del todo / sacar el menú lateral.
 .xtd-sidebar-arrow {
     align-items: center;
-    background: #ffffff;
-    border: 1px solid #e1e4e8;
+    background: var(--xtd-surface, #ffffff);
+    border: 1px solid var(--xtd-line, #e1e4e8);
     border-left: 0;
     border-radius: 0 10px 10px 0;
     box-shadow: 2px 0 8px rgba(21, 21, 21, 0.08);
-    color: #5f6368;
+    color: var(--xtd-muted, #5f6368);
     display: inline-flex;
     height: 56px;
     justify-content: center;
@@ -332,8 +332,18 @@ body.xtd-no-sidebar {
     }
 }
 
+// Con el menú oculto la pestaña se queda pegada al borde, discreta hasta que
+// se pasa el ratón, para no tapar el contenido (p. ej. las pestañas de Ajustes).
 body.xtd-no-sidebar .xtd-sidebar-arrow {
     left: 0;
+    opacity: 0.5;
+    width: 14px;
+
+    &:hover,
+    &:focus-visible {
+        opacity: 1;
+        width: 18px;
+    }
 }
 
 body:not(.xtd-no-sidebar):has(.xtd-sidebar-panel:hover) .xtd-sidebar-arrow {
@@ -343,5 +353,58 @@ body:not(.xtd-no-sidebar):has(.xtd-sidebar-panel:hover) .xtd-sidebar-arrow {
 @media (max-width: 767.98px) {
     .xtd-sidebar-arrow {
         display: none;
+    }
+}
+
+// Degradado arriba y abajo de la lista de apps que se apaga solo al llegar al
+// principio o al final del scroll (animación guiada por el desplazamiento).
+// En navegadores sin soporte no hay degradado y la lista funciona igual.
+@property --xtd-fade-top {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --xtd-fade-bottom {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+}
+
+@keyframes xtd-sidebar-fade {
+    0% {
+        --xtd-fade-top: 0px;
+    }
+
+    6%,
+    100% {
+        --xtd-fade-top: 28px;
+    }
+}
+
+@keyframes xtd-sidebar-fade-bottom {
+    0%,
+    94% {
+        --xtd-fade-bottom: 28px;
+    }
+
+    100% {
+        --xtd-fade-bottom: 0px;
+    }
+}
+
+@supports (animation-timeline: scroll()) {
+    .xtd-sidebar-panel .o_burger_menu_content {
+        animation:
+            xtd-sidebar-fade linear both,
+            xtd-sidebar-fade-bottom linear both;
+        animation-timeline: scroll(self block), scroll(self block);
+        mask-image: linear-gradient(
+            to bottom,
+            transparent 0,
+            #000 var(--xtd-fade-top),
+            #000 calc(100% - var(--xtd-fade-bottom)),
+            transparent 100%
+        );
     }
 }

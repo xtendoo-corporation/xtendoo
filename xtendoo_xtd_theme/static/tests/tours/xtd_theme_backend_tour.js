@@ -5,6 +5,15 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
     steps: () => [
         // --- Dashboard: carga, edición, ocultar bloque y aviso de cambios sin guardar
         { trigger: ".o_xtd_dashboard .kpi-card" },
+        {
+            trigger: ".o_xtd_dashboard h2",
+            run() {
+                const greeting = document.querySelector(".o_xtd_dashboard h2").textContent.trim();
+                if (/^Hola,?$/.test(greeting)) {
+                    throw new Error("El saludo del dashboard debe incluir el nombre del usuario.");
+                }
+            },
+        },
         { trigger: ".o_xtd_dashboard button:contains('Editar dashboard')", run: "click" },
         { trigger: ".xtd-dashboard-block-controls" },
         {

@@ -161,6 +161,16 @@ class TestXtdTheme(TransactionCase):
 
         self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_theme.dark.scss", assets)
         self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_menu.dark.scss", assets)
+        # El calendario, Ajustes y el chatter salían claros en modo oscuro.
+        self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_calendar.dark.scss", assets)
+        self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_surfaces.dark.scss", assets)
+
+    def test_xtd_theme_brand_overrides_are_declared(self):
+        manifest = get_manifest("xtendoo_xtd_theme")
+        self.assertIn(
+            "xtendoo_xtd_theme/static/src/scss/xtd_brand.scss",
+            manifest["assets"]["web.assets_backend"],
+        )
 
     def test_xtd_theme_tour_asset_is_declared(self):
         manifest = get_manifest("xtendoo_xtd_theme")

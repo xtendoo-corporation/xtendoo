@@ -31,6 +31,7 @@
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_menu.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_sidebar_toggle.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_brand.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_calendar.scss",
             "xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js",
             "xtendoo_xtd_theme/static/src/xml/xtd_calendar.xml",
@@ -54,6 +55,8 @@
         "web.assets_web_dark": [
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.dark.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_menu.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_calendar.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_surfaces.dark.scss",
         ],
         "point_of_sale._assets_pos": [
             "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
