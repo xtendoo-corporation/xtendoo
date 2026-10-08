@@ -7,6 +7,12 @@
                 <t t-call="web.NavBar.AppsMenu.Sidebar">
                     <t t-set="apps" t-value="menuService.getApps()" />
                 </t>
+                <button type="button"
+                        class="xtd-sidebar-arrow"
+                        t-att-title="isXtdSidebarOff ? 'Mostrar menú lateral' : 'Ocultar menú lateral'"
+                        t-on-click.stop.prevent="toggleXtdSidebarOff">
+                    <i t-att-class="'fa ' + (isXtdSidebarOff ? 'fa-chevron-right' : 'fa-chevron-left')"/>
+                </button>
             </t>
         </xpath>
         <!-- No ocultamos el AppsMenu, ya que contiene el botón de hamburguesa que hemos parcheado -->
@@ -21,6 +27,24 @@
             >
                 <img src="/xtendoo_xtd_theme/static/src/img/xtd_symbol.svg" alt="Xtd"/>
             </button>
+        </xpath>
+    </t>
+
+    <!-- Buscador de menús (paleta de comandos de Odoo) en la barra superior del dashboard -->
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_menu_systray')]" position="before">
+            <div t-if="showXtdNavbarSearch" class="o_xtd_navbar_search flex-grow-1 d-flex justify-content-center px-3">
+                <div class="o_xtd_navbar_search__box">
+                    <i class="fa fa-search"/>
+                    <input type="search"
+                           t-ref="xtdNavbarSearch"
+                           autocomplete="off"
+                           placeholder="Buscar menús..."
+                           class="form-control"
+                           t-on-input="onXtdNavbarSearchInput"
+                           t-on-click="onXtdNavbarSearchClick"/>
+                </div>
+            </div>
         </xpath>
     </t>
 

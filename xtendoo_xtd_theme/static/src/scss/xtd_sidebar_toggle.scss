@@ -299,3 +299,58 @@ body.xtd-sidebar-hidden {
     filter: grayscale(1);
     opacity: 0.45;
 }
+
+body.xtd-no-sidebar {
+    .xtd-sidebar-panel {
+        transform: translateX(-100%) !important;
+        transition: width 0.3s ease, transform 0.3s ease !important;
+    }
+
+    .o_action_manager {
+        margin-left: 0 !important;
+    }
+}
+
+// Flecha del borde para contraer del todo / sacar el menú lateral.
+.xtd-sidebar-arrow {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-left: 0;
+    border-radius: 0 10px 10px 0;
+    box-shadow: 2px 0 8px rgba(21, 21, 21, 0.08);
+    color: #5f6368;
+    display: inline-flex;
+    height: 56px;
+    justify-content: center;
+    left: $xtd-sidebar-collapsed-width;
+    padding: 0;
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: left 0.3s ease;
+    width: 18px;
+    z-index: 1210;
+
+    &:hover {
+        color: var(--xtd-orange, #ff4f00);
+    }
+
+    .fa {
+        font-size: 11px;
+    }
+}
+
+body.xtd-no-sidebar .xtd-sidebar-arrow {
+    left: 0;
+}
+
+body:not(.xtd-no-sidebar):has(.xtd-sidebar-panel:hover) .xtd-sidebar-arrow {
+    left: $xtd-sidebar-width;
+}
+
+@media (max-width: 767.98px) {
+    .xtd-sidebar-arrow {
+        display: none;
+    }
+}

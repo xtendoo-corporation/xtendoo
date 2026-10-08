@@ -25,6 +25,11 @@ class ResUsersSettings(models.Model):
         default=list,
         string="Xtd Sidebar Hidden Apps",
     )
+    # False = menú lateral contraído del todo (solo la flecha para sacarlo).
+    xtd_show_sidebar = fields.Boolean(
+        string="Show Xtd Sidebar Menu",
+        default=True,
+    )
     xtd_use_custom_dashboard = fields.Boolean(
         string="Use Custom Xtd Dashboard",
     )

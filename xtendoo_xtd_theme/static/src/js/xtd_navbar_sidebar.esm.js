@@ -5,10 +5,11 @@ import { AppsMenu } from "@web_responsive/components/apps_menu/apps_menu.esm";
 import { patch } from "@web/core/utils/patch";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { user } from "@web/core/user";
-import { onMounted, onWillUnmount, useState } from "@odoo/owl";
+import { onMounted, onWillUnmount, useEffect, useRef, useState } from "@odoo/owl";
 
 const XTD_DASHBOARD_MENU_XMLID = "xtendoo_xtd_theme.menu_xtd_dashboard";
 const XTD_SIDEBAR_HIDDEN_CLASS = "xtd-sidebar-hidden";
+const XTD_SETTINGS_MENU_XMLID = "base.menu_administration";
 
 patch(NavBar.prototype, {
     setup() {
@@ -20,7 +21,14 @@ patch(NavBar.prototype, {
             // significa que desaparezca: eso lo garantiza _closeAppMenuSidebar
             // más abajo, que es un estado del core totalmente independiente.
             isSidebarVisible: false,
+            // En Ajustes el menú arranca contraído del todo; esto recuerda si
+            // el usuario lo ha sacado a mano durante esa visita.
+            settingsExpanded: false,
+            // Preferencia guardada (reactiva, para que la flecha repinte).
+            userSidebarOff: user.settings?.xtd_show_sidebar === false,
         });
+        this.xtdCommand = useService("command");
+        this.xtdNavbarSearchRef = useRef("xtdNavbarSearch");
         this.xtdSidebarState = useState({
             isReordering: false,
             orderVersion: 0,
@@ -55,13 +63,73 @@ patch(NavBar.prototype, {
             }
         });
 
+        useEffect(
+            (isOff) => {
+                document.body.classList.toggle("xtd-no-sidebar", isOff);
+            },
+            () => [this.isXtdSidebarOff]
+        );
+        useEffect(
+            (inSettings) => {
+                if (!inSettings) {
+                    this.xtdState.settingsExpanded = false;
+                }
+            },
+            () => [this.isXtdInSettings]
+        );
+
         onWillUnmount(() => {
+            document.body.classList.remove("xtd-no-sidebar");
             this._xtdNavbarResizeObserver?.disconnect();
         });
 
         useBus(this.env.bus, "XTD_SIDEBAR:TOGGLE", () => {
             this.toggleXtdSidebar();
         });
+    },
+
+    get isXtdInSettings() {
+        return this.currentApp?.xmlid === XTD_SETTINGS_MENU_XMLID;
+    },
+
+    // Menú lateral contraído del todo: en Ajustes siempre (salvo que el
+    // usuario lo saque a mano) y en el resto según su preferencia. En móvil
+    // nunca, porque es la única forma de navegar entre apps.
+    get isXtdSidebarOff() {
+        if (this.ui.isSmall) {
+            return false;
+        }
+        if (this.isXtdInSettings) {
+            return !this.xtdState.settingsExpanded;
+        }
+        return this.xtdState.userSidebarOff;
+    },
+
+    async toggleXtdSidebarOff() {
+        if (this.isXtdInSettings) {
+            this.xtdState.settingsExpanded = !this.xtdState.settingsExpanded;
+            return;
+        }
+        this.xtdState.userSidebarOff = !this.xtdState.userSidebarOff;
+        await user.setUserSettings("xtd_show_sidebar", !this.xtdState.userSidebarOff);
+    },
+
+    // Solo en el dashboard inicial: en el resto de apps la navbar ya muestra
+    // sus propios menús de sección.
+    get showXtdNavbarSearch() {
+        return !this.ui.isSmall && this.currentApp?.xmlid === XTD_DASHBOARD_MENU_XMLID;
+    },
+
+    onXtdNavbarSearchInput(ev) {
+        const value = ev.target.value;
+        if (value) {
+            ev.target.value = "";
+            this.xtdCommand.openMainPalette({ searchValue: `/${value}` }, null);
+        }
+    },
+
+    onXtdNavbarSearchClick() {
+        this.xtdCommand.openMainPalette({ searchValue: "/" }, null);
     },
 
     toggleXtdSidebar() {

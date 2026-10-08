@@ -341,3 +341,36 @@
         border-left: 0 !important;
     }
 }
+
+.o_main_navbar .o_xtd_navbar_search {
+    min-width: 0;
+
+    .o_xtd_navbar_search__box {
+        align-items: center;
+        background: rgba(21, 21, 21, 0.04);
+        border: 1px solid rgba(21, 21, 21, 0.08);
+        border-radius: 999px;
+        display: flex;
+        gap: 0.5rem;
+        max-width: 420px;
+        padding: 0 1rem;
+        width: 100%;
+
+        &:focus-within {
+            border-color: rgba(255, 79, 0, 0.45);
+            box-shadow: 0 0 0 3px rgba(255, 79, 0, 0.12);
+        }
+
+        .fa {
+            color: #5f6368;
+        }
+
+        .form-control {
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            height: 36px;
+            padding: 0;
+        }
+    }
+}
