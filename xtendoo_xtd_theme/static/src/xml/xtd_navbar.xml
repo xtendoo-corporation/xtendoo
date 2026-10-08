@@ -46,11 +46,17 @@
                         <li class="nav-item">
                             <a t-att-href="getMenuItemHref(app)"
                                class="nav-link d-flex align-items-center gap-3 py-3 text-dark rounded-dashboard border-0"
-                               t-att-class="{'active': menuService.getCurrentApp() === app}"
+                               t-att-class="{'active': menuService.getCurrentApp() === app, 'xtd-sidebar-app-hidden': isXtdSidebarAppHidden(app)}"
                                t-on-click="() => { this.onNavBarDropdownItemSelection(app); this._closeAppMenuSidebar(); }">
                                 <img t-if="app.webIconData" t-att-src="app.webIconData" style="width: 24px; height: 24px;"/>
                                 <span class="fw-bold" t-out="app.name"/>
                                 <span t-if="xtdSidebarState.isReordering" class="xtd-sidebar-reorder ms-auto">
+                                    <button type="button"
+                                            class="xtd-sidebar-reorder-btn"
+                                            t-att-title="isXtdSidebarAppHidden(app) ? 'Mostrar' : 'Ocultar'"
+                                            t-on-click.stop.prevent="() => this.toggleXtdSidebarAppHidden(app)">
+                                        <i t-att-class="'fa ' + (isXtdSidebarAppHidden(app) ? 'fa-eye-slash' : 'fa-eye')"/>
+                                    </button>
                                     <button type="button"
                                             class="xtd-sidebar-reorder-btn"
                                             title="Subir"

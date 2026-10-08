@@ -103,7 +103,11 @@ patch(NavBar.prototype, {
     },
 
     getXtdSidebarApps(apps) {
-        const sidebarApps = apps.filter((app) => app.xmlid !== XTD_DASHBOARD_MENU_XMLID);
+        const hiddenIds = new Set(this._getStoredSidebarHiddenApps());
+        const sidebarApps = apps.filter((app) => (
+            app.xmlid !== XTD_DASHBOARD_MENU_XMLID
+            && (this.xtdSidebarState.isReordering || !hiddenIds.has(app.id))
+        ));
         const storedOrder = this._getStoredSidebarOrder();
         if (!storedOrder.length) {
             return sidebarApps;
@@ -135,6 +139,27 @@ patch(NavBar.prototype, {
             orderedApps.map((orderedApp) => orderedApp.id)
         );
         this.xtdSidebarState.orderVersion += 1;
+    },
+
+    isXtdSidebarAppHidden(app) {
+        return this._getStoredSidebarHiddenApps().includes(app.id);
+    },
+
+    async toggleXtdSidebarAppHidden(app) {
+        const hiddenIds = this._getStoredSidebarHiddenApps();
+        await user.setUserSettings(
+            "xtd_sidebar_hidden_apps",
+            hiddenIds.includes(app.id)
+                ? hiddenIds.filter((id) => id !== app.id)
+                : [...hiddenIds, app.id]
+        );
+        this.xtdSidebarState.orderVersion += 1;
+    },
+
+    _getStoredSidebarHiddenApps() {
+        return Array.isArray(user.settings?.xtd_sidebar_hidden_apps)
+            ? user.settings.xtd_sidebar_hidden_apps
+            : [];
     },
 
     _getStoredSidebarOrder() {

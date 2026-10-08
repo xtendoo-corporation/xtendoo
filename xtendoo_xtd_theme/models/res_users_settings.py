@@ -21,6 +21,10 @@ class ResUsersSettings(models.Model):
         default=list,
         string="Xtd Sidebar App Order",
     )
+    xtd_sidebar_hidden_apps = fields.Json(
+        default=list,
+        string="Xtd Sidebar Hidden Apps",
+    )
     xtd_use_custom_dashboard = fields.Boolean(
         string="Use Custom Xtd Dashboard",
     )

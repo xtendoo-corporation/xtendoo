@@ -294,3 +294,8 @@ body.xtd-sidebar-hidden {
         margin-left: 0 !important;
     }
 }
+
+.xtd-sidebar-app-hidden {
+    filter: grayscale(1);
+    opacity: 0.45;
+}
