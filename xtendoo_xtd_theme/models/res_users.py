@@ -15,11 +15,22 @@ class ResUsers(models.Model):
         readonly=False,
     )
 
+    xtd_calendar_hour_start = fields.Integer(
+        related="res_users_settings_id.xtd_calendar_hour_start",
+        readonly=False,
+    )
+    xtd_calendar_hour_end = fields.Integer(
+        related="res_users_settings_id.xtd_calendar_hour_end",
+        readonly=False,
+    )
+
     @property
     def SELF_READABLE_FIELDS(self):
         return super().SELF_READABLE_FIELDS + [
             "color_scheme",
             "xtd_use_custom_dashboard",
+            "xtd_calendar_hour_start",
+            "xtd_calendar_hour_end",
         ]
 
     @property
@@ -27,4 +38,6 @@ class ResUsers(models.Model):
         return super().SELF_WRITEABLE_FIELDS + [
             "color_scheme",
             "xtd_use_custom_dashboard",
+            "xtd_calendar_hour_start",
+            "xtd_calendar_hour_end",
         ]

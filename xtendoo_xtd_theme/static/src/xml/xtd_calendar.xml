@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <!-- Evento de calendario: título arriba, horario debajo y avatares de asistentes
+         (en mes se mantiene la línea original) -->
+    <t t-inherit="web.CalendarCommonRenderer.event" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='!isTimeHidden']" position="attributes">
+            <attribute name="t-if">!isTimeHidden and isMonth</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_event_title')]" position="after">
+            <span t-if="!isTimeHidden and !isMonth and !isAllDay"
+                  class="o_xtd_event_time"
+                  t-esc="startTime + ' – ' + endTime"/>
+            <div t-if="!isMonth and rawRecord.partner_ids and rawRecord.partner_ids.length > 1"
+                 class="o_xtd_event_avatars">
+                <t t-foreach="rawRecord.partner_ids.slice(0, 3)" t-as="partner" t-key="partner_index">
+                    <img class="o_xtd_event_avatar"
+                         alt=""
+                         loading="lazy"
+                         t-att-src="'/web/image/res.partner/' + (partner.id || partner) + '/avatar_128'"/>
+                </t>
+                <span t-if="rawRecord.partner_ids.length > 3"
+                      class="o_xtd_event_avatars_more"
+                      t-esc="'+' + (rawRecord.partner_ids.length - 3)"/>
+            </div>
+        </xpath>
+    </t>
+
+    <!-- Aviso de eventos fuera de la franja horaria visible -->
+    <t t-inherit="web.CalendarRenderer" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_calendar_renderer')]" position="inside">
+            <div t-if="xtdHoursNotice" class="o_xtd_hours_notice">
+                <i class="fa fa-clock-o"/>
+                <span t-esc="xtdHoursNotice.text"/>
+                <button type="button" class="btn btn-link btn-sm p-0" t-on-click="toggleXtdHours" t-esc="xtdHoursNotice.button"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

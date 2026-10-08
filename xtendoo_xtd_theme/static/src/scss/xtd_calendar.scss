@@ -1,0 +1,336 @@
+// Calendario Xtd: restyling de la vista calendar estándar (FullCalendar).
+// Solo toca variables CSS y estilos visuales: no cambia el comportamiento.
+// Funciona en claro y oscuro porque usa las variables --xtd-* del tema, que
+// xtd_theme.dark.scss redefine.
+
+.o_calendar_container {
+    // ---------- Cabecera: navegación, escala, "Hoy" y título ----------
+    .o_calendar_header {
+        gap: 0.5rem !important;
+        padding-bottom: 0.65rem !important;
+        padding-top: 0.65rem !important;
+
+        .btn.btn-secondary,
+        .o_view_scale_selector .btn {
+            background: transparent;
+            border: 1px solid var(--xtd-line, #dedbd6);
+            border-radius: 999px;
+            color: var(--xtd-ink, #151515);
+            font-weight: 600;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+
+            &:hover,
+            &:focus-visible {
+                background: rgba(244, 87, 0, 0.08);
+                border-color: var(--xtd-orange, #f45700);
+            }
+        }
+
+        .o_calendar_navigation_buttons {
+            gap: 0.25rem;
+
+            .btn {
+                border-radius: 50%;
+                height: 34px;
+                padding: 0;
+                width: 34px;
+            }
+        }
+
+        h5 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .o_current_week {
+            background: rgba(244, 87, 0, 0.1) !important;
+            border-radius: 999px !important;
+            color: var(--xtd-orange, #f45700);
+            font-weight: 600;
+            padding: 0.2rem 0.6rem !important;
+        }
+    }
+
+    // ---------- Panel lateral ----------
+    .o_calendar_sidebar_container {
+        border-left: 1px solid var(--xtd-line, #dedbd6);
+    }
+}
+
+.o_calendar_renderer {
+    --o-cw-border-color: var(--xtd-line, #dedbd6);
+    // El "hoy" y la línea de la hora actual usan el naranja de marca.
+    --xtd-cal-accent: var(--xtd-orange, #f45700);
+
+    .o_calendar_widget {
+        --fc-border-color: var(--xtd-line, #dedbd6);
+
+        // Barras de desplazamiento discretas (no las naranjas globales).
+        .fc-scroller {
+            scrollbar-color: var(--xtd-line, #dedbd6) transparent;
+            scrollbar-width: thin;
+        }
+
+        // ---------- Días no laborables: tinte suave en lugar de bloque gris ----------
+        .o_calendar_disabled,
+        .fc-more-popover.o_calendar_disabled {
+            background-color: rgba(127, 127, 127, 0.06);
+        }
+
+        // ---------- Cabecera de días ----------
+        .fc-col-header-cell {
+            border-bottom: 1px solid var(--xtd-line, #dedbd6);
+            color: var(--xtd-muted, #8b8790);
+
+            a {
+                padding-bottom: 0.25rem;
+                padding-top: 0.25rem;
+            }
+
+            .o_cw_day_name {
+                font-size: 0.7rem;
+                font-weight: 600;
+                letter-spacing: 0.06em;
+            }
+
+            .o_cw_day_number {
+                color: var(--xtd-ink, #151515);
+                font-weight: 600;
+            }
+        }
+
+        .fc-timeGridWeek-view .fc-col-header-cell .o_cw_day_number {
+            font-size: 1.1rem !important;
+            height: 2.2rem;
+            line-height: 2.2rem;
+            padding: 0 !important;
+            width: 2.2rem;
+        }
+
+        // Hoy, siempre en el naranja de marca.
+        .fc-timeGridDay-view,
+        .fc-timeGridWeek-view,
+        .fc-dayGridMonth-view {
+            --o-cw-bg: var(--xtd-cal-accent);
+            --o-cw-color: #fff;
+
+            .fc-day-today .o_cw_day_number {
+                color: #fff;
+            }
+
+            .fc-day-today .o_cw_day_name {
+                color: var(--xtd-cal-accent);
+            }
+        }
+
+        // ---------- Rejilla horaria ----------
+        .fc-timegrid-slot {
+            height: 2.6rem;
+        }
+
+        .fc-timegrid-slot-lane {
+            border-color: var(--xtd-line, #dedbd6);
+        }
+
+        .fc-timegrid-slot-label-cushion {
+            color: var(--xtd-muted, #8b8790);
+            font-size: 0.7rem;
+        }
+
+        // Fila de "todo el día": más baja y sin sombra marcada.
+        .fc-timeGridWeek-view,
+        .fc-timeGridDay-view {
+            // Fila de "todo el día": una franja fina cuando no hay eventos de ese tipo
+            // (sigue siendo clicable para crear uno) y su altura natural cuando los hay.
+            .fc-scrollgrid-section-body:not(.fc-scrollgrid-section-liquid) {
+                .fc-daygrid-day-frame {
+                    min-height: 0;
+                }
+
+                .fc-daygrid-day-bottom,
+                .fc-daygrid-day-top {
+                    display: none;
+                }
+            }
+
+            &:not(:has(.fc-daygrid-event-harness)) {
+                .fc-scrollgrid-section-body:not(.fc-scrollgrid-section-liquid) {
+                    .fc-daygrid-day-frame {
+                        min-height: 14px;
+                    }
+
+                    .fc-daygrid-day-events {
+                        margin-bottom: 0 !important;
+                        min-height: 0 !important;
+                    }
+                }
+            }
+
+            // Odoo deja 15px sobre la primera hora para que quepa su etiqueta: se
+            // sustituye por un margen mínimo y la franja se pega a la rejilla.
+            .fc-scroller.fc-scroller-liquid-absolute {
+                padding-top: 0 !important;
+            }
+
+            .fc-timegrid-slots tr:first-child .fc-timegrid-slot-label-cushion {
+                margin-top: 2px !important;
+            }
+
+            .fc-timegrid-divider.fc-cell-shaded {
+                background: var(--xtd-line, #dedbd6);
+                height: 1px;
+                padding: 0;
+
+                &::after {
+                    display: none;
+                }
+            }
+        }
+
+        // ---------- Línea de la hora actual ----------
+        .o_calendar_time_indicator_now {
+            background-color: var(--xtd-cal-accent) !important;
+            height: 2px !important;
+            opacity: 0.85 !important;
+        }
+
+        .fc-timegrid-now-indicator-line::before {
+            background-color: var(--xtd-cal-accent) !important;
+            height: 0.6rem !important;
+            width: 0.6rem !important;
+        }
+
+        // ---------- Mes ----------
+        .fc-dayGridMonth-view {
+            .fc-daygrid-day-number {
+                font-weight: 600;
+            }
+
+            .fc-day-today .fc-daygrid-day-number {
+                color: #fff;
+            }
+        }
+    }
+
+    // ---------- Eventos como tarjetas ----------
+    // Doble clase para ganar especificidad sin depender del orden de carga.
+    &.o_calendar_renderer .o_calendar_widget .fc-event {
+        --o-bg-opacity: 0.2;
+
+        border: 0;
+        border-left: 3px solid var(--o-event-bg, var(--xtd-orange, #f45700));
+        border-radius: 6px;
+        box-shadow: none;
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+        &:hover {
+            --o-bg-opacity: 0.32;
+
+            box-shadow: 0 4px 12px rgba(21, 21, 21, 0.12);
+        }
+
+        .fc-event-main {
+            color: var(--xtd-ink, #151515);
+            line-height: 1.25;
+            padding: 0.2rem 0.4rem;
+        }
+
+        .o_event_title {
+            font-weight: 600;
+        }
+
+        .o_xtd_event_time {
+            color: var(--xtd-muted, #8b8790);
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        &.o_event_allday,
+        &.o_event_oneliner {
+            .o_xtd_event_time {
+                display: none;
+            }
+        }
+
+        // Eventos del mes (puntos): sin barra lateral.
+        &.o_event_dot {
+            border-left: 0;
+        }
+
+        &.fc-event-mirror,
+        &.fc-dragging {
+            border-left-color: var(--xtd-orange, #f45700);
+        }
+    }
+}
+
+// ---------- Avatares de asistentes en la tarjeta del evento ----------
+.o_calendar_renderer .o_calendar_widget .fc-event {
+    .o_xtd_event_avatars {
+        align-items: center;
+        display: flex;
+        margin-top: 0.2rem;
+    }
+
+    .o_xtd_event_avatar {
+        background: var(--xtd-paper, #f7f5f2);
+        border: 1.5px solid var(--xtd-surface, #fff);
+        border-radius: 50%;
+        height: 18px;
+        object-fit: cover;
+        width: 18px;
+
+        & + .o_xtd_event_avatar {
+            margin-left: -6px;
+        }
+    }
+
+    .o_xtd_event_avatars_more {
+        color: var(--xtd-muted, #8b8790);
+        font-size: 0.65rem;
+        font-weight: 600;
+        margin-left: 0.25rem;
+    }
+
+    // Eventos cortos: solo título y hora.
+    &.fc-timegrid-event-short .o_xtd_event_avatars,
+    &.o_event_oneliner .o_xtd_event_avatars {
+        display: none;
+    }
+}
+
+// ---------- Aviso de horas ocultas ----------
+.o_calendar_renderer {
+    position: relative;
+
+    .o_xtd_hours_notice {
+        align-items: center;
+        background: var(--xtd-surface, #fff);
+        border: 1px solid var(--xtd-line, #dedbd6);
+        border-radius: 999px;
+        bottom: 0.75rem;
+        box-shadow: 0 6px 18px rgba(21, 21, 21, 0.14);
+        color: var(--xtd-ink, #151515);
+        display: inline-flex;
+        font-size: 0.8rem;
+        gap: 0.5rem;
+        left: 50%;
+        padding: 0.35rem 0.9rem;
+        position: absolute;
+        transform: translateX(-50%);
+        z-index: 20;
+
+        .fa {
+            color: var(--xtd-orange, #f45700);
+        }
+
+        .btn-link {
+            color: var(--xtd-orange, #f45700);
+            font-size: inherit;
+            font-weight: 700;
+            text-decoration: none;
+        }
+    }
+}

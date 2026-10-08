@@ -13,6 +13,11 @@ class TestXtdThemeTours(odoo.tests.HttpCase):
             limit=1,
         )
         cls.user.write({"password": "xtendoo"})
+        # El tour del calendario comprueba que se respeta la franja horaria del usuario.
+        cls.user.res_users_settings_id.write({
+            "xtd_calendar_hour_start": 9,
+            "xtd_calendar_hour_end": 18,
+        })
 
     def test_xtd_theme_backend_tour(self):
         self.start_tour("/odoo/action-xtendoo_xtd_theme.action_xtd_dashboard", "xtd_theme_backend_tour", login=self.user.login)

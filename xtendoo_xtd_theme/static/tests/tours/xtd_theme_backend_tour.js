@@ -57,6 +57,60 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
         { trigger: ".o_xtd_dashboard button:contains('Cancelar')", run: "click" },
         { trigger: ".modal .btn-primary", run: "click" },
         { trigger: ".o_xtd_dashboard:not(:has(.xtd-dashboard-block-controls))" },
+        // --- Calendario: carga con el estilo Xtd (botones redondeados, sin errores de JS/SCSS)
+        {
+            trigger: ".o_xtd_dashboard",
+            run() {
+                odoo.__WOWL_DEBUG__.root.env.services.action.doAction("calendar.action_calendar_event");
+            },
+        },
+        { trigger: ".o_calendar_renderer .fc-timegrid" },
+        {
+            // Nunca debe sombrearse la semana entera como "no laborable".
+            trigger: ".o_calendar_renderer .fc-timegrid-col.fc-day",
+            run() {
+                const total = document.querySelectorAll(".o_calendar_renderer .fc-timegrid-col.fc-day").length;
+                const disabled = document.querySelectorAll(".o_calendar_renderer .fc-timegrid-col.fc-day.o_calendar_disabled").length;
+                if (total && total === disabled) {
+                    throw new Error("Todos los días del calendario aparecen sombreados como no laborables.");
+                }
+            },
+        },
+        {
+            // Sin eventos de todo el día, esa fila no debe ocupar espacio de más.
+            trigger: ".o_calendar_renderer .fc-scrollgrid-section-body:not(.fc-scrollgrid-section-liquid)",
+            run() {
+                const row = document.querySelector(
+                    ".o_calendar_renderer .fc-scrollgrid-section-body:not(.fc-scrollgrid-section-liquid)"
+                );
+                if (!document.querySelector(".o_calendar_renderer .fc-daygrid-event-harness") && row.offsetHeight > 30) {
+                    throw new Error(`La fila de todo el día ocupa demasiado (${row.offsetHeight}px).`);
+                }
+            },
+        },
+        {
+            // Franja 9:00-18:00 del usuario: no hay filas fuera de ella.
+            trigger: ".o_calendar_renderer .fc-timegrid-slot-label[data-time='10:00:00']",
+            run() {
+                const hasSlot = (time) => !!document.querySelector(
+                    `.o_calendar_renderer .fc-timegrid-slot-label[data-time='${time}']`
+                );
+                if (hasSlot("08:00:00") || hasSlot("18:00:00")) {
+                    throw new Error("El calendario debe ocultar las horas fuera de la franja del usuario.");
+                }
+            },
+        },
+        {
+            trigger: ".o_calendar_header .o_calendar_button_today",
+            run() {
+                const radius = parseFloat(
+                    window.getComputedStyle(document.querySelector(".o_calendar_button_today")).borderTopLeftRadius
+                );
+                if (!(radius >= 20)) {
+                    throw new Error("Los botones del calendario deben tener el estilo redondeado Xtd.");
+                }
+            },
+        },
         // --- Ajustes: el tema de la pestaña activa y de la navbar
         {
             trigger: ".o_main_navbar",

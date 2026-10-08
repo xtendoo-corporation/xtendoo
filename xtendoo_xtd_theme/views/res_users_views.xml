@@ -16,6 +16,14 @@
                     name="xtd_use_custom_dashboard"
                     string="Dashboard personalizado Xtd"
                 />
+                <field
+                    name="xtd_calendar_hour_start"
+                    string="Calendario: primera hora visible"
+                />
+                <field
+                    name="xtd_calendar_hour_end"
+                    string="Calendario: última hora visible"
+                />
             </xpath>
         </field>
     </record>
@@ -35,6 +43,14 @@
                 <field
                     name="xtd_use_custom_dashboard"
                     string="Dashboard personalizado Xtd"
+                />
+                <field
+                    name="xtd_calendar_hour_start"
+                    string="Calendario: primera hora visible"
+                />
+                <field
+                    name="xtd_calendar_hour_end"
+                    string="Calendario: última hora visible"
                 />
             </xpath>
         </field>
