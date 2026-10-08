@@ -74,7 +74,10 @@ export class XtdDashboard extends Component {
     get topProducts() { return this.state.topProducts; }
     get orderStatus() { return this.state.orderStatus; }
     get dashboardBlocks() {
-        return this.state.editingLayout ? this.state.draftBlocks : (this.state.layout.blocks || []);
+        if (this.state.editingLayout) {
+            return this.state.draftBlocks;
+        }
+        return (this.state.layout.blocks || []).filter((block) => !block.config?.hidden);
     }
     get canEditLayout() { return !!this.state.layout.can_edit; }
     get editingLayout() { return this.state.editingLayout; }
@@ -526,7 +529,8 @@ export class XtdDashboard extends Component {
             large: "col-12 col-lg-8",
             full: "col-12",
         };
-        return classesBySize[block.size] || classesBySize.medium;
+        const sizeClass = classesBySize[block.size] || classesBySize.medium;
+        return block.config?.hidden ? sizeClass + " xtd-dashboard-block-hidden" : sizeClass;
     }
 
     startLayoutEdition() {
@@ -582,6 +586,14 @@ export class XtdDashboard extends Component {
         this.state.draftBlocks = this.state.draftBlocks.map((candidate) => (
             candidate.key === block.key
                 ? { ...candidate, size: sizes[nextIndex] }
+                : candidate
+        ));
+    }
+
+    toggleBlockHidden(block) {
+        this.state.draftBlocks = this.state.draftBlocks.map((candidate) => (
+            candidate.key === block.key
+                ? { ...candidate, config: { ...(candidate.config || {}), hidden: !candidate.config?.hidden } }
                 : candidate
         ));
     }

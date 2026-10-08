@@ -475,6 +475,15 @@
         position: relative;
     }
 
+    .xtd-dashboard-block-hidden {
+        opacity: 0.45;
+        filter: grayscale(1);
+
+        .xtd-dashboard-block-controls {
+            filter: none;
+        }
+    }
+
     .table {
         --bs-table-bg: transparent;
 
