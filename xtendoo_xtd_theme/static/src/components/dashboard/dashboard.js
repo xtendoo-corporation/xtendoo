@@ -1,9 +1,23 @@
 import { Component, onWillStart, onMounted, onWillDestroy, onPatched, useState, useRef } from "@odoo/owl";
 import { useBus, useService } from "@web/core/utils/hooks";
+import { useExternalListener } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { session } from "@web/session";
+import { user } from "@web/core/user";
+import { loadBundle } from "@web/core/assets";
+import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
+import { _t } from "@web/core/l10n/translation";
+import { deserializeDateTime, serializeDateTime } from "@web/core/l10n/dates";
 
-const Chart = window.Chart;
+const { DateTime } = luxon;
+
+// Las fechas del dashboard se calculan en hora local del usuario. Nunca usar
+// toISOString(): convierte a UTC y, en zonas con offset positivo (España),
+// medianoche local cae en el día anterior.
+const pad2 = (n) => String(n).padStart(2, "0");
+const toLocalDate = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+// Campos datetime (UTC en servidor): medianoche local -> datetime UTC.
+const toUtcDateTime = (d) => serializeDateTime(DateTime.fromJSDate(d).startOf("day"));
 
 export class XtdDashboard extends Component {
     static template = "xtendoo_xtd_theme.XtdDashboard";
@@ -11,8 +25,10 @@ export class XtdDashboard extends Component {
     setup() {
         this.action = useService("action");
         this.orm = useService("orm");
+        this.dialog = useService("dialog");
         this.session = session;
 
+        this.currencyCode = session.currency_code || "EUR";
         this.salesChartRef = useRef("salesChart");
         this.orderStatusChartRef = useRef("orderStatusChart");
         this._chartInstances = {};
@@ -27,20 +43,11 @@ export class XtdDashboard extends Component {
             layout: { mode: "global", can_customize: false, blocks: [] },
             editingLayout: false,
             draftBlocks: [],
+            draggingKey: null,
+            dropTargetKey: null,
+            dropPosition: "before",
+            dropVertical: false,
             genericBlockData: {},
-            previewBlock: null,
-            builderOptions: { apps: [], models: [], fields: [] },
-            showBlockBuilder: false,
-            newBlock: {
-                name: "",
-                block_type: "generic_list",
-                app: "",
-                model: "",
-                selectedFields: [],
-                date_field: "",
-                limit: 5,
-                size: "medium",
-            },
             isSidebarHidden: document.body.classList.contains("xtd-sidebar-hidden"),
             chartPeriod: "year",
             kpiPeriod: "month",
@@ -48,12 +55,26 @@ export class XtdDashboard extends Component {
             recentItems: { sales: [], orders: [], purchase_orders: [], invoiced: [] },
         });
 
+        // Aviso nativo del navegador si se cierra o recarga con cambios sin guardar.
+        useExternalListener(window, "beforeunload", (ev) => {
+            if (this.isLayoutDirty) {
+                ev.preventDefault();
+                ev.returnValue = "";
+            }
+        });
+
         useBus(this.env.bus, "XTD_SIDEBAR:TOGGLE", () => {
             this.state.isSidebarHidden = document.body.classList.contains("xtd-sidebar-hidden");
         });
 
         onWillStart(async () => {
-            await this._fetchData();
+            // Chart.js (~200 KB) solo se descarga al abrir el dashboard.
+            await Promise.all([
+                loadBundle("xtendoo_xtd_theme.chartjs").catch((error) => {
+                    console.warn("No se pudo cargar Chart.js:", error);
+                }),
+                this._fetchData(),
+            ]);
         });
 
         onMounted(() => {
@@ -61,6 +82,7 @@ export class XtdDashboard extends Component {
         });
 
         onPatched(() => {
+            this._playFlip();
             this._renderCharts();
         });
 
@@ -81,29 +103,7 @@ export class XtdDashboard extends Component {
     }
     get canEditLayout() { return !!this.state.layout.can_edit; }
     get editingLayout() { return this.state.editingLayout; }
-    get availableDashboardBlocks() {
-        const visibleKeys = new Set(this.state.draftBlocks.map((block) => block.key));
-        const availableByKey = new Map();
-        for (const block of [
-            ...(this.state.layout.available_blocks || []),
-            ...(this.state.layout.blocks || []),
-        ]) {
-            if (block?.key && !visibleKeys.has(block.key)) {
-                availableByKey.set(block.key, block);
-            }
-        }
-        return [...availableByKey.values()].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
-    }
     get isSidebarHidden() { return this.state.isSidebarHidden; }
-    get filteredBuilderModels() {
-        if (!this.state.newBlock.app) {
-            return this.state.builderOptions.models || [];
-        }
-        return (this.state.builderOptions.models || []).filter((model) => (
-            model.apps?.includes(this.state.newBlock.app)
-        ));
-    }
-
     async _fetchData() {
         this.state.loading = true;
 
@@ -116,12 +116,10 @@ export class XtdDashboard extends Component {
             }
 
             await Promise.all([
-                this._fetchKpis(),
+                this._fetchSummary(),
                 this._fetchChartData(),
                 this._fetchActivities(),
                 this._fetchTopProducts(),
-                this._fetchOrderStatus(),
-                this._fetchRecentItems(),
             ]);
 
             await this._fetchGenericBlocks();
@@ -177,8 +175,7 @@ export class XtdDashboard extends Component {
 
     async onChangeKpiPeriod(period) {
         this.state.kpiPeriod = period;
-        await this._fetchKpis();
-        await this._fetchRecentItems();
+        await this._fetchSummary();
     }
 
     async onChangeTopPeriod(period) {
@@ -216,166 +213,41 @@ export class XtdDashboard extends Component {
         return { curStart, curEnd, prevStart, prevEnd, endNext, prevEndNext };
     }
 
-    async _fetchKpis() {
-        const period = this.state.kpiPeriod || "month";
-        const { curStart, prevStart, endNext, prevEndNext } = this._kpiPeriodRanges(period);
-        const fmt = d => d.toISOString().split("T")[0];
-
-        const readSum = (model, domain, fields) =>
-            this.orm.call(model, "search_read", [domain, fields], { limit: 10000 });
-
-        const kpis = {};
-
+    async _fetchSummary() {
         try {
-            const [cur, prev] = await Promise.all([
-                readSum("sale.order", [
-                    ["state", "in", ["sale", "done"]],
-                    ["date_order", ">=", fmt(curStart)],
-                    ["date_order", "<", fmt(endNext)],
-                ], ["amount_total"]),
-                readSum("sale.order", [
-                    ["state", "in", ["sale", "done"]],
-                    ["date_order", ">=", fmt(prevStart)],
-                    ["date_order", "<", fmt(prevEndNext)],
-                ], ["amount_total"]),
-            ]);
-            kpis.sales = {
-                value: cur.length,
-                previous_value: prev.length,
-                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                label: "Pedidos venta", icon: "fa-shopping-bag",
+            const summary = await this.orm.call(
+                "xtd.dashboard.service",
+                "get_dashboard_summary",
+                [this.state.kpiPeriod || "month"]
+            );
+            this.currencyCode = summary.currency || this.currencyCode;
+            const labels = {
+                sales: _t("Pedidos venta"),
+                orders: _t("Presupuestos"),
+                purchase_orders: _t("Compras"),
+                invoiced: _t("Facturado"),
             };
-        } catch {
-            kpis.sales = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Pedidos venta", icon: "fa-shopping-bag" };
-        }
-
-        try {
-            const [cur, prev] = await Promise.all([
-                readSum("sale.order", [
-                    ["state", "in", ["draft", "sent"]],
-                    ["date_order", ">=", fmt(curStart)],
-                    ["date_order", "<", fmt(endNext)],
-                ], ["amount_total"]),
-                readSum("sale.order", [
-                    ["state", "in", ["draft", "sent"]],
-                    ["date_order", ">=", fmt(prevStart)],
-                    ["date_order", "<", fmt(prevEndNext)],
-                ], ["amount_total"]),
-            ]);
-            kpis.orders = {
-                value: cur.length,
-                previous_value: prev.length,
-                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                label: "Presupuestos", icon: "fa-file-text-o",
+            const icons = {
+                sales: "fa-shopping-bag",
+                orders: "fa-file-text-o",
+                purchase_orders: "fa-truck",
+                invoiced: "fa-file-text-o",
             };
-        } catch {
-            kpis.orders = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Presupuestos", icon: "fa-file-text-o" };
-        }
-
-        try {
-            const [cur, prev] = await Promise.all([
-                readSum("account.move", [
-                    ["move_type", "=", "out_invoice"],
-                    ["state", "=", "posted"],
-                    ["invoice_date", ">=", fmt(curStart)],
-                    ["invoice_date", "<", fmt(endNext)],
-                ], ["amount_total"]),
-                readSum("account.move", [
-                    ["move_type", "=", "out_invoice"],
-                    ["state", "=", "posted"],
-                    ["invoice_date", ">=", fmt(prevStart)],
-                    ["invoice_date", "<", fmt(prevEndNext)],
-                ], ["amount_total"]),
-            ]);
-            kpis.invoiced = {
-                value: cur.length,
-                previous_value: prev.length,
-                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                label: "Facturado", icon: "fa-file-text-o",
-            };
-        } catch {
-            kpis.invoiced = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Facturado", icon: "fa-file-text-o" };
-        }
-
-        try {
-            const [cur, prev] = await Promise.all([
-                readSum("purchase.order", [
-                    ["state", "in", ["purchase", "done"]],
-                    ["date_order", ">=", fmt(curStart)],
-                    ["date_order", "<", fmt(endNext)],
-                ], ["amount_total"]),
-                readSum("purchase.order", [
-                    ["state", "in", ["purchase", "done"]],
-                    ["date_order", ">=", fmt(prevStart)],
-                    ["date_order", "<", fmt(prevEndNext)],
-                ], ["amount_total"]),
-            ]);
-            kpis.purchase_orders = {
-                value: cur.length,
-                previous_value: prev.length,
-                total: cur.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                previous_total: prev.reduce((s, r) => s + Number(r.amount_total || 0), 0),
-                label: "Compras", icon: "fa-truck",
-            };
-        } catch {
-            kpis.purchase_orders = { value: 0, previous_value: 0, total: 0, previous_total: 0, label: "Compras", icon: "fa-truck" };
-        }
-
-        for (const key of Object.keys(kpis)) {
-            const trendValue = key === "invoiced" ? kpis[key].total : kpis[key].value;
-            const previousTrendValue = key === "invoiced" ? kpis[key].previous_total : kpis[key].previous_value;
-            kpis[key].trend = this._calcTrend(trendValue, previousTrendValue);
-        }
-
-        this.state.statistics = this._formatKpis(kpis);
-    }
-
-    async _fetchRecentItems() {
-        const period = this.state.kpiPeriod || "month";
-        const { curStart, endNext } = this._kpiPeriodRanges(period);
-        const fmt = d => d.toISOString().split("T")[0];
-
-        try {
-            this.state.recentItems.sales = await this.orm.call("sale.order", "search_read", [
-                [["state", "in", ["sale", "done"]],
-                 ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
-                ["name", "partner_id", "amount_total", "date_order"],
-            ], { limit: 3, order: "date_order desc" });
-        } catch {
-            this.state.recentItems.sales = [];
-        }
-
-        try {
-            this.state.recentItems.orders = await this.orm.call("sale.order", "search_read", [
-                [["state", "in", ["draft", "sent"]],
-                 ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
-                ["name", "partner_id", "amount_total", "date_order"],
-            ], { limit: 3, order: "date_order desc" });
-        } catch {
-            this.state.recentItems.orders = [];
-        }
-
-        try {
-            this.state.recentItems.invoiced = await this.orm.call("account.move", "search_read", [
-                [["move_type", "=", "out_invoice"], ["state", "=", "posted"],
-                 ["invoice_date", ">=", fmt(curStart)], ["invoice_date", "<", fmt(endNext)]],
-                ["name", "partner_id", "amount_total", "invoice_date"],
-            ], { limit: 3, order: "invoice_date desc" });
-        } catch {
-            this.state.recentItems.invoiced = [];
-        }
-
-        try {
-            this.state.recentItems.purchase_orders = await this.orm.call("purchase.order", "search_read", [
-                [["state", "in", ["purchase", "done"]],
-                 ["date_order", ">=", fmt(curStart)], ["date_order", "<", fmt(endNext)]],
-                ["name", "partner_id", "amount_total", "date_order"],
-            ], { limit: 3, order: "date_order desc" });
-        } catch {
-            this.state.recentItems.purchase_orders = [];
+            const kpis = {};
+            for (const [key, kpi] of Object.entries(summary.kpis)) {
+                kpis[key] = { ...kpi, label: labels[key], icon: icons[key] };
+                const trendValue = key === "invoiced" ? kpi.total : kpi.value;
+                const previousValue = key === "invoiced" ? kpi.previous_total : kpi.previous_value;
+                kpis[key].trend = this._calcTrend(trendValue, previousValue);
+            }
+            this.state.statistics = this._formatKpis(kpis);
+            this.state.recentItems = summary.recent;
+            this.state.orderStatus = summary.order_status;
+        } catch (error) {
+            console.warn("No se pudo cargar el resumen del dashboard:", error);
+            this.state.statistics = this._formatKpis({});
+            this.state.recentItems = { sales: [], orders: [], purchase_orders: [], invoiced: [] };
+            this.state.orderStatus = [];
         }
     }
 
@@ -384,9 +256,7 @@ export class XtdDashboard extends Component {
         const { start, end } = this._getPeriodRange(period);
         const endNext = new Date(end);
         endNext.setDate(endNext.getDate() + 1);
-        const fmt = d => d.toISOString().split("T")[0];
-        const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-        const monthLabels = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const fmt = toUtcDateTime;
 
         const quotationsByBucket = {};
         const ordersByBucket = {};
@@ -398,7 +268,9 @@ export class XtdDashboard extends Component {
             ], { limit: 10000 });
             for (const order of orders) {
                 if (!order.date_order) continue;
-                const key = period === "year" ? String(order.date_order).slice(0, 7) : String(order.date_order).slice(0, 10);
+                // date_order viene en UTC: se pasa a hora local antes de agrupar.
+                const localOrderDate = deserializeDateTime(order.date_order);
+                const key = localOrderDate.toFormat(period === "year" ? "yyyy-MM" : "yyyy-MM-dd");
                 if (["sale", "done"].includes(order.state)) {
                     ordersByBucket[key] = (ordersByBucket[key] || 0) + 1;
                 } else if (["draft", "sent"].includes(order.state)) {
@@ -416,7 +288,7 @@ export class XtdDashboard extends Component {
                 const d = new Date(start);
                 d.setDate(start.getDate() + i);
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                labels.push(`${dayLabels[d.getDay()]} ${d.getDate()}`);
+                labels.push(DateTime.fromJSDate(d).toFormat("ccc d"));
                 quotations.push(quotationsByBucket[key] || 0);
                 orders_count.push(ordersByBucket[key] || 0);
             }
@@ -432,7 +304,7 @@ export class XtdDashboard extends Component {
             const cur = new Date(start);
             while (cur <= end) {
                 const key = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}`;
-                labels.push(`${monthLabels[cur.getMonth()]} ${cur.getFullYear()}`);
+                labels.push(DateTime.fromJSDate(cur).toFormat("LLL yyyy"));
                 quotations.push(quotationsByBucket[key] || 0);
                 orders_count.push(ordersByBucket[key] || 0);
                 cur.setMonth(cur.getMonth() + 1);
@@ -446,7 +318,7 @@ export class XtdDashboard extends Component {
         try {
             this.state.activities = await this.orm.searchRead(
                 "mail.activity",
-                [["user_id", "=", this.session.uid], ["date_deadline", ">=", new Date().toISOString().split("T")[0]]],
+                [["user_id", "=", this.session.uid], ["date_deadline", ">=", toLocalDate(new Date())]],
                 ["res_name", "summary", "date_deadline"],
                 { limit: 5 }
             );
@@ -494,7 +366,7 @@ export class XtdDashboard extends Component {
     }
 
     _resolveGenericDomain(domain) {
-        const today = new Date().toISOString().split("T")[0];
+        const today = toLocalDate(new Date());
         return (domain || []).map((term) => (
             Array.isArray(term)
                 ? term.map((value) => value === "__today__" ? today : value)
@@ -518,7 +390,6 @@ export class XtdDashboard extends Component {
                 { key: "pending_activities", component: "pending_activities", size: "medium", sequence: 30 },
                 { key: "top_products", component: "top_products", size: "large", sequence: 40 },
             ],
-            available_blocks: [],
         };
     }
 
@@ -529,8 +400,20 @@ export class XtdDashboard extends Component {
             large: "col-12 col-lg-8",
             full: "col-12",
         };
-        const sizeClass = classesBySize[block.size] || classesBySize.medium;
-        return block.config?.hidden ? sizeClass + " xtd-dashboard-block-hidden" : sizeClass;
+        let classes = classesBySize[block.size] || classesBySize.medium;
+        if (block.config?.hidden) {
+            classes += " xtd-dashboard-block-hidden";
+        }
+        if (this.state.draggingKey === block.key) {
+            classes += " xtd-dashboard-block-dragging";
+        }
+        if (this.state.dropTargetKey === block.key && this.state.draggingKey !== block.key) {
+            classes += ` xtd-dashboard-block-drop-${this.state.dropPosition}`;
+            if (this.state.dropVertical) {
+                classes += " xtd-dashboard-block-drop-vertical";
+            }
+        }
+        return classes;
     }
 
     startLayoutEdition() {
@@ -541,10 +424,166 @@ export class XtdDashboard extends Component {
         this.state.editingLayout = true;
     }
 
-    cancelLayoutEdition() {
+    // Orden, tamaño y visibilidad: lo único que el usuario puede cambiar.
+    _layoutSignature(blocks) {
+        return JSON.stringify((blocks || []).map((block) => [
+            block.key,
+            block.size || "medium",
+            !!block.config?.hidden,
+        ]));
+    }
+
+    get isLayoutDirty() {
+        return this.state.editingLayout
+            && this._layoutSignature(this.state.draftBlocks) !== this._layoutSignature(this.state.layout.blocks);
+    }
+
+    _closeLayoutEdition() {
         this.state.draftBlocks = [];
-        this.state.previewBlock = null;
+        this.state.draggingKey = null;
+        this.state.dropTargetKey = null;
         this.state.editingLayout = false;
+    }
+
+    cancelLayoutEdition() {
+        if (!this.isLayoutDirty) {
+            this._closeLayoutEdition();
+            return;
+        }
+        this.dialog.add(ConfirmationDialog, {
+            title: _t("Cambios sin guardar"),
+            body: _t("Si cancelas se perderán los cambios hechos en el dashboard."),
+            confirmLabel: _t("Descartar cambios"),
+            confirm: () => this._closeLayoutEdition(),
+            cancelLabel: _t("Seguir editando"),
+            cancel: () => {},
+        });
+    }
+
+    onBlockDragStart(ev, block) {
+        this.state.draggingKey = block.key;
+        ev.dataTransfer.effectAllowed = "move";
+        ev.dataTransfer.setData("text/plain", block.key);
+        const blockEl = ev.target.closest("[data-block-key]");
+        if (blockEl) {
+            ev.dataTransfer.setDragImage(blockEl, 20, 20);
+        }
+    }
+
+    /**
+     * Calcula dónde caería el bloque arrastrado: el bloque más cercano al
+     * cursor (también en los huecos entre bloques) y si va delante o detrás.
+     * Con bloques que ocupan casi toda la fila se decide por la mitad
+     * vertical; con bloques más estrechos, por la mitad horizontal.
+     */
+    _computeDrop(ev) {
+        const container = ev.currentTarget;
+        const containerWidth = container.getBoundingClientRect().width || 1;
+        let best = null;
+        for (const el of container.querySelectorAll("[data-block-key]")) {
+            const key = el.dataset.blockKey;
+            if (key === this.state.draggingKey) {
+                continue;
+            }
+            const rect = el.getBoundingClientRect();
+            const dx = Math.max(rect.left - ev.clientX, 0, ev.clientX - rect.right);
+            const dy = Math.max(rect.top - ev.clientY, 0, ev.clientY - rect.bottom);
+            const distance = Math.hypot(dx, dy);
+            if (!best || distance < best.distance) {
+                best = { key, rect, distance };
+            }
+        }
+        if (!best) {
+            return null;
+        }
+        const vertical = best.rect.width >= containerWidth * 0.7;
+        const after = vertical
+            ? ev.clientY > best.rect.top + best.rect.height / 2
+            : ev.clientX > best.rect.left + best.rect.width / 2;
+        return { key: best.key, position: after ? "after" : "before", vertical };
+    }
+
+    _autoScroll(ev) {
+        const scroller = ev.currentTarget.closest(".overflow-auto");
+        if (!scroller) {
+            return;
+        }
+        const rect = scroller.getBoundingClientRect();
+        if (ev.clientY < rect.top + 80) {
+            scroller.scrollTop -= 20;
+        } else if (ev.clientY > rect.bottom - 80) {
+            scroller.scrollTop += 20;
+        }
+    }
+
+    onBlocksDragOver(ev) {
+        if (!this.state.draggingKey) {
+            return;
+        }
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+        this._autoScroll(ev);
+        const drop = this._computeDrop(ev);
+        this.state.dropTargetKey = drop?.key || null;
+        this.state.dropPosition = drop?.position || "before";
+        this.state.dropVertical = !!drop?.vertical;
+    }
+
+    onBlocksDrop(ev) {
+        const draggingKey = this.state.draggingKey;
+        const drop = draggingKey && this._computeDrop(ev);
+        if (drop) {
+            ev.preventDefault();
+            const blocks = this.state.draftBlocks.filter((block) => block.key !== draggingKey);
+            const moved = this.state.draftBlocks.find((block) => block.key === draggingKey);
+            const targetIndex = blocks.findIndex((block) => block.key === drop.key);
+            if (moved && targetIndex >= 0) {
+                blocks.splice(drop.position === "after" ? targetIndex + 1 : targetIndex, 0, moved);
+                const changed = blocks.some((block, i) => block.key !== this.state.draftBlocks[i].key);
+                if (changed) {
+                    this._flipRects = this._captureBlockRects(ev.currentTarget);
+                    this.state.draftBlocks = blocks;
+                }
+            }
+        }
+        this.onBlockDragEnd();
+    }
+
+    _captureBlockRects(container) {
+        const rects = new Map();
+        for (const el of container.querySelectorAll("[data-block-key]")) {
+            rects.set(el.dataset.blockKey, el.getBoundingClientRect());
+        }
+        return rects;
+    }
+
+    /** Animación FLIP: los bloques se deslizan de su sitio anterior al nuevo. */
+    _playFlip() {
+        const before = this._flipRects;
+        this._flipRects = null;
+        if (!before) {
+            return;
+        }
+        for (const el of document.querySelectorAll(".o_xtd_dashboard [data-block-key]")) {
+            const old = before.get(el.dataset.blockKey);
+            if (!old) {
+                continue;
+            }
+            const now = el.getBoundingClientRect();
+            const dx = old.left - now.left;
+            const dy = old.top - now.top;
+            if (dx || dy) {
+                el.animate(
+                    [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }],
+                    { duration: 250, easing: "ease-out" }
+                );
+            }
+        }
+    }
+
+    onBlockDragEnd() {
+        this.state.draggingKey = null;
+        this.state.dropTargetKey = null;
     }
 
     async saveLayoutEdition() {
@@ -559,21 +598,7 @@ export class XtdDashboard extends Component {
             "save_dashboard_layout",
             [this.state.draftBlocks]
         );
-        this.state.draftBlocks = [];
-        this.state.previewBlock = null;
-        this.state.editingLayout = false;
-    }
-
-    moveDashboardBlock(block, direction) {
-        const currentIndex = this.state.draftBlocks.findIndex((candidate) => candidate.key === block.key);
-        const nextIndex = currentIndex + direction;
-        if (currentIndex < 0 || nextIndex < 0 || nextIndex >= this.state.draftBlocks.length) {
-            return;
-        }
-        const blocks = [...this.state.draftBlocks];
-        const [movedBlock] = blocks.splice(currentIndex, 1);
-        blocks.splice(nextIndex, 0, movedBlock);
-        this.state.draftBlocks = blocks;
+        this._closeLayoutEdition();
     }
 
     resizeDashboardBlock(block, direction) {
@@ -596,18 +621,6 @@ export class XtdDashboard extends Component {
                 ? { ...candidate, config: { ...(candidate.config || {}), hidden: !candidate.config?.hidden } }
                 : candidate
         ));
-    }
-
-    removeDashboardBlock(block) {
-        this.state.draftBlocks = this.state.draftBlocks.filter((candidate) => candidate.key !== block.key);
-    }
-
-    addDashboardBlock(block) {
-        this.state.draftBlocks = [
-            ...this.state.draftBlocks,
-            this._cloneBlocks([block])[0],
-        ];
-        this.state.previewBlock = null;
     }
 
     getGenericBlockData(block) {
@@ -703,116 +716,25 @@ export class XtdDashboard extends Component {
         return colors[(index || 0) % colors.length];
     }
 
-    async openBlockBuilder() {
-        this.state.showBlockBuilder = true;
-        this.state.newBlock = this._defaultNewBlock();
-        this.state.builderOptions = await this.orm.call(
-            "xtd.dashboard.service",
-            "get_block_builder_options",
-            [false]
-        );
-    }
-
-    async previewDashboardBlock(block) {
-        this.state.previewBlock = this._cloneBlocks([block])[0];
-        if (["generic_list", "generic_calendar", "generic_kanban"].includes(block.component)) {
-            await this._fetchGenericBlock(block);
-        }
-    }
-
-    isBlockPreviewed(block) {
-        return this.state.previewBlock?.key === block.key;
-    }
-
-    getBlockComponentLabel(block) {
-        const labels = {
-            generic_list: "Lista",
-            generic_kanban: "Kanban",
-            generic_calendar: "Calendario",
-            main_kpis: "KPIs",
-            single_kpi: "KPI",
-            sales_chart: "Gráfico",
-            pending_activities: "Lista",
-            top_products: "Ranking",
-            order_status: "Estado",
-        };
-        return labels[block.component] || block.type || "Bloque";
-    }
-
-    closeBlockBuilder() {
-        this.state.showBlockBuilder = false;
-    }
-
-    onNewBlockAppChange(event) {
-        this.state.newBlock.app = event.target.value;
-        this.state.newBlock.model = "";
-        this.state.newBlock.selectedFields = [];
-        this.state.newBlock.date_field = "";
-        this.state.builderOptions.fields = [];
-    }
-
-    async onNewBlockModelChange(event) {
-        this.state.newBlock.model = event.target.value;
-        this.state.newBlock.selectedFields = [];
-        this.state.newBlock.date_field = "";
-        if (!this.state.newBlock.model) {
-            this.state.builderOptions.fields = [];
-            return;
-        }
-        this.state.builderOptions = await this.orm.call(
-            "xtd.dashboard.service",
-            "get_block_builder_options",
-            [this.state.newBlock.model]
-        );
-        this.state.newBlock.selectedFields = this.state.builderOptions.fields
-            .slice(0, 4)
-            .map((field) => field.name);
-    }
-
-    toggleNewBlockField(fieldName) {
-        const selectedFields = this.state.newBlock.selectedFields || [];
-        this.state.newBlock.selectedFields = selectedFields.includes(fieldName)
-            ? selectedFields.filter((selectedField) => selectedField !== fieldName)
-            : [...selectedFields, fieldName];
-    }
-
-    isNewBlockFieldSelected(fieldName) {
-        return (this.state.newBlock.selectedFields || []).includes(fieldName);
-    }
-
-    async createCustomBlock() {
-        if (!this.state.newBlock.name || !this.state.newBlock.model) {
-            return;
-        }
-        this.state.layout = await this.orm.call(
-            "xtd.dashboard.service",
-            "create_custom_block",
-            [{
-                ...this.state.newBlock,
-                fields: this.state.newBlock.selectedFields,
-            }]
-        );
-        await this._fetchGenericBlocks();
-        this.state.draftBlocks = this._cloneBlocks(this.state.layout.blocks || []);
-        this.state.showBlockBuilder = false;
-        this.state.newBlock = this._defaultNewBlock();
-    }
-
-    async deleteCustomBlock(block) {
+    deleteCustomBlock(block) {
         if (!block.can_delete) {
             return;
         }
-        const confirmed = window.confirm(`¿Eliminar definitivamente el bloque "${block.name}"?`);
-        if (!confirmed) {
-            return;
-        }
-        this.state.layout = await this.orm.call(
-            "xtd.dashboard.service",
-            "delete_custom_block",
-            [block.block_id]
-        );
-        await this._fetchGenericBlocks();
-        this.state.draftBlocks = this._cloneBlocks(this.state.layout.blocks || []);
+        this.dialog.add(ConfirmationDialog, {
+            title: _t("Eliminar bloque"),
+            body: _t('¿Eliminar definitivamente el bloque "%s"?', block.name),
+            confirmLabel: _t("Eliminar"),
+            confirm: async () => {
+                this.state.layout = await this.orm.call(
+                    "xtd.dashboard.service",
+                    "delete_custom_block",
+                    [block.block_id]
+                );
+                await this._fetchGenericBlocks();
+                this.state.draftBlocks = this._cloneBlocks(this.state.layout.blocks || []);
+            },
+            cancel: () => {},
+        });
     }
 
     _cloneBlocks(blocks) {
@@ -822,23 +744,10 @@ export class XtdDashboard extends Component {
         }));
     }
 
-    _defaultNewBlock() {
-        return {
-            name: "",
-            block_type: "generic_list",
-            app: "",
-            model: "",
-            selectedFields: [],
-            date_field: "",
-            limit: 5,
-            size: "medium",
-        };
-    }
-
     async _fetchTopProducts() {
         const period = this.state.topPeriod || "month";
         const { curStart, endNext } = this._kpiPeriodRanges(period);
-        const fmt = d => d.toISOString().split("T")[0];
+        const fmt = toUtcDateTime;
         const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
 
         try {
@@ -877,37 +786,18 @@ export class XtdDashboard extends Component {
         }
     }
 
-    async _fetchOrderStatus() {
-        try {
-            const states = ["draft", "sent", "sale", "done", "cancel"];
-            const results = await Promise.all(states.map(s =>
-                this.orm.call("sale.order", "search_count", [[["state", "=", s]]])
-            ));
-            this.state.orderStatus = states
-                .map((state, i) => ({ state, count: results[i] }))
-                .filter(item => item.count > 0)
-                .map(item => ({
-                    state: item.state,
-                    count: item.count,
-                    label: this._getOrderStateLabel(item.state)
-                }));
-        } catch (e) {
-            console.warn("No se pudo cargar estado de pedidos:", e);
-        }
-    }
-
     get donutTotal() {
         return this.state.orderStatus.reduce((sum, s) => sum + (s.count || 0), 0);
     }
 
     get kpiPeriodLabel() {
-        const labels = { week: "vs semana anterior", month: "vs mes anterior", year: "vs año anterior" };
-        return labels[this.state.kpiPeriod] || "vs periodo anterior";
+        const labels = { week: _t("vs semana anterior"), month: _t("vs mes anterior"), year: _t("vs año anterior") };
+        return labels[this.state.kpiPeriod] || _t("vs periodo anterior");
     }
 
     _formatKpis(kpis) {
         const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
-        const formatCurrency = (val) => val ? this._formatCurrency(val) : "0 €";
+        const formatCurrency = (val) => this._formatCurrency(val || 0);
         const salesVal = toNum(kpis.sales?.value);
         const invoicedTotal = toNum(kpis.invoiced?.total);
         const ticketMedio = salesVal > 0 ? this._formatCurrency(invoicedTotal / salesVal) : "—";
@@ -955,12 +845,13 @@ export class XtdDashboard extends Component {
     }
 
     _renderCharts() {
-        if (!Chart) return;
+        if (!window.Chart) return;
         this._renderSalesChart();
         this._renderOrderStatusChart();
     }
 
     _renderSalesChart() {
+        const Chart = window.Chart;
         const canvas = this.salesChartRef?.el;
         const data = this.state.chartData;
 
@@ -994,7 +885,7 @@ export class XtdDashboard extends Component {
                 labels: rawData.labels,
                 datasets: [
                     {
-                        label: "Presupuestos",
+                        label: _t("Presupuestos"),
                         data: rawData.quotations,
                         borderColor: "#FFC107",
                         backgroundColor: "rgba(255, 193, 7, 0.08)",
@@ -1009,7 +900,7 @@ export class XtdDashboard extends Component {
                         borderDash: [5, 3],
                     },
                     {
-                        label: "Pedidos de venta",
+                        label: _t("Pedidos de venta"),
                         data: rawData.orders_count,
                         borderColor: "#6464FF",
                         backgroundColor: "rgba(100, 100, 255, 0.08)",
@@ -1065,6 +956,7 @@ export class XtdDashboard extends Component {
     }
 
     _renderOrderStatusChart() {
+        const Chart = window.Chart;
         const canvas = this.orderStatusChartRef?.el;
         const statuses = this.state.orderStatus;
 
@@ -1115,7 +1007,7 @@ export class XtdDashboard extends Component {
                         cornerRadius: 8,
                         z: 9999,
                         callbacks: {
-                            label: (ctx) => ` ${ctx.parsed} pedidos`,
+                            label: (ctx) => ` ${ctx.parsed} ${_t("pedidos")}`,
                         },
                     },
                 },
@@ -1130,19 +1022,9 @@ export class XtdDashboard extends Component {
         this._chartInstances = {};
     }
 
-    _getOrderStateLabel(state) {
-        const labels = {
-            'draft': 'Presupuesto',
-            'sent': 'Enviado',
-            'sale': 'Pedido de venta',
-            'done': 'Bloqueado',
-            'cancel': 'Cancelado'
-        };
-        return labels[state] || state;
-    }
-
     _formatCurrency(amount) {
-        return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+        const locale = (user.lang || "es_ES").replace("_", "-");
+        return new Intl.NumberFormat(locale, { style: "currency", currency: this.currencyCode }).format(amount);
     }
 
     openAction(xmlid) {
@@ -1151,12 +1033,12 @@ export class XtdDashboard extends Component {
 
     getKpiCreateTitle(key) {
         const labels = {
-            sales: "Crear pedido de venta",
-            orders: "Crear presupuesto",
-            purchase_orders: "Crear compra",
-            invoiced: "Crear factura",
+            sales: _t("Crear pedido de venta"),
+            orders: _t("Crear presupuesto"),
+            purchase_orders: _t("Crear compra"),
+            invoiced: _t("Crear factura"),
         };
-        return labels[key] || "Crear";
+        return labels[key] || _t("Crear");
     }
 
     createKpiRecord(key) {
@@ -1167,7 +1049,7 @@ export class XtdDashboard extends Component {
                 views: [[false, "form"]],
                 target: "current",
                 context: {},
-                name: "Ventas",
+                name: _t("Ventas"),
             },
             orders: {
                 type: "ir.actions.act_window",
@@ -1175,7 +1057,7 @@ export class XtdDashboard extends Component {
                 views: [[false, "form"]],
                 target: "current",
                 context: {},
-                name: "Ventas",
+                name: _t("Ventas"),
             },
             purchase_orders: {
                 type: "ir.actions.act_window",
@@ -1183,7 +1065,7 @@ export class XtdDashboard extends Component {
                 views: [[false, "form"]],
                 target: "current",
                 context: {},
-                name: "Compras",
+                name: _t("Compras"),
             },
             invoiced: {
                 type: "ir.actions.act_window",
@@ -1191,7 +1073,7 @@ export class XtdDashboard extends Component {
                 views: [[false, "form"]],
                 target: "current",
                 context: { default_move_type: "out_invoice" },
-                name: "Facturación",
+                name: _t("Facturación"),
             },
         }[key];
         if (actions) {
@@ -1206,28 +1088,28 @@ export class XtdDashboard extends Component {
                 res_model: "sale.order",
                 views: [[false, "list"], [false, "form"]],
                 domain: [["state", "in", ["sale", "done"]]],
-                name: "Pedidos venta",
+                name: _t("Pedidos venta"),
             },
             orders: {
                 type: "ir.actions.act_window",
                 res_model: "sale.order",
                 views: [[false, "list"], [false, "form"]],
                 domain: [["state", "in", ["draft", "sent"]]],
-                name: "Presupuestos",
+                name: _t("Presupuestos"),
             },
             purchase_orders: {
                 type: "ir.actions.act_window",
                 res_model: "purchase.order",
                 views: [[false, "list"], [false, "form"]],
                 domain: [["state", "in", ["purchase", "done"]]],
-                name: "Compras",
+                name: _t("Compras"),
             },
             invoiced: {
                 type: "ir.actions.act_window",
                 res_model: "account.move",
                 views: [[false, "list"], [false, "form"]],
                 domain: [["move_type", "=", "out_invoice"], ["state", "=", "posted"]],
-                name: "Facturado",
+                name: _t("Facturado"),
             },
         }[key];
         if (actions) {

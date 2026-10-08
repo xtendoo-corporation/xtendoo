@@ -283,196 +283,112 @@
         }
     }
 
-    .xtd-dashboard-editor-bar {
-        background: #fff;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        box-shadow: 0 10px 28px rgba(21, 21, 21, 0.045);
-        padding: 1rem;
-    }
-
-    .xtd-dashboard-builder {
-        background: #fbfbfb;
-        border: 1px solid #eef0f3;
-        border-radius: 8px;
-        padding: 0.85rem;
-    }
-
-    .xtd-dashboard-field-picker {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-        max-height: 9rem;
-        overflow: auto;
-        padding-right: 0.25rem;
-    }
-
-    .xtd-dashboard-field-chip {
-        align-items: flex-start;
-        background: #fff;
-        border: 1px solid #e1e4e8;
-        border-radius: 8px;
-        color: #2f3337;
-        display: inline-flex;
-        flex-direction: column;
-        gap: 0.05rem;
-        line-height: 1.1;
-        max-width: 12rem;
-        min-height: 2.25rem;
-        padding: 0.3rem 0.5rem;
-        text-align: left;
-
-        span,
-        small {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 100%;
-        }
-
-        small {
-            color: #8b8790;
-            font-size: 0.68rem;
-        }
-
-        &.xtd-dashboard-field-chip--active {
-            background: rgba(244, 87, 0, 0.08);
-            border-color: #f45700;
-            color: #151515;
-        }
-    }
-
-    .xtd-dashboard-library {
-        display: grid;
-        gap: 0.55rem;
-        grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
-    }
-
-    .xtd-dashboard-library-item {
-        align-items: stretch;
-        background: #fff;
-        border: 1px solid #e7e9ed;
-        border-radius: 8px;
-        display: flex;
-        min-height: 3rem;
-        overflow: hidden;
-
-        &.xtd-dashboard-library-item--active {
-            border-color: #f45700;
-            box-shadow: 0 0 0 2px rgba(244, 87, 0, 0.08);
-        }
-
-        .btn {
-            align-items: center;
-            border-radius: 0;
-            display: inline-flex;
-            flex: 0 0 2.75rem;
-            justify-content: center;
-            padding: 0;
-        }
-    }
-
-    .xtd-dashboard-library-item__main {
-        background: transparent;
-        border: 0;
-        color: #2f3337;
-        display: flex;
-        flex: 1 1 auto;
-        flex-direction: column;
-        justify-content: center;
-        min-width: 0;
-        padding: 0.45rem 0.65rem;
-        text-align: left;
-
-        &:hover {
-            background: rgba(244, 87, 0, 0.04);
-        }
-    }
-
-    .xtd-dashboard-block-preview {
-        background: #fff;
-        border: 1px solid #e7e9ed;
-        border-radius: 8px;
-        padding: 0.85rem;
-    }
-
-    .xtd-dashboard-preview-surface {
-        background: #fbfbfc;
-        border: 1px solid #eef0f3;
-        border-radius: 8px;
-        max-height: 18rem;
-        overflow: auto;
-        padding: 0.75rem;
-    }
-
-    .xtd-dashboard-preview-static {
-        align-items: center;
-        display: flex;
-        gap: 0.75rem;
-        min-height: 5rem;
-    }
-
-    .xtd-dashboard-preview-static__icon {
-        align-items: center;
-        background: rgba(244, 87, 0, 0.09);
-        border-radius: 8px;
-        color: #f45700;
-        display: inline-flex;
-        flex: 0 0 2.75rem;
-        height: 2.75rem;
-        justify-content: center;
-    }
-
     .xtd-dashboard-block-controls {
+        cursor: grab;
         align-items: center;
         background: #fff;
         border: 1px solid rgba(244, 87, 0, 0.35);
         border-radius: 8px;
-        box-shadow: 0 8px 20px rgba(21, 21, 21, 0.08);
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        justify-content: space-between;
-        min-height: 40px;
-        padding: 0.3rem 0.4rem 0.3rem 0.65rem;
-        position: absolute;
-        right: 1.25rem;
-        top: 0;
-        z-index: 10;
+        gap: 0.4rem;
+        margin-bottom: 0.5rem;
+        min-height: 36px;
+        padding: 0.2rem 0.3rem 0.2rem 0.2rem;
+    }
 
-        > span {
-            flex: 1 1 9rem;
-            min-width: 0;
+    .xtd-dashboard-block-controls__handle {
+        align-items: center;
+        color: #8b8790;
+        cursor: grab;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 28px;
+        justify-content: center;
+        width: 28px;
+
+        &:hover {
+            color: #f45700;
         }
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    .xtd-dashboard-block-controls__name {
+        flex: 1 1 auto;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .xtd-dashboard-block-controls__actions {
         display: inline-flex;
         flex: 0 0 auto;
-        flex-wrap: wrap;
-        gap: 0.25rem;
-        justify-content: flex-end;
-        margin-left: auto;
+        gap: 0.2rem;
 
         .btn {
             align-items: center;
             display: inline-flex;
-            height: 30px;
+            font-size: 0.75rem;
+            height: 28px;
             justify-content: center;
             padding: 0;
-            width: 30px;
+            width: 28px;
         }
     }
 
-    .xtd-dashboard-block-controls + .card,
-    .xtd-dashboard-block-controls + .row {
-        outline: 1px solid rgba(244, 87, 0, 0.2);
-        outline-offset: 2px;
-    }
-
     .xtd-dashboard-editable-block {
-        padding-top: 3rem;
         position: relative;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+
+        &.xtd-dashboard-block-dragging {
+            opacity: 0.35;
+        }
+
+        // Marca de inserción: barra naranja en el borde donde caerá el bloque.
+        &.xtd-dashboard-block-drop-before::after,
+        &.xtd-dashboard-block-drop-after::after {
+            background: #f45700;
+            border-radius: 3px;
+            bottom: 0;
+            box-shadow: 0 0 0 3px rgba(244, 87, 0, 0.18);
+            content: "";
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            width: 4px;
+            z-index: 5;
+        }
+
+        &.xtd-dashboard-block-drop-before::after {
+            left: -0.8rem;
+        }
+
+        &.xtd-dashboard-block-drop-after::after {
+            right: -0.8rem;
+        }
+
+        &.xtd-dashboard-block-drop-vertical.xtd-dashboard-block-drop-before::after,
+        &.xtd-dashboard-block-drop-vertical.xtd-dashboard-block-drop-after::after {
+            bottom: auto;
+            height: 4px;
+            left: 0;
+            right: 0;
+            top: auto;
+            width: auto;
+        }
+
+        &.xtd-dashboard-block-drop-vertical.xtd-dashboard-block-drop-before::after {
+            top: -0.8rem;
+        }
+
+        &.xtd-dashboard-block-drop-vertical.xtd-dashboard-block-drop-after::after {
+            bottom: -0.8rem;
+        }
     }
 
     .xtd-dashboard-block-hidden {

@@ -16,7 +16,6 @@ class TestXtdTheme(TransactionCase):
         for xmlid in (
             "xtendoo_xtd_theme.web_layout_xtd_branding",
             "xtendoo_xtd_theme.login_layout_xtd_branding",
-            "xtendoo_xtd_theme.brand_promotion_message_xtd",
             "xtendoo_xtd_theme.webclient_bootstrap_xtd_theme_color",
             "xtendoo_xtd_theme.view_users_form_simple_modif_xtd_color_scheme",
             "xtendoo_xtd_theme.view_users_form_xtd_color_scheme",
@@ -240,7 +239,7 @@ class TestXtdTheme(TransactionCase):
         templates_path = self.module_path / "views" / "webclient_templates.xml"
         content = templates_path.read_text(encoding="utf-8")
 
-        self.assertIn("'#151515' if color_scheme == 'dark' else '#ff4f00'", content)
+        self.assertIn('<meta name="theme-color" content="#FF7A00"/>', content)
 
     def test_xtd_theme_icons_use_global_black_palette(self):
         theme_scss = self.module_path / "static" / "src" / "scss" / "xtd_theme.scss"

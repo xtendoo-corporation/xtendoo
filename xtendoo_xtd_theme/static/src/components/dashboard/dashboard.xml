@@ -16,6 +16,7 @@
                         </div>
                         <div t-if="canEditLayout" class="d-flex align-items-center gap-2">
                             <t t-if="editingLayout">
+                                <span t-if="isLayoutDirty" class="badge rounded-pill text-bg-warning">Cambios sin guardar</span>
                                 <button class="btn btn-light rounded-pill px-4 py-2" t-on-click="cancelLayoutEdition">
                                     Cancelar
                                 </button>
@@ -64,11 +65,14 @@
                             </div>
                         </div>
                     </div>
-                    <div t-else="" class="row g-4 mb-5">
+                    <div t-else="" class="row g-4 mb-5"
+                         t-on-dragover="onBlocksDragOver"
+                         t-on-drop="onBlocksDrop"
+                         t-on-dragend="onBlockDragEnd">
                         <t t-foreach="dashboardBlocks" t-as="block" t-key="block.key">
                             <t t-if="block.component === 'single_kpi'">
                                 <t t-set="kpiKey" t-value="block.config &amp;&amp; block.config.kpi_key"/>
-                                <div t-if="statistics[kpiKey]" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                                <div t-if="statistics[kpiKey]" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                                     <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                                     <div class="card border-0 shadow-sm rounded-dashboard h-100 kpi-card kpi-card--compact cursor-pointer" t-on-click="() => this.onKpiClick(kpiKey)">
                                         <div class="kpi-card__summary">
@@ -109,7 +113,7 @@
                                                             </div>
                                                             <div class="text-end flex-shrink-0">
                                                                 <span class="small fw-bold d-block" t-esc="_formatCurrency(item.amount_total)"/>
-                                                                <span class="x-small text-muted" t-esc="item.invoice_date || item.date_order"/>
+                                                                <span class="x-small text-muted" t-esc="item.date"/>
                                                             </div>
                                                         </div>
                                                     </t>
@@ -120,7 +124,7 @@
                                 </div>
                             </t>
                             <t t-if="block.component === 'main_kpis'">
-                                <div t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                                <div t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                                     <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                                     <div class="d-flex justify-content-between align-items-center mb-4">
                                         <h4 class="fw-bold mb-0">Resumen</h4>
@@ -169,7 +173,7 @@
                                                                         </div>
                                                                         <div class="text-end flex-shrink-0">
                                                                             <span class="small fw-bold d-block" t-esc="_formatCurrency(item.amount_total)"/>
-                                                                            <span class="x-small text-muted" t-esc="item.invoice_date || item.date_order"/>
+                                                                            <span class="x-small text-muted" t-esc="item.date"/>
                                                                         </div>
                                                                     </div>
                                                                 </t>
@@ -182,7 +186,7 @@
                                     </div>
                                 </div>
                             </t>
-                            <div t-if="block.component === 'sales_chart'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <div t-if="block.component === 'sales_chart'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                             <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100 d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -225,7 +229,7 @@
                                 </div>
                             </div>
                         </div>
-                            <div t-if="block.component === 'pending_activities'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <div t-if="block.component === 'pending_activities'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                             <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <h4 class="fw-bold mb-5">Actividades pendientes</h4>
@@ -258,7 +262,7 @@
                                 </button>
                             </div>
                         </div>
-                            <div t-if="block.component === 'top_products'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <div t-if="block.component === 'top_products'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                             <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -307,7 +311,7 @@
                                 </div>
                             </div>
                         </div>
-                            <div t-if="block.component === 'order_status'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                            <div t-if="block.component === 'order_status'" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                             <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                             <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                 <h5 class="fw-bold mb-4">Estado de pedidos</h5>
@@ -333,7 +337,7 @@
                                 </div>
                             </div>
                         </div>
-                             <div t-if="['generic_list', 'generic_calendar', 'generic_kanban'].includes(block.component)" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')">
+                             <div t-if="['generic_list', 'generic_calendar', 'generic_kanban'].includes(block.component)" t-att-class="getBlockClass(block) + (editingLayout ? ' xtd-dashboard-editable-block' : '')" t-att-data-block-key="block.key">
                                 <t t-call="xtendoo_xtd_theme.XtdDashboardBlockEditorControls"/>
                                 <div class="card border-0 shadow-sm rounded-dashboard p-4 h-100">
                                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -416,22 +420,28 @@
     </t>
 
     <t t-name="xtendoo_xtd_theme.XtdDashboardBlockEditorControls">
-        <div t-if="editingLayout" class="xtd-dashboard-block-controls">
-            <span class="fw-bold small text-truncate" t-esc="block.name"/>
+        <div t-if="editingLayout" class="xtd-dashboard-block-controls"
+             draggable="true"
+             title="Arrastra para reordenar"
+             t-on-dragstart="(ev) => this.onBlockDragStart(ev, block)">
+            <span class="xtd-dashboard-block-controls__handle">
+                <i class="fa fa-arrows"/>
+            </span>
+            <span class="xtd-dashboard-block-controls__name" t-esc="block.name"/>
             <div class="xtd-dashboard-block-controls__actions">
-                <button type="button" class="btn btn-light btn-sm" title="Más estrecho" t-on-click.stop.prevent="() => this.resizeDashboardBlock(block, -1)">
-                    <i class="fa fa-chevron-left"/>
+                <button type="button" class="btn btn-light btn-sm" title="Más estrecho"
+                        t-att-disabled="block.size === 'small'"
+                        t-on-click.stop.prevent="() => this.resizeDashboardBlock(block, -1)">
+                    <i class="fa fa-compress"/>
                 </button>
-                <button type="button" class="btn btn-light btn-sm" title="Subir" t-on-click.stop.prevent="() => this.moveDashboardBlock(block, -1)">
-                    <i class="fa fa-chevron-up"/>
+                <button type="button" class="btn btn-light btn-sm" title="Más ancho"
+                        t-att-disabled="block.size === 'full'"
+                        t-on-click.stop.prevent="() => this.resizeDashboardBlock(block, 1)">
+                    <i class="fa fa-expand"/>
                 </button>
-                <button type="button" class="btn btn-light btn-sm" title="Bajar" t-on-click.stop.prevent="() => this.moveDashboardBlock(block, 1)">
-                    <i class="fa fa-chevron-down"/>
-                </button>
-                <button type="button" class="btn btn-light btn-sm" title="Más ancho" t-on-click.stop.prevent="() => this.resizeDashboardBlock(block, 1)">
-                    <i class="fa fa-chevron-right"/>
-                </button>
-                <button type="button" class="btn btn-light btn-sm" t-att-title="block.config?.hidden ? 'Mostrar bloque' : 'Ocultar bloque'" t-on-click.stop.prevent="() => this.toggleBlockHidden(block)">
+                <button type="button" class="btn btn-light btn-sm"
+                        t-att-title="block.config?.hidden ? 'Mostrar bloque' : 'Ocultar bloque'"
+                        t-on-click.stop.prevent="() => this.toggleBlockHidden(block)">
                     <i t-att-class="'fa ' + (block.config?.hidden ? 'fa-eye-slash' : 'fa-eye')"/>
                 </button>
                 <button t-if="block.can_delete" type="button" class="btn btn-light btn-sm text-danger" title="Eliminar bloque" t-on-click.stop.prevent="() => this.deleteCustomBlock(block)">

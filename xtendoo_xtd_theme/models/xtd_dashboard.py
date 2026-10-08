@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, time
+
+import pytz
 from dateutil.relativedelta import relativedelta
-from lxml import etree
 
 from odoo import api, fields, models
 
@@ -128,10 +130,6 @@ class XtdDashboardService(models.AbstractModel):
             "can_edit": use_custom or can_edit_global,
             "can_edit_global": can_edit_global,
             "blocks": [self._format_layout_line(line) for line in layout_lines],
-            "available_blocks": [
-                self._format_block(block)
-                for block in self.env["xtd.dashboard.block"].sudo().search([("active", "=", True)])
-            ],
         }
 
     def _format_layout_line(self, line):
@@ -151,22 +149,6 @@ class XtdDashboardService(models.AbstractModel):
             "action_xmlid": block.action_xmlid,
             "size": line.size or block.default_size,
             "sequence": line.sequence,
-            "can_delete": self._can_delete_block(block),
-            "config": config,
-        }
-
-    def _format_block(self, block):
-        config = self._with_field_labels(block.model_name, block.config or {})
-        return {
-            "block_id": block.id,
-            "key": block.technical_key,
-            "name": block.name,
-            "type": block.block_type,
-            "component": block.component,
-            "model": block.model_name,
-            "action_xmlid": block.action_xmlid,
-            "size": block.default_size,
-            "sequence": block.sequence,
             "can_delete": self._can_delete_block(block),
             "config": config,
         }
@@ -212,224 +194,181 @@ class XtdDashboardService(models.AbstractModel):
 
         return self.get_dashboard_layout()
 
-    @api.model
-    def get_dashboard_kpis(self):
-        today = fields.Date.today()
-        first_of_month = today.replace(day=1)
-        first_of_prev_month = (first_of_month - relativedelta(days=1)).replace(day=1)
-
-        kpis = {
-            "sales": {"value": 0, "trend": 0, "previous_value": 0, "label": "Ventas (mes)", "icon": "fa-money"},
-            "orders": {"value": 0, "trend": 0, "previous_value": 0, "label": "Pedidos", "icon": "fa-shopping-bag"},
-            "purchase_orders": {"value": 0, "trend": 0, "previous_value": 0, "label": "Pedidos de compra", "icon": "fa-truck"},
-            "invoiced": {"value": 0, "trend": 0, "previous_value": 0, "label": "Facturado (mes)", "icon": "fa-file-text-o"},
-        }
-
-        # Ventas facturadas (account.move)
-        try:
-            self.env["account.move"].check_access_rights("read")
-            cur_total = self.env["account.move"].read_group([
-                ("move_type", "=", "out_invoice"),
-                ("state", "=", "posted"),
-                ("invoice_date", ">=", first_of_month),
-            ], ["amount_total:sum"], [])
-            prev_total = self.env["account.move"].read_group([
-                ("move_type", "=", "out_invoice"),
-                ("state", "=", "posted"),
-                ("invoice_date", ">=", first_of_prev_month),
-                ("invoice_date", "<", first_of_month),
-            ], ["amount_total:sum"], [])
-            cur_val = cur_total[0]["amount_total"] or 0 if cur_total else 0
-            prev_val = prev_total[0]["amount_total"] or 0 if prev_total else 0
-            kpis["sales"]["value"] = cur_val
-            kpis["sales"]["previous_value"] = prev_val
-            kpis["sales"]["trend"] = self._calc_trend(cur_val, prev_val)
-            kpis["invoiced"]["value"] = cur_val
-            kpis["invoiced"]["previous_value"] = prev_val
-            kpis["invoiced"]["trend"] = self._calc_trend(cur_val, prev_val)
-        except Exception:
-            pass
-
-        # Pedidos de venta (sale.order)
-        try:
-            self.env["sale.order"].check_access_rights("read")
-            cur_count = self.env["sale.order"].search_count([
-                ("state", "in", ["sale", "done"]),
-                ("date_order", ">=", first_of_month),
-            ])
-            prev_count = self.env["sale.order"].search_count([
-                ("state", "in", ["sale", "done"]),
-                ("date_order", ">=", first_of_prev_month),
-                ("date_order", "<", first_of_month),
-            ])
-            kpis["orders"]["value"] = cur_count
-            kpis["orders"]["previous_value"] = prev_count
-            kpis["orders"]["trend"] = self._calc_trend(cur_count, prev_count)
-        except Exception:
-            pass
-
-        # Pedidos de compra (purchase.order)
-        try:
-            self.env["purchase.order"].check_access_rights("read")
-            cur_count = self.env["purchase.order"].search_count([
-                ("state", "in", ["purchase", "done"]),
-                ("date_order", ">=", first_of_month),
-            ])
-            prev_count = self.env["purchase.order"].search_count([
-                ("state", "in", ["purchase", "done"]),
-                ("date_order", ">=", first_of_prev_month),
-                ("date_order", "<", first_of_month),
-            ])
-            kpis["purchase_orders"]["value"] = cur_count
-            kpis["purchase_orders"]["previous_value"] = prev_count
-            kpis["purchase_orders"]["trend"] = self._calc_trend(cur_count, prev_count)
-        except Exception:
-            pass
-
-        return kpis
+    # ------------------------------------------------------------------
+    # Resumen (KPIs, últimos elementos y estado de pedidos) en una sola llamada
+    # ------------------------------------------------------------------
+    _KPI_SPECS = {
+        "sales": {
+            "model": "sale.order",
+            "domain": [("state", "in", ["sale", "done"])],
+            "date_field": "date_order",
+            "is_datetime": True,
+            "amount_field": "amount_total",
+            "currency_field": "currency_id",
+        },
+        "orders": {
+            "model": "sale.order",
+            "domain": [("state", "in", ["draft", "sent"])],
+            "date_field": "date_order",
+            "is_datetime": True,
+            "amount_field": "amount_total",
+            "currency_field": "currency_id",
+        },
+        "purchase_orders": {
+            "model": "purchase.order",
+            "domain": [("state", "in", ["purchase", "done"])],
+            "date_field": "date_order",
+            "is_datetime": True,
+            "amount_field": "amount_total",
+            "currency_field": "currency_id",
+        },
+        "invoiced": {
+            "model": "account.move",
+            "domain": [("move_type", "=", "out_invoice"), ("state", "=", "posted")],
+            "date_field": "invoice_date",
+            "is_datetime": False,
+            "amount_field": "amount_total_signed",
+            "currency_field": "company_currency_id",
+        },
+    }
 
     @api.model
-    def get_sales_chart_data(self):
-        today = fields.Date.today()
-        start_date = (today - relativedelta(years=1)).replace(day=1)
+    def get_dashboard_summary(self, period="month"):
+        """Devuelve todo lo que necesitan las tarjetas KPI del dashboard.
 
-        labels = []
-        sales_by_month = {}
-        orders_by_month = {}
-
-        # Ventas mensuales agrupadas
-        try:
-            self.env["account.move"].check_access_rights("read")
-            sales_data = self.env["account.move"].read_group([
-                ("move_type", "=", "out_invoice"),
-                ("state", "=", "posted"),
-                ("invoice_date", ">=", start_date),
-            ], ["amount_total:sum"], ["invoice_date:month"])
-            for item in sales_data:
-                raw = item["invoice_date:month"]
-                key = raw[:7] if isinstance(raw, str) else f"{raw['year']}-{str(raw['month']).zfill(2)}"
-                sales_by_month[key] = item["amount_total"] or 0
-        except Exception:
-            pass
-
-        # Pedidos mensuales agrupados
-        try:
-            self.env["sale.order"].check_access_rights("read")
-            orders_data = self.env["sale.order"].read_group([
-                ("state", "in", ["sale", "done"]),
-                ("date_order", ">=", start_date),
-            ], [], ["date_order:month"])
-            for item in orders_data:
-                raw = item["date_order:month"]
-                key = raw[:7] if isinstance(raw, str) else f"{raw['year']}-{str(raw['month']).zfill(2)}"
-                orders_by_month[key] = item["__count"] or 0
-        except Exception:
-            pass
-
-        sales_arr = []
-        orders_arr = []
-        current = start_date
-        while current <= today:
-            key = current.strftime("%Y-%m")
-            labels.append(current.strftime("%b %Y"))
-            sales_arr.append(float(sales_by_month.get(key, 0) or 0))
-            orders_arr.append(orders_by_month.get(key, 0) or 0)
-            current += relativedelta(months=1)
-
-        return {
-            "labels": labels,
-            "sales": sales_arr,
-            "orders_count": orders_arr,
-        }
-
-    def _calc_trend(self, current, previous):
-        if not previous:
-            return 100.0 if current else 0.0
-        return round(((current - previous) / previous) * 100, 1)
-
-    @api.model
-    def get_order_status_data(self):
-        try:
-            self.env["sale.order"].check_access_rights("read")
-            data = self.env["sale.order"].read_group(
-                [], ["state"], ["state"]
-            )
-            return [
-                {"state": item["state"], "count": item["__count"]}
-                for item in data
-                if item["__count"] > 0
-            ]
-        except Exception:
-            return []
-
-    @api.model
-    def get_block_builder_options(self, model_name=False):
-        available_models = self.env["ir.model"].get_available_models()
-        model_names = [model["model"] for model in available_models]
-        model_records = self.env["ir.model"].sudo().search([("model", "in", model_names)])
-        model_by_name = {model.model: model for model in model_records}
-        module_names = set()
-        for model in model_records:
-            module_names.update(self._model_module_names(model))
-        module_labels = self._get_module_labels(module_names)
-        preferred_apps = ["sale", "stock", "purchase", "account", "contacts", "crm", "project"]
-        app_options = [
-            {
-                "key": module_name,
-                "name": module_labels.get(module_name) or module_name,
+        Los importes se agregan en servidor y se convierten a la moneda de la
+        empresa activa. Los registros se filtran por las empresas
+        seleccionadas (``allowed_company_ids`` del contexto) mediante las
+        reglas de registro habituales.
+        """
+        if period not in ("week", "month", "year"):
+            period = "month"
+        ranges = self._period_ranges(period)
+        company = self.env.company
+        kpis = {}
+        recent = {}
+        for key, spec in self._KPI_SPECS.items():
+            if spec["model"] not in self.env or not self.env[spec["model"]].has_access("read"):
+                kpis[key] = self._empty_kpi()
+                recent[key] = []
+                continue
+            current = self._kpi_totals(spec, ranges["current"])
+            previous = self._kpi_totals(spec, ranges["previous"])
+            kpis[key] = {
+                "value": current["count"],
+                "previous_value": previous["count"],
+                "total": current["total"],
+                "previous_total": previous["total"],
             }
-            for module_name in sorted(
-                module_names,
-                key=lambda name: (
-                    preferred_apps.index(name) if name in preferred_apps else 1000,
-                    (module_labels.get(name) or name).lower(),
-                ),
-            )
+            recent[key] = self._recent_records(spec, ranges["current"])
+        return {
+            "kpis": kpis,
+            "recent": recent,
+            "order_status": self._order_status(),
+            "currency": company.currency_id.name,
+        }
+
+    @api.model
+    def _empty_kpi(self):
+        return {"value": 0, "previous_value": 0, "total": 0.0, "previous_total": 0.0}
+
+    @api.model
+    def _period_ranges(self, period):
+        """Rangos [inicio, fin) del periodo actual y del anterior, en fechas locales."""
+        today = fields.Date.context_today(self)
+        if period == "week":
+            start = today - relativedelta(days=today.weekday())
+            end = start + relativedelta(days=7)
+            prev_start = start - relativedelta(days=7)
+        elif period == "year":
+            start = today.replace(month=1, day=1)
+            end = start + relativedelta(years=1)
+            prev_start = start - relativedelta(years=1)
+        else:
+            start = today.replace(day=1)
+            end = start + relativedelta(months=1)
+            prev_start = start - relativedelta(months=1)
+        return {"current": (start, end), "previous": (prev_start, start)}
+
+    @api.model
+    def _local_day_start_utc(self, day):
+        """Medianoche local del usuario para ``day``, como datetime UTC naive."""
+        tz = pytz.timezone(self.env.context.get("tz") or self.env.user.tz or "UTC")
+        local_midnight = tz.localize(datetime.combine(day, time.min))
+        return local_midnight.astimezone(pytz.utc).replace(tzinfo=None)
+
+    @api.model
+    def _kpi_period_domain(self, spec, date_range):
+        start, end = date_range
+        if spec["is_datetime"]:
+            start, end = self._local_day_start_utc(start), self._local_day_start_utc(end)
+        return list(spec["domain"]) + [
+            (spec["date_field"], ">=", start),
+            (spec["date_field"], "<", end),
         ]
-        preferred_models = {
-            "sale.order": 0,
-            "stock.picking": 1,
-            "purchase.order": 2,
-            "account.move": 3,
-            "res.partner": 4,
-            "product.template": 5,
-            "product.product": 6,
-            "mail.activity": 7,
-        }
-        sorted_models = sorted(
-            available_models,
-            key=lambda model: (
-                preferred_models.get(model["model"], 1000),
-                model["display_name"].lower(),
-                model["model"],
-            ),
+
+    @api.model
+    def _to_company_currency(self, amount, currency):
+        company = self.env.company
+        if not amount or not currency or currency == company.currency_id:
+            return amount or 0.0
+        return currency._convert(amount, company.currency_id, company, fields.Date.context_today(self))
+
+    @api.model
+    def _kpi_totals(self, spec, date_range):
+        Model = self.env[spec["model"]]
+        groups = Model._read_group(
+            self._kpi_period_domain(spec, date_range),
+            [spec["currency_field"]],
+            ["__count", f"{spec['amount_field']}:sum"],
         )
-        result = {
-            "models": [
-                {
-                    "model": model["model"],
-                    "name": model["display_name"],
-                    "apps": self._model_module_names(model_by_name.get(model["model"])),
-                }
-                for model in sorted_models
-            ],
-            "apps": app_options,
-            "fields": [],
-        }
-        if model_name and model_name in self.env:
-            fields_info = self.env[model_name].fields_get()
-            view_field_names = self._get_model_view_field_names(model_name)
-            supported_types = {"char", "text", "html", "integer", "float", "monetary", "date", "datetime", "boolean", "selection", "many2one"}
-            result["fields"] = [
-                {
-                    "name": field_name,
-                    "string": field.get("string") or field_name,
-                    "type": field.get("type"),
-                }
-                for field_name, field in sorted(fields_info.items(), key=lambda item: item[1].get("string") or item[0])
-                if field_name in view_field_names and field.get("type") in supported_types
-            ]
+        count = 0
+        total = 0.0
+        for currency, group_count, amount in groups:
+            count += group_count
+            total += self._to_company_currency(amount, currency)
+        return {"count": count, "total": total}
+
+    @api.model
+    def _recent_records(self, spec, date_range, limit=3):
+        Model = self.env[spec["model"]]
+        records = Model.search(
+            self._kpi_period_domain(spec, date_range),
+            limit=limit,
+            order=f"{spec['date_field']} desc, id desc",
+        )
+        result = []
+        for record in records:
+            record_date = record[spec["date_field"]]
+            if spec["is_datetime"] and record_date:
+                record_date = fields.Datetime.context_timestamp(self, record_date).date()
+            amount = abs(record[spec["amount_field"]])
+            result.append({
+                "id": record.id,
+                "name": record.display_name,
+                "partner_id": [record.partner_id.id, record.partner_id.display_name] if record.partner_id else False,
+                "amount_total": self._to_company_currency(amount, record[spec["currency_field"]]),
+                "date": fields.Date.to_string(record_date) if record_date else "",
+            })
         return result
+
+    @api.model
+    def _order_status(self):
+        if "sale.order" not in self.env or not self.env["sale.order"].has_access("read"):
+            return []
+        SaleOrder = self.env["sale.order"]
+        labels = dict(SaleOrder._fields["state"]._description_selection(self.env))
+        order = list(labels)
+        groups = [
+            (state, count)
+            for state, count in SaleOrder._read_group([], ["state"], ["__count"])
+            if count
+        ]
+        groups.sort(key=lambda group: order.index(group[0]) if group[0] in order else len(order))
+        return [
+            {"state": state, "count": count, "label": labels.get(state, state)}
+            for state, count in groups
+        ]
 
     @api.model
     def delete_custom_block(self, block_id):
@@ -447,95 +386,8 @@ class XtdDashboardService(models.AbstractModel):
         block.unlink()
         return self.get_dashboard_layout()
 
-    @api.model
-    def create_custom_block(self, vals):
-        user = self.env.user
-        use_custom = bool(user.xtd_use_custom_dashboard)
-        if not use_custom and not user.has_group("base.group_system"):
-            return self.get_dashboard_layout()
-
-        block_type = vals.get("block_type") or "generic_list"
-        if block_type not in {"generic_list", "generic_calendar", "generic_kanban"}:
-            block_type = "generic_list"
-        model_name = vals.get("model")
-        if not model_name or model_name not in self.env:
-            return self.get_dashboard_layout()
-        if not self._can_read_model(model_name):
-            return self.get_dashboard_layout()
-
-        fields_list = vals.get("fields") or ["display_name"]
-        if isinstance(fields_list, str):
-            fields_list = [field.strip() for field in fields_list.split(",") if field.strip()]
-        fields_info = self.env[model_name].fields_get()
-        fields_list = [field for field in fields_list if field in fields_info][:6] or ["display_name"]
-        date_field = vals.get("date_field")
-        if date_field and date_field not in fields_info:
-            date_field = False
-        try:
-            limit = int(vals.get("limit") or 5)
-        except (TypeError, ValueError):
-            limit = 5
-
-        block = self.env["xtd.dashboard.block"].sudo().create({
-            "name": vals.get("name") or self.env["ir.model"].sudo()._get(model_name).name,
-            "technical_key": self._new_custom_block_key(model_name),
-            "block_type": "list" if block_type == "generic_list" else "custom",
-            "component": block_type,
-            "model_name": model_name,
-            "default_size": vals.get("size") or "medium",
-            "config": {
-                "fields": fields_list,
-                "limit": max(1, min(limit, 20)),
-                "domain": vals.get("domain") or [],
-                "date_field": date_field,
-            },
-        })
-
-        layout_model = self.env["xtd.dashboard.user.layout" if use_custom else "xtd.dashboard.layout"].sudo()
-        layout_vals = {
-            "block_id": block.id,
-            "sequence": 999,
-            "size": vals.get("size") or "medium",
-            "visible": True,
-        }
-        if use_custom:
-            layout_vals["user_id"] = user.id
-        layout_model.create(layout_vals)
-        return self.get_dashboard_layout()
-
-    def _new_custom_block_key(self, model_name):
-        base_key = f"custom_{model_name.replace('.', '_')}"
-        key = base_key
-        index = 1
-        Block = self.env["xtd.dashboard.block"].sudo()
-        while Block.search_count([("technical_key", "=", key)]):
-            index += 1
-            key = f"{base_key}_{index}"
-        return key
-
-    def _can_read_model(self, model_name):
-        try:
-            return self.env[model_name].check_access_rights("read", raise_exception=False)
-        except Exception:
-            return False
-
     def _can_delete_block(self, block):
         return bool(block and block.component in {"generic_list", "generic_calendar", "generic_kanban"} and block.technical_key.startswith("custom_"))
-
-    def _model_module_names(self, model):
-        if not model:
-            return []
-        modules = model.modules or ""
-        return [module.strip() for module in modules.split(",") if module.strip()]
-
-    def _get_module_labels(self, module_names):
-        if not module_names:
-            return {}
-        modules = self.env["ir.module.module"].sudo().search([("name", "in", list(module_names))])
-        labels = {}
-        for module in modules:
-            labels[module.name] = module.shortdesc or module.summary or module.name
-        return labels
 
     def _with_field_labels(self, model_name, config):
         config = dict(config or {})
@@ -553,20 +405,3 @@ class XtdDashboardService(models.AbstractModel):
         }
         return config
 
-    def _get_model_view_field_names(self, model_name):
-        view_field_names = set()
-        views = self.env["ir.ui.view"].sudo().search([
-            ("model", "=", model_name),
-            ("type", "in", ["list", "form", "kanban", "calendar", "search"]),
-        ])
-        for view in views:
-            try:
-                arch = etree.fromstring(view.arch_db.encode())
-            except Exception:
-                continue
-            view_field_names.update(
-                field_name
-                for field_name in arch.xpath("//field/@name")
-                if field_name
-            )
-        return view_field_names or set(self.env[model_name]._fields)

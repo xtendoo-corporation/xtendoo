@@ -15,11 +15,4 @@ class TestXtdThemeTours(odoo.tests.HttpCase):
         cls.user.write({"password": "xtendoo"})
 
     def test_xtd_theme_backend_tour(self):
-        self.start_tour("/odoo", "xtd_theme_backend_tour", login=self.user.login)
-
-
-
-
-
-
-
+        self.start_tour("/odoo/action-xtendoo_xtd_theme.action_xtd_dashboard", "xtd_theme_backend_tour", login=self.user.login)

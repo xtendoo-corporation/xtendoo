@@ -1,19 +1,71 @@
 import { registry } from "@web/core/registry";
-import { stepUtils } from "@web_tour/tour_utils";
 
 registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
-    url: "/odoo",
+    url: "/odoo/action-xtendoo_xtd_theme.action_xtd_dashboard",
     steps: () => [
-        stepUtils.showAppsMenuItem(),
+        // --- Dashboard: carga, edición, ocultar bloque y aviso de cambios sin guardar
+        { trigger: ".o_xtd_dashboard .kpi-card" },
+        { trigger: ".o_xtd_dashboard button:contains('Editar dashboard')", run: "click" },
+        { trigger: ".xtd-dashboard-block-controls" },
         {
-            trigger: ".o_main_navbar .o_menu_sections",
-        },
-        {
-            trigger: ".o_grid_apps_menu__button",
+            trigger: ".xtd-dashboard-block-controls button[title='Ocultar bloque']",
             run: "click",
         },
+        { trigger: ".xtd-dashboard-block-hidden" },
+        { trigger: ".o_xtd_dashboard .badge:contains('Cambios sin guardar')" },
         {
-            trigger: ".app-menu-container .o-app-menu-list",
+            // Arrastrar el primer bloque a la mitad derecha del tercero: debe
+            // quedar detrás de él y el resto desplazarse.
+            trigger: ".o_xtd_dashboard [data-block-key]",
+            run() {
+                const keys = () => [...document.querySelectorAll(".o_xtd_dashboard [data-block-key]")]
+                    .map((el) => el.dataset.blockKey);
+                const before = keys();
+                const row = document.querySelector(".o_xtd_dashboard [data-block-key]").parentElement;
+                const first = document.querySelector(".o_xtd_dashboard [data-block-key] .xtd-dashboard-block-controls");
+                const target = document.querySelectorAll(".o_xtd_dashboard [data-block-key]")[2];
+                const rect = target.getBoundingClientRect();
+                const dataTransfer = new DataTransfer();
+                const fire = (el, type) => el.dispatchEvent(new DragEvent(type, {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer,
+                    clientX: rect.right - 5,
+                    clientY: rect.top + rect.height / 2,
+                }));
+                fire(first, "dragstart");
+                fire(row, "dragover");
+                fire(row, "drop");
+                fire(first, "dragend");
+                window.__xtdDragBefore = before;
+            },
+        },
+        {
+            trigger: ".o_xtd_dashboard [data-block-key]",
+            run() {
+                const after = [...document.querySelectorAll(".o_xtd_dashboard [data-block-key]")]
+                    .map((el) => el.dataset.blockKey);
+                const before = window.__xtdDragBefore;
+                if (after.join() === before.join()) {
+                    throw new Error("Arrastrar un bloque no ha cambiado el orden.");
+                }
+                if (after[2] !== before[0]) {
+                    throw new Error(`El bloque arrastrado debía quedar detrás del tercero: ${after}`);
+                }
+            },
+        },
+        { trigger: ".o_xtd_dashboard button:contains('Cancelar')", run: "click" },
+        { trigger: ".modal .btn-primary", run: "click" },
+        { trigger: ".o_xtd_dashboard:not(:has(.xtd-dashboard-block-controls))" },
+        // --- Ajustes: el tema de la pestaña activa y de la navbar
+        {
+            trigger: ".o_main_navbar",
+            run() {
+                const menuService = odoo.__WOWL_DEBUG__.root.env.services.menu;
+                menuService.selectMenu(
+                    menuService.getApps().find((app) => app.xmlid === "base.menu_administration")
+                );
+            },
         },
         {
             trigger: "body",
@@ -27,8 +79,7 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
             },
         },
         {
-            trigger: '.app-menu-container a[data-menu-xmlid="base.menu_administration"]',
-            run: "click",
+            trigger: ".o_base_settings_view",
         },
         {
             trigger: ".o_base_settings_view .settings_tab .tab.selected",
@@ -51,7 +102,7 @@ registry.category("web_tour.tours").add("xtd_theme_backend_tour", {
                 if (activeTabStyle.color !== "rgb(74, 8, 35)") {
                     throw new Error("La pestaña activa de Ajustes debe usar texto borgoña Xtd.");
                 }
-                if (!activeTabStyle.boxShadow.includes("255, 79, 0")) {
+                if (!activeTabStyle.boxShadow.includes("244, 87, 0")) {
                     throw new Error("La pestaña activa de Ajustes debe resaltar con el acento naranja Xtd.");
                 }
 
