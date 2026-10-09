@@ -133,6 +133,8 @@ class TestPortalHttp(HttpCase, PortalCommon):
         match = re.search(r'portal\.css\?v=([0-9a-f]{10})', html)
         self.assertTrue(match, "stylesheet URL must carry a content version")
         self.assertIn("portal.js?v=" + match.group(1), html)
+        self.assertIn("apple-touch-icon.png?v=" + match.group(1), html)
+        self.assertIn("manifest.webmanifest?v=" + match.group(1), html)
         res = self.url_open("/xtendoo_hr_attendance_mobile_portal/static/src/css/portal.css?v=" + match.group(1))
         self.assertEqual(res.status_code, 200)
 
@@ -143,5 +145,8 @@ class TestPortalHttp(HttpCase, PortalCommon):
         data = res.json()
         self.assertEqual(data["display"], "standalone")
         self.assertEqual(data["theme_color"], "#f45700")
+        self.assertEqual(data["id"], "/fichaje")
+        self.assertIn("no-cache", res.headers["Cache-Control"])
+        self.assertTrue(all("?v=" in icon["src"] for icon in data["icons"]))
         for icon in data["icons"]:
             self.assertEqual(self.url_open(icon["src"]).status_code, 200)

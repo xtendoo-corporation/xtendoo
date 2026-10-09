@@ -15,10 +15,16 @@ PAGE_SIZE = 20
 
 @functools.lru_cache(maxsize=1)
 def _assets_version():
-    """Hash of the static CSS/JS: appended to their URLs so phones never keep
-    serving a stale stylesheet after an update (cache busting)."""
+    """Hash of the static CSS/JS/icons: appended to their URLs so phones never
+    keep serving a stale stylesheet or app icon after an update."""
     digest = hashlib.sha1()
-    for path in ("static/src/css/portal.css", "static/src/js/portal.js"):
+    for path in (
+        "static/src/css/portal.css",
+        "static/src/js/portal.js",
+        "static/img/icon-192.png",
+        "static/img/icon-512.png",
+        "static/img/apple-touch-icon.png",
+    ):
         with file_open(f"xtendoo_hr_attendance_mobile_portal/{path}", "rb") as handle:
             digest.update(handle.read())
     return digest.hexdigest()[:10]
@@ -192,10 +198,14 @@ class MobilePortal(http.Controller):
     @http.route("/fichaje/manifest.webmanifest", type="http", auth="public",
                 methods=["GET"], sitemap=False)
     def manifest(self, **kw):
+        self._set_lang(request.env.company)
         base = "/xtendoo_hr_attendance_mobile_portal/static/img"
+        v = _assets_version()
+        name = request.env._("Time clock")
         manifest = {
-            "name": request.env._("Time clock"),
-            "short_name": request.env._("Time clock"),
+            "id": "/fichaje",
+            "name": name,
+            "short_name": name,
             "start_url": "/fichaje",
             "scope": "/fichaje",
             "display": "standalone",
@@ -203,12 +213,13 @@ class MobilePortal(http.Controller):
             "background_color": "#ffffff",
             "theme_color": "#f45700",
             "icons": [
-                {"src": f"{base}/icon-192.png", "sizes": "192x192", "type": "image/png"},
-                {"src": f"{base}/icon-512.png", "sizes": "512x512", "type": "image/png"},
-                {"src": f"{base}/icon-512.png", "sizes": "512x512",
+                {"src": f"{base}/icon-192.png?v={v}", "sizes": "192x192", "type": "image/png"},
+                {"src": f"{base}/icon-512.png?v={v}", "sizes": "512x512", "type": "image/png"},
+                {"src": f"{base}/icon-512.png?v={v}", "sizes": "512x512",
                  "type": "image/png", "purpose": "maskable"},
             ],
         }
         response = request.make_json_response(manifest)
         response.headers["Content-Type"] = "application/manifest+json"
+        response.headers["Cache-Control"] = "no-cache"
         return response

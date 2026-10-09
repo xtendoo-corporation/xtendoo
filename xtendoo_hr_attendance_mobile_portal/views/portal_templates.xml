@@ -13,9 +13,9 @@
                 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
                 <meta name="robots" content="noindex, nofollow"/>
                 <title>Fichaje</title>
-                <link rel="manifest" href="/fichaje/manifest.webmanifest"/>
-                <link rel="apple-touch-icon" href="/xtendoo_hr_attendance_mobile_portal/static/img/apple-touch-icon.png"/>
-                <link rel="icon" type="image/png" href="/xtendoo_hr_attendance_mobile_portal/static/img/icon-192.png"/>
+                <link rel="manifest" t-attf-href="/fichaje/manifest.webmanifest?v=#{assets_v}"/>
+                <link rel="apple-touch-icon" t-attf-href="/xtendoo_hr_attendance_mobile_portal/static/img/apple-touch-icon.png?v=#{assets_v}"/>
+                <link rel="icon" type="image/png" t-attf-href="/xtendoo_hr_attendance_mobile_portal/static/img/icon-192.png?v=#{assets_v}"/>
                 <link rel="stylesheet" t-attf-href="/xtendoo_hr_attendance_mobile_portal/static/src/css/portal.css?v=#{assets_v}"/>
             </head>
             <body>
