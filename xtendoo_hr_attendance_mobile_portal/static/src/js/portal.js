@@ -19,6 +19,52 @@
         var status = document.getElementById("mp-status");
         var last = document.getElementById("mp-last");
         var csrf = root.dataset.csrf;
+        var toggle = document.getElementById("mp-loc-toggle");
+        var hint = document.getElementById("mp-loc-hint");
+        var STORE_KEY = "mp_share_location";
+        var permission = "prompt";
+
+        function loadPref() {
+            try {
+                return window.localStorage.getItem(STORE_KEY) !== "0";
+            } catch (e) {
+                return true;
+            }
+        }
+
+        function savePref(value) {
+            try {
+                window.localStorage.setItem(STORE_KEY, value ? "1" : "0");
+            } catch (e) { /* private mode: keep it for this page only */ }
+        }
+
+        function renderHint() {
+            var key = "loc-off";
+            if (toggle.checked) {
+                key = permission === "denied" ? "loc-blocked"
+                    : permission === "granted" ? "loc-granted" : "loc-on";
+            }
+            hint.textContent = t(key);
+            hint.className = "mp-hint" + (toggle.checked && permission === "denied" ? " mp-warn" : "");
+        }
+
+        toggle.checked = loadPref();
+        toggle.addEventListener("change", function () {
+            savePref(toggle.checked);
+            renderHint();
+        });
+        // Read-only query of the permission state; it never triggers a prompt.
+        if (navigator.permissions && navigator.permissions.query) {
+            navigator.permissions.query({name: "geolocation"}).then(function (status) {
+                permission = status.state;
+                status.onchange = function () {
+                    permission = status.state;
+                    renderHint();
+                };
+                renderHint();
+            }).catch(function () {});
+        }
+        renderHint();
         var checkedIn = root.dataset.checkedIn === "1";
 
         function say(text, kind) {
@@ -28,9 +74,9 @@
 
         function render() {
             button.textContent = t(checkedIn ? "label-out" : "label-in");
-            button.className = "mp-btn mp-btn-big " + (checkedIn ? "mp-btn-out" : "mp-btn-in");
+            button.className = "mp-btn-round " + (checkedIn ? "mp-btn-out" : "mp-btn-in");
             status.textContent = t(checkedIn ? "status-in" : "status-out");
-            status.className = "mp-status " + (checkedIn ? "mp-in" : "mp-out");
+            status.className = "mp-pill " + (checkedIn ? "mp-in" : "mp-out");
         }
 
         function getPosition() {
@@ -63,9 +109,11 @@
                 return;
             }
             button.disabled = true;
-            say(t("locating"), "info");
+            var share = toggle.checked;
+            say(share ? t("locating") : "", "info");
             var action = checkedIn ? "check_out" : "check_in";
-            getPosition().then(function (geo) {
+            // Sharing off: geolocation is not even requested.
+            (share ? getPosition() : Promise.resolve({status: "declined"})).then(function (geo) {
                 var body = new URLSearchParams();
                 body.set("csrf_token", csrf);
                 body.set("action", action);
@@ -97,7 +145,8 @@
                 var text = t(checkedIn ? "in" : "out");
                 if (!data.geo) {
                     // Be explicit: it was recorded, but without location.
-                    text += ". " + t(result.geo.status === "denied" ? "denied" : "unavailable");
+                    var why = result.geo.status;
+                    text += ". " + t(why === "denied" || why === "declined" ? why : "unavailable");
                     say(text, "warning");
                 } else {
                     say(text, "success");

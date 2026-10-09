@@ -11,7 +11,7 @@ estándar hr.attendance, sin usuario de backend.
 * Historial personal paginado.
 * Manifiesto web para guardar el acceso en la pantalla de inicio.
 """,
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Human Resources/Attendances",
     "author": "Xtendoo",
     "website": "https://www.xtendoo.es",

@@ -83,6 +83,17 @@ class TestPortalPunch(PortalCommon):
         self.assertFalse(att.in_longitude)
         self.assertFalse(att.in_accuracy)
 
+    def test_declined_by_employee_is_flagged_and_stores_no_location(self):
+        att = self.Punch.punch(
+            self.employee, "check_in", geo_status="declined",
+            latitude="37.1", longitude="-5.1", accuracy="5",
+        )
+        self.assertEqual(att.in_location_status, "declined")
+        self.assertFalse(att.in_latitude)
+        self.company.portal_attendance_location_policy = "required"
+        with self.assertRaises(UserError):
+            self.Punch.punch(self.other, "check_in", geo_status="declined")
+
     def test_gps_failures_are_flagged(self):
         for status, expected in (("unavailable", "unavailable"), ("timeout", "unavailable"),
                                  ("unsupported", "unavailable")):

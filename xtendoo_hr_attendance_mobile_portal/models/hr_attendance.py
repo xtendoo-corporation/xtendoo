@@ -4,6 +4,7 @@ LOCATION_STATUS = [
     ("ok", "Obtained from browser (unverified)"),
     ("low_accuracy", "Obtained, low accuracy"),
     ("denied", "Permission denied"),
+    ("declined", "Not shared by the employee"),
     ("unavailable", "Unavailable"),
 ]
 

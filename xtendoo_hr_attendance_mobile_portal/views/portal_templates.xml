@@ -70,6 +70,7 @@
                 <div hidden="hidden" id="mp-i18n">
                     <p data-key="locating">Getting your location…</p>
                     <p data-key="denied">Location permission denied: the punch is recorded without location.</p>
+                    <p data-key="declined">Location sharing is off: the punch is recorded without location.</p>
                     <p data-key="unavailable">Location not available: the punch is recorded without location.</p>
                     <p data-key="in">Check-in recorded</p>
                     <p data-key="out">Check-out recorded</p>
@@ -78,28 +79,54 @@
                     <p data-key="label-out">Check out</p>
                     <p data-key="status-in">You are working</p>
                     <p data-key="status-out">You are off the clock</p>
+                    <p data-key="loc-on">Your browser will ask for permission when you punch.</p>
+                    <p data-key="loc-off">The punch will be recorded without location.</p>
+                    <p data-key="loc-blocked">Location is blocked for this site in your browser settings. Allow it there to share it.</p>
+                    <p data-key="loc-granted">Location allowed in your browser.</p>
                 </div>
-                <p class="mp-employee" t-out="employee.name"/>
-                <p id="mp-status" t-attf-class="mp-status #{'mp-in' if state['checked_in'] else 'mp-out'}">
-                    <t t-if="state['checked_in']">You are working</t>
-                    <t t-else="">You are off the clock</t>
-                </p>
+                <header class="mp-header">
+                    <div class="mp-avatar" t-out="(employee.name or '?')[:1].upper()"/>
+                    <div class="mp-who">
+                        <div class="mp-employee" t-out="employee.name"/>
+                        <div id="mp-status" t-attf-class="mp-pill #{'mp-in' if state['checked_in'] else 'mp-out'}">
+                            <t t-if="state['checked_in']">You are working</t>
+                            <t t-else="">You are off the clock</t>
+                        </div>
+                    </div>
+                </header>
                 <p class="mp-last">
                     <span>Last punch:</span>
                     <strong id="mp-last" t-out="state['last_label'] or '—'"/>
                 </p>
-                <button id="mp-punch" type="button"
-                        t-attf-class="mp-btn mp-btn-big #{'mp-btn-out' if state['checked_in'] else 'mp-btn-in'}">
-                    <t t-if="state['checked_in']">Check out</t>
-                    <t t-else="">Check in</t>
-                </button>
+                <div class="mp-punch-wrap">
+                    <button id="mp-punch" type="button"
+                            t-attf-class="mp-btn-round #{'mp-btn-out' if state['checked_in'] else 'mp-btn-in'}">
+                        <t t-if="state['checked_in']">Check out</t>
+                        <t t-else="">Check in</t>
+                    </button>
+                </div>
                 <p id="mp-message" class="mp-message" role="status" aria-live="polite"/>
-                <p class="mp-privacy" t-out="privacy_text"/>
+                <div class="mp-loc">
+                    <label class="mp-switch-row" for="mp-loc-toggle">
+                        <span class="mp-switch-text">
+                            <div class="mp-switch-title">Share my location when punching</div>
+                            <div id="mp-loc-hint" class="mp-hint"/>
+                        </span>
+                        <span class="mp-switch">
+                            <input type="checkbox" id="mp-loc-toggle" checked="checked"/>
+                            <span class="mp-slider"/>
+                        </span>
+                    </label>
+                    <p class="mp-privacy">
+                        <t t-if="privacy_text" t-out="privacy_text"/>
+                        <t t-else="">Your location is requested only when you press the punch button, and is stored together with the punch to document it. It is not tracked at any other time.</t>
+                    </p>
+                </div>
                 <nav class="mp-nav">
-                    <a href="/fichaje/historial">My history</a>
+                    <a href="/fichaje/historial" class="mp-nav-btn">My history</a>
                     <form method="post" action="/fichaje/salir">
                         <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
-                        <button type="submit" class="mp-link">Log out</button>
+                        <button type="submit" class="mp-nav-btn mp-nav-muted">Log out</button>
                     </form>
                 </nav>
                 <div id="mp-install" class="mp-install" hidden="hidden">

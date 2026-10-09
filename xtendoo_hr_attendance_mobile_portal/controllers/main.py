@@ -26,8 +26,16 @@ class MobilePortal(http.Controller):
     # Helpers
     # ------------------------------------------------------------------
     def _set_lang(self, company):
-        """Public requests carry no user language: use the company's one."""
-        lang = company.sudo().partner_id.lang
+        """Public requests carry no user language: follow the phone's browser
+        language when it is installed, else the company's one."""
+        installed = [code for code, _name in request.env["res.lang"].get_installed()]
+        wanted = request.best_lang
+        lang = None
+        if wanted:
+            lang = wanted if wanted in installed else next(
+                (c for c in installed if c.split("_")[0] == wanted.split("_")[0]), None
+            )
+        lang = lang or company.sudo().partner_id.lang
         if lang and request.env.lang != lang:
             request.update_context(lang=lang)
 

@@ -5,7 +5,7 @@ import pytz
 from odoo import api, models
 from odoo.exceptions import UserError, ValidationError
 
-GEO_STATUSES = {"ok", "denied", "unavailable", "timeout", "unsupported"}
+GEO_STATUSES = {"ok", "denied", "declined", "unavailable", "timeout", "unsupported"}
 MAX_ACCURACY_M = 1_000_000
 
 
@@ -32,7 +32,9 @@ class PortalPunch(models.AbstractModel):
             raise UserError(self.env._("Invalid location data."))
         required = company.portal_attendance_location_policy == "required"
         no_location = {
-            "location_status": "denied" if geo_status == "denied" else "unavailable"
+            "location_status": geo_status
+            if geo_status in ("denied", "declined")
+            else "unavailable"
         }
 
         if geo_status != "ok":

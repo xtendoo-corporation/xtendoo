@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 08:48+0000\n"
-"PO-Revision-Date: 2026-10-09 08:48+0000\n"
+"POT-Creation-Date: 2026-10-09 09:33+0000\n"
+"PO-Revision-Date: 2026-10-09 09:33+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -310,6 +310,18 @@ msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Location allowed in your browser."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid ""
+"Location is blocked for this site in your browser settings. Allow it there "
+"to share it."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
 msgid "Location not available: the punch is recorded without location."
 msgstr ""
 
@@ -333,6 +345,11 @@ msgstr ""
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
 msgid "Location recorded"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Location sharing is off: the punch is recorded without location."
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
@@ -431,6 +448,12 @@ msgid "No punches yet."
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__in_location_status__declined
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__out_location_status__declined
+msgid "Not shared by the employee"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
 #: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__in_location_status__ok
 #: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__out_location_status__ok
 msgid "Obtained from browser (unverified)"
@@ -514,6 +537,11 @@ msgid "Session Hash"
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Share my location when punching"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
 #: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__state
 msgid "State"
 msgstr ""
@@ -521,6 +549,14 @@ msgstr ""
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_search
 msgid "Status"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,help:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_privacy_text
+#: model:ir.model.fields,help:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_privacy_text
+msgid ""
+"Text shown to the employee under the punch button. Leave empty to use the "
+"default notice."
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
@@ -544,6 +580,11 @@ msgstr ""
 msgid ""
 "The location is required to punch, but it could not be obtained. Allow "
 "location access in your browser and try again."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "The punch will be recorded without location."
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
@@ -587,8 +628,12 @@ msgid "You are working"
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
-#. odoo-python
-#: code:addons/xtendoo_hr_attendance_mobile_portal/models/res_company.py:0
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Your browser will ask for permission when you punch."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
 msgid ""
 "Your location is requested only when you press the punch button, and is "
 "stored together with the punch to document it. It is not tracked at any "

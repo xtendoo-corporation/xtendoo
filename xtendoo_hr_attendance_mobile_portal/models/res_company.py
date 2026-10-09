@@ -32,9 +32,6 @@ class ResCompany(models.Model):
     portal_attendance_privacy_text = fields.Text(
         string="Location notice",
         translate=True,
-        default=lambda self: self.env._(
-            "Your location is requested only when you press the punch button, "
-            "and is stored together with the punch to document it. It is not "
-            "tracked at any other time."
-        ),
+        help="Text shown to the employee under the punch button. Leave empty "
+        "to use the default notice.",
     )
