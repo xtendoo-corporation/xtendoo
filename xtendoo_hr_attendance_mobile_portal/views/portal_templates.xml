@@ -120,7 +120,7 @@
                     </label>
                     <p class="mp-privacy">
                         <t t-if="privacy_text" t-out="privacy_text"/>
-                        <t t-else="">Your location is requested when you turn on location sharing and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time.</t>
+                        <t t-else="">Your location is requested when you open this page and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time.</t>
                     </p>
                 </div>
                 <nav class="mp-nav">
@@ -132,11 +132,6 @@
                 </nav>
                 <div id="mp-install" class="mp-install" hidden="hidden">
                     <button id="mp-install-btn" type="button" class="mp-btn mp-btn-secondary" hidden="hidden">Add to home screen</button>
-                    <details>
-                        <summary>How to add it to your home screen</summary>
-                        <p><strong>iPhone (Safari):</strong> tap Share, then “Add to Home Screen”.</p>
-                        <p><strong>Android (Chrome):</strong> open the ⋮ menu, then “Add to Home screen” or “Install app”.</p>
-                    </details>
                 </div>
             </div>
         </t>

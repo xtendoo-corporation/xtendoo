@@ -21,19 +21,6 @@ msgid "<span>Last punch:</span>"
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
-msgid ""
-"<strong>Android (Chrome):</strong> open the ⋮ menu, then “Add to Home "
-"screen” or “Install app”."
-msgstr ""
-
-#. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
-msgid ""
-"<strong>iPhone (Safari):</strong> tap Share, then “Add to Home Screen”."
-msgstr ""
-
-#. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.unauthorized
 msgid "Access not available"
 msgstr ""
@@ -236,10 +223,6 @@ msgstr ""
 msgid "How long an activation link and a device session stay valid."
 msgstr ""
 
-#. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
-msgid "How to add it to your home screen"
-msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__id
@@ -635,7 +618,7 @@ msgstr ""
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
 msgid ""
-"Your location is requested when you turn on location sharing and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time."
+"Your location is requested when you open this page and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time."
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal

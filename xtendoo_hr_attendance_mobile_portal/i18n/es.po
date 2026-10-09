@@ -21,19 +21,6 @@ msgid "<span>Last punch:</span>"
 msgstr "<span>Último fichaje:</span>"
 
 #. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
-msgid ""
-"<strong>Android (Chrome):</strong> open the ⋮ menu, then “Add to Home "
-"screen” or “Install app”."
-msgstr "<strong>Android (Chrome):</strong> abre el menú ⋮ y elige «Añadir a la pantalla de inicio» o «Instalar aplicación»."
-
-#. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
-msgid ""
-"<strong>iPhone (Safari):</strong> tap Share, then “Add to Home Screen”."
-msgstr "<strong>iPhone (Safari):</strong> pulsa Compartir y después «Añadir a pantalla de inicio»."
-
-#. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.unauthorized
 msgid "Access not available"
 msgstr "Acceso no disponible"
@@ -236,10 +223,6 @@ msgstr "Obteniendo tu ubicación…"
 msgid "How long an activation link and a device session stay valid."
 msgstr "Cuánto tiempo siguen siendo válidos un enlace de activación y una sesión de dispositivo."
 
-#. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
-msgid "How to add it to your home screen"
-msgstr "Cómo añadirlo a la pantalla de inicio"
 
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__id
@@ -630,8 +613,8 @@ msgstr "Tu navegador pedirá permiso al fichar."
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
 msgid ""
-"Your location is requested when you turn on location sharing and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time."
-msgstr "Tu ubicación se solicita al activar «Compartir mi ubicación» y al pulsar el botón de fichaje. Solo se guarda junto con el fichaje, para documentarlo. No se rastrea en ningún otro momento."
+"Your location is requested when you open this page and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time."
+msgstr "Tu ubicación se solicita al abrir esta página y al pulsar el botón de fichaje. Solo se guarda junto con el fichaje, para documentarlo. No se rastrea en ningún otro momento."
 
 #. module: xtendoo_hr_attendance_mobile_portal
 #. odoo-python

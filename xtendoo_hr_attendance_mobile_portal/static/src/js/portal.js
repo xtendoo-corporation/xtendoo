@@ -79,18 +79,25 @@
                 askPermission();
             }
         });
-        // Read-only query of the permission state; it never triggers a prompt.
+        // Read-only query of the permission state (it never prompts), then, if
+        // sharing is on and the browser can still ask, ask once on page open.
+        // The reading is only used to trigger the dialog and is discarded.
+        var ready = Promise.resolve();
         if (navigator.permissions && navigator.permissions.query) {
-            navigator.permissions.query({name: "geolocation"}).then(function (status) {
+            ready = navigator.permissions.query({name: "geolocation"}).then(function (status) {
                 permission = status.state;
                 status.onchange = function () {
                     permission = status.state;
                     renderHint();
                 };
-                renderHint();
             }).catch(function () {});
         }
-        renderHint();
+        ready.then(function () {
+            renderHint();
+            if (toggle.checked && permission !== "denied") {
+                askPermission();
+            }
+        });
         var checkedIn = root.dataset.checkedIn === "1";
 
         function say(text, kind) {
@@ -195,13 +202,13 @@
         if (standalone) {
             return;
         }
-        box.hidden = false;
         var btn = document.getElementById("mp-install-btn");
         var deferred = null;
         // Only offered when the browser decides to fire the event.
         window.addEventListener("beforeinstallprompt", function (event) {
             event.preventDefault();
             deferred = event;
+            box.hidden = false;
             btn.hidden = false;
         });
         btn.addEventListener("click", function () {
@@ -209,6 +216,7 @@
                 deferred.prompt();
                 deferred = null;
                 btn.hidden = true;
+                box.hidden = true;
             }
         });
     }
