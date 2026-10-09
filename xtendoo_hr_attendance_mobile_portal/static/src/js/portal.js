@@ -48,10 +48,36 @@
             hint.className = "mp-hint" + (toggle.checked && permission === "denied" ? " mp-warn" : "");
         }
 
+        function askPermission() {
+            // One single reading, triggered by the employee turning the switch
+            // on, only to make the browser show its permission dialog. The
+            // coordinates are discarded: nothing is stored or sent.
+            if (!navigator.geolocation || permission === "granted") {
+                return;
+            }
+            hint.textContent = t("loc-asking");
+            navigator.geolocation.getCurrentPosition(
+                function () {
+                    permission = "granted";
+                    renderHint();
+                },
+                function (err) {
+                    if (err && err.code === 1) {
+                        permission = "denied";
+                    }
+                    renderHint();
+                },
+                {enableHighAccuracy: false, timeout: 10000, maximumAge: 0}
+            );
+        }
+
         toggle.checked = loadPref();
         toggle.addEventListener("change", function () {
             savePref(toggle.checked);
             renderHint();
+            if (toggle.checked) {
+                askPermission();
+            }
         });
         // Read-only query of the permission state; it never triggers a prompt.
         if (navigator.permissions && navigator.permissions.query) {

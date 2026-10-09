@@ -635,9 +635,7 @@ msgstr ""
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
 msgid ""
-"Your location is requested only when you press the punch button, and is "
-"stored together with the punch to document it. It is not tracked at any "
-"other time."
+"Your location is requested when you turn on location sharing and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time."
 msgstr ""
 
 #. module: xtendoo_hr_attendance_mobile_portal
@@ -661,4 +659,9 @@ msgstr ""
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
 msgid "‹ Newer"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Waiting for your browser's permission…"
 msgstr ""

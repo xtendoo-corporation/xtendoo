@@ -82,6 +82,7 @@
                     <p data-key="loc-on">Your browser will ask for permission when you punch.</p>
                     <p data-key="loc-off">The punch will be recorded without location.</p>
                     <p data-key="loc-blocked">Location is blocked for this site in your browser settings. Allow it there to share it.</p>
+                    <p data-key="loc-asking">Waiting for your browser's permission…</p>
                     <p data-key="loc-granted">Location allowed in your browser.</p>
                 </div>
                 <header class="mp-header">
@@ -119,7 +120,7 @@
                     </label>
                     <p class="mp-privacy">
                         <t t-if="privacy_text" t-out="privacy_text"/>
-                        <t t-else="">Your location is requested only when you press the punch button, and is stored together with the punch to document it. It is not tracked at any other time.</t>
+                        <t t-else="">Your location is requested when you turn on location sharing and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time.</t>
                     </p>
                 </div>
                 <nav class="mp-nav">

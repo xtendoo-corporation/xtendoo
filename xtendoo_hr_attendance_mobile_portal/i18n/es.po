@@ -630,10 +630,8 @@ msgstr "Tu navegador pedirá permiso al fichar."
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
 msgid ""
-"Your location is requested only when you press the punch button, and is "
-"stored together with the punch to document it. It is not tracked at any "
-"other time."
-msgstr "Tu ubicación se solicita únicamente al pulsar el botón de fichaje y se guarda junto con el fichaje para documentarlo. No se rastrea en ningún otro momento."
+"Your location is requested when you turn on location sharing and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time."
+msgstr "Tu ubicación se solicita al activar «Compartir mi ubicación» y al pulsar el botón de fichaje. Solo se guarda junto con el fichaje, para documentarlo. No se rastrea en ningún otro momento."
 
 #. module: xtendoo_hr_attendance_mobile_portal
 #. odoo-python
@@ -686,3 +684,8 @@ msgstr "Se cancelará el acceso actual y se generará un nuevo enlace de activac
 #: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__state
 msgid "State"
 msgstr "Estado"
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Waiting for your browser's permission…"
+msgstr "Esperando el permiso de tu navegador…"
