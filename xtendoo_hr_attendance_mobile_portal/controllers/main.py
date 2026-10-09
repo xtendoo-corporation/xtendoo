@@ -1,13 +1,27 @@
+import functools
+import hashlib
 import logging
 
 from odoo import http
 from odoo.exceptions import UserError
 from odoo.http import request
+from odoo.tools import file_open
 
 _logger = logging.getLogger(__name__)
 
 COOKIE_NAME = "xtd_hr_mp"
 PAGE_SIZE = 20
+
+
+@functools.lru_cache(maxsize=1)
+def _assets_version():
+    """Hash of the static CSS/JS: appended to their URLs so phones never keep
+    serving a stale stylesheet after an update (cache busting)."""
+    digest = hashlib.sha1()
+    for path in ("static/src/css/portal.css", "static/src/js/portal.js"):
+        with file_open(f"xtendoo_hr_attendance_mobile_portal/{path}", "rb") as handle:
+            digest.update(handle.read())
+    return digest.hexdigest()[:10]
 
 
 def _no_store(response):
@@ -46,7 +60,9 @@ class MobilePortal(http.Controller):
         return access
 
     def _render(self, template, values=None, status=200):
-        values = dict(values or {}, csrf_token=request.csrf_token())
+        values = dict(
+            values or {}, csrf_token=request.csrf_token(), assets_v=_assets_version()
+        )
         employee = values.get("employee")
         self._set_lang(employee.company_id if employee else request.env.company)
         response = request.render(template, values, status=status)

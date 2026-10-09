@@ -16,13 +16,13 @@
                 <link rel="manifest" href="/fichaje/manifest.webmanifest"/>
                 <link rel="apple-touch-icon" href="/xtendoo_hr_attendance_mobile_portal/static/img/apple-touch-icon.png"/>
                 <link rel="icon" type="image/png" href="/xtendoo_hr_attendance_mobile_portal/static/img/icon-192.png"/>
-                <link rel="stylesheet" href="/xtendoo_hr_attendance_mobile_portal/static/src/css/portal.css"/>
+                <link rel="stylesheet" t-attf-href="/xtendoo_hr_attendance_mobile_portal/static/src/css/portal.css?v=#{assets_v}"/>
             </head>
             <body>
                 <main class="mp-page">
                     <t t-out="0"/>
                 </main>
-                <script src="/xtendoo_hr_attendance_mobile_portal/static/src/js/portal.js" defer="defer"/>
+                <script t-attf-src="/xtendoo_hr_attendance_mobile_portal/static/src/js/portal.js?v=#{assets_v}" defer="defer"/>
             </body>
         </html>
     </template>

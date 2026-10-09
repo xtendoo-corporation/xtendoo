@@ -134,6 +134,15 @@ class TestPortalHttp(HttpCase, PortalCommon):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(self.employee.attendance_state, "checked_out")
 
+    def test_assets_are_cache_busted(self):
+        self._fresh_session()
+        html = self.url_open("/fichaje/activar/x").text
+        match = re.search(r'portal\.css\?v=([0-9a-f]{10})', html)
+        self.assertTrue(match, "stylesheet URL must carry a content version")
+        self.assertIn("portal.js?v=" + match.group(1), html)
+        res = self.url_open("/xtendoo_hr_attendance_mobile_portal/static/src/css/portal.css?v=" + match.group(1))
+        self.assertEqual(res.status_code, 200)
+
     def test_manifest_and_icons(self):
         res = self.url_open("/fichaje/manifest.webmanifest")
         self.assertEqual(res.status_code, 200)
