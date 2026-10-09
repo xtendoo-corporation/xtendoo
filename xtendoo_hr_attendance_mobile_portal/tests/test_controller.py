@@ -142,5 +142,6 @@ class TestPortalHttp(HttpCase, PortalCommon):
         self.assertIn("manifest+json", res.headers["Content-Type"])
         data = res.json()
         self.assertEqual(data["display"], "standalone")
+        self.assertEqual(data["theme_color"], "#f45700")
         for icon in data["icons"]:
             self.assertEqual(self.url_open(icon["src"]).status_code, 200)

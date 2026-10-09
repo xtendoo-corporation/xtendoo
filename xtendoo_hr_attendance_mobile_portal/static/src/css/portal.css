@@ -1,5 +1,5 @@
 :root {
-    --mp-primary: #714b67; --mp-primary-soft: #f1e8ee;
+    --mp-primary: #f45700; --mp-primary-soft: #fde8db;
     --mp-in: #1f8a4c; --mp-in-soft: #e3f4ea;
     --mp-out: #c0392b; --mp-out-soft: #fbe9e7;
     --mp-bg: #f3f0f4; --mp-card: #fff; --mp-text: #1f1b22; --mp-muted: #6b6470; --mp-line: #ece7ee;
@@ -89,9 +89,9 @@ h1 { font-size: 1.35rem; margin: 0 0 12px; }
 
 @media (prefers-color-scheme: dark) {
     :root { --mp-bg: #17131a; --mp-card: #241e27; --mp-text: #eee; --mp-muted: #a99fae; --mp-line: #3a323e;
-        --mp-primary-soft: #3a2a35; --mp-in-soft: #17382a; --mp-out-soft: #43211d; }
+        --mp-primary-soft: #3d2418; --mp-in-soft: #17382a; --mp-out-soft: #43211d; }
     .mp-card { box-shadow: none; }
-    .mp-nav a, .mp-link, .mp-install summary { color: #d9b8d0; }
-    .mp-nav-btn, .mp-btn-secondary { color: #e6d5e1; }
+    .mp-nav a, .mp-link, .mp-install summary { color: #ff8a4a; }
+    .mp-nav-btn, .mp-btn-secondary { color: #ff9c63; }
     .mp-slider { background: #4a414e; }
 }

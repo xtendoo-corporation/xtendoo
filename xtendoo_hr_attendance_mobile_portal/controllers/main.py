@@ -201,7 +201,7 @@ class MobilePortal(http.Controller):
             "display": "standalone",
             "orientation": "portrait",
             "background_color": "#ffffff",
-            "theme_color": "#714b67",
+            "theme_color": "#f45700",
             "icons": [
                 {"src": f"{base}/icon-192.png", "sizes": "192x192", "type": "image/png"},
                 {"src": f"{base}/icon-512.png", "sizes": "512x512", "type": "image/png"},
