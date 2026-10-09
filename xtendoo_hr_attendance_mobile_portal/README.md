@@ -8,7 +8,9 @@ backend. Odoo 19. Depende solo de `hr_attendance` (no requiere `website`).
 2. Ficha del empleado > pestaña **Fichaje móvil** > *Generar enlace de activación*. El enlace se
    muestra una sola vez (en BD solo se guarda su hash). Enviarlo al empleado por el canal que se quiera.
 3. El empleado abre el enlace, pulsa *Activar* y ese dispositivo queda vinculado (cookie `HttpOnly`).
-4. Revocación: botón *Revocar* en la ficha, o menú Asistencias > Configuración > *Accesos de fichaje móvil*.
+4. **Desvincular dispositivo** (p. ej. cambio de móvil): cierra la sesión de ese dispositivo y el MISMO enlace
+   vuelve a funcionar (con la caducidad renovada). **Renovar**: anula el acceso y genera un enlace nuevo.
+5. Revocación: botón *Revocar* en la ficha, o menú Asistencias > Configuración > *Accesos de fichaje móvil*.
    El empleado también puede cerrar sesión desde el portal.
 
 ## Configuración (por empresa)
@@ -17,7 +19,8 @@ Validez del enlace (48 h), validez de la sesión (90 días), política de ubicac
 aviso de ubicación (texto mostrado al empleado).
 
 ## Seguridad
-* Tokens `secrets.token_urlsafe(32)`, guardados como SHA-256, caducidad, un solo uso.
+* Tokens `secrets.token_urlsafe(32)`, guardados como SHA-256, caducidad. El enlace solo sirve para un dispositivo a la vez:
+  mientras haya uno vinculado no se puede reutilizar (salvo que se desvincule).
 * El GET del enlace solo muestra una pantalla de confirmación (los previsualizadores de WhatsApp/correo
   no consumen el enlace); la activación es un POST con CSRF.
 * Escritura (`/fichaje/marcar`, `/fichaje/salir`) con CSRF obligatorio. El empleado sale siempre de la

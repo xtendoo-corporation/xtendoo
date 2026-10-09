@@ -82,7 +82,9 @@ class PortalAccess(models.Model):
         """Exchange a valid, unused activation token for a device session.
 
         Returns ``(access, plain_session_token)`` or ``(None, None)``.
-        The activation token is destroyed on use (single use).
+        While a device is bound the link cannot be used again (state is no
+        longer ``pending``); it becomes usable again only if the device is
+        unlinked (see ``action_unlink_device``).
         """
         if not token or len(token) > 128:
             return None, None
@@ -111,8 +113,6 @@ class PortalAccess(models.Model):
         access.write(
             {
                 "state": "active",
-                "activation_hash": False,
-                "activation_expires": False,
                 "session_hash": _hash(session_token),
                 "session_expires": now + timedelta(days=days),
                 "activated_on": now,
@@ -154,6 +154,32 @@ class PortalAccess(models.Model):
                 "session_hash": False,
             }
         )
+
+    def action_unlink_device(self):
+        """Log the bound device out and make the SAME activation link usable
+        again (with a fresh validity window), e.g. when the employee changes
+        phone. Revoked accesses stay revoked."""
+        now = fields.Datetime.now()
+        for access in self.filtered(lambda a: a.state == "active"):
+            hours = max(access.company_id.portal_attendance_link_hours, 1)
+            access.write(
+                {
+                    "state": "pending",
+                    "session_hash": False,
+                    "session_expires": False,
+                    "activated_on": False,
+                    "device_info": False,
+                    "activation_expires": now + timedelta(hours=hours),
+                }
+            )
+
+    def action_renew(self):
+        """Replace this access: cut the current device/link and issue a new
+        one-time activation link for the same employee."""
+        self.ensure_one()
+        employee = self.employee_id
+        self.action_revoke()
+        return employee.action_portal_generate_link()
 
     @api.autovacuum
     def _gc_accesses(self):
