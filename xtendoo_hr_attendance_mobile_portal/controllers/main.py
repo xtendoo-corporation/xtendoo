@@ -118,16 +118,6 @@ class MobilePortal(http.Controller):
         _logger.info("Mobile punch portal: access %s activated", access.id)
         return response
 
-    @http.route("/fichaje/salir", type="http", auth="public", methods=["POST"],
-                sitemap=False)
-    def logout(self, **kw):
-        access = self._session()
-        if access:
-            access.sudo().action_revoke()
-        response = _no_store(request.redirect("/fichaje", local=True))
-        response.delete_cookie(COOKIE_NAME, path="/fichaje")
-        return response
-
     # ------------------------------------------------------------------
     # Pages
     # ------------------------------------------------------------------

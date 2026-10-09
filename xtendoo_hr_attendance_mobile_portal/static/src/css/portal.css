@@ -60,6 +60,7 @@ h1 { font-size: 1.35rem; margin: 0 0 12px; }
 
 /* Navigation */
 .mp-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 20px 0 0; }
+.mp-nav-center { justify-content: center; }
 .mp-nav form { margin: 0; }
 .mp-nav a, .mp-link { color: var(--mp-primary); background: none; border: 0; font-size: 1rem; padding: 8px 0;
     text-decoration: none; cursor: pointer; }

@@ -354,11 +354,6 @@ msgid ""
 msgstr "Las ubicaciones menos precisas que este valor se marcan como de baja precisión (o se rechazan si la política de ubicación es «obligatoria»)."
 
 #. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
-msgid "Log out"
-msgstr "Cerrar sesión"
-
-#. module: xtendoo_hr_attendance_mobile_portal
 #: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_max_accuracy
 #: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_max_accuracy
 msgid "Maximum accepted accuracy (m)"

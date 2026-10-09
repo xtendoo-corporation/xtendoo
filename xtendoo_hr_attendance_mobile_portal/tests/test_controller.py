@@ -4,7 +4,7 @@ from odoo.tests import HttpCase, tagged
 
 from .common import PortalCommon
 
-CSRF_RE = re.compile(r'name="csrf_token" value="([^"]+)"')
+CSRF_RE = re.compile(r'name="csrf_token" value="([^"]+)"|data-csrf="([^"]+)"')
 GEO = {"geo_status": "ok", "latitude": "37.3891", "longitude": "-5.9845", "accuracy": "15"}
 
 
@@ -19,8 +19,8 @@ class TestPortalHttp(HttpCase, PortalCommon):
     def _csrf(self, url="/fichaje/activar/x"):
         res = self.url_open(url)
         match = CSRF_RE.search(res.text)
-        self.assertTrue(match, "CSRF token missing in form")
-        return match.group(1)
+        self.assertTrue(match, "CSRF token missing in page")
+        return match.group(1) or match.group(2)
 
     def _login(self, employee):
         """Activate through the real HTTP flow; leaves cookies in self.opener."""
@@ -79,7 +79,7 @@ class TestPortalHttp(HttpCase, PortalCommon):
 
     def test_punch_in_out_through_http(self):
         self._login(self.employee)
-        csrf = self._csrf("/fichaje")  # home contains the csrf field in the logout form
+        csrf = self._csrf("/fichaje")  # the home page exposes it in data-csrf
         res = self.url_open("/fichaje/marcar", data={"csrf_token": csrf, "action": "check_in", **GEO})
         self.assertEqual(res.status_code, 200, res.text)
         self.assertTrue(res.json()["checked_in"])
@@ -117,13 +117,6 @@ class TestPortalHttp(HttpCase, PortalCommon):
         res = self.url_open("/fichaje/historial?page=abc&employee_id=%s" % self.other.id)
         self.assertEqual(res.status_code, 200)
         self.assertNotIn("02/01/2020", res.text)
-
-    def test_logout_revokes_session(self):
-        access, _token = self._login(self.employee)
-        csrf = self._csrf("/fichaje")
-        self.url_open("/fichaje/salir", data={"csrf_token": csrf})
-        self.assertEqual(access.state, "revoked")
-        self.assertEqual(self.url_open("/fichaje").status_code, 401)
 
     def test_revoked_session_cannot_punch(self):
         access, _token = self._login(self.employee)

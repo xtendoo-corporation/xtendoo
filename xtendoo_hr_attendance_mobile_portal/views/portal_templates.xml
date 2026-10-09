@@ -123,12 +123,8 @@
                         <t t-else="">Your location is requested when you open this page and when you press the punch button. It is stored only together with the punch, to document it. It is not tracked at any other time.</t>
                     </p>
                 </div>
-                <nav class="mp-nav">
+                <nav class="mp-nav mp-nav-center">
                     <a href="/fichaje/historial" class="mp-nav-btn">My history</a>
-                    <form method="post" action="/fichaje/salir">
-                        <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
-                        <button type="submit" class="mp-nav-btn mp-nav-muted">Log out</button>
-                    </form>
                 </nav>
                 <div id="mp-install" class="mp-install" hidden="hidden">
                     <button id="mp-install-btn" type="button" class="mp-btn mp-btn-secondary" hidden="hidden">Add to home screen</button>
