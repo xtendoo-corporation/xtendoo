@@ -19,7 +19,8 @@ class TestPortalAccess(PortalCommon):
         redeemed, session = self.Access._redeem(token)
         self.assertEqual(redeemed, access)
         self.assertEqual(access.state, "active")
-        again, _ = self.Access._redeem(token)  # a bound link can't be reused
+        self.assertFalse(access.activation_hash)
+        again, _ = self.Access._redeem(token)
         self.assertFalse(again)
 
     def test_redeem_rejects_wrong_and_malformed_tokens(self):
@@ -70,28 +71,6 @@ class TestPortalAccess(PortalCommon):
         self.assertTrue(Attempt._is_blocked(ip))
         self.assertFalse(Attempt._is_blocked("203.0.113.10"))
         self.assertNotIn(ip, Attempt.search([]).mapped("ip_hash"))
-
-    def test_unlink_device_frees_the_same_link(self):
-        access, token = self.Access._create_pending(self.employee)
-        _a, session = self.Access._redeem(token)
-        self.assertFalse(self.Access._redeem(token)[0])
-        access.action_unlink_device()
-        self.assertEqual(access.state, "pending")
-        self.assertFalse(self.Access._resolve_session(session))
-        self.assertFalse(access.device_info)
-        again, new_session = self.Access._redeem(token)  # same link, new device
-        self.assertEqual(again, access)
-        self.assertNotEqual(new_session, session)
-        self.assertTrue(self.Access._resolve_session(new_session))
-        self.assertFalse(self.Access._resolve_session(session))
-
-    def test_unlink_does_not_resurrect_revoked_or_expire_rules(self):
-        access, token = self.Access._create_pending(self.employee)
-        self.Access._redeem(token)
-        access.action_revoke()
-        access.action_unlink_device()
-        self.assertEqual(access.state, "revoked")
-        self.assertFalse(self.Access._redeem(token)[0])
 
     def test_renew_replaces_the_access(self):
         access, token = self.Access._create_pending(self.employee)

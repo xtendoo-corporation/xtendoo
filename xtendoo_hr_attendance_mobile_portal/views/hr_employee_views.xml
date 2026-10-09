@@ -23,9 +23,8 @@
                             <field name="activated_on"/>
                             <field name="last_used"/>
                             <field name="device_info"/>
-                            <button name="action_unlink_device" type="object" string="Unlink device"
-                                    icon="fa-chain-broken" invisible="state != 'active'"
-                                    confirm="The device will be logged out. The same activation link will work again. Continue?"/>
+                            <button name="action_revoke" type="object" string="Revoke" icon="fa-ban"
+                                    invisible="state == 'revoked'"/>
                             <button name="action_renew" type="object" string="Renew" icon="fa-refresh"
                                     confirm="The current access will be cancelled and a new activation link will be generated. Continue?"/>
                         </list>

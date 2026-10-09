@@ -656,11 +656,6 @@ msgstr "‹ Volver"
 msgid "‹ Newer"
 msgstr "‹ Más recientes"
 
-#. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_list
-msgid "Unlink device"
-msgstr "Desvincular dispositivo"
 
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
@@ -668,11 +663,6 @@ msgstr "Desvincular dispositivo"
 msgid "Renew"
 msgstr "Renovar"
 
-#. module: xtendoo_hr_attendance_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
-#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_list
-msgid "The device will be logged out. The same activation link will work again. Continue?"
-msgstr "Se cerrará la sesión del dispositivo. El mismo enlace de activación volverá a funcionar. ¿Continuar?"
 
 #. module: xtendoo_hr_attendance_mobile_portal
 #: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
