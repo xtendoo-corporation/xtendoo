@@ -4,6 +4,7 @@ from odoo import _, models
 from odoo.exceptions import UserError
 from odoo.fields import Command
 from odoo.tools.float_utils import float_compare, float_is_zero
+from odoo.tools.misc import format_date
 
 
 class SaleOrder(models.Model):
@@ -111,14 +112,53 @@ class SaleOrder(models.Model):
             skip_sms=True,
         ).button_validate()
         if picking.state not in ("done", "cancel"):
+            expired_lots = self._get_expired_lots_from_result(result)
+            if expired_lots:
+                lots_detail = "\n".join(
+                    "- %(product)s, lote %(lot)s (caducó el %(date)s)"
+                    % {
+                        "product": lot.product_id.display_name,
+                        "lot": lot.name,
+                        "date": format_date(self.env, lot.expiration_date)
+                        if lot.expiration_date
+                        else _("fecha desconocida"),
+                    }
+                    for lot in expired_lots
+                )
+                raise UserError(
+                    _(
+                        "No se puede validar la entrega %(picking)s porque "
+                        "contiene productos caducados:\n%(lots)s\n\n"
+                        "Cambie el lote por uno en vigor y vuelva a intentarlo.",
+                        picking=picking.display_name,
+                        lots=lots_detail,
+                    )
+                )
             raise UserError(
                 _(
                     "No se pudo validar la entrega %(picking)s. "
-                    "Resultado devuelto: %(result)s.",
+                    "Revísela manualmente (puede requerir una confirmación "
+                    "adicional).",
                     picking=picking.display_name,
-                    result=result,
                 )
             )
+
+    def _get_expired_lots_from_result(self, result):
+        """Devuelve los lotes caducados si `button_validate` devolvió el
+        asistente de confirmación de caducidad de product_expiry."""
+        if (
+            isinstance(result, dict)
+            and result.get("res_model") == "expiry.picking.confirmation"
+        ):
+            lot_commands = result.get("context", {}).get("default_lot_ids") or []
+            lot_ids = [
+                lot_id
+                for command in lot_commands
+                if command[0] == Command.SET
+                for lot_id in command[2]
+            ]
+            return self.env["stock.lot"].browse(lot_ids).exists()
+        return self.env["stock.lot"]
 
     def _set_move_quantity_to_order_demand(self, move):
         demand = move.product_uom_qty

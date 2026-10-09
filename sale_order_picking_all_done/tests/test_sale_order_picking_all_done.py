@@ -152,3 +152,15 @@ class TestSaleOrderPickingAllDone(TransactionCase):
         self.assertEqual(order.invoice_ids, first_invoice)
         self.assertEqual(len(order.invoice_ids), 1)
         self.assertEqual(order.invoice_ids.state, "posted")
+
+    def test_expired_lots_are_extracted_from_wizard_result(self):
+        product = self._create_stockable_product("Producto caducado test")
+        lot = self._create_lot(product, "LOTE-CADUCADO")
+        result = {
+            "res_model": "expiry.picking.confirmation",
+            "context": {"default_lot_ids": [(6, 0, [lot.id])]},
+        }
+        order = self.env["sale.order"]
+        self.assertEqual(order._get_expired_lots_from_result(result), lot)
+        self.assertFalse(order._get_expired_lots_from_result({"res_model": "x"}))
+        self.assertFalse(order._get_expired_lots_from_result(True))
