@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="portal_access_view_list" model="ir.ui.view">
+        <field name="name">hr.attendance.portal.access.list</field>
+        <field name="model">hr.attendance.portal.access</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" decoration-muted="state == 'revoked' or is_expired">
+                <field name="employee_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state"/>
+                <field name="is_expired"/>
+                <field name="activation_expires" optional="hide"/>
+                <field name="session_expires" optional="hide"/>
+                <field name="activated_on"/>
+                <field name="last_used"/>
+                <field name="device_info"/>
+                <button name="action_revoke" type="object" string="Revoke" icon="fa-ban"
+                        invisible="state == 'revoked'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="portal_access_view_search" model="ir.ui.view">
+        <field name="name">hr.attendance.portal.access.search</field>
+        <field name="model">hr.attendance.portal.access</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <filter name="active" string="Active" domain="[('state', '=', 'active')]"/>
+                <filter name="pending" string="Pending" domain="[('state', '=', 'pending')]"/>
+                <filter name="revoked" string="Revoked" domain="[('state', '=', 'revoked')]"/>
+                <group>
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="portal_access_action" model="ir.actions.act_window">
+        <field name="name">Mobile punch accesses</field>
+        <field name="res_model">hr.attendance.portal.access</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_portal_access"
+              name="Mobile punch accesses"
+              parent="hr_attendance.menu_hr_attendance_configuration"
+              sequence="50"
+              action="portal_access_action"
+              groups="hr_attendance.group_hr_attendance_user"/>
+</odoo>

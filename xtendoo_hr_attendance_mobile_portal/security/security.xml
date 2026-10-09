@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="portal_access_company_rule" model="ir.rule">
+        <field name="name">Mobile punch access: multi-company</field>
+        <field name="model_id" ref="model_hr_attendance_portal_access"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

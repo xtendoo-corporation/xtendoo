@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_mobile_portal" model="ir.ui.view">
+        <field name="name">res.config.settings.form.mobile.portal</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr_attendance.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='kiosk_mode_setting_container']" position="after">
+                <block title="Mobile Punch Portal" name="mobile_portal_setting_container">
+                    <setting string="Mobile punch portal" company_dependent="1"
+                             help="Let employees punch in/out from /fichaje on their phone, without an Odoo account. Requires HTTPS in production.">
+                        <field name="portal_attendance_enabled"/>
+                    </setting>
+                    <setting string="Activation &amp; sessions" company_dependent="1"
+                             invisible="not portal_attendance_enabled"
+                             help="How long an activation link and a device session stay valid.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label class="col-5" for="portal_attendance_link_hours"/>
+                                <field name="portal_attendance_link_hours" class="col-2"/>
+                            </div>
+                            <div class="row">
+                                <label class="col-5" for="portal_attendance_session_days"/>
+                                <field name="portal_attendance_session_days" class="col-2"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting string="Location" company_dependent="1"
+                             invisible="not portal_attendance_enabled"
+                             help="Browser geolocation is requested only when the employee presses the button. It is declared by the device and cannot be considered authentic.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label class="col-5" for="portal_attendance_location_policy"/>
+                                <field name="portal_attendance_location_policy" class="col-7"/>
+                            </div>
+                            <div class="row">
+                                <label class="col-5" for="portal_attendance_max_accuracy"/>
+                                <field name="portal_attendance_max_accuracy" class="col-2"/>
+                            </div>
+                            <div class="mt8">
+                                <label for="portal_attendance_privacy_text"/>
+                                <field name="portal_attendance_privacy_text"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

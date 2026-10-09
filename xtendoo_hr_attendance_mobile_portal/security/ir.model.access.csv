@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_portal_access_officer,hr.attendance.portal.access.officer,model_hr_attendance_portal_access,hr_attendance.group_hr_attendance_officer,1,0,0,0
+access_portal_access_user,hr.attendance.portal.access.user,model_hr_attendance_portal_access,hr_attendance.group_hr_attendance_user,1,1,1,1
+access_portal_attempt_manager,hr.attendance.portal.attempt.manager,model_hr_attendance_portal_attempt,hr_attendance.group_hr_attendance_manager,1,0,0,0

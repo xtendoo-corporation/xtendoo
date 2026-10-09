@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_attendance_view_form_mobile_portal" model="ir.ui.view">
+        <field name="name">hr.attendance.form.mobile.portal</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='in_mode']" position="after">
+                <field name="in_location_status" invisible="in_mode != 'mobile_portal'"/>
+                <field name="in_accuracy" invisible="in_mode != 'mobile_portal' or not in_accuracy"/>
+            </xpath>
+            <xpath expr="//field[@name='out_mode']" position="after">
+                <field name="out_location_status" invisible="out_mode != 'mobile_portal'"/>
+                <field name="out_accuracy" invisible="out_mode != 'mobile_portal' or not out_accuracy"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_attendance_tree_mobile_portal" model="ir.ui.view">
+        <field name="name">hr.attendance.list.mobile.portal</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='in_mode']" position="after">
+                <field name="in_location_status" optional="hide"/>
+                <field name="in_accuracy" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

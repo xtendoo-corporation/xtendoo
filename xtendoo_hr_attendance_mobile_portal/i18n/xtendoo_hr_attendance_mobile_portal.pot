@@ -1,0 +1,619 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* xtendoo_hr_attendance_mobile_portal
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-09 08:48+0000\n"
+"PO-Revision-Date: 2026-10-09 08:48+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "<span>Last punch:</span>"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid ""
+"<strong>Android (Chrome):</strong> open the ⋮ menu, then “Add to Home "
+"screen” or “Install app”."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid ""
+"<strong>iPhone (Safari):</strong> tap Share, then “Add to Home Screen”."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.unauthorized
+msgid "Access not available"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__in_accuracy
+msgid "Accuracy (m) (In)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__out_accuracy
+msgid "Accuracy (m) (Out)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.activate
+msgid "Activate"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.activate
+msgid "Activate this device"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__activated_on
+msgid "Activated On"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.res_config_settings_view_form_mobile_portal
+msgid "Activation & sessions"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__activation_expires
+msgid "Activation Expires"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__activation_hash
+msgid "Activation Hash"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.activation_failed
+msgid "Activation failed"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/hr_employee.py:0
+msgid "Activation link for %s"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_link_hours
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_link_hours
+msgid "Activation link validity (hours)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance_portal_access__state__active
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_search
+msgid "Active"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Add to home screen"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,help:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_enabled
+#: model:ir.model.fields,help:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_enabled
+msgid ""
+"Allow employees of this company to punch in/out from the mobile portal."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.unauthorized
+msgid "Ask your company for a new activation link."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model,name:xtendoo_hr_attendance_mobile_portal.model_hr_attendance
+msgid "Attendance"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.res_config_settings_view_form_mobile_portal
+msgid ""
+"Browser geolocation is requested only when the employee presses the button. "
+"It is declared by the device and cannot be considered authentic."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Check in"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Check out"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Check-in recorded"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Check-out recorded"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model,name:xtendoo_hr_attendance_mobile_portal.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__company_id
+msgid "Company"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model,name:xtendoo_hr_attendance_mobile_portal.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Could not record the punch. Try again."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
+msgid "Created"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__create_uid
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_attempt__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__create_date
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_attempt__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__device_info
+msgid "Device Info"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_session_days
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_session_days
+msgid "Device session validity (days)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__display_name
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__display_name
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_attempt__display_name
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_punch__display_name
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_employee__display_name
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__display_name
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model,name:xtendoo_hr_attendance_mobile_portal.model_hr_employee
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__employee_id
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_search
+msgid "Employee"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
+msgid "Every device of this employee will be logged out. Continue?"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
+msgid "Generate activation link"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Getting your location…"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.res_config_settings_view_form_mobile_portal
+msgid "How long an activation link and a device session stay valid."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "How to add it to your home screen"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__id
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__id
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_attempt__id
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_punch__id
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_employee__id
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__id
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__id
+msgid "ID"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "In progress"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/portal_punch.py:0
+msgid "Invalid action."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/portal_punch.py:0
+msgid "Invalid location data."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_attempt__ip_hash
+msgid "Ip Hash"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__is_expired
+msgid "Is Expired"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__write_uid
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_attempt__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__write_date
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_attempt__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__last_used
+msgid "Last Used"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.res_config_settings_view_form_mobile_portal
+msgid ""
+"Let employees punch in/out from /fichaje on their phone, without an Odoo "
+"account. Requires HTTPS in production."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.res_config_settings_view_form_mobile_portal
+msgid "Location"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Location not available: the punch is recorded without location."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_privacy_text
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_privacy_text
+msgid "Location notice"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Location permission denied: the punch is recorded without location."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_location_policy
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_location_policy
+msgid "Location policy"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "Location recorded"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__in_location_status
+msgid "Location status (In)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__out_location_status
+msgid "Location status (Out)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,help:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_max_accuracy
+#: model:ir.model.fields,help:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_max_accuracy
+msgid ""
+"Locations less accurate than this are flagged as low accuracy (or rejected "
+"when the location policy is 'required')."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "Log out"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_max_accuracy
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_max_accuracy
+msgid "Maximum accepted accuracy (m)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.res_config_settings_view_form_mobile_portal
+msgid "Mobile Punch Portal"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__in_mode__mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__out_mode__mobile_portal
+msgid "Mobile portal"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
+msgid "Mobile punch"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.actions.act_window,name:xtendoo_hr_attendance_mobile_portal.portal_access_action
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_employee__portal_access_ids
+#: model:ir.ui.menu,name:xtendoo_hr_attendance_mobile_portal.menu_portal_access
+msgid "Mobile punch accesses"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_company__portal_attendance_enabled
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_res_config_settings__portal_attendance_enabled
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.res_config_settings_view_form_mobile_portal
+msgid "Mobile punch portal"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model,name:xtendoo_hr_attendance_mobile_portal.model_hr_attendance_portal_access
+msgid "Mobile punch portal access"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model,name:xtendoo_hr_attendance_mobile_portal.model_hr_attendance_portal_attempt
+msgid "Mobile punch portal failed attempt"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model,name:xtendoo_hr_attendance_mobile_portal.model_hr_attendance_portal_punch
+msgid "Mobile punch portal logic"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__in_mode
+msgid "Mode"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "My history"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "No location"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "No punches yet."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__in_location_status__ok
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__out_location_status__ok
+msgid "Obtained from browser (unverified)"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__in_location_status__low_accuracy
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__out_location_status__low_accuracy
+msgid "Obtained, low accuracy"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "Older ›"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance__out_mode
+msgid "Out Mode"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_search
+msgid "Pending"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance_portal_access__state__pending
+msgid "Pending activation"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__in_location_status__denied
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__out_location_status__denied
+msgid "Permission denied"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__res_company__portal_attendance_location_policy__optional
+msgid "Punch anyway, flagging the missing location"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__res_company__portal_attendance_location_policy__required
+msgid "Reject the punch without a valid location"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_list
+msgid "Revoke"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.hr_employee_view_form_mobile_portal
+msgid "Revoke all accesses"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance_portal_access__state__revoked
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_search
+msgid "Revoked"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/hr_employee.py:0
+msgid ""
+"Send this link to the employee (valid until %(date)s). It is shown only once"
+" and works for a single device: %(url)s"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__session_expires
+msgid "Session Expires"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__session_hash
+msgid "Session Hash"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields,field_description:xtendoo_hr_attendance_mobile_portal.field_hr_attendance_portal_access__state
+msgid "State"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.portal_access_view_search
+msgid "Status"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.activation_failed
+msgid ""
+"The link is not valid, has expired or has already been used. Ask your "
+"company for a new one."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/portal_punch.py:0
+msgid ""
+"The location accuracy (%(acc)d m) is not enough. Move to an open area, "
+"enable GPS and try again."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/portal_punch.py:0
+msgid ""
+"The location is required to punch, but it could not be obtained. Allow "
+"location access in your browser and try again."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.unauthorized
+msgid ""
+"This device is not activated, or its access has expired or been revoked."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/controllers/main.py:0
+msgid "Time clock"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.activation_failed
+msgid "Too many failed attempts. Try again in a few minutes."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__in_location_status__unavailable
+#: model:ir.model.fields.selection,name:xtendoo_hr_attendance_mobile_portal.selection__hr_attendance__out_location_status__unavailable
+msgid "Unavailable"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.activate
+msgid ""
+"You are about to link this device to your time clock access. Only continue "
+"if the link was sent to you by your company."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "You are off the clock"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.home
+msgid "You are working"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/res_company.py:0
+msgid ""
+"Your location is requested only when you press the punch button, and is "
+"stored together with the punch to document it. It is not tracked at any "
+"other time."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#. odoo-python
+#: code:addons/xtendoo_hr_attendance_mobile_portal/models/portal_punch.py:0
+msgid ""
+"Your status has changed in the meantime. Please check the screen and try "
+"again."
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "h"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "‹ Back"
+msgstr ""
+
+#. module: xtendoo_hr_attendance_mobile_portal
+#: model_terms:ir.ui.view,arch_db:xtendoo_hr_attendance_mobile_portal.history
+msgid "‹ Newer"
+msgstr ""

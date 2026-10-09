@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Standalone mobile layout: no website, no backend assets. -->
+    <template id="layout" name="Mobile punch portal layout">&lt;!DOCTYPE html&gt;
+        <html lang="es">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+                <meta name="theme-color" content="#714b67"/>
+                <meta name="mobile-web-app-capable" content="yes"/>
+                <meta name="apple-mobile-web-app-capable" content="yes"/>
+                <meta name="apple-mobile-web-app-title" content="Fichaje"/>
+                <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+                <meta name="robots" content="noindex, nofollow"/>
+                <title>Fichaje</title>
+                <link rel="manifest" href="/fichaje/manifest.webmanifest"/>
+                <link rel="apple-touch-icon" href="/xtendoo_hr_attendance_mobile_portal/static/img/apple-touch-icon.png"/>
+                <link rel="icon" type="image/png" href="/xtendoo_hr_attendance_mobile_portal/static/img/icon-192.png"/>
+                <link rel="stylesheet" href="/xtendoo_hr_attendance_mobile_portal/static/src/css/portal.css"/>
+            </head>
+            <body>
+                <main class="mp-page">
+                    <t t-out="0"/>
+                </main>
+                <script src="/xtendoo_hr_attendance_mobile_portal/static/src/js/portal.js" defer="defer"/>
+            </body>
+        </html>
+    </template>
+
+    <template id="unauthorized" name="Mobile punch: no session">
+        <t t-call="xtendoo_hr_attendance_mobile_portal.layout">
+            <div class="mp-card mp-center">
+                <h1>Access not available</h1>
+                <p>This device is not activated, or its access has expired or been revoked.</p>
+                <p>Ask your company for a new activation link.</p>
+            </div>
+        </t>
+    </template>
+
+    <template id="activate" name="Mobile punch: activate device">
+        <t t-call="xtendoo_hr_attendance_mobile_portal.layout">
+            <div class="mp-card mp-center">
+                <h1>Activate this device</h1>
+                <p>You are about to link this device to your time clock access. Only continue if the link was sent to you by your company.</p>
+                <form method="post" action="/fichaje/activar">
+                    <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
+                    <input type="hidden" name="token" t-att-value="token"/>
+                    <button type="submit" class="mp-btn mp-btn-primary">Activate</button>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <template id="activation_failed" name="Mobile punch: activation failed">
+        <t t-call="xtendoo_hr_attendance_mobile_portal.layout">
+            <div class="mp-card mp-center">
+                <h1>Activation failed</h1>
+                <p t-if="blocked">Too many failed attempts. Try again in a few minutes.</p>
+                <p t-else="">The link is not valid, has expired or has already been used. Ask your company for a new one.</p>
+            </div>
+        </t>
+    </template>
+
+    <template id="home" name="Mobile punch: home">
+        <t t-call="xtendoo_hr_attendance_mobile_portal.layout">
+            <div class="mp-card"
+                 id="mp-home"
+                 t-att-data-csrf="csrf_token"
+                 t-att-data-checked-in="'1' if state['checked_in'] else '0'">
+                <div hidden="hidden" id="mp-i18n">
+                    <p data-key="locating">Getting your location…</p>
+                    <p data-key="denied">Location permission denied: the punch is recorded without location.</p>
+                    <p data-key="unavailable">Location not available: the punch is recorded without location.</p>
+                    <p data-key="in">Check-in recorded</p>
+                    <p data-key="out">Check-out recorded</p>
+                    <p data-key="error">Could not record the punch. Try again.</p>
+                    <p data-key="label-in">Check in</p>
+                    <p data-key="label-out">Check out</p>
+                    <p data-key="status-in">You are working</p>
+                    <p data-key="status-out">You are off the clock</p>
+                </div>
+                <p class="mp-employee" t-out="employee.name"/>
+                <p id="mp-status" t-attf-class="mp-status #{'mp-in' if state['checked_in'] else 'mp-out'}">
+                    <t t-if="state['checked_in']">You are working</t>
+                    <t t-else="">You are off the clock</t>
+                </p>
+                <p class="mp-last">
+                    <span>Last punch:</span>
+                    <strong id="mp-last" t-out="state['last_label'] or '—'"/>
+                </p>
+                <button id="mp-punch" type="button"
+                        t-attf-class="mp-btn mp-btn-big #{'mp-btn-out' if state['checked_in'] else 'mp-btn-in'}">
+                    <t t-if="state['checked_in']">Check out</t>
+                    <t t-else="">Check in</t>
+                </button>
+                <p id="mp-message" class="mp-message" role="status" aria-live="polite"/>
+                <p class="mp-privacy" t-out="privacy_text"/>
+                <nav class="mp-nav">
+                    <a href="/fichaje/historial">My history</a>
+                    <form method="post" action="/fichaje/salir">
+                        <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
+                        <button type="submit" class="mp-link">Log out</button>
+                    </form>
+                </nav>
+                <div id="mp-install" class="mp-install" hidden="hidden">
+                    <button id="mp-install-btn" type="button" class="mp-btn mp-btn-secondary" hidden="hidden">Add to home screen</button>
+                    <details>
+                        <summary>How to add it to your home screen</summary>
+                        <p><strong>iPhone (Safari):</strong> tap Share, then “Add to Home Screen”.</p>
+                        <p><strong>Android (Chrome):</strong> open the ⋮ menu, then “Add to Home screen” or “Install app”.</p>
+                    </details>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="history" name="Mobile punch: history">
+        <t t-call="xtendoo_hr_attendance_mobile_portal.layout">
+            <div class="mp-card">
+                <p class="mp-employee" t-out="employee.name"/>
+                <h1>My history</h1>
+                <p t-if="not history['rows']" class="mp-last">No punches yet.</p>
+                <ul class="mp-list">
+                    <li t-foreach="history['rows']" t-as="row" class="mp-row">
+                        <div class="mp-row-date" t-out="row['date']"/>
+                        <div class="mp-row-times">
+                            <span><t t-out="row['check_in']"/> → <t t-out="row['check_out'] or '…'"/></span>
+                            <span t-if="row['open']" class="mp-tag mp-tag-open">In progress</span>
+                            <span t-else="" class="mp-tag"><t t-out="'%.2f' % row['worked']"/> h</span>
+                        </div>
+                        <div class="mp-row-loc">
+                            <t t-set="statuses" t-value="[row['in_status'], row['out_status']]"/>
+                            <t t-if="'ok' in statuses or 'low_accuracy' in statuses">Location recorded</t>
+                            <t t-else="">No location</t>
+                        </div>
+                    </li>
+                </ul>
+                <nav class="mp-nav">
+                    <a t-if="history['page'] &gt; 1" t-attf-href="/fichaje/historial?page=#{history['page'] - 1}">‹ Newer</a>
+                    <span><t t-out="history['page']"/> / <t t-out="history['pages']"/></span>
+                    <a t-if="history['page'] &lt; history['pages']" t-attf-href="/fichaje/historial?page=#{history['page'] + 1}">Older ›</a>
+                </nav>
+                <p class="mp-nav"><a href="/fichaje">‹ Back</a></p>
+            </div>
+        </t>
+    </template>
+</odoo>
