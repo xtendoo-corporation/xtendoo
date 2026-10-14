@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_product_qr" model="ir.actions.report">
+        <field name="name">Código QR</field>
+        <field name="model">product.template</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">xtendoo_encapsulate_companies_qr.report_product_qr</field>
+        <field name="report_file">xtendoo_encapsulate_companies_qr.report_product_qr</field>
+        <field name="print_report_name">'QR - %s' % object.name</field>
+    </record>
+
+    <template id="report_product_qr">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs.filtered(lambda p: p.qr_image)" t-as="o">
+                <div class="page" style="text-align:center; page-break-after: always;">
+                    <h3 t-field="o.name"/>
+                    <img t-att-src="image_data_uri(o.qr_image)" style="width:8cm;height:8cm;"/>
+                    <p t-if="o.default_code" t-field="o.default_code"/>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_qr" model="ir.ui.view">
+        <field name="name">product.template.form.qr</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='inventory']" position="after">
+                <page string="QR" name="qr" invisible="not qr_company_enabled">
+                    <field name="qr_company_enabled" invisible="1"/>
+                    <group>
+                        <group string="Configuración">
+                            <field name="qr_content" placeholder="Por defecto: URL del documento"/>
+                            <div colspan="2">
+                                <button name="action_generate_qr" type="object" string="Generar QR" class="btn-primary"/>
+                                <button name="action_clear_qr" type="object" string="Borrar QR" class="btn-secondary ms-2" invisible="not qr_image"/>
+                                <button name="action_print_qr" type="object" string="Imprimir PDF" class="btn-secondary ms-2" invisible="not qr_image"/>
+                            </div>
+                        </group>
+                        <group string="Documento al escanear">
+                            <field name="qr_document_filename" invisible="1"/>
+                            <field name="qr_document" filename="qr_document_filename"/>
+                        </group>
+                        <group string="Imagen QR">
+                            <field name="qr_image_filename" invisible="1"/>
+                            <field name="qr_image" widget="image" filename="qr_image_filename" nolabel="1" options="{'size': [200, 200]}"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
