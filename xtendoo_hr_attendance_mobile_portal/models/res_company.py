@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ResCompany(models.Model):
@@ -35,3 +35,11 @@ class ResCompany(models.Model):
         help="Text shown to the employee under the punch button. Leave empty "
         "to use the default notice.",
     )
+
+    def write(self, vals):
+        res = super().write(vals)
+        if vals.get("portal_attendance_enabled"):
+            self.env["hr.employee"].sudo().search(
+                [("company_id", "in", self.ids)]
+            )._portal_ensure_link()
+        return res

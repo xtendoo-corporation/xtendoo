@@ -25,6 +25,13 @@
                             </div>
                         </div>
                     </setting>
+                    <setting string="Activation links" company_dependent="1"
+                             invisible="not portal_attendance_enabled"
+                             help="Create the activation link of every employee that has no valid access yet.">
+                        <button name="action_portal_generate_all_links" type="object"
+                                class="btn-link" icon="oi-arrow-right"
+                                string="Generate links for all employees"/>
+                    </setting>
                     <setting string="Location" company_dependent="1"
                              invisible="not portal_attendance_enabled"
                              help="Browser geolocation is requested only when the employee presses the button. It is declared by the device and cannot be considered authentic.">

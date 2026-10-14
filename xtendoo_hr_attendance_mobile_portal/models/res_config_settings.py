@@ -22,3 +22,13 @@ class ResConfigSettings(models.TransientModel):
     portal_attendance_privacy_text = fields.Text(
         related="company_id.portal_attendance_privacy_text", readonly=False
     )
+
+    def action_portal_generate_all_links(self):
+        """Create the activation link of every employee of the company that has
+        no live access (useful when the portal was enabled before this module
+        generated links automatically)."""
+        self.ensure_one()
+        self.env["hr.employee"].sudo().search(
+            [("company_id", "=", self.company_id.id)]
+        )._portal_ensure_link()
+        return {"type": "ir.actions.client", "tag": "soft_reload"}

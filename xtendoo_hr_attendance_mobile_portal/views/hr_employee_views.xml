@@ -10,11 +10,21 @@
                       groups="hr_attendance.group_hr_attendance_user">
                     <div class="mb-3">
                         <button name="action_portal_generate_link" type="object"
-                                class="btn btn-primary me-2" string="Generate activation link"/>
+                                class="btn btn-primary me-2" string="Generate new activation link"/>
+                        <button name="action_portal_send_chat" type="object"
+                                class="btn btn-secondary me-2" icon="fa-comments"
+                                string="Send by chat"/>
                         <button name="action_portal_revoke_all" type="object"
                                 class="btn btn-secondary" string="Revoke all accesses"
                                 confirm="Every device of this employee will be logged out. Continue?"/>
                     </div>
+                    <group>
+                        <field name="portal_url" widget="CopyClipboardChar" readonly="1"/>
+                        <field name="portal_activation_url" widget="CopyClipboardChar" readonly="1"
+                               placeholder="No valid link: generate a new one"/>
+                        <field name="portal_activation_expires" readonly="1"
+                               invisible="not portal_activation_url"/>
+                    </group>
                     <field name="portal_access_ids" readonly="1">
                         <list decoration-muted="state == 'revoked' or is_expired">
                             <field name="create_date" string="Created"/>

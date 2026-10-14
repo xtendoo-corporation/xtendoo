@@ -39,12 +39,30 @@ class PortalAccess(models.Model):
     # Only hashes are stored; the plain tokens are never persisted.
     activation_hash = fields.Char(index=True, copy=False)
     activation_expires = fields.Datetime(copy=False)
+    # Plain token kept only while the link is pending so HR can copy it again;
+    # cleared on redemption/revocation. Visible to attendance users only.
+    activation_token = fields.Char(
+        copy=False, groups="hr_attendance.group_hr_attendance_user"
+    )
+    activation_url = fields.Char(
+        compute="_compute_activation_url",
+        groups="hr_attendance.group_hr_attendance_user",
+    )
     session_hash = fields.Char(index=True, copy=False)
     session_expires = fields.Datetime(copy=False)
     activated_on = fields.Datetime(readonly=True, copy=False)
     last_used = fields.Datetime(readonly=True, copy=False)
     device_info = fields.Char(readonly=True, copy=False)
     is_expired = fields.Boolean(compute="_compute_is_expired")
+
+    @api.depends("activation_token")
+    def _compute_activation_url(self):
+        for access in self:
+            access.activation_url = (
+                f"{access.get_base_url()}/fichaje/activar/{access.activation_token}"
+                if access.activation_token
+                else False
+            )
 
     @api.depends("state", "activation_expires", "session_expires")
     def _compute_is_expired(self):
@@ -71,6 +89,7 @@ class PortalAccess(models.Model):
             {
                 "employee_id": employee.id,
                 "activation_hash": _hash(token),
+                "activation_token": token,
                 "activation_expires": fields.Datetime.now()
                 + timedelta(hours=max(company.portal_attendance_link_hours, 1)),
             }
@@ -112,6 +131,7 @@ class PortalAccess(models.Model):
             {
                 "state": "active",
                 "activation_hash": False,
+                "activation_token": False,
                 "activation_expires": False,
                 "session_hash": _hash(session_token),
                 "session_expires": now + timedelta(days=days),
@@ -151,6 +171,7 @@ class PortalAccess(models.Model):
             {
                 "state": "revoked",
                 "activation_hash": False,
+                "activation_token": False,
                 "session_hash": False,
             }
         )

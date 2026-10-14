@@ -76,10 +76,34 @@ class TestPortalAccess(PortalCommon):
         access, token = self.Access._create_pending(self.employee)
         _a, session = self.Access._redeem(token)
         action = access.action_renew()
-        self.assertEqual(action["tag"], "display_notification")
-        self.assertIn("/fichaje/activar/", action["params"]["message"])
+        self.assertEqual(action["tag"], "soft_reload")
+        self.assertIn(
+            "/fichaje/activar/", self.employee.portal_activation_url
+        )
         self.assertEqual(access.state, "revoked")
         self.assertFalse(self.Access._redeem(token)[0])  # old link is dead
         self.assertFalse(self.Access._resolve_session(session))
         pending = self.employee.portal_access_ids.filtered(lambda a: a.state == "pending")
         self.assertEqual(len(pending), 1)
+
+
+@tagged("post_install", "-at_install")
+class TestActivationUrl(PortalCommon):
+    def test_new_employee_gets_link_and_regenerate_replaces_it(self):
+        self.employee.company_id.portal_attendance_enabled = True
+        employee = self.env["hr.employee"].create(
+            {"name": "Nuevo", "company_id": self.employee.company_id.id}
+        )
+        url = employee.portal_activation_url
+        self.assertIn("/fichaje/activar/", url)
+        employee.action_portal_generate_link()
+        self.assertNotEqual(employee.portal_activation_url, url)
+        self.assertEqual(
+            len(employee.portal_access_ids.filtered(lambda a: a.state == "pending")), 1
+        )
+
+    def test_url_cleared_after_redeem(self):
+        access, token = self.Access._create_pending(self.employee)
+        self.assertTrue(access.activation_url.endswith(token))
+        self.Access._redeem(token)
+        self.assertFalse(access.activation_token)
