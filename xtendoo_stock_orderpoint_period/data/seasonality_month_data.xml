@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seasonality_month_01" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">1</field>
+        <field name="month">1</field>
+        <field name="name">Enero</field>
+    </record>
+    <record id="seasonality_month_02" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">2</field>
+        <field name="month">2</field>
+        <field name="name">Febrero</field>
+    </record>
+    <record id="seasonality_month_03" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">3</field>
+        <field name="month">3</field>
+        <field name="name">Marzo</field>
+    </record>
+    <record id="seasonality_month_04" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">4</field>
+        <field name="month">4</field>
+        <field name="name">Abril</field>
+    </record>
+    <record id="seasonality_month_05" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">5</field>
+        <field name="month">5</field>
+        <field name="name">Mayo</field>
+    </record>
+    <record id="seasonality_month_06" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">6</field>
+        <field name="month">6</field>
+        <field name="name">Junio</field>
+    </record>
+    <record id="seasonality_month_07" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">7</field>
+        <field name="month">7</field>
+        <field name="name">Julio</field>
+    </record>
+    <record id="seasonality_month_08" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">8</field>
+        <field name="month">8</field>
+        <field name="name">Agosto</field>
+    </record>
+    <record id="seasonality_month_09" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">9</field>
+        <field name="month">9</field>
+        <field name="name">Septiembre</field>
+    </record>
+    <record id="seasonality_month_10" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">10</field>
+        <field name="month">10</field>
+        <field name="name">Octubre</field>
+    </record>
+    <record id="seasonality_month_11" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">11</field>
+        <field name="month">11</field>
+        <field name="name">Noviembre</field>
+    </record>
+    <record id="seasonality_month_12" model="stock.orderpoint.seasonality.wizard.month">
+        <field name="sequence">12</field>
+        <field name="month">12</field>
+        <field name="name">Diciembre</field>
+    </record>
+</odoo>

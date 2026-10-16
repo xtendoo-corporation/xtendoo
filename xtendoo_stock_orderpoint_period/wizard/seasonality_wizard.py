@@ -34,10 +34,19 @@ class SeasonalityWizardLine(models.TransientModel):
         digits="Product Unit",
         readonly=True,
     )
+    suggested_max_qty = fields.Float(
+        string="Max qty sugerida",
+        digits="Product Unit",
+        readonly=True,
+    )
     date_start = fields.Date(string="Fecha inicio", readonly=True)
     date_end = fields.Date(string="Fecha fin", readonly=True)
     action_flag = fields.Selection(
-        [("create", "Crear"), ("update", "Actualizar")],
+        [
+            ("create", "Crear"),
+            ("update", "Actualizar"),
+            ("conflict", "Conflicto (se omite)"),
+        ],
         string="Acción",
         readonly=True,
     )
@@ -45,6 +54,8 @@ class SeasonalityWizardLine(models.TransientModel):
         "stock.warehouse.orderpoint",
         string="Orderpoint existente",
         readonly=True,
+        help="Regla que se actualiza, o regla automática con la que solapa "
+        "cuando la acción es 'Conflicto'.",
     )
 
     @api.depends("month")
@@ -151,6 +162,13 @@ class SeasonalityWizard(models.TransientModel):
         help="Se toma por defecto del ajuste de la compañía. "
         "Editable aquí para sobreescribir.",
     )
+    max_margin_pct = fields.Float(
+        string="Margen del máximo (%)",
+        default=50.0,
+        help="El máximo de la regla se calcula como "
+        "mínimo × (1 + margen/100).  Con 0 el máximo coincide con el mínimo "
+        "y cada venta por debajo del mínimo dispararía un pedido pequeño.",
+    )
     target_year = fields.Integer(
         string="Año objetivo",
         required=True,
@@ -181,9 +199,13 @@ class SeasonalityWizard(models.TransientModel):
     # ── Helpers ─────────────────────────────────────────────────────────
     def _get_months(self):
         """Devuelve lista de enteros [1..12] según selección."""
-        if self.all_year or not self.month_ids:
+        if self.all_year:
             return list(range(1, 13))
-        return [int(m.month) for m in self.month_ids]
+        if not self.month_ids:
+            raise UserError(
+                _("Selecciona al menos un mes o marca la opción «Año completo».")
+            )
+        return sorted(int(m.month) for m in self.month_ids)
 
     def _get_products(self):
         """Devuelve recordset de productos a analizar."""
@@ -215,6 +237,9 @@ class SeasonalityWizard(models.TransientModel):
            Las devoluciones POS tienen qty negativa, así que se acumulan
            directamente.
 
+        Solo se cuentan las ventas del almacén seleccionado: pedidos de venta
+        de ese almacén y TPV cuyo tipo de operación pertenece a él.
+
         Retorna: dict  {(product_id, month): qty_in_product_uom}
         """
         result = defaultdict(float)
@@ -241,9 +266,14 @@ class SeasonalityWizard(models.TransientModel):
                     ("product_id", "in", products.ids),
                     ("product_id.is_storable", "=", True),
                 ]
+                # warehouse_id en sale.order lo aporta sale_stock
+                if "warehouse_id" in self.env["sale.order"]._fields:
+                    sol_domain.append(
+                        ("order_id.warehouse_id", "=", self.warehouse_id.id)
+                    )
                 sol_groups = self.env["sale.order.line"]._read_group(
                     sol_domain,
-                    ["product_id", "product_uom"],
+                    ["product_id", "product_uom_id"],
                     ["product_uom_qty:sum", "qty_delivered:sum"],
                 )
                 for product, uom, qty_ordered, qty_delivered in sol_groups:
@@ -268,6 +298,11 @@ class SeasonalityWizard(models.TransientModel):
                     ("order_id.date_order", "<=", dt_end),
                     ("product_id", "in", products.ids),
                     ("product_id.is_storable", "=", True),
+                    (
+                        "order_id.config_id.picking_type_id.warehouse_id",
+                        "=",
+                        self.warehouse_id.id,
+                    ),
                 ]
                 pol_groups = self.env["pos.order.line"]._read_group(
                     pol_domain,
@@ -297,6 +332,23 @@ class SeasonalityWizard(models.TransientModel):
             limit=1,
         )
 
+    def _find_conflicting_orderpoint(self, product, ds, de):
+        """Regla automática que solapa con el período pero no es la misma."""
+        location = self._get_location()
+        OP = self.env["stock.warehouse.orderpoint"]
+        return OP.search(
+            OP._overlap_domain(
+                product.id, location.id, self.company_id.id, ds, de
+            ),
+            limit=1,
+        )
+
+    def _compute_suggested_qtys(self, demand_qty, factor):
+        """(mínimo, máximo) sugeridos para una demanda histórica."""
+        suggested_min = demand_qty * (1.0 + factor / 100.0)
+        suggested_max = suggested_min * (1.0 + self.max_margin_pct / 100.0)
+        return suggested_min, suggested_max
+
     # ── Acción: Calcular preview ────────────────────────────────────────
     def action_compute_preview(self):
         """Calcula la demanda histórica y genera las líneas de preview."""
@@ -316,10 +368,21 @@ class SeasonalityWizard(models.TransientModel):
         for product in products:
             for month in months:
                 qty = demand.get((product.id, month), 0.0)
-                suggested = qty * (1.0 + factor / 100.0)
+                suggested, suggested_max = self._compute_suggested_qtys(qty, factor)
 
                 ds, de = self._month_date_range(self.target_year, month)
                 existing = self._find_existing_orderpoint(product, ds, de)
+                conflict = (
+                    False
+                    if existing
+                    else self._find_conflicting_orderpoint(product, ds, de)
+                )
+                if existing:
+                    action_flag = "update"
+                elif conflict:
+                    action_flag = "conflict"
+                else:
+                    action_flag = "create"
 
                 line_vals.append(
                     {
@@ -329,10 +392,11 @@ class SeasonalityWizard(models.TransientModel):
                         "demand_qty": qty,
                         "factor_pct": factor,
                         "suggested_min_qty": suggested,
+                        "suggested_max_qty": suggested_max,
                         "date_start": ds,
                         "date_end": de,
-                        "action_flag": "update" if existing else "create",
-                        "existing_orderpoint_id": existing.id if existing else False,
+                        "action_flag": action_flag,
+                        "existing_orderpoint_id": (existing or conflict).id or False,
                     }
                 )
 
@@ -371,11 +435,15 @@ class SeasonalityWizard(models.TransientModel):
         location = self._get_location()
         created = 0
         updated = 0
+        skipped = 0
 
         for line in self.line_ids:
+            if line.action_flag == "conflict":
+                skipped += 1
+                continue
             vals = {
                 "product_min_qty": line.suggested_min_qty,
-                "product_max_qty": line.suggested_min_qty,  # max = min por defecto
+                "product_max_qty": line.suggested_max_qty,
             }
 
             if line.action_flag == "update" and line.existing_orderpoint_id:
@@ -400,9 +468,12 @@ class SeasonalityWizard(models.TransientModel):
 
         # Mensaje informativo
         message = _(
-            "Proceso completado: %(created)d reglas creadas, %(updated)d actualizadas.",
+            "Proceso completado: %(created)d reglas creadas, %(updated)d "
+            "actualizadas, %(skipped)d omitidas por solapar con otra regla "
+            "automática.",
             created=created,
             updated=updated,
+            skipped=skipped,
         )
         return {
             "type": "ir.actions.client",
@@ -420,10 +491,19 @@ class SeasonalityWizard(models.TransientModel):
 # ────────────────────────────────────────────────────────────────────────
 #  Modelo auxiliar para selección de meses (Many2many del wizard)
 # ────────────────────────────────────────────────────────────────────────
-class SeasonalityWizardMonth(models.TransientModel):
+class SeasonalityWizardMonth(models.Model):
+    """Meses del año seleccionables en el wizard.
+
+    Es un modelo persistente (no transitorio) cuyos 12 registros se cargan
+    desde ``data/seasonality_month_data.xml``; con un TransientModel el
+    selector aparecía vacío porque nada creaba los registros.
+    """
+
     _name = "stock.orderpoint.seasonality.wizard.month"
     _description = "Mes seleccionable para el wizard de estacionalidad"
     _rec_name = "name"
+    _order = "sequence, id"
 
+    sequence = fields.Integer(default=10)
     month = fields.Char(string="Mes (número)", required=True)
-    name = fields.Char(string="Nombre", required=True)
+    name = fields.Char(string="Nombre", required=True, translate=True)

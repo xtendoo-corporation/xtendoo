@@ -27,6 +27,7 @@
                             options="{'no_create': True}" />
                         <field name="categ_id" options="{'no_create': True}" />
                         <field name="factor_pct" />
+                        <field name="max_margin_pct" />
                         <field name="simulation" />
                     </group>
                 </group>
@@ -39,11 +40,13 @@
                                 <field name="demand_qty" />
                                 <field name="factor_pct" string="Factor (%)" />
                                 <field name="suggested_min_qty" />
+                                <field name="suggested_max_qty" />
                                 <field name="date_start" />
                                 <field name="date_end" />
                                 <field name="action_flag" string="Acción"
                                     decoration-success="action_flag == 'create'"
-                                    decoration-info="action_flag == 'update'" />
+                                    decoration-info="action_flag == 'update'"
+                                    decoration-danger="action_flag == 'conflict'" />
                                 <field name="existing_orderpoint_id"
                                     string="Regla existente" />
                             </list>
