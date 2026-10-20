@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="s_video_overlay" name="Video Overlay">
+        <section class="s_video_overlay pt48 pb48" data-video-src="/web/content/video_ejemplo.mp4" data-snippet="xtendoo_website_video_overlay.s_video_overlay" data-name="Video Overlay">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 mb-4 mb-lg-0 o_text_col">
+                        <h2>Título cautivador aquí</h2>
+                        <p class="lead text-muted">Añade aquí una descripción atractiva. Este texto es complementario a tu vídeo interno de Odoo. Cámbialo por lo que quieras transmitir a tu audiencia.</p>
+                        <a href="#" class="btn btn-primary btn-lg mt-3">Descubrir más</a>
+                    </div>
+                    <div class="col-lg-6 position-relative o_visual_col">
+                        <!-- Wrapper para mantener proporción y dar un look limpio -->
+                        <div class="o_video_wrapper position-relative rounded shadow-lg overflow-hidden" style="aspect-ratio: 16/9; background-color: #000000;">
+                            <!-- El video de fondo mostrará el primer frame automáticamente. Usamos autoplay desactivado -->
+                            <video src="/web/content/video_ejemplo.mp4" class="w-100 h-100 o_video_poster_video" style="object-fit: cover; opacity: 0.7; pointer-events: none;" preload="metadata" muted="muted" playsinline="playsinline"></video>
+
+                            <!-- Capa overlay con el btn play centrado -->
+                            <div class="o_video_overlay_layer position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="pointer-events: none;">
+                                <!-- Botón más pequeño (60px) y sin sombra, color naranja nativo -->
+                                <a href="#" class="o_video_play_btn rounded-circle d-flex justify-content-center align-items-center text-white text-decoration-none" style="width: 60px; height: 60px; pointer-events: auto; background-color: #f97316;">
+                                    <!-- Play Icon alineado ópticamente con tamaño menor (fa-lg en vez de fa-2x) -->
+                                    <i class="fa fa-play fa-lg ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

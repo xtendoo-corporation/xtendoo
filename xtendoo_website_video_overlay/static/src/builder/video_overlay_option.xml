@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="xtendoo_website_video_overlay.VideoOverlayOption">
+    <BuilderRow label.translate="Video URL">
+        <BuilderButton action="'xtendooSelectVideo'" preview="false" title.translate="Seleccionar o subir vídeo">
+            <i class="fa fa-upload me-1"/> Seleccionar vídeo MP4
+        </BuilderButton>
+    </BuilderRow>
+</t>
+
+</templates>
