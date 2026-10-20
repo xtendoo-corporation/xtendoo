@@ -21,7 +21,7 @@ class MailThread(models.AbstractModel):
                 )
             )
 
-            # Check if the model has phone fields (partner, mobile, etc)
+            # Check if the model has phone fields (partner, phone, etc)
             can_send = False
             if has_whatsapp_gateway:
                 # Check if record has valid phone field method
@@ -29,7 +29,7 @@ class MailThread(models.AbstractModel):
                     phone_fields = self._phone_get_number_fields()
                     can_send = bool(phone_fields)
                 # Fallback: check common fields
-                elif any(f in self._fields for f in ["mobile", "phone", "partner_id"]):
+                elif any(f in self._fields for f in ["phone", "partner_id"]):
                     can_send = True
 
             store.add(
@@ -41,7 +41,7 @@ class MailThread(models.AbstractModel):
 
     def _whatsapp_get_channel(self, field_name, gateway):
         """
-        Override to support relational fields like 'partner_id.mobile'.
+        Override to support relational fields like 'partner_id.phone'.
         This allows WhatsApp integration to work with models that don't have
         direct phone fields but have them through relations.
         For direct fields (no dot notation), delegate to super().
@@ -101,8 +101,8 @@ class MailThread(models.AbstractModel):
         """
         Get phone value from field name, supporting dot notation for relational fields.
         Examples:
-        - 'mobile' -> direct field
-        - 'partner_id.mobile' -> relational field
+        - 'phone' -> direct field
+        - 'partner_id.phone' -> relational field
         - 'partner_id.phone' -> relational field
         """
         if not field_name:

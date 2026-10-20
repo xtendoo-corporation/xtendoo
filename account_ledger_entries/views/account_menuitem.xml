@@ -23,7 +23,7 @@
         <field name="name">General Ledger</field>
         <field name="res_model">account.move.line</field>
         <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
-        <field name="view_mode">tree,pivot,graph</field>
+        <field name="view_mode">list,pivot,graph</field>
         <field name="view_id" ref="view_move_line_tree_accounting_ledgers_inherit"/>
     </record>
 
@@ -34,7 +34,7 @@
         <field name="name">Ledger by Partner</field>
         <field name="res_model">account.move.line</field>
         <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
-        <field name="view_mode">tree,pivot,graph</field>
+        <field name="view_mode">list,pivot,graph</field>
         <field name="view_id" ref="view_move_line_tree_accounting_ledgers_inherit"/>
     </record>
 

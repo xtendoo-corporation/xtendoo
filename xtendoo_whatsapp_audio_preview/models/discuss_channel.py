@@ -31,7 +31,7 @@ class DiscussChannel(models.Model):
             {
                 "id": partner.id,
                 "name": partner.display_name,
-                "phone": partner.mobile or partner.phone or partner.phone_sanitized,
+                "phone": partner.phone or partner.phone_sanitized,
             }
             for partner in partners
         ]
@@ -42,10 +42,22 @@ class DiscussChannel(models.Model):
             "whatsapp_odoo_contact_label": odoo_contact_label,
         }
 
-    def _to_store(self, store: Store, fields):
-        result = super()._to_store(store, fields)
-        for channel in self:
-            whatsapp_data = channel._get_whatsapp_phone_preview_data()
-            if whatsapp_data:
-                store.add(channel, whatsapp_data)
-        return result
+    def _to_store_defaults(self, target: Store.Target):
+        # En 19 no se puede llamar a store.add(channel, ...) dentro de _to_store (recursión infinita):
+        # los campos extra se declaran aquí, como hace el core.
+        res = super()._to_store_defaults(target)
+        res += [
+            Store.Attr(
+                "whatsapp_phone",
+                lambda channel: channel._get_whatsapp_phone_preview_data().get("whatsapp_phone") or False,
+            ),
+            Store.Attr(
+                "whatsapp_odoo_contact_label",
+                lambda channel: channel._get_whatsapp_phone_preview_data().get("whatsapp_odoo_contact_label") or False,
+            ),
+            Store.Attr(
+                "whatsapp_partner_matches",
+                lambda channel: channel._get_whatsapp_phone_preview_data().get("whatsapp_partner_matches") or [],
+            ),
+        ]
+        return res

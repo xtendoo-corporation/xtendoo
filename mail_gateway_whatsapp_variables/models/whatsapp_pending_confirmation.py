@@ -261,15 +261,15 @@ class WhatsappPendingConfirmation(models.Model):
             # Determinar el campo de número de teléfono según el modelo
             number_field_name = False
             if self.res_model == 'sale.order':
-                number_field_name = 'partner_id.mobile'
+                number_field_name = 'partner_id.phone'
             elif self.res_model == 'account.move':
-                number_field_name = 'partner_id.mobile'
+                number_field_name = 'partner_id.phone'
             elif self.res_model == 'res.partner':
-                number_field_name = 'mobile'
+                number_field_name = 'phone'
             elif self.res_model == 'pos.order':
-                number_field_name = 'partner_id.mobile'
+                number_field_name = 'partner_id.phone'
             else:
-                number_field_name = 'partner_id.mobile'
+                number_field_name = 'partner_id.phone'
 
             _logger.info(f"📱 Using phone field: {number_field_name}, gateway: {gateway.name}")
             _logger.info(f"📋 Template: {self.confirmation_template_id.name}")

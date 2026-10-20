@@ -11,31 +11,29 @@ patch(Chatter.prototype, {
     sendWhatsapp() {
         const send = async (thread) => {
             // Determine the phone field to use based on model
-            let numberFieldName = "mobile";
+            let numberFieldName = "phone";
 
             // Get the model fields to check what's available
             try {
                 const fieldsInfo = await this.env.services.orm.call(
                     thread.model,
                     "fields_get",
-                    [["mobile", "phone", "partner_id"]],
+                    [["phone", "partner_id"]],
                     {
                         attributes: ["type", "relation"]
                     }
                 );
 
-                // Priority: mobile > phone > partner_id.mobile
-                if (fieldsInfo.mobile) {
-                    numberFieldName = "mobile";
-                } else if (fieldsInfo.phone) {
+                // Priority: phone > partner_id.phone (res.partner.mobile no existe en 19)
+                if (fieldsInfo.phone) {
                     numberFieldName = "phone";
                 } else if (fieldsInfo.partner_id) {
-                    numberFieldName = "partner_id.mobile";
+                    numberFieldName = "partner_id.phone";
                 }
             } catch (error) {
                 console.warn("Could not determine phone field, using default:", error);
-                // Fallback: if model is res.partner use mobile, else use partner_id.mobile
-                numberFieldName = thread.model === "res.partner" ? "mobile" : "partner_id.mobile";
+                // Fallback: if model is res.partner use phone, else use partner_id.phone
+                numberFieldName = thread.model === "res.partner" ? "phone" : "partner_id.phone";
             }
 
             // Try to get available gateways
