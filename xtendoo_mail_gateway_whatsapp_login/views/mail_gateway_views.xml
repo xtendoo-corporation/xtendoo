@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="mail_gateway_form_view_embedded_signup" model="ir.ui.view">
+        <field name="name">mail.gateway.form.inherit.xtendoo.embedded.signup</field>
+        <field name="model">mail.gateway</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.mail_gateway_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button
+                    name="action_open_embedded_signup"
+                    string="Vincular con Meta"
+                    type="object"
+                    class="btn-primary"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+            </xpath>
+            <xpath expr="//field[@name='whatsapp_version']" position="after">
+                <field name="xtendoo_meta_signup_state" invisible="gateway_type != 'whatsapp'" />
+                <field name="xtendoo_meta_app_id" invisible="gateway_type != 'whatsapp'" />
+                <field name="xtendoo_meta_config_id" invisible="gateway_type != 'whatsapp'" />
+                <field
+                    name="xtendoo_meta_app_secret"
+                    password="True"
+                    invisible="gateway_type != 'whatsapp'"
+                />
+            </xpath>
+            <xpath expr="//page[@name='whatsapp']/div" position="inside">
+                <div class="mt16">
+                    <h2>Meta Embedded Signup</h2>
+                    <span>
+                        Usa este bloque para iniciar el flujo oficial de Meta, recibir el
+                        token del system user y rellenar automáticamente el gateway con los
+                        identificadores básicos de WhatsApp Business.
+                    </span>
+                    <group col="2">
+                        <field name="xtendoo_meta_business_id" readonly="1" />
+                        <field name="xtendoo_meta_waba_id" readonly="1" />
+                        <field name="xtendoo_meta_phone_number_id" readonly="1" />
+                        <field name="xtendoo_meta_phone_number" readonly="1" />
+                        <field name="xtendoo_meta_last_error" readonly="1" colspan="2" />
+                        <field name="xtendoo_meta_last_response" readonly="1" colspan="2" />
+                    </group>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Acción de servidor para cargar plantillas predefinidas -->
+    <record id="action_server_load_predefined_templates" model="ir.actions.server">
+        <field name="name">Cargar Plantillas Predefinidas</field>
+        <field name="model_id" ref="mail_gateway_whatsapp.model_mail_gateway" />
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Obtener IDs de los modelos
+sale_order_model = env.ref('sale.model_sale_order').id
+stock_picking_model = env.ref('stock.model_stock_picking').id
+account_move_model = env.ref('account.model_account_move').id
+
+# Plantillas predefinidas con sus variables y botones
+templates_data = [
+    {
+        'name': 'Confirmacion de Pedido',
+        'body': '✅ Hola {{1}}\n\nTu pedido {{2}} ha sido confirmado exitosamente.\n\n📦 Detalles del pedido:\n💰 Total: {{3}}\n📅 Fecha estimada: {{4}}\n\n¡Gracias por tu compra!',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': sale_order_model,
+    },
+    {
+        'name': 'Pedido Confirmado con PDF',
+        'body': '✅ Hola {{1}}\n\nTu pedido {{2}} ha sido confirmado.\n\n📄 Puedes solicitar el PDF con los detalles respondiendo a este mensaje.',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': sale_order_model,
+    },
+    {
+        'name': 'Notificacion de Envio',
+        'body': '🚚 Hola {{1}}\n\nTu pedido {{2}} ha sido enviado.\n\n📋 Informacion de envio:\n📦 Albaran: {{3}}\n📅 Fecha: {{4}}\n\n¡Recibiras tu pedido pronto!',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': stock_picking_model,
+    },
+    {
+        'name': 'Albaran Enviado con PDF',
+        'body': '🚚 Hola {{1}}\n\nTu pedido {{2}} ha sido enviado.\n📦 Albaran: {{3}}\n\n📄 Puedes solicitar el PDF del albaran respondiendo a este mensaje.',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': stock_picking_model,
+    },
+    {
+        'name': 'Factura Disponible',
+        'body': '🧾 Hola {{1}}\n\nTu factura {{2}} ya esta disponible.\n\n💰 Detalles de la factura:\n📊 Importe total: {{3}}\n📅 Fecha de emision: {{4}}\n⏰ Vencimiento: {{5}}\n\nPuedes realizar el pago cuando desees.',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': account_move_model,
+    },
+    {
+        'name': 'Factura Lista con PDF',
+        'body': '🧾 Hola {{1}}\n\nTu factura {{2}} esta lista.\n💰 Total: {{3}}\n\n📄 Puedes solicitar el PDF respondiendo a este mensaje.',
+        'category': 'utility',
+        'language': 'es',
+        'model_id': account_move_model,
+    },
+]
+
+# Obtener todos los gateways de WhatsApp
+gateways = env['mail.gateway'].search([('gateway_type', '=', 'whatsapp')])
+
+if not gateways:
+    raise UserError('No se encontraron gateways de WhatsApp configurados. Por favor, configure al menos un gateway antes de cargar las plantillas.')
+
+created_count = 0
+updated_count = 0
+
+for gateway in gateways:
+    # Primera pasada: crear todas las plantillas
+    for template_data in templates_data:
+        # Buscar si ya existe
+        existing = env['mail.whatsapp.template'].search([
+            ('name', '=', template_data['name']),
+            ('gateway_id', '=', gateway.id),
+            ('language', '=', template_data['language']),
+        ], limit=1)
+
+        # Preparar datos de la plantilla
+        template_vals = {
+            'name': template_data['name'],
+            'body': template_data['body'],
+            'category': template_data['category'],
+            'language': template_data['language'],
+            'model_id': template_data['model_id'],
+            'gateway_id': gateway.id,
+            'state': 'draft',
+        }
+
+        if existing:
+            # Actualizar plantilla existente
+            existing.write(template_vals)
+            template = existing
+            updated_count += 1
+        else:
+            # Crear nueva plantilla
+            template = env['mail.whatsapp.template'].create(template_vals)
+            created_count += 1
+
+# Mostrar resultado
+message = 'Plantillas cargadas correctamente:\n- Creadas: %s\n- Actualizadas: %s' % (created_count, updated_count)
+action = {
+    'type': 'ir.actions.client',
+    'tag': 'display_notification',
+    'params': {
+        'title': 'Plantillas Predefinidas',
+        'message': message,
+        'type': 'success',
+        'sticky': False,
+    }
+}
+        ]]></field>
+    </record>
+
+    <!-- Menú para ejecutar la acción -->
+    <menuitem
+        id="menu_whatsapp_load_templates"
+        name="Cargar Plantillas Predefinidas"
+        parent="menu_whatsapp_root"
+        action="action_server_load_predefined_templates"
+        sequence="20" />
+
+</odoo>

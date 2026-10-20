@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend whatsapp.composer to add attachments -->
+    <record id="whatsapp_composer_form_view_attachments" model="ir.ui.view">
+        <field name="name">whatsapp.composer.form.attachments</field>
+        <field name="model">whatsapp.composer</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.whatsapp_composer_form_view" />
+        <field name="arch" type="xml">
+            <!-- Add attachment fields after body -->
+            <xpath expr="//field[@name='body']" position="after">
+                <separator string="Attachments" />
+
+                <group>
+                    <field name="attachment_ids"
+                        widget="many2many_binary"
+                        string="Attach Files"
+                        help="PDF, images (JPG, PNG), documents, videos, etc."
+                        nolabel="1" />
+                </group>
+                <div class="text-muted" style="font-size: 90%; padding: 8px 0;">
+                    <i class="fa fa-info-circle" />
+                    <span>PDFs are automatically generated for Sale Orders and Invoices. You can
+                        remove them or add more files.</span>
+                </div>
+            </xpath>
+            <!-- Reemplazar el campo template_id por uno con string personalizado -->
+            <xpath expr="//field[@name='template_id']" position="replace">
+                <label for="template_id" string="Selecciona la plantilla" />
+                <field name="template_id" required="is_required_template"
+                    options="{'no_create': True, 'no_open': True}" string="Selecciona la plantilla" />
+            </xpath>
+            <xpath expr="//field[@name='body']" position="before">
+                <label for="body" string="Mensaje de la Plantilla" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Dummy view to overwrite the deleted variables view and avoid crashes during upgrade -->
+    <record id="view_mail_whatsapp_template_form_variables_v2" model="ir.ui.view">
+        <field name="name">mail.whatsapp.template.form.variables.v2.dummy</field>
+        <field name="model">mail.whatsapp.template</field>
+        <field name="inherit_id" ref="mail_gateway_whatsapp.view_mail_whatsapp_template_form" />
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <data />
+        </field>
+    </record>
+</odoo>
