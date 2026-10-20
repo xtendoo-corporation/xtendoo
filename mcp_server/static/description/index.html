@@ -361,7 +361,7 @@
             <div id="crud_ops" class="tab-pane fade show active" role="tabpanel">
                 <h3 style="font-size: 22px; font-weight: 700; color: #1A365D; margin-bottom: 20px; margin-top: 0;">Full CRUD Through Natural Language</h3>
                 <p style="color: #2D3748; line-height: 1.7; margin-bottom: 15px; font-size: 16px;">
-                    Complete data management through conversation, with the same ease as asking questions. 12 built-in tools cover the full lifecycle.
+                    Complete data management through conversation, with the same ease as asking questions. 17 built-in tools cover the full lifecycle, including atomic batch creates and updates and attachment reading and uploading.
                 </p>
                 <ul style="color: #2D3748; line-height: 1.7; margin: 0; padding-left: 20px; font-size: 15px;">
                     <li><strong>Create:</strong> Add new records to any enabled model - customers, products, orders, tasks, and more</li>
@@ -369,6 +369,7 @@
                     <li><strong>Update:</strong> Modify individual fields or update records based on conditions</li>
                     <li><strong>Delete:</strong> Remove records with full respect for Odoo's referential integrity rules</li>
                     <li><strong>Beyond CRUD:</strong> post chatter messages, inspect model fields, call whitelisted business methods (admin opt-in), and fetch binaries/attachments on demand</li>
+                    <li><strong>Attachments:</strong> read a PDF, image or file attached to a record as text, image or a time-limited download link, list a record's attachments, and upload new ones</li>
                     <li><strong>Per-model toggles:</strong> Enable each operation independently for each exposed model</li>
                 </ul>
             </div>
@@ -619,7 +620,7 @@
                     <div style="background-color: #D6E4F0; padding: 30px; border-radius: 16px; height: 100%; box-sizing: border-box;">
                         <h4 style="font-size: 18px; font-weight: 600; color: #1A365D; margin: 0 0 15px;">Requirements</h4>
                         <ul style="color: #2D3748; line-height: 1.7; margin: 0; padding-left: 20px; font-size: 15px;">
-                            <li>Odoo 18.0</li>
+                            <li>Odoo 19.0</li>
                             <li>Python packages: <code>authlib</code> (&ge;1.6.12, &lt;1.7.0), <code>defusedxml</code>, <code>packaging</code></li>
                             <li>Any AI assistant with MCP support</li>
                         </ul>

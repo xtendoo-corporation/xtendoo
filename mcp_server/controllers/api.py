@@ -5,8 +5,7 @@ from typing import Any, Optional, Tuple
 
 import defusedxml.xmlrpc
 
-from odoo import api, http
-from odoo.exceptions import AccessDenied
+from odoo import SUPERUSER_ID, api, http
 from odoo.http import request
 from odoo.service import (
     common as common_service_root,
@@ -15,7 +14,7 @@ from odoo.service import (
 )
 from odoo.tools import config
 
-from odoo.addons.base.controllers.rpc import dumps as odoo_dumps
+from odoo.addons.rpc.controllers.xmlrpc import dumps as odoo_dumps
 
 from . import auth, utils
 from .rate_limiting import (
@@ -233,40 +232,33 @@ class MCPObjectController(http.Controller):
     def _verify_uid_passwd(uid: int, auth_token: Any) -> None:
         """Verify a (uid, password) credential the way core does, or raise.
 
-        Delegates to the ``res.users.check`` classmethod -- the exact call
-        ``model_service_root.dispatch`` makes through ``security.check`` -- so
-        the gate can never accept a credential core would refuse. ``check``
-        opens its own cursor internally (``cls.pool.cursor()``), so it is safe
-        on this ``auth="none"`` route even though the route defaults to
-        ``readonly`` (``odoo/http.py``), and it is ``@ormcache('uid',
-        'passwd')``: core's own call inside dispatch hits the cache, so the
-        second verification costs no password hashing.
+        Runs on an INDEPENDENT read/write cursor, not the request cursor: this
+        ``auth="none"`` route defaults to ``readonly`` (``odoo/http.py``), which
+        is a real replica cursor wherever ``db_replica_host`` is set, and
+        ``_check_uid_passwd`` writes -- ``_check_credentials`` rehashes a
+        deprecated hash through ``_set_encrypted_password``'s UPDATE. On the
+        request cursor that UPDATE raises ``ReadOnlySqlTransaction``, and the
+        controller's blanket ``except`` swallows the retry core's own
+        ``http.py`` handler would perform, so the rehash could never commit and
+        the member would be wedged at 500 forever. ``model_service_root.dispatch``
+        has the same requirement and meets it the same way.
 
-        Under ``test_enable`` the check body runs inlined on the REQUEST
-        cursor instead: ``check``'s internal ``cls.pool.cursor()`` is refused
-        outright when opened from HttpCase's readonly test cursor. Mirrors
-        ``controllers/audit.py``'s test/prod cursor discipline.
+        Under ``test_enable`` the request cursor is used instead: opening a
+        read/write cursor from HttpCase's readonly test cursor is refused
+        outright. Mirrors ``controllers/audit.py``'s test/prod cursor
+        discipline.
 
         Failures propagate untouched -- the caller must not turn a rejected
         credential into anything the caller can distinguish.
         """
         if config["test_enable"]:
-            # Core's ``check`` body on the request cursor: same auth counter,
-            # same active check, same credential verification -- minus the
-            # cursor it cannot open here and the ormcache entry (tests never
-            # reuse a warm one anyway).
-            users = api.Environment(request.env.cr, uid, {})["res.users"]
-            with users._assert_can_auth(user=uid):
-                if not users.env.user.active:
-                    raise AccessDenied()
-                credential = {
-                    "login": users.env.user.login,
-                    "password": auth_token,
-                    "type": "password",
-                }
-                users._check_credentials(credential, {"interactive": False})
+            # sudo: no user is authenticated yet on this auth="none" route.
+            request.env["res.users"].sudo()._check_uid_passwd(uid, auth_token)
             return
-        request.env["res.users"].check(request.env.cr.dbname, uid, auth_token)
+        with request.env.registry.cursor() as cr:
+            api.Environment(cr, SUPERUSER_ID, {})["res.users"]._check_uid_passwd(
+                uid, auth_token
+            )
 
     def _gate_password_credential(self, uid: Any, auth_token: Any) -> None:
         """Apply the MCP access-group gate to a (uid, password) credential.
@@ -285,7 +277,7 @@ class MCPObjectController(http.Controller):
         gate and still authenticate downstream. A uid ``int()`` rejects is left
         to core, which raises on the same conversion.
 
-        ``res.users.check`` is ``@ormcache('uid', 'passwd')``, so core's own
+        ``_check_uid_passwd`` is ``@ormcache('uid', 'passwd')``, so core's own
         call inside dispatch hits the cache -- the second verification costs no
         password hashing.
 

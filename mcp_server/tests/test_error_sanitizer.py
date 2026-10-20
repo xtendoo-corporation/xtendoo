@@ -11,9 +11,11 @@ import time
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+import psycopg2
+
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import common, tagged
-from odoo.tools import mute_logger
+from odoo.tools import exception_to_unicode, mute_logger
 
 from ..controllers import error_sanitizer, rate_limiting, utils
 from ..models.mcp_tools_read import McpToolsRead
@@ -92,6 +94,88 @@ class TestErrorSanitizerUnit(common.TransactionCase):
         self.assertNotIn("email", cleaned)
         # The generic leading line still survives so the message is not empty.
         self.assertIn("duplicate key value", cleaned)
+
+    @mute_logger("odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_sanitize_integrity_error_raw_driver_fallback_is_genericized(self):
+        """Odoo's last-resort raw driver text collapses to the generic message.
+
+        A bare ``IntegrityError`` carries no ``diag.table_name``, so the walk
+        falls back to ``env["base"]``; ``_sql_error_to_message`` is pinned to
+        its own fallback (``exception_to_unicode``) to force the raw branch.
+        """
+        exc = psycopg2.IntegrityError("new row violates check constraint x_chk")
+        self.assertIsNone(exc.diag.table_name)
+        with patch.object(
+            type(self.env["base"]),
+            "_sql_error_to_message",
+            return_value=exception_to_unicode(exc),
+        ):
+            result = error_sanitizer.sanitize_integrity_error(self.env, exc)
+        self.assertEqual(result, error_sanitizer.GENERIC_ERROR_MESSAGE)
+        self.assertNotIn("x_chk", result)
+
+    @mute_logger("odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_sanitize_integrity_error_raw_unique_fallback_is_named(self):
+        """An unattributable unique violation gets the fixed unique message."""
+        exc = psycopg2.errors.UniqueViolation(
+            'duplicate key value violates unique constraint "t_uniq"\n'
+            "DETAIL:  Key (a, b)=(1, 2) already exists."
+        )
+        with patch.object(
+            type(self.env["base"]),
+            "_sql_error_to_message",
+            return_value=exception_to_unicode(exc),
+        ):
+            result = error_sanitizer.sanitize_integrity_error(self.env, exc)
+        self.assertEqual(result, error_sanitizer.UNIQUE_ERROR_MESSAGE)
+
+    @mute_logger("odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_sanitize_integrity_error_translated_message_is_scrubbed(self):
+        """A field-naming message passes through, minus the Detail line."""
+        exc = psycopg2.IntegrityError("duplicate key value")
+        with patch.object(
+            type(self.env["base"]),
+            "_sql_error_to_message",
+            return_value=(
+                "The value for 'email' (Email) already exists.\n\n"
+                "Detail: Key (email)=(victim@example.com) already exists.\n"
+            ),
+        ):
+            result = error_sanitizer.sanitize_integrity_error(self.env, exc)
+        self.assertIn("already exists", result)
+        self.assertNotIn("victim@example.com", result)
+        self.assertNotIn("Detail", result)
+
+    @mute_logger("odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_sanitize_integrity_error_delete_fk_keeps_core_wording(self):
+        """A DELETE-time FK violation keeps Odoo's delete-oriented message.
+
+        Only the INSERT / UPDATE case gets the module's own wording; a delete
+        blocked by a referencing record is exactly what core's text describes.
+        """
+        exc = psycopg2.errors.ForeignKeyViolation(
+            'update or delete on table "res_partner" violates foreign key '
+            'constraint "x_fkey" on table "y"'
+        )
+        with patch.object(
+            type(self.env["base"]),
+            "_sql_error_to_message",
+            return_value="Another model is using the record you are trying to delete.",
+        ):
+            result = error_sanitizer.sanitize_integrity_error(self.env, exc)
+        self.assertIn("trying to delete", result)
+
+    @mute_logger("odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_sanitize_integrity_error_translation_failure_is_genericized(self):
+        """A crash while translating never propagates; the generic text wins."""
+        exc = psycopg2.IntegrityError("duplicate key value")
+        with patch.object(
+            type(self.env["base"]),
+            "_sql_error_to_message",
+            side_effect=RuntimeError("translator broke"),
+        ):
+            result = error_sanitizer.sanitize_integrity_error(self.env, exc)
+        self.assertEqual(result, error_sanitizer.GENERIC_ERROR_MESSAGE)
 
 
 @tagged("much_unit", "post_install", "-at_install")

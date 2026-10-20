@@ -24,7 +24,6 @@ from odoo.tests import common, tagged
 from ..controllers import auth, oauth_server, rate_limiting, utils
 from ..models import ir_http
 from .test_helpers import (
-    UrlOpenCompatMixin,
     create_test_user,
     grant_mcp_access,
     users_groups_field,
@@ -36,7 +35,7 @@ PREFERRED_PROTOCOL_VERSION = "2025-11-25"
 
 
 @tagged("much_unit", "post_install", "-at_install")
-class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
+class TestMcpAccessGroupGate(common.HttpCase):
     """The group gate refuses non-members on every MCP surface."""
 
     def setUp(self):
@@ -224,8 +223,8 @@ class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
     def test_group_side_removal_cuts_off_outstanding_key(self):
         """Removing the user on the GROUP form refuses the existing key too.
 
-        Group-side revocation (``res.groups.write({'users': ...})``) is a
-        different write path than the user-side groups unlink the
+        Group-side revocation (``res.groups.write({'user_ids': ...})``) is a
+        different write path than the user-side ``group_ids`` unlink the
         sibling test exercises; this pins that it also bites immediately at
         credential use time, after the gate warmed on a prior request.
         """
@@ -400,7 +399,7 @@ class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
         """A VALID uid/password whose user is not a member is refused 403.
 
         The proxy's second credential kind. Gated only after core's own
-        ``res.users.check`` verified the password, so reaching this 403
+        ``_check_uid_passwd`` verified the password, so reaching this 403
         requires already holding the credential.
         """
         fault = self._xmlrpc_fault(self.user_nogroup.id, self.password)
@@ -497,12 +496,10 @@ class TestMcpAccessGroupGate(UrlOpenCompatMixin, common.HttpCase):
                 ]
             },
         )
-        # Reached only by implication: group_system is the only group assigned
-        # explicitly; the MCP membership arrives through the implied chain,
-        # which core materializes into the user's groups on write.
-        groups = admin[users_groups_field(self.env)]
-        self.assertIn(self.env.ref("base.group_system"), groups)
-        self.assertIn(self.env.ref("mcp_server.group_mcp_user"), groups)
+        # Reached only by implication: group_system is explicit, the MCP group
+        # is not -- it appears in all_group_ids, never assigned directly.
+        self.assertIn(self.env.ref("base.group_system"), admin.group_ids)
+        self.assertIn(self.env.ref("mcp_server.group_mcp_user"), admin.all_group_ids)
         key = self._mint_key(admin, "Sysadmin Key")
         self.assertEqual(self._post_rpc(key).status_code, 200)
 

@@ -1,4 +1,4 @@
-"""The 18.0.2.0.1 post-migration grants the MCP group by prior activity."""
+"""The 19.0.2.0.1 post-migration grants the MCP group by prior activity."""
 
 import importlib.util
 import os
@@ -13,7 +13,7 @@ _MIGRATION_PATH = os.path.join(
     os.path.dirname(__file__),
     "..",
     "migrations",
-    "18.0.2.0.1",
+    "19.0.2.0.1",
     "post-migrate.py",
 )
 
@@ -21,7 +21,7 @@ _MIGRATION_PATH = os.path.join(
 def _load_migration():
     """Load the post-migrate module by path (migrations/ is not a package)."""
     spec = importlib.util.spec_from_file_location(
-        "mcp_server_post_migrate_18_0_2_0_1", _MIGRATION_PATH
+        "mcp_server_post_migrate_19_0_2_0_1", _MIGRATION_PATH
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -124,22 +124,22 @@ class TestMigrationGrant(common.TransactionCase):
         skipped = spoofable + portal + archived + idle
         for user in granted + skipped:
             self.assertNotIn(
-                self.group, user[users_groups_field(self.env)], f"{user.login} starts without the group"
+                self.group, user.all_group_ids, f"{user.login} starts without the group"
             )
 
-        _load_migration().migrate(self.env.cr, "18.0.2.0.0")
+        _load_migration().migrate(self.env.cr, "19.0.2.0.0")
         self.env.invalidate_all()
 
         for user in granted:
             self.assertIn(
                 self.group,
-                user[users_groups_field(self.env)],
+                user.all_group_ids,
                 f"{user.login} has MCP activity and must be granted",
             )
         for user in skipped:
             self.assertNotIn(
                 self.group,
-                (user.with_context(active_test=False))[users_groups_field(self.env)],
+                (user.with_context(active_test=False)).all_group_ids,
                 f"{user.login} must NOT be granted",
             )
 
@@ -155,13 +155,13 @@ class TestMigrationGrant(common.TransactionCase):
             self._log(user, event_type)
             users[event_type] = user
 
-        _load_migration().migrate(self.env.cr, "18.0.2.0.0")
+        _load_migration().migrate(self.env.cr, "19.0.2.0.0")
         self.env.invalidate_all()
 
         for event_type, user in users.items():
             self.assertIn(
                 self.group,
-                user[users_groups_field(self.env)],
+                user.all_group_ids,
                 f"a {event_type} row must grant the group",
             )
 
@@ -170,7 +170,7 @@ class TestMigrationGrant(common.TransactionCase):
         user = self._user("idem")
         self._mcp_key(user)
         migrate = _load_migration().migrate
-        migrate(self.env.cr, "18.0.2.0.0")
-        migrate(self.env.cr, "18.0.2.0.0")
+        migrate(self.env.cr, "19.0.2.0.0")
+        migrate(self.env.cr, "19.0.2.0.0")
         self.env.invalidate_all()
-        self.assertIn(self.group, user[users_groups_field(self.env)])
+        self.assertIn(self.group, user.all_group_ids)

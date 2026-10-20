@@ -483,6 +483,35 @@ def _utc_datetime_guidance():
     )
 
 
+# Cross-tool workflow guidance for initialize.instructions. Per-tool detail
+# belongs in the tool descriptions; this block only carries what no single
+# description can: which tool to reach for, and the batch-over-loop rule.
+def _usage_guidance():
+    return _(
+        "Usage guidance:\n"
+        "- Discovery: list_models shows the accessible models; get_fields "
+        "describes a model's schema (most relevant fields by default).\n"
+        "- Reads: search_records is the primary tool. Filter with 'domain', "
+        "request only the columns you need with 'fields', and read many known "
+        'records in one call with [["id", "in", ids]] instead of one '
+        "get_record call per ID. Prefer one call with a larger 'limit' over "
+        "many small pages. For counts and per-group totals, use "
+        "aggregate_records instead of listing rows.\n"
+        "- Writes: create_record / update_record / delete_record and "
+        "post_message run as the authenticated user, so Odoo's access rights "
+        "and validations apply. To create many records, or update many "
+        "records (shared values via record_ids + values, or per-record "
+        "values via updates), use create_records / update_records (one "
+        "atomic call) instead of looping single calls. call_model_method "
+        "triggers business actions on models where it is enabled.\n"
+        "- Attachments and binary fields: get_record / search_records return "
+        "binary fields as odoo:// URIs; pass a URI (or an attachment id) to "
+        "read_attachment to get the content (text, image, extracted PDF text "
+        "or a download link). list_record_attachments lists the files "
+        "attached to a record; upload_attachment adds one."
+    )
+
+
 def _one_line(value: str) -> str:
     """Collapse CR/LF in an interpolated value to a single space.
 
@@ -533,6 +562,8 @@ def build_user_context(env: Environment) -> str:
             lines.append(_("- Allowed companies: %(names)s", names=names))
         lines.append("")
         lines.append(_utc_datetime_guidance())
+        lines.append("")
+        lines.append(_usage_guidance())
         return "\n".join(lines)
     except Exception as e:
         _logger.error(f"Error building MCP user context: {e}")

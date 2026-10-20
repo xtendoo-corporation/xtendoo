@@ -86,6 +86,27 @@ def log_mcp_group_denied(user, *, api_key_used):
     )
 
 
+def _seed_default_env(user):
+    """Claim ``transaction.default_env`` before the membership read.
+
+    Load-bearing on ONE door: the native ``/mcp`` bearer with no session
+    cookie, where ``request.env`` is built with ``session.uid = None`` and
+    ``transaction.default_env`` is still unset. There, the cold
+    ``all_group_ids`` compute cascades into
+    ``res.groups._compute_all_implied_ids``, whose assignment writes
+    relational commands and reaches core's ``Field._check_sudo_commands``,
+    which dereferences ``transaction.default_env.uid`` -- an AttributeError
+    on ``None`` (``odoo/orm/fields_relational.py``). Instantiating a
+    user-bound env claims ``default_env`` (``Environment.__new__`` claims it
+    only when unset), so this is a no-op on every other door: REST/session
+    and ``authorize`` are already bound, and the ``auth='none'`` doors
+    (XML-RPC proxy, OAuth token endpoint) had it assigned by core's
+    ``_auth_method_none``. Pure side effect -- the env is registered on the
+    transaction, not returned.
+    """
+    user.env(user=user.id)
+
+
 def user_has_mcp_access(user):
     """Whether ``user`` may use any MCP surface at all.
 
@@ -104,15 +125,16 @@ def user_has_mcp_access(user):
     ``base.group_user``), so they are rejected at every door by construction.
     ``user`` may be any singleton ``res.users`` record.
     """
+    _seed_default_env(user)
     user_su = user.sudo()  # sudo: membership read only, no user bound yet
     group = user_su.env.ref("mcp_server.group_mcp_user", raise_if_not_found=False)
-    # Membership via ``groups_id``: implied memberships are materialized into
-    # it on write (``UsersImplied``/``GroupsImplied`` in core), so a plain m2m
-    # read sees a grant/revocation on the next request with no per-user cache
+    # Membership via ``all_group_ids``: a direct, non-ormcached compute
+    # recomputed per transaction on top of the 'groups' definition cache, so
+    # a grant/revocation bites on the next request with no per-user cache
     # entry to go stale -- and no debug-mode special-casing the way
     # ``has_group`` treats ``base.group_no_one``. Fail closed if the group
     # record is missing.
-    return bool(group) and group.id in user_su.groups_id.ids
+    return bool(group) and group.id in user_su.all_group_ids.ids
 
 
 def get_user_from_api_key(api_key, *, allowed_scopes=("rpc",), log_failure=True):

@@ -1,6 +1,6 @@
 {
     "name": "MCP Server",
-    "version": "18.0.2.0.1",
+    "version": "19.0.2.2.0",
     "summary": "Connect AI assistants to your Odoo instance via Model Context Protocol",
     "description": """
 MCP Server for Odoo
@@ -15,6 +15,11 @@ Key Features
   connect MCP clients directly to Odoo, no separate process to install
 * Search, retrieve, create, update and delete Odoo records, run aggregations
   and call business methods
+* Batch writes: create_records and update_records write many records of one
+  model in a single atomic call (capped by a configurable batch size)
+* Attachments: read_attachment returns a PDF, image or file attached to a
+  record as text, image or a time-limited download link from any client;
+  list_record_attachments and upload_attachment complete the loop
 * User context on connect: the handshake advertises the caller's timezone,
   active and allowed companies (plus a get_current_context tool) so the model
   writes to the right company and stops guessing timezones
@@ -41,14 +46,14 @@ How It Works
    Odoo URL's /mcp endpoint
 5. Start querying your Odoo data naturally
 
-Requirements: Odoo 18.0. The native /mcp endpoint needs no extra software;
+Requirements: Odoo 19.0. The native /mcp endpoint needs no extra software;
 the module's legacy XML-RPC endpoints remain available for programmatic/RPC access.
     """,
     "author": "much. Consulting",
     "website": "https://muchconsulting.com/",
     "support": "product@erp.muchconsulting.de",
     "category": "Productivity",
-    "depends": ["base", "base_setup", "mail", "web"],
+    "depends": ["base", "base_setup", "mail", "rpc", "web"],
     "data": [
         "security/security.xml",
         "security/ir.model.access.csv",

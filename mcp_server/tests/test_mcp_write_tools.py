@@ -38,7 +38,7 @@ from odoo.exceptions import UserError
 from odoo.tests import common, tagged
 from odoo.tools import mute_logger
 
-from ..controllers import rate_limiting, utils
+from ..controllers import error_sanitizer, mcp, rate_limiting, utils
 from .test_helpers import create_test_user, grant_mcp_access, users_groups_field
 
 
@@ -50,6 +50,10 @@ class TestMcpWriteTools(common.HttpCase):
         super().setUp()
         utils.clear_mcp_caches()
         rate_limiting._api_limiter.clear()
+        # The error-audit independent-cursor write is capped per IP; the many
+        # refused calls this suite issues would otherwise exhaust the budget
+        # and silently drop the error / permission_denied rows asserted below.
+        mcp._audit_write_limiter.clear()
 
         unique_id = str(int(time.time() * 1000))[-6:]
 
@@ -108,6 +112,14 @@ class TestMcpWriteTools(common.HttpCase):
         # low-priv user is blocked by the ORM (AccessError, not the MCP gate).
         self._enable_model(
             "base.model_ir_mail_server", allow_read=True, allow_create=True
+        )
+        # res.partner.category: ``name`` is required with no default -> a
+        # deterministic fixture for batch atomicity (one bad entry, zero rows).
+        self._enable_model(
+            "base.model_res_partner_category",
+            allow_read=True,
+            allow_create=True,
+            allow_write=True,
         )
 
         # A target record for call_model_method.
@@ -203,9 +215,7 @@ class TestMcpWriteTools(common.HttpCase):
         from psycopg2.errors import SerializationFailure
 
         mixin_cls = type(self.env["mcp.mixin"])
-        boom = MagicMock(
-            side_effect=SerializationFailure("could not serialize access")
-        )
+        boom = MagicMock(side_effect=SerializationFailure("could not serialize access"))
         with mute_logger(
             "odoo.addons.mcp_server.controllers.mcp_dispatcher",
             "odoo.http",
@@ -653,6 +663,735 @@ class TestMcpWriteTools(common.HttpCase):
         self.assertTrue(allowed["structuredContent"]["success"])
 
     # ------------------------------------------------------------------
+    # create_records (batch)
+    # ------------------------------------------------------------------
+    def test_create_records_creates_all_in_one_call(self):
+        """N entries -> N records; the result lists id/display_name/url + count."""
+        marker = "MCP Batch %s" % int(time.time() * 1000000)
+        names = [f"{marker} {i}" for i in range(3)]
+        result = self._call_tool(
+            "create_records",
+            {"model": "res.partner", "records": [{"name": n} for n in names]},
+        )
+        self.assertFalse(result["isError"], msg=result)
+        structured = result["structuredContent"]
+        self.assertTrue(structured["success"])
+        self.assertEqual(structured["count"], 3)
+        self.assertEqual(len(structured["records"]), 3)
+        self.assertEqual([r["display_name"] for r in structured["records"]], names)
+        for row in structured["records"]:
+            self.assertIn(f"/odoo/res.partner/{row['id']}", row["url"])
+        self.assertIn("created 3 res.partner records", structured["message"])
+        text = result["content"][0]["text"]
+        for row in structured["records"]:
+            self.assertIn(f"- [{row['id']}] {row['display_name']}", text)
+
+        self.env.invalidate_all()
+        created = self.env["res.partner"].search([("name", "like", marker)])
+        self.assertEqual(
+            sorted(created.ids), sorted(r["id"] for r in structured["records"])
+        )
+
+    def test_create_records_single_entry_batch(self):
+        """A batch of one is accepted and reports count 1."""
+        result = self._call_tool(
+            "create_records",
+            {"model": "res.partner", "records": [{"name": "MCP Batch Solo"}]},
+        )
+        self.assertFalse(result["isError"], msg=result)
+        self.assertEqual(result["structuredContent"]["count"], 1)
+
+    @mute_logger("odoo.sql_db", "odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_create_records_is_atomic(self):
+        """One entry missing a required field fails the batch; zero rows land."""
+        marker = "MCP Atomic Tag %s" % int(time.time() * 1000000)
+        result = self._call_tool(
+            "create_records",
+            {
+                "model": "res.partner.category",
+                "records": [{"name": f"{marker} ok"}, {"color": 1}],
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        # The NOT NULL violation is translated into Odoo's field-naming
+        # message, not the generic "Internal server error".
+        self.assertIn("Missing required value", text)
+        self.assertIn("(name)", text)
+        self.assertNotIn("Traceback", text)
+        self.assertNotIn("psycopg2", text)
+        self.assertNotIn("res_partner_category", text)
+        self.env.invalidate_all()
+        self.assertFalse(
+            self.env["res.partner.category"].search([("name", "like", marker)]),
+            "the valid entry must be rolled back with the failing one",
+        )
+
+    @mute_logger("odoo.sql_db", "odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_unique_violation_is_translated_without_leaking_values(self):
+        """A unique constraint failure names the constraint, never the value."""
+        self._enable_model(
+            "base.model_res_partner_bank", allow_read=True, allow_create=True
+        )
+        acc = "MCP-UNIQUE-%s" % int(time.time() * 1000000)
+        result = self._call_tool(
+            "create_records",
+            {
+                "model": "res.partner.bank",
+                "records": [
+                    {"acc_number": acc, "partner_id": self.partner.id},
+                    {"acc_number": acc, "partner_id": self.partner.id},
+                ],
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertNotEqual(text, "Internal server error")
+        self.assertIn("unique", text.lower())
+        self.assertNotIn(acc, text, "the conflicting value must not leak")
+        self.assertNotIn("Key (", text)
+        self.assertNotIn("psycopg2", text)
+        self.env.invalidate_all()
+        self.assertFalse(
+            self.env["res.partner.bank"].search([("acc_number", "=", acc)])
+        )
+
+    @mute_logger("odoo.sql_db", "odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_unique_index_violation_is_named_without_leaking(self):
+        """A unique *index* violation is a data error, not an internal one.
+
+        ``mail.notification`` declares a plain ``UniqueIndex`` on
+        ``(mail_message_id, res_partner_id)``. An index has no ``pg_constraint``
+        row, so Odoo cannot resolve its columns and ``_sql_error_to_message``
+        falls back to the raw driver text (index name + ``DETAIL`` key). The
+        sanitizer must map that to the fixed unique message, never the generic
+        "Internal server error" and never the raw names / values.
+        """
+        self._enable_model(
+            "mail.model_mail_notification", allow_read=True, allow_create=True
+        )
+        message = self.env["mail.message"].create(
+            {
+                "model": "res.partner",
+                "res_id": self.partner.id,
+                "body": "MCP unique index probe",
+                "message_type": "comment",
+            }
+        )
+        entry = {
+            "mail_message_id": message.id,
+            "res_partner_id": self.partner.id,
+            "notification_type": "inbox",
+        }
+        result = self._call_tool(
+            "create_records",
+            {"model": "mail.notification", "records": [entry, dict(entry)]},
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertEqual(text, error_sanitizer.UNIQUE_ERROR_MESSAGE)
+        self.env.invalidate_all()
+        self.assertFalse(
+            self.env["mail.notification"].search([("mail_message_id", "=", message.id)])
+        )
+
+    def test_create_records_shape_rules(self):
+        """Empty list, non-list, non-dict entry and empty entry are clean errors."""
+        cases = {
+            "empty list": [],
+            "non-list": "not a list",
+            "non-dict entry": [{"name": "ok"}, "garbage"],
+            "empty entry": [{"name": "ok"}, {}],
+        }
+        for label, records in cases.items():
+            with self.subTest(label):
+                result = self._call_tool(
+                    "create_records", {"model": "res.partner", "records": records}
+                )
+                self.assertTrue(result["isError"], msg=(label, result))
+                text = result["content"][0]["text"]
+                self.assertNotIn("Traceback", text)
+                if label in ("non-dict entry", "empty entry"):
+                    self.assertIn("Entry 1", text)
+                else:
+                    self.assertIn("non-empty list", text)
+
+    def test_create_records_enforces_batch_cap(self):
+        """A batch at the configured cap passes; one over is refused."""
+        self.env["ir.config_parameter"].sudo().set_param(
+            "mcp_server.max_batch_size", "2"
+        )
+        ok = self._call_tool(
+            "create_records",
+            {
+                "model": "res.partner",
+                "records": [{"name": "MCP Cap 1"}, {"name": "MCP Cap 2"}],
+            },
+        )
+        self.assertFalse(ok["isError"], msg=ok)
+        self.assertEqual(ok["structuredContent"]["count"], 2)
+
+        over = self._call_tool(
+            "create_records",
+            {
+                "model": "res.partner",
+                "records": [{"name": f"MCP Cap {i}"} for i in range(3)],
+            },
+        )
+        self.assertTrue(over["isError"], msg=over)
+        text = over["content"][0]["text"]
+        self.assertIn("too many", text.lower())
+        self.assertIn("max 2", text)
+        self.assertIn("split", text.lower())
+
+    def test_batch_cap_falls_back_to_default_on_bad_config(self):
+        """Garbage, 0 and negative cap values all fall back to 100."""
+        params = self.env["ir.config_parameter"].sudo()
+        mixin = self.env["mcp.mixin"]
+        for raw in ("garbage", "0", "-5", ""):
+            with self.subTest(raw):
+                params.set_param("mcp_server.max_batch_size", raw)
+                self.assertEqual(mixin._max_batch_size(), 100)
+        params.set_param("mcp_server.max_batch_size", "7")
+        self.assertEqual(mixin._max_batch_size(), 7)
+
+    def test_create_records_gated_like_single_record_tool(self):
+        """Per-op gate and non-enabled model fail exactly like create_record."""
+        blocked = self._call_tool(
+            "create_records",
+            {"model": "res.country", "records": [{"name": "MCP Batchland"}]},
+        )
+        self.assertTrue(blocked["isError"])
+        text = blocked["content"][0]["text"]
+        self.assertIn("not allowed", text.lower())
+        self.assertIn("via MCP", text)
+
+        not_enabled = self._call_tool(
+            "create_records",
+            {"model": "res.currency", "records": [{"name": "MCP"}]},
+        )
+        self.assertTrue(not_enabled["isError"])
+        text = not_enabled["content"][0]["text"]
+        self.assertIn("not enabled for MCP", text)
+        self.assertNotIn("Traceback", text)
+
+    def test_create_records_low_privilege_user_blocked_by_acl(self):
+        """A low-priv user is stopped by Odoo's ACL and nothing is created."""
+        marker = "MCP Batch SMTP %s" % int(time.time() * 1000000)
+        result = self._call_tool(
+            "create_records",
+            {
+                "model": "ir.mail_server",
+                "records": [{"name": marker, "smtp_host": "localhost"}],
+            },
+            api_key=self.low_priv_key,
+        )
+        self.assertTrue(result["isError"])
+        text = result["content"][0]["text"]
+        self.assertTrue(text.strip())
+        self.assertNotIn("Traceback", text)
+        self.assertNotIn("via MCP", text)
+        self.env.invalidate_all()
+        self.assertFalse(
+            self.env["ir.mail_server"].sudo().search([("name", "=", marker)])
+        )
+
+    # ------------------------------------------------------------------
+    # update_records (batch)
+    # ------------------------------------------------------------------
+    def _make_partners(self, count, marker):
+        return self.env["res.partner"].create(
+            [{"name": f"{marker} {i}"} for i in range(count)]
+        )
+
+    def test_update_records_applies_values_to_all(self):
+        """One values dict lands on every listed id; the result lists them all."""
+        partners = self._make_partners(3, "MCP Bulk")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": partners.ids,
+                "values": {"comment": "bulk-updated"},
+            },
+        )
+        self.assertFalse(result["isError"], msg=result)
+        structured = result["structuredContent"]
+        self.assertEqual(structured["count"], 3)
+        self.assertEqual([r["id"] for r in structured["records"]], partners.ids)
+        self.assertIn("updated 3 res.partner records", structured["message"])
+        for row in structured["records"]:
+            self.assertIn(f"/odoo/res.partner/{row['id']}", row["url"])
+        self.env.invalidate_all()
+        self.assertEqual(set(partners.mapped("comment")), {"<p>bulk-updated</p>"})
+
+    def test_update_records_single_id_and_dedupe(self):
+        """A single-id batch works; duplicate ids collapse to the unique count."""
+        single = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": [self.partner.id],
+                "values": {"ref": "solo"},
+            },
+        )
+        self.assertFalse(single["isError"], msg=single)
+        self.assertEqual(single["structuredContent"]["count"], 1)
+
+        partners = self._make_partners(2, "MCP Dupe")
+        dup = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": [partners[0].id, partners[1].id, partners[0].id],
+                "values": {"ref": "deduped"},
+            },
+        )
+        self.assertFalse(dup["isError"], msg=dup)
+        self.assertEqual(dup["structuredContent"]["count"], 2)
+        self.assertEqual(
+            [r["id"] for r in dup["structuredContent"]["records"]], partners.ids
+        )
+
+    def _assert_id_coercion_matrix(self, tool, build_args):
+        """Shared id-coercion matrix for update_records and call_model_method.
+
+        Accepted forms resolve to a real id (success) or, for the float bound,
+        pass coercion and then fail as *not found*; rejected forms are refused
+        with the list-of-integers UserError before any lookup.
+        """
+        pid = self.partner.id
+        accepted = {"digit string": str(pid), "integral float": float(pid)}
+        for label, rid in accepted.items():
+            with self.subTest(label):
+                result = self._call_tool(tool, build_args([rid]))
+                self.assertFalse(result["isError"], msg=(label, result))
+        with self.subTest("float at MAX_SAFE_INTEGER passes coercion"):
+            result = self._call_tool(tool, build_args([float(2**53 - 1)]))
+            self.assertTrue(result["isError"], msg=result)
+            self.assertIn("not found", result["content"][0]["text"].lower())
+
+        rejected = {
+            "non-integral float": 1.5,
+            "bool": True,
+            "nan": float("nan"),
+            "inf": float("inf"),
+            "float past MAX_SAFE_INTEGER": float(2**53),
+            "non-numeric string": "abc",
+            "none": None,
+            "dict": {"id": pid},
+            "list": [pid],
+        }
+        for label, rid in rejected.items():
+            with self.subTest(label):
+                result = self._call_tool(tool, build_args([rid]))
+                self.assertTrue(result["isError"], msg=(label, result))
+                text = result["content"][0]["text"]
+                self.assertIn("must be a list of integers", text)
+                self.assertNotIn("Traceback", text)
+
+    def test_update_records_id_coercion_matrix(self):
+        self._assert_id_coercion_matrix(
+            "update_records",
+            lambda ids: {
+                "model": "res.partner",
+                "record_ids": ids,
+                "values": {"ref": "coerced"},
+            },
+        )
+
+    def test_call_model_method_id_coercion_matrix(self):
+        """The tightening applies to call_model_method too (shared helper)."""
+        self._set_method_calls(True)
+        self._assert_id_coercion_matrix(
+            "call_model_method",
+            lambda ids: {
+                "model": "res.partner",
+                "method": "message_post",
+                "record_ids": ids,
+                "kwargs": {"body": "coercion matrix"},
+            },
+        )
+
+    def test_single_record_tools_share_id_coercion(self):
+        """update_record / delete_record refuse a non-integral id.
+
+        ``int(1.5)`` used to target record 1 -- a record the client never
+        named. The single-record path now shares ``_coerce_record_id`` with
+        the batch tools, so it is refused up front and nothing is touched.
+        """
+        for tool, extra in (
+            ("update_record", {"values": {"ref": "never"}}),
+            ("delete_record", {}),
+        ):
+            with self.subTest(tool):
+                result = self._call_tool(
+                    tool, {"model": "res.partner", "record_id": 1.5, **extra}
+                )
+                self.assertTrue(result["isError"], msg=result)
+                self.assertIn("must be an integer", result["content"][0]["text"])
+        self.env.invalidate_all()
+        partner_one = self.env["res.partner"].browse(1)
+        self.assertTrue(partner_one.exists())
+        self.assertNotEqual(partner_one.ref, "never")
+
+    def test_call_model_method_negative_max_limit_falls_back(self):
+        """A negative max_limit does not refuse every record-targeted call."""
+        self._set_method_calls(True)
+        self.env["ir.config_parameter"].sudo().set_param("mcp_server.max_limit", "-5")
+        result = self._call_tool(
+            "call_model_method",
+            {
+                "model": "res.partner",
+                "method": "message_post",
+                "record_ids": [self.partner.id],
+                "kwargs": {"body": "negative cap"},
+            },
+        )
+        self.assertFalse(result["isError"], msg=result)
+
+    def test_call_model_method_keeps_duplicate_ids(self):
+        """call_model_method does not dedupe (deduplicate=False preserved).
+
+        ``[id, id]`` browses a two-record set, so the singleton-only
+        ``message_post`` trips ``ensure_one`` -- proof the duplicate reached
+        the ORM instead of being collapsed by the shared helper.
+        """
+        self._set_method_calls(True)
+        result = self._call_tool(
+            "call_model_method",
+            {
+                "model": "res.partner",
+                "method": "message_post",
+                "record_ids": [self.partner.id, self.partner.id],
+                "kwargs": {"body": "dup call"},
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        self.assertIn("singleton", result["content"][0]["text"].lower())
+
+    def test_update_records_missing_ids_lists_all_and_writes_nothing(self):
+        """Every missing id is named in one MissingError; zero writes land."""
+        partners = self._make_partners(2, "MCP Missing")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": partners.ids + [999999998, 999999999],
+                "values": {"ref": "should-not-land"},
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertIn("not found", text.lower())
+        self.assertIn("999999998", text)
+        self.assertIn("999999999", text)
+        self.env.invalidate_all()
+        self.assertFalse(any(partners.mapped("ref")))
+
+    def test_update_records_rule_hidden_id_is_access_error(self):
+        """A record hidden by a write rule surfaces as AccessError, not MissingError.
+
+        ``exists()`` is record-rule-blind, so the id passes the existence pass
+        and the ORM write refuses it -- the whole batch rolls back.
+        """
+        partners = self._make_partners(2, "MCP Rule")
+        hidden = partners[1]
+        self.env["ir.rule"].sudo().create(
+            {
+                "name": "MCP test: hide one partner from writes",
+                "model_id": self.env.ref("base.model_res_partner").id,
+                "domain_force": f"[('id', '!=', {hidden.id})]",
+                "groups": [(6, 0, [self.env.ref("base.group_user").id])],
+                "perm_read": False,
+                "perm_write": True,
+                "perm_create": False,
+                "perm_unlink": False,
+            }
+        )
+        self.env.flush_all()
+        self.env.registry.clear_cache()
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": partners.ids,
+                "values": {"ref": "rule-blocked"},
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertNotIn("not found", text.lower())
+        self.assertNotIn("Traceback", text)
+        self.env.invalidate_all()
+        self.assertFalse(any(partners.mapped("ref")), "batch must roll back")
+
+    def test_update_records_shape_rules(self):
+        """Empty ids, non-list ids and empty values are clean UserErrors."""
+        cases = {
+            "empty ids": ([], {"ref": "x"}, "non-empty list"),
+            "non-list ids": ("12", {"ref": "x"}, "non-empty list"),
+            "empty values": ([self.partner.id], {}, "No values"),
+            "non-dict values": ([self.partner.id], "x", "No values"),
+        }
+        for label, (ids, values, expected) in cases.items():
+            with self.subTest(label):
+                result = self._call_tool(
+                    "update_records",
+                    {"model": "res.partner", "record_ids": ids, "values": values},
+                )
+                self.assertTrue(result["isError"], msg=(label, result))
+                text = result["content"][0]["text"]
+                self.assertIn(expected, text)
+                self.assertNotIn("Traceback", text)
+
+    def test_update_records_cap_counts_duplicates(self):
+        """The cap applies to the raw list, so duplicates cannot bypass it."""
+        self.env["ir.config_parameter"].sudo().set_param(
+            "mcp_server.max_batch_size", "2"
+        )
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": [self.partner.id] * 3,
+                "values": {"ref": "over"},
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertIn("too many", text.lower())
+        self.assertIn("max 2", text)
+
+    # -- form (b): per-record values -----------------------------------
+    def test_update_records_each_applies_distinct_values(self):
+        """'updates' writes each record its own values; result lists them in order."""
+        partners = self._make_partners(3, "MCP Each")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "updates": [
+                    {"id": partners[0].id, "values": {"ref": "one"}},
+                    {"id": str(partners[1].id), "values": {"ref": "two"}},
+                    {"id": partners[2].id, "values": {"ref": "three", "comment": "c"}},
+                ],
+            },
+        )
+        self.assertFalse(result["isError"], msg=result)
+        structured = result["structuredContent"]
+        self.assertEqual(structured["count"], 3)
+        self.assertEqual([r["id"] for r in structured["records"]], partners.ids)
+        self.env.invalidate_all()
+        self.assertEqual(partners.mapped("ref"), ["one", "two", "three"])
+        self.assertEqual(partners[2].comment, "<p>c</p>")
+
+    def test_update_records_each_is_atomic(self):
+        """An invalid later entry rolls back the earlier, valid writes."""
+        partners = self._make_partners(2, "MCP Each Atomic")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "updates": [
+                    {"id": partners[0].id, "values": {"ref": "landed?"}},
+                    {"id": partners[1].id, "values": {"type": "bogus"}},
+                ],
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        self.assertIn("Wrong value", result["content"][0]["text"])
+        self.env.invalidate_all()
+        self.assertFalse(partners[0].ref, "first write must roll back with the batch")
+
+    def test_update_records_each_rejects_duplicate_ids(self):
+        partners = self._make_partners(2, "MCP Each Dup")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "updates": [
+                    {"id": partners[0].id, "values": {"ref": "a"}},
+                    {"id": partners[1].id, "values": {"ref": "b"}},
+                    {"id": partners[0].id, "values": {"ref": "c"}},
+                ],
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertIn("Duplicate ids", text)
+        self.assertIn(str(partners[0].id), text)
+        self.env.invalidate_all()
+        self.assertFalse(any(partners.mapped("ref")))
+
+    def test_update_records_each_missing_id_lists_all_and_writes_nothing(self):
+        partners = self._make_partners(1, "MCP Each Missing")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "updates": [
+                    {"id": partners.id, "values": {"ref": "never"}},
+                    {"id": 999999998, "values": {"ref": "x"}},
+                    {"id": 999999999, "values": {"ref": "y"}},
+                ],
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertIn("999999998", text)
+        self.assertIn("999999999", text)
+        self.env.invalidate_all()
+        self.assertFalse(partners.ref)
+
+    def test_update_records_each_shape_rules(self):
+        pid = self.partner.id
+        cases = {
+            "empty list": ([], "non-empty list"),
+            "not a list": ({"id": pid, "values": {"ref": "x"}}, "non-empty list"),
+            "entry not dict": ([{"id": pid, "values": {"ref": "x"}}, 5], "Entry 1"),
+            "entry missing values": ([{"id": pid}], "Entry 0"),
+            "entry missing id": ([{"values": {"ref": "x"}}], "Entry 0"),
+            "entry extra key": (
+                [{"id": pid, "values": {"ref": "x"}, "z": 1}],
+                "Entry 0",
+            ),
+            "entry empty values": ([{"id": pid, "values": {}}], "Entry 0"),
+            "entry values not dict": ([{"id": pid, "values": "x"}], "Entry 0"),
+            "entry bad id": ([{"id": 1.5, "values": {"ref": "x"}}], "list of integers"),
+        }
+        for label, (updates, expected) in cases.items():
+            with self.subTest(label):
+                result = self._call_tool(
+                    "update_records", {"model": "res.partner", "updates": updates}
+                )
+                self.assertTrue(result["isError"], msg=(label, result))
+                text = result["content"][0]["text"]
+                self.assertIn(expected, text)
+                self.assertNotIn("Traceback", text)
+
+    def test_update_records_each_cap(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "mcp_server.max_batch_size", "2"
+        )
+        partners = self._make_partners(3, "MCP Each Cap")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "updates": [{"id": p.id, "values": {"ref": "x"}} for p in partners],
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+        self.assertIn("Too many record_ids: 3 (max 2)", result["content"][0]["text"])
+
+    def test_update_records_forms_are_exclusive(self):
+        """Both forms at once, or neither, is a clean error."""
+        pid = self.partner.id
+        both = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": [pid],
+                "values": {"ref": "x"},
+                "updates": [{"id": pid, "values": {"ref": "y"}}],
+            },
+        )
+        self.assertTrue(both["isError"], msg=both)
+        self.assertIn("not both", both["content"][0]["text"])
+        neither = self._call_tool("update_records", {"model": "res.partner"})
+        self.assertTrue(neither["isError"], msg=neither)
+        self.assertIn(
+            "Pass 'record_ids' + 'values', or 'updates'", neither["content"][0]["text"]
+        )
+        half = self._call_tool(
+            "update_records", {"model": "res.partner", "record_ids": [pid]}
+        )
+        self.assertTrue(half["isError"], msg=half)
+        self.assertIn("No values", half["content"][0]["text"])
+
+    def test_update_records_each_audit_row(self):
+        partners = self._make_partners(2, "MCP Each Audit")
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "updates": [
+                    {"id": partners[0].id, "values": {"ref": "a"}},
+                    {"id": partners[1].id, "values": {"ref": "b"}},
+                ],
+            },
+        )
+        self.assertFalse(result["isError"], msg=result)
+        row = self._latest_success_row("write")
+        self.assertEqual(row.tool_name, "update_records")
+        self.assertEqual(row.record_ids, ",".join(map(str, partners.ids)))
+        self.assertEqual(row.response_data, "2 records")
+        self.assertEqual(row.request_data, "model, updates, batch_size=2")
+
+    def test_batch_list_arguments_accept_json_strings(self):
+        """A stringified array (JSON or Python literal) is parsed like a list."""
+        partners = self._make_partners(2, "MCP Stringified")
+        created = self._call_tool(
+            "create_records",
+            {"model": "res.partner", "records": '[{"name": "MCP Str A"}]'},
+        )
+        self.assertFalse(created["isError"], msg=created)
+        self.assertEqual(created["structuredContent"]["count"], 1)
+
+        shared = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                "record_ids": json.dumps(partners.ids),
+                "values": {"ref": "str-shared"},
+            },
+        )
+        self.assertFalse(shared["isError"], msg=shared)
+        self.assertEqual(shared["structuredContent"]["count"], 2)
+
+        each = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                # Python-literal form (single quotes), as some clients emit
+                "updates": "[{'id': %s, 'values': {'ref': 'str-each'}}]"
+                % partners[0].id,
+            },
+        )
+        self.assertFalse(each["isError"], msg=each)
+        self.env.invalidate_all()
+        self.assertEqual(partners[0].ref, "str-each")
+
+        # A string that is not a list still hits the tool's own shape rule.
+        for label, args, needle in (
+            ("garbage", {"records": "not a list"}, "non-empty list"),
+            ("scalar json", {"records": "42"}, "non-empty list"),
+            ("object json", {"records": '{"name": "x"}'}, "non-empty list"),
+        ):
+            with self.subTest(label):
+                result = self._call_tool(
+                    "create_records", {"model": "res.partner", **args}
+                )
+                self.assertTrue(result["isError"], msg=(label, result))
+                self.assertIn(needle, result["content"][0]["text"])
+
+    def test_update_records_write_disabled_model_is_blocked(self):
+        """The per-op write gate refuses the batch like update_record."""
+        result = self._call_tool(
+            "update_records",
+            {
+                "model": "res.country",
+                "record_ids": [self.env.ref("base.de").id],
+                "values": {"name": "MCP"},
+            },
+        )
+        self.assertTrue(result["isError"])
+        text = result["content"][0]["text"]
+        self.assertIn("not allowed", text.lower())
+        self.assertIn("via MCP", text)
+
+    # ------------------------------------------------------------------
     # Audit logging (mcp.log)
     # ------------------------------------------------------------------
     def test_audit_rows_written_for_success_and_failure(self):
@@ -779,6 +1518,133 @@ class TestMcpWriteTools(common.HttpCase):
         )
         self.assertEqual(method_row.record_ids, str(self.partner.id))
 
+    def _latest_success_row(self, operation):
+        self.env.invalidate_all()
+        return (
+            self.env["mcp.log"]
+            .sudo()
+            .search(
+                [
+                    ("event_type", "=", "model_access"),
+                    ("model_name", "=", "res.partner"),
+                    ("operation", "=", operation),
+                    ("user_id", "=", self.mcp_user.id),
+                ],
+                order="id desc",
+                limit=1,
+            )
+        )
+
+    def test_audit_batch_success_rows_carry_result_ids(self):
+        """Each batch call logs one row: ids from the result, count + batch size."""
+        log_model = self.env["mcp.log"].sudo()
+        before = log_model.search_count([("user_id", "=", self.mcp_user.id)])
+
+        created = self._call_tool(
+            "create_records",
+            {
+                "model": "res.partner",
+                "records": [{"name": "Audit Batch A"}, {"name": "Audit Batch B"}],
+            },
+        )
+        self.assertFalse(created["isError"], msg=created)
+        created_ids = [r["id"] for r in created["structuredContent"]["records"]]
+
+        partners = self._make_partners(2, "MCP Audit Upd")
+        updated = self._call_tool(
+            "update_records",
+            {
+                "model": "res.partner",
+                # duplicate on purpose: the row must carry the DEDUPED ids
+                "record_ids": [partners[0].id, partners[1].id, partners[0].id],
+                "values": {"ref": "audited-batch"},
+            },
+        )
+        self.assertFalse(updated["isError"], msg=updated)
+
+        self.env.invalidate_all()
+        self.assertEqual(
+            log_model.search_count([("user_id", "=", self.mcp_user.id)]), before + 2
+        )
+
+        create_row = self._latest_success_row("create")
+        self.assertEqual(create_row.tool_name, "create_records")
+        self.assertEqual(create_row.record_ids, ",".join(map(str, created_ids)))
+        self.assertEqual(create_row.response_data, "2 records")
+        self.assertEqual(create_row.request_data, "model, records, batch_size=2")
+
+        write_row = self._latest_success_row("write")
+        self.assertEqual(write_row.tool_name, "update_records")
+        self.assertEqual(write_row.record_ids, ",".join(map(str, partners.ids)))
+        self.assertEqual(write_row.response_data, "2 records")
+        self.assertEqual(
+            write_row.request_data, "model, record_ids, values, batch_size=3"
+        )
+
+    @mute_logger("odoo.sql_db", "odoo.addons.mcp_server.controllers.error_sanitizer")
+    def test_audit_batch_error_leaves_error_row_only(self):
+        """A failed batch logs the existing id-less error row, no success row."""
+        log_model = self.env["mcp.log"].sudo()
+        success_before = log_model.search_count(
+            [("event_type", "=", "model_access"), ("user_id", "=", self.mcp_user.id)]
+        )
+        result = self._call_tool(
+            "create_records",
+            {
+                "model": "res.partner.category",
+                "records": [{"name": "Audit Atomic"}, {"color": 2}],
+            },
+        )
+        self.assertTrue(result["isError"], msg=result)
+
+        self.env.invalidate_all()
+        self.assertEqual(
+            log_model.search_count(
+                [
+                    ("event_type", "=", "model_access"),
+                    ("user_id", "=", self.mcp_user.id),
+                ]
+            ),
+            success_before,
+        )
+        error_row = log_model.search(
+            [
+                ("event_type", "=", "error"),
+                ("model_name", "=", "res.partner.category"),
+                ("operation", "=", "create"),
+                ("user_id", "=", self.mcp_user.id),
+            ],
+            order="id desc",
+            limit=1,
+        )
+        self.assertTrue(error_row, "expected an error row for the failed batch")
+        self.assertFalse(error_row.record_ids)
+
+    def test_audit_batch_malformed_result_degrades_to_no_ids(self):
+        """A batch tool returning malformed ``records`` still succeeds, id-less."""
+
+        def fake_create_records(mixin_self, model, records):
+            return {
+                "content": [{"type": "text", "text": "ok"}],
+                "structuredContent": {
+                    "success": True,
+                    "count": 1,
+                    "records": "not-a-list",
+                },
+            }
+
+        mixin_cls = type(self.env["mcp.mixin"])
+        with patch.object(mixin_cls, "create_records", fake_create_records):
+            result = self._call_tool(
+                "create_records",
+                {"model": "res.partner", "records": [{"name": "Malformed"}]},
+            )
+        self.assertFalse(result["isError"], msg=result)
+        row = self._latest_success_row("create")
+        self.assertEqual(row.tool_name, "create_records")
+        self.assertFalse(row.record_ids)
+        self.assertEqual(row.response_data, "1 records")
+
     # ------------------------------------------------------------------
     # Rate limiting primitives (endpoint enforcement covered in test_mcp_rate_limit)
     # ------------------------------------------------------------------
@@ -903,6 +1769,16 @@ class TestMcpWriteTools(common.HttpCase):
             self.assertIn(payload["error"]["code"], (-32602, -32603))
         else:
             self.assertTrue(payload["result"]["isError"], msg=payload)
+            text = payload["result"]["content"][0]["text"]
+            # The FK violation is translated into insert-oriented wording that
+            # names the field -- not core's delete-case text, and never the
+            # raw driver text.
+            self.assertIn("refers to a record that does not exist", text)
+            self.assertIn("(country_id)", text)
+            self.assertNotIn("trying to delete", text)
+            self.assertNotIn("psycopg2", text)
+            self.assertNotIn("res_partner_country_id_fkey", text)
+            self.assertNotIn("violates", text)
 
         # The partial parent insert must have been rolled back by the savepoint.
         self.env.invalidate_all()

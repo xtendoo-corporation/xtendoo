@@ -92,8 +92,8 @@ On an Odoo instance that serves **more than one database**, every ``/mcp`` route
 ``404 "No database is selected"`` until Odoo can tell which database a request targets —
 the Bearer token or OAuth session cannot select one on its own. Give each database its own
 hostname and let Odoo map host → database (``proxy_mode = True``, ``dbfilter = ^%d$`` in
-``odoo.conf``), or pin a single database with ``db_name``. (The ``X-Odoo-Database``
-header is Odoo 19+ core and does not work on Odoo 18.)
+``odoo.conf``); this is the only option that works for browser OAuth clients. Bearer /
+API-key clients that can set headers may instead send ``X-Odoo-Database: <db>``.
 Single-database instances need none of this.
 
 Connecting AI Assistants
@@ -288,18 +288,24 @@ Features
 Built-in Tools
 ~~~~~~~~~~~~~~
 
-The ``/mcp`` endpoint exposes 12 built-in tools — seven read tools
+The ``/mcp`` endpoint exposes 17 built-in tools — nine read tools
 (``search_records``, ``get_record``, ``get_fields``, ``list_models``,
-``aggregate_records``, ``list_resource_templates``, ``get_current_context``) and five
-write tools (``create_record``, ``update_record``, ``delete_record``,
-``post_message``, ``call_model_method`` — the latter an admin opt-in per model).
+``aggregate_records``, ``read_attachment``, ``list_record_attachments``,
+``list_resource_templates``, ``get_current_context``) and eight
+write tools (``create_record``, ``create_records``, ``update_record``,
+``update_records``, ``delete_record``, ``upload_attachment``, ``post_message``,
+``call_model_method`` — the latter an admin opt-in per model). ``create_records`` and ``update_records`` write many
+records of one model in a single atomic call, with shared or per-record values.
 ``call_model_method`` is deliberately narrow: it runs only public *business* methods on
 models whose *Allow Method Calls* flag is set, and refuses private (``_``-prefixed)
 methods as well as data-access methods (``read``, ``search``, ``name_search``) — for those,
 use the dedicated CRUD tools.
 Binary data is served on demand via ``odoo://`` resources
 (``odoo://record/{model}/{id}/{field}``, ``odoo://attachment/{id}``) instead of
-inlined base64.
+inlined base64. ``read_attachment`` dereferences such a URI from any client: text
+inline, images as an image block, PDF/Office documents as extracted text, or a
+time-limited download link; ``list_record_attachments`` lists a record's files and
+``upload_attachment`` adds one.
 
 User Context on Connect
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -414,7 +420,7 @@ Common Issues
   ``module 'lib' has no attribute 'GEN_EMAIL'``, a newer ``cryptography`` was installed anyway
   (e.g. by another add-on) and the system ``pyOpenSSL`` cannot import against it — keep
   ``cryptography`` at the image's version, or upgrade ``pyOpenSSL`` to match
-- Ensure Odoo 18.0 is being used
+- Ensure Odoo 19.0 is being used
 
 **OAuth Login Fails or Keeps Re-Prompting**
 

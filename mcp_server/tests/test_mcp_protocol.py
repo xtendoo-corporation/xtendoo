@@ -119,9 +119,7 @@ class TestMcpProtocol(common.HttpCase):
             }
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json()["result"]["protocolVersion"], "2025-06-18"
-        )
+        self.assertEqual(response.json()["result"]["protocolVersion"], "2025-06-18")
 
     def test_initialize_pre_batch_removal_version_negotiated_down(self):
         """A batch-era revision (2025-03-26) is negotiated down to the preferred.
@@ -178,6 +176,32 @@ class TestMcpProtocol(common.HttpCase):
         for tool in tools:
             self.assertIn("name", tool)
             self.assertIn("inputSchema", tool)
+
+    def test_tools_list_advertises_batch_write_tools(self):
+        """create_records / update_records ship valid schemas and annotations."""
+        response = self._post_rpc({"jsonrpc": "2.0", "id": 4, "method": "tools/list"})
+        self.assertEqual(response.status_code, 200)
+        tools = {tool["name"]: tool for tool in response.json()["result"]["tools"]}
+        expected = {
+            "create_records": (["model", "records"], False),
+            "update_records": (["model"], True),
+        }
+        for name, (required, idempotent) in expected.items():
+            with self.subTest(name):
+                self.assertIn(name, tools)
+                schema = tools[name]["inputSchema"]
+                self.assertEqual(schema["required"], required)
+                self.assertFalse(schema["additionalProperties"])
+                annotations = tools[name]["annotations"]
+                self.assertFalse(annotations["readOnlyHint"])
+                self.assertFalse(annotations["destructiveHint"])
+                self.assertEqual(annotations["idempotentHint"], idempotent)
+        self.assertEqual(
+            tools["create_records"]["inputSchema"]["properties"]["records"]["items"],
+            {"type": "object", "minProperties": 1},
+        )
+        updates = tools["update_records"]["inputSchema"]["properties"]["updates"]
+        self.assertEqual(updates["items"]["required"], ["id", "values"])
 
     def test_ping_returns_empty_result(self):
         """ping acknowledges liveness with an empty result object."""

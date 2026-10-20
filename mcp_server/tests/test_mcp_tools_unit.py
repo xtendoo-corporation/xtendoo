@@ -159,9 +159,7 @@ class TestSmartFields(common.TransactionCase):
         ), patch.object(
             mcp_tools_read, "is_sensitive_field_name", lambda name: name == "comment"
         ):
-            explicit = mixin.get_record(
-                "res.partner", partner.id, ["name", "comment"]
-            )
+            explicit = mixin.get_record("res.partner", partner.id, ["name", "comment"])
             bulk = mixin.get_record("res.partner", partner.id, ["__all__"])
 
         self.assertIn("comment", explicit["structuredContent"]["record"])
@@ -247,6 +245,58 @@ class TestDatasetFormatter(common.TransactionCase):
         self.assertIn("Search Results: res.partner", text)
         self.assertIn("Page 1 of 3", text)
         self.assertIn("Showing records 1-2 of 5", text)
+
+    def test_search_results_skip_empty_fields_keep_boolean_false(self):
+        """The list view spends no line on empty values; boolean False stays."""
+        fmt = DatasetFormatter("res.partner")
+        rows = [
+            {
+                "id": 1,
+                "display_name": "ACME",
+                "email": "a@ex.com",
+                "phone": False,
+                "city": "",
+                "category_id": [],
+                "is_company": False,
+            }
+        ]
+        meta = {
+            "email": {"type": "char"},
+            "phone": {"type": "char"},
+            "city": {"type": "char"},
+            "category_id": {"type": "many2many"},
+            "is_company": {"type": "boolean"},
+        }
+        text = fmt.format_search_results(
+            rows,
+            fields=["email", "phone", "city", "category_id", "is_company"],
+            fields_metadata=meta,
+        )
+        self.assertIn("email: a@ex.com", text)
+        self.assertIn("is_company: No", text)
+        for absent in ("phone:", "city:", "category_id:", "Not set"):
+            self.assertNotIn(absent, text)
+
+    def test_search_results_inline_text_is_bounded(self):
+        """Inline field values stop at MAX_INLINE_TEXT_CHARS; rows stay listed."""
+        fmt = DatasetFormatter("res.partner")
+        # 300 rows x 4 fields x 1,000 chars = 1.2 M chars of values, well past
+        # the 200k budget; each value stays below the per-field 2,000 cap.
+        fields = ["f1", "f2", "f3", "f4"]
+        rows = [
+            {"id": i, "display_name": f"Row {i}", **{f: "x" * 1000 for f in fields}}
+            for i in range(1, 301)
+        ]
+        meta = {f: {"type": "char"} for f in fields}
+        text = fmt.format_search_results(rows, fields=fields, fields_metadata=meta)
+        self.assertLess(len(text), fmt.MAX_INLINE_TEXT_CHARS + 20_000)
+        self.assertIn("[300] Row 300", text)  # every row still listed
+        self.assertIn("f1: " + "x" * 1000, text)  # first rows inline
+        self.assertIn("from record [", text)
+        self.assertIn("fewer 'fields' or a smaller 'limit'", text)
+        # A page within budget carries no notice.
+        small = fmt.format_search_results(rows[:5], fields=fields, fields_metadata=meta)
+        self.assertNotIn("from record [", small)
 
 
 @tagged("much_unit", "post_install", "-at_install")

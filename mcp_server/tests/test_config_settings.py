@@ -71,6 +71,28 @@ class TestConfigSettings(TransactionCase):
         param_obj = self.env["ir.config_parameter"].sudo()
         self.assertEqual(param_obj.get_param("mcp_server.request_limit"), "0")
 
+    def test_max_batch_size_round_trip(self):
+        """mcp_max_batch_size defaults to 100 and round-trips to the param."""
+        param_obj = self.env["ir.config_parameter"].sudo()
+        param_obj.set_param("mcp_server.max_batch_size", "")
+        self.assertEqual(self.Settings.create({}).mcp_max_batch_size, 100)
+
+        settings = self.Settings.create({"mcp_max_batch_size": 25})
+        settings.execute()
+        self.assertEqual(param_obj.get_param("mcp_server.max_batch_size"), "25")
+        self.assertEqual(self.Settings.create({}).mcp_max_batch_size, 25)
+
+    def test_link_ttl_hours_round_trip(self):
+        """mcp_link_ttl_hours defaults to 1 and round-trips to the param."""
+        param_obj = self.env["ir.config_parameter"].sudo()
+        param_obj.set_param("mcp_server.link_ttl_hours", "")
+        self.assertEqual(self.Settings.create({}).mcp_link_ttl_hours, 1)
+
+        settings = self.Settings.create({"mcp_link_ttl_hours": 24})
+        settings.execute()
+        self.assertEqual(param_obj.get_param("mcp_server.link_ttl_hours"), "24")
+        self.assertEqual(self.Settings.create({}).mcp_link_ttl_hours, 24)
+
     def test_load_settings(self):
         """Test that settings are loaded from system parameters."""
         # Set some values in system parameters
@@ -116,10 +138,11 @@ class TestConfigSettings(TransactionCase):
         ``set_param`` (shell, XML data, another module) bypasses the
         res.config.settings / mcp.enabled.model invalidation paths, but core
         ``set_param`` still writes through ir.config_parameter create/write/unlink
-        -- each calling ``registry.clear_cache()``, which flushes the ``default``
-        pool both in-process and cross-worker. This locks in that reliance: a
-        kill-switch / OAuth-switch / Origin-allowlist change made the direct way
-        takes effect on the next read.
+        -- each calling ``registry.clear_cache('stable')`` -- and the ``stable``
+        invalidation key cascades to the ``default`` pool
+        (``_CACHES_BY_KEY['stable']`` includes ``'default'``) both in-process and
+        cross-worker. This locks in that reliance: a kill-switch / OAuth-switch /
+        Origin-allowlist change made the direct way takes effect on the next read.
         """
         param_obj = self.env["ir.config_parameter"].sudo()
         mock_request = MagicMock()

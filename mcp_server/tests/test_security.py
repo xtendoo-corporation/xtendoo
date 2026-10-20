@@ -300,14 +300,14 @@ class TestMcpSecurity(common.TransactionCase):
 
         self.assertIn(
             mcp_admin_group,
-            menu_root.groups_id,
+            menu_root.group_ids,
             "Menu should be restricted to MCP Admin group",
         )
 
         # Even though mcp_admin implies mcp_user, the menu should only list mcp_admin
         self.assertNotIn(
             mcp_user_group,
-            menu_root.groups_id,
+            menu_root.group_ids,
             "Menu should NOT be directly accessible to MCP User group",
         )
 
@@ -407,7 +407,7 @@ class TestMcpSecurity(common.TransactionCase):
                 "model_id": self.env.ref("base.model_res_partner").id,
                 "state": "code",
                 "code": "mcp['result'] = {'ok': True}",
-                "groups_id": [
+                "group_ids": [
                     (6, 0, [self.env.ref("mcp_server.group_mcp_admin").id])
                 ],
             }

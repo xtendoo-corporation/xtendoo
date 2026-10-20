@@ -30,7 +30,7 @@ from odoo.tests import common, tagged
 from odoo.tools import mute_logger
 
 from ..controllers import oauth_server, rate_limiting, utils
-from .test_helpers import UrlOpenCompatMixin, create_test_user, grant_mcp_access
+from .test_helpers import create_test_user, grant_mcp_access
 
 
 def _code_challenge(verifier):
@@ -45,7 +45,7 @@ def _sha256_hex(value):
 
 
 @tagged("much_unit", "post_install", "-at_install")
-class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
+class TestOAuth(common.HttpCase):
     """OAuth 2.1 auth-code + PKCE flow and security assertions."""
 
     def setUp(self):
@@ -1573,7 +1573,7 @@ class TestOAuth(UrlOpenCompatMixin, common.HttpCase):
 
 
 @tagged("much_unit", "post_install", "-at_install")
-class TestOAuthDisabled(UrlOpenCompatMixin, common.HttpCase):
+class TestOAuthDisabled(common.HttpCase):
     """OAuth front door explicitly OFF: endpoints 404, tokens refused.
 
     ``mcp_server.enable_oauth`` can be turned off, so with MCP enabled but OAuth off

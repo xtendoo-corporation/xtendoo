@@ -5,31 +5,9 @@ of which Odoo modules are installed. It dynamically detects required fields
 and provides safe defaults.
 """
 
-import json as _json
 import logging
-from urllib.parse import urlencode
 
 _logger = logging.getLogger(__name__)
-
-
-class UrlOpenCompatMixin:
-    """v19-compatible ``url_open`` kwargs for the v18 ``HttpCase``.
-
-    v19 extended ``HttpCase.url_open`` with ``json=`` (serialized body +
-    ``Content-Type: application/json``) and ``params=`` (urlencoded query
-    string); v18's signature has neither. Translating them here lets the
-    HTTP tests use the richer kwargs regardless of version. Mix in FIRST:
-    ``class TestFoo(UrlOpenCompatMixin, common.HttpCase)``.
-    """
-
-    def url_open(self, url, data=None, *, json=None, params=None, headers=None, **kwargs):
-        if params:
-            url += ("&" if "?" in url else "?") + urlencode(params)
-        if json is not None:
-            data = _json.dumps(json)
-            # Caller-supplied Content-Type wins, mirroring requests' json=.
-            headers = {"Content-Type": "application/json", **(headers or {})}
-        return super().url_open(url, data, headers=headers, **kwargs)
 
 
 class TestHelpers:
@@ -131,11 +109,6 @@ class TestHelpers:
         Returns:
             res.users: Created user record
         """
-        # Callers may pass the v19 field name ``group_ids``; translate it
-        # to whatever this Odoo version calls the users->groups field.
-        if "group_ids" in kwargs:
-            kwargs[users_groups_field(env)] = kwargs.pop("group_ids")
-
         # Check if we need to handle autopost_bills
         partner_has_autopost_bills = False
         try:
@@ -229,8 +202,15 @@ def create_test_config_settings(env, **kwargs):
         if field_info.get("required") and field_name not in values:
             field_type = field_info.get("type")
 
-            # Skip computed and readonly fields
-            if field_info.get("compute") or field_info.get("readonly"):
+            # Skip computed, readonly and related fields: Odoo fills related
+            # (company-backed) settings fields itself, and writing one can
+            # trip a company constraint (e.g. account_price_include once
+            # the company has posted invoices).
+            if (
+                field_info.get("compute")
+                or field_info.get("readonly")
+                or field_info.get("related")
+            ):
                 continue
 
             # Provide safe defaults based on field type

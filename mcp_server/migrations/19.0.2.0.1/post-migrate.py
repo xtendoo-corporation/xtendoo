@@ -76,7 +76,7 @@ def migrate(cr, version):
 
     # User-side write: res.users.write invalidates and signals the full
     # registry cache, so warm HTTP workers see the grant on their next request.
-    users.write({"groups_id": [(4, group.id)]})
+    users.write({"group_ids": [(4, group.id)]})
     _logger.info(
         "Granted the MCP User access group to %s user(s): %s",
         len(users),

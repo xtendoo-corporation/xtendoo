@@ -242,6 +242,12 @@ class TestMcpReadTools(common.HttpCase):
     # ------------------------------------------------------------------
     def test_search_records_returns_smart_fields_and_pagination(self):
         """search_records returns smart fields, formatted text and paging info."""
+        # The assertions below compare against the code fallback constants, so
+        # drop any limit parameters a previous settings save left in the DB.
+        params = self.env["ir.config_parameter"].sudo()
+        params.set_param("mcp_server.default_limit", False)
+        params.set_param("mcp_server.max_limit", False)
+
         result = self._call_tool("search_records", {"model": "res.partner"})
 
         self.assertFalse(result["isError"])
@@ -497,7 +503,11 @@ class TestMcpReadTools(common.HttpCase):
         )
         result = self._call_tool(
             "get_record",
-            {"model": "res.partner", "record_id": partner.id, "fields": ["category_id"]},
+            {
+                "model": "res.partner",
+                "record_id": partner.id,
+                "fields": ["category_id"],
+            },
         )
         self.assertFalse(result["isError"], msg=result)
         text = result["content"][0]["text"]
@@ -519,7 +529,11 @@ class TestMcpReadTools(common.HttpCase):
         )
         result = self._call_tool(
             "get_record",
-            {"model": "res.partner", "record_id": partner.id, "fields": ["category_id"]},
+            {
+                "model": "res.partner",
+                "record_id": partner.id,
+                "fields": ["category_id"],
+            },
         )
         self.assertFalse(result["isError"], msg=result)
         text = result["content"][0]["text"]
@@ -547,7 +561,11 @@ class TestMcpReadTools(common.HttpCase):
         )
         result = self._call_tool(
             "get_record",
-            {"model": "res.partner", "record_id": partner.id, "fields": ["category_id"]},
+            {
+                "model": "res.partner",
+                "record_id": partner.id,
+                "fields": ["category_id"],
+            },
         )
         self.assertFalse(result["isError"], msg=result)
         text = result["content"][0]["text"]
@@ -596,6 +614,7 @@ class TestMcpReadTools(common.HttpCase):
             "readonly",
             "relation",
             "selection",
+            "selection_more",
         }
         for field in result["structuredContent"]["fields"]:
             extra = set(field) - allowed
@@ -603,6 +622,54 @@ class TestMcpReadTools(common.HttpCase):
             # Noisy attributes are not returned by default.
             self.assertNotIn("help", field)
             self.assertNotIn("depends", field)
+
+    def test_get_fields_default_is_curated_and_all_sentinel_expands(self):
+        """Omitting field_names returns a curated subset with an expansion hint.
+
+        ``["__all__"]`` returns the complete schema. Keeps a schema-discovery
+        call affordable in tokens on wide models like res.partner.
+        """
+        curated = self._call_tool("get_fields", {"model": "res.partner"})
+        self.assertFalse(curated["isError"], msg=curated)
+        full = self._call_tool(
+            "get_fields", {"model": "res.partner", "field_names": ["__all__"]}
+        )
+        self.assertFalse(full["isError"], msg=full)
+
+        curated_names = {f["name"] for f in curated["structuredContent"]["fields"]}
+        full_names = {f["name"] for f in full["structuredContent"]["fields"]}
+        self.assertLess(len(curated_names), len(full_names))
+        self.assertTrue(curated_names <= full_names)
+        # Essential + structural fields survive the curation.
+        for expected in ("name", "email", "country_id"):
+            self.assertIn(expected, curated_names)
+        # Chatter boilerplate does not.
+        self.assertFalse({n for n in curated_names if n.startswith("message_")})
+        # The curated text carries the expansion hint; the full one does not.
+        self.assertIn("more fields not shown", curated["content"][0]["text"])
+        self.assertNotIn("more fields not shown", full["content"][0]["text"])
+        self.assertEqual(
+            curated["structuredContent"]["omitted"],
+            len(full_names) - len(curated_names),
+        )
+        # Giant selection lists are capped in the curated view (res.partner's
+        # tz has ~500 options) and complete when the field is named explicitly.
+        curated_tz = next(
+            f for f in curated["structuredContent"]["fields"] if f["name"] == "tz"
+        )
+        self.assertLessEqual(len(curated_tz["selection"]), 20)
+        self.assertGreater(curated_tz["selection_more"], 0)
+        self.assertIn("more options", curated["content"][0]["text"])
+        explicit_tz = self._call_tool(
+            "get_fields", {"model": "res.partner", "field_names": ["tz"]}
+        )
+        self.assertFalse(explicit_tz["isError"], msg=explicit_tz)
+        tz_field = explicit_tz["structuredContent"]["fields"][0]
+        self.assertNotIn("selection_more", tz_field)
+        self.assertEqual(
+            len(tz_field["selection"]),
+            len(curated_tz["selection"]) + curated_tz["selection_more"],
+        )
 
     def test_get_fields_field_names_filter(self):
         """field_names restricts the result to exactly the requested fields."""
@@ -971,10 +1038,10 @@ class TestMcpReadTools(common.HttpCase):
     def test_aggregate_records_structured_drops_internal_keys(self):
         """Structured groups drop engine internals but keep requested aggregates.
 
-        Internal ``__``-prefixed bucket keys (``__extra_domain`` /
-        ``__fold``-style grouping-engine tags) must never reach the client,
-        while the requested ``__count`` aggregate and the groupby field value
-        are preserved.
+        ``formatted_read_group`` tags each bucket with internal ``__``-prefixed
+        keys (``__extra_domain`` always; ``__fold`` for foldable groupings) that
+        must not reach the client, while the requested ``__count`` aggregate and
+        the groupby field value are preserved.
         """
         result = self._call_tool(
             "aggregate_records",
@@ -1028,64 +1095,6 @@ class TestMcpReadTools(common.HttpCase):
         self.assertEqual(structured["aggregates"], ["__count"])
         self.assertTrue(structured["groups"])
         self.assertIn("__count", structured["groups"][0])
-
-    def test_aggregate_records_relational_buckets_and_sum(self):
-        """Relational buckets arrive as [id, display_name]; field:sum as numbers.
-
-        The tool shapes raw ``_read_group`` tuples itself
-        (``_format_read_group_rows``): a many2one groupby value must reach the
-        client as a JSON ``[id, display_name]`` pair -- ``false`` when unset --
-        and a ``field:sum`` aggregate as a plain number.
-        """
-        parent = self.env["res.partner"].create({"name": "Agg Parent"})
-        self.env["res.partner"].create(
-            [
-                {"name": "Agg Child 1", "parent_id": parent.id, "color": 2},
-                {"name": "Agg Child 2", "parent_id": parent.id, "color": 3},
-            ]
-        )
-        result = self._call_tool(
-            "aggregate_records",
-            {
-                "model": "res.partner",
-                "groupby": ["parent_id"],
-                "aggregates": ["color:sum", "__count"],
-                "domain": [["parent_id", "=", parent.id]],
-            },
-        )
-        self.assertFalse(result["isError"], msg=result)
-        groups = result["structuredContent"]["groups"]
-        self.assertEqual(len(groups), 1)
-        bucket = groups[0]
-        self.assertEqual(bucket["parent_id"], [parent.id, parent.display_name])
-        self.assertEqual(bucket["color:sum"], 5)
-        self.assertEqual(bucket["__count"], 2)
-
-    def test_aggregate_records_date_bucket_is_string(self):
-        """A date/datetime granularity bucket is emitted in its string form.
-
-        v19's ``formatted_read_group`` returns ``(bucket start, localized
-        label)`` for time buckets; on v18 the tool intentionally emits only
-        the string-coerced bucket start (JSON-serializable, stable regardless
-        of babel locale data).
-        """
-        marker = self.env["res.partner"].create({"name": "Agg Dated"})
-        result = self._call_tool(
-            "aggregate_records",
-            {
-                "model": "res.partner",
-                "groupby": ["create_date:month"],
-                "domain": [["id", "=", marker.id]],
-            },
-        )
-        self.assertFalse(result["isError"], msg=result)
-        groups = result["structuredContent"]["groups"]
-        self.assertEqual(len(groups), 1)
-        bucket_value = groups[0]["create_date:month"]
-        self.assertIsInstance(bucket_value, str)
-        # Month granularity truncates to the first of the month.
-        self.assertRegex(bucket_value, r"^\d{4}-\d{2}-01")
-        self.assertEqual(groups[0]["__count"], 1)
 
     def test_aggregate_records_no_truncation_no_has_more(self):
         """A page covering every group reports has_more False and no hint."""
@@ -1165,11 +1174,25 @@ class TestMcpReadTools(common.HttpCase):
         self.assertTrue(result["isError"], msg=result)
         self.assertIn("record_id", result["content"][0]["text"])
 
+    def test_tools_call_unknown_arg_is_iserror(self):
+        """An argument the schema does not declare is a clean validation error.
+
+        Builtin schemas declare ``additionalProperties: false``; without this
+        check the stray key reached ``method(**arguments)`` and the Python
+        ``TypeError`` leaked the implementing class and signature.
+        """
+        result = self._call_tool(
+            "get_record", {"model": "res.partner", "record_id": 1, "bogus": 1}
+        )
+        self.assertTrue(result["isError"], msg=result)
+        text = result["content"][0]["text"]
+        self.assertIn("Unknown argument(s): bogus", text)
+        self.assertNotIn("unexpected keyword", text)
+        self.assertNotIn("McpTools", text)
+
     def test_tools_call_non_object_arguments_is_iserror(self):
         """A non-object ``arguments`` payload is an isError tool result (SEP-1303)."""
-        result = self._rpc_result(
-            "tools/call", {"name": "get_record", "arguments": []}
-        )
+        result = self._rpc_result("tools/call", {"name": "get_record", "arguments": []})
         self.assertTrue(result["isError"], msg=result)
         self.assertIn("must be an object", result["content"][0]["text"])
 

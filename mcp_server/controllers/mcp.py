@@ -17,12 +17,13 @@ import json
 import logging
 from datetime import datetime
 
-from psycopg2 import OperationalError
+from psycopg2 import IntegrityError, OperationalError
 
 from odoo import _, http
 from odoo.exceptions import AccessError
 from odoo.http import Response, request
 
+from ..tools.uri_schema import URIParseError, parse_attachment_uri, parse_field_uri
 from . import audit, error_sanitizer, jsonrpc, oauth_server, rate_limiting, utils
 from .mcp_route import mcp_route
 
@@ -51,6 +52,16 @@ _rate_limit_audit_limiter = rate_limiting.SlidingWindowLimiter(
 _AUDIT_WRITE_MAX = 20
 _AUDIT_WRITE_WINDOW_SECONDS = 60
 _audit_write_limiter = rate_limiting.SlidingWindowLimiter(_AUDIT_WRITE_WINDOW_SECONDS)
+
+# Batch write tools: their success audit row derives the touched ids from the
+# tool result (see _batch_touched_ids) and carries the requested batch size.
+_BATCH_WRITE_TOOLS = frozenset({"create_records", "update_records"})
+
+# Attachment tools: their audit ``model`` column defaults to ``ir.attachment``
+# when the call names no model (a ``odoo://record/...`` URI names its own).
+_ATTACHMENT_TOOLS = frozenset(
+    {"read_attachment", "list_record_attachments", "upload_attachment"}
+)
 
 
 def _tool_error(text):
@@ -368,7 +379,7 @@ class MCPController(http.Controller):
         # the filtered result under sudo so the per-row DISPLAY reads below
         # (is_readonly/input_schema/name/description -- never the action code)
         # succeed for a caller lacking mcp.custom.tool read (e.g. a portal user
-        # authorized to run a tool via the action's groups_id).
+        # authorized to run a tool via the action's group_ids).
         visible = request.env["mcp.custom.tool"]._visible_tools()
         for custom in visible.sudo():  # sudo: non-sensitive display reads only
             annotations = {
@@ -419,12 +430,31 @@ class MCPController(http.Controller):
             key for key in required if isinstance(key, str) and key not in arguments
         ]
 
+    @staticmethod
+    def _unknown_args(input_schema, arguments):
+        """Argument names not declared by an ``additionalProperties: false`` schema.
+
+        Every builtin tool declares ``additionalProperties: false``; honouring it
+        here turns a stray key into a clean validation error instead of the
+        Python ``TypeError`` from ``method(**arguments)``, whose message names
+        the implementing class and signature. A schema that allows extra
+        properties (custom tools by default) keeps accepting them. Defensive
+        like :meth:`_missing_required_args`: a malformed ``properties`` yields
+        no rejection.
+        """
+        if input_schema.get("additionalProperties") is not False:
+            return []
+        properties = input_schema.get("properties")
+        if not isinstance(properties, dict):
+            return []
+        return [key for key in arguments if key not in properties]
+
     def _tools_call(self, params):
         """Handle ``tools/call``: invoke a registered tool and return its result.
 
         Tool execution errors AND input-validation failures (non-object
-        ``arguments``, missing required arguments) are returned as an MCP tool
-        result with ``isError: true`` -- the latter per SEP-1303 (protocol
+        ``arguments``, missing required or unknown arguments) are returned as
+        an MCP tool result with ``isError: true`` -- the latter per SEP-1303 (protocol
         revision 2025-11-25), so clients feed the message back to the model for
         self-correction. Only calls that cannot be attributed to a tool --
         unknown tool, unusable ``name`` -- are JSON-RPC ``-32602`` errors.
@@ -465,7 +495,7 @@ class MCPController(http.Controller):
         # only present on model-scoped tools (e.g. ``list_models`` has none).
         model_name = arguments.get("model")
         if not isinstance(model_name, str):
-            model_name = None
+            model_name = self._attachment_audit_model(name, arguments)
         operation = meta.get("operation") or name
         # ``call_model_method`` invokes an arbitrary business method; record the
         # real method name as the operation (parity with the legacy XML-RPC
@@ -479,7 +509,7 @@ class MCPController(http.Controller):
         # sent, plus -- filled after a successful run -- a one-line result-size
         # summary. Both land on the model_access row so the log shows what was
         # asked and how much came back without storing business data.
-        request_summary = ", ".join(sorted(arguments)) if arguments else None
+        request_summary = self._audit_request_summary(name, arguments)
         response_summary = None
         start_time = datetime.now()
         error_detail = None
@@ -565,6 +595,16 @@ class MCPController(http.Controller):
                         fields=", ".join(missing),
                     ),
                 )
+            unknown = self._unknown_args(meta["input_schema"], arguments)
+            if unknown:
+                rejected = True
+                return self._reject_invalid_input(
+                    name,
+                    _(
+                        "Unknown argument(s): %(fields)s",
+                        fields=", ".join(sorted(map(str, unknown))),
+                    ),
+                )
             try:
                 # Run the tool AND normalize its result inside one savepoint, so
                 # a failure in either -- the tool raising, or the tool returning
@@ -602,6 +642,10 @@ class MCPController(http.Controller):
                             raise _ToolResultError from err
                 # Result built OK inside the savepoint: capture a size summary for
                 # the audit row (per-tool total/groups, else touched-record count).
+                # Batch writes take their touched ids from the result -- the
+                # argument list can differ after dedupe, and created ids do not
+                # exist before the call -- so both derive from the same source.
+                record_ids = self._batch_touched_ids(name, result, record_ids)
                 response_summary = self._audit_response_summary(
                     name, result, record_ids
                 )
@@ -644,6 +688,16 @@ class MCPController(http.Controller):
                 # token/register endpoints.
                 concurrency_retry = True
                 raise
+            except IntegrityError as err:
+                # A constraint failure at flush (NOT NULL / FK / unique) is a
+                # data error the model can fix, not an internal fault: surface
+                # Odoo's own field-naming message (see sanitize_integrity_error)
+                # instead of the generic text. The savepoint already rolled the
+                # writes back, so the cursor is usable for the translation.
+                error_detail = error_sanitizer.sanitize_integrity_error(
+                    request.env, err, "MCP tool '%s' hit a DB constraint" % name
+                )
+                return _tool_error(error_detail)
             except AccessError as err:
                 # Authorization denial -- the MCP per-model / method gate
                 # (mcp.mixin) or Odoo's own ACL / record rules -- not an internal
@@ -698,7 +752,7 @@ class MCPController(http.Controller):
         The DISPLAY fields read here (input_schema/is_readonly/name) are
         non-sensitive -- never the action code -- so they are read off a SUDO
         record, letting a caller who lacks mcp.custom.tool read (e.g. a portal user
-        authorized via the action's groups_id) reach the gate. The returned
+        authorized via the action's group_ids) reach the gate. The returned
         ``custom_tool`` is re-bound to the caller's NON-su env, so the downstream
         _user_can_run() gate and _run_tool evaluate the caller's own ACLs, never
         sudo's.
@@ -745,22 +799,61 @@ class MCPController(http.Controller):
         return meta, custom_tool
 
     @staticmethod
-    def _extract_record_ids(arguments):
+    def _parse_uri_argument(arguments):
+        """Parsed ``uri`` argument of an attachment tool call, or ``None``.
+
+        Returns ``("attachment", id)`` / ``("record", RecordFieldURI)``; a
+        missing or malformed URI yields ``None`` (the tool itself rejects it).
+        """
+        uri = arguments.get("uri")
+        if not isinstance(uri, str):
+            return None
+        try:
+            return "record", parse_field_uri(uri)
+        except URIParseError:
+            try:
+                return "attachment", parse_attachment_uri(uri)
+            except URIParseError:
+                return None
+
+    @classmethod
+    def _attachment_audit_model(cls, name, arguments):
+        """Audit ``model`` for an attachment tool call that names no model.
+
+        ``read_attachment`` targets are given as a URI or an attachment id:
+        a ``odoo://record/...`` URI is attributed to its own model, everything
+        else to ``ir.attachment``. Other tools keep ``None``.
+        """
+        if name not in _ATTACHMENT_TOOLS:
+            return None
+        parsed = cls._parse_uri_argument(arguments)
+        if parsed and parsed[0] == "record":
+            return parsed[1].model
+        return "ir.attachment"
+
+    @classmethod
+    def _extract_record_ids(cls, arguments):
         """Record IDs a tool call targets, for the audit row.
 
         Mirrors the legacy proxy's ``_extract_record_ids``: pull the ids from the
         tool arguments (a ``record_ids`` / ``ids`` list, or a single
-        ``record_id``). Tools that target no specific records (search / aggregate
-        / create) yield ``None``.
+        ``record_id``). Attachment tools name their target as ``attachment_id``
+        or a ``uri`` instead. Tools that target no specific records (search /
+        aggregate / create) yield ``None``.
         """
         for key in ("record_ids", "ids"):
             value = arguments.get(key)
             if isinstance(value, (list, tuple)) and value:
                 return list(value)
-        record_id = arguments.get("record_id")
-        if record_id is not None:
-            return [record_id]
-        return None
+        for key in ("record_id", "attachment_id"):
+            value = arguments.get(key)
+            if value is not None:
+                return [value]
+        parsed = cls._parse_uri_argument(arguments)
+        if parsed is None:
+            return None
+        kind, ref = parsed
+        return [ref.record_id if kind == "record" else ref]
 
     def _audit_tool_call(
         self,
@@ -851,6 +944,53 @@ class MCPController(http.Controller):
         }
 
     @staticmethod
+    def _audit_request_summary(name, arguments):
+        """Argument KEYS of a tool call, for the audit row (never values).
+
+        A batch write tool additionally carries its requested batch size --
+        metadata only (a count). A non-list argument yields no size; the tool
+        itself rejects it.
+        """
+        summary = ", ".join(sorted(arguments)) if arguments else None
+        if name not in _BATCH_WRITE_TOOLS:
+            return summary
+        entries = None
+        for key in ("records", "updates", "record_ids"):
+            if isinstance(arguments.get(key), list):
+                entries = arguments[key]
+                break
+        if not isinstance(entries, list):
+            return summary
+        size = "batch_size=%s" % len(entries)
+        return f"{summary}, {size}" if summary else size
+
+    @staticmethod
+    def _batch_touched_ids(name, result, record_ids):
+        """Touched record ids for the audit row of a successful tool call.
+
+        Non-batch tools keep the argument-derived ``record_ids``. A batch
+        write tool takes them from the tool result instead. Runs after the
+        savepoint released, in the must-not-raise audit position:
+        isinstance-guarded throughout, so a malformed ``structuredContent``
+        degrades to ``None`` (no ids on the row) rather than an error response
+        for writes that are already committed.
+        """
+        if name not in _BATCH_WRITE_TOOLS:
+            return record_ids
+        structured = None
+        if isinstance(result, dict):
+            structured = result.get("structuredContent")
+        rows = structured.get("records") if isinstance(structured, dict) else None
+        if not isinstance(rows, list):
+            return None
+        ids = [
+            row["id"]
+            for row in rows
+            if isinstance(row, dict) and isinstance(row.get("id"), int)
+        ]
+        return ids or None
+
+    @staticmethod
     def _audit_response_summary(name, result, record_ids):
         """One-line result-size summary for a model_access audit row.
 
@@ -859,8 +999,9 @@ class MCPController(http.Controller):
         the number of ``groups``. Other read tools (``get_fields`` stashes a
         ``total`` that counts *fields*, ``list_models``) are not record-oriented,
         so they carry no summary here. Calls targeting explicit records
-        (``get_record`` / update / delete) fall back to the id count. ``None``
-        when none applies. Metadata only -- never row values.
+        (``get_record`` / update / delete) fall back to the id count; the batch
+        write tools report their ``count``. ``None`` when none applies.
+        Metadata only -- never row values.
         """
         structured = None
         if isinstance(result, dict):
@@ -870,6 +1011,8 @@ class MCPController(http.Controller):
                 return "%s records" % structured["total"]
             if name == "aggregate_records" and "groups" in structured:
                 return "%s groups" % len(structured["groups"])
+            if name in _BATCH_WRITE_TOOLS and "count" in structured:
+                return "%s records" % structured["count"]
         if record_ids:
             return "%s record(s)" % len(record_ids)
         return None
@@ -989,13 +1132,17 @@ class MCPController(http.Controller):
                     "description": (
                         "Fetch a binary/image field from an Odoo record "
                         "(e.g. an image or stored document) instead of "
-                        "inlining base64."
+                        "inlining base64. The same URI can be passed to the "
+                        "read_attachment tool."
                     ),
                 },
                 {
                     "uriTemplate": "odoo://attachment/{id}",
                     "name": "Odoo attachment",
-                    "description": "Fetch an ir.attachment by ID.",
+                    "description": (
+                        "Fetch an ir.attachment by ID. The same URI can be "
+                        "passed to the read_attachment tool."
+                    ),
                 },
             ]
         }

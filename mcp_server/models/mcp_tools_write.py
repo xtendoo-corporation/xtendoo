@@ -1,7 +1,8 @@
 """Write-side MCP tools.
 
 Contributes the write tools to :class:`McpMixin` via ``_inherit = 'mcp.mixin'``:
-``create_record``, ``update_record``, ``delete_record`` and the
+``create_record``, ``update_record``, ``delete_record``, their batch siblings
+``create_records`` / ``update_records``, ``upload_attachment``, and the
 method-call escape hatch ``call_model_method`` plus ``post_message``.
 
 Every tool routes through the mixin chokepoints: :meth:`McpMixin._resolve_model`
@@ -18,6 +19,8 @@ boundary it enforces). ``post_message`` maps to ``message_post`` and is gated as
 a plain **write** operation, not via ``allow_method_calls``.
 """
 
+import ast
+import base64
 import json
 import logging
 
@@ -25,6 +28,8 @@ from odoo import _, api, models
 from odoo.exceptions import AccessError, MissingError, UserError
 
 from ..controllers import utils
+from ..controllers.mcp_route import MCP_MAX_CONTENT_LENGTH
+from ..tools.uri_schema import build_attachment_uri
 from .mcp_mixin import mcp_tool
 from .mcp_tools_read import MAX_LIMIT, _tool_result
 
@@ -33,6 +38,17 @@ _logger = logging.getLogger(__name__)
 # Essential fields read back after a create/update -- universally available
 # (not every model has ``name``).
 _ESSENTIAL_FIELDS = ["id", "display_name"]
+
+# Default cap on entries per batch write call (``mcp_server.max_batch_size``);
+# aligned with ``MAX_LIMIT`` so a batch never exceeds one read page.
+MAX_BATCH_SIZE = 100
+
+# Largest decoded payload ``upload_attachment`` accepts. Derived from the
+# 10 MiB JSON-RPC body cap on every /mcp route (``MCP_MAX_CONTENT_LENGTH`` in
+# ``mcp_route.py``): base64 inflates by 4/3, and the JSON envelope plus the
+# other arguments need headroom, so the tool refuses early with a clear message
+# instead of the client hitting an opaque transport 413.
+MAX_UPLOAD_BYTES = MCP_MAX_CONTENT_LENGTH * 3 // 4 - 64 * 1024
 
 # ``post_message`` subtype -> mail subtype XML id.
 _SUBTYPE_XMLID = {"note": "mail.mt_note", "comment": "mail.mt_comment"}
@@ -97,6 +113,27 @@ _BLOCKED_METHOD_CALLS = frozenset(
 # ACL/record-rule boundary. Scoped to these prefixes on purpose -- other ir.*
 # models (ir.attachment, ...) stay callable; no blanket ir.% block.
 _METHOD_CALL_BLOCKED_MODELS = ("ir.actions", "ir.cron")
+
+
+def _unstringify_list(value):
+    """Return the list a JSON / Python-literal string encodes, else ``value``.
+
+    Some LLM clients serialize a nested array argument as a string. Like the
+    ``domain`` / ``fields`` tolerance of the read tools, a string that parses
+    to a list is accepted; anything else is returned unchanged so the caller's
+    own shape rule rejects it with its usual message.
+    """
+    if not isinstance(value, str):
+        return value
+    for parse in (json.loads, ast.literal_eval):
+        try:
+            parsed = parse(value)
+        except (ValueError, SyntaxError, TypeError, MemoryError, RecursionError):
+            continue
+        if isinstance(parsed, list):
+            return parsed
+        break
+    return value
 
 
 def _json_safe(value, max_records=MAX_LIMIT):
@@ -178,6 +215,93 @@ class McpToolsWrite(models.AbstractModel):
             lines.append(_("URL: %s", url))
         return "\n".join(lines)
 
+    def _max_batch_size(self):
+        """Effective entries-per-batch cap for the batch write tools.
+
+        A misconfigured 0 / negative / garbage value falls back to the module
+        default rather than uncapping (or refusing) every batch.
+        """
+        cap = self._mcp_int_config("mcp_server.max_batch_size", MAX_BATCH_SIZE)
+        return cap if cap > 0 else MAX_BATCH_SIZE
+
+    def _resolve_record_ids_or_raise(
+        self, model, model_rs, record_ids, cap, deduplicate=False
+    ):
+        """Coerce, cap, (optionally) dedupe and existence-check a list of ids.
+
+        Shared by ``call_model_method`` and ``update_records``. The caller
+        owns the non-list / empty-list guards (an empty list means a
+        model-level call for ``call_model_method``). The cap is applied to the
+        raw list so duplicates cannot smuggle a batch past it; ``deduplicate``
+        then drops repeats (order-preserving). Any id missing from the DB
+        raises one ``MissingError`` listing every missing id. ``exists()`` is
+        record-rule-blind: rule/ACL-denied records pass here and surface as
+        the ORM's ``AccessError`` at call time, like the single-record tools.
+        """
+        try:
+            record_ids = [self._coerce_record_id(rid) for rid in record_ids]
+        except (TypeError, ValueError) as err:
+            raise UserError(_("'record_ids' must be a list of integers.")) from err
+        # Bound the batch: an unbounded id list is a large IN(...) plus
+        # unbounded result serialization.
+        if len(record_ids) > cap:
+            raise UserError(
+                _(
+                    "Too many record_ids: %(count)s (max %(max)s). Split the "
+                    "batch into smaller calls.",
+                    count=len(record_ids),
+                    max=cap,
+                )
+            )
+        if deduplicate:
+            record_ids = list(dict.fromkeys(record_ids))
+        target = model_rs.browse(record_ids).exists()
+        # Reject the whole call if ANY requested id is missing, rather than
+        # silently narrowing to the survivors and reporting success -- the
+        # single-record tools raise the same way, and a partial run the caller
+        # can't detect is worse than a clean error.
+        existing = set(target.ids)
+        missing = [rid for rid in record_ids if rid not in existing]
+        if missing:
+            raise MissingError(
+                _(
+                    "Records not found: %(model)s with IDs %(ids)s",
+                    model=model,
+                    ids=missing,
+                )
+            )
+        return target
+
+    def _batch_write_confirmation(self, model, records, message):
+        """Read the written records back and build the batch confirmation.
+
+        Pluralized sibling of :meth:`_write_confirmation`, shared by
+        create_records / update_records: one batched ``read`` of the essential
+        fields, a web URL per record and a text listing (one line per record).
+        ``web.base.url`` is read once for the whole batch.
+        """
+        base_url = (
+            self.env["ir.config_parameter"]
+            .sudo()  # sudo: read system web.base.url param (not user data)
+            .get_param("web.base.url")
+        )
+        rows = []
+        lines = [message]
+        for data in records.read(_ESSENTIAL_FIELDS):
+            url = f"{base_url}/odoo/{model}/{data['id']}" if base_url else ""
+            rows.append(
+                {"id": data["id"], "display_name": data["display_name"], "url": url}
+            )
+            line = "- [%s] %s" % (data["id"], data["display_name"] or "")
+            lines.append(f"{line} {url}".rstrip())
+        structured = {
+            "success": True,
+            "count": len(rows),
+            "records": rows,
+            "message": message,
+        }
+        return _tool_result("\n".join(lines), structured)
+
     # ------------------------------------------------------------------
     # create_record
     # ------------------------------------------------------------------
@@ -187,7 +311,8 @@ class McpToolsWrite(models.AbstractModel):
         description=(
             "Create a new record in a model. Pass 'values' as a field->value "
             "mapping. Runs as the calling user, so Odoo's access rights, record "
-            "rules and required-field validation apply."
+            "rules and required-field validation apply. To create several "
+            "records at once, use create_records instead of repeated calls."
         ),
         input_schema={
             "type": "object",
@@ -232,6 +357,86 @@ class McpToolsWrite(models.AbstractModel):
         return self._write_confirmation(model, record, message)
 
     # ------------------------------------------------------------------
+    # create_records (batch)
+    # ------------------------------------------------------------------
+    @mcp_tool(
+        name="create_records",
+        title="Create Records",
+        description=(
+            "Create several records in one model with a single call. Pass "
+            "'records' as a list of field->value mappings, one per record. "
+            "Runs as the calling user, so Odoo's access rights, record rules "
+            "and required-field validation apply. The batch is atomic: if any "
+            "entry fails, the whole batch is rolled back and nothing is "
+            "created. Odoo may not name the failing entry; on an ambiguous "
+            "failure, retry in smaller batches or bisect. Prefer this over "
+            "repeated create_record calls."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "description": "Technical model name (e.g. 'res.partner').",
+                },
+                "records": {
+                    "type": "array",
+                    "items": {"type": "object", "minProperties": 1},
+                    "minItems": 1,
+                    "description": "One field->value mapping per record to create.",
+                },
+            },
+            "required": ["model", "records"],
+            "additionalProperties": False,
+        },
+        operation="create",
+        readOnlyHint=False,
+        destructiveHint=False,
+        idempotentHint=False,
+        openWorldHint=True,
+    )
+    @api.model
+    def create_records(self, model, records):
+        """Create N records in one ORM call as the calling user."""
+        model_rs = self._resolve_model(model)
+        self._check_op(model, "create")
+
+        # The dispatcher only checks required-presence, so validate shape here.
+        records = _unstringify_list(records)
+        if not isinstance(records, list) or not records:
+            raise UserError(_("'records' must be a non-empty list of objects."))
+        max_entries = self._max_batch_size()
+        if len(records) > max_entries:
+            raise UserError(
+                _(
+                    "Too many records: %(count)s (max %(max)s). Split the batch "
+                    "into smaller calls.",
+                    count=len(records),
+                    max=max_entries,
+                )
+            )
+        for index, entry in enumerate(records):
+            if not isinstance(entry, dict) or not entry:
+                raise UserError(
+                    _(
+                        "Entry %(index)s of 'records' must be a non-empty "
+                        "field->value object.",
+                        index=index,
+                    )
+                )
+
+        # One ORM call (batched defaults/computes); runs as the calling user ->
+        # ORM enforces create ACLs, record rules and required-field validation.
+        # Any failure rolls the whole batch back via the dispatcher savepoint.
+        created = model_rs.create(records)
+        message = _(
+            "Successfully created %(count)s %(model)s records",
+            count=len(created),
+            model=model,
+        )
+        return self._batch_write_confirmation(model, created, message)
+
+    # ------------------------------------------------------------------
     # update_record
     # ------------------------------------------------------------------
     @mcp_tool(
@@ -240,7 +445,8 @@ class McpToolsWrite(models.AbstractModel):
         description=(
             "Update an existing record by ID. Pass 'values' as a field->value "
             "mapping. Runs as the calling user, so Odoo's access rights and "
-            "record rules apply."
+            "record rules apply. To apply the same values to several records, "
+            "use update_records instead of repeated calls."
         ),
         input_schema={
             "type": "object",
@@ -288,6 +494,173 @@ class McpToolsWrite(models.AbstractModel):
             id=record.id,
         )
         return self._write_confirmation(model, record, message)
+
+    # ------------------------------------------------------------------
+    # update_records (batch)
+    # ------------------------------------------------------------------
+    @mcp_tool(
+        name="update_records",
+        title="Update Records",
+        description=(
+            "Update several records of one model in a single call. Two forms: "
+            "(a) the same values for every record: pass 'record_ids' and one "
+            "'values' field->value mapping; (b) different values per record: "
+            "pass 'updates' as a list of {id, values} entries and omit "
+            "'record_ids' / 'values'. Runs as the calling user, so Odoo's "
+            "access rights and record rules apply. The batch is atomic: if any "
+            "record fails (missing, denied or invalid), the whole batch is "
+            "rolled back and nothing is written. Prefer this over repeated "
+            "update_record calls."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "description": "Technical model name (e.g. 'res.partner').",
+                },
+                "record_ids": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "minItems": 1,
+                    "description": (
+                        "Form (a): the record IDs that all receive 'values'."
+                    ),
+                },
+                "values": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "description": (
+                        "Form (a): field values applied to every record in "
+                        "'record_ids'."
+                    ),
+                },
+                "updates": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "values": {"type": "object", "minProperties": 1},
+                        },
+                        "required": ["id", "values"],
+                        "additionalProperties": False,
+                    },
+                    "description": (
+                        "Form (b): one {id, values} entry per record, each with "
+                        "its own field values. Use instead of record_ids + "
+                        "values; each id may appear once."
+                    ),
+                },
+            },
+            "required": ["model"],
+            "additionalProperties": False,
+        },
+        operation="write",
+        readOnlyHint=False,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=True,
+    )
+    @api.model
+    def update_records(self, model, record_ids=None, values=None, updates=None):
+        """Write to N records in one call: shared values or per-record values."""
+        model_rs = self._resolve_model(model)
+        self._check_op(model, "write")
+
+        shared = record_ids is not None or values is not None
+        if updates is not None and shared:
+            raise UserError(
+                _("Pass either 'record_ids' + 'values' or 'updates', not both.")
+            )
+        if updates is not None:
+            records = self._update_records_each(model, model_rs, updates)
+        elif shared:
+            records = self._update_records_shared(model, model_rs, record_ids, values)
+        else:
+            raise UserError(
+                _(
+                    "Pass 'record_ids' + 'values', or 'updates' (a list of "
+                    "{id, values})."
+                )
+            )
+
+        message = _(
+            "Successfully updated %(count)s %(model)s records",
+            count=len(records),
+            model=model,
+        )
+        return self._batch_write_confirmation(model, records, message)
+
+    def _update_records_shared(self, model, model_rs, record_ids, values):
+        """Form (a): one ``write(values)`` on the deduplicated id list."""
+        if not isinstance(values, dict) or not values:
+            raise UserError(_("No values provided for record update."))
+        record_ids = _unstringify_list(record_ids)
+        if not isinstance(record_ids, list) or not record_ids:
+            raise UserError(_("'record_ids' must be a non-empty list of integers."))
+
+        records = self._resolve_record_ids_or_raise(
+            model, model_rs, record_ids, self._max_batch_size(), deduplicate=True
+        )
+        # Runs as the calling user -> ORM enforces write ACLs / record rules.
+        # Any failure rolls the whole batch back via the dispatcher savepoint.
+        records.write(values)
+        return records
+
+    def _update_records_each(self, model, model_rs, updates):
+        """Form (b): one ``write`` per ``{id, values}`` entry, in one savepoint.
+
+        Odoo has no batched per-record write, so this is a server-side loop;
+        the client still saves N round trips, gets one audit row and
+        all-or-nothing semantics. A repeated id is refused rather than
+        resolved last-wins: two value sets for one record is a client error.
+        """
+        updates = _unstringify_list(updates)
+        if not isinstance(updates, list) or not updates:
+            raise UserError(_("'updates' must be a non-empty list of {id, values}."))
+        ids, values_list = [], []
+        for index, entry in enumerate(updates):
+            bad = (
+                not isinstance(entry, dict)
+                or set(entry) != {"id", "values"}
+                or not isinstance(entry["values"], dict)
+                or not entry["values"]
+            )
+            if bad:
+                raise UserError(
+                    _(
+                        "Entry %(index)s of 'updates' must be an object with "
+                        "'id' and a non-empty 'values'.",
+                        index=index,
+                    )
+                )
+            ids.append(entry["id"])
+            values_list.append(entry["values"])
+
+        # Coerce + cap + existence check; duplicates are then a client error.
+        records = self._resolve_record_ids_or_raise(
+            model, model_rs, ids, self._max_batch_size()
+        )
+        seen, duplicates = set(), []
+        for rid in records.ids:
+            if rid in seen and rid not in duplicates:
+                duplicates.append(rid)
+            seen.add(rid)
+        if duplicates:
+            raise UserError(
+                _(
+                    "Duplicate ids in 'updates': %(ids)s. List each record once.",
+                    ids=duplicates,
+                )
+            )
+
+        # Runs as the calling user -> ORM enforces write ACLs / record rules.
+        # Any failure rolls the whole batch back via the dispatcher savepoint.
+        for record, vals in zip(records, values_list, strict=True):
+            record.write(vals)
+        return records
 
     def _write_confirmation(self, model, record, message):
         """Read the written record back and build the confirmation tool result.
@@ -560,39 +933,13 @@ class McpToolsWrite(models.AbstractModel):
             raise UserError(_("'record_ids' must be a list."))
 
         if record_ids:
-            try:
-                record_ids = [int(rid) for rid in record_ids]
-            except (TypeError, ValueError) as err:
-                raise UserError(_("'record_ids' must be a list of integers.")) from err
-            # Bound the batch: unlike the read tools (capped via _effective_limit),
-            # this path has no size limit, so a huge id list is a large IN(...) +
-            # unbounded result serialization. Reuse the read cap for consistency.
-            max_ids = (
-                self._mcp_int_config("mcp_server.max_limit", MAX_LIMIT) or MAX_LIMIT
+            # Reuse the read cap for consistency (unlike the read tools this
+            # path has no built-in size limit); _limit_bounds already falls a
+            # 0 / negative setting back to the default. Duplicates are kept on
+            # purpose: the browse keeps the client's order and multiplicity.
+            target = self._resolve_record_ids_or_raise(
+                model, model_rs, record_ids, self._limit_bounds()[1]
             )
-            if len(record_ids) > max_ids:
-                raise UserError(
-                    _(
-                        "Too many record_ids: %(count)s (max %(max)s).",
-                        count=len(record_ids),
-                        max=max_ids,
-                    )
-                )
-            target = model_rs.browse(record_ids).exists()
-            # Reject the whole call if ANY requested id is missing, rather than
-            # silently narrowing to the survivors and reporting success -- the
-            # single-record tools raise the same way, and a partial run the caller
-            # can't detect is worse than a clean error.
-            existing = set(target.ids)
-            missing = [rid for rid in record_ids if rid not in existing]
-            if missing:
-                raise MissingError(
-                    _(
-                        "Records not found: %(model)s with IDs %(ids)s",
-                        model=model,
-                        ids=missing,
-                    )
-                )
         else:
             target = model_rs
 
@@ -620,6 +967,137 @@ class McpToolsWrite(models.AbstractModel):
             rendered = str(result)
         text = "%s\n%s" % (message, _("Result: %s", rendered))
         return _tool_result(text, structured)
+
+    # ------------------------------------------------------------------
+    # upload_attachment
+    # ------------------------------------------------------------------
+    @mcp_tool(
+        name="upload_attachment",
+        title="Upload Attachment",
+        description=(
+            "Create an ir.attachment from base64 file content, optionally "
+            "linked to a record ('model' + 'record_id' together; attaching to a "
+            "record requires write access to it via MCP and in Odoo). Without "
+            "a record the attachment is standalone (requires ir.attachment "
+            "create access via MCP). Effective size limit about 7 MiB of file "
+            "content. Returns the attachment id and its odoo://attachment/{id} "
+            "uri; read it back with read_attachment (readable when the parent "
+            "model, or ir.attachment, is MCP-enabled for read), or link it to "
+            "a chatter message with post_message(attachment_ids=[id]). Note: "
+            "Odoo stores HTML/XML/SVG uploads from non-privileged users as "
+            "text/plain."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "File name, e.g. 'invoice.pdf'.",
+                },
+                "data": {
+                    "type": "string",
+                    "description": "File content, base64-encoded.",
+                },
+                "model": {
+                    "type": ["string", "null"],
+                    "description": (
+                        "Technical model of the record to attach to (with "
+                        "'record_id'). Omit for a standalone attachment."
+                    ),
+                },
+                "record_id": {
+                    "type": ["integer", "null"],
+                    "description": "The record to attach to (with 'model').",
+                },
+                "mimetype": {
+                    "type": ["string", "null"],
+                    "description": (
+                        "Content type, e.g. 'application/pdf'. Guessed from "
+                        "the name/content when omitted."
+                    ),
+                },
+            },
+            "required": ["name", "data"],
+            "additionalProperties": False,
+        },
+        operation="create",
+        readOnlyHint=False,
+        destructiveHint=False,
+        idempotentHint=False,
+        openWorldHint=False,
+    )
+    @api.model
+    def upload_attachment(self, name, data, model=None, record_id=None, mimetype=None):
+        """Create an attachment as the calling user (record-linked or standalone).
+
+        Record-linked uploads are gated as **write on the parent** (MCP
+        ``allow_write`` + Odoo's own ``ir.attachment.check()``, which requires
+        write access to the parent record): attaching a file is part of
+        writing the record, mirroring core semantics, so ``ir.attachment``
+        ``allow_create`` is deliberately NOT required as well. Standalone
+        uploads are gated on ``ir.attachment`` ``allow_create``.
+        """
+        if not isinstance(name, str) or not name.strip():
+            raise UserError(_("No attachment name provided."))
+        if (model is None) != (record_id is None):
+            raise UserError(_("Pass 'model' and 'record_id' together, or neither."))
+        if not isinstance(data, str):
+            raise UserError(_("'data' must be a base64 string."))
+        try:
+            raw = base64.b64decode(data, validate=True)
+        except ValueError as err:  # binascii.Error is a ValueError
+            raise UserError(_("'data' is not valid base64.")) from err
+        if len(raw) > MAX_UPLOAD_BYTES:
+            raise UserError(
+                _(
+                    "File is %(size)s bytes, above the %(cap)s-byte upload " "limit.",
+                    size=len(raw),
+                    cap=MAX_UPLOAD_BYTES,
+                )
+            )
+
+        values = {"name": name.strip(), "raw": raw, "type": "binary"}
+        if mimetype:
+            values["mimetype"] = mimetype
+        if model is not None:
+            model_rs = self._resolve_model(model)
+            self._check_op(model, "write")
+            record = self._browse_record_or_raise(model, model_rs, record_id)
+            values.update({"res_model": model, "res_id": record.id})
+        elif not utils.check_model_operation_allowed(
+            self.env, "ir.attachment", "create"
+        ):
+            raise AccessError(
+                _(
+                    "Standalone attachment upload via MCP requires "
+                    "'ir.attachment' to be MCP-enabled for create."
+                )
+            )
+
+        # Runs as the calling user -> ir.attachment's own access check binds
+        # (write access on the parent record for a linked upload).
+        attachment = self.env["ir.attachment"].create(values)
+        uri = build_attachment_uri(attachment.id)
+        confirmation = _(
+            "Uploaded attachment %(id)s (%(name)s, %(mimetype)s, %(size)s bytes)",
+            id=attachment.id,
+            name=attachment.name,
+            mimetype=attachment.mimetype,
+            size=attachment.file_size,
+        )
+        lines = [confirmation, _("URI: %s", uri)]
+        if model is not None:
+            lines.append(_("Attached to %(model)s/%(id)s", model=model, id=record.id))
+        structured = {
+            "attachment_id": attachment.id,
+            "uri": uri,
+            "name": attachment.name,
+            "mimetype": attachment.mimetype,
+            "file_size": attachment.file_size,
+        }
+        if model is not None:
+            structured.update({"model": model, "record_id": record.id})
+        return _tool_result("\n".join(lines), structured)
 
     # ------------------------------------------------------------------
     # post_message (-> message_post, gated as a write op)

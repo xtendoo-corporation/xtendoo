@@ -93,13 +93,10 @@ class OauthClient(models.Model, ClientMixin):
     # uniqueness constraint (which also provides the lookup index) rules out a
     # duplicate ever masking another registration. Server-generated tokens make
     # a collision astronomically unlikely, but the guarantee is defense-in-depth.
-    _sql_constraints = [
-        (
-            "unique_client_id",
-            "UNIQUE(client_id)",
-            "OAuth client_id must be unique.",
-        )
-    ]
+    _unique_client_id = models.Constraint(
+        "UNIQUE(client_id)",
+        "OAuth client_id must be unique.",
+    )
 
     # The three OAuth models (client / token / authorization.code) deliberately
     # carry NO ir.rule, so group_mcp_admin sees every user's credential rows

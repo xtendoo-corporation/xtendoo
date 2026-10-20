@@ -32,17 +32,12 @@ from odoo import fields
 from odoo.tests import common, tagged
 
 from ..controllers import mcp, oauth_server, rate_limiting, utils
-from .test_helpers import (
-    UrlOpenCompatMixin,
-    create_test_user,
-    grant_mcp_access,
-    users_groups_field,
-)
+from .test_helpers import create_test_user, grant_mcp_access, users_groups_field
 from .test_oauth import _code_challenge, _sha256_hex
 
 
 @tagged("much_unit", "post_install", "-at_install")
-class TestOAuthScopes(UrlOpenCompatMixin, common.HttpCase):
+class TestOAuthScopes(common.HttpCase):
     """OAuth ``mcp:read`` / ``mcp:write`` scope grant + request-time enforcement."""
 
     def setUp(self):
@@ -281,19 +276,36 @@ class TestOAuthScopes(UrlOpenCompatMixin, common.HttpCase):
             "delete_record",
             "call_model_method",
             "post_message",
+            "create_records",
+            "update_records",
+            "upload_attachment",
         ):
             self.assertNotIn(write_tool, names, msg=names)
         self.assertIn("search_records", names)
 
-        # A write tools/call is refused with a read-only isError result.
-        denied = self._call_tool(
-            access_token,
-            "create_record",
-            {"model": "res.partner", "values": {"name": "Read-only create"}},
-        )
-        self.assertTrue(denied["isError"], msg=denied)
-        self.assertIn("read-only", denied["content"][0]["text"].lower())
-        self.assertNotIn("Traceback", denied["content"][0]["text"])
+        # A write tools/call is refused with a read-only isError result -- the
+        # batch write tools included (the expanded write surface).
+        write_calls = {
+            "create_record": {
+                "model": "res.partner",
+                "values": {"name": "Read-only create"},
+            },
+            "create_records": {
+                "model": "res.partner",
+                "records": [{"name": "Read-only batch"}],
+            },
+            "update_records": {
+                "model": "res.partner",
+                "record_ids": [1],
+                "values": {"name": "Read-only batch"},
+            },
+        }
+        for tool_name, arguments in write_calls.items():
+            with self.subTest(tool_name):
+                denied = self._call_tool(access_token, tool_name, arguments)
+                self.assertTrue(denied["isError"], msg=denied)
+                self.assertIn("read-only", denied["content"][0]["text"].lower())
+                self.assertNotIn("Traceback", denied["content"][0]["text"])
 
         # A read tool still runs under the same read-only token.
         read_ok = self._call_tool(

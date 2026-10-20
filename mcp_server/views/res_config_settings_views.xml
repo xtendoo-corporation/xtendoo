@@ -242,7 +242,7 @@
                             <div class="o_setting_right_pane">
                                 <span class="o_form_label">Tool Limits</span>
                                 <div class="text-muted">
-                                    Default and maximum sizes applied to MCP read tools
+                                    Default and maximum sizes applied to MCP read and batch write tools
                                 </div>
                                 <div class="content-group mt16">
                                     <div class="row">
@@ -293,6 +293,22 @@
                                             /> fields
                                         </div>
                                     </div>
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <label
+                                                for="mcp_max_batch_size"
+                                                class="o_light_label"
+                                            />
+                                            <div class="text-muted">
+                                                Maximum entries per batch write call (create_records / update_records)
+                                            </div>
+                                            <field
+                                                name="mcp_max_batch_size"
+                                                class="o_light_label oe_inline"
+                                                style="width: 100px;"
+                                            /> entries
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -318,6 +334,22 @@
                                                 class="o_light_label oe_inline"
                                                 style="width: 100px;"
                                             /> items
+                                        </div>
+                                    </div>
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <label
+                                                for="mcp_link_ttl_hours"
+                                                class="o_light_label"
+                                            />
+                                            <div class="text-muted">
+                                                Validity of read_attachment download links (bearer URLs, no login needed)
+                                            </div>
+                                            <field
+                                                name="mcp_link_ttl_hours"
+                                                class="o_light_label oe_inline"
+                                                style="width: 100px;"
+                                            /> hours
                                         </div>
                                     </div>
                                 </div>

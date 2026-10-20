@@ -152,7 +152,7 @@ get_xmlrpc_fault_message() {
 get_xmlrpc_result() {
     local response="$1"
     local result_type="${2:-auto}"  # auto, int, bool, string, array
-
+    
     case "$result_type" in
         int)
             echo "$response" | sed -n 's/.*<value><int>\([0-9]\+\)<\/int><\/value>.*/\1/p' | head -1
@@ -172,16 +172,16 @@ get_xmlrpc_result() {
             local val
             val=$(get_xmlrpc_result "$response" "int")
             [ -n "$val" ] && echo "$val" && return
-
+            
             val=$(get_xmlrpc_result "$response" "bool")
             [ -n "$val" ] && echo "$val" && return
-
+            
             val=$(get_xmlrpc_result "$response" "string")
             [ -n "$val" ] && echo "$val" && return
-
+            
             val=$(get_xmlrpc_result "$response" "array")
             [ "$val" != "0" ] && echo "$val" && return
-
+            
             echo ""
             ;;
     esac
@@ -235,7 +235,7 @@ test_endpoint() {
     TEST_COUNT=$((TEST_COUNT + 1))
     GROUP_TOTAL=$((GROUP_TOTAL + 1))
     TOTAL_COUNT=$((TOTAL_COUNT + 1))
-
+    
     echo -n -e "${BLUE}[${TEST_COUNT}]${NC} $name ... "
 
     # Prepare curl command
@@ -318,14 +318,14 @@ test_endpoint() {
                             failure_reason="Invalid or missing timestamp"
                         fi
                     fi
-
+                    
                     # Validate data if expression provided
                     if [ -z "$failure_reason" ] && [ -n "$data_jq_expr" ]; then
                         if ! check_json_expr "$HTTP_BODY" ".data | $data_jq_expr"; then
                             failure_reason="Data validation failed"
                         fi
                     fi
-
+                    
                     [ -z "$failure_reason" ] && test_passed=true
                 else
                     failure_reason="Response missing success=true"
@@ -385,7 +385,7 @@ test_xmlrpc() {
     TEST_COUNT=$((TEST_COUNT + 1))
     GROUP_TOTAL=$((GROUP_TOTAL + 1))
     TOTAL_COUNT=$((TOTAL_COUNT + 1))
-
+    
     echo -n -e "${BLUE}[${TEST_COUNT}]${NC} $name ... "
 
     # Build kwargs parameter if provided
@@ -515,25 +515,25 @@ test_rate_limiting() {
     echo -e "${BLUE}Testing rate limiting (this may take a minute)...${NC}"
     local requests_made=0
     local rate_limited=false
-
+    
     # Make 301 requests rapidly (limit is 300/min)
     for i in {1..301}; do
         RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null -H "X-API-Key: $API_KEY" "$BASE_URL/mcp/health")
         requests_made=$((requests_made + 1))
-
+        
         if [ "$RESPONSE" = "429" ]; then
             rate_limited=true
             break
         fi
-
+        
         # Show progress every 50 requests
         if [ $((i % 50)) -eq 0 ]; then
             echo -n "."
         fi
     done
-
+    
     echo
-
+    
     if $rate_limited; then
         echo -e "${GREEN}✓${NC} Rate limiting working (limited after $requests_made requests)"
         SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
@@ -541,7 +541,7 @@ test_rate_limiting() {
         echo -e "${RED}✗${NC} Rate limiting not triggered after 301 requests"
         FAILURES+=("Rate limiting test - Not triggered after 301 requests")
     fi
-
+    
     # Wait for rate limit to reset
     echo "Waiting 60 seconds for rate limit to reset..."
     sleep 60
@@ -807,13 +807,13 @@ test_xmlrpc "Create on Full Access Model" \
 # Track created ID for cleanup
 if [ -n "$CREATED_COMPANY_ID" ] && [ "$CREATED_COMPANY_ID" != "" ] && [ "$CREATED_COMPANY_ID" != "false" ]; then
     CREATED_IDS+=("$FULL_ACCESS_MODEL:$CREATED_COMPANY_ID")
-
+    
     # Test copy operation only if we have a valid ID
     test_xmlrpc "Copy Record" \
         "copy" "$FULL_ACCESS_MODEL" \
         "<value><int>$CREATED_COMPANY_ID</int></value>" \
         false "$API_KEY" "COPIED_COMPANY_ID"
-
+    
     if [ -n "$COPIED_COMPANY_ID" ] && [ "$COPIED_COMPANY_ID" != "" ] && [ "$COPIED_COMPANY_ID" != "false" ]; then
         CREATED_IDS+=("$FULL_ACCESS_MODEL:$COPIED_COMPANY_ID")
     fi

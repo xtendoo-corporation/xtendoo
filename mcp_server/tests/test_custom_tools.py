@@ -34,12 +34,7 @@ from odoo.tests import common, tagged
 from odoo.tools import mute_logger
 
 from ..controllers import rate_limiting, utils
-from .test_helpers import (
-    UrlOpenCompatMixin,
-    create_test_user,
-    grant_mcp_access,
-    users_groups_field,
-)
+from .test_helpers import create_test_user, grant_mcp_access, users_groups_field
 from .test_oauth import _sha256_hex
 
 # A code action that echoes its ``x`` argument back through the shared dict.
@@ -214,7 +209,7 @@ class TestCustomToolsModel(common.TransactionCase):
 
 
 @tagged("much_unit", "post_install", "-at_install")
-class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
+class TestCustomTools(common.HttpCase):
     """Custom-tool execution, access gate, rollback, scope + audit on /mcp."""
 
     def setUp(self):
@@ -326,9 +321,7 @@ class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
                 "model_id": self.env.ref(model_xmlid).id,
                 "state": "code",
                 "code": code,
-                # ir.actions.server's groups field is ``groups_id`` on v18;
-                # the helper kwarg keeps the v19 public name.
-                "groups_id": group_ids,
+                "group_ids": group_ids,
             }
         )
         return self.env["mcp.custom.tool"].create(
@@ -419,6 +412,36 @@ class TestCustomTools(UrlOpenCompatMixin, common.HttpCase):
         self.assertEqual(
             json.loads(result["content"][0]["text"]), {"echo": "hello"}
         )
+        # A custom schema without ``additionalProperties: false`` keeps
+        # accepting undeclared keys (they travel in mcp['args']); the
+        # unknown-argument check only enforces what a schema declares.
+        result = self._call_tool(
+            self.key_in, "echo_grouped", {"x": "hello", "extra": 1}
+        )
+        self.assertFalse(result["isError"], msg=result)
+
+    def test_custom_tool_strict_schema_rejects_unknown_arg(self):
+        """A custom schema with ``additionalProperties: false`` is enforced too."""
+        self._make_tool(
+            "echo_strict",
+            code=_ECHO_CODE,
+            group_ids=[(6, 0, [self.tool_group.id])],
+            is_readonly=True,
+            input_schema=json.dumps(
+                {
+                    "type": "object",
+                    "properties": {"x": {"type": "string"}},
+                    "additionalProperties": False,
+                }
+            ),
+        )
+        result = self._call_tool(
+            self.key_in, "echo_strict", {"x": "hello", "extra": 1}
+        )
+        self.assertTrue(result["isError"], msg=result)
+        self.assertIn("Unknown argument(s): extra", result["content"][0]["text"])
+        result = self._call_tool(self.key_in, "echo_strict", {"x": "hello"})
+        self.assertFalse(result["isError"], msg=result)
 
     # ------------------------------------------------------------------
     # Access gate: action's Allowed Groups (enforced NON-su, list + call)

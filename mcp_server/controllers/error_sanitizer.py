@@ -11,6 +11,10 @@ Two cases:
   errors, which are raised as ``UserError``/``AccessError``) carry messages
   authored for end users. Their message passes through, still defensively
   scrubbed in case it ever embeds an internal detail.
+* **Database constraint failures** (``psycopg2.IntegrityError``: NOT NULL,
+  foreign-key and unique violations) are translated with Odoo's own
+  ``_sql_error_to_message`` -- the field/model-naming text the web client
+  shows -- then scrubbed; the driver's raw fallback text is genericized.
 * **Every other exception** is reduced to a single generic message while the
   full traceback is preserved server-side via the logger -- so an unexpected
   ORM/psycopg/Python error can be diagnosed from the server log without ever
@@ -25,7 +29,12 @@ the user-safe gate messages the suite relies on.
 import logging
 import re
 
+from psycopg2 import errors as pg_errors
+
+from odoo import _
 from odoo.exceptions import AccessError, MissingError, UserError, ValidationError
+from odoo.orm.models import get_columns_from_sql_diagnostics
+from odoo.tools import exception_to_unicode
 
 _logger = logging.getLogger(__name__)
 
@@ -36,6 +45,10 @@ SAFE_EXCEPTIONS = (UserError, AccessError, ValidationError, MissingError)
 # Returned for any non-safe (unexpected/internal) exception. Kept as the single
 # generic message so the dispatcher / ir.http error renders stay consistent.
 GENERIC_ERROR_MESSAGE = "Internal server error"
+# A unique violation Odoo cannot attribute to fields (a unique *index* has no
+# pg_constraint row to resolve columns from) -- still a data error, so it is
+# named as such without leaking the index or table name.
+UNIQUE_ERROR_MESSAGE = "A record with the same unique values already exists."
 
 # Marker identifying traceback-shaped text and the shape of the final exception
 # line that ends one.
@@ -99,6 +112,78 @@ def sanitize_exception(exc, log_context=None):
     # Unexpected error: keep the full traceback server-side, return generic.
     _logger.error(log_context or "Unhandled MCP error", exc_info=exc)
     return GENERIC_ERROR_MESSAGE
+
+
+def sanitize_integrity_error(env, exc, log_context=None):
+    """Client-safe message for a database constraint failure.
+
+    A NOT NULL / foreign-key / unique violation raised by the ORM flush is a
+    data error the model can act on, not an internal fault. Odoo's own
+    ``_sql_error_to_message`` (what the web client shows) names the field and
+    model, or the constraint's authored message; a dangling foreign key on
+    insert / update gets its own wording first (see :func:`_insert_fk_message`),
+    because core's FK text describes the delete case. Its last-resort fallback is
+    the raw driver text (table / constraint names), which is mapped to a
+    fixed message instead: ``UNIQUE_ERROR_MESSAGE`` for a unique violation
+    (typically a ``UniqueIndex``, whose columns Odoo cannot resolve), the
+    generic message otherwise. The result is scrubbed like any safe message,
+    which also drops the ``Detail:`` line a unique violation carries (it
+    embeds the conflicting value).
+
+    The cursor must be usable again (the caller's savepoint rolled back).
+    Never raises: a failure while translating falls back to the generic
+    message.
+    """
+    _logger.warning(log_context or "MCP database constraint error", exc_info=exc)
+    try:
+        table = exc.diag.table_name
+        model = env["base"]
+        for rclass in env.registry.values():
+            if table == rclass._table:
+                model = env[rclass._name]
+                break
+        message = _insert_fk_message(model, exc) or model._sql_error_to_message(exc)
+        if message == exception_to_unicode(exc):
+            if isinstance(exc, pg_errors.UniqueViolation):
+                return UNIQUE_ERROR_MESSAGE
+            return GENERIC_ERROR_MESSAGE
+        return sanitize_message(message)
+    except Exception:  # noqa: BLE001 - translation must never raise
+        _logger.exception("Could not translate database constraint error")
+        return GENERIC_ERROR_MESSAGE
+
+
+def _insert_fk_message(model, exc):
+    """Message for a dangling foreign key on INSERT / UPDATE, else ``None``.
+
+    Odoo's own FK text is written for the DELETE case ("another model is using
+    the record you are trying to delete"), which misleads a client that just
+    passed a non-existent id in a create / update. Postgres distinguishes the
+    two in the primary message, so name the field and say the referenced
+    record does not exist. Columns come from the constraint diagnostics like
+    core does; the raw fallback (no resolvable field) still gets a field-less
+    message rather than the delete-oriented one.
+    """
+    if not isinstance(exc, pg_errors.ForeignKeyViolation):
+        return None
+    primary = exc.diag.message_primary or ""
+    if not primary.startswith("insert or update"):
+        return None
+    model_string = model.env["ir.model"]._get(model._name).name or model._description
+    columns = get_columns_from_sql_diagnostics(
+        model.env.cr, exc.diag, check_registry=True
+    )
+    if len(columns) == 1 and (field := model._fields.get(columns[0])):
+        return _(
+            "The value for %(field)s refers to a record that does not exist.\n"
+            "Model: %(model)s",
+            field=f"'{field._description_string(model.env)}' ({field.name})",
+            model=f"'{model_string}' ({model._name})",
+        )
+    return _(
+        "A value refers to a record that does not exist.\nModel: %(model)s",
+        model=f"'{model_string}' ({model._name})",
+    )
 
 
 def sanitize_message(text):

@@ -14,6 +14,11 @@ _logger = logging.getLogger(__name__)
 # Default cap on the number of fields a smart selection returns.
 DEFAULT_MAX_SMART_FIELDS = 15
 
+# Default cap on the number of fields the get_fields schema view returns when
+# no explicit field_names are requested. Wider than the read-path cap: schema
+# discovery needs relations and structure, not just readable values.
+DEFAULT_MAX_SCHEMA_FIELDS = 60
+
 # Essential fields always included when present on a model.
 ESSENTIAL_FIELDS = ["id", "name", "display_name", "active"]
 
@@ -192,6 +197,46 @@ def score_field_importance(field_name: str, field_info: Dict[str, Any]) -> int:
         return 0
 
     return max(score, 0)
+
+
+def score_field_schema_relevance(field_name: str, field_info: Dict[str, Any]) -> int:
+    """Score a field's relevance for the schema view (``get_fields`` default).
+
+    Reuses :func:`score_field_importance`, but keeps the field types that the
+    read path excludes for payload size: x2many and binary/html fields carry no
+    readable value by default, yet they ARE the model's structure and belong in
+    a schema listing. They are rescored under a value-safe proxy type of
+    comparable rank so the boilerplate/sensitive exclusions still apply.
+    """
+    field_type = field_info.get("type", "")
+    if field_type in ("one2many", "many2many", "binary", "image", "html"):
+        proxy_type = "many2one" if field_type in ("one2many", "many2many") else "text"
+        return score_field_importance(field_name, dict(field_info, type=proxy_type))
+    return score_field_importance(field_name, field_info)
+
+
+def get_schema_default_fields(
+    fields_info: Dict[str, Dict[str, Any]],
+    max_fields: int = DEFAULT_MAX_SCHEMA_FIELDS,
+) -> List[str]:
+    """Pick the default field subset for the ``get_fields`` schema view.
+
+    Keeps positive-scoring fields, takes the top ``max_fields`` (ties broken
+    alphabetically for determinism), and always appends the essential fields
+    present on the model.
+    """
+    scored = [
+        (field_name, score_field_schema_relevance(field_name, field_info))
+        for field_name, field_info in fields_info.items()
+    ]
+    scored = [(name, score) for name, score in scored if score > 0]
+    scored.sort(key=lambda item: (-item[1], item[0]))
+
+    selected = [name for name, _ in scored[:max_fields]]
+    for field in ESSENTIAL_FIELDS:
+        if field in fields_info and field not in selected:
+            selected.append(field)
+    return selected
 
 
 def get_smart_default_fields(

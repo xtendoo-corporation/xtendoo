@@ -2,7 +2,8 @@
 
 Contributes the read tools to :class:`McpMixin` via ``_inherit = 'mcp.mixin'``:
 ``list_models``, ``get_record``, ``get_fields``, ``search_records``,
-``aggregate_records``, ``list_resource_templates`` and ``get_current_context``.
+``aggregate_records``, ``read_attachment``, ``list_record_attachments``,
+``list_resource_templates`` and ``get_current_context``.
 The LLM-friendly text output reuses the
 ``tools.formatters`` / ``tools.uri_schema`` / ``tools.smart_fields`` helpers.
 
@@ -22,28 +23,48 @@ adding ``isError: false``.
 """
 
 import ast
+import base64
 import json
-from datetime import date, datetime
-from decimal import Decimal
+import time
+from datetime import datetime, timezone
 
 from odoo import _, api, models
 from odoo.exceptions import AccessError, MissingError, UserError
+from odoo.tools.misc import limited_field_access_token
 
 from ..controllers import utils
 from ..tools.formatters import DatasetFormatter, RecordFormatter
 from ..tools.smart_fields import (
     DEFAULT_MAX_SMART_FIELDS,
+    get_schema_default_fields,
     get_smart_default_fields,
     is_sensitive_field_name,
 )
-from ..tools.uri_schema import build_attachment_uri, build_field_uri
-from .mcp_mixin import _BINARY_FIELD_TYPES, mcp_tool
+from ..tools.uri_schema import (
+    URIParseError,
+    build_attachment_uri,
+    build_field_uri,
+    parse_attachment_uri,
+    parse_field_uri,
+)
+from .mcp_mixin import (
+    _BINARY_FIELD_TYPES,
+    MAX_EXTRACT_BYTES,
+    MAX_INLINE_BLOB_BYTES,
+    MAX_INLINE_TEXT_BYTES,
+    MAX_INLINE_TEXT_CHARS,
+    mcp_tool,
+)
 
 # Pagination fallback defaults. The live values come from the MCP settings
 # (``mcp_server.default_limit`` / ``mcp_server.max_limit``); these apply only
 # when the corresponding setting is unset.
-DEFAULT_LIMIT = 10
+DEFAULT_LIMIT = 25
 MAX_LIMIT = 100
+
+# Cap on selection options per field in get_fields' curated default view; an
+# explicit field_names request (or ["__all__"]) returns the full list.
+_SELECTION_OPTIONS_CAP = 20
 
 # Deep pagination is query-cost amplification: Postgres still walks (and discards)
 # every skipped row, so a huge offset is expensive even though limit is capped.
@@ -59,6 +80,34 @@ DEFAULT_MAX_RELATED_ITEMS = 3
 
 # ``fields`` sentinel: explicit request for every field on the model.
 _ALL_FIELDS_SENTINEL = "__all__"
+
+# Validity of a ``read_attachment`` download link, in hours (live value:
+# ``mcp_server.link_ttl_hours``). The link is a delegated-access bearer URL
+# redeemed by core as sudo and cannot be revoked, so the default covers only
+# the conversation that minted it (the model re-mints one when needed). Capped
+# at 42 days -- this module's ceiling, mirroring the longest validity core gives
+# its own auto-generated tokens (core does not bound an explicit expiry).
+DEFAULT_LINK_TTL_HOURS = 1
+MAX_LINK_TTL_HOURS = 42 * 24
+
+# ``read_attachment`` output formats.
+_ATTACHMENT_FORMATS = ("auto", "link", "blob")
+
+
+def _append_binary_note(text, structured):
+    """Add the ``read_attachment`` hint next to swapped ``odoo://`` binary URIs.
+
+    Sibling key on purpose: ``get_record``'s ``metadata["note"]`` (smart
+    fields) must survive. Returns the text with the hint appended.
+    """
+    note = _(
+        "Binary fields are shown as odoo:// URIs. Pass a URI to "
+        "read_attachment to get the content; list_record_attachments lists "
+        "the files attached to a record."
+    )
+    structured["binary_note"] = note
+    return text + "\n\n" + note
+
 
 # Compact attribute set ``get_fields`` returns when the caller does not request
 # specific attributes -- enough to discover a model's schema without the noise.
@@ -343,7 +392,10 @@ class McpToolsRead(models.AbstractModel):
         description=(
             "Get a single record by ID with smart field selection. Omit "
             "'fields' for a smart default selection, pass a list of field "
-            'names for specific fields, or ["__all__"] for every field.'
+            'names for specific fields, or ["__all__"] for every field. '
+            "To fetch several records, do not call this tool repeatedly: "
+            "use search_records with a domain like "
+            '[["id", "in", [1, 2, 3]]] in one call.'
         ),
         input_schema={
             "type": "object",
@@ -396,7 +448,7 @@ class McpToolsRead(models.AbstractModel):
         if selection_method != "explicit":
             self._strip_sensitive_fields(data)
         render_metadata = self._replace_binaries(
-            model, int(record_id), data, fields_metadata
+            model, record_rs.id, data, fields_metadata
         )
 
         max_related_items = self._mcp_int_config(
@@ -424,6 +476,10 @@ class McpToolsRead(models.AbstractModel):
                     "every field, or a list of field names for a specific subset."
                 ),
             }
+        # A swapped binary re-types its metadata (see _replace_binaries), so
+        # an untouched mapping means no URI was emitted.
+        if render_metadata is not fields_metadata:
+            text = _append_binary_note(text, structured)
         return _tool_result(text, structured)
 
     def _replace_binaries(self, model, record_id, data, fields_metadata):
@@ -528,7 +584,9 @@ class McpToolsRead(models.AbstractModel):
         description=(
             "Describe a model's fields: type, label, required/readonly, "
             "relation target, and selection options. Use it to discover a "
-            "model's schema before reading or writing records."
+            "model's schema before reading or writing records. Returns the "
+            "most relevant fields by default; pass 'field_names' for specific "
+            'fields or ["__all__"] for the complete schema.'
         ),
         input_schema={
             "type": "object",
@@ -541,8 +599,9 @@ class McpToolsRead(models.AbstractModel):
                     "type": ["array", "null"],
                     "items": {"type": "string"},
                     "description": (
-                        "Restrict the result to these field names. Omit/null "
-                        "to describe every field on the model."
+                        "Restrict the result to these field names, or "
+                        '["__all__"] for every field on the model. Omit/null '
+                        "for a curated selection of the most relevant fields."
                     ),
                 },
                 "attributes": {
@@ -572,23 +631,59 @@ class McpToolsRead(models.AbstractModel):
         self._check_op(model, "read")
 
         selected_attributes = attributes or _CURATED_FIELD_ATTRIBUTES
+        show_all = bool(field_names) and "__all__" in field_names
+        explicit_names = field_names if field_names and not show_all else None
+        # Fetch 'store' internally even when not requested: the schema-relevance
+        # scoring needs it to demote computed fields; stripped again below.
+        internal_attributes = set(selected_attributes) | {"store"}
         # Runs as the calling user (no sudo) -> field-level group ACLs apply.
         fields_metadata = model_rs.fields_get(
-            field_names or None, attributes=list(selected_attributes)
+            explicit_names, attributes=list(internal_attributes)
         )
+
+        omitted = 0
+        if not explicit_names and not show_all:
+            keep = set(get_schema_default_fields(fields_metadata))
+            omitted = len(fields_metadata) - len(keep)
+            if omitted:
+                fields_metadata = {
+                    fname: meta
+                    for fname, meta in fields_metadata.items()
+                    if fname in keep
+                }
+            # Cap giant selection lists (res.partner's tz alone has ~500
+            # options) in the curated view; naming the field or passing
+            # ["__all__"] returns the full list.
+            for meta in fields_metadata.values():
+                selection = meta.get("selection")
+                if selection and len(selection) > _SELECTION_OPTIONS_CAP:
+                    meta["selection_more"] = len(selection) - _SELECTION_OPTIONS_CAP
+                    meta["selection"] = selection[:_SELECTION_OPTIONS_CAP]
+        if "store" not in selected_attributes:
+            for meta in fields_metadata.values():
+                meta.pop("store", None)
 
         fields = [
             {"name": fname, **meta} for fname, meta in sorted(fields_metadata.items())
         ]
         structured = {"model": model, "fields": fields, "total": len(fields)}
-        return _tool_result(self._format_fields_text(model, fields), structured)
+        if omitted:
+            structured["omitted"] = omitted
+        return _tool_result(
+            self._format_fields_text(model, fields, omitted=omitted), structured
+        )
 
     @staticmethod
-    def _format_fields_text(model, fields):
+    def _format_fields_text(model, fields, omitted=0):
         """Render field definitions as concise, LLM-friendly text."""
+        count = (
+            _("%(shown)s of %(total)s", shown=len(fields), total=len(fields) + omitted)
+            if omitted
+            else str(len(fields))
+        )
         lines = [
             "=" * 60,
-            _("Fields: %(model)s (%(count)s)", model=model, count=len(fields)),
+            _("Fields: %(model)s (%(count)s)", model=model, count=count),
             "=" * 60,
         ]
         for field in fields:
@@ -609,7 +704,19 @@ class McpToolsRead(models.AbstractModel):
             selection = field.get("selection")
             if selection:
                 line += ": " + ", ".join(str(option[0]) for option in selection)
+                more = field.get("selection_more")
+                if more:
+                    line += _(", ... +%(count)s more options", count=more)
             lines.append(line)
+        if omitted:
+            lines.append(
+                _(
+                    "+ %(count)s more fields not shown. Pass field_names=[...] "
+                    'for specific fields or ["__all__"] for the complete '
+                    "schema.",
+                    count=omitted,
+                )
+            )
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
@@ -621,7 +728,10 @@ class McpToolsRead(models.AbstractModel):
         description=(
             "Search for records in a model. Returns a smart field selection by "
             "default with pagination. Use 'domain' to filter, 'fields' to pick "
-            "columns, and 'limit'/'offset'/'order' to page and sort."
+            "columns, and 'limit'/'offset'/'order' to page and sort. Also the "
+            "efficient way to read many records at once: one call with "
+            '[["id", "in", ids]] or [["name", "in", names]] replaces repeated '
+            "get_record calls."
         ),
         input_schema={
             "type": "object",
@@ -714,12 +824,14 @@ class McpToolsRead(models.AbstractModel):
             total = model_rs.search_count(parsed_domain)
 
         binary_names = self._binary_field_names(fields_metadata)
+        binary_swapped = False
         if binary_names:
             for row in rows:
                 row_id = row.get("id")
                 for name in binary_names:
                     if row_id and row.get(name):
                         row[name] = build_field_uri(model, row_id, name)
+                        binary_swapped = True
 
         total_pages = (total + limit - 1) // limit if limit else 1
         current_page = (offset // limit) + 1 if limit else 1
@@ -730,6 +842,14 @@ class McpToolsRead(models.AbstractModel):
                 offset=offset + limit,
                 limit=limit,
             )
+            max_limit = self._limit_bounds()[1]
+            if limit and limit < max_limit:
+                # Steer agents toward fewer, larger pages instead of looping
+                # through many small ones at the current limit.
+                next_hint += _(
+                    " (or raise limit up to %(max)s to fetch more per call)",
+                    max=max_limit,
+                )
         if offset > 0:
             prev_hint = _(
                 "search_records with offset=%(offset)s, limit=%(limit)s",
@@ -758,6 +878,8 @@ class McpToolsRead(models.AbstractModel):
             "offset": offset,
             "model": model,
         }
+        if binary_swapped:
+            text = _append_binary_note(text, structured)
         return _tool_result(text, structured)
 
     # ------------------------------------------------------------------
@@ -837,7 +959,7 @@ class McpToolsRead(models.AbstractModel):
         limit=None,
         offset=0,
     ):
-        """Group records server-side via ``_read_group``."""
+        """Group records server-side via Odoo 19 ``formatted_read_group``."""
         model_rs = self._resolve_model(model)
         self._check_op(model, "read")
 
@@ -860,26 +982,18 @@ class McpToolsRead(models.AbstractModel):
         effective_aggregates = list(aggregates) if aggregates else ["__count"]
 
         # Runs as the calling user -> raises AccessError when read is not
-        # permitted. _read_group offers no cheap "count of groups", so peek
-        # one group past the page (limit+1): if it comes back, the result is
+        # permitted. formatted_read_group offers no cheap "count of groups", so
+        # peek one group past the page (limit+1): if it comes back, the result is
         # truncated and we signal has_more rather than pass off a partial "top
         # N" as complete. Mirrors search_records' next_hint.
-        # v19's formatted_read_group is a web-addon wrapper over _read_group;
-        # on v18 we call _read_group directly (identical signature) and shape
-        # the rows ourselves. Mirror the wrapper's input normalization:
-        # ':recordset' aggregates run as ':array_agg', and an empty order
-        # defaults to the groupby specs.
-        rows = model_rs._read_group(
+        groups = model_rs.formatted_read_group(
             parsed_domain,
             groupby=list(groupby),
-            aggregates=[
-                agg.replace(":recordset", ":array_agg") for agg in effective_aggregates
-            ],
+            aggregates=effective_aggregates,
             offset=offset,
             limit=limit + 1 if limit else None,
-            order=order or ", ".join(groupby),
+            order=order or None,
         )
-        groups = self._format_read_group_rows(list(groupby), effective_aggregates, rows)
         has_more = bool(limit) and len(groups) > limit
         if has_more:
             groups = groups[:limit]
@@ -920,42 +1034,6 @@ class McpToolsRead(models.AbstractModel):
         return _tool_result(text, structured)
 
     @staticmethod
-    def _format_read_group_rows(groupby, aggregates, rows):
-        """Shape raw ``_read_group`` tuples like v19 ``formatted_read_group``.
-
-        ``_read_group`` returns one tuple per group: the groupby values first
-        (recordsets for relational fields, raw date/datetime for granularity
-        buckets), then the aggregate values in spec order. Rebuild the
-        ``{spec: value}`` dicts the tool's structured output promises:
-        relational values become ``(id, display_name)`` pairs (``False`` when
-        unset, display_name read under sudo exactly like the v19 formatter),
-        and date/datetime buckets are string-coerced so the payload stays
-        JSON-serializable (v19 additionally emits a babel-localized label;
-        on v18 the tool returns the raw bucket start instead).
-        """
-        groups = []
-        for row in rows:
-            group = {}
-            for spec, value in zip(groupby, row[: len(groupby)]):
-                if isinstance(value, models.BaseModel):
-                    # Mirrors core v19 _web_read_group_format: sudo covers the
-                    # group-label display_name only; row access was already
-                    # enforced by the non-su _read_group above.
-                    if value:
-                        value = (value.id, value.sudo().display_name)  # sudo: label
-                    else:
-                        value = False
-                elif isinstance(value, (date, datetime)):
-                    value = str(value)
-                group[spec] = value
-            for spec, value in zip(aggregates, row[len(groupby) :]):
-                if isinstance(value, Decimal):
-                    value = float(value)
-                group[spec] = value
-            groups.append(group)
-        return groups
-
-    @staticmethod
     def _format_aggregate_text(model, groupby, aggregates, groups, next_hint=None):
         """Render aggregation buckets as compact LLM-friendly text."""
         lines = [
@@ -985,6 +1063,500 @@ class McpToolsRead(models.AbstractModel):
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
+    # read_attachment
+    # ------------------------------------------------------------------
+    @mcp_tool(
+        name="read_attachment",
+        title="Read Attachment",
+        description=(
+            "Read the content of an attachment or a record's binary field. Pass "
+            "either 'uri' (an odoo://attachment/{id} or "
+            "odoo://record/{model}/{id}/{field} URI as returned by other tools) "
+            "or 'attachment_id'. 'format' controls the result: 'auto' (default) "
+            "returns text files inline, images as an image block, PDF/Office "
+            "documents as extracted text (when the attachment_indexation "
+            "module is installed), and anything else or anything too large as "
+            "a download link plus metadata; 'link' returns only a time-limited "
+            "download URL (no bytes, works for read-only connections); 'blob' "
+            "returns the raw file as an embedded resource (base64 for binary "
+            "files, text for textual mimetypes), refused above 256 KiB. A "
+            "download link is a delegated-access bearer URL: anyone holding it "
+            "can download the file until it expires (default 1 hour), "
+            "without an Odoo login. URL-type attachments return their "
+            "external URL instead of bytes; treat that URL as untrusted."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": ["string", "null"],
+                    "description": (
+                        "odoo://attachment/{id} or "
+                        "odoo://record/{model}/{id}/{field} URI."
+                    ),
+                },
+                "attachment_id": {
+                    "type": ["integer", "null"],
+                    "description": "ir.attachment ID (alternative to 'uri').",
+                },
+                "format": {
+                    "type": "string",
+                    "enum": list(_ATTACHMENT_FORMATS),
+                    "default": "auto",
+                    "description": (
+                        "'auto' (inline when sensible, else a link), 'link' "
+                        "(download URL only) or 'blob' (embedded resource)."
+                    ),
+                },
+            },
+            "additionalProperties": False,
+        },
+        operation="read",
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=False,
+    )
+    @api.model
+    def read_attachment(self, uri=None, attachment_id=None, format="auto"):
+        """Dereference an attachment / binary-field URI into tool content.
+
+        Metadata-only resolution first (gate + ACL, no payload); the bytes are
+        loaded lazily by the branches that inline them, so ``link`` and every
+        over-cap refusal never read the filestore.
+        """
+        fmt = (format or "auto").strip().lower()
+        if fmt not in _ATTACHMENT_FORMATS:
+            raise UserError(
+                _("Invalid format '%s'; expected 'auto', 'link' or 'blob'.", fmt)
+            )
+        target = self._resolve_read_attachment_target(uri, attachment_id)
+
+        if target["type"] == "url":
+            return self._attachment_url_result(target)
+        if fmt == "link":
+            return self._attachment_link_result(target)
+        if fmt == "blob":
+            return self._attachment_blob_result(target)
+        return self._attachment_auto_result(target)
+
+    def _resolve_read_attachment_target(self, uri, attachment_id):
+        """Validate the ``uri`` XOR ``attachment_id`` input and resolve it."""
+        if (uri is None) == (attachment_id is None):
+            raise UserError(_("Pass exactly one of 'uri' or 'attachment_id'."))
+        if attachment_id is not None:
+            try:
+                attachment_id = self._coerce_record_id(attachment_id)
+            except (TypeError, ValueError) as err:
+                raise UserError(_("'attachment_id' must be an integer.")) from err
+            return self._resolve_attachment_for_tool(
+                build_attachment_uri(attachment_id), attachment_id
+            )
+
+        if not isinstance(uri, str) or not uri.startswith("odoo://"):
+            raise UserError(_("Invalid resource URI: %s", uri))
+        try:
+            ref = parse_field_uri(uri)
+        except URIParseError:
+            ref = None
+        if ref is not None:
+            return self._resolve_record_field_for_tool(uri, ref)
+        try:
+            parsed_id = parse_attachment_uri(uri)
+        except URIParseError as err:
+            raise UserError(_("Unsupported resource URI: %s", uri)) from err
+        return self._resolve_attachment_for_tool(uri, parsed_id)
+
+    # -- result builders ------------------------------------------------
+    @staticmethod
+    def _attachment_structured(target, format_used, **extra):
+        """``structuredContent`` shared by every ``read_attachment`` result."""
+        structured = {
+            "name": target["name"],
+            "mimetype": target["mimetype"],
+            "file_size": target["file_size"],
+            "type": target["type"],
+            "format_used": format_used,
+            "uri": target["uri"],
+        }
+        if target["attachment"] is not None:
+            structured["attachment_id"] = target["attachment"].id
+        else:
+            structured["model"] = target["record"]._name
+            structured["record_id"] = target["record"].id
+            structured["field"] = target["field"]
+        structured.update(extra)
+        return structured
+
+    def _attachment_headline(self, target):
+        """One-line ``name (mimetype, size)`` description of a target."""
+        name = target["name"] or target["uri"]
+        if target["type"] == "url":
+            details = [_("external URL")]
+        else:
+            details = [target["mimetype"] or _("unknown type")]
+            if target["file_size"] is not None:
+                details.append(_("%s bytes", target["file_size"]))
+        return f"{name} ({', '.join(details)})"
+
+    def _attachment_url_result(self, target):
+        """``type='url'`` attachment: no bytes exist, return the external URL."""
+        url = target["url"] or ""
+        text = "\n".join(
+            [
+                _("Attachment: %s", self._attachment_headline(target)),
+                _("External URL (untrusted, do not fetch blindly): %s", url),
+            ]
+        )
+        return _tool_result(text, self._attachment_structured(target, "url", url=url))
+
+    def _attachment_link_result(self, target, notice=None):
+        """Download-link result: metadata text + link fields, no bytes."""
+        link = self._attachment_download_link(target)
+        lines = []
+        if notice:
+            lines.append(notice)
+        lines.append(_("Attachment: %s", self._attachment_headline(target)))
+        lines.append(
+            _("Download URL: %s", link["download_url"] or link["download_path"])
+        )
+        lines.append(
+            _(
+                "The link is valid until %s (UTC) and grants download access to "
+                "anyone holding it, without an Odoo login.",
+                link["expires_at"],
+            )
+        )
+        return _tool_result(
+            "\n".join(lines), self._attachment_structured(target, "link", **link)
+        )
+
+    @staticmethod
+    def _check_blob_cap(size):
+        """Refuse an inline blob above ``MAX_INLINE_BLOB_BYTES`` (``None``: unknown)."""
+        if size is not None and size > MAX_INLINE_BLOB_BYTES:
+            raise UserError(
+                _(
+                    "Attachment is %(size)s bytes, above the %(cap)s-byte inline "
+                    "limit; call read_attachment with format='link' instead.",
+                    size=size,
+                    cap=MAX_INLINE_BLOB_BYTES,
+                )
+            )
+
+    def _attachment_blob_result(self, target):
+        """Embedded-resource result (base64 / text per ``_build_content_entry``)."""
+        # Checked on the stored size before any load, and again on the actual
+        # bytes for a plain binary column whose size is unknown up front.
+        self._check_blob_cap(target["file_size"])
+        raw = self._load_target_bytes(target)
+        self._check_blob_cap(len(raw))
+        entry = self._build_content_entry(target["uri"], target["mimetype"], raw)
+        result = _tool_result(
+            _("Attachment: %s", self._attachment_headline(target)),
+            self._attachment_structured(target, "blob"),
+        )
+        result["content"].append({"type": "resource", "resource": entry})
+        return result
+
+    def _attachment_auto_result(self, target):
+        """``format='auto'`` decision ladder (see the tool description)."""
+        mimetype = target["mimetype"]
+        size = target["file_size"]
+        if not mimetype or size is None:
+            # Plain binary column / missing mimetype: the bytes must be read
+            # to know either, and they live in the DB row rather than the
+            # filestore.
+            self._load_target_bytes(target)
+            mimetype, size = target["mimetype"], target["file_size"]
+
+        if self._is_text_mimetype(mimetype):
+            if size > MAX_INLINE_TEXT_BYTES:
+                return self._attachment_link_result(
+                    target, notice=_("The file is too large to return inline.")
+                )
+            text = self._load_target_bytes(target).decode("utf-8", errors="replace")
+            return self._attachment_inline_text(target, text, "text")
+
+        base = mimetype.split(";", 1)[0].strip().lower()
+        if base.startswith("image/"):
+            if size > MAX_INLINE_BLOB_BYTES:
+                return self._attachment_link_result(
+                    target, notice=_("The image is too large to return inline.")
+                )
+            raw = self._load_target_bytes(target)
+            result = _tool_result(
+                _("Attachment: %s", self._attachment_headline(target)),
+                self._attachment_structured(target, "image"),
+            )
+            result["content"].append(
+                {
+                    "type": "image",
+                    "data": base64.b64encode(raw).decode("ascii"),
+                    "mimeType": base,
+                }
+            )
+            return result
+
+        if self._is_extractable_mimetype(base):
+            if size > MAX_EXTRACT_BYTES:
+                return self._attachment_link_result(
+                    target,
+                    notice=_("The document is too large for inline text extraction."),
+                )
+            text = self._extract_attachment_text(target)
+            if text:
+                return self._attachment_inline_text(target, text, "extracted_text")
+            return self._attachment_link_result(
+                target,
+                notice=_(
+                    "No inline text could be extracted from this document "
+                    "(install the attachment_indexation module for inline "
+                    "PDF/Office text). Use the download link below."
+                ),
+            )
+
+        return self._attachment_link_result(
+            target, notice=_("This file type is not returned inline.")
+        )
+
+    def _attachment_inline_text(self, target, text, format_used):
+        """Inline-text result, truncated at ``MAX_INLINE_TEXT_CHARS``.
+
+        The text is carried in ``structuredContent`` as well: per the MCP spec
+        the structured result holds the same information as the content
+        blocks, and clients that render only ``structuredContent`` (Claude
+        Code does) would otherwise never see the file content.
+        """
+        truncated = len(text) > MAX_INLINE_TEXT_CHARS
+        extra = {"truncated": truncated}
+        if truncated:
+            text = text[:MAX_INLINE_TEXT_CHARS]
+            link = self._attachment_download_link(target)
+            extra.update(link)
+            text += "\n\n" + _(
+                "[Truncated after %(chars)s characters. Full file: %(url)s "
+                "(valid until %(expires)s UTC)]",
+                chars=MAX_INLINE_TEXT_CHARS,
+                url=link["download_url"] or link["download_path"],
+                expires=link["expires_at"],
+            )
+        return _tool_result(
+            text, self._attachment_structured(target, format_used, text=text, **extra)
+        )
+
+    def _link_ttl_seconds(self):
+        """Effective download-link validity, in seconds, from
+        ``mcp_server.link_ttl_hours``.
+
+        A malformed / non-positive value falls back to the default; an
+        excessive one is clamped to ``MAX_LINK_TTL_HOURS`` (42 days).
+        """
+        hours = self._mcp_int_config(
+            "mcp_server.link_ttl_hours", DEFAULT_LINK_TTL_HOURS
+        )
+        if hours <= 0:
+            hours = DEFAULT_LINK_TTL_HOURS
+        return min(hours, MAX_LINK_TTL_HOURS) * 3600
+
+    def _attachment_download_link(self, target):
+        """Time-limited ``/web/content`` download link for a target.
+
+        Built with core's stateless ``limited_field_access_token`` -- an HMAC
+        over (model, id, field, expiry) -- so nothing is written: no
+        attachment, access-token or business-data mutation and no ``sudo``.
+        The token is a delegated-access bearer: core redeems it as
+        ``record.sudo()`` regardless of who downloads, so the expiry is
+        explicit and short (``_link_ttl_seconds``). The relative
+        ``download_path`` is canonical; ``download_url`` prefixes it with
+        ``web.base.url`` (may be stale behind a proxy).
+        """
+        expires = int(time.time()) + self._link_ttl_seconds()
+        attachment = target["attachment"]
+        if attachment is not None:
+            record, field = attachment, "raw"
+            path = f"/web/content/{attachment.id}"
+        else:
+            record, field = target["record"], target["field"]
+            path = f"/web/content/{record._name}/{record.id}/{field}"
+        # Core parses the embedded expiry with ``int(timestamp, 16)``.
+        token = limited_field_access_token(record, field, hex(expires), scope="binary")
+        download_path = f"{path}?access_token={token}&download=true"
+        params = self.env["ir.config_parameter"].sudo()  # sudo: system web.base.url
+        base_url = params.get_param("web.base.url")
+        download_url = f"{base_url.rstrip('/')}{download_path}" if base_url else None
+        expires_at = (
+            datetime.fromtimestamp(expires, tz=timezone.utc)
+            .replace(tzinfo=None)
+            .isoformat(timespec="seconds")
+            + "Z"
+        )
+        return {
+            "download_path": download_path,
+            "download_url": download_url,
+            "expires_at": expires_at,
+        }
+
+    # ------------------------------------------------------------------
+    # list_record_attachments
+    # ------------------------------------------------------------------
+    @mcp_tool(
+        name="list_record_attachments",
+        title="List Record Attachments",
+        description=(
+            "List the files attached to a record (ir.attachment rows linked to "
+            "it, e.g. chatter attachments), with name, mimetype, size, type "
+            "and a uri. Pass a returned 'uri' to read_attachment to get the "
+            "content. Binary fields of the record itself are not listed here: "
+            "they appear as odoo://record/... URIs in get_record output."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "description": "Technical model name (e.g. 'account.move').",
+                },
+                "record_id": {
+                    "type": "integer",
+                    "description": "The record whose attachments to list.",
+                },
+                "limit": {
+                    "type": ["integer", "null"],
+                    # Live default/max filled in at tools/list serve time.
+                    "description": (
+                        "Max attachments to return. Defaults to %(default)s, "
+                        "capped at %(max)s."
+                    ),
+                },
+                "offset": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of attachments to skip (pagination).",
+                },
+            },
+            "required": ["model", "record_id"],
+            "additionalProperties": False,
+        },
+        operation="read",
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=False,
+    )
+    @api.model
+    def list_record_attachments(self, model, record_id, limit=None, offset=0):
+        """List a record's attachments (gated like ``read_attachment``).
+
+        Same allow-list rule as ``read_attachment``
+        (:meth:`McpMixin._attachment_read_allowed`): the parent ``model``
+        MCP-read-enabled OR ``ir.attachment`` itself MCP-read-enabled.
+        ``_resolve_model`` cannot be used here -- it refuses every non-enabled
+        model, which would wrongly block the ``ir.attachment``-enabled branch --
+        so the name is validated separately.
+        """
+        if not model or model not in self.env:
+            raise UserError(_("Unknown model: %s", model))
+        if not self._attachment_read_allowed(model):
+            raise AccessError(
+                _(
+                    "Listing attachments via MCP requires '%s' or 'ir.attachment' "
+                    "to be MCP-enabled for read.",
+                    model,
+                )
+            )
+        record = self._browse_record_or_raise(model, self.env[model], record_id)
+        # The user must be able to read the parent record itself, not merely
+        # know its id (raises AccessError).
+        record.check_access("read")
+
+        limit = self._effective_limit(limit)
+        offset = self._effective_offset(offset)
+        # Runs as the calling user -> ir.attachment ACL + record rules bind.
+        # ``res_field = False``: chatter/document attachments only, never the
+        # blobs backing the record's own binary fields.
+        domain = [
+            ("res_model", "=", model),
+            ("res_id", "=", record.id),
+            ("res_field", "=", False),
+        ]
+        attachments = self.env["ir.attachment"]
+        rows = attachments.search_read(
+            domain,
+            ["name", "mimetype", "type", "file_size", "create_date", "create_uid"],
+            offset=offset,
+            limit=limit,
+            order="id desc",
+        )
+        if offset == 0 and len(rows) < limit:
+            total = len(rows)
+        else:
+            total = attachments.search_count(domain)
+
+        entries = []
+        for row in rows:
+            create_uid = row.get("create_uid")
+            entries.append(
+                {
+                    "id": row["id"],
+                    "name": row["name"],
+                    "mimetype": row["mimetype"] or None,
+                    "type": row["type"],
+                    "file_size": row["file_size"],
+                    "create_date": row["create_date"],
+                    "create_uid": create_uid[1] if create_uid else None,
+                    "uri": build_attachment_uri(row["id"]),
+                }
+            )
+
+        lines = [
+            "=" * 60,
+            _(
+                "Attachments of %(model)s/%(id)s (%(shown)s of %(total)s)",
+                model=model,
+                id=record.id,
+                shown=len(entries),
+                total=total,
+            ),
+            "=" * 60,
+        ]
+        if not entries:
+            lines.append(_("No attachments."))
+        for idx, entry in enumerate(entries, offset + 1):
+            details = [entry["mimetype"] or _("unknown type")]
+            if entry["type"] == "url":
+                details.append(_("url"))
+            elif entry["file_size"] is not None:
+                details.append(_("%s bytes", entry["file_size"]))
+            lines.append(
+                f"[{idx}] {entry['name']} ({', '.join(details)}) -> {entry['uri']}"
+            )
+        if offset + len(entries) < total:
+            lines.append("")
+            lines.append(
+                _(
+                    "More attachments available -- next page: "
+                    "list_record_attachments with offset=%(offset)s, "
+                    "limit=%(limit)s",
+                    offset=offset + limit,
+                    limit=limit,
+                )
+            )
+        if entries:
+            lines.append("")
+            lines.append(_("Pass a uri to read_attachment to get the content."))
+
+        structured = {
+            "attachments": entries,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "model": model,
+            "record_id": record.id,
+        }
+        return _tool_result("\n".join(lines), structured)
+
+    # ------------------------------------------------------------------
     # list_resource_templates
     # ------------------------------------------------------------------
     @mcp_tool(
@@ -992,7 +1564,8 @@ class McpToolsRead(models.AbstractModel):
         title="List Resource Templates",
         description=(
             "List the available odoo:// resource URI templates (record binary "
-            "fields and attachments) usable with resources/read."
+            "fields and attachments). A URI can be passed to the "
+            "read_attachment tool (works in every client) or to resources/read."
         ),
         input_schema={
             "type": "object",
@@ -1019,7 +1592,8 @@ class McpToolsRead(models.AbstractModel):
                 "uri_template": "odoo://record/{model}/{id}/{field}",
                 "description": _(
                     "Fetch a record's binary/image field (e.g. an attachment "
-                    "or image) instead of inlining base64."
+                    "or image) instead of inlining base64. Pass the URI to "
+                    "read_attachment, or to resources/read."
                 ),
                 "parameters": {
                     "model": _("Odoo model name (e.g. res.partner)"),
@@ -1030,7 +1604,10 @@ class McpToolsRead(models.AbstractModel):
             },
             {
                 "uri_template": "odoo://attachment/{id}",
-                "description": _("Fetch an ir.attachment by ID."),
+                "description": _(
+                    "Fetch an ir.attachment by ID. Pass the URI to "
+                    "read_attachment, or to resources/read."
+                ),
                 "parameters": {
                     "id": _("ir.attachment record ID"),
                 },
@@ -1041,7 +1618,8 @@ class McpToolsRead(models.AbstractModel):
         note = _(
             "Resource URIs do not support query parameters. Use the "
             "search_records / get_record tools for filtering, pagination and "
-            "field selection."
+            "field selection. Clients without resources/read support can "
+            "dereference any URI with the read_attachment tool."
         )
         text_lines = ["=" * 60, _("Resource templates"), "=" * 60]
         for template in templates:

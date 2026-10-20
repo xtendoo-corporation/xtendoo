@@ -63,9 +63,9 @@ class ResConfigSettings(models.TransientModel):
         string="Default Record Limit",
         help="Number of records a read tool returns when the client does not "
         "request a specific limit. Applies to search_records and "
-        "aggregate_records. Default: 10.",
+        "aggregate_records. Default: 25.",
         config_parameter="mcp_server.default_limit",
-        default=10,
+        default=25,
     )
     mcp_max_limit = fields.Integer(
         string="Maximum Record Limit",
@@ -73,6 +73,14 @@ class ResConfigSettings(models.TransientModel):
         "single request. A client asking for more is clamped to this value. "
         "Default: 100.",
         config_parameter="mcp_server.max_limit",
+        default=100,
+    )
+    mcp_max_batch_size = fields.Integer(
+        string="Maximum Batch Size",
+        help="Maximum number of entries accepted by a single batch write call "
+        "(create_records / update_records). A larger batch is refused and the "
+        "client is asked to split it. Default: 100.",
+        config_parameter="mcp_server.max_batch_size",
         default=100,
     )
     mcp_max_smart_fields = fields.Integer(
@@ -90,6 +98,17 @@ class ResConfigSettings(models.TransientModel):
         "plus a search hint. Set 0 to always collapse. Default: 3.",
         config_parameter="mcp_server.max_related_items",
         default=3,
+    )
+    mcp_link_ttl_hours = fields.Integer(
+        string="Download Link Validity (hours)",
+        help="How long a download link returned by read_attachment stays "
+        "valid. The link is a bearer URL: anyone holding it can download the "
+        "file until it expires, without an Odoo login, and it cannot be "
+        "revoked individually - keep it short; an AI client simply requests a "
+        "new link when one has expired. Values above 1008 hours (42 days) are "
+        "clamped; a value of 0 or less falls back to the default. Default: 1.",
+        config_parameter="mcp_server.link_ttl_hours",
+        default=1,
     )
     mcp_allowed_origins = fields.Char(
         string="Allowed Browser Origins",
@@ -124,10 +143,12 @@ class ResConfigSettings(models.TransientModel):
         )
         params.set_param("mcp_server.default_limit", str(self.mcp_default_limit))
         params.set_param("mcp_server.max_limit", str(self.mcp_max_limit))
+        params.set_param("mcp_server.max_batch_size", str(self.mcp_max_batch_size))
         params.set_param("mcp_server.max_smart_fields", str(self.mcp_max_smart_fields))
         params.set_param(
             "mcp_server.max_related_items", str(self.mcp_max_related_items)
         )
+        params.set_param("mcp_server.link_ttl_hours", str(self.mcp_link_ttl_hours))
         # A Char: write the stripped value; empty deletes the param, which the
         # runtime reader (utils.get_allowed_origins) reads as "no restriction".
         params.set_param(

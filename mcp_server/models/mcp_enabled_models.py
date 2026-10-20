@@ -55,13 +55,10 @@ class McpEnabledModel(models.Model):
     )
     notes = fields.Text(help="Additional notes about this model configuration")
 
-    _sql_constraints = [
-        (
-            "unique_model",
-            "UNIQUE(model_id)",
-            "A model can only be enabled once for MCP access.",
-        )
-    ]
+    _unique_model = models.Constraint(
+        "UNIQUE(model_id)",
+        "A model can only be enabled once for MCP access.",
+    )
 
     @api.constrains("model_id")
     def _check_model_not_internal(self):

@@ -86,7 +86,7 @@ class TestModelSelectionUI(HttpCase):
         wizard = (
             self.env["mcp.model.selection.wizard"]
             .with_user(
-                self.env.ref("mcp_server.group_mcp_admin").users[0]
+                self.env.ref("mcp_server.group_mcp_admin").user_ids[0]
             )  # Run as MCP Admin
             .create(
                 {

@@ -361,6 +361,14 @@ class RecordFormatter:
 class DatasetFormatter:
     """Formats datasets and search results for LLM consumption."""
 
+    # Ceiling on the inline field values of one result page. Every requested
+    # field is inlined (a text-only client sees nothing else), but fields x
+    # rows x MAX_FIELD_DISPLAY_LENGTH is otherwise unbounded; past this many
+    # characters the remaining rows show their summary line only and a note
+    # tells the reader how to narrow the request. structuredContent is not
+    # affected.
+    MAX_INLINE_TEXT_CHARS = 200_000
+
     def __init__(self, model: str):
         """Initialize the dataset formatter."""
         self.model = model
@@ -448,28 +456,63 @@ class DatasetFormatter:
         """Render the record list block (with optional inline fields)."""
         metadata = fields_metadata or {}
         lines = []
+        inline_chars = 0
+        cut_at_record = None
         for idx, record in enumerate(records, 1):
             if offset:
                 idx = offset + idx
             lines.append(f"[{idx}] {self.record_formatter._get_record_summary(record)}")
 
-            # Add selected field values if specific fields were requested
-            if fields and len(fields) <= 5:  # Only show inline for small field sets
+            # Inline every fetched field: the values were already read from the
+            # database, and a text-only client (structuredContent hidden) would
+            # otherwise re-read each record one by one via get_record. Bounded
+            # by MAX_INLINE_TEXT_CHARS across the page (see the constant).
+            if inline_chars > self.MAX_INLINE_TEXT_CHARS:
+                if cut_at_record is None:
+                    cut_at_record = idx
+            elif fields:
                 for field in fields:
                     if field in record and field not in (
                         "id",
                         "name",
                         "display_name",
                     ):
+                        value = record[field]
+                        meta = metadata.get(field, {})
+                        # List view: spend no line on empty values -- the header
+                        # names every fetched column, so a missing line reads as
+                        # "empty". Boolean False is a real value and stays
+                        # (same type-vs-value distinction as the formatter).
+                        ftype = meta.get("type", "unknown")
+                        boolean_like = ftype == "boolean" or (
+                            ftype == "unknown" and isinstance(value, bool)
+                        )
+                        if not boolean_like and (
+                            value is None
+                            or value is False
+                            or value == ""
+                            or value == []
+                        ):
+                            continue
                         # Delegate to the type-aware record formatter so an empty
                         # char field reads "Not set" (not "No") and a many2one
                         # renders "name (ID: id)" -- the field metadata, when
                         # available, drives the distinction.
                         formatted = self.record_formatter._format_field_value(
-                            field, record[field], metadata.get(field, {})
+                            field, value, meta
                         )
-                        lines.append(f"    {field}: {formatted}")
+                        line = f"    {field}: {formatted}"
+                        inline_chars += len(line)
+                        lines.append(line)
 
+            lines.append("")
+        if cut_at_record is not None:
+            lines.append(
+                f"Field values are shown as text up to {self.MAX_INLINE_TEXT_CHARS:,} "
+                f"characters; from record [{cut_at_record}] on only the summary line "
+                "is shown (all values remain in structuredContent). Request fewer "
+                "'fields' or a smaller 'limit' to see every value as text."
+            )
             lines.append("")
         return lines
 

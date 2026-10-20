@@ -33,6 +33,8 @@ from simplest to most involved:
   their timezone and companies, so it stops guessing
 - 🧩 **Custom Tools**: expose curated verbs (e.g. `confirm_sale_order`) backed by server
   actions instead of generic CRUD
+- 📎 **Attachments**: read a PDF, image or file attached to a record from any client,
+  list a record's attachments, upload new ones
 - 🎯 **Granular Permissions**: Control read/write/create/delete access per model
 - 🌐 **REST & XML-RPC APIs**: Dual protocol support for maximum compatibility
 - 👥 **Role-Based Access**: MCP access is granted per user through the MCP User and
@@ -72,7 +74,7 @@ This module opens up powerful AI-assisted workflows for your Odoo instance:
 
 ## Requirements
 
-**Odoo 18.0** (Community or Enterprise). This module targets Odoo 18.0.
+**Odoo 19.0** (Community or Enterprise). This module targets Odoo 19.0 and uses v19-only APIs.
 
 You always need **this Odoo module** installed and configured (it provides the MCP
 protocol, access control, and security layer). Whichever way a client connects — OAuth,
@@ -330,23 +332,103 @@ working.
 
 ### Available Tools
 
-The endpoint exposes 12 built-in tools (plus any admin-defined
+The endpoint exposes 17 built-in tools (plus any admin-defined
 [Custom Tools](#custom-tools)):
 
 | Tool                      | Operation   | Description                                              |
 | ------------------------- | ----------- | -------------------------------------------------------- |
 | `search_records`          | read        | Search records with smart field selection and pagination |
-| `get_record`              | read        | Fetch a single record, formatted for LLMs                |
+| `get_record`              | read        | Fetch one record by ID, formatted for LLMs               |
 | `get_fields`              | read        | Describe a model's fields (type, label, relation, etc.)  |
 | `list_models`             | read        | List the MCP-enabled models                              |
 | `aggregate_records`       | read        | Group/aggregate records (`read_group`-style)             |
+| `read_attachment`         | read        | Read an attachment or binary field (text, image, link)   |
+| `list_record_attachments` | read        | List the files attached to a record                      |
 | `list_resource_templates` | read        | Advertise the available `odoo://` resource templates     |
 | `get_current_context`     | read        | Return the caller's user / timezone / company context    |
 | `create_record`           | create      | Create a record                                          |
+| `create_records`          | create      | Create several records of one model in one call          |
 | `update_record`           | write       | Update a record                                          |
+| `update_records`          | write       | Update several records of one model in one call          |
 | `delete_record`           | unlink      | Delete a record                                          |
+| `upload_attachment`       | create      | Upload a file as an attachment, optionally to a record   |
 | `call_model_method`       | method call | Call a public business method (opt-in per model)         |
 | `post_message`            | write       | Post a message to a record's chatter                     |
+
+`search_records` is also the batch read path. One call with a domain such as
+`[["id", "in", [1, 2, 3]]]` fetches many records at once. A larger `limit` (up to
+the configured maximum) reads a big result set in few calls. The tool descriptions
+and the `initialize` instructions steer AI clients toward this pattern instead of
+one `get_record` call per record.
+
+`get_fields` returns a curated subset of the schema by default: the most relevant
+fields (at most 60) with selection lists cut at 20 options. The result names how many
+fields it left out. Pass `field_names` for specific fields, or `["__all__"]` for the
+complete schema with full selection lists.
+
+`create_records` and `update_records` are the batch write path. `create_records`
+takes one model and a list of field->value objects. `update_records` takes one model and
+either `record_ids` plus one `values` object that is written to every listed record, or
+`updates`, a list of `{"id": …, "values": {…}}` entries when each record needs its own
+values (each id once). Both tools run as the calling user. Both are atomic: if one entry
+fails, the whole batch is rolled back and nothing is written. To create a parent with its
+children in one atomic call, use nested one2many commands in the values, for example
+`"order_line": [[0, 0, {...}]]`. Odoo does not always name the failing entry, so the tool
+descriptions tell clients to retry an ambiguous failure in smaller batches. A batch is
+capped at **Maximum Batch Size** entries (`mcp_server.max_batch_size`, default 100). A
+larger batch is refused with an error that asks the client to split it. The `record_ids`
+list of `call_model_method` keeps its own cap, **Maximum Record Limit**
+(`mcp_server.max_limit`). One batch call counts as **one** request for rate limiting.
+Deletion has no batch tool on purpose: `delete_record` stays one record per call.
+
+### Attachments and Binary Fields
+
+`get_record` and `search_records` never inline binary data. A populated binary or image
+field is returned as an `odoo://record/{model}/{id}/{field}` URI, together with a
+`binary_note` that points the client at `read_attachment`. Files attached to a record
+(chatter attachments, documents) are listed by `list_record_attachments`, each with an
+`odoo://attachment/{id}` URI.
+
+`read_attachment` takes such a `uri` (or a plain `attachment_id`) and a `format`:
+
+- `auto` (default): text files come back inline, images as an MCP `image` content block,
+  PDF and Office documents as extracted text, and anything else — or anything above the
+  inline size caps — as a download link plus metadata. Inline PDF/Office text needs the
+  standard `attachment_indexation` module; without it the tool returns the link and says
+  so. Inline text is truncated at 100,000 characters (with a link to the full file),
+  images and blobs are inlined up to 256 KiB.
+- `link`: only a time-limited download URL, no bytes. Works for read-only OAuth sessions
+  and for clients that can fetch URLs.
+- `blob`: the raw file as an embedded resource (base64 for binary files, text for
+  textual mimetypes), refused above 256 KiB.
+
+A download link is a **delegated-access bearer URL**: it is an HMAC token over the
+record, field and expiry, redeemed by Odoo's standard `/web/content` route. Anyone who
+holds the link can download the file until it expires, without an Odoo login, and the
+download bypasses MCP auditing and rate limiting. The tool call that produced the link
+is audited as usual. The link validity is **Download Link Validity** in the settings
+(`mcp_server.link_ttl_hours`, default 1 hour; the module clamps it at 1008 hours = 42
+days, the longest validity Odoo gives its own binary access tokens). Keep it short: an AI
+client simply requests a new link when one has expired. A link
+cannot be revoked individually; only rotating the database secret invalidates all of
+them.
+
+`upload_attachment` creates an `ir.attachment` from base64 content. Pass `model` and
+`record_id` to attach it to a record — this is gated as a **write** on that record, both
+via MCP (`allow_write`) and by Odoo (write access to the record). Omit both for a
+standalone attachment, which requires `ir.attachment` to be MCP-enabled for create. The
+content is limited to about 7 MiB by the request body cap. Odoo stores HTML, XML and SVG
+uploads from non-privileged users as `text/plain`. The returned URI can be read back
+with `read_attachment` and the id linked to a chatter message with
+`post_message(attachment_ids=[id])`.
+
+**Gating.** An attachment is readable via MCP when its parent record's model is
+MCP-enabled for read, **or** when `ir.attachment` itself is MCP-enabled for read. The
+same rule applies to `list_record_attachments`. A record-field URI always requires the
+record's own model to be read-enabled; enabling `ir.attachment` never unlocks arbitrary
+binary fields. Odoo's attachment access rules apply on top in every case. To enable
+`ir.attachment` itself, create the row directly under **Settings > Technical > MCP > MCP
+Available Models** — the model selection wizard filters out `ir.*` models.
 
 ### Access Control
 
@@ -383,7 +465,9 @@ per worker process).
 
 The whole `POST /mcp` request body is capped at 10 MiB; since binary fields are written
 base64-encoded, this limits a single `create_record` / `update_record` binary write to
-roughly 7.5 MiB of decoded data — a larger payload is rejected with HTTP 413.
+roughly 7.5 MiB of decoded data — a larger payload is rejected with HTTP 413. The cap
+applies to the whole batch of a `create_records` / `update_records` call, so a batch
+that carries binary values reaches it much sooner than a single-record write.
 
 ### Resources
 
@@ -393,9 +477,13 @@ instead of inlined as base64:
 - `odoo://record/{model}/{id}/{field}` — a binary/image field on a record
 - `odoo://attachment/{id}` — an `ir.attachment` by ID
 
+`resources/read` is an application-driven MCP primitive that many chat clients do not
+let the model call. The `read_attachment` tool accepts the same URIs and works in every
+client; see [Attachments and Binary Fields](#attachments-and-binary-fields).
+
 ## User Context, Scoped Keys, Read-Only Consent & Custom Tools
 
-These four capabilities were added in **18.0.2** to tighten security and give admins
+These four capabilities were added in **19.0.2** to tighten security and give admins
 more control over what MCP clients can do.
 
 ### User Context on Connect
@@ -436,8 +524,9 @@ screen shows an **"Allow creating and modifying data"** checkbox (checked by def
 - **Leave it checked** → the session is granted the `mcp:write` scope: the client can
   read **and** write, exactly as before.
 - **Uncheck it** → the session is granted the read-only `mcp:read` scope. Write tools
-  (`create_record`, `update_record`, `delete_record`, `call_model_method`,
-  `post_message`, and any non-read-only [custom tool](#custom-tools)) are **not even
+  (`create_record`, `create_records`, `update_record`, `update_records`,
+  `delete_record`, `call_model_method`, `post_message`, and any non-read-only
+  [custom tool](#custom-tools)) are **not even
   listed** for that session, and any attempt to call one is refused with a clear
   read-only error.
 
@@ -543,7 +632,9 @@ log (`mcp.log`).
    - Turn on **Enable MCP Server** (the master switch). Optional switches live here too:
      **Allow OAuth 2.1 login**, rate limiting and its request limit, logging and its
      retention, the default/maximum record limits for tool responses (plus the smart
-     field and related-item caps), and an optional
+     field and related-item caps), the **Maximum Batch Size** for
+     `create_records` / `update_records`, the **Download Link Validity** of
+     `read_attachment` links, and an optional
      **Allowed Browser Origins** allowlist (empty by default = any Origin accepted;
      when set, browser requests from other Origins get HTTP 403 — native clients
      send no Origin header and are never affected).
@@ -616,9 +707,9 @@ is resolved from the request itself. Resolve it at the transport layer:
    resolves it. Discovery documents and consent redirects are built from the request
    host, so each tenant automatically advertises its own correct URLs.
 
-2. **`X-Odoo-Database` header — not available on Odoo 18.** Odoo 19 core resolves this
-   header; Odoo 18 does not, so header-based selection cannot work on this branch. Use
-   hostname routing (option 1) or pin a single database (option 3).
+2. **`X-Odoo-Database` header** — Bearer / API-key clients that can set headers (Claude
+   Code, `curl`, custom integrations) can send `X-Odoo-Database: <db>` alongside
+   `Authorization`, with no hostname routing. This does **not** help browser OAuth clients.
 
 3. **Single database** — pin the instance with `db_name = <db>` (or `dbfilter = ^<db>$`).
 
@@ -810,9 +901,9 @@ MCP-specific XML-RPC endpoints with enhanced access control (used by the
   request targets — every `/mcp*` route 404s and the body reads *"No database is
   selected"*
 - Resolve the target database at the transport layer — see
-  [Multi-Database Deployment](#multi-database-deployment): hostname-based `dbfilter`,
-  or pin a single database with `db_name` (the `X-Odoo-Database` header is Odoo 19+
-  core and does not work on Odoo 18)
+  [Multi-Database Deployment](#multi-database-deployment): hostname-based `dbfilter`
+  (required for browser OAuth clients), an `X-Odoo-Database: <db>` header (Bearer /
+  API-key clients), or pin a single database with `db_name`
 - Single-database instances are unaffected — Odoo auto-selects the only database
 
 </details>

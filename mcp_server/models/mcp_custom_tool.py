@@ -82,13 +82,10 @@ class McpCustomTool(models.Model):
     )
     active = fields.Boolean(default=True)
 
-    _sql_constraints = [
-        (
-            "unique_name",
-            "UNIQUE(name)",
-            "A custom tool with this name already exists.",
-        )
-    ]
+    _unique_name = models.Constraint(
+        "UNIQUE(name)",
+        "A custom tool with this name already exists.",
+    )
 
     @api.constrains("name")
     def _check_name(self):
@@ -197,7 +194,7 @@ class McpCustomTool(models.Model):
     def _sudo_action(self):
         """Return this tool's wrapped action reference read under sudo.
 
-        Sudo reads the action DEFINITION only (groups_id/model_id/state; the code
+        Sudo reads the action DEFINITION only (group_ids/model_id/state; the code
         stays group_system-restricted on ir.actions.server). Sudo the RECORD so a
         caller without mcp.custom.tool read does not re-trigger that model-read ACL
         navigating action_id. The action is NOT executed under this sudo -- callers
@@ -210,21 +207,21 @@ class McpCustomTool(models.Model):
         """Whether the CALLING user (non-su) may run this tool.
 
         The access boundary is the wrapped action's own: the action's Allowed
-        Groups when set, else write access to the action's model (mirrors the
-        groups/model-write gate inline in core ``run()``, ir_actions.py).
-        Enforced here NON-su -- and NOT probed through a ``sudo()`` recordset --
-        because under ``sudo()`` ``check_access`` is a no-op, so a sudo'd probe
-        of the model-access branch would pass for everyone. This is therefore
-        the real gate, evaluated at both list and call time.
+        Groups when set, else write access to the action's model (mirrors core
+        ``_can_execute_action_on_records``, ir_actions.py). Enforced here NON-su
+        -- and NOT via ``sudo()._can_execute_action_on_records`` -- because core
+        ``run()`` executes under ``sudo()`` where ``check_access`` is a no-op, so
+        that probe's model-access branch would pass for everyone. This is
+        therefore the real gate, evaluated at both list and call time.
         """
         self.ensure_one()
-        # Read the action DEFINITION (groups_id/model_id) under sudo via
+        # Read the action DEFINITION (group_ids/model_id) under sudo via
         # _sudo_action; it is NOT executed here, and the gate below still
         # evaluates the CALLER (self.env).
         action = self._sudo_action()
-        groups = action.groups_id
+        groups = action.group_ids
         if groups:
-            return bool(groups & self.env.user.groups_id)
+            return bool(groups & self.env.user.all_group_ids)
         model = action.model_id.model
         if not model:
             # A server action always has a model (model_id is required); fail
