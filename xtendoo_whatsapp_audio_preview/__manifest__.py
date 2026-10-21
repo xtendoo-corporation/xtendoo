@@ -18,6 +18,8 @@
         "web.assets_backend": [
             "xtendoo_whatsapp_audio_preview/static/src/js/audio_attachment.js",
             "xtendoo_whatsapp_audio_preview/static/src/js/thread_model_patch.js",
+            "xtendoo_whatsapp_audio_preview/static/src/js/thread_actions_fix.js",
+            "xtendoo_whatsapp_audio_preview/static/src/js/message_compat.js",
             "xtendoo_whatsapp_audio_preview/static/src/xml/audio_attachment.xml",
             "xtendoo_whatsapp_audio_preview/static/src/xml/whatsapp_contact_preview.xml",
             "xtendoo_whatsapp_audio_preview/static/src/css/audio_attachment.css",
