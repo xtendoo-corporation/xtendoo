@@ -1,6 +1,8 @@
 {
-    "name": "AI Agent Tools: Accounting",
-    "summary": "Invoice and receivable/payable tools for the AI agent (draft only)",
+    "name": "Agente IA: contabilidad",
+    "summary": (
+        "Herramientas de facturas, cobros y pagos para el agente IA (solo borradores)"
+    ),
     "version": "19.0.1.0.0",
     "category": "Productivity",
     "author": "Xtendoo",

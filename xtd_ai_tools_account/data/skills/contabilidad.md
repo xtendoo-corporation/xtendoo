@@ -47,7 +47,9 @@ línea `[Adjunto: nombre (id N)]`. Úsala así:
    el nombre. Si no existe, propón `create_contact` (siempre pide confirmación) y espera
    a que quede creado. Si hay varios candidatos, pregunta cuál.
 3. **Cabecera:** `invoice_date` = fecha de la factura del documento; `ref` = número de
-   factura del proveedor, tal como aparece.
+   factura del proveedor, tal como aparece; `invoice_date_due` = fecha de vencimiento si
+   el documento la trae (si solo indica un plazo, p. ej. «30 días», calcúlala desde la
+   fecha de la factura y dilo en la respuesta).
 4. **Líneas:** una por concepto del documento, con su cantidad y precio unitario sin
    impuestos. Si el producto se identifica con claridad (`search_products`), usa
    `product_id`; si no, usa `description` con el texto del documento y `price_unit`. Si

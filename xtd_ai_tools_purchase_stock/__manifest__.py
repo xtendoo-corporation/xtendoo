@@ -1,7 +1,7 @@
 {
-    "name": "AI Agent Tools: Purchase and Stock",
+    "name": "Agente IA: compras e inventario",
     "summary": (
-        "Purchase and inventory tools for the AI agent (read-only plus RFQ drafts)"
+        "Herramientas de compras e inventario para el agente IA (solo borradores)"
     ),
     "version": "19.0.1.0.0",
     "category": "Productivity",

@@ -85,6 +85,39 @@ class TestAccountAttachments(XtdAiAccountCase):
         structured = self.agent_call(self.biller, run, "create_vendor_bill", args)
         self.assertNotEqual(structured["status"], "error", structured)
 
+    def test_due_date_from_document_wins_over_payment_term(self):
+        term = self.env.ref(
+            "account.account_payment_term_30days", raise_if_not_found=False
+        )
+        if term:
+            self.vendor.with_company(self.vendor.company_id or self.env.company).write(
+                {"property_supplier_payment_term_id": term.id}
+            )
+        att = self.upload(self.biller, raw=make_pdf(), name="factura.pdf")
+        run, _token = self.start_run(self.biller, "", attachment_ids=[att.id])
+        args = self.bill_args(att.id) | {"invoice_date_due": "2026-04-15"}
+        structured = self.agent_call(self.biller, run, "create_vendor_bill", args)
+        self.assertEqual(structured["status"], "pending_confirmation", structured)
+        self.assertIn("vence 2026-04-15", structured["summary"])
+        preview = (
+            self.env(su=True)["xtd.ai.pending_action"]
+            .browse(structured["pending_action_id"])
+            .preview
+        )
+        self.assertEqual(preview["invoice_date_due"], "2026-04-15")
+        move = self.confirm(self.biller, structured)
+        self.assertEqual(str(move.invoice_date_due), "2026-04-15")
+        self.assertFalse(move.invoice_payment_term_id)
+
+    def test_due_date_before_invoice_date_is_rejected(self):
+        att = self.upload(self.biller, raw=make_pdf(), name="factura.pdf")
+        run, _token = self.start_run(self.biller, "", attachment_ids=[att.id])
+        args = self.bill_args(att.id) | {"invoice_date_due": "2026-02-01"}
+        structured = self.agent_call(self.biller, run, "create_vendor_bill", args)
+        self.assertEqual(structured["status"], "error", structured)
+        self.assertEqual(structured["error"]["code"], "validation")
+        self.assertIn("vencimiento", structured["error"]["message"])
+
     def test_customer_invoice_with_attachment(self):
         att = self.upload(self.biller)
         run, _token = self.start_run(self.biller, "mira", attachment_ids=[att.id])

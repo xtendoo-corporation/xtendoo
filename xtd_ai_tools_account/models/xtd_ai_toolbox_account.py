@@ -88,6 +88,14 @@ def _invoice_schema(partner_label):
                     "del documento."
                 )
             },
+            "invoice_date_due": _DATE
+            | {
+                "description": (
+                    "Fecha de vencimiento (YYYY-MM-DD) si el documento la indica: "
+                    "léela del documento. Si se da, manda sobre el plazo de pago del "
+                    "contacto. Si no, Odoo la calcula."
+                )
+            },
             "ref": {
                 "type": "string",
                 "maxLength": 100,
@@ -626,6 +634,21 @@ class XtdAiToolboxAccount(models.AbstractModel):
         }
         if args.get("invoice_date"):
             vals["invoice_date"] = args["invoice_date"]
+        if args.get("invoice_date_due"):
+            due = args["invoice_date_due"]
+            if args.get("invoice_date") and due < args["invoice_date"]:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "La fecha de vencimiento (%(due)s) es anterior a la fecha de "
+                        "la factura (%(date)s). Revisa las fechas del documento.",
+                        due=due,
+                        date=args["invoice_date"],
+                    ),
+                )
+            # an explicit due date wins over the partner's payment term
+            vals["invoice_payment_term_id"] = False
+            vals["invoice_date_due"] = due
         if args.get("ref"):
             vals["ref"] = args["ref"].strip()
         return vals
@@ -703,6 +726,12 @@ class XtdAiToolboxAccount(models.AbstractModel):
             summary = (
                 self.env._("[%(company)s] ", company=move.company_id.name) + summary
             )
+        if move.invoice_date or move.invoice_date_due:
+            summary += self.env._(
+                " Fecha %(date)s, vence %(due)s.",
+                date=move.invoice_date or "-",
+                due=move.invoice_date_due or "-",
+            )
         if attachment:
             summary += self.env._(
                 " Adjunto: %s.", self._xtd_ai_text(attachment.name)["untrusted_text"]
@@ -730,6 +759,10 @@ class XtdAiToolboxAccount(models.AbstractModel):
             "amount_untaxed": self._xtd_ai_money(move.amount_untaxed, currency),
             "amount_tax": self._xtd_ai_money(move.amount_tax, currency),
             "amount_total": self._xtd_ai_money(move.amount_total, currency),
+            "invoice_date": str(move.invoice_date) if move.invoice_date else None,
+            "invoice_date_due": str(move.invoice_date_due)
+            if move.invoice_date_due
+            else None,
         }
 
     @xtd_ai_tool(

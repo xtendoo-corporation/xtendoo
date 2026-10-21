@@ -1,6 +1,9 @@
 {
-    "name": "AI Agent Gateway",
-    "summary": "Security boundary between the AI agent service and Odoo",
+    "name": "Agente IA: pasarela de seguridad",
+    "summary": (
+        "Barrera de seguridad entre el agente IA y Odoo: permisos del usuario, "
+        "solo borradores y auditoría"
+    ),
     "version": "19.0.1.0.0",
     "category": "Productivity",
     "author": "Xtendoo",

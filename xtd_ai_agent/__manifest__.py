@@ -1,6 +1,6 @@
 {
-    "name": "AI Agent (in Odoo)",
-    "summary": "Runs the AI agent loop inside Odoo with queue_job and Anthropic",
+    "name": "Agente IA",
+    "summary": "Asistente de IA integrado en Odoo con queue_job y Claude",
     "version": "19.0.1.0.0",
     "category": "Productivity",
     "author": "Xtendoo",

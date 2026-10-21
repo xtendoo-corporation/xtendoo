@@ -1,6 +1,6 @@
 {
-    "name": "AI Agent Tools: Sales and CRM",
-    "summary": "Sales and CRM tools and skills for the AI agent (draft only)",
+    "name": "Agente IA: ventas y CRM",
+    "summary": "Herramientas de ventas y CRM para el agente IA (solo borradores)",
     "version": "19.0.1.0.0",
     "category": "Productivity",
     "author": "Xtendoo",

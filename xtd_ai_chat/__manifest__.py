@@ -1,8 +1,8 @@
 {
-    "name": "AI Agent Chat",
+    "name": "Agente IA: chat",
     "summary": (
-        "Floating window, full-page app and routes to chat with the AI agent from the "
-        "Odoo web client"
+        "Chat del asistente de IA: icono en la barra, ventana flotante y app a "
+        "pantalla completa"
     ),
     "version": "19.0.1.0.0",
     "category": "Productivity",
