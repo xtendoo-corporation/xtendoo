@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form_xtd_ai" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.xtd_ai_gateway</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app
+                    data-string="Agente IA"
+                    string="Agente IA"
+                    name="xtd_ai_gateway"
+                    groups="xtd_ai_gateway.group_xtd_ai_manager"
+                >
+                    <block title="Agente IA">
+                        <setting
+                            string="Confirmación obligatoria"
+                            help="Obliga a confirmar todas las acciones del agente IA."
+                        >
+                            <field name="xtd_ai_force_confirmation" />
+                        </setting>
+                        <setting
+                            string="Retención de la auditoría"
+                            help="Días que se conservan los registros de auditoría."
+                        >
+                            <field name="xtd_ai_audit_retention_days" />
+                        </setting>
+                        <setting
+                            string="Clave de firma de tokens"
+                            help="Rotarla invalida todas las ejecuciones en curso."
+                        >
+                            <button
+                                name="action_xtd_ai_rotate_secret"
+                                type="object"
+                                string="Rotar clave"
+                                class="btn-secondary"
+                                confirm="¿Rotar la clave de firma? Se invalidan las ejecuciones en curso."
+                            />
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

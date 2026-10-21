@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="action_xtd_ai_chat_app" model="ir.actions.client">
+        <field name="name">Asistente IA</field>
+        <field name="tag">xtd_ai_chat.app</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem
+        id="menu_xtd_ai_chat_root"
+        name="Asistente IA"
+        action="action_xtd_ai_chat_app"
+        web_icon="xtd_ai_chat,static/description/icon.png"
+        groups="xtd_ai_gateway.group_xtd_ai_user"
+        sequence="5"
+    />
+</odoo>
