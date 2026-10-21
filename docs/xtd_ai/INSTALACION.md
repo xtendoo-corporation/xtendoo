@@ -3,27 +3,27 @@
 Asistente de IA dentro de Odoo 19 Community. Responde preguntas sobre ventas, compras,
 inventario, contabilidad, CRM y contactos, y prepara **borradores** (presupuestos,
 solicitudes de compra, facturas, oportunidades, contactos) que una persona revisa y
-confirma. El agente actúa siempre con los permisos del usuario que chatea: no ve ni
-hace nada que Odoo no le permita a esa persona.
+confirma. El agente actúa siempre con los permisos del usuario que chatea: no ve ni hace
+nada que Odoo no le permita a esa persona.
 
 ## Módulos
 
-| Módulo | Qué aporta | Obligatorio |
-|---|---|---|
-| `xtd_ai_gateway` | Barrera de seguridad: permisos, «solo borrador», auditoría, adjuntos | Sí |
-| `xtd_ai_agent` | El agente en sí, dentro de Odoo, con `queue_job` y Claude | Sí |
-| `xtd_ai_chat` | Chat: icono en la barra, ventana flotante y app «Asistente IA» | Sí |
-| `xtd_ai_tools_sale` | Herramientas de ventas y CRM | Si se usan Ventas/CRM |
-| `xtd_ai_tools_purchase_stock` | Herramientas de compras e inventario | Si se usan Compras/Inventario |
-| `xtd_ai_tools_account` | Herramientas de contabilidad (facturas, cobros y pagos) | Si se usa Facturación |
+| Módulo                        | Qué aporta                                                           | Obligatorio                   |
+| ----------------------------- | -------------------------------------------------------------------- | ----------------------------- |
+| `xtd_ai_gateway`              | Barrera de seguridad: permisos, «solo borrador», auditoría, adjuntos | Sí                            |
+| `xtd_ai_agent`                | El agente en sí, dentro de Odoo, con `queue_job` y Claude            | Sí                            |
+| `xtd_ai_chat`                 | Chat: icono en la barra, ventana flotante y app «Asistente IA»       | Sí                            |
+| `xtd_ai_tools_sale`           | Herramientas de ventas y CRM                                         | Si se usan Ventas/CRM         |
+| `xtd_ai_tools_purchase_stock` | Herramientas de compras e inventario                                 | Si se usan Compras/Inventario |
+| `xtd_ai_tools_account`        | Herramientas de contabilidad (facturas, cobros y pagos)              | Si se usa Facturación         |
 
 Dependencia externa: **`queue_job`** (repositorio OCA `queue`, rama 19.0). No hace falta
 instalar ninguna librería de Python nueva: el agente usa `requests`, que ya trae Odoo.
 
 ## 1. Configuración del servidor (una vez)
 
-Añadir `queue_job` a los módulos de servidor para que arranque su ejecutor de trabajos en
-segundo plano. En Doodba, un fichero `odoo/custom/conf.d/50-queue_job.conf`:
+Añadir `queue_job` a los módulos de servidor para que arranque su ejecutor de trabajos
+en segundo plano. En Doodba, un fichero `odoo/custom/conf.d/50-queue_job.conf`:
 
 ```ini
 [options]
@@ -34,8 +34,9 @@ channels = root:2,root.xtd_ai:2
 ```
 
 - `root.xtd_ai:2` = hasta 2 preguntas al agente a la vez. Súbelo si hay muchos usuarios.
-- El ejecutor de `queue_job` solo atiende las bases de datos de `db_name` / `PGDATABASE`.
-  En una instalación normal de Doodba hay una sola y no hay que hacer nada más.
+- El ejecutor de `queue_job` solo atiende las bases de datos de `db_name` /
+  `PGDATABASE`. En una instalación normal de Doodba hay una sola y no hay que hacer nada
+  más.
 - Sin esta configuración el agente **funciona igual** con un hilo de respaldo, pero en
   Ajustes aparece un aviso: para producción conviene `queue_job`.
 
@@ -46,12 +47,17 @@ Reiniciar Odoo.
 
 ## 2. Instalación
 
-1. Añadir el repositorio `xtendoo` y el de OCA `queue` a `repos.yaml`/`addons.yaml` (si no
-   están ya).
-2. Instalar los módulos: `xtd_ai_agent`, `xtd_ai_chat` y las herramientas de las apps que
-   use el cliente (`xtd_ai_tools_sale`, `xtd_ai_tools_purchase_stock`,
+1. Añadir el repositorio `xtendoo` y el de OCA `queue` a `repos.yaml`/`addons.yaml` (si
+   no están ya).
+2. Instalar los módulos: `xtd_ai_agent`, `xtd_ai_chat` y las herramientas de las apps
+   que use el cliente (`xtd_ai_tools_sale`, `xtd_ai_tools_purchase_stock`,
    `xtd_ai_tools_account`). Las dependencias (`xtd_ai_gateway`, `queue_job`) se instalan
    solas.
+3. **Reiniciar Odoo después de instalarlos.** El ejecutor de `queue_job` decide al
+   arrancar qué bases atiende; si `queue_job` se acaba de instalar, hasta el reinicio no
+   atiende esa base. Mientras tanto el agente no se queda colgado: si una pregunta no
+   empieza en 20 s, la ejecuta él mismo en un hilo (y lo deja anotado en el log), pero
+   así cada respuesta tarda 20 s más.
 
 ## 3. Configuración en Odoo
 
@@ -60,7 +66,7 @@ Reiniciar Odoo.
 1. Pegar la **clave de la API de Anthropic** y guardar. La clave no se vuelve a mostrar
    (aparece «Clave configurada»). Alternativa: variable de entorno `ANTHROPIC_API_KEY`
    en el contenedor, que tiene prioridad.
-2. Si la clave de Anthropic no está ligada a un *workspace*, indicar el **ID del
+2. Si la clave de Anthropic no está ligada a un _workspace_, indicar el **ID del
    workspace** (o la variable de entorno `ANTHROPIC_WORKSPACE_ID`).
 3. Pulsar **«Probar conexión»**. Debe responder OK.
 4. Opcional: modelo (por defecto `claude-haiku-5-5`, el recomendado), esfuerzo (`low`),
@@ -93,8 +99,8 @@ compañías activas. Todo queda auditado en **Ajustes → Agente IA → Auditor�
 ## 6. Datos personales (RGPD)
 
 Las preguntas, los datos que el agente consulta para responderlas y los documentos
-adjuntos se envían a Anthropic (EE. UU.) para generar la respuesta. Antes de activarlo en
-un cliente: contrato de encargo del tratamiento, DPA de Anthropic, información a los
+adjuntos se envían a Anthropic (EE. UU.) para generar la respuesta. Antes de activarlo
+en un cliente: contrato de encargo del tratamiento, DPA de Anthropic, información a los
 usuarios y revisión de la retención. Las herramientas solo devuelven los campos
 necesarios y las conversaciones se borran pasados 365 días (configurable).
 

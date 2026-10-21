@@ -260,6 +260,73 @@ class TestAgentJob(XtdAiCase):
         )
         thread.return_value.start.assert_called_once()
 
+    def test_queue_job_path_arms_the_watchdog(self):
+        run = self.run.with_user(self.user)
+        added = []
+        with (
+            patch.object(
+                self.registry[CONFIG], "_xtd_ai_jobrunner_active", lambda *a: True
+            ),
+            patch.object(
+                self.registry[CONFIG], "_xtd_ai_config_error", lambda *a: False
+            ),
+            patch.object(Callbacks, "add", lambda cbs, f: added.append(f)),
+            trap_jobs() as trap,
+        ):
+            self.assertFalse(run._xtd_ai_schedule())
+            trap.assert_jobs_count(1)
+        self.assertEqual(len(added), 1)  # the watchdog, after the commit
+        with patch.object(run_module.threading, "Thread") as thread:
+            added[0]()
+        self.assertEqual(thread.call_args.kwargs["target"], run_module._watchdog_main)
+        self.assertEqual(
+            thread.call_args.kwargs["args"],
+            (self.env.cr.dbname, self.run.id, run_module.WATCHDOG_DELAY),
+        )
+
+    def test_only_one_executor_runs_it(self):
+        provider = self.use_provider([text_response("una vez")])
+        self.assertTrue(self.run._xtd_ai_claim())
+        self.assertFalse(self.run._xtd_ai_claim())  # the second executor loses
+        # a run already claimed by another executor is left alone
+        self.job()
+        self.assertEqual(len(provider.requests), 0)
+        self.assertFalse(self.messages("assistant"))
+
+    def test_job_claims_before_running(self):
+        provider = self.use_provider([text_response("hecho")])
+        self.job()
+        self.assertTrue(self.run.agent_claimed_at)
+        self.assertEqual(len(provider.requests), 1)
+        self.assertFalse(self.run._xtd_ai_claim())
+
+    def test_watchdog_runs_an_unclaimed_queued_run(self):
+        provider = self.use_provider([text_response("rescatada")])
+        self.assertTrue(self.run._xtd_ai_watchdog_should_run())
+        registry = MagicMock()
+        registry.return_value.cursor.return_value = nullcontext(self.env.cr)
+        with (
+            patch.object(run_module, "Registry", registry),
+            patch.object(run_module.time, "sleep") as sleep,
+        ):
+            run_module._watchdog_main(self.env.cr.dbname, self.run.id, 20)
+        sleep.assert_called_once_with(20)
+        self.assertEqual(len(provider.requests), 1)
+        self.assertEqual(self.messages("assistant").body, "rescatada")
+
+    def test_watchdog_leaves_a_claimed_run_alone(self):
+        provider = self.use_provider([text_response("no")])
+        self.assertTrue(self.run._xtd_ai_claim())  # queue_job got it first
+        self.assertFalse(self.run._xtd_ai_watchdog_should_run())
+        registry = MagicMock()
+        registry.return_value.cursor.return_value = nullcontext(self.env.cr)
+        with (
+            patch.object(run_module, "Registry", registry),
+            patch.object(run_module.time, "sleep"),
+        ):
+            run_module._watchdog_main(self.env.cr.dbname, self.run.id, 0)
+        self.assertEqual(len(provider.requests), 0)
+
     def test_thread_main_runs_with_its_own_cursor(self):
         provider = self.use_provider([text_response("desde el hilo")])
         registry = MagicMock()

@@ -1,7 +1,8 @@
 import logging
 import threading
+import time
 
-from odoo import SUPERUSER_ID, _, api, models, tools
+from odoo import SUPERUSER_ID, _, api, fields, models, tools
 from odoo.modules.registry import Registry
 
 from ..agent.errors import ProviderNotConfigured
@@ -14,6 +15,10 @@ _logger = logging.getLogger(__name__)
 CHANNEL = "root.xtd_ai"
 MAX_ITERATIONS = 30
 ACTIVE_STATES = ("queued", "running")
+# Seconds a queued run may wait for the queue_job runner before the safety net
+# runs it in a thread (e.g. Odoo was not restarted after installing queue_job, so
+# its runner does not serve this database yet).
+WATCHDOG_DELAY = 20
 
 
 def _thread_main(dbname, run_id):
@@ -35,8 +40,36 @@ def _thread_main(dbname, run_id):
             _logger.exception("Could not mark run %s as failed", run_id)
 
 
+def _watchdog_main(dbname, run_id, delay):
+    """Safety net for queue_job: run the agent if nobody claimed the run in time."""
+    threading.current_thread().dbname = dbname
+    time.sleep(delay)
+    try:
+        with Registry(dbname).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, {})
+            run = env["xtd.ai.run"].browse(run_id).exists()
+            if run and run._xtd_ai_watchdog_should_run():
+                _logger.warning(
+                    "AI agent run %s not picked up by queue_job after %ss: running "
+                    "it in a thread (restart Odoo so the queue_job runner serves "
+                    "this database)",
+                    run_id,
+                    delay,
+                )
+                run._xtd_ai_job_run()
+    except Exception:  # noqa: BLE001 - the thread must never die noisily
+        _logger.exception("AI agent watchdog for run %s failed", run_id)
+
+
 class XtdAiRun(models.Model):
     _inherit = "xtd.ai.run"
+
+    agent_claimed_at = fields.Datetime(
+        readonly=True,
+        copy=False,
+        help="When an executor (queue_job or the fallback thread) took the run. "
+        "Only one executor may run it.",
+    )
 
     # ------------------------------------------------------------------
     # Scheduling
@@ -61,9 +94,46 @@ class XtdAiRun(models.Model):
                 max_retries=1,
                 description=self.env._("Agente IA: ejecución %(run)s", run=self.id),
             )._xtd_ai_job_run()
+            self._xtd_ai_start_watchdog()
         else:
             self._xtd_ai_start_thread()
         return False
+
+    def _xtd_ai_start_watchdog(self, delay=WATCHDOG_DELAY):
+        dbname, run_id = self.env.cr.dbname, self.id
+
+        def start():
+            threading.Thread(
+                target=_watchdog_main,
+                args=(dbname, run_id, delay),
+                name=f"xtd_ai_watchdog_{run_id}",
+                daemon=True,
+            ).start()
+
+        self.env.cr.postcommit.add(start)
+
+    def _xtd_ai_watchdog_should_run(self):
+        """Still queued and unclaimed: nobody is executing it."""
+        self.ensure_one()
+        run = self.sudo()  # sudo: control record of the gateway
+        return run.state == "queued" and not run.agent_claimed_at
+
+    def _xtd_ai_claim(self):
+        """Atomically take the run for this executor. False if another took it."""
+        self.ensure_one()
+        self.env.cr.execute(
+            "UPDATE xtd_ai_run SET agent_claimed_at = now() at time zone 'utc' "
+            "WHERE id = %s AND agent_claimed_at IS NULL "
+            "AND state IN ('queued', 'running') RETURNING id",
+            (self.id,),
+        )
+        claimed = bool(self.env.cr.fetchone())
+        self.invalidate_recordset(["agent_claimed_at"])
+        if claimed and not tools.config["test_enable"]:
+            # make the claim visible to the other executor at once (queue_job and
+            # the safety net may both try): without it both could run the agent
+            self.env.cr.commit()  # pylint: disable=invalid-commit
+        return claimed
 
     def _xtd_ai_start_thread(self):
         dbname, run_id = self.env.cr.dbname, self.id
@@ -91,6 +161,9 @@ class XtdAiRun(models.Model):
         run = self.sudo()  # sudo: control record of the gateway
         if run.state not in ACTIVE_STATES:
             return _("La ejecución ya había terminado (%s).", run.state)
+        if not run._xtd_ai_claim():
+            # queue_job and the safety net may both try: only one runs it
+            return _("Otra instancia ya está ejecutando esta petición.")
         try:
             self._xtd_ai_job_execute()
             self.env.invalidate_all()
