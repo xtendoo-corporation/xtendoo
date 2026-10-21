@@ -1,5 +1,21 @@
 /* Inline audio player for WhatsApp voice messages */
+/* El contenedor de adjuntos de 19 tiene tamaño fijo (~140px de alto y 182 de ancho): para los audios se
+   adapta al contenido, así queda compacto y sin barra de desplazamiento. */
+.o-mail-AttachmentContainer.o-mail-AttachmentContainer:has(> .o-mail-AttachmentCard-audio) {
+    width: auto !important;
+    height: auto !important;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.o-mail-AttachmentCard-audio {
+    width: auto;
+    height: auto;
+}
+
 .o-mail-AttachmentCard-audio audio {
+    width: 260px;
+    max-width: 100%;
     min-width: 180px;
     height: 36px;
     border-radius: 20px;
