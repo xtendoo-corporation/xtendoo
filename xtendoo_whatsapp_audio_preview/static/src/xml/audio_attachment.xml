@@ -5,11 +5,19 @@
         <xpath expr="//div[hasclass('o-mail-AttachmentCard')]" position="before">
             <div t-elif="isAudioAttachment(attachment)" class="o-mail-AttachmentCard-audio d-flex align-items-center p-2 w-100">
                 <i class="fa fa-microphone text-primary me-2" title="Audio"/>
-                <audio controls="controls" preload="metadata" class="flex-grow-1" t-on-click.stop="">
+                <audio controls="controls" preload="metadata" class="flex-grow-1">
                     <source t-att-src="getAudioUrl(attachment)" t-att-type="attachment.mimetype"/>
                     Tu navegador no soporta la reproducción de audio.
                 </audio>
+                <a class="ms-2 text-600" t-att-href="attachment.downloadUrl" t-att-download="attachment.name" title="Descargar" t-on-click.stop="">
+                    <i class="fa fa-download"/>
+                </a>
             </div>
+        </xpath>
+        <!-- La capa de "hover" (nombre, tamaño, descargar) de 19 cubre todo el adjunto y tapa los controles del
+             reproductor: en los audios no se muestra (el botón de descarga está junto al reproductor). -->
+        <xpath expr="//div[hasclass('o-mail-Attachment-hover')]" position="attributes">
+            <attribute name="t-if">!isMobileOS and !isAudioAttachment(attachment)</attribute>
         </xpath>
     </t>
 </templates>
