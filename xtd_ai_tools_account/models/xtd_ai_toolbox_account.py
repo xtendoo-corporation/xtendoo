@@ -66,8 +66,14 @@ _LINE_SCHEMA = _obj(
 )
 
 
-def _invoice_schema(partner_label):
-    return _obj(
+def _invoice_schema(partner_label, vendor=False):
+    """Schema of the draft invoice tools.
+
+    Vendor bills require the supplier's invoice number and date: every supplier
+    invoice has them, and with strict tool use a required field always arrives
+    (a small model tends to leave optional ones out, even after an error).
+    """
+    schema = _obj(
         {
             "partner_id": {
                 "type": "integer",
@@ -118,6 +124,23 @@ def _invoice_schema(partner_label):
         },
         required=["partner_id", "lines"],
     )
+    if vendor:
+        schema["required"] = ["partner_id", "lines", "ref", "invoice_date"]
+        props = schema["properties"]
+        props["ref"] = props["ref"] | {
+            "description": (
+                "Número de la factura del proveedor, tal como aparece en ella "
+                "(obligatorio). Si el usuario no lo da y no hay documento, "
+                "pregúntaselo."
+            )
+        }
+        props["invoice_date"] = props["invoice_date"] | {
+            "description": (
+                "Fecha de la factura del proveedor, YYYY-MM-DD (obligatoria). Léela "
+                "del documento; si no hay documento, pregúntala al usuario."
+            )
+        }
+    return schema
 
 
 class XtdAiToolboxAccount(models.AbstractModel):
@@ -821,7 +844,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
             "facturas de cliente (create_customer_invoice) ni para modificar facturas "
             "existentes."
         ),
-        input_schema=_invoice_schema("proveedor"),
+        input_schema=_invoice_schema("proveedor", vendor=True),
         kind="draft",
         skill="contabilidad",
         groups=_WRITE_GROUPS,

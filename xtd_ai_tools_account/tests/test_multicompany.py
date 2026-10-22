@@ -138,7 +138,8 @@ class TestAccountMultiCompany(XtdAiAccountCase):
             (self.company2, self.company2),
         )
         self.assertEqual(res["data"]["company"], self.company2.name)
-        res = self.mc("create_vendor_bill", args | {"company": str(self.company.id)})
+        bill = args | {"ref": "F-MC-1", "invoice_date": "2026-03-01"}
+        res = self.mc("create_vendor_bill", bill | {"company": str(self.company.id)})
         move = self.env["account.move"].browse(res["records"][0]["id"])
         self.assertEqual(move.company_id, self.company)
         # default: first active company
@@ -155,7 +156,7 @@ class TestAccountMultiCompany(XtdAiAccountCase):
         self.assertEqual(self.env["account.move"].search_count([]), before)
         res = self.mc(
             "create_vendor_bill",
-            args | {"company": self.company2.name},
+            bill | {"company": self.company2.name},
             cids=[self.company.id],
         )
         self.assertEqual(res["error"]["code"], "not_found")

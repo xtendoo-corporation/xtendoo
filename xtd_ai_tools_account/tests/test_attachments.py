@@ -78,12 +78,13 @@ class TestAccountAttachments(XtdAiAccountCase):
             for key in missing:
                 self.assertIn(key, structured["error"]["message"])
         self.assertEqual(self.env["account.move"].search_count([]), moves)
-        # without a document the bill can still be prepared without them
+        # a vendor bill always needs them, document or not (required in the schema)
         args = self.bill_args()
         args.pop("ref")
         args.pop("invoice_date")
         structured = self.agent_call(self.biller, run, "create_vendor_bill", args)
-        self.assertNotEqual(structured["status"], "error", structured)
+        self.assertEqual(structured["status"], "error", structured)
+        self.assertEqual(structured["error"]["code"], "validation")
 
     def test_due_date_from_document_wins_over_payment_term(self):
         term = self.env.ref(
