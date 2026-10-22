@@ -1,6 +1,6 @@
 from odoo import models
 
-from odoo.addons.xtd_ai_gateway.tools.errors import XtdAiDraftOnlyError
+from odoo.addons.xtd_ai.tools.errors import XtdAiDraftOnlyError
 
 
 class SaleOrder(models.Model):

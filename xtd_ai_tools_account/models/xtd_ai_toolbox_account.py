@@ -3,8 +3,8 @@ from datetime import timedelta
 
 from odoo import Command, fields, models
 
-from odoo.addons.xtd_ai_gateway.tools import xtd_ai_tool
-from odoo.addons.xtd_ai_gateway.tools.errors import XtdAiDraftOnlyError, XtdAiToolError
+from odoo.addons.xtd_ai.tools import xtd_ai_tool
+from odoo.addons.xtd_ai.tools.errors import XtdAiDraftOnlyError, XtdAiToolError
 
 _READ_GROUPS = ["account.group_account_invoice", "account.group_account_readonly"]
 _WRITE_GROUPS = ["account.group_account_invoice"]

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form_agent" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.agent</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="xtd_ai.res_config_settings_view_form_xtd_ai" />
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='xtd_ai']" position="inside">
+                <block title="Agente integrado en Odoo" groups="base.group_system">
+                    <div
+                        class="alert alert-warning"
+                        role="alert"
+                        invisible="xtd_ai_jobrunner_active"
+                    >
+                        El ejecutor de queue_job no está activo (falta
+                        <code>queue_job</code>
+                        en
+                        <code>server_wide_modules</code>
+                        ). El agente se ejecutará en un hilo de respaldo; para
+                        producción conviene activar queue_job.
+                    </div>
+                    <setting
+                        string="Proveedor y modelo"
+                        help="Proveedor del modelo de lenguaje, modelo y esfuerzo de razonamiento."
+                    >
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="xtd_ai_provider" class="col-lg-3" />
+                                <field name="xtd_ai_provider" />
+                            </div>
+                            <div class="row mt8">
+                                <label for="xtd_ai_model" class="col-lg-3" />
+                                <field name="xtd_ai_model" />
+                            </div>
+                            <div class="row mt8">
+                                <label for="xtd_ai_effort" class="col-lg-3" />
+                                <field name="xtd_ai_effort" />
+                            </div>
+                            <div class="row mt8">
+                                <label for="xtd_ai_timeout" class="col-lg-3" />
+                                <field name="xtd_ai_timeout" />
+                            </div>
+                        </div>
+                    </setting>
+                    <setting
+                        string="Clave de Anthropic"
+                        help="Se guarda en el servidor y nunca se vuelve a mostrar. La variable de entorno ANTHROPIC_API_KEY, si existe, tiene prioridad."
+                    >
+                        <div class="content-group">
+                            <div
+                                class="text-success"
+                                invisible="not xtd_ai_api_key_set"
+                            >
+                                <i class="fa fa-check" />
+                                Clave configurada
+                                <span invisible="not xtd_ai_api_key_env">
+                                    (desde la variable de entorno)
+                                </span>
+                            </div>
+                            <div class="row mt8">
+                                <label
+                                    for="xtd_ai_api_key_input"
+                                    class="col-lg-3"
+                                    string="Nueva clave"
+                                />
+                                <field
+                                    name="xtd_ai_api_key_input"
+                                    password="True"
+                                    autocomplete="off"
+                                />
+                            </div>
+                            <div class="mt8">
+                                <button
+                                    name="action_xtd_ai_test_connection"
+                                    type="object"
+                                    string="Probar conexión"
+                                    class="btn-secondary"
+                                />
+                                <button
+                                    name="action_xtd_ai_clear_key"
+                                    type="object"
+                                    string="Borrar clave"
+                                    class="btn-link"
+                                    invisible="not xtd_ai_api_key_set"
+                                    confirm="¿Borrar la clave de Anthropic guardada?"
+                                />
+                            </div>
+                        </div>
+                    </setting>
+                    <setting
+                        string="Opciones avanzadas"
+                        help="Workspace de Anthropic (solo para claves sin workspace), detalle de errores 400 (puede incluir contenido de la petición) y tabla de precios."
+                    >
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="xtd_ai_workspace_id" class="col-lg-3" />
+                                <field name="xtd_ai_workspace_id" />
+                            </div>
+                            <div class="row mt8">
+                                <label
+                                    for="xtd_ai_log_error_details"
+                                    class="col-lg-3"
+                                />
+                                <field name="xtd_ai_log_error_details" />
+                            </div>
+                            <div class="mt8">
+                                <label for="xtd_ai_prices_json" />
+                                <field
+                                    name="xtd_ai_prices_json"
+                                    placeholder='{"claude-haiku-5-5": {"input": 0.1, "output": 0.5}}'
+                                />
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

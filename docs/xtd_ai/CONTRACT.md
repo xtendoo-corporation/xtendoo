@@ -24,16 +24,17 @@
 
 | Módulo                        | depends                                    | Contenido                                                                                                                                                                                     |
 | ----------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `xtd_ai_gateway`              | `base`, `mail`, `bus`                      | Grupos, modelos núcleo (§5), token (§2), auth `xtd_ai` (§3), endpoint MCP (§4), registro de herramientas (§6), guardas «solo borrador» (§7), herramientas comunes (§8.1), auditoría, ajustes. |
-| `xtd_ai_tools_sale`           | `xtd_ai_gateway`, `sale_management`, `crm` | Herramientas de ventas y CRM + skills `ventas`, `crm`. Guardas de `sale.order`, `crm.lead`.                                                                                                   |
-| `xtd_ai_tools_purchase_stock` | `xtd_ai_gateway`, `purchase`, `stock`      | Herramientas de compras y stock + skills `compras`, `inventario`. Guardas de `purchase.order`, `stock.picking`.                                                                               |
-| `xtd_ai_tools_account`        | `xtd_ai_gateway`, `account`                | Herramientas de contabilidad + skill `contabilidad`. Guardas de `account.move`, `account.payment`.                                                                                            |
-| `xtd_ai_chat`                 | `xtd_ai_gateway`, `web`                    | Panel OWL en la barra superior, rutas de la UI (§9), preferencias de usuario.                                                                                                                 |
+| `xtd_ai`                      | `base`, `mail`, `bus`, `web`, `queue_job`  | Núcleo (gateway + agente + chat): grupos, modelos núcleo (§5), token (§2), auth `xtd_ai` (§3), endpoint MCP (§4), registro de herramientas (§6), guardas «solo borrador» (§7), herramientas comunes (§8.1), auditoría, ajustes, agente integrado (§15), chat y rutas de la UI (§9). Único módulo que se instala a mano. |
+| `xtd_ai_tools_sale`           | `xtd_ai`, `sale_management`                | `auto_install`. Herramientas de ventas + skill `ventas`. Guardas de `sale.order`.                                                                                                             |
+| `xtd_ai_tools_crm`            | `xtd_ai`, `crm`                            | `auto_install`. Herramientas de CRM + skill `crm`. Guardas de `crm.lead`.                                                                                                                     |
+| `xtd_ai_tools_purchase`       | `xtd_ai`, `purchase`                       | `auto_install`. Herramientas de compras + skill `compras`. Guardas de `purchase.order`.                                                                                                       |
+| `xtd_ai_tools_stock`          | `xtd_ai`, `stock`                          | `auto_install`. Herramientas de inventario + skill `inventario`. Guardas de `stock.picking`.                                                                                                  |
+| `xtd_ai_tools_account`        | `xtd_ai`, `account`                        | `auto_install`. Herramientas de contabilidad + skill `contabilidad`. Guardas de `account.move`, `account.payment`.                                                                            |
 
-Grupos (en `xtd_ai_gateway`, categoría «Agente IA»):
+Grupos (en `xtd_ai`, categoría «Agente IA»):
 
-- `xtd_ai_gateway.group_xtd_ai_user` «Usuario»: puede chatear.
-- `xtd_ai_gateway.group_xtd_ai_manager` «Administrador» (implica usuario): ajustes,
+- `xtd_ai.group_xtd_ai_user` «Usuario»: puede chatear.
+- `xtd_ai.group_xtd_ai_manager` «Administrador» (implica usuario): ajustes,
   lectura de auditoría y uso de todos.
 
 ## 2. Token de ejecución
@@ -56,7 +57,7 @@ Formato: `xtdai1.<payload>.<firma>`
 | `jti`         | str       | 128 bits aleatorios en hex                    |
 
 - `firma` = base64url sin relleno de `HMAC-SHA256(secret, "xtdai1." + payload)`.
-- `secret`: `ir.config_parameter` `xtd_ai_gateway.token_secret`, 64 bytes aleatorios en
+- `secret`: `ir.config_parameter` `xtd_ai.token_secret`, 64 bytes aleatorios en
   hex generados al instalar si no existe. Rotarlo invalida todos los tokens vigentes.
 - Comparación de firma con `hmac.compare_digest`.
 
@@ -74,7 +75,7 @@ token):
 
 ## 3. Autenticación `xtd_ai` (rutas servicio → Odoo)
 
-- Método `_auth_method_xtd_ai` en `ir.http` (`xtd_ai_gateway/models/ir_http.py`).
+- Método `_auth_method_xtd_ai` en `ir.http` (`xtd_ai/models/ir_http.py`).
 - Cabeceras obligatorias:
   - `Authorization: Bearer <token>`
   - `X-XTD-AI-Service-Key: <XTD_AI_SERVICE_KEY>`
@@ -98,7 +99,7 @@ Odoo). Sin notificaciones ni streaming. Una petición = un mensaje JSON-RPC.
 
 | Método              | params                          | result                                                                                                      |
 | ------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `initialize`        | `{protocolVersion, clientInfo}` | `{protocolVersion: "2025-06-18", serverInfo: {name: "xtd_ai_gateway", version}, capabilities: {tools: {}}}` |
+| `initialize`        | `{protocolVersion, clientInfo}` | `{protocolVersion: "2025-06-18", serverInfo: {name: "xtd_ai", version}, capabilities: {tools: {}}}` |
 | `tools/list`        | `{}`                            | `{tools: [Tool]}`, solo herramientas instaladas y cuyos `groups` tiene el usuario, ordenadas por nombre     |
 | `tools/call`        | `{name, arguments}`             | `ToolResult`                                                                                                |
 | `xtd_ai/history`    | `{}`                            | `History` (§4.3)                                                                                            |
@@ -218,7 +219,7 @@ Odoo guarda el mensaje del asistente, cierra la ejecución con su uso, enlaza la
 `xtd.ai.run.tool_calls`. El servicio corta a las 30 iteraciones del bucle del LLM. No
 hay más límites de coste en esta fase.
 
-## 5. Modelos núcleo (`xtd_ai_gateway`)
+## 5. Modelos núcleo (`xtd_ai`)
 
 | Modelo                  | Campos principales                                                                                                                                                                                                                                                      | Acceso                                                                                                                                                                                             |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -226,10 +227,10 @@ hay más límites de coste en esta fase.
 | `xtd.ai.message`        | `conversation_id`, `role` (user/assistant/notice), `body` (Text, sin HTML), `run_id`, `pending_action_ids`, `record_refs` (JSON)                                                                                                                                        | Como su conversación                                                                                                                                                                               |
 | `xtd.ai.run`            | `conversation_id`, `user_id`, `state` (queued/running/done/failed/cancelled), `jti`, `provider`, `model`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `cost_estimate`, `iterations`, `tool_calls`, `started_at`, `finished_at`, `error` | Usuario: lectura de las suyas. Escritura solo vía gateway (`sudo` comentado, campos de control)                                                                                                    |
 | `xtd.ai.pending_action` | `run_id`, `conversation_id`, `user_id`, `tool_name`, `arguments` (JSON), `preview` (JSON), `state` (pending/confirmed/cancelled/expired/failed), `result_model`, `result_res_id`, `error`, `expires_at` (24 h)                                                          | Solo el propio usuario; confirmar requiere sesión web (§9)                                                                                                                                         |
-| `xtd.ai.audit`          | `run_id`, `user_id`, `company_id`, `event` (tool_call/auth_failed/confirm/cancel/guard_blocked), `tool_name`, `arguments` (JSON, textos > 300 caracteres cortados), `outcome` (ok/error/pending/denied), `error_code`, `record_refs` (JSON), `duration_ms`              | Solo lectura para el administrador del agente; nadie escribe ni borra por UI (`create` vía `sudo` en el gateway). Retención por cron, 365 días por defecto (`xtd_ai_gateway.audit_retention_days`) |
+| `xtd.ai.audit`          | `run_id`, `user_id`, `company_id`, `event` (tool_call/auth_failed/confirm/cancel/guard_blocked), `tool_name`, `arguments` (JSON, textos > 300 caracteres cortados), `outcome` (ok/error/pending/denied), `error_code`, `record_refs` (JSON), `duration_ms`              | Solo lectura para el administrador del agente; nadie escribe ni borra por UI (`create` vía `sudo` en el gateway). Retención por cron, 365 días por defecto (`xtd_ai.audit_retention_days`) |
 
 `res.users`: campo `xtd_ai_confirm_writes` (Boolean, por defecto True), editable por el
-propio usuario. Parámetro `xtd_ai_gateway.force_confirmation` (por defecto `False`): si
+propio usuario. Parámetro `xtd_ai.force_confirmation` (por defecto `False`): si
 es `True`, la confirmación es obligatoria para todos.
 
 ## 6. Registro de herramientas
@@ -238,7 +239,7 @@ Cada módulo declara herramientas como métodos de un modelo abstracto que hered
 `xtd.ai.toolbox` (definido en el gateway) y los decora con `@xtd_ai_tool(...)`:
 
 ```python
-from odoo.addons.xtd_ai_gateway.tools import xtd_ai_tool
+from odoo.addons.xtd_ai.tools import xtd_ai_tool
 
 class XtdAiToolboxSale(models.AbstractModel):
     _name = "xtd.ai.toolbox.sale"
@@ -296,9 +297,9 @@ gateway). El gateway la convierte en `error.code = "draft_only"` y la audita com
 | Módulo               | Modelo                | Métodos bloqueados                                                                                                                                                 |
 | -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | tools_sale           | `sale.order`          | `action_confirm`, `action_quotation_send`, `action_lock`, `action_cancel`, `_action_confirm`, `unlink`                                                             |
-| tools_sale           | `crm.lead`            | `action_set_won`, `action_set_lost`, `action_set_won_rainbowman`, `unlink`                                                                                         |
-| tools_purchase_stock | `purchase.order`      | `button_confirm`, `button_approve`, `action_rfq_send`, `button_cancel`, `unlink`                                                                                   |
-| tools_purchase_stock | `stock.picking`       | `button_validate`, `action_confirm`, `action_assign`, `_action_done`, `unlink`                                                                                     |
+| tools_crm            | `crm.lead`            | `action_set_won`, `action_set_lost`, `action_set_won_rainbowman`, `unlink`                                                                                         |
+| tools_purchase       | `purchase.order`      | `button_confirm`, `button_approve`, `action_rfq_send`, `button_cancel`, `unlink`                                                                                   |
+| tools_stock          | `stock.picking`       | `button_validate`, `action_confirm`, `action_assign`, `_action_done`, `unlink`                                                                                     |
 | tools_account        | `account.move`        | `action_post`, `_post`, `button_cancel`, `action_register_payment`, `unlink`                                                                                       |
 | tools_account        | `account.payment`     | `action_post`, `create`                                                                                                                                            |
 | gateway              | `res.partner`         | `unlink`; `write` sobre partners existentes                                                                                                                        |
@@ -323,7 +324,7 @@ cuentas bancarias, empresa padre).
 
 ## 8. Herramientas comunes (gateway)
 
-### 8.1 En `xtd_ai_gateway`
+### 8.1 En `xtd_ai`
 
 | Herramienta           | Tipo   | Argumentos principales                                                                                                                      |
 | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -337,7 +338,7 @@ cuentas bancarias, empresa padre).
 Las de ventas, compras, stock, contabilidad y CRM se detallan en el §6 del plan y las
 implementa cada módulo de herramientas con este mismo contrato.
 
-## 9. Chat (rutas de la UI, `xtd_ai_chat`)
+## 9. Chat (rutas de la UI, `xtd_ai`)
 
 Rutas `auth='user'`, `type='jsonrpc'` (sesión web normal, CSRF del cliente web):
 
@@ -420,14 +421,14 @@ ai_service/
 - `@xtd_ai_tool(..., requires=["product.product"])`: la herramienta solo se registra si
   esos modelos existen. `groups` se evalúa como «cualquiera de» (semántica de Odoo).
 - Tope de llamadas a herramientas por ejecución: parámetro
-  `xtd_ai_gateway.max_tool_calls_per_run` (por defecto 30) → 409 / -32004 al superarlo.
+  `xtd_ai.max_tool_calls_per_run` (por defecto 30) → 409 / -32004 al superarlo.
 - Conversación cerrada → 401; ejecución terminada o cancelada → 409.
 - Los métodos de herramienta son `@api.private` (no se pueden llamar por `/json/2`).
 - Las vistas previas se ejecutan en un savepoint que siempre se revierte.
 - `xtd.ai.audit` rechaza `write`/`unlink` incluso con sudo, salvo el cron de retención.
 - Guarda adicional: crear `mail.mail` dentro de `xtd_ai_run` lanza
   `XtdAiDraftOnlyError`.
-- Base de tests reutilizable: `odoo.addons.xtd_ai_gateway.tests.common.XtdAiCase`
+- Base de tests reutilizable: `odoo.addons.xtd_ai.tests.common.XtdAiCase`
   (`start_run`, `tool_env`, `call`, `audits`…).
 - API Python para el chat: `xtd.ai.conversation._xtd_ai_open()`,
   `conversation._xtd_ai_start_run(text) -> (run, token)`, `run.action_cancel()`,
@@ -475,7 +476,7 @@ sin crear nada.
 `res_id = <conversación>`, creado con el env del usuario. `xtd.ai.message` gana
 `attachment_ids` (Many2many). Se borran con la retención de conversaciones.
 
-**Subida (xtd_ai_chat):** `POST /xtd_ai/chat/upload` (`type="http"`, `auth="user"`,
+**Subida (xtd_ai):** `POST /xtd_ai/chat/upload` (`type="http"`, `auth="user"`,
 multipart, con CSRF del cliente web) → `{attachment_id, name, mimetype, size}`. Solo en
 la conversación abierta del usuario. `/xtd_ai/chat/send` acepta `attachment_ids` (lista
 de ids subidos a esa conversación y aún no enlazados a otro mensaje).
@@ -517,7 +518,7 @@ Objetivo: **implantar = instalar módulos y poner la clave de Anthropic en Ajust
 contenedores extra ni librerías nuevas en la imagen de Odoo. El servicio externo
 (`ai_service`, §10–§11) sigue existiendo como modo alternativo.
 
-**Módulo nuevo `xtd_ai_agent`** (depends: `xtd_ai_gateway`, `queue_job`). Contiene el
+**Componente nuevo del módulo `xtd_ai`** (añade la dependencia `queue_job`). Contiene el
 bucle del agente, la capa de proveedor y la ejecución en segundo plano. Es una
 traducción **síncrona** del dominio de `ai_service` (`domain/`: tipos neutros, bucle,
 precios, prompts; `providers/`: Anthropic y Fake). El dominio no importa nada de Odoo ni
@@ -530,7 +531,7 @@ sistema + último bloque, bloques `document`/`image` para adjuntos,
 (opcional), reintentos 408/409/429/5xx con espera exponencial (máx. 2) y timeout por
 llamada.
 
-**Puerto hacia Odoo en proceso** (sustituye al cliente MCP): `xtd_ai_gateway` expone
+**Puerto hacia Odoo en proceso** (sustituye al cliente MCP): `xtd_ai` expone
 `env["xtd.ai.mcp"]._xtd_ai_dispatch(method, params)`, que ejecuta exactamente lo mismo
 que el endpoint HTTP `/xtd_ai/mcp` para `initialize`, `tools/list`, `tools/call`,
 `xtd_ai/history`, `xtd_ai/attachment` y `xtd_ai/post_reply`, con el mismo resultado JSON
@@ -561,7 +562,7 @@ ejecuciones guardan `cids` al crearse (`_xtd_ai_start_run`).
 (`anthropic` | `fake`), modelo (por defecto `claude-haiku-5-5`), esfuerzo (`low`),
 timeout por llamada (30 s), workspace de Anthropic (opcional), registrar detalle de
 errores 400 (desactivado), y la **clave de Anthropic** como campo contraseña guardado en
-`ir.config_parameter` `xtd_ai_agent.anthropic_api_key` (solo `base.group_system`; nunca
+`ir.config_parameter` `xtd_ai.anthropic_api_key` (solo `base.group_system`; nunca
 se devuelve al cliente, el campo se muestra vacío con «clave configurada»). La variable
 de entorno `ANTHROPIC_API_KEY` del contenedor, si existe, tiene prioridad. Un botón
 «Probar conexión» hace una llamada mínima y muestra el resultado (sin datos de negocio).
@@ -573,3 +574,40 @@ Tabla de precios editable para `cost_estimate`.
 **Sin cambios** en seguridad: las herramientas, guardas, confirmaciones, adjuntos,
 auditoría, multicompañía y el chat funcionan igual; el LLM sigue sin ver credenciales y
 sin poder elegir usuario ni compañía.
+
+## 16. Reorganización de módulos (v2.1)
+
+Para reducir instalaciones, los tres módulos del núcleo se fusionan y las herramientas
+pasan a módulos puente con `auto_install`.
+
+- **`xtd_ai`** (versión 19.0.2.0.0) = antiguos `xtd_ai_gateway` + `xtd_ai_agent` +
+  `xtd_ai_chat`. Es el **único módulo que se instala a mano**. Depende de `base`,
+  `mail`, `bus`, `web` y `queue_job`. El helper `check_draft_only` (guardas §7) vive en
+  `xtd_ai.tools` y lo usan los módulos de herramientas.
+- **Módulos puente** (`auto_install: True`; se instalan solos cuando están instaladas
+  todas sus dependencias, ahora o más adelante):
+
+| Módulo                  | depends                        | Contenido                                           |
+| ----------------------- | ------------------------------ | --------------------------------------------------- |
+| `xtd_ai_tools_sale`     | `xtd_ai`, `sale_management`    | Ventas, skill `ventas`, guardas de `sale.order`     |
+| `xtd_ai_tools_crm`      | `xtd_ai`, `crm`                | CRM, skill `crm`, guardas de `crm.lead`             |
+| `xtd_ai_tools_purchase` | `xtd_ai`, `purchase`           | Compras, skill `compras`, guardas de `purchase.order` |
+| `xtd_ai_tools_stock`    | `xtd_ai`, `stock`              | Inventario, skill `inventario`, guardas de `stock.picking` |
+| `xtd_ai_tools_account`  | `xtd_ai`, `account`            | Contabilidad, skill `contabilidad`, guardas de `account.*` |
+
+  `get_product_availability` (ventas) sigue registrándose solo si existe `stock.quant`.
+  `xtd_ai_tools_sale` se divide en ventas y CRM; `xtd_ai_tools_purchase_stock`
+  desaparece (se divide en compras e inventario).
+- **Renombrados.** XML ids `xtd_ai_gateway.*`, `xtd_ai_agent.*` y `xtd_ai_chat.*` pasan
+  a `xtd_ai.*` (grupos `xtd_ai.group_xtd_ai_user` y `xtd_ai.group_xtd_ai_manager`; la
+  acción y el menú del chat son `xtd_ai.action_xtd_ai_app` y `xtd_ai.menu_xtd_ai_app`).
+  Los parámetros `ir.config_parameter` `xtd_ai_gateway.*` y `xtd_ai_agent.*` pasan al
+  prefijo `xtd_ai.` (p. ej. `xtd_ai.force_confirmation`, `xtd_ai.anthropic_api_key`,
+  `xtd_ai.provider`, `xtd_ai.model`). Imports `odoo.addons.xtd_ai.*`; JS `@xtd_ai/...`,
+  etiqueta de la acción cliente `xtd_ai.app`, servicio `xtd_ai.chat`, plantillas
+  `xtd_ai.*`. Los campos de ajustes `xtd_ai_agent_*` pasan a `xtd_ai_*`. El nombre del
+  servidor MCP (`serverInfo.name`) es ahora `xtd_ai`. Las rutas `/xtd_ai/...` no cambian.
+- **Migración de datos** (solo si hubiera instalación previa): renombrar los módulos en
+  `ir_module_module` y `ir_model_data.module`, y las claves de `ir_config_parameter`
+  (incluida la clave de la API y el secreto del token); reasignar los grupos de usuario;
+  sustituir `xtd_ai_tools_purchase_stock` por los dos nuevos y partir `xtd_ai_tools_sale`.

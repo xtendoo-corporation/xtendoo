@@ -1,6 +1,6 @@
 from odoo import api, models
 
-from odoo.addons.xtd_ai_gateway.tools.errors import XtdAiDraftOnlyError
+from odoo.addons.xtd_ai.tools.errors import XtdAiDraftOnlyError
 
 
 class AccountPayment(models.Model):

@@ -1,6 +1,6 @@
 from odoo.tests import tagged
 
-from odoo.addons.xtd_ai_gateway.tests.common import make_pdf
+from odoo.addons.xtd_ai.tests.common import make_pdf
 
 from .common import XtdAiAccountCase
 

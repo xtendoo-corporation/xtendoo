@@ -4,7 +4,7 @@ from odoo import Command
 from odoo.tests import tagged
 from odoo.tests.common import new_test_user
 
-from odoo.addons.xtd_ai_gateway.tests.common import AI_GROUPS
+from odoo.addons.xtd_ai.tests.common import AI_GROUPS
 
 from .common import XtdAiAccountCase
 

@@ -16,11 +16,13 @@ identidad real del usuario.
 
 | Componente                    | Dónde                      | Responsabilidad                                                                                                                                          |
 | ----------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `xtd_ai_gateway`              | `odoo/custom/src/private/` | Tokens de identidad, autenticación propia, endpoint MCP de herramientas, registro de herramientas, guardas «solo borrador», auditoría, grupos y ajustes. |
-| `xtd_ai_tools_sale`           | idem                       | Herramientas de ventas y CRM (`depends: sale_management, crm`).                                                                                          |
-| `xtd_ai_tools_purchase_stock` | idem                       | Herramientas de compras e inventario (`depends: purchase, stock`).                                                                                       |
+| `xtd_ai`              | `odoo/custom/src/private/` | Tokens de identidad, autenticación propia, endpoint MCP de herramientas, registro de herramientas, guardas «solo borrador», auditoría, grupos y ajustes. |
+| `xtd_ai_tools_sale`           | idem                       | Herramientas de ventas (`depends: sale_management`).                                                                                                     |
+| `xtd_ai_tools_crm`            | idem                       | Herramientas de CRM (`depends: crm`).                                                                                                                    |
+| `xtd_ai_tools_purchase`       | idem                       | Herramientas de compras (`depends: purchase`).                                                                                                           |
+| `xtd_ai_tools_stock`          | idem                       | Herramientas de inventario (`depends: stock`).                                                                                                           |
 | `xtd_ai_tools_account`        | idem                       | Herramientas de contabilidad (`depends: account`).                                                                                                       |
-| `xtd_ai_chat`                 | idem                       | Panel de chat OWL en la barra superior, conversaciones, tarjetas de confirmación, preferencias de usuario y notificaciones por bus.                      |
+| `xtd_ai`                 | idem                       | Panel de chat OWL en la barra superior, conversaciones, tarjetas de confirmación, preferencias de usuario y notificaciones por bus.                      |
 | `ai_service`                  | `~/Odoo_19/ai_service/`    | Servicio Python 3.12 (FastAPI): bucle del agente, capa de proveedor LLM, gestión de contexto y límites de coste. Sin estado propio de negocio.           |
 
 Separar las herramientas por dominio permite instalar en cada cliente solo las de las
@@ -32,7 +34,7 @@ apps que tiene, sin dependencias rotas. Esto prepara el paso a multi-cliente.
  Usuario (navegador)
    │ 1. escribe "hazme un presupuesto para Deco Addict con 5 sillas"
    ▼
- xtd_ai_chat  (ruta auth='user', sesión Odoo normal)
+ xtd_ai  (ruta auth='user', sesión Odoo normal)
    │ 2. guarda el mensaje en xtd.ai.message
    │ 3. emite un TOKEN CORTO firmado {uid, db, conv_id, run_id, company_ids, lang, tz, exp≈10 min}
    │ 4. POST ai_service /v1/runs  (cabecera con secreto de servicio + token)  → 202
@@ -40,9 +42,9 @@ apps que tiene, sin dependencias rotas. Esto prepara el paso a multi-cliente.
  ai_service
    │ 5. pide a Odoo el historial de la conversación y la lista de herramientas (con el token)
    │ 6. bucle LLM: Claude decide qué herramienta usar
-   │ 7. tools/call → xtd_ai_gateway /xtd_ai/mcp (Authorization: Bearer <token>)
+   │ 7. tools/call → xtd_ai /xtd_ai/mcp (Authorization: Bearer <token>)
    ▼
- xtd_ai_gateway
+ xtd_ai
    │ 8. valida el token (firma, caducidad, usuario activo e interno, grupo IA, conversación abierta)
    │ 9. reconstruye env: with_user(uid), su=False, allowed_company_ids, lang, tz, flag xtd_ai_run
    │10. valida argumentos con JSON Schema y ejecuta la herramienta (ACL y reglas de Odoo)
@@ -53,7 +55,7 @@ apps que tiene, sin dependencias rotas. Esto prepara el paso a multi-cliente.
  ai_service
    │13. termina el bucle → POST respuesta final al gateway (post_reply, mismo token)
    ▼
- xtd_ai_chat
+ xtd_ai
    │14. guarda la respuesta y avisa al navegador por bus → aparece en el panel
    │15. si hay acción pendiente: tarjeta con vista previa y botones Crear / Cancelar
    │16. el usuario pulsa Crear → ruta auth='user' (sesión, NO token) ejecuta la acción
@@ -117,7 +119,7 @@ está activada); **C** = crea un registro sin estado borrador (confirmación sie
 permisos los aplica siempre Odoo; la columna «Grupo mínimo» solo sirve para no ofrecer
 herramientas inútiles en `tools/list`.
 
-### Comunes (`xtd_ai_gateway`)
+### Comunes (`xtd_ai`)
 
 | Herramienta           | Qué hace                                                                                                                                                                                                                                                                     | Modelo(s)                        | Tipo | Grupo mínimo         |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---- | -------------------- |
@@ -128,7 +130,7 @@ herramientas inútiles en `tools/list`.
 | `get_partner_summary` | Ficha corta y totales visibles de ventas, compras, facturas pendientes                                                                                                                                                                                                       | res.partner + lecturas agregadas | L    | Usuario interno      |
 | `search_products`     | Busca productos por nombre o referencia, precio y unidad                                                                                                                                                                                                                     | product.product                  | L    | Usuario interno      |
 
-### Ventas y CRM (`xtd_ai_tools_sale`)
+### Ventas y CRM (`xtd_ai_tools_sale`, `xtd_ai_tools_crm`)
 
 | Herramienta             | Qué hace                                                       | Modelo(s)         | Tipo | Grupo mínimo               |
 | ----------------------- | -------------------------------------------------------------- | ----------------- | ---- | -------------------------- |
@@ -142,7 +144,7 @@ herramientas inútiles en `tools/list`.
 | `pipeline_report`       | Agregados por etapa, comercial o equipo                        | crm.lead          | L    | idem                       |
 | `create_opportunity`    | Oportunidad nueva (sin ganar ni perder)                        | crm.lead          | B    | idem                       |
 
-### Compras e inventario (`xtd_ai_tools_purchase_stock`)
+### Compras e inventario (`xtd_ai_tools_purchase`, `xtd_ai_tools_stock`)
 
 | Herramienta              | Qué hace                                                | Modelo(s)                    | Tipo | Grupo mínimo         |
 | ------------------------ | ------------------------------------------------------- | ---------------------------- | ---- | -------------------- |
@@ -310,12 +312,12 @@ Antes de lanzar subagentes, **yo escribo el contrato**: formato del token, endpo
 | Hito | Contenido                                                                                                                                  | Quién                                               | Depende de | Paralelo con |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | ---------- | ------------ |
 | H0   | Contrato (`docs/ai_agent/CONTRACT.md`), base `ai_agent_test` y script de seed                                                              | Yo + subagente **QA/infra**                         | —          | —            |
-| H1   | `xtd_ai_gateway`: token, autenticación, endpoint MCP, registro, guardas ORM, auditoría, grupos, ajustes y sus tests                        | Subagente **Addon Odoo**                            | H0         | H2           |
+| H1   | `xtd_ai`: token, autenticación, endpoint MCP, registro, guardas ORM, auditoría, grupos, ajustes y sus tests                        | Subagente **Addon Odoo**                            | H0         | H2           |
 | H2   | `ai_service`: interfaz de proveedor, adaptadores Anthropic y Fake, bucle, cliente MCP, API `/v1/runs`, límites, tests `pytest`, Dockerfile | Subagente **Proveedor LLM / Backend**               | H0         | H1           |
 | H3a  | `xtd_ai_tools_sale` y sus tests de permisos                                                                                                | Subagente **Backend / herramientas**                | H1         | H3b, H3c, H4 |
-| H3b  | `xtd_ai_tools_purchase_stock` y sus tests de permisos                                                                                      | Subagente **Backend / herramientas**                | H1         | H3a, H3c, H4 |
+| H3b  | `xtd_ai_tools_purchase`, `xtd_ai_tools_stock` y sus tests de permisos                                                                                      | Subagente **Backend / herramientas**                | H1         | H3a, H3c, H4 |
 | H3c  | `xtd_ai_tools_account` y sus tests de permisos                                                                                             | Subagente **Backend / herramientas**                | H1         | H3a, H3b, H4 |
-| H4   | `xtd_ai_chat`: panel OWL, conversaciones, bus, tarjetas de confirmación, preferencias                                                      | Subagente **Addon Odoo**                            | H1         | H3           |
+| H4   | `xtd_ai`: panel OWL, conversaciones, bus, tarjetas de confirmación, preferencias                                                      | Subagente **Addon Odoo**                            | H1         | H3           |
 | H5   | Integración en Doodba, suite de inyección y banco de preguntas en español                                                                  | Subagente **QA**                                    | H2, H3, H4 | —            |
 | H6   | Revisión adversarial y correcciones                                                                                                        | Subagente **Seguridad** (y luego quien corresponda) | H5         | —            |
 | H7   | Documentación en español (instalación, configuración, operación, RGPD) y verificación final en el stack local                              | Yo + subagente **docs**                             | H6         | —            |

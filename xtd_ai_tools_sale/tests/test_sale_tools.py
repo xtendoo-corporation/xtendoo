@@ -10,10 +10,6 @@ SALE_TOOLS = {
     "sales_report",
     "create_sale_quotation",
     "add_sale_order_lines",
-    "search_opportunities",
-    "get_opportunity",
-    "pipeline_report",
-    "create_opportunity",
 }
 
 
@@ -38,7 +34,7 @@ class TestSaleTools(XtdAiSaleCase):
         kinds = {n: tools[n]["annotations"]["xtdKind"] for n in SALE_TOOLS}
         self.assertEqual(
             {n for n, k in kinds.items() if k == "draft"},
-            {"create_sale_quotation", "add_sale_order_lines", "create_opportunity"},
+            {"create_sale_quotation", "add_sale_order_lines"},
         )
         for name in SALE_TOOLS:
             schema = tools[name]["inputSchema"]
@@ -47,7 +43,7 @@ class TestSaleTools(XtdAiSaleCase):
 
     def test_non_sales_user_forced_call_is_denied(self):
         run, _t = self.start_run(self.nosales)
-        for name, args in (("search_sale_orders", {}), ("pipeline_report", {})):
+        for name, args in (("search_sale_orders", {}), ("get_sale_order", {})):
             status, response = self.rpc(
                 self.nosales, run, "tools/call", {"name": name, "arguments": args}
             )
@@ -57,7 +53,6 @@ class TestSaleTools(XtdAiSaleCase):
         toolbox = env["xtd.ai.toolbox"]
         for name, args in (
             ("search_sale_orders", {}),
-            ("search_opportunities", {}),
             (
                 "sales_report",
                 {

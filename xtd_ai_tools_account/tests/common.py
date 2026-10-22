@@ -4,7 +4,7 @@ from unittest.mock import patch
 from odoo import Command
 from odoo.tests.common import new_test_user
 
-from odoo.addons.xtd_ai_gateway.tests.common import AI_GROUPS, XtdAiCase
+from odoo.addons.xtd_ai.tests.common import AI_GROUPS, XtdAiCase
 
 TODAY = date(2026, 6, 30)
 

@@ -8,14 +8,18 @@ nada que Odoo no le permita a esa persona.
 
 ## Módulos
 
-| Módulo                        | Qué aporta                                                           | Obligatorio                   |
-| ----------------------------- | -------------------------------------------------------------------- | ----------------------------- |
-| `xtd_ai_gateway`              | Barrera de seguridad: permisos, «solo borrador», auditoría, adjuntos | Sí                            |
-| `xtd_ai_agent`                | El agente en sí, dentro de Odoo, con `queue_job` y Claude            | Sí                            |
-| `xtd_ai_chat`                 | Chat: icono en la barra, ventana flotante y app «Asistente IA»       | Sí                            |
-| `xtd_ai_tools_sale`           | Herramientas de ventas y CRM                                         | Si se usan Ventas/CRM         |
-| `xtd_ai_tools_purchase_stock` | Herramientas de compras e inventario                                 | Si se usan Compras/Inventario |
-| `xtd_ai_tools_account`        | Herramientas de contabilidad (facturas, cobros y pagos)              | Si se usa Facturación         |
+Solo se instala a mano **un módulo**: «Agente IA» (`xtd_ai`). Los módulos de herramientas
+son puentes con instalación automática: se instalan solos cuando están instaladas las
+apps de Odoo que necesitan (ahora o más adelante).
+
+| Módulo                  | Qué aporta                                                        | Instalación                |
+| ----------------------- | ----------------------------------------------------------------- | -------------------------- |
+| `xtd_ai`                | Pasarela de seguridad, agente (`queue_job` y Claude) y chat       | **Manual (única)**         |
+| `xtd_ai_tools_sale`     | Herramientas de ventas                                            | Auto con Ventas            |
+| `xtd_ai_tools_crm`      | Herramientas de CRM                                               | Auto con CRM               |
+| `xtd_ai_tools_purchase` | Herramientas de compras                                           | Auto con Compras           |
+| `xtd_ai_tools_stock`    | Herramientas de inventario                                        | Auto con Inventario        |
+| `xtd_ai_tools_account`  | Herramientas de contabilidad (facturas, cobros y pagos)           | Auto con Facturación       |
 
 Dependencia externa: **`queue_job`** (repositorio OCA `queue`, rama 19.0). No hace falta
 instalar ninguna librería de Python nueva: el agente usa `requests`, que ya trae Odoo.
@@ -49,11 +53,10 @@ Reiniciar Odoo.
 
 1. Añadir el repositorio `xtendoo` y el de OCA `queue` a `repos.yaml`/`addons.yaml` (si
    no están ya).
-2. Instalar los módulos: `xtd_ai_agent`, `xtd_ai_chat` y las herramientas de las apps
-   que use el cliente (`xtd_ai_tools_sale`, `xtd_ai_tools_purchase_stock`,
-   `xtd_ai_tools_account`). Las dependencias (`xtd_ai_gateway`, `queue_job`) se instalan
-   solas.
-3. **Reiniciar Odoo después de instalarlos.** El ejecutor de `queue_job` decide al
+2. Instalar el módulo **Agente IA** (`xtd_ai`). Sus dependencias (`queue_job`) se
+   instalan solas, y los módulos de herramientas (`xtd_ai_tools_*`) se instalan
+   automáticamente para cada app que ya esté instalada o que se instale después.
+3. **Reiniciar Odoo después de instalarlo.** El ejecutor de `queue_job` decide al
    arrancar qué bases atiende; si `queue_job` se acaba de instalar, hasta el reinicio no
    atiende esa base. Mientras tanto el agente no se queda colgado: si una pregunta no
    empieza en 20 s, la ejecuta él mismo en un hilo (y lo deja anotado en el log), pero
@@ -61,7 +64,9 @@ Reiniciar Odoo.
 
 ## 3. Configuración en Odoo
 
-**Ajustes → Agente IA** (solo administradores):
+**Ajustes → Agente IA** (solo administradores). Los parámetros del sistema usan el
+prefijo `xtd_ai.` (p. ej. `xtd_ai.anthropic_api_key`, `xtd_ai.provider`, `xtd_ai.model`,
+`xtd_ai.force_confirmation`, `xtd_ai.audit_retention_days`):
 
 1. Pegar la **clave de la API de Anthropic** y guardar. La clave no se vuelve a mostrar
    (aparece «Clave configurada»). Alternativa: variable de entorno `ANTHROPIC_API_KEY`
@@ -112,6 +117,6 @@ cada ejecución queda registrado en Odoo.
 ## Documentación de diseño
 
 - `PLAN_FASE1.md`: arquitectura, modelo de amenazas, catálogo de herramientas.
-- `CONTRACT.md`: contrato técnico entre componentes (§15: agente integrado en Odoo).
+- `CONTRACT.md`: contrato técnico entre componentes (§15: agente integrado en Odoo; §16: organización de módulos).
 - `CASOS_DE_USO.md`: casos de prueba por rol.
 - `ESTUDIO_JEV.md`: estudio de un modelo alternativo de decisiones.
