@@ -1,0 +1,152 @@
+// Formularios dentro de diálogos (p. ej. configuración rápida de un TPV).
+// Odoo pinta la hoja del formulario como una tarjeta y mete un margen negativo
+// en las pestañas para que lleguen al borde de esa tarjeta; dentro de un modal
+// eso daba tarjeta dentro de tarjeta con las pestañas sobresaliendo. Aquí el
+// diálogo es una sola superficie plana y las pestañas encajan en ella.
+// Las variables --xtd-* cambian solas en modo oscuro; los !important son para
+// ganar a las reglas oscuras de .o_form_sheet.
+
+body .modal {
+    .modal-header {
+        background: transparent !important;
+        border-bottom: 1px solid var(--xtd-line);
+        padding: 1rem 1.5rem;
+
+        .modal-title {
+            font-weight: 600;
+        }
+    }
+
+    .modal-footer {
+        background: transparent !important;
+        border-top: 1px solid var(--xtd-line);
+        gap: .5rem;
+        justify-content: flex-start;
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-body {
+        padding: 0;
+    }
+
+    .o_form_view {
+        .o_form_sheet_bg {
+            background: transparent !important;
+            border: 0;
+            padding: 0;
+        }
+
+        .o_form_sheet {
+            --Notebook-margin-x: 0;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            margin: 0;
+            max-width: none;
+            padding: 1.25rem 1.5rem .75rem;
+        }
+
+        .oe_title {
+            margin-bottom: 1rem;
+
+            h1 {
+                font-size: 1.75rem;
+                font-weight: 600;
+                line-height: 1.2;
+            }
+
+            .o_form_label {
+                color: var(--xtd-muted);
+                font-size: .8rem;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+            }
+        }
+
+        // Pestañas: subrayado de marca en lugar de pestaña con marco.
+        .o_notebook {
+            .o_notebook_headers {
+                margin: 0;
+            }
+
+            .nav-tabs {
+                border-bottom: 1px solid var(--xtd-line);
+                gap: .25rem;
+            }
+
+            .nav-link {
+                background: transparent !important;
+                border: 0 !important;
+                border-bottom: 2px solid transparent !important;
+                border-radius: 0;
+                color: var(--xtd-muted);
+                margin-bottom: -1px;
+                padding: .6rem 1rem;
+
+                &:hover {
+                    color: var(--xtd-ink);
+                }
+
+                &.active {
+                    border-bottom-color: var(--xtd-orange) !important;
+                    color: var(--xtd-ink);
+                    font-weight: 600;
+                }
+            }
+
+            .tab-content {
+                padding-top: 1rem;
+            }
+        }
+
+        // Ajustes en rejilla de tarjetas ligeras.
+        .o_settings_container {
+            display: grid !important;
+            gap: .75rem;
+            grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+            margin: 0 !important;
+
+            > .o_setting_box {
+                background: var(--xtd-surface, #fff);
+                border: 1px solid var(--xtd-line);
+                border-radius: var(--xtd-radius);
+                margin: 0;
+                max-width: none;
+                padding: .9rem 1rem;
+                width: auto;
+                transition: border-color .15s ease;
+
+                &:hover {
+                    border-color: var(--xtd-line-strong, var(--xtd-muted));
+                }
+            }
+
+            .o_setting_right_pane {
+                border-left: 0;
+                padding-left: .5rem;
+            }
+
+            .o_form_label {
+                font-weight: 600;
+            }
+
+            .text-muted,
+            .o_setting_right_pane .text-muted {
+                color: var(--xtd-muted) !important;
+                font-size: .9rem;
+            }
+        }
+
+        // «Más ajustes»: pie discreto, separado del contenido.
+        .o_form_sheet > div:last-child > div[groups] {
+            border-top: 1px solid var(--xtd-line);
+            color: var(--xtd-muted);
+            margin-top: 1rem;
+            padding-top: .75rem;
+
+            p {
+                margin: 0;
+            }
+        }
+    }
+}
