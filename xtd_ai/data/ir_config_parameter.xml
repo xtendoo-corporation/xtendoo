@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="param_force_confirmation" model="ir.config_parameter">
+        <field name="key">xtd_ai.force_confirmation</field>
+        <field name="value">False</field>
+    </record>
+    <record id="param_audit_retention_days" model="ir.config_parameter">
+        <field name="key">xtd_ai.audit_retention_days</field>
+        <field name="value">365</field>
+    </record>
+    <record id="param_max_tool_calls" model="ir.config_parameter">
+        <field name="key">xtd_ai.max_tool_calls_per_run</field>
+        <field name="value">30</field>
+    </record>
+    <record id="param_attachment_max_mb" model="ir.config_parameter">
+        <field name="key">xtd_ai.attachment_max_mb</field>
+        <field name="value">10</field>
+    </record>
+    <record id="param_attachment_max_files" model="ir.config_parameter">
+        <field name="key">xtd_ai.attachment_max_files</field>
+        <field name="value">5</field>
+    </record>
+    <record id="param_attachment_max_pdf_pages" model="ir.config_parameter">
+        <field name="key">xtd_ai.attachment_max_pdf_pages</field>
+        <field name="value">20</field>
+    </record>
+    <record id="param_conversation_retention_days" model="ir.config_parameter">
+        <field name="key">xtd_ai.conversation_retention_days</field>
+        <field name="value">365</field>
+    </record>
+</odoo>

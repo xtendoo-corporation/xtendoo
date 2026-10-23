@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_xtd_ai_conversation_user,xtd.ai.conversation user,model_xtd_ai_conversation,group_xtd_ai_user,1,1,1,0
+access_xtd_ai_message_user,xtd.ai.message user,model_xtd_ai_message,group_xtd_ai_user,1,0,0,0
+access_xtd_ai_run_user,xtd.ai.run user,model_xtd_ai_run,group_xtd_ai_user,1,0,0,0
+access_xtd_ai_pending_action_user,xtd.ai.pending_action user,model_xtd_ai_pending_action,group_xtd_ai_user,1,0,0,0
+access_xtd_ai_audit_manager,xtd.ai.audit manager,model_xtd_ai_audit,group_xtd_ai_manager,1,0,0,0

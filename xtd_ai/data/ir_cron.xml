@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="cron_xtd_ai_audit_purge" model="ir.cron">
+        <field name="name">AI agent: purge old audit records</field>
+        <field name="model_id" ref="model_xtd_ai_audit" />
+        <field name="state">code</field>
+        <field name="code">model._xtd_ai_cron_purge()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+    <record id="cron_xtd_ai_housekeeping" model="ir.cron">
+        <field name="name">AI agent: expire pending actions and stale runs</field>
+        <field name="model_id" ref="model_xtd_ai_run" />
+        <field name="state">code</field>
+        <field name="code">model._xtd_ai_cron_housekeeping()</field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+    </record>
+    <record id="cron_xtd_ai_conversation_retention" model="ir.cron">
+        <field
+            name="name"
+        >AI agent: purge old conversations and their attachments</field>
+        <field name="model_id" ref="model_xtd_ai_conversation" />
+        <field name="state">code</field>
+        <field name="code">model._xtd_ai_cron_retention()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+</odoo>

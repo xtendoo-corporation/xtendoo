@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <menuitem
+        id="menu_xtd_ai_root"
+        name="Agente IA"
+        parent="base.menu_administration"
+        sequence="90"
+        groups="group_xtd_ai_manager"
+    />
+    <menuitem
+        id="menu_xtd_ai_conversation"
+        name="Conversaciones"
+        parent="menu_xtd_ai_root"
+        action="action_xtd_ai_conversation"
+        sequence="10"
+        groups="group_xtd_ai_manager"
+    />
+    <menuitem
+        id="menu_xtd_ai_audit"
+        name="Auditoría"
+        parent="menu_xtd_ai_root"
+        action="action_xtd_ai_audit"
+        sequence="20"
+        groups="group_xtd_ai_manager"
+    />
+</odoo>
