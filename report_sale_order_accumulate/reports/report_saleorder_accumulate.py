@@ -26,6 +26,7 @@ class ReportSaleOrderLine(models.AbstractModel):
                 product = self.env["product.product"].browse(line["product_id"][0])
                 records.append(
                     {
+                        "product_code": product.default_code,
                         "product_name": product.name,
                         "product_classification_sequence": product.product_classification_id.sequence,
                         "product_classification_name": product.product_classification_id.name,

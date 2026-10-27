@@ -212,7 +212,7 @@
                                 />
                                 <t t-if="not lines_grouped">
                                     <t t-set="lines_grouped"
-                                       t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
+                                       t-value="[{'picking': False, 'line': l, 'quantity': l.quantity} for l in o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True) if l.product_id]"/>
                                 </t>
                                 <t t-set="current_subtotal" t-value="0"/>
                                 <t

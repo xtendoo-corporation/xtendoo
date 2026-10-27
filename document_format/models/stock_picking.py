@@ -12,8 +12,8 @@ class StockPicking(models.Model):
     def _compute_pic_name(self):
         for picking in self:
             picking.pic_name = picking.name
-            alb_ids = self.env['stock.picking'].search([('sale_id', '=', picking.sale_id.id), ('name', 'like', 'ALB%')],order='date_done desc')
-            pic_ids = self.env['stock.picking'].search([('sale_id', '=', picking.sale_id.id), ('name', 'like', 'PIC%')],order='date_done desc')
+            alb_ids = self.env['stock.picking'].search([('sale_id', '=', picking.sale_id.id), '|', ('name', 'like', 'ALB%'), ('name', 'like', 'WH/OUT%')],order='date_done desc')
+            pic_ids = self.env['stock.picking'].search([('sale_id', '=', picking.sale_id.id), '|', ('name', 'like', 'PIC%'), ('name', 'like', 'WH/PICK%')],order='date_done desc')
             print(len(alb_ids))
             if "PIC" in picking.name:
                 if len(alb_ids) <= 1:
