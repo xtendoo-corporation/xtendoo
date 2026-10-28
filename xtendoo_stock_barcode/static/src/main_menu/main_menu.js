@@ -80,6 +80,17 @@ export class XtendooStockBarcodeMainMenu extends Component {
         });
     }
 
+    async openDeliveriesAction() {
+        return this.actionService.doAction({
+            type: "ir.actions.client",
+            tag: "xtendoo_stock_barcode_picking_list",
+            name: _t("Entregas"),
+            params: {
+                domain: [["picking_type_code", "=", "outgoing"]],
+            }
+        });
+    }
+
     async openInternalAction() {
         return this.openAction("xtendoo_stock_barcode.action_stock_barcode_internal_wizard");
     }

@@ -35,12 +35,17 @@
 
                                 <div class="row g-3 mb-4">
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <button type="button" class="btn btn-outline-primary w-100 py-3" t-on-click="openIncomingAction">
                                             Entradas
                                         </button>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-outline-primary w-100 py-3" t-on-click="openDeliveriesAction">
+                                            Entregas
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
                                         <button type="button" class="btn btn-outline-primary w-100 py-3" t-on-click="openInternalAction">
                                             Transferencias internas
                                         </button>
