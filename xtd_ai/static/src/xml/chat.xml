@@ -190,7 +190,7 @@
                 >
                     <span class="o_xtd_ai_empty_logo"><ChatLogo size="40" /></span>
                     <h5 class="mt-3 mb-1">Asistente IA</h5>
-                    <p class="text-muted mb-3">Tu ayudante para el día a día en Odoo</p>
+                    <p class="text-muted mb-3">Tu ayudante para el día a día en XTD</p>
                     <div
                         class="o_xtd_ai_chips d-flex flex-column align-items-stretch gap-2"
                     >

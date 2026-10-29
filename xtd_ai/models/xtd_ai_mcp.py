@@ -364,6 +364,9 @@ class XtdAiMcp(models.AbstractModel):
         data = None
         event, outcome = "tool_call", "error"
         if isinstance(exc, XtdAiDraftOnlyError):
+            # A guard may trip inside Odoo or another module's code (e.g. a module
+            # that deletes a temporary record): keep the stack to find out which.
+            _logger.warning("AI guard blocked an operation in a tool", exc_info=exc)
             code, message = "draft_only", str(exc)
             event, outcome = "guard_blocked", "denied"
         elif isinstance(exc, XtdAiToolError):

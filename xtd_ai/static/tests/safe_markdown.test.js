@@ -1,8 +1,11 @@
-import {animationFrame, describe, expect, test} from "@odoo/hoot";
+import {advanceTime, animationFrame, describe, expect, test} from "@odoo/hoot";
 import {click, edit, press} from "@odoo/hoot-dom";
 import {
+    getService,
+    makeMockEnv,
     mockService,
     mountWithCleanup,
+    onRpc,
     patchWithCleanup,
 } from "@web/../tests/web_test_helpers";
 import {parseInline, parseSafeMarkdown} from "@xtd_ai/js/safe_markdown.esm";
@@ -209,7 +212,7 @@ describe("xtd_ai safe renderer", () => {
         });
         await mountWithCleanup(ChatWindow);
         expect(".o_xtd_ai_empty h5").toHaveText("Asistente IA");
-        expect(".o_xtd_ai_empty p").toHaveText("Tu ayudante para el día a día en Odoo");
+        expect(".o_xtd_ai_empty p").toHaveText("Tu ayudante para el día a día en XTD");
         expect(".o_xtd_ai_chip").toHaveCount(2);
         await click(".o_xtd_ai_chip:eq(0)");
         await animationFrame();
@@ -501,5 +504,39 @@ describe("xtd_ai systray", () => {
         await mountWithCleanup(ChatSystray);
         await animationFrame();
         expect("button.o_xtd_ai_toggle").toHaveCount(0);
+    });
+});
+
+describe("xtd_ai chat service", () => {
+    test("polls for the answer while a run is in progress, even without the bus", async () => {
+        let running = 9;
+        let reloads = 0;
+        onRpc("/xtd_ai/chat/open", () => ({
+            conversation_id: 1,
+            settings: {forced: false, confirm_writes: true},
+            suggestions: [],
+        }));
+        onRpc("/xtd_ai/chat/messages", () => {
+            reloads++;
+            return {
+                conversation_id: 1,
+                state: "open",
+                running_run_id: running,
+                messages: [],
+            };
+        });
+        await makeMockEnv();
+        const chat = getService("xtd_ai.chat");
+        await chat.open();
+        expect(chat.state.runningRunId).toBe(9);
+        const first = reloads;
+        await advanceTime(3000);
+        expect(reloads).toBe(first + 1);
+        running = false;
+        await advanceTime(3000);
+        expect(chat.state.runningRunId).toBe(false);
+        const done = reloads;
+        await advanceTime(10000);
+        expect(reloads).toBe(done);
     });
 });

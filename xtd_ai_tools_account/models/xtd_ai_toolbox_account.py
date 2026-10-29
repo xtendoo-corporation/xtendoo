@@ -99,7 +99,7 @@ def _invoice_schema(partner_label, vendor=False):
                 "description": (
                     "Fecha de vencimiento (YYYY-MM-DD) si el documento la indica: "
                     "léela del documento. Si se da, manda sobre el plazo de pago del "
-                    "contacto. Si no, Odoo la calcula."
+                    "contacto. Si no, XTD la calcula."
                 )
             },
             "ref": {
@@ -737,7 +737,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
         partner = self.env["res.partner"].browse(vals["partner_id"])
         summary = self.env._(
             "%(label)s para %(partner)s: %(count)s líneas, %(amount)s sin impuestos, "
-            "%(tax)s de impuestos, total %(total)s calculado por Odoo (borrador)",
+            "%(tax)s de impuestos, total %(total)s calculado por XTD (borrador)",
             label=label,
             partner=partner.display_name,
             count=len(args["lines"]),
@@ -794,13 +794,13 @@ class XtdAiToolboxAccount(models.AbstractModel):
         description=(
             "Crea una factura de cliente SIEMPRE en borrador: no la contabiliza, no "
             "la envía y no "
-            "registra pagos; el usuario la revisa y publica en Odoo. Necesita el "
+            "registra pagos; el usuario la revisa y publica en XTD. Necesita el "
             "contacto "
             "(partner_id de search_partners) y líneas con cantidad y producto "
             "(product_id de "
             "search_products) o descripción más price_unit; el precio, si falta, es "
             "el del "
-            "producto. Los impuestos y el diario los calcula Odoo. Opcionales: "
+            "producto. Los impuestos y el diario los calcula XTD. Opcionales: "
             "invoice_date, ref "
             "y attachment_id (documento adjunto del chat que quedará en el borrador). "
             "Con varias compañías activas se crea en `company` (o en la primera "
@@ -829,7 +829,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
         description=(
             "Registra una factura de proveedor SIEMPRE en borrador: no la contabiliza "
             "ni registra "
-            "pagos; el usuario la revisa y publica en Odoo. Necesita el proveedor "
+            "pagos; el usuario la revisa y publica en XTD. Necesita el proveedor "
             "(partner_id de "
             "search_partners) y líneas con cantidad y producto o descripción más "
             "price_unit. "
@@ -838,7 +838,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
             "factura del proveedor) y attachment_id (id del documento adjunto del "
             "chat, p. ej. "
             "el PDF de la factura, que quedará adjunto al borrador). Los impuestos y "
-            "el diario los calcula Odoo. Con varias compañías "
+            "el diario los calcula XTD. Con varias compañías "
             "activas se crea en `company` (o en la primera activa si se omite). No "
             "sirve para "
             "facturas de cliente (create_customer_invoice) ni para modificar facturas "

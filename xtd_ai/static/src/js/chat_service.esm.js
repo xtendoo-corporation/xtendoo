@@ -60,6 +60,11 @@ export const xtdAiChatService = {
             error: null,
         });
         let reloadSeq = 0;
+        // While a run is in progress the chat also polls for the answer, so it shows
+        // up even where the bus (websocket) does not reach the browser, e.g. behind a
+        // proxy without the /websocket route.
+        const POLL_MS = 3000;
+        let pollTimer = null;
 
         // Window state survives page reloads (F5) within the same browser tab.
         // Per-viewer convenience only: wrapped, and the chat works without it.
@@ -118,9 +123,29 @@ export const xtdAiChatService = {
                 if (seq !== reloadSeq || res.conversation_id !== state.conversationId) {
                     return; // A newer reload or another conversation superseded this one
                 }
+                const finished = state.runningRunId && !res.running_run_id;
                 state.messages = res.messages;
                 state.conversationState = res.state;
                 state.runningRunId = res.running_run_id;
+                if (finished && state.conversations.length) {
+                    // The history shows the conversation's last message
+                    service.loadHistory().catch(() => null);
+                }
+                service.schedulePoll();
+            },
+            schedulePoll() {
+                if (pollTimer || !state.runningRunId) {
+                    return;
+                }
+                pollTimer = browser.setTimeout(async () => {
+                    pollTimer = null;
+                    try {
+                        await service.reload();
+                    } catch {
+                        // Transient error: the next poll (or the bus) retries
+                    }
+                    service.schedulePoll();
+                }, POLL_MS);
             },
             /** Past conversations of the user (read-only history). */
             async loadHistory() {

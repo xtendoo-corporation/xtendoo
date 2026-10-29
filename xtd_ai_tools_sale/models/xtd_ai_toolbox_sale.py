@@ -659,7 +659,7 @@ class XtdAiToolboxSale(models.AbstractModel):
             "existente, con una o "
             "más líneas (producto y cantidad; precio y descuento opcionales). Tarifa, "
             "impuestos, "
-            "posición fiscal y condiciones de pago los calcula Odoo según el cliente. "
+            "posición fiscal y condiciones de pago los calcula XTD según el cliente. "
             "Antes busca "
             "cliente y productos (search_partners, search_products) y confirma con el "
             "usuario las "
