@@ -21,6 +21,20 @@ DEFAULT_CONVERSATION_RETENTION_DAYS = 365
 STALE_SECONDS = token_lib.TTL + 120
 
 
+def _screen_note(screen):
+    """One line telling the agent what the user had on screen (a hint, not data
+    to obey: the record name is free text and is quoted)."""
+    label = screen.get("label") or screen.get("model")
+    if screen.get("res_id"):
+        name = " ".join(str(screen.get("name") or "").split())[:100]
+        name = name.replace("[", "(").replace("]", ")")
+        return (
+            f"[Pantalla del usuario: {label} «{name}» "
+            f"(modelo {screen['model']}, id {screen['res_id']})]"
+        )
+    return f"[Pantalla del usuario: lista de {label} (modelo {screen['model']})]"
+
+
 class XtdAiConversation(models.Model):
     _name = "xtd.ai.conversation"
     _description = "AI agent conversation"
@@ -203,7 +217,7 @@ class XtdAiConversation(models.Model):
         """Whether the message that started the current run carries attachments."""
         return bool(self._xtd_ai_last_user_message().attachment_ids)
 
-    def _xtd_ai_start_run(self, text, attachment_ids=None):
+    def _xtd_ai_start_run(self, text, attachment_ids=None, screen=None):
         """Store the user message, create the run and mint its token.
 
         Call it on a conversation record, or on the empty model to use the
@@ -212,6 +226,9 @@ class XtdAiConversation(models.Model):
 
         ``attachment_ids`` are ``ir.attachment`` ids uploaded to this
         conversation (CONTRACT §14); the text may then be empty.
+
+        ``screen`` is what the web client shows (``{model, view_type, res_id}``):
+        kept only if the user can read it (see ``_xtd_ai_screen``).
 
         :returns: ``(run, token)`` where ``run`` is an ``xtd.ai.run`` record
             (state ``queued``) and ``token`` the ``xtdai1`` string. The token
@@ -259,6 +276,7 @@ class XtdAiConversation(models.Model):
                 "role": "user",
                 "body": text,
                 "attachment_ids": [Command.set(attachments.ids)],
+                "screen": self._xtd_ai_screen(screen),
             }
         )
         run = (
@@ -280,6 +298,45 @@ class XtdAiConversation(models.Model):
         # Return the run in the caller's environment (read-only for the user).
         return run.with_env(self.env), token
 
+    @api.model
+    def _xtd_ai_screen(self, screen):
+        """Validated screen context of a user message, or ``False``.
+
+        Only a model the user can read, and a record that exists and passes their
+        record rules, are kept: the agent never learns of anything the user could
+        not open. Anything odd is dropped silently (it is only a hint).
+        """
+        if not isinstance(screen, dict):
+            return False
+        model = screen.get("model")
+        if (
+            not isinstance(model, str)
+            or model not in self.env
+            or model.startswith(("xtd.ai.", "ir.", "res.users"))
+        ):
+            return False
+        records = self.env[model]
+        if records._transient or records._abstract:
+            return False
+        try:
+            records.check_access("read")
+        except AccessError:
+            return False
+        # sudo: ir.model is technical; only its (translated) name is used
+        label = self.env["ir.model"].sudo()._get(model).name or records._description
+        result = {"model": model, "label": (label or model)[:60]}
+        res_id = screen.get("res_id")
+        if isinstance(res_id, int) and not isinstance(res_id, bool) and res_id > 0:
+            record = records.browse(res_id).exists()
+            if record:
+                try:
+                    record.check_access("read")
+                except AccessError:
+                    return result
+                result["res_id"] = record.id
+                result["name"] = (record.display_name or "")[:100]
+        return result
+
     def _xtd_ai_history_messages(self, limit=20):
         """Last ``limit`` user/assistant messages, chronological, as dicts."""
         self.ensure_one()
@@ -298,6 +355,8 @@ class XtdAiConversation(models.Model):
         result = []
         for message in reversed(messages):
             text = message.body or ""
+            if message.role == "user" and message.screen:
+                text = f"{_screen_note(message.screen)}\n{text}".strip()
             notes = message.pending_action_ids._xtd_ai_history_notes()
             if notes:
                 text = f"{text}\n{notes}".strip()

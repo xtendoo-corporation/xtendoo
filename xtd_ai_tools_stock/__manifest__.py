@@ -1,7 +1,7 @@
 {
     "name": "Agente IA: inventario",
     "summary": ("Herramientas de inventario para el agente IA (solo lectura)"),
-    "version": "19.0.2.1.1",
+    "version": "19.0.2.2.0",
     "category": "Productivity",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",

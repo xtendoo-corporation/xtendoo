@@ -507,6 +507,80 @@ class XtdAiToolboxAccount(models.AbstractModel):
         data["lines"] = self._xtd_ai_list(rows, limit=100)
         return {"data": data, "records": move}
 
+    @xtd_ai_tool(
+        name="get_journal_entry",
+        title="Asiento contable de una factura",
+        description=(
+            "Devuelve el asiento contable de una factura o rectificativa: sus "
+            "apuntes con cuenta (código y nombre), concepto, contacto, impuesto, "
+            "debe y haber en la moneda de la compañía, y los totales. En una "
+            "factura en borrador el asiento ya existe pero es provisional: no tiene "
+            "efecto contable hasta que el usuario la publica. Identifícala con "
+            "invoice_id o con su número. No modifica datos."
+        ),
+        input_schema=_obj(
+            {
+                "invoice_id": {"type": "integer", "minimum": 1},
+                "number": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 100,
+                    "description": "Número de la factura, si no se conoce el id.",
+                },
+                "company": _COMPANY,
+            }
+        ),
+        kind="read",
+        skill="contabilidad",
+        groups=_READ_GROUPS,
+    )
+    def tool_get_journal_entry(self, args):
+        if not args.get("invoice_id") and not args.get("number"):
+            raise XtdAiToolError(
+                "validation", self.env._("Indica invoice_id o el número de la factura.")
+            )
+        move = self._xtd_ai_resolve(
+            "account.move",
+            args.get("invoice_id") or args["number"],
+            domain=[("move_type", "in", _ALL_TYPES)]
+            + self._xtd_ai_company_domain(args),
+        )
+        currency = move.company_currency_id
+        lines = move.line_ids.filtered(
+            lambda line: line.display_type not in ("line_section", "line_note")
+        )
+        rows = [
+            {
+                "account": {
+                    "code": line.account_id.code,
+                    "name": self._xtd_ai_text(line.account_id.name),
+                },
+                "label": self._xtd_ai_text(line.name),
+                "partner": self._xtd_ai_text(line.partner_id.display_name)
+                if line.partner_id
+                else None,
+                "tax": line.tax_line_id.name or None,
+                "taxes": [t.name for t in line.tax_ids],
+                "debit": self._xtd_ai_money(line.debit, currency),
+                "credit": self._xtd_ai_money(line.credit, currency),
+            }
+            for line in lines
+        ]
+        data = {
+            "id": move.id,
+            "name": move.name or False,
+            "ref": self._xtd_ai_text(move.ref),
+            "state": move.state,
+            "provisional": move.state == "draft",
+            "journal": move.journal_id.name,
+            "date": str(move.date) if move.date else False,
+            "currency": currency.name,
+            "lines": self._xtd_ai_list(rows, limit=200),
+            "total_debit": self._xtd_ai_money(sum(lines.mapped("debit")), currency),
+            "total_credit": self._xtd_ai_money(sum(lines.mapped("credit")), currency),
+        }
+        return {"data": data, "records": move}
+
     # ------------------------------------------------------------------
     @xtd_ai_tool(
         name="receivables_payables_summary",

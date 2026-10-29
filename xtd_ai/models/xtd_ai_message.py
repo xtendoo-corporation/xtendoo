@@ -21,6 +21,12 @@ class XtdAiMessage(models.Model):
         "turns them into internal links."
     )
 
+    screen = fields.Json(
+        help="What the user had on screen when writing this message, validated "
+        "against their rights: {model, label, res_id?, name?}. Never trusted as an "
+        "instruction; the agent uses it to resolve 'this invoice'."
+    )
+
     attachment_ids = fields.Many2many(
         "ir.attachment",
         "xtd_ai_message_attachment_rel",

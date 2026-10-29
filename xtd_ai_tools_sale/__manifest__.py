@@ -4,7 +4,7 @@
         "Herramientas de ventas (presupuestos y pedidos) para el agente IA (solo "
         "borradores)"
     ),
-    "version": "19.0.2.1.1",
+    "version": "19.0.2.2.0",
     "category": "Productivity",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",

@@ -258,6 +258,31 @@ export const xtdAiChatService = {
                     target: "current",
                 });
             },
+            /**
+             * What the user has on screen behind the chat (a form record or a
+             * list), so the agent understands "this invoice". The server keeps it
+             * only if the user can read it.
+             */
+            screen() {
+                const controller = actionService.currentController;
+                if (controller?.action?.type !== "ir.actions.act_window") {
+                    return null;
+                }
+                const model = controller.props?.resModel;
+                if (!model) {
+                    return null;
+                }
+                const viewType = controller.view?.type || null;
+                const resId =
+                    viewType === "form"
+                        ? controller.currentState?.resId || controller.props?.resId
+                        : null;
+                return {
+                    model,
+                    view_type: viewType,
+                    res_id: Number.isInteger(resId) ? resId : null,
+                };
+            },
             toggle() {
                 return state.isOpen ? service.close() : service.open();
             },
@@ -387,6 +412,7 @@ export const xtdAiChatService = {
                         attachment_ids: files.map((a) => a.id),
                         // Companies active in the switcher (first one = current company)
                         company_ids: user.activeCompanies.map((c) => c.id),
+                        screen: service.screen(),
                     });
                     state.runningRunId = res.state === "failed" ? null : res.run_id;
                 } catch (error) {
