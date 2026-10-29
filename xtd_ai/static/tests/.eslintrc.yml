@@ -1,0 +1,4 @@
+# Hoot files must be named *.test.js (Hoot discovers them by that suffix), so the
+# repo-wide override for *.esm.js does not apply: declare them ES modules here.
+parserOptions:
+  sourceType: module
