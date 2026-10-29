@@ -94,7 +94,7 @@
     </t>
 
     <t t-name="xtd_ai.Menu">
-        <div class="o_xtd_ai_menu position-relative" t-ref="root">
+        <div class="o_xtd_ai_menu" t-ref="root">
             <button
                 class="o_xtd_ai_menu_toggle btn btn-sm btn-light rounded-circle"
                 aria-label="Más opciones"

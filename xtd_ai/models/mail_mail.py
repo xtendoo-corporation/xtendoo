@@ -10,7 +10,7 @@ class MailMail(models.Model):
     def create(self, vals_list):
         # Last line of defence: an AI run must never queue an outgoing email,
         # even through a flow that does not go through message_post.
-        if self.env.context.get("xtd_ai_run"):
+        if vals_list and self.env.context.get("xtd_ai_run"):
             raise XtdAiDraftOnlyError(
                 self.env._(
                     "El agente IA no puede escribir en el chatter ni enviar correos."
