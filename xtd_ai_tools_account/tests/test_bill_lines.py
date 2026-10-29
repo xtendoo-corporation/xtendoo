@@ -160,3 +160,34 @@ class TestBillLines(XtdAiAccountCase):
         )
         self.assertEqual(structured["error"]["code"], "validation", structured)
         self.assertIn(str(self.vendor.id), structured["error"]["message"])
+
+    def test_journal_entry_of_a_draft_bill(self):
+        self.set_confirm(self.biller, False)
+        run, _token = self.start_run(self.biller)
+        move = self.created_move(
+            self.bill(
+                self.biller,
+                run,
+                [
+                    {
+                        "description": "Cubierta",
+                        "quantity": 2,
+                        "price_unit": 100,
+                        "tax": "IVA 21% bienes AI",
+                    }
+                ],
+            )
+        )
+        entry = self.agent_call(
+            self.biller, run, "get_journal_entry", {"invoice_id": move.id}
+        )["data"]
+        self.assertTrue(entry["provisional"])
+        self.assertEqual(entry["state"], "draft")
+        self.assertEqual(entry["total_debit"], entry["total_credit"])
+        self.assertEqual(entry["total_debit"]["amount"], 242.0)
+        lines = entry["lines"]["items"]
+        self.assertEqual(len(lines), 3)  # expense, tax and payable
+        self.assertEqual(
+            sorted(line["credit"]["amount"] for line in lines), [0.0, 0.0, 242.0]
+        )
+        self.assertTrue(all(line["account"]["code"] for line in lines))

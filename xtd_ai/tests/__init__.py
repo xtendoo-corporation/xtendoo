@@ -17,3 +17,4 @@ from . import test_job
 from . import test_settings
 from . import test_chat_routes
 from . import test_chat_js
+from . import test_screen

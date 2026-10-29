@@ -145,9 +145,10 @@ class XtdAiRun(models.Model):
         """Accumulate (deduplicated, capped) record references of the run."""
         self.ensure_one()
         current = list(self.sudo().record_refs or [])
-        seen = {(r.get("model"), r.get("id")) for r in current}
+        # The same record may come twice: as a form and as its journal items
+        seen = {(r.get("model"), r.get("id"), r.get("view")) for r in current}
         for ref in refs:
-            key = (ref.get("model"), ref.get("id"))
+            key = (ref.get("model"), ref.get("id"), ref.get("view"))
             if key not in seen and len(current) < MAX_RECORD_REFS:
                 seen.add(key)
                 current.append(ref)

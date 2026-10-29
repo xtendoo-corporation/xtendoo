@@ -195,7 +195,13 @@ class XtdAiPendingAction(models.Model):
                         .browse(action.result_res_id)
                     )
                     if record.exists():
-                        label = _("creada %s", (record.display_name or "")[:60])
+                        # model and id let the agent work on it next ("show it")
+                        label = _(
+                            "creada %(name)s (modelo %(model)s, id %(id)s)",
+                            name=(record.display_name or "")[:60],
+                            model=action.result_model,
+                            id=action.result_res_id,
+                        )
             else:
                 label = {
                     "pending": _("pendiente de confirmación"),

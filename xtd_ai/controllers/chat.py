@@ -10,6 +10,8 @@ from odoo.exceptions import AccessError, UserError
 from odoo.http import request
 from odoo.modules.registry import Registry
 
+from ..models.xtd_ai_toolbox import REF_VIEWS
+
 _logger = logging.getLogger(__name__)
 
 SERVICE_TIMEOUT = 5  # seconds, CONTRACT §10
@@ -135,6 +137,10 @@ class XtdAiChatController(http.Controller):
                         "name": str(ref.get("name") or ref["model"])[:100],
                         "created": bool(ref.get("created")),
                         "url": url,
+                        "view": ref.get("view")
+                        if ref.get("view") in REF_VIEWS
+                        else None,
+                        "navigate": ref.get("navigate") is True,
                     }
                 )
         return result
@@ -479,7 +485,12 @@ class XtdAiChatController(http.Controller):
 
     @http.route("/xtd_ai/chat/send", type="jsonrpc", auth="user")
     def send(
-        self, text="", conversation_id=None, company_ids=None, attachment_ids=None
+        self,
+        text="",
+        conversation_id=None,
+        company_ids=None,
+        attachment_ids=None,
+        screen=None,
     ):
         env = self._env()
         # Companies active in the web client's company switcher. jsonrpc routes do not
@@ -512,11 +523,11 @@ class XtdAiChatController(http.Controller):
             raise UserError(
                 _("Máximo %s adjuntos por mensaje.", UPLOAD_MAX_PER_MESSAGE)
             )
-        if ids:
-            # gateway API (CONTRACT §14): validates owner, conversation, type, size
-            run, token = conversations._xtd_ai_start_run(text, attachment_ids=ids)
-        else:
-            run, token = conversations._xtd_ai_start_run(text)
+        # gateway API (CONTRACT §14): validates owner, conversation, type, size;
+        # the screen context is checked against the user's rights there too.
+        run, token = conversations._xtd_ai_start_run(
+            text, attachment_ids=ids or None, screen=screen
+        )
         url = os.environ.get("XTD_AI_SERVICE_URL")
         key = os.environ.get("XTD_AI_SERVICE_KEY")
         if not url:

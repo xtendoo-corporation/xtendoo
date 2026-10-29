@@ -13,6 +13,10 @@ DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 
 
+# Ways the chat may open a record reference besides its form (see chat_service.esm.js)
+REF_VIEWS = ("journal_items",)
+
+
 class XtdAiToolbox(models.AbstractModel):
     """Base of every AI toolbox (CONTRACT §6).
 
@@ -225,13 +229,17 @@ class XtdAiToolbox(models.AbstractModel):
             if isinstance(item, models.BaseModel):
                 refs.extend(self._xtd_ai_ref(r) for r in item if r.id)
             elif isinstance(item, dict) and "model" in item and "id" in item:
-                refs.append(
-                    {
-                        "model": item["model"],
-                        "id": item["id"],
-                        "name": item.get("name", ""),
-                    }
-                )
+                ref = {
+                    "model": item["model"],
+                    "id": item["id"],
+                    "name": item.get("name", ""),
+                }
+                # How the chat opens it (whitelisted) and whether it opens by itself
+                if item.get("view") in REF_VIEWS:
+                    ref["view"] = item["view"]
+                if item.get("navigate") is True:
+                    ref["navigate"] = True
+                refs.append(ref)
         return {"data": result.get("data", {}), "records": refs}
 
     # ------------------------------------------------------------------

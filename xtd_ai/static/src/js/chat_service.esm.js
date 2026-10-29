@@ -39,8 +39,8 @@ export function fileIcon(mimetype) {
 }
 
 export const xtdAiChatService = {
-    dependencies: ["bus_service", "action", "ui"],
-    start(env, {bus_service, action: actionService, ui}) {
+    dependencies: ["bus_service", "action", "ui", "orm"],
+    start(env, {bus_service, action: actionService, ui, orm}) {
         const state = reactive({
             isOpen: false,
             minimized: false,
@@ -123,13 +123,24 @@ export const xtdAiChatService = {
                 if (seq !== reloadSeq || res.conversation_id !== state.conversationId) {
                     return; // A newer reload or another conversation superseded this one
                 }
-                const finished = state.runningRunId && !res.running_run_id;
+                const finishedRun = !res.running_run_id && state.runningRunId;
                 state.messages = res.messages;
                 state.conversationState = res.state;
                 state.runningRunId = res.running_run_id;
-                if (finished && state.conversations.length) {
+                if (finishedRun && state.conversations.length) {
                     // The history shows the conversation's last message
                     service.loadHistory().catch(() => null);
+                }
+                if (finishedRun) {
+                    // A tool asked to show something (e.g. "take me to the journal
+                    // entry"): open it once, only when the run ends in this tab.
+                    const reply = res.messages.findLast(
+                        (m) => m.role === "assistant" && m.run_id === finishedRun
+                    );
+                    const ref = reply?.record_refs?.find((r) => r.navigate);
+                    if (ref) {
+                        service.openRef(ref).catch(() => null);
+                    }
                 }
                 service.schedulePoll();
             },
@@ -257,6 +268,52 @@ export const xtdAiChatService = {
                     views: [[false, "form"]],
                     target: "current",
                 });
+            },
+            /**
+             * What the user has on screen behind the chat (a form record or a
+             * list), so the agent understands "this invoice". The server keeps it
+             * only if the user can read it.
+             */
+            screen() {
+                const controller = actionService.currentController;
+                if (controller?.action?.type !== "ir.actions.act_window") {
+                    return null;
+                }
+                const model = controller.props?.resModel;
+                if (!model) {
+                    return null;
+                }
+                const viewType = controller.view?.type || null;
+                const resId =
+                    viewType === "form"
+                        ? controller.currentState?.resId || controller.props?.resId
+                        : null;
+                return {
+                    model,
+                    view_type: viewType,
+                    res_id: Number.isInteger(resId) ? resId : null,
+                };
+            },
+            /** Open a record reference of a reply the way its tool asked. */
+            async openRef(ref) {
+                if (ref.view === "journal_items" && ref.model === "account.move") {
+                    // Odoo's own "Journal Items" button of the entry, as the user
+                    const action = await orm.call(
+                        "account.move",
+                        "action_open_journal_items",
+                        [[ref.id]]
+                    );
+                    if (!state.isOpen) {
+                        state.isOpen = true;
+                        state.minimized = false;
+                    }
+                    if (ui.isSmall) {
+                        state.minimized = true;
+                    }
+                    saveWindow();
+                    return actionService.doAction(action);
+                }
+                return service.openRecord(ref.model, ref.id);
             },
             toggle() {
                 return state.isOpen ? service.close() : service.open();
@@ -387,6 +444,7 @@ export const xtdAiChatService = {
                         attachment_ids: files.map((a) => a.id),
                         // Companies active in the switcher (first one = current company)
                         company_ids: user.activeCompanies.map((c) => c.id),
+                        screen: service.screen(),
                     });
                     state.runningRunId = res.state === "failed" ? null : res.run_id;
                 } catch (error) {
