@@ -489,7 +489,7 @@ class XtdAiToolboxPurchase(models.AbstractModel):
             "proveedor, con "
             "una o varias líneas (producto y cantidad; precio unitario opcional: si "
             "se omite, "
-            "Odoo usa la tarifa del proveedor). Opcionalmente fecha prevista de "
+            "XTD usa la tarifa del proveedor). Opcionalmente fecha prevista de "
             "llegada y "
             "referencia del proveedor. Antes localiza proveedor y productos con "
             "search_partners "
@@ -498,7 +498,7 @@ class XtdAiToolboxPurchase(models.AbstractModel):
             "varias compañías activas se crea en `company` (o en la primera activa si "
             "se omite). No "
             "confirma ni envía nada: convertir la RFQ en pedido lo hace una persona "
-            "en Odoo."
+            "en XTD."
         ),
         input_schema=_obj(
             {

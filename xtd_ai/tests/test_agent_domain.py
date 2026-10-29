@@ -31,7 +31,7 @@ class TestAgentDomain(BaseCase):
 
     def test_system_prompt_loaded(self):
         prompt = load_system_prompt()
-        self.assertTrue(prompt.startswith("Eres el asistente de Odoo"))
+        self.assertTrue(prompt.startswith("Eres el asistente de XTD"))
         self.assertIn("Reglas fijas", prompt)
 
     def test_sonnet_with_cache(self):

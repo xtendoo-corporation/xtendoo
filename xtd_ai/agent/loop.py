@@ -49,7 +49,7 @@ MSG_FAILED = "No he podido completar la petición. Inténtalo de nuevo en unos m
 MSG_FAILED_SHORT = "Error interno del servicio del agente."
 MSG_EMPTY = "No he podido generar una respuesta."
 MSG_REPEATED = (
-    "He parado porque estaba repitiendo la misma operación y Odoo la rechazaba "
+    "He parado porque estaba repitiendo la misma operación y XTD la rechazaba "
     "una y otra vez. Revisa los datos o dime qué falta y lo vuelvo a intentar."
 )
 NOTE_REPEATED = (
@@ -118,7 +118,7 @@ class AgentLoop:
                 "odoo_auth_failed",
                 extra={"fields": {"run_id": self.run_id, "code": exc.code}},
             )
-            reply = self._failed("No se ha podido autorizar la ejecución en Odoo.")
+            reply = self._failed("No se ha podido autorizar la ejecución en XTD.")
         except ProviderError as exc:
             log.error(
                 "provider_error",

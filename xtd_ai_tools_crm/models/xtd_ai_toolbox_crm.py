@@ -584,7 +584,7 @@ class XtdAiToolboxCrm(models.AbstractModel):
                     "minimum": 1,
                     "maximum": 99,
                     "description": (
-                        "Probabilidad en % (1 a 99). Omítela para que la calcule Odoo."
+                        "Probabilidad en % (1 a 99). Omítela para que la calcule XTD."
                     ),
                 },
                 "salesperson": {
