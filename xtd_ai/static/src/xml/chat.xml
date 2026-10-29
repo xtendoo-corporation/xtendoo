@@ -243,7 +243,7 @@
                                     <a
                                         class="o_xtd_ai_ref badge text-bg-light me-1"
                                         t-att-href="ref.url"
-                                        t-on-click="(ev) => this.onRecordClick(ev, ref.model, ref.id)"
+                                        t-on-click="(ev) => this.onRecordClick(ev, ref)"
                                         t-esc="ref.name"
                                     />
                                 </t>

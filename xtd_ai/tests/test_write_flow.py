@@ -269,8 +269,13 @@ class TestWriteFlow(XtdAiCase):
             "messages"
         ]
         text = next(m["text"] for m in messages if m["role"] == "assistant")
-        self.assertIn(f"[Acción #{action.id}: creada tag-hist]", text)
         action2 = self.env["xtd.ai.pending_action"].sudo().browse(action.id)
+        # model and id of what was created: the agent can open or reuse it
+        self.assertIn(
+            f"[Acción #{action.id}: creada tag-hist (modelo {action2.result_model}, "
+            f"id {action2.result_res_id})]",
+            text,
+        )
         self.assertEqual(action2.state, "confirmed")
 
     def test_preview_cannot_write(self):

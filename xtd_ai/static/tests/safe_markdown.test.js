@@ -316,7 +316,7 @@ describe("xtd_ai safe renderer", () => {
         });
         mockService("xtd_ai.chat", {
             state,
-            openRecord: (model, id) => calls.push([model, id]),
+            openRef: (ref) => calls.push([ref.model, ref.id]),
         });
         await mountWithCleanup(ChatWindow);
         expect("a.o_xtd_ai_ref").toHaveAttribute("href", "/odoo/sale.order/60");
@@ -538,5 +538,56 @@ describe("xtd_ai chat service", () => {
         const done = reloads;
         await advanceTime(10000);
         expect(reloads).toBe(done);
+    });
+
+    test("a reply that asks to show the journal entry opens it once, when the run ends", async () => {
+        let running = 9;
+        const actions = [];
+        const reply = {
+            id: 2,
+            role: "assistant",
+            run_id: 9,
+            record_refs: [
+                {
+                    model: "account.move",
+                    id: 5,
+                    name: "Asiento X",
+                    view: "journal_items",
+                    navigate: true,
+                },
+            ],
+        };
+        onRpc("/xtd_ai/chat/open", () => ({
+            conversation_id: 1,
+            settings: {forced: false, confirm_writes: true},
+            suggestions: [],
+        }));
+        onRpc("/xtd_ai/chat/messages", () => ({
+            conversation_id: 1,
+            state: "open",
+            running_run_id: running,
+            messages: running ? [] : [reply],
+        }));
+        onRpc("account.move", "action_open_journal_items", ({args}) => ({
+            type: "ir.actions.act_window",
+            res_model: "account.move.line",
+            domain: [["move_id", "in", args[0]]],
+        }));
+        mockService("action", {
+            doAction: (action) => actions.push(action),
+        });
+        await makeMockEnv();
+        const chat = getService("xtd_ai.chat");
+        await chat.open();
+        expect(actions).toHaveLength(0);
+        running = false;
+        await advanceTime(3000);
+        await animationFrame();
+        expect(actions).toHaveLength(1);
+        expect(actions[0].res_model).toBe("account.move.line");
+        // Later reloads of the same conversation never navigate again
+        await chat.reload();
+        await animationFrame();
+        expect(actions).toHaveLength(1);
     });
 });

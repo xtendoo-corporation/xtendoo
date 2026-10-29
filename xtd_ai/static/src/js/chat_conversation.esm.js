@@ -222,15 +222,15 @@ export class ChatConversation extends Component {
      * Record links open inside the web client (no reload), so the chat window
      * stays. Ctrl/Cmd/Shift+click keep the browser default (new tab or window).
      */
-    onRecordClick(ev, resModel, resId) {
+    onRecordClick(ev, ref) {
         if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.button !== 0) {
             return;
         }
-        if (!resModel || !resId) {
+        if (!ref.model || !ref.id) {
             return;
         }
         ev.preventDefault();
-        this.chat.openRecord(resModel, resId);
+        this.chat.openRef(ref);
     }
 
     onKeydown(ev) {

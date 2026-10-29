@@ -8,6 +8,8 @@ from odoo.addons.xtd_ai.tools.errors import XtdAiDraftOnlyError, XtdAiToolError
 
 _READ_GROUPS = ["account.group_account_invoice", "account.group_account_readonly"]
 _WRITE_GROUPS = ["account.group_account_invoice"]
+# Manual journal entries are for accountants, not for invoicing-only users
+_ENTRY_GROUPS = ["account.group_account_user", "account.group_account_manager"]
 
 _MOVE_TYPES = {
     "customer_invoice": "out_invoice",
@@ -187,6 +189,47 @@ def _invoice_schema(partner_label, vendor=False):
             )
         }
     return schema
+
+
+_MOVE_REF_SCHEMA = _obj(
+    {
+        "invoice_id": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Id de la factura o del asiento.",
+        },
+        "number": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "description": "Número de la factura o del asiento, si no se conoce el id.",
+        },
+        "company": _COMPANY,
+    }
+)
+
+_ENTRY_LINE_SCHEMA = _obj(
+    {
+        "account": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20,
+            "description": "Código de la cuenta contable, p. ej. 629000.",
+        },
+        "label": {"type": "string", "maxLength": 200},
+        "debit": {"type": "number", "minimum": 0, "maximum": 1000000000},
+        "credit": {"type": "number", "minimum": 0, "maximum": 1000000000},
+        "partner_id": {
+            "type": "integer",
+            "minimum": 0,
+            "description": (
+                "Contacto del apunte: solo un id que el usuario haya pedido y hayas "
+                "obtenido con search_partners. Omítelo o pon 0 si no hay contacto."
+            ),
+        },
+    },
+    required=["account", "debit", "credit"],
+)
 
 
 class XtdAiToolboxAccount(models.AbstractModel):
@@ -509,42 +552,23 @@ class XtdAiToolboxAccount(models.AbstractModel):
 
     @xtd_ai_tool(
         name="get_journal_entry",
-        title="Asiento contable de una factura",
+        title="Asiento contable",
         description=(
-            "Devuelve el asiento contable de una factura o rectificativa: sus "
-            "apuntes con cuenta (código y nombre), concepto, contacto, impuesto, "
-            "debe y haber en la moneda de la compañía, y los totales. En una "
-            "factura en borrador el asiento ya existe pero es provisional: no tiene "
-            "efecto contable hasta que el usuario la publica. Identifícala con "
-            "invoice_id o con su número. No modifica datos."
+            "Devuelve el asiento contable de una factura, rectificativa o asiento "
+            "manual: sus apuntes con cuenta (código y nombre), concepto, contacto, "
+            "impuesto, debe y haber en la moneda de la compañía, y los totales. En "
+            "borrador el asiento es provisional: no tiene efecto contable hasta que "
+            "el usuario lo publica. Identifícalo con invoice_id (id del asiento o la "
+            "factura) o con su número. Para llevar al usuario a los apuntes en "
+            "pantalla usa open_journal_entry. No modifica datos."
         ),
-        input_schema=_obj(
-            {
-                "invoice_id": {"type": "integer", "minimum": 1},
-                "number": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 100,
-                    "description": "Número de la factura, si no se conoce el id.",
-                },
-                "company": _COMPANY,
-            }
-        ),
+        input_schema=_MOVE_REF_SCHEMA,
         kind="read",
         skill="contabilidad",
         groups=_READ_GROUPS,
     )
     def tool_get_journal_entry(self, args):
-        if not args.get("invoice_id") and not args.get("number"):
-            raise XtdAiToolError(
-                "validation", self.env._("Indica invoice_id o el número de la factura.")
-            )
-        move = self._xtd_ai_resolve(
-            "account.move",
-            args.get("invoice_id") or args["number"],
-            domain=[("move_type", "in", _ALL_TYPES)]
-            + self._xtd_ai_company_domain(args),
-        )
+        move = self._xtd_ai_entry_move(args)
         currency = move.company_currency_id
         lines = move.line_ids.filtered(
             lambda line: line.display_type not in ("line_section", "line_note")
@@ -580,6 +604,253 @@ class XtdAiToolboxAccount(models.AbstractModel):
             "total_credit": self._xtd_ai_money(sum(lines.mapped("credit")), currency),
         }
         return {"data": data, "records": move}
+
+    def _xtd_ai_entry_move(self, args):
+        """The invoice or journal entry named by ``invoice_id`` or ``number``."""
+        if not args.get("invoice_id") and not args.get("number"):
+            raise XtdAiToolError(
+                "validation",
+                self.env._("Indica invoice_id o el número de la factura o el asiento."),
+            )
+        return self._xtd_ai_resolve(
+            "account.move",
+            args.get("invoice_id") or args["number"],
+            domain=[("move_type", "in", [*_ALL_TYPES, "entry"])]
+            + self._xtd_ai_company_domain(args),
+        )
+
+    @xtd_ai_tool(
+        name="open_journal_entry",
+        title="Abrir el asiento en pantalla",
+        description=(
+            "Lleva al usuario a los apuntes contables (el asiento) de una factura o "
+            "asiento en Contabilidad: la pantalla se abre sola al terminar tu "
+            "respuesta. Úsala cuando pida ver, abrir o ir al asiento («enséñamelo», "
+            "«llévame al asiento»). Identifícalo con invoice_id o su número. No "
+            "modifica datos."
+        ),
+        input_schema=_MOVE_REF_SCHEMA,
+        kind="read",
+        skill="contabilidad",
+        groups=_READ_GROUPS,
+    )
+    def tool_open_journal_entry(self, args):
+        move = self._xtd_ai_entry_move(args)
+        name = move.name if move.name and move.name != "/" else move.display_name
+        return {
+            "data": {"id": move.id, "name": name, "opened": True},
+            "records": [
+                {
+                    "model": "account.move",
+                    "id": move.id,
+                    "name": self.env._("Asiento %s", name)[:100],
+                    "view": "journal_items",
+                    "navigate": True,
+                }
+            ],
+        }
+
+    @xtd_ai_tool(
+        name="create_journal_entry",
+        title="Crear asiento manual (borrador)",
+        description=(
+            "Crea un asiento contable manual SIEMPRE en borrador (diario de "
+            "operaciones varias si no se indica otro): el usuario lo revisa y lo "
+            "publica en XTD; tú no puedes publicarlo. Cada apunte lleva la cuenta "
+            "(código), debit o credit (el otro a 0) y, si procede, label y "
+            "partner_id. El debe y el haber deben cuadrar. No sirve para facturas "
+            "(usa create_vendor_bill o create_customer_invoice)."
+        ),
+        input_schema=_obj(
+            {
+                "date": _DATE | {"description": "Fecha contable (YYYY-MM-DD)."},
+                "ref": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Referencia o concepto del asiento.",
+                },
+                "journal": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": (
+                        "Diario de operaciones varias (código o nombre). Omítelo para "
+                        "usar el de la compañía."
+                    ),
+                },
+                "lines": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 50,
+                    "items": _ENTRY_LINE_SCHEMA,
+                },
+                "company": _COMPANY,
+            },
+            required=["date", "lines"],
+        ),
+        kind="draft",
+        skill="contabilidad",
+        groups=_ENTRY_GROUPS,
+        preview="_xtd_ai_preview_create_journal_entry",
+    )
+    def tool_create_journal_entry(self, args):
+        self = self._xtd_ai_scoped(args)  # noqa: PLW0642
+        move = self.env["account.move"].create(self._xtd_ai_entry_vals(args))
+        if move.state != "draft" or move.auto_post != "no" or move.move_type != "entry":
+            raise XtdAiDraftOnlyError(
+                self.env._("El asiento no ha quedado en borrador.")
+            )
+        currency = move.company_currency_id
+        data = {
+            "id": move.id,
+            "journal": move.journal_id.name,
+            "date": str(move.date),
+            "state": move.state,
+            "total": self._xtd_ai_money(sum(move.line_ids.mapped("debit")), currency),
+        }
+        ref = {
+            "model": "account.move",
+            "id": move.id,
+            "name": self.env._("Asiento borrador %s", move.ref or move.date)[:100],
+            "view": "journal_items",
+        }
+        return {"data": data, "records": [ref]}
+
+    def _xtd_ai_entry_vals(self, args):
+        """Validated values of a balanced, draft manual journal entry."""
+        company = self.env.company
+        journal_model = self.env["account.journal"]
+        journal_domain = [
+            *journal_model._check_company_domain(company),
+            ("type", "=", "general"),
+        ]
+        if args.get("journal"):
+            text = args["journal"].strip()
+            journal = journal_model.search(
+                journal_domain
+                + ["|", ("code", "=ilike", text), ("name", "=ilike", text)],
+                limit=2,
+            )
+            if len(journal) != 1:
+                raise XtdAiToolError(
+                    "validation" if not journal else "ambiguous",
+                    self.env._(
+                        "No encuentro un único diario de operaciones varias «%s».", text
+                    ),
+                )
+        else:
+            journal = journal_model.search(journal_domain, limit=1)
+            if not journal:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._("La compañía no tiene diario de operaciones varias."),
+                )
+        account_model = self.env["account.account"]
+        commands = []
+        total_debit = total_credit = 0.0
+        currency = company.currency_id
+        for index, line in enumerate(args["lines"], 1):
+            debit = currency.round(line["debit"])
+            credit = currency.round(line["credit"])
+            if bool(debit) == bool(credit):
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "Apunte %s: pon un importe en debit o en credit (el otro a 0).",
+                        index,
+                    ),
+                )
+            code = line["account"].strip()
+            account = account_model.search(
+                [*account_model._check_company_domain(company), ("code", "=", code)],
+                limit=1,
+            )
+            if not account:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "Apunte %(index)s: no existe la cuenta %(code)s en la "
+                        "compañía. Pregunta al usuario el código correcto.",
+                        index=index,
+                        code=code,
+                    ),
+                )
+            vals = {
+                "account_id": account.id,
+                "debit": debit,
+                "credit": credit,
+                "name": (line.get("label") or "").strip() or args.get("ref") or "/",
+            }
+            if line.get("partner_id"):  # 0 = no contact
+                partner = self._xtd_ai_resolve("res.partner", line["partner_id"])
+                if partner in self.env.user.company_ids.partner_id:
+                    raise XtdAiToolError(
+                        "validation",
+                        self.env._(
+                            "Apunte %s: el contacto es una de tus compañías. Si el "
+                            "usuario no pidió un contacto, quita partner_id.",
+                            index,
+                        ),
+                    )
+                vals["partner_id"] = partner.id
+            commands.append(Command.create(vals))
+            total_debit += debit
+            total_credit += credit
+        if currency.compare_amounts(total_debit, total_credit):
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "El asiento no cuadra: debe %(debit)s, haber %(credit)s. Revisa "
+                    "los importes con el usuario.",
+                    debit=f"{total_debit:,.2f}",
+                    credit=f"{total_credit:,.2f}",
+                ),
+            )
+        vals = {
+            "move_type": "entry",
+            "journal_id": journal.id,
+            "date": args["date"],
+            "line_ids": commands,
+        }
+        if args.get("ref"):
+            vals["ref"] = args["ref"].strip()
+        return vals
+
+    def _xtd_ai_preview_create_journal_entry(self, args):
+        multi = self._xtd_ai_multi()
+        self = self._xtd_ai_scoped(args)  # noqa: PLW0642
+        vals = self._xtd_ai_entry_vals(args)
+        # Rolled back by the gateway (preview savepoint)
+        move = self.env["account.move"].create(vals)
+        currency = move.company_currency_id
+        total = sum(move.line_ids.mapped("debit"))
+        summary = self.env._(
+            "Asiento manual en %(journal)s del %(date)s: %(count)s apuntes, "
+            "%(total)s al debe y al haber (borrador)",
+            journal=move.journal_id.name,
+            date=move.date,
+            count=len(move.line_ids),
+            total=f"{total:,.2f} {currency.name}",
+        )
+        if multi:
+            summary = (
+                self.env._("[%(company)s] ", company=move.company_id.name) + summary
+            )
+        if move.ref:
+            summary += self.env._(". Referencia: %s", move.ref)
+        lines = [
+            {
+                "field": f"{line.account_id.code} {line.account_id.name}"[:60],
+                "value": (
+                    self.env._("Debe %s", f"{line.debit:,.2f} {currency.name}")
+                    if line.debit
+                    else self.env._("Haber %s", f"{line.credit:,.2f} {currency.name}")
+                )
+                + (f" · {line.name}" if line.name and line.name != "/" else "")
+                + (f" · {line.partner_id.display_name}" if line.partner_id else ""),
+            }
+            for line in move.line_ids
+        ]
+        return {"summary": summary, "lines": lines}
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(

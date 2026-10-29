@@ -10,6 +10,8 @@ from odoo.exceptions import AccessError, UserError
 from odoo.http import request
 from odoo.modules.registry import Registry
 
+from ..models.xtd_ai_toolbox import REF_VIEWS
+
 _logger = logging.getLogger(__name__)
 
 SERVICE_TIMEOUT = 5  # seconds, CONTRACT §10
@@ -135,6 +137,10 @@ class XtdAiChatController(http.Controller):
                         "name": str(ref.get("name") or ref["model"])[:100],
                         "created": bool(ref.get("created")),
                         "url": url,
+                        "view": ref.get("view")
+                        if ref.get("view") in REF_VIEWS
+                        else None,
+                        "navigate": ref.get("navigate") is True,
                     }
                 )
         return result
