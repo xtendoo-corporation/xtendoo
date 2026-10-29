@@ -178,6 +178,34 @@ class TestCommonTools(XtdAiCase):
         bad = self.call(self.user, self.run, "create_contact", {"name": "X"})
         self.assertEqual(bad["structuredContent"]["error"]["code"], "validation")
 
+    def test_create_contact_parent_rules_and_card(self):
+        company = self.env["res.partner"].create(
+            {"name": "Matriz Padre SL", "is_company": True}
+        )
+        person = self.env["res.partner"].create({"name": "Persona Suelta"})
+
+        def create(args):
+            return self.call(self.user, self.run, "create_contact", args)[
+                "structuredContent"
+            ]
+
+        # a company never gets a parent (the agent once proposed parent_id 1)
+        bad = create({"name": "Hija SL", "is_company": True, "parent_id": company.id})
+        self.assertEqual(bad["error"]["code"], "validation", bad)
+        # the parent of a person must be a company
+        bad = create({"name": "Empleada", "parent_id": person.id})
+        self.assertEqual(bad["error"]["code"], "validation", bad)
+        self.assertIn(str(person.id), bad["error"]["message"])
+        ok = create({"name": "Empleada", "parent_id": company.id, "country_code": "ES"})
+        action = (
+            self.env["xtd.ai.pending_action"].sudo().browse(ok["pending_action_id"])
+        )
+        rows = {row["field"]: row["value"] for row in action.preview["lines"]}
+        self.assertEqual(rows["Empresa padre"]["untrusted_text"], "Matriz Padre SL")
+        self.assertEqual(rows["Nombre"]["untrusted_text"], "Empleada")
+        self.assertEqual(rows["Tipo"], "Persona")
+        self.assertIn("País", rows)
+
     def test_create_contact_requires_partner_manager_group(self):
         run2, _t = self.start_run(self.user2)
         status, response = self.rpc(

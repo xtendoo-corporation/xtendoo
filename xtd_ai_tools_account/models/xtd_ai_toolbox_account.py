@@ -58,12 +58,49 @@ _LINE_SCHEMA = _obj(
             "minimum": 0,
             "maximum": 100000000,
             "description": (
-                "Precio unitario sin impuestos. Si se omite se usa el del producto."
+                "Precio unitario sin impuestos ni descuento. Si se omite se usa el del "
+                "producto."
+            ),
+        },
+        "discount": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": (
+                "Descuento de la línea en % (p. ej. 30). Pásalo tal cual viene en el "
+                "documento; no lo restes del precio."
+            ),
+        },
+        "tax": {
+            "type": "string",
+            "maxLength": 60,
+            "description": (
+                'IVA de la línea: porcentaje (p. ej. "21") o nombre exacto del '
+                "impuesto. Obligatorio en líneas sin producto si el documento trae "
+                "impuestos; con producto, omítelo para usar el del producto."
             ),
         },
     },
     required=["quantity"],
 )
+
+_NEW_PARTNER_SCHEMA = _obj(
+    {
+        "name": {"type": "string", "minLength": 2, "maxLength": 200},
+        "vat": {"type": "string", "maxLength": 40},
+        "street": {"type": "string", "maxLength": 200},
+        "zip": {"type": "string", "maxLength": 20},
+        "city": {"type": "string", "maxLength": 100},
+        "country_code": {"type": "string", "minLength": 2, "maxLength": 2},
+    },
+    required=["name"],
+) | {
+    "description": (
+        "Proveedor que aún no existe en XTD (datos del documento). Úsalo solo con "
+        "partner_id 0, tras comprobar con search_partners que no existe: se crea "
+        "junto con la factura al confirmar."
+    )
+}
 
 
 def _invoice_schema(partner_label, vendor=False):
@@ -127,6 +164,15 @@ def _invoice_schema(partner_label, vendor=False):
     if vendor:
         schema["required"] = ["partner_id", "lines", "ref", "invoice_date"]
         props = schema["properties"]
+        props["partner_id"] = {
+            "type": "integer",
+            "minimum": 0,
+            "description": (
+                "Id del proveedor (search_partners). 0 si no existe en XTD: entonces "
+                "pasa sus datos en new_partner."
+            ),
+        }
+        props["new_partner"] = _NEW_PARTNER_SCHEMA
         props["ref"] = props["ref"] | {
             "description": (
                 "Número de la factura del proveedor, tal como aparece en ella "
@@ -623,10 +669,15 @@ class XtdAiToolboxAccount(models.AbstractModel):
                         " y ".join(missing),
                     ),
                 )
-        partner = self._xtd_ai_resolve("res.partner", args["partner_id"])
+        partner = self._xtd_ai_invoice_partner(args, move_type)
         lines = []
         for index, line in enumerate(args["lines"], 1):
             line_vals = {"quantity": line["quantity"]}
+            if line.get("discount"):
+                line_vals["discount"] = line["discount"]
+            if str(line.get("tax") or "").strip():
+                taxes = self._xtd_ai_line_tax(line["tax"], move_type, index)
+                line_vals["tax_ids"] = [Command.set(taxes.ids)]
             product = None
             if line.get("product_id"):
                 product = self._xtd_ai_resolve("product.product", line["product_id"])
@@ -676,6 +727,104 @@ class XtdAiToolboxAccount(models.AbstractModel):
             vals["ref"] = args["ref"].strip()
         return vals
 
+    def _xtd_ai_invoice_partner(self, args, move_type):
+        """The invoice partner: an existing one, or (vendor bills) a new supplier
+        created from ``new_partner`` in the same confirmed action."""
+        new = args.get("new_partner")
+        if args["partner_id"]:
+            if new:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "Pasa partner_id o new_partner (con partner_id 0), no ambos."
+                    ),
+                )
+            return self._xtd_ai_resolve("res.partner", args["partner_id"])
+        if move_type != "in_invoice" or not new:
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "Falta el proveedor: pasa su id en partner_id o, si no existe, "
+                    "partner_id 0 y sus datos en new_partner."
+                ),
+            )
+        common = self.env["xtd.ai.toolbox.common"]
+        vals = common._xtd_ai_contact_vals(new | {"is_company": True})
+        duplicates = common._xtd_ai_find_duplicates(vals)
+        if duplicates:
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "Ya existe un contacto con ese nombre o NIF: %s. Usa su id en "
+                    "partner_id (o pregunta al usuario cuál es).",
+                    ", ".join(f"{p.display_name} (id {p.id})" for p in duplicates),
+                ),
+            )
+        return self.env["res.partner"].create(vals)
+
+    def _xtd_ai_line_tax(self, value, move_type, index):
+        """Resolve a line's tax from a percentage ("21") or an exact tax name."""
+        company = self.env.company
+        purchase = move_type.startswith("in_")
+        domain = [
+            *self.env["account.tax"]._check_company_domain(company),
+            ("type_tax_use", "=", "purchase" if purchase else "sale"),
+        ]
+        tax_model = self.env["account.tax"]
+        text = str(value).strip()
+        found = tax_model.search(domain + [("name", "=ilike", text)])
+        if len(found) == 1:
+            return found
+        number = text.rstrip("%").strip().replace(",", ".")
+        try:
+            percent = float(number)
+        except ValueError:
+            percent = None
+        if percent is not None and not found:
+            found = tax_model.search(
+                domain + [("amount_type", "=", "percent")]
+            ).filtered(
+                lambda t: abs(t.amount - percent) < 0.001 and not t.price_include
+            )
+            default = (
+                company.account_purchase_tax_id
+                if purchase
+                else company.account_sale_tax_id
+            )
+            if default in found:
+                return default
+            if len(found) == 1:
+                return found
+        if not found:
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "Línea %(index)s: no hay ningún impuesto «%(tax)s». Pregunta al "
+                    "usuario qué impuesto aplica.",
+                    index=index,
+                    tax=text,
+                ),
+            )
+        raise XtdAiToolError(
+            "ambiguous",
+            self.env._(
+                "Línea %(index)s: hay varios impuestos «%(tax)s»: %(names)s. Pregunta "
+                "al usuario cuál aplica y pasa su nombre exacto en tax.",
+                index=index,
+                tax=text,
+                names=", ".join(found[:10].mapped("name")),
+            ),
+        )
+
+    def _xtd_ai_map_line_taxes(self, move, args):
+        """Explicit line taxes follow the partner's fiscal position, like the UI."""
+        fiscal_position = move.fiscal_position_id
+        if not fiscal_position:
+            return
+        for line, line_args in zip(move.invoice_line_ids, args["lines"], strict=False):
+            if str(line_args.get("tax") or "").strip():
+                line.tax_ids = fiscal_position.map_tax(line.tax_ids)
+
     def _xtd_ai_invoice_attachment(self, args):
         """The chat attachment to keep with the draft (empty recordset if none)."""
         if args.get("attachment_id") is None:
@@ -691,6 +840,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
         vals = self._xtd_ai_invoice_vals(args, move_type)
         attachment = self._xtd_ai_invoice_attachment(args)
         move = self._xtd_ai_move_model(move_type).create(vals)
+        self._xtd_ai_map_line_taxes(move, args)
         if (
             move.state != "draft"
             or move.auto_post != "no"
@@ -723,7 +873,14 @@ class XtdAiToolboxAccount(models.AbstractModel):
             data["company"] = move.company_id.name
         data["currency"] = move.currency_id.name
         data["amount_tax"] = self._xtd_ai_money(move.amount_tax, move.currency_id)
-        return {"data": data, "records": move}
+        records = [move]
+        if not args["partner_id"]:
+            data["new_partner"] = {
+                "id": move.partner_id.id,
+                "name": self._xtd_ai_text(move.partner_id.name),
+            }
+            records.append(move.partner_id)
+        return {"data": data, "records": records}
 
     def _xtd_ai_preview_invoice(self, args, move_type, label):
         multi = self._xtd_ai_multi()
@@ -733,6 +890,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
         # The gateway runs previews in a savepoint that is always rolled back, so the
         # draft can be really created to let Odoo compute taxes and totals.
         move = self._xtd_ai_move_model(move_type).create(vals)
+        self._xtd_ai_map_line_taxes(move, args)
         currency = move.currency_id or self.env.company.currency_id
         partner = self.env["res.partner"].browse(vals["partner_id"])
         summary = self.env._(
@@ -759,6 +917,15 @@ class XtdAiToolboxAccount(models.AbstractModel):
             summary += self.env._(
                 " Adjunto: %s.", self._xtd_ai_text(attachment.name)["untrusted_text"]
             )
+        if not args["partner_id"]:
+            summary += self.env._(
+                " Crea también el proveedor «%(name)s»%(vat)s.",
+                name=partner.name,
+                vat=f" (NIF {partner.vat})" if partner.vat else "",
+            )
+        untaxed = move.invoice_line_ids.filtered(lambda line: not line.tax_ids)
+        if untaxed:
+            summary += self.env._(" Atención: %s líneas sin impuestos.", len(untaxed))
         lines = [
             {
                 "product": self._xtd_ai_text(line.product_id.display_name)
@@ -767,6 +934,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
                 "description": self._xtd_ai_text(line.name),
                 "quantity": line.quantity,
                 "price_unit": self._xtd_ai_money(line.price_unit, currency),
+                "discount": line.discount,
                 "taxes": [t.name for t in line.tax_ids],
                 "subtotal": self._xtd_ai_money(line.price_subtotal, currency),
             }
@@ -800,8 +968,9 @@ class XtdAiToolboxAccount(models.AbstractModel):
             "(product_id de "
             "search_products) o descripción más price_unit; el precio, si falta, es "
             "el del "
-            "producto. Los impuestos y el diario los calcula XTD. Opcionales: "
-            "invoice_date, ref "
+            "producto. En cada línea, discount (%) y tax (IVA en %) son opcionales; "
+            "sin tax se usan los impuestos del producto. El total y el diario los "
+            "calcula XTD. Opcionales: invoice_date, ref "
             "y attachment_id (documento adjunto del chat que quedará en el borrador). "
             "Con varias compañías activas se crea en `company` (o en la primera "
             "activa si se omite). "
@@ -828,21 +997,17 @@ class XtdAiToolboxAccount(models.AbstractModel):
         title="Crear factura de proveedor (borrador)",
         description=(
             "Registra una factura de proveedor SIEMPRE en borrador: no la contabiliza "
-            "ni registra "
-            "pagos; el usuario la revisa y publica en XTD. Necesita el proveedor "
-            "(partner_id de "
-            "search_partners) y líneas con cantidad y producto o descripción más "
-            "price_unit. "
-            "Opcionales: ref (número de la factura del proveedor), invoice_date "
-            "(fecha de la "
-            "factura del proveedor) y attachment_id (id del documento adjunto del "
-            "chat, p. ej. "
-            "el PDF de la factura, que quedará adjunto al borrador). Los impuestos y "
-            "el diario los calcula XTD. Con varias compañías "
-            "activas se crea en `company` (o en la primera activa si se omite). No "
-            "sirve para "
-            "facturas de cliente (create_customer_invoice) ni para modificar facturas "
-            "existentes."
+            "ni registra pagos; el usuario la revisa y publica en XTD. Necesita el "
+            "proveedor (partner_id de search_partners, o 0 y new_partner si no existe: "
+            "se crea con la factura), ref (número de la factura del proveedor), "
+            "invoice_date y líneas con cantidad y producto o descripción más "
+            'price_unit; en cada línea, discount (%) y tax (IVA en %, p. ej. "21") '
+            "si el documento los trae. Opcional: attachment_id (id del documento "
+            "adjunto del chat, p. ej. el PDF de la factura, que quedará adjunto al "
+            "borrador). Las cuotas, el total y el diario los calcula XTD. Con varias "
+            "compañías activas se crea en `company` (o en la primera activa si se "
+            "omite). No sirve para facturas de cliente (create_customer_invoice) ni "
+            "para modificar facturas existentes."
         ),
         input_schema=_invoice_schema("proveedor", vendor=True),
         kind="draft",

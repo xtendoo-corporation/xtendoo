@@ -300,7 +300,15 @@ class XtdAiToolboxCommon(models.AbstractModel):
                 "zip": {"type": "string", "maxLength": 20},
                 "city": {"type": "string", "maxLength": 100},
                 "country_code": {"type": "string", "minLength": 2, "maxLength": 2},
-                "parent_id": {"type": "integer", "minimum": 1},
+                "parent_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": (
+                        "Solo para una persona de contacto de una empresa que ya "
+                        "existe: id de esa empresa (search_partners). Omítelo para "
+                        "empresas y para personas independientes."
+                    ),
+                },
             },
             "required": ["name"],
             "additionalProperties": False,
@@ -336,10 +344,66 @@ class XtdAiToolboxCommon(models.AbstractModel):
                 )
             vals["country_id"] = country.id
         if args.get("parent_id"):
-            vals["parent_id"] = self._xtd_ai_resolve(
-                "res.partner", args["parent_id"]
-            ).id
+            if args.get("is_company"):
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "Una empresa no tiene empresa padre: quita parent_id y vuelve "
+                        "a llamar a la herramienta."
+                    ),
+                )
+            parent = self._xtd_ai_resolve("res.partner", args["parent_id"])
+            if not parent.is_company:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "parent_id debe ser una empresa (id %s no lo es). Si el "
+                        "contacto no pertenece a una empresa, quita parent_id.",
+                        parent.id,
+                    ),
+                )
+            vals["parent_id"] = parent.id
         return vals
+
+    def _xtd_ai_contact_card_lines(self, vals):
+        """Confirmation card rows of a new contact, with Spanish labels."""
+        labels = {
+            "name": self.env._("Nombre"),
+            "vat": self.env._("NIF"),
+            "email": self.env._("Email"),
+            "phone": self.env._("Teléfono"),
+            "street": self.env._("Dirección"),
+            "zip": self.env._("C.P."),
+            "city": self.env._("Ciudad"),
+        }
+        lines = [
+            {"field": label, "value": self._xtd_ai_text(vals[key])}
+            for key, label in labels.items()
+            if vals.get(key)
+        ]
+        if vals.get("country_id"):
+            country = self.env["res.country"].browse(vals["country_id"])
+            lines.append(
+                {"field": self.env._("País"), "value": self._xtd_ai_text(country.name)}
+            )
+        if vals.get("parent_id"):
+            # The parent must show on the card: it changes who the contact belongs to
+            parent = self.env["res.partner"].browse(vals["parent_id"])
+            lines.append(
+                {
+                    "field": self.env._("Empresa padre"),
+                    "value": self._xtd_ai_text(parent.display_name),
+                }
+            )
+        lines.append(
+            {
+                "field": self.env._("Tipo"),
+                "value": self.env._("Empresa")
+                if vals.get("is_company")
+                else self.env._("Persona"),
+            }
+        )
+        return lines
 
     def _xtd_ai_find_duplicates(self, vals):
         partner_model = self.env["res.partner"]
@@ -362,11 +426,7 @@ class XtdAiToolboxCommon(models.AbstractModel):
         summary = self.env._("Crear %(kind)s «%(name)s»", kind=kind, name=vals["name"])
         if duplicates:
             summary += " - " + self.env._("posibles duplicados: %s", len(duplicates))
-        lines = [
-            {"field": k, "value": self._xtd_ai_text(v)}
-            for k, v in vals.items()
-            if k not in ("country_id", "parent_id")
-        ]
+        lines = self._xtd_ai_contact_card_lines(vals)
         return {
             "summary": summary,
             "lines": lines,
