@@ -678,32 +678,6 @@
 }
 
 
-// ---------- Acento de marca en el dashboard ----------
-// El tema usa el negro como primario global; aquí los botones de acción y los
-// periodos activos llevan el naranja de marca.
-.o_xtd_dashboard {
-    .btn-primary {
-        --bs-btn-bg: var(--xtd-orange, #f45700);
-        --bs-btn-border-color: var(--xtd-orange, #f45700);
-        --bs-btn-color: #fff;
-        --bs-btn-hover-bg: #d94e00;
-        --bs-btn-hover-border-color: #d94e00;
-        --bs-btn-hover-color: #fff;
-        --bs-btn-active-bg: #bf4500;
-        --bs-btn-active-border-color: #bf4500;
-        --bs-btn-active-color: #fff;
-    }
-
-    .kpi-card__create {
-        background: var(--xtd-orange, #f45700) !important;
-
-        &:hover {
-            background: #d94e00 !important;
-        }
-    }
-}
-
-
 // ---------- Fondo y entrada suaves ----------
 // Resplandor de marca muy tenue en las esquinas superiores (el oscuro tiene el suyo).
 .o_xtd_dashboard .xtd-dashboard-bg {
