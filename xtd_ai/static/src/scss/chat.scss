@@ -103,6 +103,9 @@
     }
 }
 
+.o_xtd_ai_menu {
+    position: relative;
+}
 .o_xtd_ai_menu_popup {
     position: absolute;
     right: 0;
@@ -110,6 +113,21 @@
     margin-top: 0.25rem;
     min-width: 17rem;
     z-index: 3;
+}
+// The floating window clips what overflows it, and the menu button is not at its
+// right edge: anchor the popup to the header instead, so it always fits.
+.o_xtd_ai_window {
+    .o_xtd_ai_header {
+        position: relative;
+    }
+    .o_xtd_ai_menu {
+        position: static;
+    }
+    .o_xtd_ai_menu_popup {
+        right: 0.5rem;
+        margin-top: 0;
+        max-width: calc(100% - 1rem);
+    }
 }
 
 // Notices

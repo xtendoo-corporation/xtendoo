@@ -56,7 +56,7 @@ class ResPartner(models.Model):
     def unlink(self):
         # Deliberate: the draft-only guard must refuse deletion during an AI run.
         # pylint: disable=no-raise-unlink
-        if self.env.context.get("xtd_ai_run"):
+        if self and self.env.context.get("xtd_ai_run"):
             raise XtdAiDraftOnlyError(
                 self.env._("El agente IA no puede borrar contactos.")
             )

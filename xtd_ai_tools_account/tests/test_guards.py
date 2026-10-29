@@ -30,6 +30,19 @@ class TestAccountGuards(XtdAiAccountCase):
         self.assertEqual(self.move.state, "draft")
         self.assertTrue(self.move.exists())
 
+    def test_empty_recordsets_are_not_blocked(self):
+        # Some Odoo builds call payment_ids.unlink() -> move_id.unlink() on empty
+        # sets while creating invoice lines: an empty call must never trip a guard
+        # (seen in pre-aicia: every vendor bill failed with draft_only).
+        env = self.tool_env(self.biller, self.run)
+        env["account.move"].unlink()
+        env["account.move"].button_cancel()
+        env["account.payment"].unlink()
+        env["account.payment"].action_post()
+        env["account.payment"].create([])
+        env["res.partner"].unlink()
+        env["mail.mail"].create([])
+
     def test_move_methods_work_without_run(self):
         move = self.move.with_user(self.biller)
         move.action_post()

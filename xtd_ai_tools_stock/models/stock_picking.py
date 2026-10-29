@@ -7,6 +7,8 @@ class StockPicking(models.Model):
     _inherit = "stock.picking"
 
     def _xtd_ai_guard(self):
+        if not self:
+            return  # nothing to guard on an empty recordset (Odoo calls it internally)
         check_draft_only(
             self.env,
             self.env._(

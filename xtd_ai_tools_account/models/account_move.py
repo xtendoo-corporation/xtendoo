@@ -7,7 +7,9 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     def _xtd_ai_block(self, message):
-        if self.env.context.get("xtd_ai_run"):
+        # Nothing to guard on an empty recordset: Odoo calls these on empty sets
+        # internally (e.g. unlink() of no payments while creating invoice lines).
+        if self and self.env.context.get("xtd_ai_run"):
             raise XtdAiDraftOnlyError(message)
 
     def action_post(self):

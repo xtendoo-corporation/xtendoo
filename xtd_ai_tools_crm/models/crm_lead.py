@@ -10,7 +10,8 @@ class CrmLead(models.Model):
     _inherit = "crm.lead"
 
     def _xtd_ai_guard(self, what):
-        if self.env.context.get("xtd_ai_run"):
+        # Nothing to guard on an empty recordset (Odoo calls these internally)
+        if self and self.env.context.get("xtd_ai_run"):
             raise XtdAiDraftOnlyError(
                 self.env._("El agente IA no puede %s oportunidades.", what)
             )
