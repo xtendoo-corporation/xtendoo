@@ -19,3 +19,4 @@ from . import test_chat_routes
 from . import test_chat_js
 from . import test_screen
 from . import test_count_records
+from . import test_undo

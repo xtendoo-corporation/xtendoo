@@ -16,9 +16,9 @@
             <t t-foreach="blocks" t-as="block" t-key="block_index">
                 <p t-if="block.type === 'p'" class="mb-1">
                     <t t-call="xtd_ai.Inline"><t
-                            t-set="segs"
-                            t-value="block.inline"
-                        /></t>
+              t-set="segs"
+              t-value="block.inline"
+            /></t>
                 </p>
                 <ul t-elif="block.type === 'ul'" class="mb-1">
                     <li t-foreach="block.items" t-as="item" t-key="item_index">
@@ -31,16 +31,16 @@
                     </li>
                 </ol>
                 <table
-                    t-elif="block.type === 'table'"
-                    class="table table-sm table-bordered mb-1"
-                >
+          t-elif="block.type === 'table'"
+          class="table table-sm table-bordered mb-1"
+        >
                     <thead>
                         <tr>
                             <th t-foreach="block.header" t-as="cell" t-key="cell_index">
                                 <t t-call="xtd_ai.Inline"><t
-                                        t-set="segs"
-                                        t-value="cell"
-                                    /></t>
+                    t-set="segs"
+                    t-value="cell"
+                  /></t>
                             </th>
                         </tr>
                     </thead>
@@ -48,9 +48,9 @@
                         <tr t-foreach="block.rows" t-as="row" t-key="row_index">
                             <td t-foreach="row" t-as="cell" t-key="cell_index">
                                 <t t-call="xtd_ai.Inline"><t
-                                        t-set="segs"
-                                        t-value="cell"
-                                    /></t>
+                    t-set="segs"
+                    t-value="cell"
+                  /></t>
                             </td>
                         </tr>
                     </tbody>
@@ -61,20 +61,20 @@
 
     <t t-name="xtd_ai.Logo">
         <svg
-            class="o_xtd_ai_logo"
-            t-att-width="props.size || 20"
-            t-att-height="props.size || 20"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-        >
+      class="o_xtd_ai_logo"
+      t-att-width="props.size || 20"
+      t-att-height="props.size || 20"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
             <path
-                class="o_xtd_ai_logo_bubble"
-                d="M4 3h12a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H10l-4 4v-4H4a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z"
-            />
+        class="o_xtd_ai_logo_bubble"
+        d="M4 3h12a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H10l-4 4v-4H4a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z"
+      />
             <path
-                class="o_xtd_ai_logo_spark"
-                d="M19 11l1.2 2.8L23 15l-2.8 1.2L19 19l-1.2-2.8L15 15l2.8-1.2z"
-            />
+        class="o_xtd_ai_logo_spark"
+        d="M19 11l1.2 2.8L23 15l-2.8 1.2L19 19l-1.2-2.8L15 15l2.8-1.2z"
+      />
         </svg>
     </t>
 
@@ -82,11 +82,11 @@
         <t t-if="ui.visible">
             <div class="o_xtd_ai_systray">
                 <button
-                    t-attf-class="o_xtd_ai_toggle o_nav_entry #{state.isOpen ? 'active' : ''}"
-                    t-att-title="label"
-                    t-att-aria-label="label"
-                    t-on-click="() => chat.toggle()"
-                >
+          t-attf-class="o_xtd_ai_toggle o_nav_entry #{state.isOpen ? 'active' : ''}"
+          t-att-title="label"
+          t-att-aria-label="label"
+          t-on-click="() => chat.toggle()"
+        >
                     <ChatLogo size="20" />
                 </button>
             </div>
@@ -96,45 +96,45 @@
     <t t-name="xtd_ai.Menu">
         <div class="o_xtd_ai_menu" t-ref="root">
             <button
-                class="o_xtd_ai_menu_toggle btn btn-sm btn-light rounded-circle"
-                aria-label="Más opciones"
-                title="Más opciones"
-                t-on-click="toggle"
-            >
+        class="o_xtd_ai_menu_toggle btn btn-sm btn-light rounded-circle"
+        aria-label="Más opciones"
+        title="Más opciones"
+        t-on-click="toggle"
+      >
                 <i class="fa fa-ellipsis-h" />
             </button>
             <div
-                t-if="ui.open"
-                class="o_xtd_ai_menu_popup bg-view border rounded shadow p-2"
-            >
+        t-if="ui.open"
+        class="o_xtd_ai_menu_popup bg-view border rounded shadow p-2"
+      >
                 <button
-                    t-if="props.showNew"
-                    class="o_xtd_ai_new_item dropdown-item rounded"
-                    t-att-disabled="state.busy"
-                    t-on-click="onNew"
-                >
+          t-if="props.showNew"
+          class="o_xtd_ai_new_item dropdown-item rounded"
+          t-att-disabled="state.busy"
+          t-on-click="onNew"
+        >
                     <i class="fa fa-plus me-2" />Nueva conversación
                 </button>
                 <label
-                    class="o_xtd_ai_confirm_toggle form-check small m-0 px-2 py-1 d-flex align-items-start gap-2"
-                    t-att-title="confirmHelp"
-                >
+          class="o_xtd_ai_confirm_toggle form-check small m-0 px-2 py-1 d-flex align-items-start gap-2"
+          t-att-title="confirmHelp"
+        >
                     <input
-                        type="checkbox"
-                        class="form-check-input mt-1 ms-0"
-                        t-att-checked="state.settings.confirm_writes"
-                        t-att-disabled="state.settings.forced"
-                        t-on-change="onToggleConfirm"
-                    />
+            type="checkbox"
+            class="form-check-input mt-1 ms-0"
+            t-att-checked="state.settings.confirm_writes"
+            t-att-disabled="state.settings.forced"
+            t-on-change="onToggleConfirm"
+          />
                     <span>
                         <span
-                            class="form-check-label"
-                        >Pedir confirmación antes de crear</span>
+              class="form-check-label"
+            >Pedir confirmación antes de crear</span>
                         <span
-                            t-if="state.settings.forced"
-                            class="d-block text-muted"
-                            t-esc="confirmHelp"
-                        />
+              t-if="state.settings.forced"
+              class="d-block text-muted"
+              t-esc="confirmHelp"
+            />
                     </span>
                 </label>
             </div>
@@ -143,37 +143,37 @@
 
     <t t-name="xtd_ai.ChatConversation">
         <div
-            class="o_xtd_ai_conversation d-flex flex-column flex-grow-1 overflow-hidden"
-        >
+      class="o_xtd_ai_conversation d-flex flex-column flex-grow-1 overflow-hidden"
+    >
             <div
-                t-if="isReadOnly"
-                class="o_xtd_ai_readonly_bar d-flex align-items-center gap-2 px-3 py-2 border-bottom small"
-            >
+        t-if="isReadOnly"
+        class="o_xtd_ai_readonly_bar d-flex align-items-center gap-2 px-3 py-2 border-bottom small"
+      >
                 <i class="fa fa-lock text-muted" />
                 <span class="flex-grow-1">Conversación anterior, solo de lectura.</span>
                 <a
-                    href="#"
-                    class="o_xtd_ai_back_current fw-medium"
-                    t-on-click.prevent="() => chat.backToCurrent()"
-                >Volver a la conversación actual</a>
+          href="#"
+          class="o_xtd_ai_back_current fw-medium"
+          t-on-click.prevent="() => chat.backToCurrent()"
+        >Volver a la conversación actual</a>
             </div>
             <div
-                t-if="showBanner"
-                class="o_xtd_ai_banner d-flex align-items-center gap-2 px-3 py-2 border-bottom small"
-            >
+        t-if="showBanner"
+        class="o_xtd_ai_banner d-flex align-items-center gap-2 px-3 py-2 border-bottom small"
+      >
                 <span class="flex-grow-1">
                     Nueva conversación iniciada.
                     <a
-                        href="#"
-                        class="o_xtd_ai_banner_link fw-medium"
-                        t-on-click.prevent="() => chat.viewPrevious()"
-                    >Ver conversación anterior ›</a>
+            href="#"
+            class="o_xtd_ai_banner_link fw-medium"
+            t-on-click.prevent="() => chat.viewPrevious()"
+          >Ver conversación anterior ›</a>
                 </span>
                 <button
-                    class="o_xtd_ai_banner_close btn btn-sm btn-link p-0 text-muted"
-                    aria-label="Descartar aviso"
-                    t-on-click="() => chat.dismissBanner()"
-                >
+          class="o_xtd_ai_banner_close btn btn-sm btn-link p-0 text-muted"
+          aria-label="Descartar aviso"
+          t-on-click="() => chat.dismissBanner()"
+        >
                     <i class="fa fa-times" />
                 </button>
             </div>
@@ -181,96 +181,108 @@
             <div class="o_xtd_ai_messages flex-grow-1 overflow-auto p-3" t-ref="list">
                 <div t-if="state.loading" class="text-muted">Cargando…</div>
                 <div
-                    t-elif="showEmpty and isReadOnly"
-                    class="o_xtd_ai_empty text-muted text-center"
-                >Esta conversación no tiene mensajes.</div>
+          t-elif="showEmpty and isReadOnly"
+          class="o_xtd_ai_empty text-muted text-center"
+        >Esta conversación no tiene mensajes.</div>
                 <div
-                    t-elif="showEmpty"
-                    class="o_xtd_ai_empty d-flex flex-column align-items-center text-center"
-                >
+          t-elif="showEmpty"
+          class="o_xtd_ai_empty d-flex flex-column align-items-center text-center"
+        >
                     <span class="o_xtd_ai_empty_logo"><ChatLogo size="40" /></span>
                     <h5 class="mt-3 mb-1">Asistente IA</h5>
                     <p class="text-muted mb-3">Tu ayudante para el día a día en XTD</p>
                     <div
-                        class="o_xtd_ai_chips d-flex flex-column align-items-stretch gap-2"
-                    >
+            class="o_xtd_ai_chips d-flex flex-column align-items-stretch gap-2"
+          >
                         <button
-                            t-foreach="state.suggestions"
-                            t-as="chip"
-                            t-key="chip.key"
-                            class="o_xtd_ai_chip btn btn-sm rounded-pill text-start"
-                            t-att-disabled="state.busy"
-                            t-on-click="() => this.onChip(chip)"
-                            t-esc="chip.text"
-                        />
+              t-foreach="state.suggestions"
+              t-as="chip"
+              t-key="chip.key"
+              class="o_xtd_ai_chip btn btn-sm rounded-pill text-start"
+              t-att-disabled="state.busy"
+              t-on-click="() => this.onChip(chip)"
+              t-esc="chip.text"
+            />
                     </div>
                 </div>
                 <t t-foreach="state.messages" t-as="message" t-key="message.id">
                     <div
-                        t-attf-class="o_xtd_ai_message o_xtd_ai_message_#{message.role} mb-2"
-                    >
+            t-attf-class="o_xtd_ai_message o_xtd_ai_message_#{message.role} mb-2"
+          >
                         <div class="o_xtd_ai_bubble px-3 py-2">
                             <div
-                                t-if="message.attachments and message.attachments.length"
-                                class="o_xtd_ai_msg_files d-flex flex-column gap-1 mb-1"
-                            >
+                t-if="message.attachments and message.attachments.length"
+                class="o_xtd_ai_msg_files d-flex flex-column gap-1 mb-1"
+              >
                                 <a
-                                    t-foreach="message.attachments"
-                                    t-as="file"
-                                    t-key="file.id"
-                                    class="o_xtd_ai_msg_file d-flex align-items-center gap-2"
-                                    t-att-href="file.url"
-                                    t-att-title="file.name"
-                                >
+                  t-foreach="message.attachments"
+                  t-as="file"
+                  t-key="file.id"
+                  class="o_xtd_ai_msg_file d-flex align-items-center gap-2"
+                  t-att-href="file.url"
+                  t-att-title="file.name"
+                >
                                     <i t-attf-class="fa #{fileIcon(file.mimetype)}" />
                                     <span class="text-truncate" t-esc="file.name" />
                                     <small
-                                        class="text-muted text-nowrap"
-                                        t-esc="fileSize(file.size)"
-                                    />
+                    class="text-muted text-nowrap"
+                    t-esc="fileSize(file.size)"
+                  />
                                 </a>
                             </div>
                             <SafeText text="message.body" />
                             <div
-                                t-if="message.record_refs.length"
-                                class="o_xtd_ai_refs mt-1"
-                            >
+                t-if="message.record_refs.length"
+                class="o_xtd_ai_refs mt-1"
+              >
                                 <t
-                                    t-foreach="message.record_refs"
-                                    t-as="ref"
-                                    t-key="ref_index"
-                                >
+                  t-foreach="message.record_refs"
+                  t-as="ref"
+                  t-key="ref_index"
+                >
                                     <a
-                                        class="o_xtd_ai_ref badge text-bg-light me-1"
-                                        t-att-href="ref.url"
-                                        t-on-click="(ev) => this.onRecordClick(ev, ref)"
-                                        t-esc="ref.name"
-                                    />
+                    class="o_xtd_ai_ref badge text-bg-light me-1"
+                    t-att-href="ref.url"
+                    t-on-click="(ev) => this.onRecordClick(ev, ref)"
+                    t-esc="ref.name"
+                  />
+                                    <t t-if="ref.undo and !isReadOnly">
+                                        <button
+                      t-if="ref.undo.state === 'available'"
+                      class="o_xtd_ai_undo btn btn-sm btn-link p-0 me-2"
+                      t-att-disabled="state.busy"
+                      t-on-click="() => chat.undo({messageId: message.id}, ref)"
+                    >Hecho · Deshacer</button>
+                                        <span
+                      t-else=""
+                      class="o_xtd_ai_undone text-muted small me-2"
+                    >Deshecho</span>
+                                    </t>
                                 </t>
                             </div>
                         </div>
                         <div
-                            t-foreach="message.pending_actions"
-                            t-as="action"
-                            t-key="action.id"
-                            t-attf-class="o_xtd_ai_card card mt-2 o_xtd_ai_card_#{action.state}"
-                        >
+              t-foreach="message.pending_actions"
+              t-as="action"
+              t-key="action.id"
+              t-attf-class="o_xtd_ai_card card mt-2 o_xtd_ai_card_#{action.state}"
+            >
                             <div class="card-body p-2">
                                 <div class="fw-bold" t-esc="action.title" />
                                 <div
-                                    class="o_xtd_ai_card_summary"
-                                    t-esc="action.summary"
-                                />
+                  class="o_xtd_ai_card_summary"
+                  t-esc="action.summary"
+                />
                                 <table
-                                    t-if="action.lines.length"
-                                    class="table table-sm mb-1"
-                                >
+                  t-if="action.lines.length"
+                  class="table table-sm mb-1"
+                >
                                     <tbody>
                                         <tr
-                                            t-foreach="action.lines"
-                                            t-as="line"
-                                            t-key="line_index"
-                                        >
+                      t-foreach="action.lines"
+                      t-as="line"
+                      t-key="line_index"
+                    >
                                             <td class="text-muted" t-esc="line.field" />
                                             <td t-esc="line.value" />
                                         </tr>
@@ -278,116 +290,130 @@
                                 </table>
                                 <div t-if="action.actionable" class="d-flex gap-2">
                                     <button
-                                        class="o_xtd_ai_confirm btn btn-sm btn-primary"
-                                        t-att-disabled="state.busy"
-                                        t-on-click="() => chat.confirmAction(action.id)"
-                                    >Crear</button>
+                    class="o_xtd_ai_confirm btn btn-sm btn-primary"
+                    t-att-disabled="state.busy"
+                    t-on-click="() => chat.confirmAction(action.id)"
+                  >Crear</button>
                                     <button
-                                        class="o_xtd_ai_discard btn btn-sm btn-secondary"
-                                        t-att-disabled="state.busy"
-                                        t-on-click="() => chat.cancelAction(action.id)"
-                                    >Cancelar</button>
+                    class="o_xtd_ai_discard btn btn-sm btn-secondary"
+                    t-att-disabled="state.busy"
+                    t-on-click="() => chat.cancelAction(action.id)"
+                  >Cancelar</button>
                                 </div>
                                 <div t-else="" class="o_xtd_ai_card_state small">
                                     <span t-esc="actionStateLabel(action)" />
                                     <a
-                                        t-if="action.result"
-                                        class="ms-1"
-                                        t-att-href="action.result.url"
-                                        t-on-click="(ev) => this.onRecordClick(ev, action.result.model, action.result.id)"
-                                        t-esc="action.result.name"
-                                    />
+                    t-if="action.result"
+                    class="ms-1"
+                    t-att-href="action.result.url"
+                    t-on-click="(ev) => this.onRecordClick(ev, action.result)"
+                    t-esc="action.result.name"
+                  />
+                                    <t
+                    t-if="action.result and action.result.undo and !isReadOnly"
+                  >
+                                        <button
+                      t-if="action.result.undo.state === 'available'"
+                      class="o_xtd_ai_undo btn btn-sm btn-link p-0 ms-2"
+                      t-att-disabled="state.busy"
+                      t-on-click="() => chat.undo({actionId: action.id}, action.result)"
+                    >Deshacer</button>
+                                        <span
+                      t-else=""
+                      class="o_xtd_ai_undone text-muted ms-2"
+                    >Deshecho</span>
+                                    </t>
                                     <span
-                                        t-if="action.error"
-                                        class="text-danger ms-1"
-                                        t-esc="action.error"
-                                    />
+                    t-if="action.error"
+                    class="text-danger ms-1"
+                    t-esc="action.error"
+                  />
                                 </div>
                             </div>
                         </div>
                         <div
-                            class="o_xtd_ai_date text-muted small"
-                            t-esc="formatDate(message.date)"
-                        />
+              class="o_xtd_ai_date text-muted small"
+              t-esc="formatDate(message.date)"
+            />
                     </div>
                 </t>
                 <div
-                    t-if="state.runningRunId and !isReadOnly"
-                    class="o_xtd_ai_thinking text-muted d-flex align-items-center gap-2"
-                >
+          t-if="state.runningRunId and !isReadOnly"
+          class="o_xtd_ai_thinking text-muted d-flex align-items-center gap-2"
+        >
                     <span>Pensando…</span>
                     <button
-                        class="o_xtd_ai_stop btn btn-sm btn-link"
-                        t-on-click="() => chat.cancelRun()"
-                    >Detener</button>
+            class="o_xtd_ai_stop btn btn-sm btn-link"
+            t-on-click="() => chat.cancelRun()"
+          >Detener</button>
                 </div>
                 <div
-                    t-if="state.error"
-                    class="o_xtd_ai_error text-danger small"
-                    t-esc="state.error"
-                />
+          t-if="state.error"
+          class="o_xtd_ai_error text-danger small"
+          t-esc="state.error"
+        />
             </div>
 
             <footer t-if="!isReadOnly" class="o_xtd_ai_footer px-3 pb-3 pt-2">
                 <div
-                    t-if="state.attachments.length"
-                    class="o_xtd_ai_attachments d-flex flex-wrap gap-2 mb-2"
-                >
+          t-if="state.attachments.length"
+          class="o_xtd_ai_attachments d-flex flex-wrap gap-2 mb-2"
+        >
                     <span
-                        t-foreach="state.attachments"
-                        t-as="file"
-                        t-key="file.key"
-                        class="o_xtd_ai_file_chip d-inline-flex align-items-center gap-2 rounded-pill px-2 py-1 small"
-                    >
+            t-foreach="state.attachments"
+            t-as="file"
+            t-key="file.key"
+            class="o_xtd_ai_file_chip d-inline-flex align-items-center gap-2 rounded-pill px-2 py-1 small"
+          >
                         <i t-if="file.uploading" class="fa fa-circle-o-notch fa-spin" />
                         <i t-else="" t-attf-class="fa #{fileIcon(file.mimetype)}" />
                         <span
-                            class="o_xtd_ai_file_name text-truncate"
-                            t-esc="file.name"
-                        />
+              class="o_xtd_ai_file_name text-truncate"
+              t-esc="file.name"
+            />
                         <small class="text-muted" t-esc="fileSize(file.size)" />
                         <button
-                            class="o_xtd_ai_file_remove btn btn-sm btn-link p-0 text-muted"
-                            aria-label="Quitar adjunto"
-                            t-on-click="() => chat.removeAttachment(file.key)"
-                        >
+              class="o_xtd_ai_file_remove btn btn-sm btn-link p-0 text-muted"
+              aria-label="Quitar adjunto"
+              t-on-click="() => chat.removeAttachment(file.key)"
+            >
                             <i class="fa fa-times" />
                         </button>
                     </span>
                 </div>
                 <div class="o_xtd_ai_inputbar d-flex align-items-end gap-1">
                     <input
-                        type="file"
-                        class="o_xtd_ai_file_input d-none"
-                        multiple="multiple"
-                        t-att-accept="accept"
-                        t-ref="file"
-                        t-on-change="onFilesSelected"
-                    />
+            type="file"
+            class="o_xtd_ai_file_input d-none"
+            multiple="multiple"
+            t-att-accept="accept"
+            t-ref="file"
+            t-on-change="onFilesSelected"
+          />
                     <button
-                        class="o_xtd_ai_attach btn btn-sm rounded-circle"
-                        title="Adjuntar un PDF o una imagen"
-                        aria-label="Adjuntar un PDF o una imagen"
-                        t-att-disabled="!canAttach"
-                        t-on-click="onAttachClick"
-                    >
+            class="o_xtd_ai_attach btn btn-sm rounded-circle"
+            title="Adjuntar un PDF o una imagen"
+            aria-label="Adjuntar un PDF o una imagen"
+            t-att-disabled="!canAttach"
+            t-on-click="onAttachClick"
+          >
                         <i class="fa fa-paperclip" />
                     </button>
                     <textarea
-                        class="o_xtd_ai_input flex-grow-1"
-                        rows="1"
-                        placeholder="Escribe tu mensaje…"
-                        t-ref="input"
-                        t-model="state.draft"
-                        t-on-keydown="onKeydown"
-                    />
+            class="o_xtd_ai_input flex-grow-1"
+            rows="1"
+            placeholder="Escribe tu mensaje…"
+            t-ref="input"
+            t-model="state.draft"
+            t-on-keydown="onKeydown"
+          />
                     <button
-                        class="o_xtd_ai_send btn btn-sm btn-primary rounded-circle"
-                        title="Enviar"
-                        aria-label="Enviar"
-                        t-att-disabled="!canSend"
-                        t-on-click="onSend"
-                    >
+            class="o_xtd_ai_send btn btn-sm btn-primary rounded-circle"
+            title="Enviar"
+            aria-label="Enviar"
+            t-att-disabled="!canSend"
+            t-on-click="onSend"
+          >
                         <i class="fa fa-arrow-up" />
                     </button>
                 </div>
@@ -401,40 +427,40 @@
 
     <t t-name="xtd_ai.ChatWindow">
         <aside
-            t-attf-class="o_xtd_ai_window d-flex flex-column bg-view #{state.minimized ? 'o_xtd_ai_minimized' : ''}"
-        >
+      t-attf-class="o_xtd_ai_window d-flex flex-column bg-view #{state.minimized ? 'o_xtd_ai_minimized' : ''}"
+    >
             <header class="o_xtd_ai_header d-flex align-items-center gap-2 px-3 py-2">
                 <span class="o_xtd_ai_header_logo"><ChatLogo size="20" /></span>
                 <strong
-                    class="o_xtd_ai_title flex-grow-1 text-truncate"
-                    t-esc="title"
-                    t-on-click="() => chat.toggleMinimize()"
-                />
+          class="o_xtd_ai_title flex-grow-1 text-truncate"
+          t-esc="title"
+          t-on-click="() => chat.toggleMinimize()"
+        />
                 <ChatMenu showNew="true" />
                 <button
-                    class="o_xtd_ai_minimize btn btn-sm btn-light rounded-circle"
-                    t-att-aria-label="state.minimized ? 'Restaurar' : 'Minimizar'"
-                    t-att-title="state.minimized ? 'Restaurar' : 'Minimizar'"
-                    t-on-click="() => chat.toggleMinimize()"
-                >
+          class="o_xtd_ai_minimize btn btn-sm btn-light rounded-circle"
+          t-att-aria-label="state.minimized ? 'Restaurar' : 'Minimizar'"
+          t-att-title="state.minimized ? 'Restaurar' : 'Minimizar'"
+          t-on-click="() => chat.toggleMinimize()"
+        >
                     <i
-                        t-attf-class="fa #{state.minimized ? 'fa-window-maximize' : 'fa-window-minimize'}"
-                    />
+            t-attf-class="fa #{state.minimized ? 'fa-window-maximize' : 'fa-window-minimize'}"
+          />
                 </button>
                 <button
-                    class="o_xtd_ai_expand btn btn-sm btn-light rounded-circle"
-                    aria-label="Abrir en pantalla completa"
-                    title="Abrir en pantalla completa"
-                    t-on-click="onExpand"
-                >
+          class="o_xtd_ai_expand btn btn-sm btn-light rounded-circle"
+          aria-label="Abrir en pantalla completa"
+          title="Abrir en pantalla completa"
+          t-on-click="onExpand"
+        >
                     <i class="fa fa-expand" />
                 </button>
                 <button
-                    class="o_xtd_ai_close btn btn-sm btn-light rounded-circle"
-                    aria-label="Cerrar"
-                    title="Cerrar"
-                    t-on-click="() => chat.close()"
-                >
+          class="o_xtd_ai_close btn btn-sm btn-light rounded-circle"
+          aria-label="Cerrar"
+          title="Cerrar"
+          t-on-click="() => chat.close()"
+        >
                     <i class="fa fa-times" />
                 </button>
             </header>
@@ -445,14 +471,14 @@
     <t t-name="xtd_ai.ChatApp">
         <div class="o_xtd_ai_app d-flex flex-column bg-view">
             <header
-                class="o_xtd_ai_app_header d-flex align-items-center gap-2 px-3 py-2 border-bottom"
-            >
+        class="o_xtd_ai_app_header d-flex align-items-center gap-2 px-3 py-2 border-bottom"
+      >
                 <button
-                    class="o_xtd_ai_sidebar_toggle btn btn-sm btn-light"
-                    aria-label="Conversaciones"
-                    title="Conversaciones"
-                    t-on-click="toggleSidebar"
-                >
+          class="o_xtd_ai_sidebar_toggle btn btn-sm btn-light"
+          aria-label="Conversaciones"
+          title="Conversaciones"
+          t-on-click="toggleSidebar"
+        >
                     <i class="fa fa-bars" />
                 </button>
                 <span class="o_xtd_ai_header_logo"><ChatLogo size="22" /></span>
@@ -460,66 +486,66 @@
                 <ChatMenu />
             </header>
             <div
-                class="o_xtd_ai_app_body d-flex flex-grow-1 overflow-hidden position-relative"
-            >
+        class="o_xtd_ai_app_body d-flex flex-grow-1 overflow-hidden position-relative"
+      >
                 <nav
-                    t-if="view.sidebar"
-                    class="o_xtd_ai_history border-end bg-100 d-flex flex-column"
-                >
+          t-if="view.sidebar"
+          class="o_xtd_ai_history border-end bg-100 d-flex flex-column"
+        >
                     <div class="p-2">
                         <button
-                            class="o_xtd_ai_new btn btn-primary w-100"
-                            t-on-click="onNew"
-                            t-att-disabled="state.busy"
-                        >
+              class="o_xtd_ai_new btn btn-primary w-100"
+              t-on-click="onNew"
+              t-att-disabled="state.busy"
+            >
                             <i class="fa fa-plus me-1" />Nueva conversación
                         </button>
                         <input
-                            type="search"
-                            class="o_xtd_ai_search form-control form-control-sm mt-2"
-                            placeholder="Buscar conversaciones…"
-                            t-model="view.search"
-                        />
+              type="search"
+              class="o_xtd_ai_search form-control form-control-sm mt-2"
+              placeholder="Buscar conversaciones…"
+              t-model="view.search"
+            />
                     </div>
                     <div class="o_xtd_ai_history_list flex-grow-1 overflow-auto">
                         <div
-                            t-if="!conversations.length"
-                            class="px-3 py-2 text-muted small"
-                        >Sin conversaciones.</div>
+              t-if="!conversations.length"
+              class="px-3 py-2 text-muted small"
+            >Sin conversaciones.</div>
                         <button
-                            t-foreach="conversations"
-                            t-as="conv"
-                            t-key="conv.id"
-                            t-attf-class="o_xtd_ai_history_item d-flex align-items-start gap-2 w-100 text-start border-0 px-3 py-2 #{conv.id === state.conversationId ? 'active' : ''}"
-                            t-on-click="() => this.onSelect(conv)"
-                        >
+              t-foreach="conversations"
+              t-as="conv"
+              t-key="conv.id"
+              t-attf-class="o_xtd_ai_history_item d-flex align-items-start gap-2 w-100 text-start border-0 px-3 py-2 #{conv.id === state.conversationId ? 'active' : ''}"
+              t-on-click="() => this.onSelect(conv)"
+            >
                             <span class="o_xtd_ai_history_icon mt-1">
                                 <i
-                                    t-attf-class="fa #{conv.state === 'open' ? 'fa-comment' : 'fa-lock'}"
-                                />
+                  t-attf-class="fa #{conv.state === 'open' ? 'fa-comment' : 'fa-lock'}"
+                />
                             </span>
                             <span class="flex-grow-1 overflow-hidden">
                                 <span class="d-flex gap-2">
                                     <span
-                                        class="o_xtd_ai_history_title flex-grow-1 text-truncate fw-medium"
-                                        t-esc="conv.name"
-                                    />
+                    class="o_xtd_ai_history_title flex-grow-1 text-truncate fw-medium"
+                    t-esc="conv.name"
+                  />
                                     <small
-                                        class="o_xtd_ai_history_time text-muted text-nowrap"
-                                        t-esc="shortDate(conv.date)"
-                                    />
+                    class="o_xtd_ai_history_time text-muted text-nowrap"
+                    t-esc="shortDate(conv.date)"
+                  />
                                 </span>
                                 <span
-                                    class="o_xtd_ai_history_preview d-block text-truncate small text-muted"
-                                    t-esc="conv.preview"
-                                />
+                  class="o_xtd_ai_history_preview d-block text-truncate small text-muted"
+                  t-esc="conv.preview"
+                />
                             </span>
                         </button>
                     </div>
                 </nav>
                 <main
-                    class="o_xtd_ai_main d-flex flex-column flex-grow-1 overflow-hidden"
-                >
+          class="o_xtd_ai_main d-flex flex-column flex-grow-1 overflow-hidden"
+        >
                     <ChatConversation />
                 </main>
             </div>

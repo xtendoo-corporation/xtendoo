@@ -798,7 +798,9 @@ class XtdAiToolboxSale(models.AbstractModel):
             for line in new_lines
             if not line.display_type
         ]
-        return {"data": data, "records": order}
+        # the order plus the ids of the lines just added: "Deshacer" removes them
+        ref = self._xtd_ai_ref(order) | {"undo_lines": new_lines.ids}
+        return {"data": data, "records": [ref]}
 
     def _xtd_ai_preview_add_sale_order_lines(self, args):
         order = self._xtd_ai_editable_order(args["order"])

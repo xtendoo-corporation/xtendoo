@@ -146,3 +146,23 @@ class TestJournalEntries(XtdAiAccountCase):
         self.assertEqual(groups[labels["posted"]]["sum"]["amount"], 100.0)
         self.assertEqual(groups[labels["draft"]]["count"], 1)
         self.assertEqual(structured["data"]["total"], 2)
+
+    def test_undo_deletes_a_draft_entry_but_not_a_posted_one(self):
+        self.set_confirm(self.accountant, False)
+        run, _token = self.start_run(self.accountant)
+        undo = self.env["xtd.ai.undo"].with_user(self.accountant)
+        first = self.entry(self.accountant, run, self.balanced())
+        move = self.env["account.move"].browse(first["records"][0]["id"])
+        self.assertEqual(undo._xtd_ai_undo_state("account.move", move.id), "available")
+        self.assertEqual(
+            undo._xtd_ai_undo("account.move", move.id),
+            {"undone": True, "mode": "unlink"},
+        )
+        self.assertFalse(move.exists())
+        second = self.entry(self.accountant, run, self.balanced())
+        move = self.env["account.move"].browse(second["records"][0]["id"])
+        move.with_user(self.accountant).action_post()
+        result = undo._xtd_ai_undo("account.move", move.id)
+        self.assertFalse(result["undone"], result)
+        self.assertTrue(move.exists())
+        self.assertIsNone(undo._xtd_ai_undo_state("account.move", move.id))

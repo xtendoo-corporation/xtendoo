@@ -239,6 +239,14 @@ class XtdAiToolbox(models.AbstractModel):
                     ref["view"] = item["view"]
                 if item.get("navigate") is True:
                     ref["navigate"] = True
+                # lines the tool added to an existing document (undo removes them)
+                lines = item.get("undo_lines")
+                if isinstance(lines, list):
+                    ref["undo_lines"] = [
+                        i
+                        for i in lines
+                        if isinstance(i, int) and not isinstance(i, bool)
+                    ][:50]
                 refs.append(ref)
         return {"data": result.get("data", {}), "records": refs}
 

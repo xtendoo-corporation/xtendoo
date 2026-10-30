@@ -43,6 +43,7 @@ class XtdAiAudit(models.Model):
             ("auth_failed", "Authentication failed"),
             ("confirm", "Confirmation"),
             ("cancel", "Cancellation"),
+            ("undo", "Undo"),
             ("guard_blocked", "Guard blocked"),
             ("attachment_read", "Attachment read"),
         ],
