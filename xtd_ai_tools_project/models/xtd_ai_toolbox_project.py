@@ -135,7 +135,7 @@ class XtdAiToolboxProject(models.AbstractModel):
             if len(tasks) >= limit
             else len(tasks)
         )
-        self._xtd_ai_taint_tasks(tasks)
+        # names only: get_task (full text) is what brakes the run
         rows = [self._xtd_ai_task_row(task) for task in tasks]
         return {"data": self._xtd_ai_list(rows, total, limit), "records": tasks}
 

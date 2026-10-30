@@ -17,8 +17,11 @@ Herramientas: `search_opportunities`, `get_opportunity`, `pipeline_report`,
    - Solo ves lo que el usuario puede ver (un comercial, normalmente lo suyo).
 2. ¿Crear una oportunidad? `search_partners` y `create_opportunity`. Nombre: pídelo si
    falta. Ingreso y fecha solo si el usuario los da (nunca inventes importes).
-3. Antes de tocar una oportunidad necesitas su **id**: `search_opportunities` (por
-   nombre, cliente o etapa) o `get_opportunity`. Con varias candidatas, pregunta cuál.
+3. Un nombre como «Hotel Mirador» o «Reforma nave» en una petición de CRM es casi
+   siempre el de una **oportunidad**, no un contacto: búscala primero con
+   `search_opportunities` (sin filtros te da todas las abiertas). Antes de tocar una
+   oportunidad necesitas su **id**: `search_opportunities` (por nombre, cliente o etapa)
+   o `get_opportunity`. Con varias candidatas, pregunta cuál.
 4. ¿Cambiar datos? `update_record(model=crm.lead, record=id)`:
    - `name`, `description` (notas), `probability` (1 a 99), `date_deadline`
      (AAAA-MM-DD), `tag_ids` («+Etiqueta» añade), `priority` (0 a 3), `team_id`: se
@@ -66,5 +69,10 @@ apunta que piden un 5 % de descuento.» → `search_opportunities` →
 `log_note(text=Piden un 5 % de descuento)`. Respuesta: «Llamada el lunes 2/11 y nota
 guardada.»
 
-**5.** Usuario: «Pon esa oportunidad como ganada.» (con la oportunidad en pantalla) →
+**5.** Usuario: «Añade la etiqueta Servicios a Equipamiento Hotel Mirador.» →
+`search_opportunities` (no `search_partners`) →
+`update_record(crm.lead, id, tag_ids=+Servicios)`. Respuesta: «Etiqueta Servicios
+añadida.»
+
+**6.** Usuario: «Pon esa oportunidad como ganada.» (con la oportunidad en pantalla) →
 `close_opportunity(id, won)`. Respuesta: «Tarjeta lista para marcarla ganada.»

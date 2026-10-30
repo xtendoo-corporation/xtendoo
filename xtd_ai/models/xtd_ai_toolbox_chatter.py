@@ -394,11 +394,6 @@ class XtdAiToolboxChatter(models.AbstractModel):
         found = self.env["mail.activity"].search(
             domain, limit=self._xtd_ai_limit(None), order="date_deadline, id"
         )
-        for model, acts in found.grouped("res_model").items():
-            if registry._xtd_ai_is_external(
-                model, self.env[model].browse(acts.mapped("res_id"))
-            ):
-                self._xtd_ai_mark_external()
         rows = [
             {
                 "activity_id": act.id,

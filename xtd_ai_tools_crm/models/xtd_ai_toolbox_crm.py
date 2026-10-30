@@ -328,7 +328,9 @@ class XtdAiToolboxCrm(models.AbstractModel):
         limit = self._xtd_ai_limit(args.get("limit"))
         found = leads.search(domain, limit=limit, order="date_deadline asc, id desc")
         total = leads.search_count(domain) if len(found) >= limit else len(found)
-        self._xtd_ai_taint(found)
+        # lists only carry short names (untrusted_text): the run is braked when
+        # the full text of an external lead is read (get_opportunity), and any
+        # write on that lead is a card anyway
         rows = [self._xtd_ai_lead_row(lead) for lead in found]
         return {"data": self._xtd_ai_list(rows, total, limit), "records": found}
 

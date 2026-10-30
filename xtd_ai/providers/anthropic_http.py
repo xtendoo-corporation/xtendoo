@@ -61,6 +61,21 @@ MAX_STRICT_TOOLS = 20
 MAX_STRICT_OPTIONAL_PARAMS = 24  # API limit across all strict tools of a request
 
 
+class StrictGrammarTooLarge(ProviderError):
+    """400: the strict tool schemas compile to a grammar the API refuses."""
+
+
+def _grammar_too_large(resp: Any) -> bool:
+    try:
+        body = resp.json()
+    except ValueError:
+        return False
+    if not isinstance(body, dict):
+        return False
+    message = str((body.get("error") or {}).get("message") or "").lower()
+    return "grammar is too large" in message
+
+
 class AnthropicHttpProvider:
     name = "anthropic"
 
@@ -90,6 +105,8 @@ class AnthropicHttpProvider:
         self._api_key = api_key
         self._session = session or requests.Session()
         self._sleep = sleep
+        # strict tools per request; lowered for this run if the grammar is too big
+        self._strict_cap = MAX_STRICT_TOOLS
 
     def __repr__(self) -> str:
         return f"AnthropicHttpProvider(model={self.model!r}, api_key=***)"
@@ -97,7 +114,9 @@ class AnthropicHttpProvider:
     # ------------------------------------------------------------ request mapping
 
     @staticmethod
-    def tool_params(tools: tuple[ToolSpec, ...]) -> list[dict[str, Any]]:
+    def tool_params(
+        tools: tuple[ToolSpec, ...], max_strict: int = MAX_STRICT_TOOLS
+    ) -> list[dict[str, Any]]:
         # The API accepts at most MAX_STRICT_TOOLS strict tools: strict goes to the
         # write tools first (schema-valid arguments matter most there). Every
         # argument is validated again by the Odoo gateway in any case.
@@ -106,7 +125,7 @@ class AnthropicHttpProvider:
         optional_budget = MAX_STRICT_OPTIONAL_PARAMS
         for t in sorted(ordered, key=lambda t: t.read_only):  # write tools first
             cost = count_optional_params(t.input_schema)
-            if len(strict_names) < MAX_STRICT_TOOLS and cost <= optional_budget:
+            if len(strict_names) < max_strict and cost <= optional_budget:
                 strict_names.add(t.name)
                 optional_budget -= cost
         params = []
@@ -159,7 +178,7 @@ class AnthropicHttpProvider:
                     "cache_control": _EPHEMERAL.copy(),
                 }
             ],
-            "tools": self.tool_params(request.tools),
+            "tools": self.tool_params(request.tools, self._strict_cap),
             "messages": self.message_params(request.messages),
             "output_config": {"effort": self.effort},
         }
@@ -177,10 +196,19 @@ class AnthropicHttpProvider:
     # ----------------------------------------------------------------- completion
 
     def complete(self, request: LLMRequest) -> LLMResponse:
-        params = self.build_request(request)
-        if not params["tools"]:
-            params.pop("tools")
-        return self.parse_response(self._post(params))
+        while True:
+            params = self.build_request(request)
+            if not params["tools"]:
+                params.pop("tools")
+            try:
+                return self.parse_response(self._post(params))
+            except StrictGrammarTooLarge:
+                # Many strict tools (a user with every area installed) can exceed
+                # the API's grammar size: keep the write tools strict first and
+                # halve until it fits; the gateway validates every argument anyway.
+                if not self._strict_cap:
+                    raise
+                self._strict_cap //= 2
 
     def _post(self, params: dict[str, Any]) -> dict[str, Any]:
         """POST with retries on 408/409/429/5xx and network failures."""
@@ -230,6 +258,10 @@ class AnthropicHttpProvider:
         # status and request id only. The API message of a 400 may echo prompt
         # content, so it is added only when explicitly enabled for diagnosis.
         rid = resp.headers.get("request-id") or resp.headers.get("x-request-id")
+        if resp.status_code == 400 and _grammar_too_large(resp):
+            return StrictGrammarTooLarge(
+                f"anthropic http 400 request_id={rid} strict grammar too large"
+            )
         detail = ""
         if self.log_error_details and resp.status_code == 400:
             try:

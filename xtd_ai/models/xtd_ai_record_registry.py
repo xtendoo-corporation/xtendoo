@@ -601,7 +601,10 @@ class XtdAiRecordRegistry(models.AbstractModel):
                 domain = [*domain, ("company_id", "in", [company.id, False])]
         # a code (account 629000, product reference) is not an id
         code_field = comodel._fields.get("code")
-        if code_field and code_field.store and isinstance(text, str):
+        # only a searchable code (stored, or computed with a search method like
+        # account.account): product.product.code cannot be searched
+        searchable = code_field and (code_field.store or code_field.search)
+        if searchable and isinstance(text, str):
             by_code = comodel.search([*domain, ("code", "=", text.strip())], limit=2)
             if len(by_code) == 1:
                 return by_code

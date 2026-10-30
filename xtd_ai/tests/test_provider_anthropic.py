@@ -274,6 +274,25 @@ class TestAnthropicHttp(ProviderCase):
         self.assertFalse(cm.exception.retryable)
         self.assertEqual(len(self.http.calls), 1)  # 400 is not retried
 
+    def test_strict_grammar_too_large_halves_the_strict_tools(self):
+        too_big = FakeResponse(
+            400,
+            {
+                "error": {
+                    "type": "invalid_request_error",
+                    "message": "The compiled grammar is too large, which would ...",
+                }
+            },
+        )
+        p = self.provider(
+            [too_big, too_big, message_json([{"type": "text", "text": "Hola"}])]
+        )
+        resp = p.complete(request())
+        self.assertEqual(resp.message.text, "Hola")
+        self.assertEqual(len(self.http.calls), 3)
+        # 20 -> 10 -> 5 strict tools, kept for the rest of the run
+        self.assertEqual(p._strict_cap, 5)
+
     def test_400_detail_only_when_flag_is_on(self):
         err = {"error": {"type": "invalid_request_error", "message": "TOO MANY TOOLS"}}
         p = self.provider([FakeResponse(400, err)], log_error_details=True)

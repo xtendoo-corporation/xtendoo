@@ -366,6 +366,7 @@ class TestCrmNoSalesRights(XtdAiCrmCase):
         run, _t = self.start_run(user)
         _status, response = self.rpc(user, run, "tools/list", {})
         names = {t["name"] for t in response["result"]["tools"]}
-        self.assertFalse(
-            {"move_opportunity_stage", "close_opportunity", "log_note"} & names
-        )
+        self.assertFalse({"move_opportunity_stage", "close_opportunity"} & names)
+        # notes and activities may exist for other areas, never on opportunities
+        registry = self.env["xtd.ai.record.registry"].with_user(user)
+        self.assertNotIn("crm.lead", registry._xtd_ai_chatter_models())
