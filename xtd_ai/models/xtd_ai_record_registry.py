@@ -600,7 +600,8 @@ class XtdAiRecordRegistry(models.AbstractModel):
             elif "company_id" in comodel._fields:
                 domain = [*domain, ("company_id", "in", [company.id, False])]
         # a code (account 629000, product reference) is not an id
-        if "code" in comodel._fields and isinstance(text, str):
+        code_field = comodel._fields.get("code")
+        if code_field and code_field.store and isinstance(text, str):
             by_code = comodel.search([*domain, ("code", "=", text.strip())], limit=2)
             if len(by_code) == 1:
                 return by_code

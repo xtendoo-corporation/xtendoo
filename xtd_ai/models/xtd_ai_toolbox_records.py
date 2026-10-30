@@ -45,12 +45,23 @@ def _changes_schema(toolbox, operation):
 
 def _create_schema(toolbox):
     allowed, changes = _changes_schema(toolbox, "create")
+    specs = toolbox.env["xtd.ai.record.registry"]._xtd_ai_specs()
+    properties = {
+        "model": {"type": "string", "enum": allowed or ["product.template"]},
+        "values": changes,
+    }
+    with_attachment = [m for m in allowed if specs[m].get("attachment")]
+    if with_attachment:
+        properties["attachment_id"] = {
+            "type": "integer",
+            "description": (
+                "Id del adjunto del chat ([Adjunto: … (id N)]) que se guarda en el "
+                f"registro nuevo. Solo para: {', '.join(with_attachment)}."
+            ),
+        }
     return {
         "type": "object",
-        "properties": {
-            "model": {"type": "string", "enum": allowed or ["product.template"]},
-            "values": changes,
-        },
+        "properties": properties,
         "required": ["model", "values"],
         "additionalProperties": False,
     }
@@ -102,8 +113,12 @@ class XtdAiToolboxRecords(models.AbstractModel):
     def tool_create_record(self, args):
         registry = self.env["xtd.ai.record.registry"]
         model = args["model"]
+        attachment = self._xtd_ai_record_attachment(model, args)
         vals, _info = registry._xtd_ai_prepare(model, args["values"])
         record = self.env[model].create(vals)
+        if attachment:
+            # a copy linked to the new record: the chat keeps its own
+            attachment.copy({"res_model": model, "res_id": record.id})
         return {
             "data": {
                 "model": model,
@@ -112,6 +127,18 @@ class XtdAiToolboxRecords(models.AbstractModel):
             },
             "records": record,
         }
+
+    def _xtd_ai_record_attachment(self, model, args):
+        """The chat attachment ``attachment_id`` for a model that accepts one."""
+        if args.get("attachment_id") in (None, False):
+            return None
+        spec = self.env["xtd.ai.record.registry"]._xtd_ai_spec(model, "create")
+        if not spec.get("attachment"):
+            raise XtdAiToolError(
+                "validation",
+                self.env._("Este tipo de registro no admite adjuntos."),
+            )
+        return self._xtd_ai_conversation_attachment(args["attachment_id"])
 
     def _xtd_ai_visible_create_record(self):
         return bool(self.env["xtd.ai.record.registry"]._xtd_ai_models("create"))
@@ -127,6 +154,9 @@ class XtdAiToolboxRecords(models.AbstractModel):
             level = max_level(level, policy._xtd_ai_level("edit_money"))
         if registry._xtd_ai_duplicates(model, spec, vals):
             level = max_level(level, "N2")
+        if self._xtd_ai_record_attachment(model, args):
+            # the values were read from a document: text from outside (§6.1)
+            level = max_level(level, "N2")
         return level
 
     def _xtd_ai_preview_create_record(self, args):
@@ -134,6 +164,7 @@ class XtdAiToolboxRecords(models.AbstractModel):
         model = args["model"]
         spec = registry._xtd_ai_spec(model, "create")
         vals, info = registry._xtd_ai_prepare(model, args["values"])
+        attachment = self._xtd_ai_record_attachment(model, args)
         duplicates = registry._xtd_ai_duplicates(model, spec, vals)
         name = vals.get("name") or ""
         summary = self.env._(
@@ -150,6 +181,13 @@ class XtdAiToolboxRecords(models.AbstractModel):
             }
             for fname, item in info.items()
         ]
+        if attachment:
+            lines.append(
+                {
+                    "field": self.env._("Adjunto"),
+                    "value": self._xtd_ai_text(attachment.name),
+                }
+            )
         lines += [
             {
                 "field": self.env._("Ya existe"),
