@@ -50,7 +50,11 @@ class TestUndo(XtdAiCase):
         result = self.undo(partner)
         self.assertEqual(result, {"undone": True, "mode": "unlink"})
         self.assertFalse(partner.exists())
-        audit = self.env["xtd.ai.audit"].sudo().search([("event", "=", "undo")])
+        audit = (
+            self.env["xtd.ai.audit"]
+            .sudo()
+            .search([("event", "=", "undo"), ("user_id", "=", self.user.id)], limit=1)
+        )
         self.assertEqual((audit.outcome, audit.user_id), ("ok", self.user))
         self.assertEqual(audit.record_refs[0]["id"], partner.id)
         self.assertEqual(
@@ -69,7 +73,11 @@ class TestUndo(XtdAiCase):
         result = self.undo(partner)
         self.assertFalse(result["undone"])
         self.assertTrue(partner.exists())
-        audit = self.env["xtd.ai.audit"].sudo().search([("event", "=", "undo")])
+        audit = (
+            self.env["xtd.ai.audit"]
+            .sudo()
+            .search([("event", "=", "undo"), ("user_id", "=", self.user.id)], limit=1)
+        )
         self.assertEqual((audit.outcome, audit.error_code), ("denied", "not_undoable"))
 
     def test_modified_by_someone_else_is_not_undoable(self):

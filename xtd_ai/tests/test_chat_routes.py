@@ -388,7 +388,14 @@ class TestChatRoutes(HttpCase):
         res = self.ok("/xtd_ai/chat/pending/cancel", action_id=cancelled.id)
         self.assertNotIn("continuation", res)
         self.assertFalse(
-            self.env["xtd.ai.message"].sudo().search_count([("auto", "=", True)])
+            self.env["xtd.ai.message"]
+            .sudo()
+            .search_count(
+                [
+                    ("auto", "=", True),
+                    ("conversation_id", "=", failing.conversation_id.id),
+                ]
+            )
         )
 
     def test_auto_continuation_can_be_switched_off(self):
@@ -459,7 +466,11 @@ class TestChatRoutes(HttpCase):
                 action_id=action.id,
             ),
         )
-        audit = self.env["xtd.ai.audit"].sudo().search([("event", "=", "undo")])
+        audit = (
+            self.env["xtd.ai.audit"]
+            .sudo()
+            .search([("event", "=", "undo"), ("user_id", "=", self.u1.id)], limit=1)
+        )
         self.assertEqual((audit.outcome, audit.user_id), ("ok", self.u1))
 
     def test_undo_only_what_the_conversation_created(self):
