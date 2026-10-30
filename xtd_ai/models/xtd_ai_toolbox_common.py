@@ -3,6 +3,7 @@ from odoo.exceptions import AccessError
 
 from ..tools import xtd_ai_tool
 from ..tools.errors import XtdAiToolError
+from .xtd_ai_toolbox import OPEN_MODELS
 
 _KIND_ENUM = ["customer", "supplier", "any"]
 
@@ -216,6 +217,51 @@ class XtdAiToolboxCommon(models.AbstractModel):
         )
         rows = [self._xtd_ai_partner_row(p) for p in partners]
         return {"data": self._xtd_ai_list(rows, total, limit), "records": partners}
+
+    # ------------------------------------------------------------------
+    @xtd_ai_tool(
+        name="open_record",
+        title="Abrir un registro en pantalla",
+        description=(
+            "Lleva al usuario a un registro de XTD: la pantalla se abre sola al "
+            "terminar tu respuesta. Úsala cuando el último paso no sea tuyo (publicar, "
+            "confirmar, validar, enviar: ábrelo y di qué botón falta) o cuando pida "
+            "verlo o abrirlo. Modelos: res.partner (contacto), sale.order "
+            "(presupuesto o pedido), purchase.order (RFQ o pedido de compra), "
+            "account.move (factura o asiento), crm.lead (oportunidad), stock.picking "
+            "(albarán) y product.template (producto). Para ver los apuntes de un "
+            "asiento usa open_journal_entry. No modifica datos."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "model": {"type": "string", "enum": list(OPEN_MODELS)},
+                "id": {"type": "integer", "minimum": 1},
+            },
+            "required": ["model", "id"],
+            "additionalProperties": False,
+        },
+        kind="read",
+    )
+    def tool_open_record(self, args):
+        name = args["model"]
+        if name not in OPEN_MODELS or name not in self.env:
+            raise XtdAiToolError(
+                "not_found",
+                self.env._("Ese registro no se puede abrir (%s).", name),
+            )
+        self.env[name].check_access("read")  # AccessError: access_denied
+        # the user's record rules apply: a record they cannot read is not found
+        record = self.env[name].search([("id", "=", args["id"])], limit=1)
+        if not record:
+            raise XtdAiToolError("not_found", self.env._("No encuentro ese registro."))
+        label = (record.display_name or name)[:100]
+        return {
+            "data": {"model": name, "id": record.id, "name": label, "opened": True},
+            "records": [
+                {"model": name, "id": record.id, "name": label, "navigate": True}
+            ],
+        }
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(

@@ -67,3 +67,23 @@ class TestSaleUndo(XtdAiSaleCase):
         result = undo._xtd_ai_undo("sale.order", order.id, line_ids=new_lines.ids)
         self.assertEqual(result, {"undone": True, "mode": "unlink"})
         self.assertEqual(order.order_line, before)
+
+
+@tagged("post_install", "-at_install")
+class TestSaleOpenRecord(XtdAiSaleCase):
+    def test_opens_own_order_but_not_another_salesmans(self):
+        mine = self.make_order(user=self.salesman)
+        theirs = self.make_order(user=self.salesman2)
+        res = self.sc(
+            self.salesman, "open_record", {"model": "sale.order", "id": mine.id}
+        )
+        self.assertEqual(res["status"], "ok", res)
+        self.assertEqual(res["records"][0]["navigate"], True)
+        res = self.sc(
+            self.salesman, "open_record", {"model": "sale.order", "id": theirs.id}
+        )
+        self.assertEqual(res["error"]["code"], "not_found", res)
+        res = self.sc(
+            self.nosales, "open_record", {"model": "sale.order", "id": mine.id}
+        )
+        self.assertEqual(res["error"]["code"], "access_denied", res)

@@ -23,7 +23,8 @@ Herramientas: `search_purchase_orders`, `get_purchase_order`, `purchase_report`,
      sin él, XTD usa la tarifa del proveedor.
    - `create_purchase_rfq` crea siempre un borrador. Dilo en una línea con el importe.
 3. ¿Piden confirmar, aprobar, enviar al proveedor, cancelar o borrar? No es tuyo: deja
-   la RFQ preparada y di qué botón falta («Solo falta Confirmar pedido»).
+   la RFQ preparada, ábrela con `open_record` (purchase.order) y di qué botón falta
+   («Solo falta Confirmar pedido»).
 4. Con varias compañías, las consultas cubren todas (cada una con su `company`);
    `purchase_report` separa por moneda y compañía: no sumes. Pasa `company` para una
    sola; si da `not_found`, no está activa.
@@ -45,5 +46,6 @@ Respuesta: lista corta (número, proveedor, importe); tabla si hay más de 3.
 **4.** Usuario: «Pídele cosas a Suministros Iberia.» Respuesta: «¿Qué productos y
 cuántas unidades?»
 
-**5.** Usuario: «Confirma el pedido P00012.» → `get_purchase_order`. Respuesta: «P00012
-está listo en borrador. Solo falta Confirmar pedido.»
+**5.** Usuario: «Confirma el pedido P00012.» → `get_purchase_order` y
+`open_record(purchase.order, id)`. Respuesta: «P00012 está listo y abierto en pantalla:
+solo falta Confirmar pedido.»

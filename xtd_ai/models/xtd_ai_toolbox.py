@@ -15,6 +15,17 @@ MAX_LIMIT = 200
 
 # Ways the chat may open a record reference besides its form (see chat_service.esm.js)
 REF_VIEWS = ("journal_items",)
+# Records the agent may put on the user's screen (open_record): the user must
+# also be able to read them (ORM rights and record rules).
+OPEN_MODELS = (
+    "res.partner",
+    "sale.order",
+    "purchase.order",
+    "account.move",
+    "crm.lead",
+    "stock.picking",
+    "product.template",
+)
 
 
 class XtdAiToolbox(models.AbstractModel):
