@@ -1,8 +1,9 @@
 # Ventas
 
 Herramientas: `search_sale_orders`, `get_sale_order`, `sales_report`,
-`create_sale_quotation`, `add_sale_order_lines`, `get_product_availability`. Para
-clientes y productos usa `search_partners` y `search_products`.
+`create_sale_quotation`, `add_sale_order_lines`, `update_record`,
+`get_product_availability`. Para clientes y productos usa `search_partners` y
+`search_products`.
 
 ## Qué hacer
 
@@ -30,7 +31,16 @@ clientes y productos usa `search_partners` y `search_products`.
    - Dilo en una línea: cliente, líneas e importe, y que queda en borrador.
 3. ¿Piden añadir líneas? `add_sale_order_lines` solo sirve en borradores; si el
    presupuesto ya fue enviado o confirmado, dilo en una frase. Úsalo para informar:
-   `added_lines` trae lo añadido con precio, descuento y subtotal.
+   `added_lines` trae lo añadido con precio, descuento y subtotal. ¿Piden cambiar un
+   borrador? `get_sale_order` para ver las líneas (cada una con su `id`) y
+   `update_record`:
+   - Presupuesto (`model=sale.order`, `record`=id del pedido): `client_order_ref`,
+     `validity_date`, `commitment_date` (AAAA-MM-DD), `note`.
+   - Línea (`model=sale.order.line`, `record`=id de la línea): `product_uom_qty`
+     (cantidad), `name` (descripción), `discount`, `price_unit`, `tax_ids`.
+   - Cantidad, descripción, fechas y descuentos hasta el 15 % se hacen y se pueden
+     deshacer; precio, impuestos y descuentos mayores piden tarjeta con «antes →
+     después». Cliente y producto de una línea no se cambian: dilo.
 4. ¿Piden confirmar, enviar por correo, cancelar o borrar? No es tuyo: deja el
    presupuesto preparado, ábrelo con `open_record` (sale.order) y di qué botón falta
    («Solo falta Confirmar»).
@@ -59,6 +69,15 @@ productos y cuántas unidades?» (una sola pregunta).
 impuestos) y lo tienes abierto: solo falta Confirmar.»
 
 **5.** Usuario: «Crea el cliente Nuevo SL y hazle un presupuesto de 2 cintas.» →
-`create_contact` (tarjeta). Respuesta: «Cliente preparado; acepta la tarjeta y sigo con
-el presupuesto.» Tras aceptar, XTD te avisa: `create_sale_quotation` con el id del
-cliente creado.
+`create_contact` (`ok`, id 77) → `create_sale_quotation` con `partner_id` 77. Respuesta:
+«Hecho: cliente Nuevo SL y presupuesto S00070 con 2 cintas (7,90 €).» Si
+`create_contact` deja tarjeta (posible duplicado), di que espera su confirmación: al
+aceptarla, XTD te avisa y sigues con el presupuesto.
+
+**6.** Usuario: «En el S00025 pon 5 unidades de la cinta.» → `get_sale_order` (línea
+id 87) → `update_record(model=sale.order.line, record=87, changes=[product_uom_qty=5])`
+→ `ok`. Respuesta: «Hecho: 5 unidades de cinta en S00025.»
+
+**7.** Usuario: «Hazle un 20 % de descuento en esa línea.» →
+`update_record(..., changes=[discount=20])` → `pending_confirmation`. Respuesta:
+«Preparado: descuento 0 % → 20 %. Acepta la tarjeta para aplicarlo.»

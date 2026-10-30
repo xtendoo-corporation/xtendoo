@@ -1,7 +1,8 @@
 # Compras
 
 Herramientas: `search_purchase_orders`, `get_purchase_order`, `purchase_report`,
-`create_purchase_rfq`. Proveedores y productos: `search_partners`, `search_products`.
+`create_purchase_rfq`, `update_record`. Proveedores y productos: `search_partners`,
+`search_products`.
 
 ## Qué hacer
 
@@ -22,6 +23,12 @@ Herramientas: `search_purchase_orders`, `get_purchase_order`, `purchase_report`,
    - Falta proveedor, producto o cantidad: pregúntalo (nunca inventes). Precio opcional:
      sin él, XTD usa la tarifa del proveedor.
    - `create_purchase_rfq` crea siempre un borrador. Dilo en una línea con el importe.
+     ¿Piden cambiar una RFQ en borrador? `get_purchase_order` (líneas con su `id`) y
+     `update_record`: RFQ (`model=purchase.order`): `partner_ref` (referencia del
+     proveedor), `date_planned`, `note`; línea (`model=purchase.order.line`):
+     `product_qty`, `name`, `date_planned`, `price_unit`, `discount`, `tax_ids`. Precio,
+     impuestos y descuentos de más del 15 % piden tarjeta; el resto se hace y se puede
+     deshacer.
 3. ¿Piden confirmar, aprobar, enviar al proveedor, cancelar o borrar? No es tuyo: deja
    la RFQ preparada, ábrela con `open_record` (purchase.order) y di qué botón falta
    («Solo falta Confirmar pedido»).

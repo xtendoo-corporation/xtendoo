@@ -3,4 +3,5 @@ from . import test_guards
 from . import test_multicompany
 from . import test_availability
 from . import test_undo
+from . import test_records_sale
 from . import test_records_product

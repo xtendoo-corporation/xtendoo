@@ -529,6 +529,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
         )
         rows = [
             {
+                "id": line.id,
                 "product": (
                     {
                         "id": line.product_id.id,
@@ -575,6 +576,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
         )
         rows = [
             {
+                "id": line.id,
                 "account": {
                     "code": line.account_id.code,
                     "name": self._xtd_ai_text(line.account_id.name),
