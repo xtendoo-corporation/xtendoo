@@ -11,6 +11,7 @@ from ..tools import xtd_ai_tool
 from ..tools.errors import XtdAiToolError
 from .xtd_ai_policy import max_level
 
+
 def _changes_schema(toolbox, operation):
     registry = toolbox.env["xtd.ai.record.registry"]
     specs = registry._xtd_ai_specs()
@@ -41,6 +42,7 @@ def _changes_schema(toolbox, operation):
     }
     return allowed, {"type": "array", "items": item, "minItems": 1, "maxItems": 15}
 
+
 def _create_schema(toolbox):
     allowed, changes = _changes_schema(toolbox, "create")
     return {
@@ -52,6 +54,7 @@ def _create_schema(toolbox):
         "required": ["model", "values"],
         "additionalProperties": False,
     }
+
 
 def _update_schema(toolbox):
     allowed, changes = _changes_schema(toolbox, "update")
@@ -69,10 +72,13 @@ def _update_schema(toolbox):
         "additionalProperties": False,
     }
 
+
 class XtdAiToolboxRecords(models.AbstractModel):
     _name = "xtd.ai.toolbox.records"
     _inherit = "xtd.ai.toolbox"
     _description = "AI tools: generic create and update"
+
+    _xtd_ai_skills = {"productos": "data/skills/productos.md"}
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(

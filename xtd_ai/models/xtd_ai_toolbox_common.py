@@ -560,8 +560,9 @@ class XtdAiToolboxCommon(models.AbstractModel):
         title="Buscar productos",
         description=(
             "Busca productos por nombre, referencia interna o código de barras. "
-            "Devuelve id, "
-            "referencia, nombre, precio de venta y unidad. No modifica datos."
+            "Devuelve id (variante), template_id (para update_record), "
+            "referencia, nombre, categoría, precio de venta y unidad. No modifica "
+            "datos."
         ),
         input_schema={
             "type": "object",
@@ -600,8 +601,12 @@ class XtdAiToolboxCommon(models.AbstractModel):
             {
                 "id": p.id,
                 "code": p.default_code or None,
+                # update_record edits the template (product.template)
+                "template_id": p.product_tmpl_id.id,
                 "name": self._xtd_ai_text(p.display_name),
+                "barcode": p.barcode or None,
                 "list_price": self._xtd_ai_money(p.list_price, currency),
+                "category": self._xtd_ai_text(p.categ_id.display_name),
                 "uom": p[uom_field].name if uom_field else None,
             }
             for p in products
