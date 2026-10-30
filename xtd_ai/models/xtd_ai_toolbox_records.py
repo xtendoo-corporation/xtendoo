@@ -270,6 +270,8 @@ class XtdAiToolboxRecords(models.AbstractModel):
         level = policy._xtd_ai_level("edit_money" if money else "edit_low")
         if registry._xtd_ai_duplicates(model, spec, vals, record):
             level = max_level(level, "N2")
+        if registry._xtd_ai_is_external(model, record):
+            level = max_level(level, "N2")
         return level
 
     def _xtd_ai_preview_update_record(self, args):

@@ -318,6 +318,19 @@ class XtdAiToolbox(models.AbstractModel):
         }
 
     @api.model
+    def _xtd_ai_mark_external(self):
+        """Record that this run has read text written outside the company (a
+        web form, an incoming email): from now on every write of the run is a
+        card (§6.1, external text brake). Tools call it from their bodies."""
+        run_id = self.env.context.get("xtd_ai_run")
+        if not run_id:
+            return
+        # sudo: the run is not writable by its user; only this flag is set
+        run = self.env["xtd.ai.run"].sudo().browse(run_id).exists()
+        if run and not run.external_text:
+            run.external_text = True
+
+    @api.model
     def _xtd_ai_money(self, amount, currency):
         """``{"amount": 123.45, "currency": "EUR"}``; ``currency`` is a record or a
         code."""

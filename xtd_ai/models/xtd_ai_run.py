@@ -55,6 +55,10 @@ class XtdAiRun(models.Model):
     finished_at = fields.Datetime()
     error = fields.Char()
     record_refs = fields.Json(help="Records returned by the tools during the run.")
+    external_text = fields.Boolean(
+        help="A tool of this run returned text written outside the company (web "
+        "form, incoming email, portal): every later write of the run is a card."
+    )
 
     # ------------------------------------------------------------------
     # In-process runner (CONTRACT section 15)

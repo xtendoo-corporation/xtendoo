@@ -31,6 +31,16 @@ Model spec keys:
 - ``effects``: registry method ``f(record_or_empty, vals) -> [str]`` for
   the card ("Afecta a los presupuestos nuevos...").
 - ``undo_create``: the created record can be undone (``xtd.ai.undo``).
+- ``defaults``: registry method ``f(vals) -> dict`` with values the tool sets
+  on create whatever the agent says (e.g. the task is assigned to the user);
+  they are code, never arguments, so they may be fields the agent cannot fill.
+- ``external``: registry method ``f(record) -> bool``: the record holds text
+  written outside the company (web form, incoming email). Any write on it is a
+  card, and reading it brakes the rest of the run (§6.1).
+- ``chatter``: internal notes and activities may be added to its records
+  (``log_note``, ``schedule_activity``), with the user's own rights.
+- ``attachment``: ``create_record`` accepts a chat attachment (``attachment_id``)
+  and links a copy of it to the new record.
 - ``fields``: ``{name: spec}``; field spec keys: ``label``, ``risk``
   (``low`` | ``money`` | ``forbidden``), ``risk_update`` (risk when editing,
   defaults to ``risk``), ``money_above`` (policy method returning a threshold:
@@ -457,6 +467,8 @@ class XtdAiRecordRegistry(models.AbstractModel):
                 )
         if spec.get("check"):
             getattr(self, spec["check"])(record or self.env[model], vals)
+        if not record and spec.get("defaults"):
+            vals.update(getattr(self, spec["defaults"])(vals))
         return vals, info
 
     @api.model
@@ -664,6 +676,25 @@ class XtdAiRecordRegistry(models.AbstractModel):
         if "active" in records._fields:
             records = records.with_context(active_test=False)
         return records.search(domain, limit=5)
+
+    @api.model
+    def _xtd_ai_is_external(self, model, records):
+        """Whether any of ``records`` holds text written outside the company."""
+        spec = self._xtd_ai_specs().get(model) or {}
+        if not spec.get("external") or not records:
+            return False
+        return any(getattr(self, spec["external"])(record) for record in records)
+
+    @api.model
+    def _xtd_ai_chatter_models(self):
+        """Registered models whose records may get notes and activities."""
+        return sorted(
+            model
+            for model, spec in self._xtd_ai_specs().items()
+            if spec.get("chatter")
+            and "message_ids" in self.env[model]._fields
+            and self._xtd_ai_has_access(model, "write")
+        )
 
     @api.model
     def _xtd_ai_effects(self, spec, record, vals):

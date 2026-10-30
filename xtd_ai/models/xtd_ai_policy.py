@@ -38,6 +38,10 @@ POLICY_TABLE = {
     "confirm": ("N2", "N2", "N2"),
     "send_external": ("N3", "N2", "N2"),
     "transition": ("N3", "N3", "N2"),
+    # internal transitions without documents or messages to third parties (move
+    # an opportunity or a task between stages, mark an opportunity won or lost):
+    # always a card, in every profile
+    "transition_internal": ("N2", "N2", "N2"),
     "post": ("N3", "N3", "N3"),
     "payment": ("N4", "N4", "N4"),
     "admin": ("N4", "N4", "N4"),

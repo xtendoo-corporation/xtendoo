@@ -300,8 +300,12 @@ class XtdAiMcp(models.AbstractModel):
             # that started the run carries attachments every write is confirmed.
             # The level comes from the policy (§6.1); text from outside (an
             # attachment) always raises it to a card.
+            # Text written outside the company read earlier in this run (a web
+            # lead, an incoming email) brakes the same way (§6.1).
             level = toolbox._xtd_ai_call_level(tool, arguments)
-            if level != "N0" and run.conversation_id._xtd_ai_run_has_attachments():
+            if level != "N0" and (
+                run.external_text or run.conversation_id._xtd_ai_run_has_attachments()
+            ):
                 level = max_level(level, "N2")
             if level in ("N3", "N4"):
                 raise XtdAiToolError(
