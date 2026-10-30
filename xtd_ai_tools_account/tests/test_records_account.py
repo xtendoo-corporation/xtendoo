@@ -115,7 +115,9 @@ class TestAccountDraftEdits(XtdAiAccountCase):
         )
         line = move.line_ids.filtered(lambda line: line.debit)
         result = self.update(
-            "account.move.line", line.id, [("account_id", str(accounts[1].id))]
+            "account.move.line",
+            line.id,
+            [("account_id", accounts[1].with_company(self.company).code)],
         )
         self.assertEqual(result["status"], "ok", result)
         self.assertEqual(line.account_id, accounts[1])

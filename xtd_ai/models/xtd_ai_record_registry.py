@@ -541,7 +541,7 @@ class XtdAiRecordRegistry(models.AbstractModel):
                 return moment, str(moment)
             return day, str(day)
         if ftype == "many2one":
-            target = self._xtd_ai_resolve_value(field, fspec, text, model)
+            target = self._xtd_ai_resolve_value(field, fspec, text, model, record)
             return target.id, target.id
         if ftype == "many2many":
             current = set(record[fname].ids) if record else set()
@@ -553,7 +553,7 @@ class XtdAiRecordRegistry(models.AbstractModel):
             for item in items:
                 sign = item[0] if item[0] in "+-" else "+"
                 target = self._xtd_ai_resolve_value(
-                    field, fspec, item.lstrip("+-").strip(), model
+                    field, fspec, item.lstrip("+-").strip(), model, record
                 )
                 if sign == "-":
                     ids.discard(target.id)
@@ -563,10 +563,7 @@ class XtdAiRecordRegistry(models.AbstractModel):
         raise bad(self.env._("este tipo de campo no se puede editar."))
 
     @api.model
-    def _xtd_ai_resolve_value(self, field, fspec, text, model):
-        domain = fspec.get("domain") or []
-        if isinstance(domain, str):
-            domain = getattr(self, domain)(model)
+    def _xtd_ai_resolve_value(self, field, fspec, text, model, record=None):
         if is_red_line_model(field.comodel_name) and field.comodel_name not in (
             "res.users",
             "account.tax",
@@ -575,6 +572,22 @@ class XtdAiRecordRegistry(models.AbstractModel):
             raise XtdAiToolError(
                 "forbidden", self.env._("Ese tipo de dato no se puede asignar.")
             )
+        domain = list(fspec.get("domain") or [])
+        if isinstance(fspec.get("domain"), str):
+            domain = getattr(self, fspec["domain"])(model)
+        comodel = self.env[field.comodel_name]
+        # values of the record's own company (an account, a tax of that company)
+        company = record and "company_id" in record._fields and record.company_id
+        if company:
+            if "company_ids" in comodel._fields:
+                domain = [*domain, ("company_ids", "in", company.ids)]
+            elif "company_id" in comodel._fields:
+                domain = [*domain, ("company_id", "in", [company.id, False])]
+        # a code (account 629000, product reference) is not an id
+        if "code" in comodel._fields and isinstance(text, str):
+            by_code = comodel.search([*domain, ("code", "=", text.strip())], limit=2)
+            if len(by_code) == 1:
+                return by_code
         return self.env["xtd.ai.toolbox"]._xtd_ai_resolve(
             field.comodel_name, text, domain
         )
