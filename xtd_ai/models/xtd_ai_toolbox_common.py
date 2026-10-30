@@ -3,6 +3,7 @@ from odoo.exceptions import AccessError
 
 from ..tools import xtd_ai_tool
 from ..tools.errors import XtdAiToolError
+from .xtd_ai_policy import max_level
 from .xtd_ai_toolbox import OPEN_MODELS
 
 _KIND_ENUM = ["customer", "supplier", "any"]
@@ -600,13 +601,13 @@ class XtdAiToolboxCommon(models.AbstractModel):
         rows = [
             {
                 "id": p.id,
-                "code": p.default_code or None,
                 # update_record edits the template (product.template)
                 "template_id": p.product_tmpl_id.id,
-                "name": self._xtd_ai_text(p.display_name),
+                "code": p.default_code or None,
                 "barcode": p.barcode or None,
-                "list_price": self._xtd_ai_money(p.list_price, currency),
+                "name": self._xtd_ai_text(p.display_name),
                 "category": self._xtd_ai_text(p.categ_id.display_name),
+                "list_price": self._xtd_ai_money(p.list_price, currency),
                 "uom": p[uom_field].name if uom_field else None,
             }
             for p in products
@@ -620,9 +621,9 @@ class XtdAiToolboxCommon(models.AbstractModel):
         description=(
             "Crea una empresa o persona nueva. Antes usa search_partners: la vista "
             "previa avisa "
-            "de posibles duplicados por NIF, email o nombre. Siempre requiere "
-            "confirmación del "
-            "usuario. No sirve para modificar contactos existentes."
+            "de posibles duplicados por NIF, email o nombre: con duplicados queda "
+            "una tarjeta; si no, se crea y el usuario puede deshacerlo. Para "
+            "modificar contactos existentes usa update_record."
         ),
         input_schema={
             "type": "object",
@@ -650,6 +651,7 @@ class XtdAiToolboxCommon(models.AbstractModel):
             "additionalProperties": False,
         },
         kind="create",
+        policy="_xtd_ai_policy_create_contact",
         skill="contactos",
         groups=["base.group_partner_manager"],
         preview="_xtd_ai_preview_create_contact",
@@ -752,6 +754,14 @@ class XtdAiToolboxCommon(models.AbstractModel):
         for clause in clauses:
             domain = (["|"] + domain + clause) if domain else clause
         return partner_model.search(domain, limit=5)
+
+    def _xtd_ai_policy_create_contact(self, args):
+        """A new contact is master data (N1), but a possible duplicate is a card."""
+        vals = self._xtd_ai_contact_vals(args)
+        level = self.env["xtd.ai.policy"]._xtd_ai_level("create_master")
+        if self._xtd_ai_find_duplicates(vals):
+            level = max_level(level, "N2")
+        return level
 
     def _xtd_ai_preview_create_contact(self, args):
         vals = self._xtd_ai_contact_vals(args)

@@ -140,12 +140,23 @@ class TestCommonTools(XtdAiCase):
         self.assertFalse(
             self.env["res.partner"].search([("name", "=", "Otra Duplicada SL")])
         )
-        # always confirmation, even when the user disabled it
+        # Balanced profile: without duplicates a contact is created at once (N1,
+        # "Deshacer"); a possible duplicate is still a card.
         self.set_confirm(self.user, False)
         result2 = self.call(
             self.user, self.run, "create_contact", {"name": "Nueva Persona"}
         )
-        self.assertEqual(result2["structuredContent"]["status"], "pending_confirmation")
+        self.assertEqual(result2["structuredContent"]["status"], "ok")
+        self.assertTrue(
+            self.env["res.partner"].search([("name", "=", "Nueva Persona")])
+        )
+        result3 = self.call(
+            self.user,
+            self.run,
+            "create_contact",
+            {"name": "Otra Persona", "vat": "ESB33333337"},
+        )
+        self.assertEqual(result3["structuredContent"]["status"], "pending_confirmation")
         # confirm
         outcome = action.with_user(self.user).action_confirm()
         self.assertEqual(outcome["state"], "confirmed", outcome)
@@ -158,6 +169,7 @@ class TestCommonTools(XtdAiCase):
         self.assertEqual(created.create_uid, self.user)
 
     def test_create_contact_no_duplicates_and_validation(self):
+        self.set_confirm(self.user, True)  # card flow (hardened)
         structured = self.call(
             self.user, self.run, "create_contact", {"name": "Totalmente Unica"}
         )["structuredContent"]
@@ -179,6 +191,7 @@ class TestCommonTools(XtdAiCase):
         self.assertEqual(bad["structuredContent"]["error"]["code"], "validation")
 
     def test_create_contact_parent_rules_and_card(self):
+        self.set_confirm(self.user, True)  # card flow (hardened)
         company = self.env["res.partner"].create(
             {"name": "Matriz Padre SL", "is_company": True}
         )
