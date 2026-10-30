@@ -286,6 +286,130 @@ class TestChatRoutes(HttpCase):
         self.assertEqual(res["state"], "cancelled")
         self.assertEqual(action2.state, "cancelled")
 
+    # -- continue after confirming -----------------------------------------
+    def test_confirm_resumes_the_request_with_a_hidden_system_message(self):
+        captured = self.capture_postcommit()
+        action = self.make_action(self.u1)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertEqual(res["continuation"]["state"], "queued")
+        run = self.env["xtd.ai.run"].sudo().browse(res["continuation"]["run_id"])
+        self.assertEqual(run.state, "queued")
+        auto = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .search(
+                [
+                    ("conversation_id", "=", action.conversation_id.id),
+                    ("auto", "=", True),
+                ]
+            )
+        )
+        self.assertEqual(len(auto), 1)
+        self.assertEqual(auto.role, "user")
+        self.assertIn("Acción confirmada: creada Chat Test SL", auto.body)
+        self.assertIn("res.partner", auto.body)
+        self.assertEqual(len(captured), 1)  # the service is called after the commit
+        # the agent sees it in the history, the user does not see it in the chat
+        history = action.conversation_id.sudo()._xtd_ai_history_messages()
+        self.assertIn("Acción confirmada", history[-1]["text"])
+        data = self.ok(
+            "/xtd_ai/chat/messages", conversation_id=action.conversation_id.id
+        )
+        self.assertNotIn("Acción confirmada", json.dumps(data))
+        self.assertEqual(data["running_run_id"], run.id)
+
+    def test_no_continuation_while_other_cards_wait_or_a_run_is_active(self):
+        self.capture_postcommit()
+        first = self.make_action(self.u1)
+        second = self.make_action(self.u1, conversation_id=first.conversation_id.id)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=first.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertIsNone(res["continuation"])  # the second card still waits
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=second.id)
+        self.assertIsNotNone(res["continuation"])  # the last card resumes the work
+        # a run in progress is never doubled
+        third = first.sudo().copy({"state": "pending"})
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=third.id)
+        self.assertIsNone(res["continuation"])
+
+    def test_continuations_are_capped_per_user_request(self):
+        from ..models.xtd_ai_conversation import MAX_AUTO_CONTINUATIONS
+
+        self.capture_postcommit()
+        action = self.make_action(self.u1)
+        conversation = action.conversation_id
+        for _i in range(MAX_AUTO_CONTINUATIONS):
+            self.env["xtd.ai.message"].sudo().create(
+                {
+                    "conversation_id": conversation.id,
+                    "role": "user",
+                    "body": "auto",
+                    "auto": True,
+                }
+            )
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertIsNone(res["continuation"])
+        # a new message of the user starts a new request: counter back to zero
+        self.env["xtd.ai.message"].sudo().create(
+            {"conversation_id": conversation.id, "role": "user", "body": "otra"}
+        )
+        self.assertEqual(conversation.sudo()._xtd_ai_auto_continuations(), 0)
+
+    def test_failed_or_cancelled_cards_do_not_continue(self):
+        self.capture_postcommit()
+        failing = self.make_action(self.u1, arguments={"name": ""})
+        cancelled = self.make_action(self.u1)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=failing.id)
+        self.assertEqual(res["state"], "failed")
+        self.assertIsNone(res["continuation"])
+        res = self.ok("/xtd_ai/chat/pending/cancel", action_id=cancelled.id)
+        self.assertNotIn("continuation", res)
+        self.assertFalse(
+            self.env["xtd.ai.message"].sudo().search_count([("auto", "=", True)])
+        )
+
+    def test_auto_continuation_can_be_switched_off(self):
+        self.capture_postcommit()
+        self.env["ir.config_parameter"].sudo().set_param("xtd_ai.auto_continue", "0")
+        action = self.make_action(self.u1)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertIsNone(res["continuation"])
+
+    def test_continuation_keeps_the_attachment_guard_of_the_request(self):
+        self.capture_postcommit()
+        action = self.make_action(self.u1)
+        conversation = action.conversation_id
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": "f.pdf",
+                "raw": make_pdf(),
+                "mimetype": "application/pdf",
+                "res_model": "xtd.ai.conversation",
+                "res_id": conversation.id,
+            }
+        )
+        self.env["xtd.ai.message"].sudo().create(
+            {
+                "conversation_id": conversation.id,
+                "role": "user",
+                "body": "factura",
+                "attachment_ids": [(6, 0, attachment.ids)],
+            }
+        )
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertIsNotNone(res["continuation"])
+        # the automatic message has no attachments, but the guard still applies
+        self.assertTrue(conversation.sudo()._xtd_ai_run_has_attachments())
+
     def test_messages_payload_and_record_links(self):
         action = self.make_action(self.u1)
         partner = self.env["res.partner"].create({"name": "Cliente Enlace"})

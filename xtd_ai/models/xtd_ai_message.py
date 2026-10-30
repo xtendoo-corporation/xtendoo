@@ -14,6 +14,10 @@ class XtdAiMessage(models.Model):
         required=True,
     )
     body = fields.Text(help="Plain text, never HTML.")
+    auto = fields.Boolean(
+        help="Written by the system, not by the user: the continuation after the "
+        "user confirms a card. Hidden in the chat, read by the agent."
+    )
     run_id = fields.Many2one("xtd.ai.run", ondelete="set null", index=True)
     pending_action_ids = fields.One2many("xtd.ai.pending_action", "message_id")
     record_refs = fields.Json(

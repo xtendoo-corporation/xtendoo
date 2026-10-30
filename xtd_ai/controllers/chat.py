@@ -465,7 +465,8 @@ class XtdAiChatController(http.Controller):
         env = self._env()
         conversation = self._conversation(env, conversation_id)
         messages = env["xtd.ai.message"].search(
-            [("conversation_id", "=", conversation.id)],
+            # automatic continuations are for the agent, not for the user
+            [("conversation_id", "=", conversation.id), ("auto", "=", False)],
             order="id desc",
             limit=MESSAGES_LIMIT,
         )
@@ -528,6 +529,10 @@ class XtdAiChatController(http.Controller):
         run, token = conversations._xtd_ai_start_run(
             text, attachment_ids=ids or None, screen=screen
         )
+        return self._dispatch(env, run, token)
+
+    def _dispatch(self, env, run, token):
+        """Hand a queued run to the agent (integrated or external service)."""
         url = os.environ.get("XTD_AI_SERVICE_URL")
         key = os.environ.get("XTD_AI_SERVICE_KEY")
         if not url:
@@ -649,11 +654,26 @@ class XtdAiChatController(http.Controller):
         env = self._env()
         action = self._pending(env, action_id)
         result = action.action_confirm()
+        # The agent resumes the user's request by itself (no typing needed)
+        continuation = None
+        if result["state"] == "confirmed" and self._auto_continue_enabled(env):
+            started = action.conversation_id._xtd_ai_continue_after(action)
+            if started:
+                continuation = self._dispatch(env, *started)
         return {
             "state": result["state"],
             "error": result["error"],
             "action": self._action_payload(env, action),
+            "continuation": continuation,
         }
+
+    @staticmethod
+    def _auto_continue_enabled(env):
+        # sudo: system parameter; users cannot read ir.config_parameter
+        value = (
+            env["ir.config_parameter"].sudo().get_param("xtd_ai.auto_continue", "True")
+        )
+        return str(value).lower() not in ("0", "false", "no")
 
     @http.route("/xtd_ai/chat/pending/cancel", type="jsonrpc", auth="user")
     def pending_cancel(self, action_id):

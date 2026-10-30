@@ -182,26 +182,29 @@ class XtdAiPendingAction(models.Model):
         return action
 
     # ------------------------------------------------------------------
+    def _xtd_ai_confirmed_label(self):
+        """``creada X (modelo m, id N)``: what a confirmed action produced."""
+        self.ensure_one()
+        label = _("creada")
+        action = self.sudo()
+        if action.result_model and action.result_res_id:
+            record = self.env[action.result_model].sudo().browse(action.result_res_id)
+            if record.exists():
+                # model and id let the agent work on it next ("show it")
+                label = _(
+                    "creada %(name)s (modelo %(model)s, id %(id)s)",
+                    name=(record.display_name or "")[:60],
+                    model=action.result_model,
+                    id=action.result_res_id,
+                )
+        return label
+
     def _xtd_ai_history_notes(self):
         """Lines such as ``[Acción #12: creada S00042]`` for the LLM history."""
         notes = []
         for action in self.sudo():
             if action.state == "confirmed":
-                label = _("creada")
-                if action.result_model and action.result_res_id:
-                    record = (
-                        self.env[action.result_model]
-                        .sudo()
-                        .browse(action.result_res_id)
-                    )
-                    if record.exists():
-                        # model and id let the agent work on it next ("show it")
-                        label = _(
-                            "creada %(name)s (modelo %(model)s, id %(id)s)",
-                            name=(record.display_name or "")[:60],
-                            model=action.result_model,
-                            id=action.result_res_id,
-                        )
+                label = action._xtd_ai_confirmed_label()
             else:
                 label = {
                     "pending": _("pendiente de confirmación"),
