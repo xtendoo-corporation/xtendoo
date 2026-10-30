@@ -6,9 +6,12 @@ class ResUsers(models.Model):
 
     xtd_ai_confirm_writes = fields.Boolean(
         string="Confirmar acciones del agente IA",
-        default=True,
+        # Balanced profile (ANALISIS_PERMISOS 6.1): drafts and low-risk edits are
+        # done with "Deshacer"; a user may harden it to always get a card.
+        default=False,
         help=(
-            "Si está activo, el agente IA pide confirmación antes de crear borradores."
+            "Si está activo, el agente IA pide confirmación con una tarjeta para "
+            "todo lo que escribe, también borradores y cambios de bajo riesgo."
         ),
     )
 

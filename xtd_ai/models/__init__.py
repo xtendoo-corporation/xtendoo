@@ -5,10 +5,13 @@ from . import xtd_ai_run
 from . import xtd_ai_run_job
 from . import xtd_ai_config
 from . import xtd_ai_pending_action
+from . import xtd_ai_policy
+from . import xtd_ai_record_registry
 from . import xtd_ai_undo
 from . import xtd_ai_token
 from . import xtd_ai_toolbox
 from . import xtd_ai_toolbox_common
+from . import xtd_ai_toolbox_records
 from . import xtd_ai_toolbox_test
 from . import xtd_ai_mcp
 from . import res_users

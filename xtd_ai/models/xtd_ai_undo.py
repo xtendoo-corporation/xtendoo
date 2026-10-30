@@ -9,7 +9,7 @@ other records, changed by someone else, or older than the time window).
 import logging
 from datetime import timedelta
 
-from odoo import SUPERUSER_ID, api, fields, models
+from odoo import SUPERUSER_ID, Command, api, fields, models
 from odoo.exceptions import AccessError, UserError
 
 _logger = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ UNDO_MODELS = (
     "purchase.order",
     "account.move",
     "crm.lead",
+    "product.template",
 )
 UNDO_LINE_MODELS = {"sale.order": "order_line"}
 DEFAULT_WINDOW_MINUTES = 120
@@ -29,6 +30,7 @@ UNLINK_FALLBACKS = {
     "sale.order": "cancel",
     "res.partner": "archive",
     "crm.lead": "archive",
+    "product.template": "archive",
 }
 # Documents the agent creates; anything else (posted, refunds...) is not undoable
 _MOVE_TYPES = ("out_invoice", "in_invoice", "entry")
@@ -149,6 +151,28 @@ class XtdAiUndo(models.AbstractModel):
             return self.env._("El asiento o la factura ya no es un borrador intacto.")
         return None
 
+    def _xtd_ai_undo_reason_product_template(self, template):
+        if not template.active:
+            return self.env._("El producto ya está archivado.")
+        variants = template.with_context(active_test=False).product_variant_ids
+        for model in (
+            "sale.order.line",
+            "purchase.order.line",
+            "account.move.line",
+            "stock.move",
+        ):
+            if model not in self.env:
+                continue
+            try:
+                used = self.env[model].search_count(
+                    [("product_id", "in", variants.ids)], limit=1
+                )
+            except AccessError:
+                continue
+            if used:
+                return self.env._("El producto ya se usa en otros documentos.")
+        return None
+
     def _xtd_ai_undo_reason_crm_lead(self, lead):
         if not lead.active or ("order_ids" in lead._fields and lead.order_ids):
             return self.env._("La oportunidad ya no es un borrador intacto.")
@@ -265,3 +289,112 @@ class XtdAiUndo(models.AbstractModel):
         if reason:
             return {"undone": False, "reason": reason}
         return {"undone": True, "mode": mode}
+
+    # ------------------------------------------------------------------
+    # Undo of edits: restore the values before, if nobody changed them since
+    # ------------------------------------------------------------------
+    @api.model
+    def _xtd_ai_undo_edit_reason(self, model, res_id, edit, since=None):
+        """Why the edit ``edit`` (``{"before", "after"}``) of a record cannot be
+        undone, or ``None``."""
+        if self.env.su or self.env.context.get("xtd_ai_run"):
+            return self.env._("Operación no permitida desde el agente.")
+        registry = self.env["xtd.ai.record.registry"]
+        spec = registry._xtd_ai_specs().get(model)
+        before = (edit or {}).get("before") or {}
+        after = (edit or {}).get("after") or {}
+        editable = registry._xtd_ai_editable_fields(model)
+        if not spec or not before or not set(before) <= editable:
+            return self.env._("Este cambio no se puede deshacer.")
+        record = self.env[model].browse(res_id).exists()
+        if not record:
+            return self.env._("Ya no existe.")
+        try:
+            record.check_access("write")
+        except AccessError:
+            return self.env._("No tienes permiso para modificarlo.")
+        domain = registry._xtd_ai_record_domain(model, spec)
+        if domain and not record.filtered_domain(domain):
+            return self.env._("Ya no se puede modificar (no es un borrador).")
+        if since and fields.Datetime.now() - since > self._xtd_ai_undo_window():
+            return self.env._("Ha pasado demasiado tiempo para deshacerlo.")
+        current = registry._xtd_ai_snapshot(record, list(before))
+        for fname, value in after.items():
+            if fname in current and not registry._xtd_ai_same(
+                model, fname, current[fname], value
+            ):
+                return self.env._("Alguien lo ha modificado después.")
+        return None
+
+    @api.model
+    def _xtd_ai_undo_edit_done(self, model, res_id, edit):
+        registry = self.env["xtd.ai.record.registry"]
+        record = self.env[model].browse(res_id).exists()
+        before = (edit or {}).get("before") or {}
+        after = (edit or {}).get("after") or {}
+        if not record or not before:
+            return False
+        current = registry._xtd_ai_snapshot(record, list(before))
+        return any(
+            not registry._xtd_ai_same(model, f, before[f], after.get(f)) for f in before
+        ) and all(
+            registry._xtd_ai_same(model, f, current[f], before[f]) for f in before
+        )
+
+    @api.model
+    def _xtd_ai_undo_edit_state(self, model, res_id, edit, since=None):
+        """``available``, ``undone`` or ``None`` for an edited record."""
+        if model not in self.env:
+            return None
+        if self._xtd_ai_undo_edit_done(model, res_id, edit):
+            return "undone"
+        reason = self._xtd_ai_undo_edit_reason(model, res_id, edit, since)
+        return "available" if reason is None else None
+
+    @api.model
+    def _xtd_ai_restore_vals(self, model, before):
+        """ORM values that put back the snapshot ``before``."""
+        fields_map = self.env[model]._fields
+        vals = {}
+        for fname, value in before.items():
+            field = fields_map[fname]
+            if field.type in ("many2many", "one2many"):
+                vals[fname] = [Command.set(value or [])]
+            else:
+                vals[fname] = value
+        return vals
+
+    @api.model
+    def _xtd_ai_undo_edit(self, model, res_id, edit, since=None, run=None):
+        """Restore the values before an edit, as the session user, and audit it."""
+        reason = self._xtd_ai_undo_edit_reason(model, res_id, edit, since)
+        record = self.env[model].browse(res_id).exists() if model in self.env else None
+        if not record:
+            raise UserError(self.env._("Ya no existe o no se puede deshacer."))
+        if not reason:
+            try:
+                with self.env.cr.savepoint():
+                    record.write(self._xtd_ai_restore_vals(model, edit["before"]))
+            except Exception as exc:  # constraint: not undoable any more
+                _logger.info("Undo edit of %s,%s refused: %s", model, res_id, exc)
+                reason = self.env._("No se puede volver al valor anterior.")
+        self.env["xtd.ai.audit"]._xtd_ai_log(
+            "undo",
+            "denied" if reason else "ok",
+            run_id=run.id if run else None,
+            user_id=self.env.uid,
+            company_id=self.env.company.id,
+            tool_name="undo_edit",
+            arguments={"model": model, "id": res_id, "mode": "restore"} | edit,
+            error_code="not_undoable" if reason else None,
+            record_refs=[
+                {
+                    "model": model,
+                    "id": res_id,
+                    "name": (record.display_name or "")[:100],
+                }
+            ],
+        )
+        if reason:
+            return {"undone": False, "reason": reason}
+        return {"undone": True, "mode": "restore"}

@@ -23,7 +23,7 @@ class TestCommonTools(XtdAiCase):
             data["allowed_companies"],
             [{"id": self.company.id, "name": self.company.name}],
         )
-        self.assertIs(data["confirm_writes"], True)
+        self.assertIs(data["confirm_writes"], False)  # balanced profile
         self.assertRegex(data["today"], r"^\d{4}-\d{2}-\d{2}$")
 
     def test_load_skill(self):

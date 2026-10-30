@@ -51,6 +51,9 @@ class XtdAiPendingAction(models.Model):
     result_line_ids = fields.Json(
         help="Ids of the lines the action added to an existing document (undo)."
     )
+    result_edit = fields.Json(
+        help="Values before and after of the fields the action edited (undo)."
+    )
     error = fields.Char()
     expires_at = fields.Datetime(
         required=True,
@@ -133,6 +136,8 @@ class XtdAiPendingAction(models.Model):
             vals.update(result_model=refs[0]["model"], result_res_id=refs[0]["id"])
             if refs[0].get("undo_lines"):
                 vals["result_line_ids"] = refs[0]["undo_lines"]
+            if "undo_edit" in refs[0]:
+                vals["result_edit"] = refs[0]["undo_edit"]
         action_su.write(vals)
         self.env["xtd.ai.audit"]._xtd_ai_log(
             "guard_blocked" if code == "draft_only" else "confirm",

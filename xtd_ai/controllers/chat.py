@@ -123,12 +123,17 @@ class XtdAiChatController(http.Controller):
             return None
         return f"/odoo/{model}/{res_id}"
 
-    def _undo_info(self, env, ref, since, lines=None):
-        """``{"state", "lines"}`` when the chat can offer "Deshacer"/"Deshecho"."""
+    def _undo_info(self, env, ref, since, lines=None, edit=None):
+        """``{"state", "lines", "edit"}`` when the chat can offer "Deshacer"."""
+        if edit:
+            state = env["xtd.ai.undo"]._xtd_ai_undo_edit_state(
+                ref.get("model"), ref.get("id"), edit, since=since
+            )
+            return {"state": state, "lines": False, "edit": True} if state else None
         state = env["xtd.ai.undo"]._xtd_ai_undo_state(
             ref.get("model"), ref.get("id"), since=since, line_ids=lines
         )
-        return {"state": state, "lines": bool(lines)} if state else None
+        return {"state": state, "lines": bool(lines), "edit": False} if state else None
 
     def _refs(self, refs, env=None, since=None):
         result = []
@@ -139,8 +144,9 @@ class XtdAiChatController(http.Controller):
             if url:
                 lines = ref.get("undo_lines") or None
                 undo = None
-                if env is not None and (ref.get("created") or lines):
-                    undo = self._undo_info(env, ref, since, lines)
+                edit = None if ref.get("created") else ref.get("undo_edit")
+                if env is not None and (ref.get("created") or lines or edit):
+                    undo = self._undo_info(env, ref, since, lines, edit)
                 result.append(
                     {
                         "model": ref["model"],
@@ -244,6 +250,7 @@ class XtdAiChatController(http.Controller):
                         {"model": action.result_model, "id": action.result_res_id},
                         action.create_date,
                         lines,
+                        action.result_edit or None,
                     ),
                 }
         return {
@@ -719,7 +726,9 @@ class XtdAiChatController(http.Controller):
         return action
 
     @http.route("/xtd_ai/chat/undo", type="jsonrpc", auth="user")
-    def undo(self, model, res_id, action_id=None, message_id=None, lines=False):
+    def undo(  # noqa: C901  three origins (card, message, edit) of one undo
+        self, model, res_id, action_id=None, message_id=None, lines=False, edit=False
+    ):
         """Undo (delete) an intact draft the agent created, as the session user.
 
         The record must come from this user's own conversation: a confirmed
@@ -739,6 +748,7 @@ class XtdAiChatController(http.Controller):
                 raise AccessError(_("Ese registro no viene de esta acción."))
             since, run = action.create_date, action.run_id
             line_ids = (action.result_line_ids or None) if lines else None
+            edit_values = (action.result_edit or None) if edit else None
         else:
             message = env["xtd.ai.message"].search(
                 [
@@ -753,7 +763,11 @@ class XtdAiChatController(http.Controller):
                     if isinstance(r, dict)
                     and r.get("model") == model
                     and r.get("id") == res_id
-                    and (r.get("undo_lines") if lines else r.get("created"))
+                    and (
+                        r.get("undo_edit")
+                        if edit
+                        else (r.get("undo_lines") if lines else r.get("created"))
+                    )
                 ),
                 None,
             )
@@ -763,8 +777,15 @@ class XtdAiChatController(http.Controller):
                 raise UserError(_("La conversación está cerrada."))
             since, run = message.run_id.create_date, message.run_id
             line_ids = ref.get("undo_lines") if lines else None
+            edit_values = ref.get("undo_edit") if edit else None
         if not since:
             raise AccessError(_("No se puede comprobar el origen del registro."))
+        if edit:
+            if not edit_values:
+                raise AccessError(_("Ese cambio no viene de esta conversación."))
+            return env["xtd.ai.undo"]._xtd_ai_undo_edit(
+                model, res_id, edit_values, since=since, run=run
+            )
         return env["xtd.ai.undo"]._xtd_ai_undo(
             model, res_id, since=since, line_ids=line_ids, run=run
         )

@@ -154,6 +154,14 @@ class XtdAiRun(models.Model):
                 for flag in ("navigate", "undo_lines"):
                     if ref.get(flag) and not seen[key].get(flag):
                         seen[key][flag] = ref[flag]
+                # edited twice in the run: undo goes back to the first values
+                edit = ref.get("undo_edit")
+                if edit:
+                    known = seen[key].get("undo_edit") or {"before": {}, "after": {}}
+                    seen[key]["undo_edit"] = {
+                        "before": edit["before"] | known["before"],
+                        "after": known["after"] | edit["after"],
+                    }
             elif len(current) < MAX_RECORD_REFS:
                 seen[key] = ref
                 current.append(ref)

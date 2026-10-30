@@ -14,6 +14,9 @@ def xtd_ai_tool(
     groups=None,
     preview=None,
     requires=None,
+    op_class=None,
+    policy=None,
+    visible=None,
 ):
     """Declare a method of an ``xtd.ai.toolbox`` model as an AI tool (CONTRACT §6).
 
@@ -22,6 +25,12 @@ def xtd_ai_tool(
     ``groups``: XML ids; the tool is visible/callable if the user belongs to at
     least one of them (empty/None: any AI user).
     ``requires``: optional list of model names that must be installed.
+    ``op_class``: policy class of the operation (``xtd.ai.policy``), e.g.
+    ``create_master``; without it a ``draft`` tool is ``create_draft`` and a
+    ``create`` tool always asks for confirmation (``confirm``).
+    ``policy``: optional toolbox method ``f(args) -> level`` (``N1``..``N4``)
+    for tools whose level depends on the arguments (fields and amounts).
+    ``visible``: optional toolbox method ``f() -> bool`` (e.g. ORM rights).
     """
     if kind not in KINDS:
         raise ValueError(f"Tool {name}: invalid kind {kind!r}")
@@ -44,6 +53,9 @@ def xtd_ai_tool(
             "groups": list(groups or []),
             "preview": preview,
             "requires": list(requires or []),
+            "op_class": op_class,
+            "policy": policy,
+            "visible": visible,
         }
         return func
 

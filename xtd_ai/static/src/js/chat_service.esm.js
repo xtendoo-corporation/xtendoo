@@ -483,6 +483,7 @@ export const xtdAiChatService = {
             action_id: source.actionId || null,
             message_id: source.messageId || null,
             lines: Boolean(target.undo?.lines),
+            edit: Boolean(target.undo?.edit),
           });
           if (!res.undone) {
             state.error = res.reason;

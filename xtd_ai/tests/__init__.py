@@ -21,3 +21,4 @@ from . import test_screen
 from . import test_count_records
 from . import test_undo
 from . import test_open_record
+from . import test_records

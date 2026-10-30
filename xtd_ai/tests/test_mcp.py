@@ -233,7 +233,7 @@ class TestMcp(XtdAiCase):
             history["allowed_companies"],
             [{"id": self.company.id, "name": self.company.name}],
         )
-        self.assertTrue(history["confirm_writes"])
+        self.assertFalse(history["confirm_writes"])  # balanced profile
         self.assertRegex(history["today"], r"^\d{4}-\d{2}-\d{2}$")
         self.assertEqual(
             [(m["role"], m["text"]) for m in history["messages"]],

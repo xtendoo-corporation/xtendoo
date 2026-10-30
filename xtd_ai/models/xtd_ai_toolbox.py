@@ -7,6 +7,7 @@ from odoo.tools import file_open
 
 from ..tools.errors import XtdAiToolError
 from ..tools.schema import check_tool_schema
+from .xtd_ai_policy import max_level
 
 TEXT_LIMIT = 300
 DEFAULT_LIMIT = 50
@@ -137,6 +138,11 @@ class XtdAiToolbox(models.AbstractModel):
         for model in tool["requires"]:
             if model not in self.env:
                 return False
+        if (
+            tool.get("visible")
+            and not getattr(self.env[tool["model"]], tool["visible"])()
+        ):
+            return False
         groups = tool["groups"]
         if not groups:
             return True
@@ -207,6 +213,35 @@ class XtdAiToolbox(models.AbstractModel):
         return self._xtd_ai_normalize_result(result)
 
     @api.model
+    def _xtd_ai_call_level(self, tool, args):
+        """Action level (``N0``..``N4``) of a call, from the policy (§6.1).
+
+        The tool's ``policy`` method runs in a savepoint that is always rolled
+        back (it may resolve names, never write). The user's own preference
+        and the global ``force_confirmation`` can only raise it to a card.
+        """
+        if tool["kind"] == "read":
+            return "N0"
+        policy = self.env["xtd.ai.policy"]
+        if tool.get("policy"):
+            toolbox = self.env[tool["model"]]
+            level = None
+            with suppress(_PreviewDone), self.env.cr.savepoint():
+                level = getattr(toolbox, tool["policy"])(args)
+                raise _PreviewDone()
+        elif tool.get("op_class"):
+            level = policy._xtd_ai_level(tool["op_class"])
+        elif tool["kind"] == "create":
+            level = policy._xtd_ai_level("confirm")
+        else:
+            level = policy._xtd_ai_level("create_draft")
+        user = self.env.user
+        if user._xtd_ai_force_confirmation() or user.sudo().xtd_ai_confirm_writes:
+            # sudo: own preference, always readable
+            level = max_level(level, "N2")
+        return level
+
+    @api.model
     def _xtd_ai_preview(self, tool, args):
         """Run the preview (reads only): any side effect is rolled back."""
         toolbox = self.env[tool["model"]]
@@ -258,6 +293,13 @@ class XtdAiToolbox(models.AbstractModel):
                         for i in lines
                         if isinstance(i, int) and not isinstance(i, bool)
                     ][:50]
+                # fields the tool edited: values before and after (undo, audit)
+                edit = item.get("undo_edit")
+                if isinstance(edit, dict) and isinstance(edit.get("before"), dict):
+                    ref["undo_edit"] = {
+                        "before": edit["before"],
+                        "after": edit.get("after") or {},
+                    }
                 refs.append(ref)
         return {"data": result.get("data", {}), "records": refs}
 

@@ -13,6 +13,8 @@ class TestWriteFlow(XtdAiCase):
         super().setUp()
         self.run, _token = self.start_run()
         self.tags = self.env["res.partner.category"]
+        # these tests exercise the card flow: the user hardened the policy
+        self.set_confirm(self.user, True)
 
     def tag_count(self, name):
         return self.tags.sudo().search_count([("name", "=", name)])

@@ -442,7 +442,9 @@ class TestChatRoutes(HttpCase):
         self.login(self.u1)
         res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
         result = res["action"]["result"]
-        self.assertEqual(result["undo"], {"state": "available", "lines": False})
+        self.assertEqual(
+            result["undo"], {"state": "available", "lines": False, "edit": False}
+        )
         done = self.ok(
             "/xtd_ai/chat/undo",
             model=result["model"],
@@ -567,6 +569,62 @@ class TestChatRoutes(HttpCase):
         self.assertTrue(done["undone"], done)
         self.assertFalse(partner.exists())
         self.assertTrue(untouched.exists())
+
+    def test_undo_an_edit_listed_in_a_message(self):
+        self.capture_postcommit()
+        conversation = self.env["xtd.ai.conversation"].with_user(self.u1)._xtd_ai_open()
+        run, _token = conversation._xtd_ai_start_run("cambia el teléfono")
+        partner = self.env["res.partner"].create({"name": "Editado", "phone": "2"})
+        edit = {"before": {"phone": "1"}, "after": {"phone": "2"}}
+        message = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .create(
+                {
+                    "conversation_id": conversation.id,
+                    "role": "assistant",
+                    "body": "hecho",
+                    "run_id": run.id,
+                    "record_refs": [
+                        {
+                            "model": "res.partner",
+                            "id": partner.id,
+                            "name": "Editado",
+                            "created": False,
+                            "undo_edit": edit,
+                        }
+                    ],
+                }
+            )
+        )
+        run.sudo()._xtd_ai_finish("done")
+        self.login(self.u1)
+        data = self.ok("/xtd_ai/chat/messages", conversation_id=conversation.id)
+        payload = next(m for m in data["messages"] if m["id"] == message.id)
+        self.assertEqual(
+            payload["record_refs"][0]["undo"],
+            {"state": "available", "lines": False, "edit": True},
+        )
+        # an edit is never undone as a creation (that would delete the record)
+        self.assertIn(
+            "error",
+            self.rpc(
+                "/xtd_ai/chat/undo",
+                model="res.partner",
+                res_id=partner.id,
+                message_id=message.id,
+            ),
+        )
+        done = self.ok(
+            "/xtd_ai/chat/undo",
+            model="res.partner",
+            res_id=partner.id,
+            message_id=message.id,
+            edit=True,
+        )
+        self.assertTrue(done["undone"], done)
+        self.assertEqual(partner.phone, "1")
+        self.assertTrue(partner.exists())
 
     def test_no_undo_once_the_draft_changed_or_the_conversation_closed(self):
         self.capture_postcommit()
