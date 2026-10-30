@@ -120,3 +120,29 @@ class TestJournalEntries(XtdAiAccountCase):
         lines[0]["partner_id"] = self.company.partner_id.id
         structured = self.entry(self.accountant, run, lines)
         self.assertEqual(structured["error"]["code"], "validation", structured)
+
+    def test_count_invoices_by_state_with_amounts(self):
+        self.make_move("out_invoice", self.customer, 100, "2026-07-31", post=True)
+        self.make_move("out_invoice", self.customer, 50, "2026-07-31", post=False)
+        run, _token = self.start_run(self.biller)
+        structured = self.agent_call(
+            self.biller,
+            run,
+            "count_records",
+            {
+                "model": "account.move",
+                "group_by": "state",
+                "measure": "amount_total_signed",
+                "filters": [
+                    {"field": "move_type", "operator": "=", "value": "out_invoice"}
+                ],
+            },
+        )
+        self.assertEqual(structured["status"], "ok", structured)
+        env = self.env(context={**self.env.context, "lang": self.biller.lang})
+        labels = dict(env["account.move"]._fields["state"]._description_selection(env))
+        groups = {g["group"]: g for g in structured["data"]["groups"]}
+        self.assertEqual(groups[labels["posted"]]["count"], 1)
+        self.assertEqual(groups[labels["posted"]]["sum"]["amount"], 100.0)
+        self.assertEqual(groups[labels["draft"]]["count"], 1)
+        self.assertEqual(structured["data"]["total"], 2)

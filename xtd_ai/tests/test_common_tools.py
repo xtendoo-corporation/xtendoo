@@ -114,7 +114,7 @@ class TestCommonTools(XtdAiCase):
 
     def test_create_contact_pending_with_duplicates_then_confirm(self):
         existing = self.env["res.partner"].create(
-            {"name": "Duplicada SL", "vat": "ESB22222222"}
+            {"name": "Duplicada SL", "vat": "ESB22222228"}
         )
         result = self.call(
             self.user,
@@ -123,7 +123,7 @@ class TestCommonTools(XtdAiCase):
             {
                 "name": "Otra Duplicada SL",
                 "is_company": True,
-                "vat": "ESB22222222",
+                "vat": "ESB22222228",
                 "country_code": "es",
                 "city": "Cadiz",
             },
@@ -153,7 +153,7 @@ class TestCommonTools(XtdAiCase):
         self.assertEqual(len(created), 1)
         self.assertEqual(
             (created.vat, created.city, created.country_id.code, created.is_company),
-            ("ESB22222222", "Cadiz", "ES", True),
+            ("ESB22222228", "Cadiz", "ES", True),
         )
         self.assertEqual(created.create_uid, self.user)
 
