@@ -26,6 +26,8 @@ OPEN_MODELS = (
     "crm.lead",
     "stock.picking",
     "product.template",
+    "project.task",
+    "hr.expense",
 )
 
 

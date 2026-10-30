@@ -46,6 +46,7 @@ Model spec keys:
   defaults to ``risk``), ``money_above`` (policy method returning a threshold:
   a numeric value above it is ``money``), ``create`` / ``update`` (False to
   restrict it to one of the tools), ``domain`` (for relational values),
+  ``domain_record`` (registry method ``f(record_or_none) -> list`` added to it),
   ``required`` (on create), ``max_length``.
 """
 
@@ -587,6 +588,9 @@ class XtdAiRecordRegistry(models.AbstractModel):
         domain = list(fspec.get("domain") or [])
         if isinstance(fspec.get("domain"), str):
             domain = getattr(self, fspec["domain"])(model)
+        if fspec.get("domain_record"):
+            # values that depend on the record (stages of the task's project)
+            domain += getattr(self, fspec["domain_record"])(record)
         comodel = self.env[field.comodel_name]
         # values of the record's own company (an account, a tax of that company)
         company = record and "company_id" in record._fields and record.company_id

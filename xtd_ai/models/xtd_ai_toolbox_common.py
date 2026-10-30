@@ -230,7 +230,8 @@ class XtdAiToolboxCommon(models.AbstractModel):
             "verlo o abrirlo. Modelos: res.partner (contacto), sale.order "
             "(presupuesto o pedido), purchase.order (RFQ o pedido de compra), "
             "account.move (factura o asiento), crm.lead (oportunidad), stock.picking "
-            "(albarán) y product.template (producto). Para ver los apuntes de un "
+            "(albarán), product.template (producto), project.task (tarea) y "
+            "hr.expense (gasto), si están instalados. Para ver los apuntes de un "
             "asiento usa open_journal_entry. No modifica datos."
         ),
         input_schema={

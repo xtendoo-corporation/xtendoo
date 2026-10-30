@@ -85,11 +85,13 @@ class XtdAiToolboxRecords(models.AbstractModel):
         name="create_record",
         title="Crear registro",
         description=(
-            "Crea un dato maestro permitido (hoy: productos, model product.template). "
-            "Antes busca si ya existe (search_products). Pasa los campos en "
-            "`values` como pares campo/valor. Si el producto puede estar repetido "
-            "o lleva impuestos, queda una tarjeta para confirmar; si no, se crea y "
-            "el usuario puede deshacerlo. Carga antes la skill del área."
+            "Crea un registro permitido: productos (product.template; antes "
+            "search_products), tareas (project.task), partes de horas PROPIOS "
+            "(account.analytic.line) y gastos PROPIOS (hr.expense), según lo "
+            "instalado. Pasa los campos en `values` como pares campo/valor. Si "
+            "puede estar repetido, lleva impuestos o es un gasto, queda una "
+            "tarjeta para confirmar; si no, se crea y el usuario puede deshacerlo. "
+            "Carga antes la skill del área."
         ),
         input_schema=_create_schema,
         kind="create",
@@ -171,8 +173,10 @@ class XtdAiToolboxRecords(models.AbstractModel):
         title="Modificar registro",
         description=(
             "Modifica campos permitidos de un registro existente: productos, "
-            "contactos (no bancos ni datos fiscales sin tarjeta) y borradores de "
-            "pedidos, facturas, asientos y sus líneas (solo en borrador). Usa el "
+            "contactos (no bancos ni datos fiscales sin tarjeta), oportunidades "
+            "abiertas (crm.lead), tareas y partes de horas propios, gastos "
+            "propios en borrador y borradores de pedidos, facturas, asientos y "
+            "sus líneas (solo en borrador). Usa el "
             "id que devuelven get_* o search_*. Los cambios de bajo riesgo se "
             "hacen y el usuario puede deshacerlos; precios, descuentos altos, "
             "impuestos, NIF y email piden confirmación con «antes → después». "

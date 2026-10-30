@@ -21,6 +21,9 @@ UNDO_MODELS = (
     "account.move",
     "crm.lead",
     "product.template",
+    "project.task",
+    "account.analytic.line",
+    "hr.expense",
 )
 UNDO_LINE_MODELS = {"sale.order": "order_line"}
 DEFAULT_WINDOW_MINUTES = 120
@@ -31,6 +34,7 @@ UNLINK_FALLBACKS = {
     "res.partner": "archive",
     "crm.lead": "archive",
     "product.template": "archive",
+    "project.task": "archive",
 }
 # Documents the agent creates; anything else (posted, refunds...) is not undoable
 _MOVE_TYPES = ("out_invoice", "in_invoice", "entry")
@@ -176,6 +180,25 @@ class XtdAiUndo(models.AbstractModel):
     def _xtd_ai_undo_reason_crm_lead(self, lead):
         if not lead.active or ("order_ids" in lead._fields and lead.order_ids):
             return self.env._("La oportunidad ya no es un borrador intacto.")
+        return None
+
+    def _xtd_ai_undo_reason_project_task(self, task):
+        if not task.active or task.child_ids:
+            return self.env._("La tarea ya no es un borrador intacto.")
+        if "timesheet_ids" in task._fields and task.timesheet_ids:
+            return self.env._("La tarea ya tiene horas imputadas.")
+        return None
+
+    def _xtd_ai_undo_reason_account_analytic_line(self, line):
+        if line.user_id != self.env.user:
+            return self.env._("Ese parte no es tuyo.")
+        if "validated" in line._fields and line.validated:
+            return self.env._("El parte ya está validado.")
+        return None
+
+    def _xtd_ai_undo_reason_hr_expense(self, expense):
+        if expense.state != "draft" or expense.account_move_id:
+            return self.env._("El gasto ya no está en borrador.")
         return None
 
     @api.model
