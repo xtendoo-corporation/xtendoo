@@ -5,3 +5,4 @@ from . import test_availability
 from . import test_undo
 from . import test_records_sale
 from . import test_records_product
+from . import test_records_adversarial
