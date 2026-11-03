@@ -34,3 +34,11 @@ el prefijo cacheado las herramientas que no tocan.
   fallback de la ola 1B («compiled grammar is too large» → reducir strict) sigue como
   red.
 - `xtd_ai.tool_exposure = all` vuelve a cargarlo todo (interruptor de emergencia).
+
+## Golden con la nueva exposición (Haiku 5.5, 03-11-2026)
+
+75 casos (66 anteriores + 9 de cambio de área a mitad de tarea y de administrador):
+71/75 a la primera; los 4 fallos eran del propio caso (fechas fijas «mañana»/«ayer», una
+consulta SQL y un caso que no contaba con el freno por texto externo). Corregidos, 4/4.
+Sin regresiones en los 66 anteriores. Caché: 2,27 M tokens leídos frente a 0,53 M
+escritos y 24 k sin caché en toda la batería.

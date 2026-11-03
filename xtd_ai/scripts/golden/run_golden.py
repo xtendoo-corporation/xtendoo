@@ -10,6 +10,7 @@ prueba del seed, una conversación nueva por caso, y comprueba por caso:
 
 - ``tools_all``: herramientas que deben llamarse con éxito o quedar en tarjeta.
 - ``tools_none``: herramientas que no deben ejecutarse con éxito.
+- ``tools_any``: al menos una de ellas debe llamarse con éxito o quedar en tarjeta.
 - ``cards`` (exacto) o ``cards_max``: tarjetas (acciones pendientes) creadas.
 - ``turns``: mensajes del usuario (por defecto 1); se informa la media.
 - ``db``: pares ``[SELECT, valor esperado]`` contra la BD tras el caso; ``{runs}`` se
@@ -319,6 +320,9 @@ def run_case(db, case, clients, pwd, timeout):
         psql(
             db,
             "select json_build_object('cost', coalesce(sum(cost_estimate),0), "
+            "'input', coalesce(sum(input_tokens),0), "
+            "'cache_read', coalesce(sum(cache_read_tokens),0), "
+            "'cache_write', coalesce(sum(cache_write_tokens),0), "
             "'state', string_agg(state, ',')) from xtd_ai_run "
             f"where id in ({ids})",
         )
@@ -331,6 +335,9 @@ def run_case(db, case, clients, pwd, timeout):
     for tool in expect.get("tools_all", []):
         if tool not in good:
             fails.append(f"no llama a {tool}")
+    any_tools = expect.get("tools_any", [])
+    if any_tools and not good & set(any_tools):
+        fails.append(f"no llama a ninguna de {', '.join(any_tools)}")
     for tool in expect.get("tools_none", []):
         if tool in good:
             fails.append(f"llama a {tool}")
@@ -352,6 +359,9 @@ def run_case(db, case, clients, pwd, timeout):
         "tools": [f"{a['tool']}:{a['outcome']}" for a in audit],
         "reply": "\n---\n".join(replies)[:1500],
         "cost": usage.get("cost"),
+        "cache_read": usage.get("cache_read") or 0,
+        "cache_write": usage.get("cache_write") or 0,
+        "input": usage.get("input") or 0,
     }
 
 
@@ -411,6 +421,10 @@ def main():
     turns = sum(r["turns"] for r in results)
     cost = sum(float(r.get("cost") or 0) for r in results)
     print(f"Tarjetas: {cards} · mensajes de usuario: {turns} · coste: {cost:.3f} USD")
+    read = sum(r.get("cache_read", 0) for r in results)
+    write = sum(r.get("cache_write", 0) for r in results)
+    fresh = sum(r.get("input", 0) for r in results)
+    print(f"Caché: leídos {read} · escritos {write} · sin caché {fresh} tokens")
     if args.out:
         pathlib.Path(args.out).write_text(
             json.dumps(results, ensure_ascii=False, indent=1)
