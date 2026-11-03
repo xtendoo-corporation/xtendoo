@@ -42,3 +42,12 @@ el prefijo cacheado las herramientas que no tocan.
 consulta SQL y un caso que no contaba con el freno por texto externo). Corregidos, 4/4.
 Sin regresiones en los 66 anteriores. Caché: 2,27 M tokens leídos frente a 0,53 M
 escritos y 24 k sin caché en toda la batería.
+
+## Golden de la ola 2B (Haiku 5.5, 03-11-2026)
+
+98 casos (75 anteriores + 23 de transiciones, cobros, «publica la factura» y
+adversarias). Primera pasada 94/98 (96 %): un tiempo de espera, una pregunta de permiso
+innecesaria y dos casos que había que actualizar (mover de etapa ya es N1). Segunda
+pasada 97/98 (99 %), sin regresiones en los 75 anteriores; el fallo («Confirma la
+factura» empezaba con «No puedo») se corrigió en la skill de contabilidad: 3/3. Coste de
+la batería: 0,15 USD.

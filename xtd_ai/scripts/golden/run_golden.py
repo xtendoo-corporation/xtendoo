@@ -13,6 +13,10 @@ prueba del seed, una conversación nueva por caso, y comprueba por caso:
 - ``tools_any``: al menos una de ellas debe llamarse con éxito o quedar en tarjeta.
 - ``cards`` (exacto) o ``cards_max``: tarjetas (acciones pendientes) creadas.
 - ``turns``: mensajes del usuario (por defecto 1); se informa la media.
+- ``outcomes``: ``{herramienta: resultado}`` exigido en alguna de sus llamadas
+  (``ok``, ``pending``, ``handoff``...).
+- ``reply_none``: expresiones regulares que no deben aparecer en la respuesta (p. ej.
+  ``^No puedo``).
 - ``db``: pares ``[SELECT, valor esperado]`` contra la BD tras el caso; ``{runs}`` se
   sustituye por los ids de las ejecuciones del caso.
 
@@ -61,7 +65,7 @@ SEED = pathlib.Path(
 CASES = HERE / "cases.json"
 BASE = os.environ.get("XTD_AI_BASE", "http://127.0.0.1:19069")
 POLL = 1.5
-OK_OUTCOMES = ("ok", "pending")
+OK_OUTCOMES = ("ok", "pending", "handoff")
 
 PREPARE = """
 group = env.ref("product.group_product_manager")
@@ -135,6 +139,16 @@ if not web:
     env.cr.execute(
         "UPDATE crm_lead SET create_uid=%s WHERE id=%s", (public.id, web.id)
     )
+# wave 2B: the company 1 turns on the transitions with a card (N2); the company
+# 2 keeps the default (N3: the agent opens the record)
+Rule = env["xtd.ai.policy.rule"]
+main = env["res.company"].browse(1)
+for op in ("confirm_sale", "confirm_purchase", "validate_picking"):
+    row = Rule.search([("company_id", "=", main.id), ("op_class", "=", op)])
+    if row:
+        row.level = "N2"
+    else:
+        Rule.create({"company_id": main.id, "op_class": op, "level": "N2"})
 env.cr.commit()
 print("PREPARED", user.has_group("product.group_product_manager"))
 """
@@ -281,6 +295,20 @@ def wait_reply(client, conv_id, run_id, timeout):
     return "", True
 
 
+def check_wave2(expect, audit, replies):
+    """``outcomes`` and ``reply_none`` of a case (wave 2B)."""
+    fails = [
+        f"{tool} no termina en {outcome}"
+        for tool, outcome in expect.get("outcomes", {}).items()
+        if not any(a["tool"] == tool and a["outcome"] == outcome for a in audit)
+    ]
+    text = "\n".join(replies)
+    for pattern in expect.get("reply_none", []):
+        if re.search(pattern, text, re.IGNORECASE | re.MULTILINE):
+            fails.append(f"respuesta con {pattern!r}")
+    return fails
+
+
 def run_case(db, case, clients, pwd, timeout):
     login = case["user"]
     if login not in clients:
@@ -345,6 +373,7 @@ def run_case(db, case, clients, pwd, timeout):
         fails.append(f"tarjetas {cards} (esperadas {expect['cards']})")
     if "cards_max" in expect and cards > expect["cards_max"]:
         fails.append(f"tarjetas {cards} (máximo {expect['cards_max']})")
+    fails += check_wave2(expect, audit, replies)
     for sql, expected in expect.get("db", []):
         got = psql(db, sql.replace("{runs}", ids))
         if got != str(expected):

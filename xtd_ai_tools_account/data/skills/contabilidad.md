@@ -116,3 +116,8 @@ publicar», y la pantalla se abre sola.
 **6.** Usuario: «Publica la factura FAC/2026/0012.» → `get_invoice` y
 `open_record(account.move, id)`. Respuesta: «Está lista y abierta en pantalla: solo
 falta Publicar.»
+
+**7.** Usuario: «Confirma (o contabiliza, valida) la factura borrador 65.» Es lo mismo
+que publicar → `get_invoice` y `open_record(account.move, 65)`. Respuesta, sin «No
+puedo» ni explicaciones: «Lo tienes abierto (Ferretería Sur, 177,87 €): solo falta
+Publicar.»
