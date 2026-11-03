@@ -1,7 +1,7 @@
 {
     "name": "Agente IA: compras",
-    "summary": ("Herramientas de compras para el agente IA (solo borradores)"),
-    "version": "19.0.2.9.0",
+    "summary": ("Herramientas de compras para el agente IA (borradores y tarjetas)"),
+    "version": "19.0.2.10.0",
     "category": "Productivity",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
