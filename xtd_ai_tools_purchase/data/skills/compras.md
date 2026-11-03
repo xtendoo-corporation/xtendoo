@@ -1,8 +1,8 @@
 # Compras
 
 Herramientas: `search_purchase_orders`, `get_purchase_order`, `purchase_report`,
-`create_purchase_rfq`, `update_record`. Proveedores y productos: `search_partners`,
-`search_products`.
+`create_purchase_rfq`, `update_record`, `confirm_purchase_order`, `cancel_purchase_rfq`.
+Proveedores y productos: `search_partners`, `search_products`.
 
 ## Qué hacer
 
@@ -29,9 +29,17 @@ Herramientas: `search_purchase_orders`, `get_purchase_order`, `purchase_report`,
      `product_qty`, `name`, `date_planned`, `price_unit`, `discount`, `tax_ids`. Precio,
      impuestos y descuentos de más del 15 % piden tarjeta; el resto se hace y se puede
      deshacer.
-3. ¿Piden confirmar, aprobar, enviar al proveedor, cancelar o borrar? No es tuyo: deja
-   la RFQ preparada, ábrela con `open_record` (purchase.order) y di qué botón falta
-   («Solo falta Confirmar pedido»).
+3. ¿Piden confirmar o cancelar una RFQ concreta? Con su **id** (de
+   `search_purchase_orders`):
+   - Confirmar → `confirm_purchase_order`. Cancelar una RFQ (no un pedido confirmado) →
+     `cancel_purchase_rfq`.
+   - `pending_confirmation`: «Revisa en la tarjeta proveedor, importe y recepciones, y
+     pulsa Confirmar compra». Si supera el límite de compra, la tarjeta lo resalta:
+     menciona el importe.
+   - `handoff`: «Lo tienes abierto: solo falta pulsar Confirmar pedido». Nada más.
+   - Con doble validación queda «por aprobar»: dilo. Aprobar, enviar al proveedor y
+     borrar no son tuyos: abre la RFQ con `open_record` y di qué botón falta.
+   - «Confirma todas»: pregunta cuáles (con sus números); nunca en bloque.
 4. Con varias compañías, las consultas cubren todas (cada una con su `company`);
    `purchase_report` separa por moneda y compañía: no sumes. Pasa `company` para una
    sola; si da `not_found`, no está activa.
@@ -53,6 +61,14 @@ Respuesta: lista corta (número, proveedor, importe); tabla si hay más de 3.
 **4.** Usuario: «Pídele cosas a Suministros Iberia.» Respuesta: «¿Qué productos y
 cuántas unidades?»
 
-**5.** Usuario: «Confirma el pedido P00012.» → `get_purchase_order` y
-`open_record(purchase.order, id)`. Respuesta: «P00012 está listo y abierto en pantalla:
-solo falta Confirmar pedido.»
+**5.** Usuario: «Confirma el pedido P00012.» → `search_purchase_orders` (id 12) →
+`confirm_purchase_order(order="12")`. `pending_confirmation`: «P00012 (1.250,00 €, Wood
+Corner) listo para confirmar: revisa la tarjeta.» `handoff`: «Lo tienes abierto: solo
+falta pulsar Confirmar pedido.»
+
+**6.** Usuario: «Cancela la RFQ de Envases del Norte.» → `search_purchase_orders` (una
+sola, id 19) → `cancel_purchase_rfq(order="19")`. Respuesta: «Acepta la tarjeta para
+cancelarla; se puede deshacer.»
+
+**7.** Usuario: «Envíale la RFQ al proveedor.» → `open_record(purchase.order, id)`.
+Respuesta: «La tienes abierta: solo falta Enviar por correo.»

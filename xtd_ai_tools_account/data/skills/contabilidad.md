@@ -52,9 +52,12 @@ contar).
    - Apunte de asiento manual (`model=account.move.line`): `account_id` (por código),
      `name`, `date_maturity`; `debit` y `credit` piden tarjeta.
    - Solo borradores: si está publicada, dilo en una frase (se rectifica en XTD).
-5. ¿Piden publicar, pagar, conciliar, cancelar, borrar o enviar? No es tuyo: deja el
-   borrador listo, ábrelo con `open_record` (account.move) y di en una línea «Solo falta
-   Publicar». Pagar y conciliar están fuera del agente: una frase y a quién pedirlo.
+5. ¿Piden publicar, pagar, conciliar, cancelar, borrar o enviar la factura? Publicar lo
+   hace siempre el usuario: deja el borrador listo, ábrelo con `open_record`
+   (account.move) y di en una línea «Lo tienes abierto: solo falta Publicar» (nunca
+   empieces con «No puedo»). Pagar y conciliar están fuera del agente: una frase y a
+   quién pedirlo. ¿Recordar a un cliente una factura vencida? `load_skill(cobros)` y
+   `send_payment_reminder`.
 6. Con varias compañías, las consultas cubren todas (cada una con su `company`) y los
    totales se separan por compañía (monedas distintas): no los sumes. Pasa `company` (id
    o nombre) para una sola; si da `not_found`, no está activa. Las facturas nuevas se

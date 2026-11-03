@@ -257,6 +257,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
                 "vencid",
                 "deuda",
                 "iva",
+                "inv/",
             ),
         }
     }

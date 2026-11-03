@@ -68,6 +68,9 @@ class XtdAiToolboxStock(models.AbstractModel):
                 "inventario",
                 "almacen",
                 "albaran",
+                "valida",
+                # document references (WH/IN/00002, WH/OUT/00042)
+                "wh/",
                 "entrega",
                 "recepcion",
                 "envio",

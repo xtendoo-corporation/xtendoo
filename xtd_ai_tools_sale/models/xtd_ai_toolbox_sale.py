@@ -95,6 +95,8 @@ class XtdAiToolboxSale(models.AbstractModel):
                 "oferta",
                 "cotizacion",
                 "vendid",
+                # document references (S00038)
+                "s000",
             ),
         }
     }

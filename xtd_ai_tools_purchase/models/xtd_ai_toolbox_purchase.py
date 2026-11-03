@@ -67,6 +67,9 @@ class XtdAiToolboxPurchase(models.AbstractModel):
                 "solicitud de presupuesto",
                 "rfq",
                 "pedir al proveedor",
+                "peticion de presupuesto",
+                # document references (P00017)
+                "p000",
             ),
         }
     }
