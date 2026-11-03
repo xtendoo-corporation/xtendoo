@@ -4,7 +4,7 @@
         "Herramientas de tareas y partes de horas propios para el agente IA "
         "(crear, editar, mover de etapa e imputar horas propias)"
     ),
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Productivity",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",

@@ -134,3 +134,30 @@ class TestPolicyTable(XtdAiCase):
         self.assertFalse(rows["create_draft"])
         self.assertFalse(rows["post"])
         self.assertEqual(self.policy()._xtd_ai_level("post"), "N3")
+
+    def test_agent_cannot_change_its_own_policy(self):
+        """Adversarial: no tool writes the profile, the table or the brakes."""
+        admin = self.env.ref("base.user_admin")
+        admin.group_ids = [(4, self.env.ref("xtd_ai.group_xtd_ai_manager").id)]
+        self.set_confirm(admin, False)
+        run, _token = self.start_run(admin)
+        row = self.rule(op_class="edit_low", level="N2")
+        for model, record, field, value in (
+            ("res.company", str(self.company.id), "xtd_ai_profile", "agile"),
+            ("res.company", str(self.company.id), "xtd_ai_paused", "false"),
+            ("res.company", str(self.company.id), "xtd_ai_max_writes_hour", "0"),
+            ("xtd.ai.policy.rule", str(row.id), "level", "N1"),
+        ):
+            res = self.call(
+                admin,
+                run,
+                "update_record",
+                {
+                    "model": model,
+                    "record": record,
+                    "changes": [{"field": field, "value": value}],
+                },
+            )["structuredContent"]
+            self.assertEqual(res["status"], "error", (model, field))
+        self.assertEqual(row.level, "N2")
+        self.assertNotEqual(self.company.xtd_ai_profile, "agile")
