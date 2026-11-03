@@ -273,6 +273,11 @@
                   class="o_xtd_ai_card_summary"
                   t-esc="action.summary"
                 />
+                                <div
+                  t-if="action.warning"
+                  class="o_xtd_ai_card_warning alert alert-warning fw-bold p-1 my-1"
+                  t-esc="action.warning"
+                />
                                 <table
                   t-if="action.lines.length"
                   class="table table-sm mb-1"
@@ -288,12 +293,16 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                                <div
+                  t-if="action.irreversible and action.actionable"
+                  class="o_xtd_ai_card_irreversible text-muted small mb-1"
+                >No se puede deshacer.</div>
                                 <div t-if="action.actionable" class="d-flex gap-2">
                                     <button
                     class="o_xtd_ai_confirm btn btn-sm btn-primary"
                     t-att-disabled="state.busy"
                     t-on-click="() => chat.confirmAction(action.id)"
-                  >Crear</button>
+                  ><t t-esc="action.confirm_label or 'Crear'" /></button>
                                     <button
                     class="o_xtd_ai_discard btn btn-sm btn-secondary"
                     t-att-disabled="state.busy"

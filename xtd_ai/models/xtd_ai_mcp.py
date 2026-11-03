@@ -331,7 +331,13 @@ class XtdAiMcp(models.AbstractModel):
                         if t["kind"] != "read"
                     ],
                 )
-            if level in ("N3", "N4"):
+            if level == "N3" and tool.get("handoff"):
+                # N3: prepare and take the user there (§6.1): open the record
+                structured = toolbox._xtd_ai_handoff(tool, arguments)
+                refs = structured["records"]
+                run._xtd_ai_add_record_refs(refs)
+                outcome = "handoff"
+            elif level in ("N3", "N4"):
                 raise XtdAiToolError(
                     "forbidden",
                     self.env._(
@@ -339,7 +345,7 @@ class XtdAiMcp(models.AbstractModel):
                         "que el usuario la termine en XTD."
                     ),
                 )
-            if level == "N2":
+            elif level == "N2":
                 structured = self._xtd_ai_propose(run, tool, arguments)
                 outcome = "pending"
             else:

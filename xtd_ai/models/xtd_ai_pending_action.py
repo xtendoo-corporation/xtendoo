@@ -195,18 +195,31 @@ class XtdAiPendingAction(models.Model):
     def _xtd_ai_confirmed_label(self):
         """``creada X (modelo m, id N)``: what a confirmed action produced."""
         self.ensure_one()
-        label = _("creada")
         action = self.sudo()
+        # an action on an existing record (edit, confirm, send) is not "created"
+        done = bool(action.result_edit)
+        label = _("hecha") if done else _("creada")
         if action.result_model and action.result_res_id:
             record = self.env[action.result_model].sudo().browse(action.result_res_id)
             if record.exists():
                 # model and id let the agent work on it next ("show it")
-                label = _(
-                    "creada %(name)s (modelo %(model)s, id %(id)s)",
-                    name=(record.display_name or "")[:60],
-                    model=action.result_model,
-                    id=action.result_res_id,
-                )
+                values = {
+                    "name": (record.display_name or "")[:60],
+                    "model": action.result_model,
+                    "id": action.result_res_id,
+                }
+                if done:
+                    tool = (
+                        self.env["xtd.ai.toolbox"]._xtd_ai_tools().get(action.tool_name)
+                    )
+                    label = _(
+                        "hecha «%(title)s» sobre %(name)s (modelo %(model)s, id "
+                        "%(id)s)",
+                        title=(tool or {}).get("title") or action.tool_name,
+                        **values,
+                    )
+                else:
+                    label = _("creada %(name)s (modelo %(model)s, id %(id)s)", **values)
         return label
 
     def _xtd_ai_history_notes(self):

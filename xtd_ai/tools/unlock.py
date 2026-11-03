@@ -29,16 +29,34 @@ def _granted(context, record, method):
     return _op(record, method) in grant or f"*.{method}" in grant
 
 
-def unlock(record, method):
-    """``record`` with the guard of ``method`` lifted for it alone.
+def unlock(record, method, *more):
+    """``record`` with the guard of ``method`` (and of ``more`` methods, e.g. the
+    confirmation email of a validated delivery) lifted for it alone.
 
-    Raises ``XtdAiDraftOnlyError`` if the running tool did not declare the
+    Raises ``XtdAiDraftOnlyError`` if the running tool did not declare every
     operation or ``record`` is not exactly one record."""
-    if len(record) != 1 or not _granted(record.env.context, record, method):
+    methods = (method, *more)
+    if len(record) != 1 or not all(
+        _granted(record.env.context, record, m) for m in methods
+    ):
         raise XtdAiDraftOnlyError(
             record.env._("Esta herramienta no puede desbloquear esta operación.")
         )
-    return record.with_context(**{UNLOCK_KEY: (_op(record, method), record.id)})
+    ops = tuple(_op(record, m) for m in methods)
+    return record.with_context(
+        **{UNLOCK_KEY: (ops[0] if len(ops) == 1 else ops, record.id)}
+    )
+
+
+def _key_ops(key):
+    if not isinstance(key, (tuple, list)) or len(key) != 2:
+        return ()
+    ops = key[0]
+    if isinstance(ops, str):
+        return (ops,)
+    if isinstance(ops, (tuple, list)) and all(isinstance(o, str) for o in ops):
+        return tuple(ops)
+    return ()
 
 
 def is_unlocked(record, method):
@@ -48,8 +66,20 @@ def is_unlocked(record, method):
     return bool(
         len(record) == 1
         and _granted(context, record, method)
-        and isinstance(key, (tuple, list))
-        and len(key) == 2
-        and key[0] == _op(record, method)
+        and _op(record, method) in _key_ops(key)
         and key[1] == record.id
     )
+
+
+def unlocked_record(env, method):
+    """``(model, id)`` of the one record whose ``method`` guard is lifted in
+    ``env`` (for guards of models that work for another record, such as the
+    outgoing mail of a document), or ``None``."""
+    key = env.context.get(UNLOCK_KEY)
+    for op in _key_ops(key):
+        model, _sep, name = op.rpartition(".")
+        if name == method and isinstance(key[1], int):
+            grant = env.context.get(GRANT_KEY) or ()
+            if op in grant or f"*.{method}" in grant:
+                return model, key[1]
+    return None

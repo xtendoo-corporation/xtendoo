@@ -164,8 +164,14 @@ class TestCrmAdversarial(XtdAiCrmCase):
         run, _t = self.start_run(self.sales_manager)
         _status, response = self.rpc(self.sales_manager, run, "tools/list", {})
         names = {t["name"] for t in response["result"]["tools"]}
-        for word in ("delete", "unlink", "merge", "mass", "send"):
+        for word in ("delete", "unlink", "merge", "mass"):
             self.assertFalse([n for n in names if word in n], word)
+        # the only tools that write to the outside are the wave 2B cards with a
+        # fixed recipient (the customer of the document) and template
+        self.assertLessEqual(
+            {n for n in names if "send" in n},
+            {"send_quotation_email", "send_payment_reminder"},
+        )
         env = self.tool_env(self.sales_manager, run)
         with self.assertRaises(XtdAiDraftOnlyError):
             env["crm.lead"].browse(self.web.id).unlink()

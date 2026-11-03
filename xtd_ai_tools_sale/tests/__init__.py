@@ -6,3 +6,4 @@ from . import test_undo
 from . import test_records_sale
 from . import test_records_product
 from . import test_records_adversarial
+from . import test_transitions

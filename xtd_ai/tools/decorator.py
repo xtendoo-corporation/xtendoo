@@ -19,6 +19,7 @@ def xtd_ai_tool(
     visible=None,
     core=False,
     unlocks=None,
+    handoff=None,
 ):
     """Declare a method of an ``xtd.ai.toolbox`` model as an AI tool (CONTRACT §6).
 
@@ -39,6 +40,11 @@ def xtd_ai_tool(
     ``unlocks``: operations this tool may lift a guard for, as
     ``"model.method"`` strings (``xtd.ai.unlock``); the gateway grants them
     only while it executes this tool, never in a preview or a policy check.
+    ``handoff``: optional toolbox method ``f(args) -> (record, button)`` for
+    transitions; when the policy puts the call at N3 the gateway does not
+    refuse it: it opens ``record`` on the user's screen and tells the agent
+    which button is left («solo falta Confirmar»). It runs like a preview
+    (rolled back, no unlock).
     """
     if kind not in KINDS:
         raise ValueError(f"Tool {name}: invalid kind {kind!r}")
@@ -69,6 +75,7 @@ def xtd_ai_tool(
             "visible": visible,
             "core": bool(core or not skill),
             "unlocks": tuple(unlocks or ()),
+            "handoff": handoff,
         }
         return func
 

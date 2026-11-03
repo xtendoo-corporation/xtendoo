@@ -166,6 +166,11 @@ class XtdAiRun(models.Model):
                         "before": edit["before"] | known["before"],
                         "after": known["after"] | edit["after"],
                     }
+                    # two transitions of one record: only the last one undoes
+                    if edit.get("transition") or known.get("transition"):
+                        seen[key]["undo_edit"]["transition"] = edit.get(
+                            "transition"
+                        ) or known.get("transition")
             elif len(current) < MAX_RECORD_REFS:
                 seen[key] = ref
                 current.append(ref)

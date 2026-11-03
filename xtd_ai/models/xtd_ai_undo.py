@@ -7,6 +7,7 @@ other records, changed by someone else, or older than the time window).
 """
 
 import logging
+import re
 from datetime import timedelta
 
 from odoo import SUPERUSER_ID, Command, api, fields, models
@@ -322,6 +323,8 @@ class XtdAiUndo(models.AbstractModel):
         undone, or ``None``."""
         if self.env.su or self.env.context.get("xtd_ai_run"):
             return self.env._("Operación no permitida desde el agente.")
+        if (edit or {}).get("transition"):
+            return self._xtd_ai_transition_reason(model, res_id, edit, since)
         registry = self.env["xtd.ai.record.registry"]
         spec = registry._xtd_ai_specs().get(model)
         before = (edit or {}).get("before") or {}
@@ -351,6 +354,10 @@ class XtdAiUndo(models.AbstractModel):
 
     @api.model
     def _xtd_ai_undo_edit_done(self, model, res_id, edit):
+        if (edit or {}).get("transition"):
+            handler = self._xtd_ai_transition_handler(edit, "done")
+            record = self.env[model].browse(res_id).exists()
+            return bool(handler and record and handler(record, edit))
         registry = self.env["xtd.ai.record.registry"]
         record = self.env[model].browse(res_id).exists()
         before = (edit or {}).get("before") or {}
@@ -397,7 +404,10 @@ class XtdAiUndo(models.AbstractModel):
         if not reason:
             try:
                 with self.env.cr.savepoint():
-                    record.write(self._xtd_ai_restore_vals(model, edit["before"]))
+                    if edit.get("transition"):
+                        self._xtd_ai_transition_handler(edit, "apply")(record, edit)
+                    else:
+                        record.write(self._xtd_ai_restore_vals(model, edit["before"]))
             except Exception as exc:  # constraint: not undoable any more
                 _logger.info("Undo edit of %s,%s refused: %s", model, res_id, exc)
                 reason = self.env._("No se puede volver al valor anterior.")
@@ -408,7 +418,12 @@ class XtdAiUndo(models.AbstractModel):
             user_id=self.env.uid,
             company_id=self.env.company.id,
             tool_name="undo_edit",
-            arguments={"model": model, "id": res_id, "mode": "restore"} | edit,
+            arguments={
+                "model": model,
+                "id": res_id,
+                "mode": "transition" if edit.get("transition") else "restore",
+            }
+            | edit,
             error_code="not_undoable" if reason else None,
             record_refs=[
                 {
@@ -421,3 +436,81 @@ class XtdAiUndo(models.AbstractModel):
         if reason:
             return {"undone": False, "reason": reason}
         return {"undone": True, "mode": "restore"}
+
+    # ------------------------------------------------------------------
+    # Undo of transitions (wave 2B): confirm, cancel, move a stage, an
+    # activity. ``edit["transition"]`` names the handlers
+    # ``_xtd_ai_transition_<name>_{reason,done,apply}(record, edit)`` that
+    # the tool modules define; anything unknown is not undoable.
+    # ------------------------------------------------------------------
+    @api.model
+    def _xtd_ai_transition_handler(self, edit, step):
+        name = (edit or {}).get("transition")
+        if not isinstance(name, str) or not re.fullmatch(r"[a-z_]{1,40}", name):
+            return None
+        return getattr(self, f"_xtd_ai_transition_{name}_{step}", None)
+
+    @api.model
+    def _xtd_ai_transition_reason(self, model, res_id, edit, since=None):
+        handler = self._xtd_ai_transition_handler(edit, "reason")
+        if not handler:
+            return self.env._("Este cambio no se puede deshacer.")
+        record = self.env[model].browse(res_id).exists()
+        if not record:
+            return self.env._("Ya no existe.")
+        try:
+            record.check_access("write")
+        except AccessError:
+            return self.env._("No tienes permiso para modificarlo.")
+        if since and fields.Datetime.now() - since > self._xtd_ai_undo_window():
+            return self.env._("Ha pasado demasiado tiempo para deshacerlo.")
+        return handler(record, edit)
+
+    # -- an activity the agent scheduled (schedule_activity) ------------------
+    def _xtd_ai_activity(self, record, edit):
+        activity_id = (edit.get("after") or {}).get("activity_id")
+        if not isinstance(activity_id, int) or isinstance(activity_id, bool):
+            return self.env["mail.activity"]
+        activity = (
+            self.env["mail.activity"]
+            .with_context(active_test=False)
+            .browse(activity_id)
+            .exists()
+        )
+        if activity and (activity.res_model, activity.res_id) != (
+            record._name,
+            record.id,
+        ):
+            return self.env["mail.activity"]
+        return activity
+
+    def _xtd_ai_transition_activity_reason(self, record, edit):
+        activity = self._xtd_ai_activity(record, edit)
+        if not activity:
+            return self.env._("La actividad ya no existe.")
+        if "active" in activity._fields and not activity.active:
+            return self.env._("La actividad ya está hecha.")
+        if activity.create_uid != self.env.user or activity.write_uid.id not in (
+            self.env.uid,
+            SUPERUSER_ID,
+        ):
+            return self.env._("Alguien la ha modificado después.")
+        after = edit.get("after") or {}
+        if (
+            str(activity.date_deadline) != after.get("date_deadline")
+            or activity.user_id.id != after.get("user_id")
+            or (activity.summary or "") != after.get("summary", "")
+        ):
+            return self.env._("La actividad se ha modificado después.")
+        try:
+            activity.check_access("unlink")
+        except AccessError:
+            return self.env._("No tienes permiso para borrarla.")
+        return None
+
+    def _xtd_ai_transition_activity_done(self, record, edit):
+        activity_id = (edit.get("after") or {}).get("activity_id")
+        return bool(activity_id) and not self._xtd_ai_activity(record, edit)
+
+    def _xtd_ai_transition_activity_apply(self, record, edit):
+        self._xtd_ai_activity(record, edit).unlink()

@@ -44,6 +44,11 @@ POLICY_TABLE = {
     "confirm": ("N2", "N2", "N2"),
     "send_external": ("N3", "N2", "N2"),
     "transition": ("N3", "N3", "N2"),
+    # transitions with effects of wave 2B, one row each so that a company can
+    # turn on (N2) only the ones it wants; off by default in Equilibrado (N3)
+    "confirm_sale": ("N3", "N3", "N2"),
+    "confirm_purchase": ("N3", "N3", "N2"),
+    "validate_picking": ("N3", "N3", "N2"),
     # internal transitions without documents or messages to third parties (move
     # an opportunity or a task between stages, mark an opportunity won or lost):
     # always a card, in every profile
@@ -71,7 +76,10 @@ OP_CLASS_LABELS = {
     "confirm": "Acciones que siempre piden tarjeta",
     "send_external": "Enviar algo al exterior (correo)",
     "transition": "Transiciones con efectos (confirmar venta o compra, validar)",
-    "transition_internal": "Transiciones internas (etapa, ganar o perder)",
+    "confirm_sale": "Confirmar presupuestos de venta",
+    "confirm_purchase": "Confirmar pedidos de compra",
+    "validate_picking": "Validar recepciones y entregas",
+    "transition_internal": "Transiciones internas (etapa, ganar, perder, cancelar)",
     "post": "Publicar o contabilizar",
     "payment": "Pagar, remesas",
     "admin": "Administración",

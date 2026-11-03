@@ -127,6 +127,20 @@ class XtdAiCase(TransactionCase):
         self.assertIn("result", response, response)
         return response["result"]
 
+    def set_policy(self, op_class, level, company=None):
+        """Row ``op_class`` of the policy table of ``company`` at ``level``."""
+        company = company or self.company
+        Rule = self.env["xtd.ai.policy.rule"]
+        row = Rule.search(
+            [("company_id", "=", company.id), ("op_class", "=", op_class)]
+        )
+        if row:
+            row.level = level
+        else:
+            Rule.create(
+                {"company_id": company.id, "op_class": op_class, "level": level}
+            )
+
     def set_confirm(self, user, value):
         user.sudo().xtd_ai_confirm_writes = value
 

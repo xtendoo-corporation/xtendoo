@@ -59,6 +59,7 @@ class XtdAiAudit(models.Model):
             ("error", "Error"),
             ("pending", "Pending"),
             ("denied", "Denied"),
+            ("handoff", "Handed to the user"),
         ],
         required=True,
         readonly=True,

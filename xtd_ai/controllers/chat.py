@@ -259,6 +259,11 @@ class XtdAiChatController(http.Controller):
             "title": (tool or {}).get("title") or action.tool_name,
             "summary": str(preview.get("summary") or "")[:300],
             "lines": lines,
+            # transitions: the verb of the button, a highlighted warning (amount
+            # over the limit) and whether it can be undone
+            "confirm_label": str(preview.get("confirm_label") or "")[:30] or False,
+            "warning": str(preview.get("warning") or "")[:300] or False,
+            "irreversible": preview.get("irreversible") is True,
             "state": action.state,
             # a pending card of a closed conversation is shown but never actionable
             "actionable": action.state == "pending" and not closed,

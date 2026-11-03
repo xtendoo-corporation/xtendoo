@@ -345,6 +345,39 @@ class XtdAiToolbox(models.AbstractModel):
         return preview
 
     @api.model
+    def _xtd_ai_handoff(self, tool, args):
+        """N3 of a transition (§6.1, §6.2.4): instead of refusing, put the
+        record on the user's screen and tell the agent which button is left.
+
+        The tool's ``handoff`` method runs like a preview (rolled back, no
+        unlock): it checks the record and returns ``(record, button)``."""
+        toolbox = self.env[tool["model"]].with_context(
+            **{GRANT_KEY: (), UNLOCK_KEY: None}
+        )
+        found = None
+        with suppress(_PreviewDone), self.env.cr.savepoint():
+            found = getattr(toolbox, tool["handoff"])(args)
+            raise _PreviewDone()
+        record, button = found
+        record.check_access("read")
+        ref = self._xtd_ai_ref(record) | {"navigate": True}
+        return {
+            "status": "handoff",
+            "data": {
+                "record": ref,
+                "button": button,
+                "message": self.env._(
+                    "Lo dejas preparado: «%(name)s» se abre en la pantalla del "
+                    "usuario y solo falta que pulse «%(button)s» en XTD. Díselo en "
+                    "una línea, sin disculparte ni decir que no puedes.",
+                    name=ref["name"],
+                    button=button,
+                ),
+            },
+            "records": [ref],
+        }
+
+    @api.model
     def _xtd_ai_ref(self, record):
         try:
             name = (record.display_name or "")[:100]
@@ -389,6 +422,9 @@ class XtdAiToolbox(models.AbstractModel):
                         "before": edit["before"],
                         "after": edit.get("after") or {},
                     }
+                    # a transition with its own undo (xtd.ai.undo handlers)
+                    if isinstance(edit.get("transition"), str):
+                        ref["undo_edit"]["transition"] = edit["transition"][:40]
                 refs.append(ref)
         out = {"data": result.get("data", {}), "records": refs}
         if result.get("load_tools"):

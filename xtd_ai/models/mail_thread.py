@@ -29,7 +29,9 @@ class MailThread(models.AbstractModel):
             )
 
     def message_post(self, **kwargs):
-        if not self._xtd_ai_note_unlocked(kwargs):
+        # send_email: the confirmed card of a tool that writes to the customer
+        # (quotation, payment reminder) on this one record (§6.5)
+        if not (is_unlocked(self, "send_email") or self._xtd_ai_note_unlocked(kwargs)):
             self._xtd_ai_check_chatter(kwargs.get("message_type", "notification"))
         return super().message_post(**kwargs)
 
