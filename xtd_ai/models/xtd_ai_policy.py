@@ -3,20 +3,24 @@
 Levels: ``N0`` read, ``N1`` do it and offer "Deshacer", ``N2`` confirmation card,
 ``N3`` prepare and take the user to the screen, ``N4`` forbidden.
 
-Only the *Equilibrado* (balanced) profile is in force in this wave; the other
-profiles and the per-class overrides are read from ``ir.config_parameter`` so
-the settings table of wave 2 only has to write those parameters:
+Per company (Ajustes > Agente IA):
 
-- ``xtd_ai.policy.profile``: ``balanced`` (default), ``prudent`` or ``agile``.
-- ``xtd_ai.policy.level.<op_class>``: ``N1``..``N4``; it can only *raise* the
-  level of the profile (an administrator hardens, never opens).
-- ``xtd_ai.policy.discount_threshold``: line discount (%) above which a change
-  is ``money`` (default 15).
-- ``xtd_ai.policy.purchase_confirm_limit``: amount up to which confirming a
-  purchase may be offered as a card (wave 2; default 1000).
+- ``res.company.xtd_ai_profile``: ``prudent``, ``balanced`` (default) or ``agile``.
+- ``xtd.ai.policy.rule`` (policy table): per operation class, a level that may
+  harden the profile or relax it down to ``FLOOR`` (never below); per tool, a
+  level that can only harden. ``FIXED`` classes (read, publish or post, pay,
+  administration) are not editable: publishing stays N3 with no option.
+- ``res.company.xtd_ai_discount_threshold`` / ``xtd_ai_purchase_confirm_limit``.
+
+Compatibility with waves 1A/1B: when a company has no value of its own, the
+``ir.config_parameter`` ``xtd_ai.policy.profile``, ``.discount_threshold`` and
+``.purchase_confirm_limit`` still apply, and ``xtd_ai.policy.level.<op_class>``
+still raises (never lowers) the level of every company.
 """
 
 from odoo import api, models
+
+from ..tools.errors import XtdAiToolError
 
 PARAM = "xtd_ai.policy."
 LEVELS = ("N0", "N1", "N2", "N3", "N4")
@@ -48,6 +52,40 @@ POLICY_TABLE = {
 }
 
 
+# Operation classes nobody can edit: read, publish or post (always N3, user
+# decision), payments and administration (N4, red lines of §5).
+FIXED_CLASSES = frozenset({"read", "post", "payment", "admin"})
+# The most an administrator can relax a class: the Ágil column of §6.1.
+FLOOR = {op: row[PROFILES.index("agile")] for op, row in POLICY_TABLE.items()}
+
+OP_CLASS_LABELS = {
+    "read": "Leer",
+    "create_draft": "Crear borrador de documento",
+    "create_master": "Crear dato maestro (contacto, producto)",
+    "edit_low": "Editar campos de bajo riesgo",
+    "edit_money": "Editar precios, descuentos altos o impuestos",
+    "confirm": "Acciones que siempre piden tarjeta",
+    "send_external": "Enviar algo al exterior (correo)",
+    "transition": "Transiciones con efectos (confirmar venta o compra, validar)",
+    "transition_internal": "Transiciones internas (etapa, ganar o perder)",
+    "post": "Publicar o contabilizar",
+    "payment": "Pagar, remesas",
+    "admin": "Administración",
+}
+LEVEL_LABELS = {
+    "N0": "N0 Leer",
+    "N1": "N1 Hacer con «Deshacer»",
+    "N2": "N2 Tarjeta de confirmación",
+    "N3": "N3 Preparar y llevar a la pantalla",
+    "N4": "N4 Prohibido",
+}
+PROFILE_LABELS = {
+    "prudent": "Prudente",
+    "balanced": "Equilibrado",
+    "agile": "Ágil",
+}
+
+
 def max_level(*levels):
     return max((lvl for lvl in levels if lvl in LEVELS), key=LEVELS.index, default="N0")
 
@@ -63,8 +101,16 @@ class XtdAiPolicy(models.AbstractModel):
         return default if value in (None, False, "") else value
 
     @api.model
+    def _xtd_ai_company(self):
+        # sudo: the policy of the company is read by the gateway for any user
+        return self.env.company.sudo()
+
+    @api.model
     def _xtd_ai_profile(self):
-        profile = str(self._xtd_ai_param("profile", DEFAULT_PROFILE)).strip()
+        profile = (
+            self._xtd_ai_company().xtd_ai_profile
+            or str(self._xtd_ai_param("profile", DEFAULT_PROFILE)).strip()
+        )
         return profile if profile in PROFILES else DEFAULT_PROFILE
 
     @api.model
@@ -76,22 +122,73 @@ class XtdAiPolicy(models.AbstractModel):
 
     @api.model
     def _xtd_ai_discount_threshold(self):
+        company = self._xtd_ai_company()
+        if company.xtd_ai_discount_threshold:
+            return company.xtd_ai_discount_threshold
         return self._xtd_ai_float_param(
             "discount_threshold", DEFAULT_DISCOUNT_THRESHOLD
         )
 
     @api.model
     def _xtd_ai_purchase_confirm_limit(self):
+        company = self._xtd_ai_company()
+        if company.xtd_ai_purchase_confirm_limit:
+            return company.xtd_ai_purchase_confirm_limit
         return self._xtd_ai_float_param(
             "purchase_confirm_limit", DEFAULT_PURCHASE_CONFIRM_LIMIT
         )
 
     @api.model
-    def _xtd_ai_level(self, op_class):
-        """Level of an operation class for the active profile (unknown: N4)."""
+    def _xtd_ai_profile_level(self, op_class, profile=None):
         row = POLICY_TABLE.get(op_class)
         if row is None:
             return "N4"
-        level = row[PROFILES.index(self._xtd_ai_profile())]
+        return row[PROFILES.index(profile or self._xtd_ai_profile())]
+
+    @api.model
+    def _xtd_ai_rule(self, op_class=None, tool=None):
+        domain = [
+            ("company_id", "=", self._xtd_ai_company().id),
+            ("level", "!=", False),
+        ]
+        domain.append(
+            ("op_class", "=", op_class) if op_class else ("tool_name", "=", tool)
+        )
+        # sudo: policy table of the company, managed in the settings
+        return self.env["xtd.ai.policy.rule"].sudo().search(domain, limit=1)
+
+    @api.model
+    def _xtd_ai_level(self, op_class):
+        """Level of an operation class for the company (unknown: N4)."""
+        if op_class not in POLICY_TABLE:
+            return "N4"
+        level = self._xtd_ai_profile_level(op_class)
+        if op_class not in FIXED_CLASSES:
+            rule = self._xtd_ai_rule(op_class=op_class)
+            if rule:
+                # the table may harden, or relax down to the Ágil floor
+                level = max_level(rule.level, FLOOR[op_class])
         override = str(self._xtd_ai_param(f"level.{op_class}", "")).strip().upper()
-        return max_level(level, override) if override in LEVELS else level
+        level = max_level(level, override) if override in LEVELS else level
+        return self._xtd_ai_brakes(op_class, level)
+
+    @api.model
+    def _xtd_ai_tool_level(self, tool_name, level):
+        """A tool row of the table can only harden the level of its call."""
+        rule = self._xtd_ai_rule(tool=tool_name)
+        return max_level(level, rule.level) if rule else level
+
+    @api.model
+    def _xtd_ai_brakes(self, op_class, level):
+        """Automatic brakes of the company (§6.1, §6.4); see wave 2 task 4."""
+        return level
+
+    @api.model
+    def _xtd_ai_forbidden_error(self):
+        return XtdAiToolError(
+            "forbidden",
+            self.env._(
+                "Esta acción no la hace el agente: déjala preparada y que el "
+                "usuario la termine en XTD."
+            ),
+        )

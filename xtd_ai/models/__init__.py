@@ -6,6 +6,8 @@ from . import xtd_ai_run_job
 from . import xtd_ai_config
 from . import xtd_ai_pending_action
 from . import xtd_ai_policy
+from . import xtd_ai_policy_rule
+from . import res_company
 from . import xtd_ai_record_registry
 from . import xtd_ai_undo
 from . import xtd_ai_token

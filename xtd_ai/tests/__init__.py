@@ -24,3 +24,4 @@ from . import test_open_record
 from . import test_records
 from . import test_exposure
 from . import test_unlock
+from . import test_policy_table

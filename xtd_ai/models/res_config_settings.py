@@ -6,6 +6,7 @@ from odoo.exceptions import AccessError, UserError
 from ..agent.pricing import parse_price_table
 from ..providers import PROVIDERS
 from .xtd_ai_config import DEFAULT_MODEL, EFFORTS, KEY_PARAM
+from .xtd_ai_policy import PROFILE_LABELS
 
 
 class ResConfigSettings(models.TransientModel):
@@ -22,6 +23,59 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="xtd_ai.audit_retention_days",
         default=365,
     )
+
+    # -- policy of the active company (ANALISIS_PERMISOS §6.1) ---------------
+    xtd_ai_profile = fields.Selection(
+        list(PROFILE_LABELS.items()),
+        string="Perfil del agente",
+        compute="_compute_xtd_ai_policy",
+        inverse="_inverse_xtd_ai_policy",
+        help="Prudente: casi todo con tarjeta. Equilibrado: borradores y datos "
+        "maestros con «Deshacer», el resto con tarjeta. Ágil: además transiciones "
+        "con tarjeta. Publicar o contabilizar siempre lo hace el usuario.",
+    )
+    xtd_ai_discount_threshold = fields.Float(
+        string="Descuento máximo sin tarjeta (%)",
+        compute="_compute_xtd_ai_policy",
+        inverse="_inverse_xtd_ai_policy",
+    )
+    xtd_ai_purchase_confirm_limit = fields.Float(
+        string="Importe máximo de compra con tarjeta simple",
+        compute="_compute_xtd_ai_policy",
+        inverse="_inverse_xtd_ai_policy",
+    )
+
+    @api.depends("company_id")
+    def _compute_xtd_ai_policy(self):
+        for settings in self:
+            policy = self.env["xtd.ai.policy"].with_company(settings.company_id)
+            settings.xtd_ai_profile = policy._xtd_ai_profile()
+            settings.xtd_ai_discount_threshold = policy._xtd_ai_discount_threshold()
+            settings.xtd_ai_purchase_confirm_limit = (
+                policy._xtd_ai_purchase_confirm_limit()
+            )
+
+    def _inverse_xtd_ai_policy(self):
+        for settings in self:
+            if not self.env.user.has_group("base.group_system"):
+                raise AccessError(self.env._("Solo un administrador puede hacerlo."))
+            if settings.xtd_ai_discount_threshold < 0 or (
+                settings.xtd_ai_purchase_confirm_limit < 0
+            ):
+                raise UserError(self.env._("Los umbrales no pueden ser negativos."))
+            # sudo: company settings written from the settings form (admin only)
+            settings.company_id.sudo().write(
+                {
+                    "xtd_ai_profile": settings.xtd_ai_profile,
+                    "xtd_ai_discount_threshold": settings.xtd_ai_discount_threshold,
+                    "xtd_ai_purchase_confirm_limit": (
+                        settings.xtd_ai_purchase_confirm_limit
+                    ),
+                }
+            )
+
+    def action_xtd_ai_policy_table(self):
+        return self.env["xtd.ai.policy.rule"].action_xtd_ai_open_table()
 
     def action_xtd_ai_rotate_secret(self):
         if not self.env.user.has_group("xtd_ai.group_xtd_ai_manager"):

@@ -321,6 +321,7 @@ class XtdAiToolbox(models.AbstractModel):
             level = policy._xtd_ai_level("confirm")
         else:
             level = policy._xtd_ai_level("create_draft")
+        level = policy._xtd_ai_tool_level(tool["name"], level)
         user = self.env.user
         if user._xtd_ai_force_confirmation() or user.sudo().xtd_ai_confirm_writes:
             # sudo: own preference, always readable

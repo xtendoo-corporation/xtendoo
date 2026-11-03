@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="xtd_ai_policy_rule_view_list" model="ir.ui.view">
+        <field name="name">xtd.ai.policy.rule.list</field>
+        <field name="model">xtd.ai.policy.rule</field>
+        <field name="arch" type="xml">
+            <list
+        string="Tabla de políticas del agente IA"
+        editable="bottom"
+        create="1"
+        delete="1"
+      >
+                <field name="sequence" widget="handle" />
+                <field name="company_id" column_invisible="True" />
+                <field name="editable" column_invisible="True" />
+                <field
+          name="op_class"
+          readonly="id"
+          required="not tool_name"
+          invisible="tool_name"
+        />
+                <field
+          name="tool_name"
+          readonly="id"
+          required="not op_class"
+          invisible="op_class"
+        />
+                <field name="profile_level" />
+                <field name="level" readonly="not editable" />
+                <field name="effective_level" />
+            </list>
+        </field>
+    </record>
+</odoo>

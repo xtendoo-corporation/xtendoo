@@ -7,35 +7,76 @@
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
                 <app
-                    data-string="Agente IA"
-                    string="Agente IA"
-                    name="xtd_ai"
-                    groups="xtd_ai.group_xtd_ai_manager"
-                >
+          data-string="Agente IA"
+          string="Agente IA"
+          name="xtd_ai"
+          groups="xtd_ai.group_xtd_ai_manager"
+        >
+                    <block
+            title="Permisos del agente en esta compañía"
+            name="xtd_ai_policy"
+          >
+                        <setting
+              string="Perfil"
+              help="Qué hace el agente directamente (con «Deshacer»), qué pide tarjeta y qué deja preparado. Publicar o contabilizar siempre lo termina el usuario."
+            >
+                            <field name="xtd_ai_profile" />
+                            <div class="mt8">
+                                <button
+                  name="action_xtd_ai_policy_table"
+                  type="object"
+                  string="Tabla de políticas"
+                  icon="fa-arrow-right"
+                  class="btn-link"
+                />
+                            </div>
+                        </setting>
+                        <setting
+              string="Umbrales"
+              help="Por encima de estos valores el agente siempre pide tarjeta."
+            >
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label
+                    for="xtd_ai_discount_threshold"
+                    class="col-lg-6"
+                  />
+                                    <field name="xtd_ai_discount_threshold" />
+                                </div>
+                                <div class="row mt8">
+                                    <label
+                    for="xtd_ai_purchase_confirm_limit"
+                    class="col-lg-6"
+                  />
+                                    <field name="xtd_ai_purchase_confirm_limit" />
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
                     <block title="Agente IA">
                         <setting
-                            string="Confirmación obligatoria"
-                            help="Obliga a confirmar todas las acciones del agente IA."
-                        >
+              string="Confirmación obligatoria"
+              help="Obliga a confirmar todas las acciones del agente IA."
+            >
                             <field name="xtd_ai_force_confirmation" />
                         </setting>
                         <setting
-                            string="Retención de la auditoría"
-                            help="Días que se conservan los registros de auditoría."
-                        >
+              string="Retención de la auditoría"
+              help="Días que se conservan los registros de auditoría."
+            >
                             <field name="xtd_ai_audit_retention_days" />
                         </setting>
                         <setting
-                            string="Clave de firma de tokens"
-                            help="Rotarla invalida todas las ejecuciones en curso."
-                        >
+              string="Clave de firma de tokens"
+              help="Rotarla invalida todas las ejecuciones en curso."
+            >
                             <button
-                                name="action_xtd_ai_rotate_secret"
-                                type="object"
-                                string="Rotar clave"
-                                class="btn-secondary"
-                                confirm="¿Rotar la clave de firma? Se invalidan las ejecuciones en curso."
-                            />
+                name="action_xtd_ai_rotate_secret"
+                type="object"
+                string="Rotar clave"
+                class="btn-secondary"
+                confirm="¿Rotar la clave de firma? Se invalidan las ejecuciones en curso."
+              />
                         </setting>
                     </block>
                 </app>
