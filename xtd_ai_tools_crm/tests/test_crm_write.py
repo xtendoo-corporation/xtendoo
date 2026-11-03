@@ -118,17 +118,58 @@ class TestCrmWrite(XtdAiCrmCase):
         self.assertEqual(won.name, "Opp Ya Ganada")
 
     # -- transitions -------------------------------------------------------
-    def test_move_stage_is_a_card(self):
+    def undo_ref(self, user, res, run_start):
+        ref = res["records"][0]
+        return (
+            self.env["xtd.ai.undo"]
+            .with_user(user)
+            ._xtd_ai_undo_edit(
+                ref["model"], ref["id"], ref["undo_edit"], since=run_start
+            )
+        )
+
+    def test_move_stage_is_done_with_undo(self):
         target = self.stages[1]
         res = self.sc(
             self.salesman,
             "move_opportunity_stage",
             {"opportunity": str(self.lead.id), "stage": str(target.id)},
         )
-        self.assertEqual(res["status"], "pending_confirmation", res)
-        self.assertEqual(self.lead.stage_id, self.stages[0])
-        self.assertEqual(self.confirm(self.salesman, res)["state"], "confirmed")
+        self.assertEqual(res["status"], "ok", res)
         self.assertEqual(self.lead.stage_id, target)
+        edit = res["records"][0]["undo_edit"]
+        self.assertEqual(edit["transition"], "crm_stage")
+        state = self.env["xtd.ai.undo"].with_user(self.salesman)
+        self.assertEqual(
+            state._xtd_ai_undo_edit_state("crm.lead", self.lead.id, edit), "available"
+        )
+        self.assertTrue(self.undo_ref(self.salesman, res, None)["undone"])
+        self.assertEqual(self.lead.stage_id, self.stages[0])
+        self.assertEqual(
+            state._xtd_ai_undo_edit_state("crm.lead", self.lead.id, edit), "undone"
+        )
+
+    def test_move_stage_undo_refused_if_moved_since(self):
+        res = self.sc(
+            self.salesman,
+            "move_opportunity_stage",
+            {"opportunity": str(self.lead.id), "stage": str(self.stages[1].id)},
+        )
+        self.lead.stage_id = self.stages[2]
+        out = self.undo_ref(self.salesman, res, None)
+        self.assertFalse(out["undone"], out)
+        self.assertEqual(self.lead.stage_id, self.stages[2])
+
+    def test_move_stage_is_a_card_in_prudent_profile(self):
+        self.env.company.xtd_ai_profile = "prudent"
+        res = self.sc(
+            self.salesman,
+            "move_opportunity_stage",
+            {"opportunity": str(self.lead.id), "stage": str(self.stages[1].id)},
+        )
+        self.assertEqual(res["status"], "pending_confirmation", res)
+        self.assertEqual(self.confirm(self.salesman, res)["state"], "confirmed")
+        self.assertEqual(self.lead.stage_id, self.stages[1])
 
     def test_move_stage_to_won_refused(self):
         res = self.sc(
@@ -310,6 +351,45 @@ class TestCrmWrite(XtdAiCrmCase):
         )
         self.assertEqual(res["status"], "ok", res)
         self.assertFalse(self.env["mail.activity"].search([("id", "=", activity.id)]))
+
+    def test_scheduled_activity_has_undo_note_has_not(self):
+        res = self.sc(
+            self.salesman,
+            "schedule_activity",
+            {
+                "model": "crm.lead",
+                "record": str(self.lead.id),
+                "activity_type": "todo",
+                "date_deadline": "2030-01-15",
+            },
+        )
+        activity = self.env["mail.activity"].browse(res["data"]["activity_id"])
+        edit = res["records"][0]["undo_edit"]
+        self.assertEqual(edit["transition"], "activity")
+        self.assertTrue(self.undo_ref(self.salesman, res, None)["undone"])
+        self.assertFalse(activity.exists())
+        note = self.sc(
+            self.salesman,
+            "log_note",
+            {"model": "crm.lead", "record": str(self.lead.id), "text": "Hablado"},
+        )
+        self.assertFalse(self.undo_ref(self.salesman, note, None)["undone"])
+
+    def test_activity_undo_refused_once_touched(self):
+        res = self.sc(
+            self.salesman,
+            "schedule_activity",
+            {
+                "model": "crm.lead",
+                "record": str(self.lead.id),
+                "activity_type": "call",
+                "date_deadline": "2030-01-15",
+            },
+        )
+        activity = self.env["mail.activity"].browse(res["data"]["activity_id"])
+        activity.with_user(self.sales_manager).write({"summary": "Cambiada"})
+        self.assertFalse(self.undo_ref(self.salesman, res, None)["undone"])
+        self.assertTrue(activity.exists())
 
     def test_activity_for_another_user_notifies_nobody_by_email(self):
         mails = self.env["mail.mail"].search_count([])

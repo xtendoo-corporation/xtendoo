@@ -695,7 +695,7 @@ class XtdAiToolboxCrm(models.AbstractModel):
         return {"summary": summary, "lines": lines}
 
     # ------------------------------------------------------------------
-    # CRM: transitions (always a card, §6.1 transition_internal)
+    # CRM: stages (N1 with undo) and won/lost (always a card, transition_internal)
     # ------------------------------------------------------------------
     def _xtd_ai_open_lead(self, name_or_id):
         lead = self._xtd_ai_resolve(
@@ -741,8 +741,8 @@ class XtdAiToolboxCrm(models.AbstractModel):
         title="Mover oportunidad de etapa",
         description=(
             "Mueve una oportunidad abierta a otra etapa del embudo (no a ganada: "
-            "para ganar o perder usa close_opportunity). Queda una tarjeta con "
-            "«etapa actual → nueva» para que el usuario confirme."
+            "para ganar o perder usa close_opportunity). Se hace y el usuario "
+            "puede deshacerlo (vuelve a la etapa anterior)."
         ),
         input_schema=_schema(
             {
@@ -764,18 +764,28 @@ class XtdAiToolboxCrm(models.AbstractModel):
         kind="draft",
         skill="crm",
         groups=SALES_GROUPS,
-        op_class="transition_internal",
+        # a stage is a low-risk edit: done with "Deshacer" (N1) in Equilibrado
+        op_class="edit_low",
         preview="_xtd_ai_preview_move_opportunity_stage",
     )
     def tool_move_opportunity_stage(self, args):
         lead = self._xtd_ai_open_lead(args["opportunity"])
         stage = self._xtd_ai_target_stage(lead, args["stage"])
-        before = lead.stage_id.name
+        before = lead.stage_id
         lead.write({"stage_id": stage.id})
-        data = self._xtd_ai_lead_row(lead) | {"previous_stage": before}
+        data = self._xtd_ai_lead_row(lead) | {"previous_stage": before.name}
         return {
             "data": data,
-            "records": [self._xtd_ai_ref(lead) | {"undo_edit": {"before": {}}}],
+            "records": [
+                self._xtd_ai_ref(lead)
+                | {
+                    "undo_edit": {
+                        "before": {"stage_id": before.id},
+                        "after": {"stage_id": stage.id},
+                        "transition": "crm_stage",
+                    }
+                }
+            ],
         }
 
     def _xtd_ai_preview_move_opportunity_stage(self, args):

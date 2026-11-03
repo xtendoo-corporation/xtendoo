@@ -229,7 +229,22 @@ class XtdAiToolboxChatter(models.AbstractModel):
                 "date_deadline": str(activity.date_deadline),
                 "assigned_to": user.name,
             },
-            "records": [self._xtd_ai_chatter_ref(record)],
+            # "Deshacer" deletes the activity while it is pending and untouched
+            "records": [
+                self._xtd_ai_ref(record)
+                | {
+                    "undo_edit": {
+                        "before": {},
+                        "after": {
+                            "activity_id": activity.id,
+                            "date_deadline": str(activity.date_deadline),
+                            "user_id": activity.user_id.id,
+                            "summary": activity.summary or "",
+                        },
+                        "transition": "activity",
+                    }
+                }
+            ],
         }
 
     def _xtd_ai_policy_schedule_activity(self, args):
