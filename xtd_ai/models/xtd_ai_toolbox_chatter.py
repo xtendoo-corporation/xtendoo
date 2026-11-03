@@ -13,9 +13,8 @@ from datetime import date, timedelta
 from odoo import fields, models
 from odoo.tools import plaintext2html
 
-from ..tools import xtd_ai_tool
+from ..tools import unlock, xtd_ai_tool
 from ..tools.errors import XtdAiToolError
-from .mail_thread import NOTE_UNLOCK_KEY
 from .xtd_ai_policy import max_level
 
 ACTIVITY_TYPES = {
@@ -154,15 +153,14 @@ class XtdAiToolboxChatter(models.AbstractModel):
         preview="_xtd_ai_preview_log_note",
         policy="_xtd_ai_policy_log_note",
         visible="_xtd_ai_visible_chatter",
+        unlocks=("*.message_post",),
     )
     def tool_log_note(self, args):
         record = self._xtd_ai_chatter_record(args["model"], args["record"])
         text = (args.get("text") or "").strip()
         if not text:
             raise XtdAiToolError("validation", self.env._("La nota está vacía."))
-        message = record.with_context(
-            **{NOTE_UNLOCK_KEY: f"{record._name},{record.id}"}
-        ).message_post(
+        message = unlock(record, "message_post").message_post(
             body=plaintext2html(text[:NOTE_LIMIT]),
             message_type="comment",
             subtype_xmlid="mail.mt_note",

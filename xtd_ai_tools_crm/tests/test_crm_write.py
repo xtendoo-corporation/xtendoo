@@ -193,7 +193,10 @@ class TestCrmWrite(XtdAiCrmCase):
         unlocked = (
             env["crm.lead"]
             .browse(other.id)
-            .with_context(xtd_ai_unlock_crm_close=self.lead.id)
+            .with_context(
+                xtd_ai_grant=("crm.lead.action_set_won", "crm.lead.action_set_lost"),
+                xtd_ai_unlock=("crm.lead.action_set_won", self.lead.id),
+            )
         )
         with self.assertRaises(XtdAiDraftOnlyError):
             unlocked.action_set_won()
@@ -202,14 +205,30 @@ class TestCrmWrite(XtdAiCrmCase):
         both = (
             env["crm.lead"]
             .browse((self.lead | other).ids)
-            .with_context(xtd_ai_unlock_crm_close=self.lead.id)
+            .with_context(
+                xtd_ai_grant=("crm.lead.action_set_won", "crm.lead.action_set_lost"),
+                xtd_ai_unlock=("crm.lead.action_set_won", self.lead.id),
+            )
         )
         with self.assertRaises(XtdAiDraftOnlyError):
             both.action_set_won()
         with self.assertRaises(XtdAiDraftOnlyError):
             env["crm.lead"].browse(self.lead.id).with_context(
-                xtd_ai_unlock_crm_close=self.lead.id
+                xtd_ai_grant=("crm.lead.action_set_won",),
+                xtd_ai_unlock=("crm.lead.action_set_won", self.lead.id),
             ).unlink()
+        # the unlock of «won» does not open «lost» on the same opportunity
+        won_only = (
+            env["crm.lead"]
+            .browse(self.lead.id)
+            .with_context(
+                xtd_ai_grant=("crm.lead.action_set_won", "crm.lead.action_set_lost"),
+                xtd_ai_unlock=("crm.lead.action_set_won", self.lead.id),
+            )
+        )
+        with self.assertRaises(XtdAiDraftOnlyError):
+            won_only.action_set_lost()
+        self.assertTrue(self.lead.active)
         self.assertTrue(other.active)
         self.assertFalse(other.stage_id.is_won)
 
@@ -238,7 +257,10 @@ class TestCrmWrite(XtdAiCrmCase):
         lead = (
             env["crm.lead"]
             .browse(self.lead.id)
-            .with_context(xtd_ai_unlock_note=f"crm.lead,{self.lead.id}")
+            .with_context(
+                xtd_ai_grant=("*.message_post",),
+                xtd_ai_unlock=("crm.lead.message_post", self.lead.id),
+            )
         )
         partner = self.partner
         for kwargs in (
@@ -255,7 +277,8 @@ class TestCrmWrite(XtdAiCrmCase):
         other = self.new_lead("Opp Nota Otra", self.salesman)
         with self.assertRaises(XtdAiDraftOnlyError):
             env["crm.lead"].browse(other.id).with_context(
-                xtd_ai_unlock_note=f"crm.lead,{self.lead.id}"
+                xtd_ai_grant=("*.message_post",),
+                xtd_ai_unlock=("crm.lead.message_post", self.lead.id),
             ).message_post(
                 body="x", message_type="comment", subtype_xmlid="mail.mt_note"
             )

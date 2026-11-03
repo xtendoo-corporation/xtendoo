@@ -11,6 +11,7 @@ from odoo.tools.misc import formatLang
 from odoo.addons.xtd_ai.tools import (
     XtdAiDraftOnlyError,
     XtdAiToolError,
+    unlock,
     xtd_ai_tool,
 )
 
@@ -832,14 +833,14 @@ class XtdAiToolboxCrm(models.AbstractModel):
         groups=SALES_GROUPS,
         op_class="transition_internal",
         preview="_xtd_ai_preview_close_opportunity",
+        unlocks=("crm.lead.action_set_won", "crm.lead.action_set_lost"),
     )
     def tool_close_opportunity(self, args):
         lead, reason = self._xtd_ai_close_args(args)
-        unlocked = lead.with_context(xtd_ai_unlock_crm_close=lead.id)
         if args["result"] == "won":
-            unlocked.action_set_won()
+            unlock(lead, "action_set_won").action_set_won()
         else:
-            unlocked.action_set_lost(
+            unlock(lead, "action_set_lost").action_set_lost(
                 **({"lost_reason_id": reason.id} if reason else {})
             )
         lead.invalidate_recordset()

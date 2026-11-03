@@ -8,6 +8,7 @@ from odoo.tools import file_open
 
 from ..tools.errors import XtdAiToolError
 from ..tools.schema import check_tool_schema
+from ..tools.unlock import GRANT_KEY, UNLOCK_KEY
 from .xtd_ai_policy import max_level
 
 TEXT_LIMIT = 300
@@ -286,6 +287,11 @@ class XtdAiToolbox(models.AbstractModel):
         if not self.env.context.get("xtd_ai_run"):
             raise RuntimeError("AI tools must run with xtd_ai_run in the context")
         toolbox = self.env[tool["model"]]
+        if tool.get("unlocks"):
+            # only this execution of this tool may lift its declared guards
+            toolbox = toolbox.with_context(**{GRANT_KEY: tuple(tool["unlocks"])})
+        elif self.env.context.get(GRANT_KEY):
+            toolbox = toolbox.with_context(**{GRANT_KEY: ()})
         with self.env.cr.savepoint():
             result = getattr(toolbox, tool["attr"])(args)
         return self._xtd_ai_normalize_result(result)
@@ -302,7 +308,9 @@ class XtdAiToolbox(models.AbstractModel):
             return "N0"
         policy = self.env["xtd.ai.policy"]
         if tool.get("policy"):
-            toolbox = self.env[tool["model"]]
+            toolbox = self.env[tool["model"]].with_context(
+                **{GRANT_KEY: (), UNLOCK_KEY: None}
+            )
             level = None
             with suppress(_PreviewDone), self.env.cr.savepoint():
                 level = getattr(toolbox, tool["policy"])(args)
@@ -322,7 +330,9 @@ class XtdAiToolbox(models.AbstractModel):
     @api.model
     def _xtd_ai_preview(self, tool, args):
         """Run the preview (reads only): any side effect is rolled back."""
-        toolbox = self.env[tool["model"]]
+        toolbox = self.env[tool["model"]].with_context(
+            **{GRANT_KEY: (), UNLOCK_KEY: None}
+        )
         sentinel = _PreviewDone()
         preview = None
         with suppress(_PreviewDone), self.env.cr.savepoint():
