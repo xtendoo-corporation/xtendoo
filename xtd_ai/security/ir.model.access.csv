@@ -6,3 +6,4 @@ access_xtd_ai_pending_action_user,xtd.ai.pending_action user,model_xtd_ai_pendin
 access_xtd_ai_audit_manager,xtd.ai.audit manager,model_xtd_ai_audit,group_xtd_ai_manager,1,0,0,0
 access_xtd_ai_policy_rule_manager,xtd.ai.policy.rule manager,model_xtd_ai_policy_rule,group_xtd_ai_manager,1,1,1,1
 access_xtd_ai_policy_rule_system,xtd.ai.policy.rule system,model_xtd_ai_policy_rule,base.group_system,1,1,1,1
+access_xtd_ai_usage_report_manager,xtd.ai.usage.report manager,model_xtd_ai_usage_report,group_xtd_ai_manager,1,0,0,0

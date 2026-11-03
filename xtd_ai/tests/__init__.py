@@ -26,3 +26,4 @@ from . import test_exposure
 from . import test_unlock
 from . import test_policy_table
 from . import test_brakes
+from . import test_usage_report

@@ -29,6 +29,14 @@
                   icon="fa-arrow-right"
                   class="btn-link"
                 />
+                                <button
+                  name="%(xtd_ai.action_xtd_ai_usage_report)d"
+                  type="action"
+                  string="Uso de tarjetas por semana"
+                  icon="fa-arrow-right"
+                  class="btn-link"
+                  groups="xtd_ai.group_xtd_ai_manager"
+                />
                             </div>
                         </setting>
                         <setting

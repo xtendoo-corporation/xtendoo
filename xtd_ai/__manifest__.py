@@ -19,6 +19,7 @@
         "views/xtd_ai_audit_views.xml",
         "views/xtd_ai_conversation_views.xml",
         "views/xtd_ai_policy_rule_views.xml",
+        "views/xtd_ai_usage_report_views.xml",
         "views/res_config_settings_views.xml",
         "views/res_config_settings_agent_views.xml",
         "views/menus.xml",

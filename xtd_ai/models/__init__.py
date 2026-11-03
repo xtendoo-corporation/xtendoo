@@ -23,3 +23,4 @@ from . import mail_thread
 from . import mail_mail
 from . import ir_http
 from . import res_config_settings
+from . import xtd_ai_usage_report
