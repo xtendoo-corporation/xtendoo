@@ -53,7 +53,13 @@ class TestMcp(XtdAiCase):
             self.assertIn("required", schema)
             self.assertEqual(
                 set(tool["annotations"]),
-                {"readOnlyHint", "destructiveHint", "xtdKind", "xtdSkill"},
+                {
+                    "readOnlyHint",
+                    "destructiveHint",
+                    "xtdKind",
+                    "xtdSkill",
+                    "xtdDeferred",
+                },
             )
             self.assertIs(tool["annotations"]["destructiveHint"], False)
             self.assertEqual(

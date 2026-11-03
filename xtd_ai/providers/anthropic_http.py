@@ -3,8 +3,13 @@
 Same rules as the external service adapter:
 
 - ``tool_choice`` is left at its default (auto).
-- Tools use ``strict: true`` within the API limits (20 tools, 24 optional params);
-  tools are ordered by name and the last one carries ``cache_control``.
+- Tools use ``strict: true`` within the API limits (20 tools, 24 optional params,
+  counted over the whole ``tools`` array, deferred tools included: checked
+  against the real API, see docs/xtd_ai/CARGA_DIFERIDA.md); tools are ordered by
+  name and the last non-deferred one carries ``cache_control``.
+- Tools outside the areas of the request (``ToolSpec.deferred``) go with
+  ``defer_loading: true``; ``load_skill`` loads them returning ``tool_reference``
+  blocks (custom tool search), so the cached prefix never changes in a run.
 - The system prompt is one stable block with ``cache_control``; the variable
   context travels in the first user turn, so tools+system stay cacheable.
 - A rolling breakpoint on the last block of the last user turn (3 of 4
@@ -117,13 +122,15 @@ class AnthropicHttpProvider:
     def tool_params(
         tools: tuple[ToolSpec, ...], max_strict: int = MAX_STRICT_TOOLS
     ) -> list[dict[str, Any]]:
-        # The API accepts at most MAX_STRICT_TOOLS strict tools: strict goes to the
-        # write tools first (schema-valid arguments matter most there). Every
-        # argument is validated again by the Odoo gateway in any case.
+        # The API accepts at most MAX_STRICT_TOOLS strict tools over the whole
+        # array (deferred ones count too): strict goes first to the loaded write
+        # tools (schema-valid arguments matter most there), then to the loaded
+        # read tools, then to the deferred ones. Every argument is validated
+        # again by the Odoo gateway in any case.
         ordered = sorted(tools, key=lambda t: t.name)
         strict_names: set[str] = set()
         optional_budget = MAX_STRICT_OPTIONAL_PARAMS
-        for t in sorted(ordered, key=lambda t: t.read_only):  # write tools first
+        for t in sorted(ordered, key=lambda t: (t.deferred, t.read_only)):
             cost = count_optional_params(t.input_schema)
             if len(strict_names) < max_strict and cost <= optional_budget:
                 strict_names.add(t.name)
@@ -136,13 +143,26 @@ class AnthropicHttpProvider:
                 param["strict"] = True
             else:
                 param["input_schema"] = t.input_schema
+            if t.deferred:
+                param["defer_loading"] = True
             params.append(param)
-        if params:
+        loaded = [p for p in params if not p.get("defer_loading")]
+        if loaded and len(loaded) < len(params):
+            # cache_control is refused on a deferred tool
+            loaded[-1]["cache_control"] = _EPHEMERAL.copy()
+        elif loaded:
+            params[-1]["cache_control"] = _EPHEMERAL.copy()
+        elif params:
+            # the API needs at least one tool loaded
+            for p in params:
+                p.pop("defer_loading", None)
             params[-1]["cache_control"] = _EPHEMERAL.copy()
         return params
 
     @staticmethod
-    def message_params(messages: tuple[Message, ...]) -> list[dict[str, Any]]:
+    def message_params(
+        messages: tuple[Message, ...], deferred: frozenset[str] = frozenset()
+    ) -> list[dict[str, Any]]:
         out: list[dict[str, Any]] = []
         for m in messages:
             if m.role == "assistant":
@@ -153,7 +173,7 @@ class AnthropicHttpProvider:
                     else [{"type": "text", "text": content}]
                 )
             else:
-                blocks = _user_blocks(m)
+                blocks = _user_blocks(m, deferred)
             if not blocks:
                 continue
             if out and out[-1]["role"] == m.role:
@@ -168,6 +188,8 @@ class AnthropicHttpProvider:
         return out
 
     def build_request(self, request: LLMRequest) -> dict[str, Any]:
+        tools = self.tool_params(request.tools, self._strict_cap)
+        deferred = frozenset(t["name"] for t in tools if t.get("defer_loading"))
         return {
             "model": self.model,
             "max_tokens": self.max_tokens,
@@ -178,8 +200,8 @@ class AnthropicHttpProvider:
                     "cache_control": _EPHEMERAL.copy(),
                 }
             ],
-            "tools": self.tool_params(request.tools, self._strict_cap),
-            "messages": self.message_params(request.messages),
+            "tools": tools,
+            "messages": self.message_params(request.messages, deferred),
             "output_config": {"effort": self.effort},
         }
 
@@ -421,10 +443,32 @@ def _attachment_block(a: Attachment) -> dict[str, Any] | None:
     }
 
 
-def _user_blocks(m: Message) -> list[dict[str, Any]]:
-    blocks: list[dict[str, Any]] = [
-        _tool_result_block(r) for r in m.tool_results
-    ]  # results first
+def _user_blocks(
+    m: Message, deferred: frozenset[str] = frozenset()
+) -> list[dict[str, Any]]:
+    blocks: list[dict[str, Any]] = []
+    loaded_texts: list[str] = []
+    for r in m.tool_results:  # results first
+        refs = [n for n in dict.fromkeys(r.load_tools) if n in deferred]
+        if refs and not r.is_error:
+            # A tool_result carrying tool references cannot carry text too: the
+            # tools go in the result and its text right after, in the same turn.
+            blocks.append(
+                {
+                    "type": "tool_result",
+                    "tool_use_id": r.call_id,
+                    "content": [
+                        {"type": "tool_reference", "tool_name": n} for n in refs
+                    ],
+                }
+            )
+            loaded_texts.append(r.content)
+        else:
+            blocks.append(_tool_result_block(r))
+    blocks.extend(
+        {"type": "text", "text": f"[Resultado de load_skill, datos del sistema]\n{t}"}
+        for t in loaded_texts
+    )
     # documents and images go BEFORE the text of the turn (API guidance)
     blocks.extend(b for a in m.attachments if (b := _attachment_block(a)))
     if m.text:

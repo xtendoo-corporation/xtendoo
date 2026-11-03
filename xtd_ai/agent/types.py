@@ -22,6 +22,9 @@ class ToolSpec:
     description: str
     input_schema: dict[str, Any]
     read_only: bool = False  # from MCP annotations.readOnlyHint
+    # outside the areas of the request: sent with defer_loading, loaded on
+    # demand by load_skill (MCP annotations.xtdDeferred)
+    deferred: bool = False
 
 
 @dataclass(frozen=True)
@@ -36,6 +39,8 @@ class ToolResult:
     call_id: str
     content: str
     is_error: bool = False
+    # tools this result makes available (load_skill): sent as tool references
+    load_tools: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -110,6 +115,7 @@ class ToolOutcome:
 
     text: str
     is_error: bool = False
+    load_tools: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

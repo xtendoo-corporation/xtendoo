@@ -122,11 +122,23 @@ class XtdAiMcp(models.AbstractModel):
         }
 
     def _xtd_ai_m_tools_list(self, run, params):
+        """Visible tools; those outside the areas of the request are marked
+        ``xtdDeferred`` (§6.5): the agent sends them unloaded and ``load_skill``
+        loads an area in the middle of a task."""
         toolbox = self.env["xtd.ai.toolbox"]
+        visible = toolbox._xtd_ai_visible_tools()
+        areas = None
+        if toolbox._xtd_ai_exposure() == "areas":
+            areas = toolbox._xtd_ai_request_areas(run)
         return {
             "tools": [
-                toolbox._xtd_ai_tool_descriptor(tool)
-                for tool in toolbox._xtd_ai_visible_tools().values()
+                toolbox._xtd_ai_tool_descriptor(
+                    tool,
+                    deferred=areas is not None
+                    and not tool.get("core")
+                    and tool["skill"] not in areas,
+                )
+                for tool in visible.values()
             ]
         }
 
@@ -289,6 +301,7 @@ class XtdAiMcp(models.AbstractModel):
             raise XtdAiRpcError(200, -32601, "Tool not found")
 
         event, outcome, code, refs = "tool_call", "ok", None, None
+        load_tools = []
         try:
             errors = validate(toolbox._xtd_ai_schema(tool), arguments)
             if errors:
@@ -321,6 +334,8 @@ class XtdAiMcp(models.AbstractModel):
             else:
                 result = toolbox._xtd_ai_execute(tool, arguments)
                 refs = result["records"]
+                visible = toolbox._xtd_ai_visible_tools()
+                load_tools = [n for n in result.get("load_tools", []) if n in visible]
                 if refs:
                     # an edited record is not "created": its undo restores values
                     run._xtd_ai_add_record_refs(
@@ -346,11 +361,14 @@ class XtdAiMcp(models.AbstractModel):
             structured, event, outcome, code = self._xtd_ai_error_result(exc)
             payload = json.dumps(structured, ensure_ascii=False, default=str)
         finish_audit(event, outcome, code, refs)
-        return {
+        response = {
             "content": [{"type": "text", "text": payload}],
             "structuredContent": structured,
             "isError": structured.get("status") == "error",
         }
+        if load_tools:
+            response["_meta"] = {"xtd_ai/load_tools": load_tools}
+        return response
 
     def _xtd_ai_propose(self, run, tool, arguments):
         """Store a pending action and return the ``pending_confirmation`` result."""

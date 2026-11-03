@@ -27,6 +27,21 @@ class XtdAiToolboxProject(models.AbstractModel):
     _description = "AI tools: tasks and own timesheets"
 
     _xtd_ai_skills = {"proyectos": "data/skills/proyectos.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "proyectos": {
+            "models": ("project.project", "project.task", "account.analytic.line"),
+            "words": (
+                "proyecto",
+                "tarea",
+                "horas",
+                "parte de horas",
+                "imputa",
+                "imputar",
+                "timesheet",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     def _xtd_ai_taint_tasks(self, tasks):

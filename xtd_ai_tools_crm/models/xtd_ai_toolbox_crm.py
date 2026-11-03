@@ -51,6 +51,23 @@ class XtdAiToolboxCrm(models.AbstractModel):
     _description = "AI tools: CRM"
 
     _xtd_ai_skills = {"crm": "data/skills/crm.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "crm": {
+            "models": ("crm.lead",),
+            "words": (
+                "oportunidad",
+                "lead",
+                "pipeline",
+                "embudo",
+                "crm",
+                "ganad",
+                "perdid",
+                "etapa",
+                "iniciativa",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     # Helpers

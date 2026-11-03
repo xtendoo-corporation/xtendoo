@@ -9,6 +9,22 @@ class XtdAiToolboxExpense(models.AbstractModel):
     _description = "AI tools: own expenses"
 
     _xtd_ai_skills = {"gastos": "data/skills/gastos.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "gastos": {
+            "models": ("hr.expense", "hr.expense.sheet"),
+            "words": (
+                "gasto",
+                "ticket",
+                "dieta",
+                "kilometraje",
+                "taxi",
+                "parking",
+                "restaurante",
+                "comida",
+            ),
+        }
+    }
 
     @xtd_ai_tool(
         name="my_expenses",

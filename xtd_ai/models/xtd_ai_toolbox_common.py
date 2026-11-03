@@ -85,6 +85,24 @@ class XtdAiToolboxCommon(models.AbstractModel):
     _description = "AI tools: common"
 
     _xtd_ai_skills = {"contactos": "data/skills/contactos.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "contactos": {
+            "models": ("res.partner",),
+            "words": (
+                "contacto",
+                "cliente",
+                "proveedor",
+                "empresa",
+                "nif",
+                "cif",
+                "direccion",
+                "telefono",
+                "email",
+                "correo",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(
@@ -159,7 +177,17 @@ class XtdAiToolboxCommon(models.AbstractModel):
     )
     def tool_load_skill(self, args):
         text = self._xtd_ai_read_skill(args["skill"])
-        return {"data": {"skill": args["skill"], "instructions": text}, "records": []}
+        # the tools of the area the model may not have loaded yet (§6.5)
+        tools = [
+            name
+            for name, tool in self._xtd_ai_visible_tools().items()
+            if tool["skill"] == args["skill"]
+        ]
+        return {
+            "data": {"skill": args["skill"], "instructions": text, "tools": tools},
+            "records": [],
+            "load_tools": tools,
+        }
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(
@@ -185,6 +213,7 @@ class XtdAiToolboxCommon(models.AbstractModel):
         },
         kind="read",
         skill="contactos",
+        core=True,
     )
     def tool_search_partners(self, args):
         query = (args.get("query") or "").strip()

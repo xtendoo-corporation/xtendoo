@@ -238,6 +238,28 @@ class XtdAiToolboxAccount(models.AbstractModel):
     _description = "AI tools: accounting"
 
     _xtd_ai_skills = {"contabilidad": "data/skills/contabilidad.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "contabilidad": {
+            "models": ("account.move", "account.move.line", "account.payment"),
+            "words": (
+                "factura",
+                "facturar",
+                "abono",
+                "rectificativa",
+                "asiento",
+                "apunte",
+                "contabil",
+                "cobro",
+                "cobrar",
+                "pago",
+                "pagar",
+                "vencid",
+                "deuda",
+                "iva",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     # Helpers

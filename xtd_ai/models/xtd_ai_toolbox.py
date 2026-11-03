@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from contextlib import suppress
 
 from odoo import api, models, tools
@@ -115,6 +116,77 @@ class XtdAiToolbox(models.AbstractModel):
         return result
 
     @api.model
+    def _xtd_ai_area_hints(self):
+        """``{skill: {"models": (...), "words": (...)}}`` of the installed skills:
+        what tells that a request belongs to an area (§6.5)."""
+        base = self.pool["xtd.ai.toolbox"]
+        result = {}
+        for model_name in sorted(self.pool.keys()):
+            cls = self.pool[model_name]
+            if not issubclass(cls, base) or model_name == "xtd.ai.toolbox":
+                continue
+            for klass in cls.__mro__:
+                for skill, hint in (
+                    vars(klass).get("_xtd_ai_skill_hints") or {}
+                ).items():
+                    result.setdefault(skill, hint)
+        return result
+
+    @api.model
+    def _xtd_ai_exposure(self):
+        """``areas`` (default): the tools of the areas of the request are loaded
+        and the rest deferred; ``all``: every visible tool is loaded (as before
+        wave 2; a fallback switch for the administrator)."""
+        # sudo: system parameter; agent users cannot read ir.config_parameter
+        value = (
+            self.env["ir.config_parameter"].sudo().get_param("xtd_ai.tool_exposure")
+            or "areas"
+        )
+        return "all" if value == "all" else "areas"
+
+    @api.model
+    def _xtd_ai_request_areas(self, run):
+        """Areas (skills) of the request that started ``run``, without a model:
+        the model on the user's screen, words of the last two user messages, and
+        the areas of the tools used in the last answer (follow-ups such as «sí,
+        hazlo»). The role of the user plays no part: an administrator gets the
+        same selection as anybody (§6.5)."""
+        hints = self._xtd_ai_area_hints()
+        tools = self._xtd_ai_tools()
+        # sudo: gateway-owned messages of the run's conversation
+        messages = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .search(
+                [
+                    ("conversation_id", "=", run.conversation_id.id),
+                    ("role", "in", ("user", "assistant")),
+                ],
+                order="id desc",
+                limit=4,
+            )
+        )
+        users = messages.filtered(lambda m: m.role == "user")[:2]
+        texts = [_fold(m.body or "") for m in users]
+        screen = users[:1].screen or {}
+        areas = set()
+        for skill, hint in hints.items():
+            if screen.get("model") in hint.get("models", ()):
+                areas.add(skill)
+            words = hint.get("words", ())
+            if any(
+                re.search(r"\b" + re.escape(_fold(w)), t) for w in words for t in texts
+            ):
+                areas.add(skill)
+        last = messages.filtered(lambda m: m.role == "assistant")[:1]
+        if last:
+            for used in last._xtd_ai_tools_used():
+                skill = (tools.get(used.get("tool")) or {}).get("skill")
+                if skill:
+                    areas.add(skill)
+        return areas
+
+    @api.model
     def _xtd_ai_read_skill(self, skill):
         files = self._xtd_ai_skill_files()
         if skill not in files:
@@ -166,8 +238,11 @@ class XtdAiToolbox(models.AbstractModel):
         }
 
     @api.model
-    def _xtd_ai_tool_descriptor(self, tool):
-        """MCP ``Tool`` object for ``tools/list``."""
+    def _xtd_ai_tool_descriptor(self, tool, deferred=False):
+        """MCP ``Tool`` object for ``tools/list``.
+
+        ``deferred``: outside the areas of the request; the agent sends it to
+        the model unloaded and ``load_skill`` loads it."""
         return {
             "name": tool["name"],
             "title": tool["title"],
@@ -178,6 +253,7 @@ class XtdAiToolbox(models.AbstractModel):
                 "destructiveHint": False,
                 "xtdKind": tool["kind"],
                 "xtdSkill": tool["skill"],
+                "xtdDeferred": bool(deferred),
             },
         }
 
@@ -303,7 +379,10 @@ class XtdAiToolbox(models.AbstractModel):
                         "after": edit.get("after") or {},
                     }
                 refs.append(ref)
-        return {"data": result.get("data", {}), "records": refs}
+        out = {"data": result.get("data", {}), "records": refs}
+        if result.get("load_tools"):
+            out["load_tools"] = [n for n in result["load_tools"] if isinstance(n, str)]
+        return out
 
     # ------------------------------------------------------------------
     # Helpers for tools (CONTRACT §6)
@@ -448,6 +527,12 @@ class XtdAiToolbox(models.AbstractModel):
         if not ok:
             raise not_found
         return attachment
+
+
+def _fold(text):
+    """Lower case without accents, to match area words in a message."""
+    text = unicodedata.normalize("NFKD", str(text).lower())
+    return "".join(c for c in text if not unicodedata.combining(c))
 
 
 class _PreviewDone(Exception):

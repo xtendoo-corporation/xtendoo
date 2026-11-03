@@ -90,6 +90,20 @@ class XtdAiToolboxRecords(models.AbstractModel):
     _description = "AI tools: generic create and update"
 
     _xtd_ai_skills = {"productos": "data/skills/productos.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "productos": {
+            "models": ("product.template", "product.product"),
+            "words": (
+                "producto",
+                "articulo",
+                "referencia",
+                "precio de venta",
+                "coste",
+                "catalogo",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(

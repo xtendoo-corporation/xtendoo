@@ -17,6 +17,8 @@ def xtd_ai_tool(
     op_class=None,
     policy=None,
     visible=None,
+    core=False,
+    unlocks=None,
 ):
     """Declare a method of an ``xtd.ai.toolbox`` model as an AI tool (CONTRACT §6).
 
@@ -31,11 +33,20 @@ def xtd_ai_tool(
     ``policy``: optional toolbox method ``f(args) -> level`` (``N1``..``N4``)
     for tools whose level depends on the arguments (fields and amounts).
     ``visible``: optional toolbox method ``f() -> bool`` (e.g. ORM rights).
+    ``core``: always loaded for the model, whatever the areas of the request
+    (tools without ``skill`` are core too); the others are loaded when their
+    skill is an area of the request or through ``load_skill`` (§6.5).
+    ``unlocks``: operations this tool may lift a guard for, as
+    ``"model.method"`` strings (``xtd.ai.unlock``); the gateway grants them
+    only while it executes this tool, never in a preview or a policy check.
     """
     if kind not in KINDS:
         raise ValueError(f"Tool {name}: invalid kind {kind!r}")
     if kind != "read" and not preview:
         raise ValueError(f"Tool {name}: 'preview' is mandatory for kind {kind!r}")
+    for op in unlocks or ():
+        if not isinstance(op, str) or "." not in op:
+            raise ValueError(f"Tool {name}: invalid unlock {op!r} (model.method)")
     if not callable(input_schema):
         check_tool_schema(name, input_schema)
 
@@ -56,6 +67,8 @@ def xtd_ai_tool(
             "op_class": op_class,
             "policy": policy,
             "visible": visible,
+            "core": bool(core or not skill),
+            "unlocks": tuple(unlocks or ()),
         }
         return func
 

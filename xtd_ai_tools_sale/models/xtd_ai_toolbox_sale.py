@@ -83,6 +83,21 @@ class XtdAiToolboxSale(models.AbstractModel):
     _description = "AI tools: sales"
 
     _xtd_ai_skills = {"ventas": "data/skills/ventas.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "ventas": {
+            "models": ("sale.order", "sale.order.line"),
+            "words": (
+                "venta",
+                "vender",
+                "presupuesto",
+                "pedido de venta",
+                "oferta",
+                "cotizacion",
+                "vendid",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     # Helpers
