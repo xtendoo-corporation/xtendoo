@@ -83,6 +83,23 @@ class XtdAiToolboxSale(models.AbstractModel):
     _description = "AI tools: sales"
 
     _xtd_ai_skills = {"ventas": "data/skills/ventas.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "ventas": {
+            "models": ("sale.order", "sale.order.line"),
+            "words": (
+                "venta",
+                "vender",
+                "presupuesto",
+                "pedido de venta",
+                "oferta",
+                "cotizacion",
+                "vendid",
+                # document references (S00038)
+                "s000",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     # Helpers
@@ -798,7 +815,9 @@ class XtdAiToolboxSale(models.AbstractModel):
             for line in new_lines
             if not line.display_type
         ]
-        return {"data": data, "records": order}
+        # the order plus the ids of the lines just added: "Deshacer" removes them
+        ref = self._xtd_ai_ref(order) | {"undo_lines": new_lines.ids}
+        return {"data": data, "records": [ref]}
 
     def _xtd_ai_preview_add_sale_order_lines(self, args):
         order = self._xtd_ai_editable_order(args["order"])

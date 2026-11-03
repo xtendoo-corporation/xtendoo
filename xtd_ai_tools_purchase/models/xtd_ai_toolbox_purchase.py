@@ -56,6 +56,23 @@ class XtdAiToolboxPurchase(models.AbstractModel):
     _description = "AI tools: purchase"
 
     _xtd_ai_skills = {"compras": "data/skills/compras.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "compras": {
+            "models": ("purchase.order",),
+            "words": (
+                "compra",
+                "comprar",
+                "pedido de compra",
+                "solicitud de presupuesto",
+                "rfq",
+                "pedir al proveedor",
+                "peticion de presupuesto",
+                # document references (P00017)
+                "p000",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     # Helpers

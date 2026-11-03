@@ -8,6 +8,8 @@ from odoo.tools.mimetypes import guess_mimetype
 from ..tools import token as token_lib
 
 MAX_TEXT = 8000
+# Runs XTD starts by itself (after the user confirms cards) per user message.
+MAX_AUTO_CONTINUATIONS = 5
 ATTACHMENT_MIMETYPES = (
     "application/pdf",
     "image/png",
@@ -200,14 +202,22 @@ class XtdAiConversation(models.Model):
             )
 
     def _xtd_ai_last_user_message(self):
-        """The user message that started the current run (the latest one)."""
+        """The latest message the user wrote (automatic continuations are not).
+
+        The attachment guard looks at it, so a continuation after a confirmed
+        card keeps the restrictions of the user's request.
+        """
         self.ensure_one()
         # sudo: gateway-owned messages
         return (
             self.env["xtd.ai.message"]
             .sudo()
             .search(
-                [("conversation_id", "=", self.id), ("role", "=", "user")],
+                [
+                    ("conversation_id", "=", self.id),
+                    ("role", "=", "user"),
+                    ("auto", "=", False),
+                ],
                 order="id desc",
                 limit=1,
             )
@@ -217,7 +227,7 @@ class XtdAiConversation(models.Model):
         """Whether the message that started the current run carries attachments."""
         return bool(self._xtd_ai_last_user_message().attachment_ids)
 
-    def _xtd_ai_start_run(self, text, attachment_ids=None, screen=None):
+    def _xtd_ai_start_run(self, text, attachment_ids=None, screen=None, auto=False):
         """Store the user message, create the run and mint its token.
 
         Call it on a conversation record, or on the empty model to use the
@@ -229,6 +239,9 @@ class XtdAiConversation(models.Model):
 
         ``screen`` is what the web client shows (``{model, view_type, res_id}``):
         kept only if the user can read it (see ``_xtd_ai_screen``).
+
+        ``auto`` marks the message as written by the system (continuation after a
+        confirmation, see ``_xtd_ai_continue_after``): it is hidden in the chat.
 
         :returns: ``(run, token)`` where ``run`` is an ``xtd.ai.run`` record
             (state ``queued``) and ``token`` the ``xtdai1`` string. The token
@@ -252,6 +265,13 @@ class XtdAiConversation(models.Model):
             )
         if user.company_id.id not in user.company_ids.ids:
             raise AccessError(_("Compañía no permitida."))
+        if self.env.company.sudo().xtd_ai_paused:  # sudo: company setting
+            raise UserError(
+                _(
+                    "El agente IA está en pausa en esta compañía. Puede "
+                    "reactivarlo un administrador en Ajustes."
+                )
+            )
 
         # sudo: users cannot create runs/messages through the ORM (read-only ACL);
         # the gateway creates them after the checks above.
@@ -277,6 +297,7 @@ class XtdAiConversation(models.Model):
                 "body": text,
                 "attachment_ids": [Command.set(attachments.ids)],
                 "screen": self._xtd_ai_screen(screen),
+                "auto": bool(auto),
             }
         )
         run = (
@@ -297,6 +318,67 @@ class XtdAiConversation(models.Model):
         )
         # Return the run in the caller's environment (read-only for the user).
         return run.with_env(self.env), token
+
+    def _xtd_ai_auto_continuations(self):
+        """Automatic continuations since the last message the user wrote."""
+        self.ensure_one()
+        last = self._xtd_ai_last_user_message()
+        # sudo: gateway-owned messages
+        return (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .search_count(
+                [
+                    ("conversation_id", "=", self.id),
+                    ("role", "=", "user"),
+                    ("auto", "=", True),
+                    ("id", ">", last.id or 0),
+                ]
+            )
+        )
+
+    def _xtd_ai_continue_after(self, action):
+        """Resume the user's request after they confirmed ``action``.
+
+        Starts a run with a system message ("Acción confirmada: ...") so the
+        agent carries on with the remaining steps without the user typing. It is
+        refused (returns ``None``) when the action did not succeed, the
+        conversation is closed, an answer is already in progress, other cards
+        still wait for the user, or ``MAX_AUTO_CONTINUATIONS`` were already
+        started for this request. The chain always needs a click of the user.
+
+        :returns: ``(run, token)`` like ``_xtd_ai_start_run``, or ``None``.
+        """
+        self.ensure_one()
+        conversation_su = self.sudo()
+        if action.state != "confirmed" or conversation_su.state != "open":
+            return None
+        conversation_su.run_ids._xtd_ai_expire_stale()
+        if conversation_su.run_ids.filtered(lambda r: r.state in ("queued", "running")):
+            return None
+        pending = (
+            self.env["xtd.ai.pending_action"]
+            .sudo()
+            .search_count(
+                [
+                    ("conversation_id", "=", self.id),
+                    ("state", "=", "pending"),
+                    ("expires_at", ">", fields.Datetime.now()),
+                ]
+            )
+        )
+        if pending or self._xtd_ai_auto_continuations() >= MAX_AUTO_CONTINUATIONS:
+            return None
+        cids = [c for c in (action.cids or []) if isinstance(c, int)]
+        text = _(
+            "[Mensaje del sistema, no escrito por el usuario] Acción confirmada: "
+            "%(label)s. Retoma la petición original: si quedan pasos, hazlos ahora; "
+            "si ya está todo hecho, responde con una sola frase.",
+            label=action._xtd_ai_confirmed_label(),
+        )
+        return self.with_context(allowed_company_ids=cids)._xtd_ai_start_run(
+            text, auto=True
+        )
 
     @api.model
     def _xtd_ai_screen(self, screen):

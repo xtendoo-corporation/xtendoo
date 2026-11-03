@@ -4,7 +4,7 @@
         "Asistente de IA integrado en Odoo: pasarela de seguridad, agente con "
         "Claude y chat"
     ),
-    "version": "19.0.2.2.0",
+    "version": "19.0.2.11.0",
     "category": "Productivity",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",
@@ -18,6 +18,8 @@
         "data/queue_job_data.xml",
         "views/xtd_ai_audit_views.xml",
         "views/xtd_ai_conversation_views.xml",
+        "views/xtd_ai_policy_rule_views.xml",
+        "views/xtd_ai_usage_report_views.xml",
         "views/res_config_settings_views.xml",
         "views/res_config_settings_agent_views.xml",
         "views/menus.xml",

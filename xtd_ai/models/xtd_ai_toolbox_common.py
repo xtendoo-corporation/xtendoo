@@ -1,9 +1,82 @@
 from odoo import fields, models
+from odoo.exceptions import AccessError
 
 from ..tools import xtd_ai_tool
 from ..tools.errors import XtdAiToolError
+from .xtd_ai_policy import max_level
+from .xtd_ai_toolbox import OPEN_MODELS
 
 _KIND_ENUM = ["customer", "supplier", "any"]
+
+_INVOICE_TYPES = ["out_invoice", "out_refund", "in_invoice", "in_refund"]
+# count_records only sees these models and fields: aggregated figures, never
+# records. A model or field missing from the database (app not installed) is
+# skipped. "date" is the field date_from/date_to and month/year grouping use.
+_COUNT_MODELS = {
+    "res.partner": {
+        "date": "create_date",
+        "fields": [
+            "is_company",
+            "country_id",
+            "state_id",
+            "city",
+            "user_id",
+            "company_id",
+        ],
+        "measures": [],
+    },
+    "sale.order": {
+        "date": "date_order",
+        "fields": ["state", "partner_id", "user_id", "team_id", "company_id"],
+        "measures": ["amount_untaxed", "amount_total"],
+    },
+    "purchase.order": {
+        "date": "date_order",
+        "fields": ["state", "partner_id", "user_id", "company_id"],
+        "measures": ["amount_untaxed", "amount_total"],
+    },
+    "account.move": {
+        "date": "invoice_date",
+        "fields": [
+            "move_type",
+            "state",
+            "payment_state",
+            "partner_id",
+            "journal_id",
+            "company_id",
+        ],
+        "measures": [
+            "amount_untaxed_signed",
+            "amount_total_signed",
+            "amount_residual_signed",
+        ],
+        "domain": [("move_type", "in", _INVOICE_TYPES)],
+    },
+    "crm.lead": {
+        "date": "create_date",
+        "fields": [
+            "type",
+            "stage_id",
+            "user_id",
+            "team_id",
+            "partner_id",
+            "company_id",
+        ],
+        "measures": ["expected_revenue"],
+    },
+    "product.template": {
+        "date": None,
+        "fields": ["categ_id", "type", "sale_ok", "purchase_ok", "company_id"],
+        "measures": [],
+    },
+    "stock.picking": {
+        "date": "scheduled_date",
+        "fields": ["picking_type_id", "state", "partner_id", "company_id"],
+        "measures": [],
+    },
+}
+_COUNT_OPERATORS = ["=", "!=", ">", ">=", "<", "<=", "ilike"]
+_COUNT_MAX_GROUPS = 50
 
 
 class XtdAiToolboxCommon(models.AbstractModel):
@@ -12,6 +85,24 @@ class XtdAiToolboxCommon(models.AbstractModel):
     _description = "AI tools: common"
 
     _xtd_ai_skills = {"contactos": "data/skills/contactos.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "contactos": {
+            "models": ("res.partner",),
+            "words": (
+                "contacto",
+                "cliente",
+                "proveedor",
+                "empresa",
+                "nif",
+                "cif",
+                "direccion",
+                "telefono",
+                "email",
+                "correo",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(
@@ -86,7 +177,17 @@ class XtdAiToolboxCommon(models.AbstractModel):
     )
     def tool_load_skill(self, args):
         text = self._xtd_ai_read_skill(args["skill"])
-        return {"data": {"skill": args["skill"], "instructions": text}, "records": []}
+        # the tools of the area the model may not have loaded yet (§6.5)
+        tools = [
+            name
+            for name, tool in self._xtd_ai_visible_tools().items()
+            if tool["skill"] == args["skill"]
+        ]
+        return {
+            "data": {"skill": args["skill"], "instructions": text, "tools": tools},
+            "records": [],
+            "load_tools": tools,
+        }
 
     # ------------------------------------------------------------------
     @xtd_ai_tool(
@@ -94,10 +195,11 @@ class XtdAiToolboxCommon(models.AbstractModel):
         title="Buscar contactos",
         description=(
             "Busca contactos (clientes, proveedores, empresas, personas) por nombre, "
-            "NIF, "
-            "referencia, email o ciudad. Devuelve id, nombre, NIF y datos básicos. "
-            "Úsala antes "
-            "de crear nada para reutilizar un contacto existente. No modifica datos."
+            "NIF, referencia, email o ciudad; sin query lista todos los del tipo "
+            "`kind`. Devuelve id, nombre, NIF y datos básicos de los primeros, y en "
+            "`total` cuántos hay en total. Para contar o agrupar usa mejor "
+            "count_records. Úsala antes de crear nada para reutilizar un contacto "
+            "existente. No modifica datos."
         ),
         input_schema={
             "type": "object",
@@ -106,25 +208,30 @@ class XtdAiToolboxCommon(models.AbstractModel):
                 "kind": {"type": "string", "enum": _KIND_ENUM},
                 "limit": {"type": "integer", "minimum": 1, "maximum": 200},
             },
-            "required": ["query"],
+            "required": [],
             "additionalProperties": False,
         },
         kind="read",
         skill="contactos",
+        core=True,
     )
     def tool_search_partners(self, args):
-        query = args["query"].strip()
-        domain = [
-            "|",
-            "|",
-            "|",
-            "|",
-            ("name", "ilike", query),
-            ("vat", "ilike", query),
-            ("ref", "ilike", query),
-            ("email", "ilike", query),
-            ("city", "ilike", query),
-        ]
+        query = (args.get("query") or "").strip()
+        domain = (
+            [
+                "|",
+                "|",
+                "|",
+                "|",
+                ("name", "ilike", query),
+                ("vat", "ilike", query),
+                ("ref", "ilike", query),
+                ("email", "ilike", query),
+                ("city", "ilike", query),
+            ]
+            if query
+            else []
+        )
         partner_model = self.env["res.partner"]
         kind = args.get("kind", "any")
         if kind == "customer" and "customer_rank" in partner_model._fields:
@@ -140,6 +247,261 @@ class XtdAiToolboxCommon(models.AbstractModel):
         )
         rows = [self._xtd_ai_partner_row(p) for p in partners]
         return {"data": self._xtd_ai_list(rows, total, limit), "records": partners}
+
+    # ------------------------------------------------------------------
+    @xtd_ai_tool(
+        name="open_record",
+        title="Abrir un registro en pantalla",
+        description=(
+            "Lleva al usuario a un registro de XTD: la pantalla se abre sola al "
+            "terminar tu respuesta. Úsala cuando el último paso no sea tuyo (publicar, "
+            "confirmar, validar, enviar: ábrelo y di qué botón falta) o cuando pida "
+            "verlo o abrirlo. Modelos: res.partner (contacto), sale.order "
+            "(presupuesto o pedido), purchase.order (RFQ o pedido de compra), "
+            "account.move (factura o asiento), crm.lead (oportunidad), stock.picking "
+            "(albarán), product.template (producto), project.task (tarea) y "
+            "hr.expense (gasto), si están instalados. Para ver los apuntes de un "
+            "asiento usa open_journal_entry. No modifica datos."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "model": {"type": "string", "enum": list(OPEN_MODELS)},
+                "id": {"type": "integer", "minimum": 1},
+            },
+            "required": ["model", "id"],
+            "additionalProperties": False,
+        },
+        kind="read",
+    )
+    def tool_open_record(self, args):
+        name = args["model"]
+        if name not in OPEN_MODELS or name not in self.env:
+            raise XtdAiToolError(
+                "not_found",
+                self.env._("Ese registro no se puede abrir (%s).", name),
+            )
+        self.env[name].check_access("read")  # AccessError: access_denied
+        # the user's record rules apply: a record they cannot read is not found
+        record = self.env[name].search([("id", "=", args["id"])], limit=1)
+        if not record:
+            raise XtdAiToolError("not_found", self.env._("No encuentro ese registro."))
+        label = (record.display_name or name)[:100]
+        return {
+            "data": {"model": name, "id": record.id, "name": label, "opened": True},
+            "records": [
+                {"model": name, "id": record.id, "name": label, "navigate": True}
+            ],
+        }
+
+    # ------------------------------------------------------------------
+    @xtd_ai_tool(
+        name="count_records",
+        title="Contar y agrupar",
+        description=(
+            "Cuenta registros y, si se pide, los agrupa y suma un importe: "
+            "«cuántos clientes hay», «clientes por provincia», «facturas por "
+            "estado», «ventas por mes». Solo devuelve cifras (total y grupos), "
+            "nunca la lista de registros. Modelos: res.partner (contactos; kind = "
+            "customer o supplier), sale.order (pedidos de venta), purchase.order "
+            "(compras), account.move (facturas y rectificativas), crm.lead "
+            "(oportunidades), product.template (productos) y stock.picking "
+            "(albaranes). group_by: un campo permitido del modelo, o month o year "
+            "por su fecha. filters: campo, operador y valor (para un contacto, "
+            "usuario o similar, su id o su nombre). measure: importe a sumar (en "
+            "facturas "
+            "amount_total_signed con impuestos, amount_untaxed_signed sin "
+            "impuestos, amount_residual_signed pendiente; en pedidos amount_total "
+            "o amount_untaxed). "
+            "Respeta los permisos del usuario. No modifica datos."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "model": {"type": "string", "enum": list(_COUNT_MODELS)},
+                "kind": {"type": "string", "enum": _KIND_ENUM},
+                "group_by": {"type": "string", "maxLength": 40},
+                "measure": {"type": "string", "maxLength": 40},
+                "date_from": {"type": "string", "format": "date"},
+                "date_to": {"type": "string", "format": "date"},
+                "filters": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "field": {"type": "string", "maxLength": 40},
+                            "operator": {"type": "string", "enum": _COUNT_OPERATORS},
+                            "value": {"type": "string", "maxLength": 100},
+                        },
+                        "required": ["field", "operator", "value"],
+                        "additionalProperties": False,
+                    },
+                },
+            },
+            "required": ["model"],
+            "additionalProperties": False,
+        },
+        kind="read",
+    )
+    def tool_count_records(self, args):
+        name = args["model"]
+        spec = _COUNT_MODELS[name]
+        if name not in self.env:
+            raise XtdAiToolError(
+                "not_found",
+                self.env._("Esa aplicación no está instalada (%s).", name),
+            )
+        records = self.env[name]
+        allowed = [f for f in spec["fields"] if f in records._fields]
+        domain = self._xtd_ai_count_domain(records, spec, allowed, args)
+        group_by = (args.get("group_by") or "").strip()
+        groupby = self._xtd_ai_count_groupby(spec, allowed, group_by)
+        aggregates = ["__count"]
+        measure = (args.get("measure") or "").strip()
+        if measure:
+            measures = [m for m in spec["measures"] if m in records._fields]
+            if measure not in measures:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "No se puede sumar «%(field)s». Importes posibles: "
+                        "%(allowed)s.",
+                        field=measure,
+                        allowed=", ".join(measures) or "-",
+                    ),
+                )
+            aggregates.append(f"{measure}:sum")
+        # The user's own environment: ACLs and record rules apply
+        totals = records._read_group(domain, aggregates=aggregates)[0]
+        data = {"model": name, "total": totals[0]}
+        currency = self.env.company.currency_id
+        if measure:
+            data["sum"] = self._xtd_ai_money(totals[1] or 0.0, currency)
+            data["measure"] = measure
+        if groupby:
+            rows = records._read_group(
+                domain,
+                groupby=groupby,
+                aggregates=aggregates,
+                order="__count desc",
+                limit=_COUNT_MAX_GROUPS,
+            )
+            groups = []
+            for row in rows:
+                group = {
+                    "group": self._xtd_ai_count_label(records, groupby[0], row[0]),
+                    "count": row[1],
+                }
+                if measure:
+                    group["sum"] = self._xtd_ai_money(row[2] or 0.0, currency)
+                groups.append(group)
+            data["group_by"] = group_by
+            data["groups"] = groups
+            data["groups_truncated"] = len(rows) >= _COUNT_MAX_GROUPS
+        return {"data": data}
+
+    def _xtd_ai_count_domain(self, records, spec, allowed, args):
+        """Domain of a count: model scope, kind, dates and whitelisted filters."""
+        domain = list(spec.get("domain", []))
+        kind = args.get("kind", "any")
+        if records._name == "res.partner" and kind != "any":
+            rank = "customer_rank" if kind == "customer" else "supplier_rank"
+            if rank in records._fields:
+                domain.append((rank, ">", 0))
+        for key, operator in (("date_from", ">="), ("date_to", "<=")):
+            if args.get(key):
+                if not spec["date"]:
+                    raise XtdAiToolError(
+                        "validation",
+                        self.env._("Este modelo no admite filtro por fechas."),
+                    )
+                domain.append((spec["date"], operator, args[key]))
+        for item in args.get("filters") or []:
+            domain.append(self._xtd_ai_count_filter(records, allowed, item))
+        return domain
+
+    def _xtd_ai_count_groupby(self, spec, allowed, group_by):
+        """``_read_group`` groupby spec for a whitelisted field or month/year."""
+        if group_by in ("month", "year"):
+            if not spec["date"]:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._("Este modelo no se puede agrupar por fecha."),
+                )
+            return [f"{spec['date']}:{group_by}"]
+        if not group_by:
+            return []
+        if group_by not in allowed:
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "No se puede agrupar por «%(field)s». Campos posibles: "
+                    "%(allowed)s, month o year.",
+                    field=group_by,
+                    allowed=", ".join(allowed),
+                ),
+            )
+        return [group_by]
+
+    def _xtd_ai_count_filter(self, records, allowed, item):
+        """One whitelisted domain leaf from a {field, operator, value} filter."""
+        field_name, operator, value = item["field"], item["operator"], item["value"]
+        if field_name not in allowed:
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "No se puede filtrar por «%(field)s». Campos posibles: "
+                    "%(allowed)s.",
+                    field=field_name,
+                    allowed=", ".join(allowed),
+                ),
+            )
+        field = records._fields[field_name]
+        text = str(value).strip()
+        if field.type == "many2one":
+            if text.isdigit():
+                return (field_name, operator, int(text))
+            # by name: Odoo searches the related record's display name
+            by_name = {"=": "ilike", "ilike": "ilike", "!=": "not ilike"}
+            if operator not in by_name:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "Para «%s» usa = o != con un id o un nombre.", field_name
+                    ),
+                )
+            return (field_name, by_name[operator], text)
+        if field.type == "boolean":
+            return (field_name, operator, text.lower() in ("true", "1", "sí", "si"))
+        if field.type in ("integer", "float", "monetary"):
+            try:
+                return (field_name, operator, float(text.replace(",", ".")))
+            except ValueError as exc:
+                raise XtdAiToolError(
+                    "validation", self.env._("«%s» no es un número.", text)
+                ) from exc
+        return (field_name, operator, text)
+
+    def _xtd_ai_count_label(self, records, groupby, value):
+        """Readable label of one group value (record names are free text)."""
+        field = records._fields[groupby.split(":")[0]]
+        if isinstance(value, models.BaseModel):
+            if not value:
+                return None
+            try:
+                return self._xtd_ai_text(value.display_name)
+            except AccessError:
+                return self.env._("(sin acceso)")
+        if ":" in groupby and value:
+            fmt = "%Y-%m" if groupby.endswith(":month") else "%Y"
+            return value.strftime(fmt)
+        if field.type == "selection" and value:
+            selection = dict(field._description_selection(self.env))
+            return selection.get(value, value)
+        if field.type == "boolean":
+            return self.env._("Sí") if value else self.env._("No")
+        return self._xtd_ai_text(value) if isinstance(value, str) else value
 
     def _xtd_ai_partner_row(self, partner):
         return {
@@ -229,8 +591,9 @@ class XtdAiToolboxCommon(models.AbstractModel):
         title="Buscar productos",
         description=(
             "Busca productos por nombre, referencia interna o código de barras. "
-            "Devuelve id, "
-            "referencia, nombre, precio de venta y unidad. No modifica datos."
+            "Devuelve id (variante), template_id (para update_record), "
+            "referencia, nombre, categoría, precio de venta y unidad. No modifica "
+            "datos."
         ),
         input_schema={
             "type": "object",
@@ -268,8 +631,12 @@ class XtdAiToolboxCommon(models.AbstractModel):
         rows = [
             {
                 "id": p.id,
+                # update_record edits the template (product.template)
+                "template_id": p.product_tmpl_id.id,
                 "code": p.default_code or None,
+                "barcode": p.barcode or None,
                 "name": self._xtd_ai_text(p.display_name),
+                "category": self._xtd_ai_text(p.categ_id.display_name),
                 "list_price": self._xtd_ai_money(p.list_price, currency),
                 "uom": p[uom_field].name if uom_field else None,
             }
@@ -284,9 +651,9 @@ class XtdAiToolboxCommon(models.AbstractModel):
         description=(
             "Crea una empresa o persona nueva. Antes usa search_partners: la vista "
             "previa avisa "
-            "de posibles duplicados por NIF, email o nombre. Siempre requiere "
-            "confirmación del "
-            "usuario. No sirve para modificar contactos existentes."
+            "de posibles duplicados por NIF, email o nombre: con duplicados queda "
+            "una tarjeta; si no, se crea y el usuario puede deshacerlo. Para "
+            "modificar contactos existentes usa update_record."
         ),
         input_schema={
             "type": "object",
@@ -314,6 +681,7 @@ class XtdAiToolboxCommon(models.AbstractModel):
             "additionalProperties": False,
         },
         kind="create",
+        policy="_xtd_ai_policy_create_contact",
         skill="contactos",
         groups=["base.group_partner_manager"],
         preview="_xtd_ai_preview_create_contact",
@@ -416,6 +784,14 @@ class XtdAiToolboxCommon(models.AbstractModel):
         for clause in clauses:
             domain = (["|"] + domain + clause) if domain else clause
         return partner_model.search(domain, limit=5)
+
+    def _xtd_ai_policy_create_contact(self, args):
+        """A new contact is master data (N1), but a possible duplicate is a card."""
+        vals = self._xtd_ai_contact_vals(args)
+        level = self.env["xtd.ai.policy"]._xtd_ai_level("create_master")
+        if self._xtd_ai_find_duplicates(vals):
+            level = max_level(level, "N2")
+        return level
 
     def _xtd_ai_preview_create_contact(self, args):
         vals = self._xtd_ai_contact_vals(args)

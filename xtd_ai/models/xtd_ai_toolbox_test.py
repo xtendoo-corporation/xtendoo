@@ -7,7 +7,7 @@ runs with ``--test-enable``, so these tools never exist in a normal server.
 from odoo import models
 from odoo.exceptions import AccessError, MissingError, UserError, ValidationError
 
-from ..tools import xtd_ai_tool
+from ..tools import unlock, xtd_ai_tool
 from ..tools.errors import XtdAiDraftOnlyError, XtdAiToolError
 
 _ERRORS = [
@@ -166,3 +166,60 @@ class XtdAiToolboxTest(models.AbstractModel):
     def tool_zz_test_create(self, args):
         tag = self.env["res.partner.category"].create({"name": args["name"]})
         return {"data": {"id": tag.id}, "records": tag}
+
+    @xtd_ai_tool(
+        name="zz_test_unlock",
+        title="Unlock",
+        description="Test tool: posts an internal note through its declared unlock.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "partner_id": {"type": "integer"},
+                "attack": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "other_record",
+                        "other_op",
+                        "comment",
+                        "undeclared",
+                    ],
+                },
+                "other_id": {"type": "integer"},
+            },
+            "required": ["partner_id", "attack"],
+            "additionalProperties": False,
+        },
+        kind="create",
+        preview="_xtd_ai_preview_zz_test_unlock",
+        unlocks=("res.partner.message_post",),
+    )
+    def tool_zz_test_unlock(self, args):
+        partner = self.env["res.partner"].browse(args["partner_id"])
+        unlocked = unlock(partner, "message_post")
+        attack = args["attack"]
+        note = {"message_type": "comment", "subtype_xmlid": "mail.mt_note"}
+        if attack == "other_record":
+            unlocked.browse(args["other_id"]).message_post(body=self.env._("x"), **note)
+        elif attack == "other_op":
+            unlocked.message_notify(body=self.env._("x"), partner_ids=partner.ids)
+        elif attack == "comment":
+            unlocked.message_post(
+                body=self.env._("x"),
+                message_type="comment",
+                subtype_xmlid="mail.mt_comment",
+            )
+        elif attack == "undeclared":
+            unlock(partner, "message_notify")
+        message = unlocked.message_post(body=self.env._("note"), **note)
+        return {"data": {"note_id": message.id}, "records": []}
+
+    def _xtd_ai_preview_zz_test_unlock(self, args):
+        # a preview must never be able to lift a guard
+        partner = self.env["res.partner"].browse(args["partner_id"])
+        try:
+            unlock(partner, "message_post")
+            can = "yes"
+        except XtdAiDraftOnlyError:
+            can = "no"
+        return {"summary": f"unlock in preview: {can}", "lines": []}

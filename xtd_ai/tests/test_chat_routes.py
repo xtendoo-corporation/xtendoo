@@ -82,6 +82,23 @@ class TestChatRoutes(HttpCase):
         values.update(vals)
         return self.env["xtd.ai.pending_action"].sudo().create(values)
 
+    def attach_to_message(self, action):
+        """Show the card in the chat, as the gateway does when the run ends."""
+        message = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .create(
+                {
+                    "conversation_id": action.conversation_id.id,
+                    "role": "assistant",
+                    "body": "listo",
+                    "run_id": action.run_id.id,
+                }
+            )
+        )
+        action.sudo().message_id = message
+        return message
+
     # -- access ----------------------------------------------------------
     def test_requires_login(self):
         response = self.url_open(
@@ -285,6 +302,361 @@ class TestChatRoutes(HttpCase):
         res = self.ok("/xtd_ai/chat/pending/cancel", action_id=action2.id)
         self.assertEqual(res["state"], "cancelled")
         self.assertEqual(action2.state, "cancelled")
+
+    # -- continue after confirming -----------------------------------------
+    def test_confirm_resumes_the_request_with_a_hidden_system_message(self):
+        captured = self.capture_postcommit()
+        action = self.make_action(self.u1)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertEqual(res["continuation"]["state"], "queued")
+        run = self.env["xtd.ai.run"].sudo().browse(res["continuation"]["run_id"])
+        self.assertEqual(run.state, "queued")
+        auto = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .search(
+                [
+                    ("conversation_id", "=", action.conversation_id.id),
+                    ("auto", "=", True),
+                ]
+            )
+        )
+        self.assertEqual(len(auto), 1)
+        self.assertEqual(auto.role, "user")
+        self.assertIn("Acción confirmada: creada Chat Test SL", auto.body)
+        self.assertIn("res.partner", auto.body)
+        self.assertEqual(len(captured), 1)  # the service is called after the commit
+        # the agent sees it in the history, the user does not see it in the chat
+        history = action.conversation_id.sudo()._xtd_ai_history_messages()
+        self.assertIn("Acción confirmada", history[-1]["text"])
+        data = self.ok(
+            "/xtd_ai/chat/messages", conversation_id=action.conversation_id.id
+        )
+        self.assertNotIn("Acción confirmada", json.dumps(data))
+        self.assertEqual(data["running_run_id"], run.id)
+
+    def test_no_continuation_while_other_cards_wait_or_a_run_is_active(self):
+        self.capture_postcommit()
+        first = self.make_action(self.u1)
+        second = self.make_action(self.u1, conversation_id=first.conversation_id.id)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=first.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertIsNone(res["continuation"])  # the second card still waits
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=second.id)
+        self.assertIsNotNone(res["continuation"])  # the last card resumes the work
+        # a run in progress is never doubled
+        third = first.sudo().copy({"state": "pending"})
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=third.id)
+        self.assertIsNone(res["continuation"])
+
+    def test_continuations_are_capped_per_user_request(self):
+        from ..models.xtd_ai_conversation import MAX_AUTO_CONTINUATIONS
+
+        self.capture_postcommit()
+        action = self.make_action(self.u1)
+        conversation = action.conversation_id
+        for _i in range(MAX_AUTO_CONTINUATIONS):
+            self.env["xtd.ai.message"].sudo().create(
+                {
+                    "conversation_id": conversation.id,
+                    "role": "user",
+                    "body": "auto",
+                    "auto": True,
+                }
+            )
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertIsNone(res["continuation"])
+        # a new message of the user starts a new request: counter back to zero
+        self.env["xtd.ai.message"].sudo().create(
+            {"conversation_id": conversation.id, "role": "user", "body": "otra"}
+        )
+        self.assertEqual(conversation.sudo()._xtd_ai_auto_continuations(), 0)
+
+    def test_failed_or_cancelled_cards_do_not_continue(self):
+        self.capture_postcommit()
+        failing = self.make_action(self.u1, arguments={"name": ""})
+        cancelled = self.make_action(self.u1)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=failing.id)
+        self.assertEqual(res["state"], "failed")
+        self.assertIsNone(res["continuation"])
+        res = self.ok("/xtd_ai/chat/pending/cancel", action_id=cancelled.id)
+        self.assertNotIn("continuation", res)
+        self.assertFalse(
+            self.env["xtd.ai.message"]
+            .sudo()
+            .search_count(
+                [
+                    ("auto", "=", True),
+                    ("conversation_id", "=", failing.conversation_id.id),
+                ]
+            )
+        )
+
+    def test_auto_continuation_can_be_switched_off(self):
+        self.capture_postcommit()
+        self.env["ir.config_parameter"].sudo().set_param("xtd_ai.auto_continue", "0")
+        action = self.make_action(self.u1)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertEqual(res["state"], "confirmed")
+        self.assertIsNone(res["continuation"])
+
+    def test_continuation_keeps_the_attachment_guard_of_the_request(self):
+        self.capture_postcommit()
+        action = self.make_action(self.u1)
+        conversation = action.conversation_id
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": "f.pdf",
+                "raw": make_pdf(),
+                "mimetype": "application/pdf",
+                "res_model": "xtd.ai.conversation",
+                "res_id": conversation.id,
+            }
+        )
+        self.env["xtd.ai.message"].sudo().create(
+            {
+                "conversation_id": conversation.id,
+                "role": "user",
+                "body": "factura",
+                "attachment_ids": [(6, 0, attachment.ids)],
+            }
+        )
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        self.assertIsNotNone(res["continuation"])
+        # the automatic message has no attachments, but the guard still applies
+        self.assertTrue(conversation.sudo()._xtd_ai_run_has_attachments())
+
+    # -- undo ------------------------------------------------------------------
+    def test_undo_a_confirmed_card_from_the_chat(self):
+        self.capture_postcommit()
+        action = self.make_action(self.u1)
+        self.attach_to_message(action)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        result = res["action"]["result"]
+        self.assertEqual(
+            result["undo"], {"state": "available", "lines": False, "edit": False}
+        )
+        done = self.ok(
+            "/xtd_ai/chat/undo",
+            model=result["model"],
+            res_id=result["id"],
+            action_id=action.id,
+        )
+        self.assertTrue(done["undone"], done)
+        self.assertFalse(self.env["res.partner"].browse(result["id"]).exists())
+        data = self.ok(
+            "/xtd_ai/chat/messages", conversation_id=action.conversation_id.id
+        )
+        card = next(a for m in data["messages"] for a in m["pending_actions"])
+        self.assertEqual(card["result"]["undo"]["state"], "undone")
+        # a second click finds nothing to undo
+        self.assertIn(
+            "error",
+            self.rpc(
+                "/xtd_ai/chat/undo",
+                model=result["model"],
+                res_id=result["id"],
+                action_id=action.id,
+            ),
+        )
+        audit = (
+            self.env["xtd.ai.audit"]
+            .sudo()
+            .search([("event", "=", "undo"), ("user_id", "=", self.u1.id)], limit=1)
+        )
+        self.assertEqual((audit.outcome, audit.user_id), ("ok", self.u1))
+
+    def test_undo_only_what_the_conversation_created(self):
+        self.capture_postcommit()
+        action = self.make_action(self.u1)
+        self.login(self.u1)
+        self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        foreign = self.env["res.partner"].with_user(self.u1).create({"name": "Mío"})
+        # a record that is not the card's result cannot be undone through it
+        self.assertIn(
+            "error",
+            self.rpc(
+                "/xtd_ai/chat/undo",
+                model="res.partner",
+                res_id=foreign.id,
+                action_id=action.id,
+            ),
+        )
+        # nor through a message that never listed it, nor without any source
+        self.assertIn(
+            "error",
+            self.rpc("/xtd_ai/chat/undo", model="res.partner", res_id=foreign.id),
+        )
+        self.assertTrue(foreign.exists())
+        # another user cannot undo through my card
+        self.login(self.u2)
+        self.assertIn(
+            "error",
+            self.rpc(
+                "/xtd_ai/chat/undo",
+                model="res.partner",
+                res_id=action.result_res_id,
+                action_id=action.id,
+            ),
+        )
+        self.assertTrue(self.env["res.partner"].browse(action.result_res_id).exists())
+
+    def test_undo_a_direct_write_listed_in_a_message(self):
+        self.capture_postcommit()
+        conversation = self.env["xtd.ai.conversation"].with_user(self.u1)._xtd_ai_open()
+        run, _token = conversation._xtd_ai_start_run("crea un contacto")
+        partner = self.env["res.partner"].with_user(self.u1).create({"name": "Directo"})
+        untouched = self.env["res.partner"].with_user(self.u1).create({"name": "Leído"})
+        refs = [
+            {
+                "model": "res.partner",
+                "id": partner.id,
+                "name": "Directo",
+                "created": True,
+            },
+            {"model": "res.partner", "id": untouched.id, "name": "Leído"},
+        ]
+        message = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .create(
+                {
+                    "conversation_id": conversation.id,
+                    "role": "assistant",
+                    "body": "hecho",
+                    "run_id": run.id,
+                    "record_refs": refs,
+                }
+            )
+        )
+        run.sudo()._xtd_ai_finish("done")
+        self.login(self.u1)
+        why = (
+            self.env["xtd.ai.undo"]
+            .with_user(self.u1)
+            ._xtd_ai_undo_reason(partner.with_user(self.u1), since=run.create_date)
+        )
+        self.assertIsNone(why)
+        data = self.ok("/xtd_ai/chat/messages", conversation_id=conversation.id)
+        payload = next(m for m in data["messages"] if m["id"] == message.id)
+        self.assertEqual(payload["record_refs"][0]["undo"]["state"], "available")
+        self.assertIsNone(payload["record_refs"][1]["undo"])  # only what it created
+        # a record the message did not create is refused
+        self.assertIn(
+            "error",
+            self.rpc(
+                "/xtd_ai/chat/undo",
+                model="res.partner",
+                res_id=untouched.id,
+                message_id=message.id,
+            ),
+        )
+        done = self.ok(
+            "/xtd_ai/chat/undo",
+            model="res.partner",
+            res_id=partner.id,
+            message_id=message.id,
+        )
+        self.assertTrue(done["undone"], done)
+        self.assertFalse(partner.exists())
+        self.assertTrue(untouched.exists())
+
+    def test_undo_an_edit_listed_in_a_message(self):
+        self.capture_postcommit()
+        conversation = self.env["xtd.ai.conversation"].with_user(self.u1)._xtd_ai_open()
+        run, _token = conversation._xtd_ai_start_run("cambia el teléfono")
+        partner = self.env["res.partner"].create({"name": "Editado", "phone": "2"})
+        edit = {"before": {"phone": "1"}, "after": {"phone": "2"}}
+        message = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .create(
+                {
+                    "conversation_id": conversation.id,
+                    "role": "assistant",
+                    "body": "hecho",
+                    "run_id": run.id,
+                    "record_refs": [
+                        {
+                            "model": "res.partner",
+                            "id": partner.id,
+                            "name": "Editado",
+                            "created": False,
+                            "undo_edit": edit,
+                        }
+                    ],
+                }
+            )
+        )
+        run.sudo()._xtd_ai_finish("done")
+        self.login(self.u1)
+        data = self.ok("/xtd_ai/chat/messages", conversation_id=conversation.id)
+        payload = next(m for m in data["messages"] if m["id"] == message.id)
+        self.assertEqual(
+            payload["record_refs"][0]["undo"],
+            {"state": "available", "lines": False, "edit": True},
+        )
+        # an edit is never undone as a creation (that would delete the record)
+        self.assertIn(
+            "error",
+            self.rpc(
+                "/xtd_ai/chat/undo",
+                model="res.partner",
+                res_id=partner.id,
+                message_id=message.id,
+            ),
+        )
+        done = self.ok(
+            "/xtd_ai/chat/undo",
+            model="res.partner",
+            res_id=partner.id,
+            message_id=message.id,
+            edit=True,
+        )
+        self.assertTrue(done["undone"], done)
+        self.assertEqual(partner.phone, "1")
+        self.assertTrue(partner.exists())
+
+    def test_no_undo_once_the_draft_changed_or_the_conversation_closed(self):
+        self.capture_postcommit()
+        action = self.make_action(self.u1)
+        self.attach_to_message(action)
+        self.login(self.u1)
+        res = self.ok("/xtd_ai/chat/pending/confirm", action_id=action.id)
+        partner = self.env["res.partner"].browse(res["action"]["result"]["id"])
+        partner.with_user(self.env.ref("base.user_admin")).write({"comment": "x"})
+        data = self.ok(
+            "/xtd_ai/chat/messages", conversation_id=action.conversation_id.id
+        )
+        card = next(a for m in data["messages"] for a in m["pending_actions"])
+        self.assertIsNone(card["result"]["undo"])
+        refused = self.ok(
+            "/xtd_ai/chat/undo",
+            model="res.partner",
+            res_id=partner.id,
+            action_id=action.id,
+        )
+        self.assertFalse(refused["undone"])
+        self.assertTrue(partner.exists())
+        action.conversation_id.sudo().state = "closed"
+        self.assertIn(
+            "error",
+            self.rpc(
+                "/xtd_ai/chat/undo",
+                model="res.partner",
+                res_id=partner.id,
+                action_id=action.id,
+            ),
+        )
 
     def test_messages_payload_and_record_links(self):
         action = self.make_action(self.u1)

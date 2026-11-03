@@ -98,6 +98,7 @@ class OdooRunGateway:
                 description=t.get("description", ""),
                 input_schema=t["inputSchema"],
                 read_only=bool((t.get("annotations") or {}).get("readOnlyHint")),
+                deferred=bool((t.get("annotations") or {}).get("xtdDeferred")),
             )
             for t in result.get("tools", [])
         ]
@@ -112,7 +113,12 @@ class OdooRunGateway:
                 break
         if not text and "structuredContent" in result:
             text = json.dumps(result["structuredContent"], ensure_ascii=False)
-        return ToolOutcome(text=text, is_error=bool(result.get("isError", False)))
+        load = (result.get("_meta") or {}).get("xtd_ai/load_tools") or ()
+        return ToolOutcome(
+            text=text,
+            is_error=bool(result.get("isError", False)),
+            load_tools=tuple(n for n in load if isinstance(n, str)),
+        )
 
     def post_reply(self, reply: Reply):
         self._call("xtd_ai/post_reply", reply.to_payload())

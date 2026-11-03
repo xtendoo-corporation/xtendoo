@@ -18,3 +18,12 @@ from . import test_settings
 from . import test_chat_routes
 from . import test_chat_js
 from . import test_screen
+from . import test_count_records
+from . import test_undo
+from . import test_open_record
+from . import test_records
+from . import test_exposure
+from . import test_unlock
+from . import test_policy_table
+from . import test_brakes
+from . import test_usage_report

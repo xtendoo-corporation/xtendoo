@@ -8,6 +8,7 @@ from odoo.exceptions import AccessError, MissingError, UserError
 
 from ..tools.errors import XtdAiDraftOnlyError, XtdAiRpcError, XtdAiToolError
 from ..tools.schema import validate
+from .xtd_ai_policy import max_level
 
 _logger = logging.getLogger(__name__)
 
@@ -121,11 +122,23 @@ class XtdAiMcp(models.AbstractModel):
         }
 
     def _xtd_ai_m_tools_list(self, run, params):
+        """Visible tools; those outside the areas of the request are marked
+        ``xtdDeferred`` (§6.5): the agent sends them unloaded and ``load_skill``
+        loads an area in the middle of a task."""
         toolbox = self.env["xtd.ai.toolbox"]
+        visible = toolbox._xtd_ai_visible_tools()
+        areas = None
+        if toolbox._xtd_ai_exposure() == "areas":
+            areas = toolbox._xtd_ai_request_areas(run)
         return {
             "tools": [
-                toolbox._xtd_ai_tool_descriptor(tool)
-                for tool in toolbox._xtd_ai_visible_tools().values()
+                toolbox._xtd_ai_tool_descriptor(
+                    tool,
+                    deferred=areas is not None
+                    and not tool.get("core")
+                    and tool["skill"] not in areas,
+                )
+                for tool in visible.values()
             ]
         }
 
@@ -288,7 +301,10 @@ class XtdAiMcp(models.AbstractModel):
             raise XtdAiRpcError(200, -32601, "Tool not found")
 
         event, outcome, code, refs = "tool_call", "ok", None, None
+        load_tools = []
+        policy = self.env["xtd.ai.policy"]
         try:
+            policy._xtd_ai_check_paused()
             errors = validate(toolbox._xtd_ai_schema(tool), arguments)
             if errors:
                 raise XtdAiToolError(
@@ -297,18 +313,57 @@ class XtdAiMcp(models.AbstractModel):
                 )
             # CONTRACT §14: a document is untrusted input, so when the message
             # that started the run carries attachments every write is confirmed.
-            if tool["kind"] != "read" and (
-                self.env.user._xtd_ai_needs_confirmation(tool["kind"])
-                or run.conversation_id._xtd_ai_run_has_attachments()
+            # The level comes from the policy (§6.1); text from outside (an
+            # attachment) always raises it to a card.
+            # Text written outside the company read earlier in this run (a web
+            # lead, an incoming email) brakes the same way (§6.1).
+            level = toolbox._xtd_ai_call_level(tool, arguments)
+            if level != "N0" and (
+                run.external_text or run.conversation_id._xtd_ai_run_has_attachments()
             ):
+                level = max_level(level, "N2")
+            if level != "N0":
+                policy._xtd_ai_check_rate(
+                    run,
+                    [
+                        n
+                        for n, t in toolbox._xtd_ai_tools().items()
+                        if t["kind"] != "read"
+                    ],
+                )
+            if level == "N3" and tool.get("handoff"):
+                # N3: prepare and take the user there (§6.1): open the record
+                structured = toolbox._xtd_ai_handoff(tool, arguments)
+                refs = structured["records"]
+                run._xtd_ai_add_record_refs(refs)
+                outcome = "handoff"
+            elif level in ("N3", "N4"):
+                raise XtdAiToolError(
+                    "forbidden",
+                    self.env._(
+                        "Esta acción no la hace el agente: déjala preparada y "
+                        "que el usuario la termine en XTD."
+                    ),
+                )
+            elif level == "N2":
                 structured = self._xtd_ai_propose(run, tool, arguments)
                 outcome = "pending"
             else:
                 result = toolbox._xtd_ai_execute(tool, arguments)
                 refs = result["records"]
+                visible = toolbox._xtd_ai_visible_tools()
+                load_tools = [n for n in result.get("load_tools", []) if n in visible]
                 if refs:
+                    # an edited record is not "created": its undo restores values
                     run._xtd_ai_add_record_refs(
-                        [ref | {"created": tool["kind"] != "read"} for ref in refs]
+                        [
+                            ref
+                            | {
+                                "created": tool["kind"] != "read"
+                                and "undo_edit" not in ref
+                            }
+                            for ref in refs
+                        ]
                     )
                 structured = {"status": "ok", "data": result["data"], "records": refs}
             payload = json.dumps(structured, ensure_ascii=False, default=str)
@@ -323,11 +378,14 @@ class XtdAiMcp(models.AbstractModel):
             structured, event, outcome, code = self._xtd_ai_error_result(exc)
             payload = json.dumps(structured, ensure_ascii=False, default=str)
         finish_audit(event, outcome, code, refs)
-        return {
+        response = {
             "content": [{"type": "text", "text": payload}],
             "structuredContent": structured,
             "isError": structured.get("status") == "error",
         }
+        if load_tools:
+            response["_meta"] = {"xtd_ai/load_tools": load_tools}
+        return response
 
     def _xtd_ai_propose(self, run, tool, arguments):
         """Store a pending action and return the ``pending_confirmation`` result."""

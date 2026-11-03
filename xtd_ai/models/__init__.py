@@ -5,9 +5,16 @@ from . import xtd_ai_run
 from . import xtd_ai_run_job
 from . import xtd_ai_config
 from . import xtd_ai_pending_action
+from . import xtd_ai_policy
+from . import xtd_ai_policy_rule
+from . import res_company
+from . import xtd_ai_record_registry
+from . import xtd_ai_undo
 from . import xtd_ai_token
 from . import xtd_ai_toolbox
 from . import xtd_ai_toolbox_common
+from . import xtd_ai_toolbox_records
+from . import xtd_ai_toolbox_chatter
 from . import xtd_ai_toolbox_test
 from . import xtd_ai_mcp
 from . import res_users
@@ -16,3 +23,4 @@ from . import mail_thread
 from . import mail_mail
 from . import ir_http
 from . import res_config_settings
+from . import xtd_ai_usage_report

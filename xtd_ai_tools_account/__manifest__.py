@@ -1,9 +1,10 @@
 {
     "name": "Agente IA: contabilidad",
     "summary": (
-        "Herramientas de facturas, cobros y pagos para el agente IA (solo borradores)"
+        "Herramientas de facturas, cobros y pagos para el agente IA "
+        "(borradores y tarjetas)"
     ),
-    "version": "19.0.2.2.0",
+    "version": "19.0.2.10.0",
     "category": "Productivity",
     "author": "Xtendoo",
     "website": "https://xtendoo.es",

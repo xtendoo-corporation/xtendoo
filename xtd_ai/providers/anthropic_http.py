@@ -3,8 +3,13 @@
 Same rules as the external service adapter:
 
 - ``tool_choice`` is left at its default (auto).
-- Tools use ``strict: true`` within the API limits (20 tools, 24 optional params);
-  tools are ordered by name and the last one carries ``cache_control``.
+- Tools use ``strict: true`` within the API limits (20 tools, 24 optional params,
+  counted over the whole ``tools`` array, deferred tools included: checked
+  against the real API, see docs/xtd_ai/CARGA_DIFERIDA.md); tools are ordered by
+  name and the last non-deferred one carries ``cache_control``.
+- Tools outside the areas of the request (``ToolSpec.deferred``) go with
+  ``defer_loading: true``; ``load_skill`` loads them returning ``tool_reference``
+  blocks (custom tool search), so the cached prefix never changes in a run.
 - The system prompt is one stable block with ``cache_control``; the variable
   context travels in the first user turn, so tools+system stay cacheable.
 - A rolling breakpoint on the last block of the last user turn (3 of 4
@@ -61,6 +66,21 @@ MAX_STRICT_TOOLS = 20
 MAX_STRICT_OPTIONAL_PARAMS = 24  # API limit across all strict tools of a request
 
 
+class StrictGrammarTooLarge(ProviderError):
+    """400: the strict tool schemas compile to a grammar the API refuses."""
+
+
+def _grammar_too_large(resp: Any) -> bool:
+    try:
+        body = resp.json()
+    except ValueError:
+        return False
+    if not isinstance(body, dict):
+        return False
+    message = str((body.get("error") or {}).get("message") or "").lower()
+    return "grammar is too large" in message
+
+
 class AnthropicHttpProvider:
     name = "anthropic"
 
@@ -90,6 +110,8 @@ class AnthropicHttpProvider:
         self._api_key = api_key
         self._session = session or requests.Session()
         self._sleep = sleep
+        # strict tools per request; lowered for this run if the grammar is too big
+        self._strict_cap = MAX_STRICT_TOOLS
 
     def __repr__(self) -> str:
         return f"AnthropicHttpProvider(model={self.model!r}, api_key=***)"
@@ -97,16 +119,20 @@ class AnthropicHttpProvider:
     # ------------------------------------------------------------ request mapping
 
     @staticmethod
-    def tool_params(tools: tuple[ToolSpec, ...]) -> list[dict[str, Any]]:
-        # The API accepts at most MAX_STRICT_TOOLS strict tools: strict goes to the
-        # write tools first (schema-valid arguments matter most there). Every
-        # argument is validated again by the Odoo gateway in any case.
+    def tool_params(
+        tools: tuple[ToolSpec, ...], max_strict: int = MAX_STRICT_TOOLS
+    ) -> list[dict[str, Any]]:
+        # The API accepts at most MAX_STRICT_TOOLS strict tools over the whole
+        # array (deferred ones count too): strict goes first to the loaded write
+        # tools (schema-valid arguments matter most there), then to the loaded
+        # read tools, then to the deferred ones. Every argument is validated
+        # again by the Odoo gateway in any case.
         ordered = sorted(tools, key=lambda t: t.name)
         strict_names: set[str] = set()
         optional_budget = MAX_STRICT_OPTIONAL_PARAMS
-        for t in sorted(ordered, key=lambda t: t.read_only):  # write tools first
+        for t in sorted(ordered, key=lambda t: (t.deferred, t.read_only)):
             cost = count_optional_params(t.input_schema)
-            if len(strict_names) < MAX_STRICT_TOOLS and cost <= optional_budget:
+            if len(strict_names) < max_strict and cost <= optional_budget:
                 strict_names.add(t.name)
                 optional_budget -= cost
         params = []
@@ -117,13 +143,26 @@ class AnthropicHttpProvider:
                 param["strict"] = True
             else:
                 param["input_schema"] = t.input_schema
+            if t.deferred:
+                param["defer_loading"] = True
             params.append(param)
-        if params:
+        loaded = [p for p in params if not p.get("defer_loading")]
+        if loaded and len(loaded) < len(params):
+            # cache_control is refused on a deferred tool
+            loaded[-1]["cache_control"] = _EPHEMERAL.copy()
+        elif loaded:
+            params[-1]["cache_control"] = _EPHEMERAL.copy()
+        elif params:
+            # the API needs at least one tool loaded
+            for p in params:
+                p.pop("defer_loading", None)
             params[-1]["cache_control"] = _EPHEMERAL.copy()
         return params
 
     @staticmethod
-    def message_params(messages: tuple[Message, ...]) -> list[dict[str, Any]]:
+    def message_params(
+        messages: tuple[Message, ...], deferred: frozenset[str] = frozenset()
+    ) -> list[dict[str, Any]]:
         out: list[dict[str, Any]] = []
         for m in messages:
             if m.role == "assistant":
@@ -134,7 +173,7 @@ class AnthropicHttpProvider:
                     else [{"type": "text", "text": content}]
                 )
             else:
-                blocks = _user_blocks(m)
+                blocks = _user_blocks(m, deferred)
             if not blocks:
                 continue
             if out and out[-1]["role"] == m.role:
@@ -149,6 +188,8 @@ class AnthropicHttpProvider:
         return out
 
     def build_request(self, request: LLMRequest) -> dict[str, Any]:
+        tools = self.tool_params(request.tools, self._strict_cap)
+        deferred = frozenset(t["name"] for t in tools if t.get("defer_loading"))
         return {
             "model": self.model,
             "max_tokens": self.max_tokens,
@@ -159,8 +200,8 @@ class AnthropicHttpProvider:
                     "cache_control": _EPHEMERAL.copy(),
                 }
             ],
-            "tools": self.tool_params(request.tools),
-            "messages": self.message_params(request.messages),
+            "tools": tools,
+            "messages": self.message_params(request.messages, deferred),
             "output_config": {"effort": self.effort},
         }
 
@@ -177,10 +218,19 @@ class AnthropicHttpProvider:
     # ----------------------------------------------------------------- completion
 
     def complete(self, request: LLMRequest) -> LLMResponse:
-        params = self.build_request(request)
-        if not params["tools"]:
-            params.pop("tools")
-        return self.parse_response(self._post(params))
+        while True:
+            params = self.build_request(request)
+            if not params["tools"]:
+                params.pop("tools")
+            try:
+                return self.parse_response(self._post(params))
+            except StrictGrammarTooLarge:
+                # Many strict tools (a user with every area installed) can exceed
+                # the API's grammar size: keep the write tools strict first and
+                # halve until it fits; the gateway validates every argument anyway.
+                if not self._strict_cap:
+                    raise
+                self._strict_cap //= 2
 
     def _post(self, params: dict[str, Any]) -> dict[str, Any]:
         """POST with retries on 408/409/429/5xx and network failures."""
@@ -230,6 +280,10 @@ class AnthropicHttpProvider:
         # status and request id only. The API message of a 400 may echo prompt
         # content, so it is added only when explicitly enabled for diagnosis.
         rid = resp.headers.get("request-id") or resp.headers.get("x-request-id")
+        if resp.status_code == 400 and _grammar_too_large(resp):
+            return StrictGrammarTooLarge(
+                f"anthropic http 400 request_id={rid} strict grammar too large"
+            )
         detail = ""
         if self.log_error_details and resp.status_code == 400:
             try:
@@ -389,10 +443,32 @@ def _attachment_block(a: Attachment) -> dict[str, Any] | None:
     }
 
 
-def _user_blocks(m: Message) -> list[dict[str, Any]]:
-    blocks: list[dict[str, Any]] = [
-        _tool_result_block(r) for r in m.tool_results
-    ]  # results first
+def _user_blocks(
+    m: Message, deferred: frozenset[str] = frozenset()
+) -> list[dict[str, Any]]:
+    blocks: list[dict[str, Any]] = []
+    loaded_texts: list[str] = []
+    for r in m.tool_results:  # results first
+        refs = [n for n in dict.fromkeys(r.load_tools) if n in deferred]
+        if refs and not r.is_error:
+            # A tool_result carrying tool references cannot carry text too: the
+            # tools go in the result and its text right after, in the same turn.
+            blocks.append(
+                {
+                    "type": "tool_result",
+                    "tool_use_id": r.call_id,
+                    "content": [
+                        {"type": "tool_reference", "tool_name": n} for n in refs
+                    ],
+                }
+            )
+            loaded_texts.append(r.content)
+        else:
+            blocks.append(_tool_result_block(r))
+    blocks.extend(
+        {"type": "text", "text": f"[Resultado de load_skill, datos del sistema]\n{t}"}
+        for t in loaded_texts
+    )
     # documents and images go BEFORE the text of the turn (API guidance)
     blocks.extend(b for a in m.attachments if (b := _attachment_block(a)))
     if m.text:

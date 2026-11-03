@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from contextlib import suppress
 
 from odoo import api, models, tools
@@ -7,6 +8,8 @@ from odoo.tools import file_open
 
 from ..tools.errors import XtdAiToolError
 from ..tools.schema import check_tool_schema
+from ..tools.unlock import GRANT_KEY, UNLOCK_KEY
+from .xtd_ai_policy import max_level
 
 TEXT_LIMIT = 300
 DEFAULT_LIMIT = 50
@@ -15,6 +18,19 @@ MAX_LIMIT = 200
 
 # Ways the chat may open a record reference besides its form (see chat_service.esm.js)
 REF_VIEWS = ("journal_items",)
+# Records the agent may put on the user's screen (open_record): the user must
+# also be able to read them (ORM rights and record rules).
+OPEN_MODELS = (
+    "res.partner",
+    "sale.order",
+    "purchase.order",
+    "account.move",
+    "crm.lead",
+    "stock.picking",
+    "product.template",
+    "project.task",
+    "hr.expense",
+)
 
 
 class XtdAiToolbox(models.AbstractModel):
@@ -101,6 +117,77 @@ class XtdAiToolbox(models.AbstractModel):
         return result
 
     @api.model
+    def _xtd_ai_area_hints(self):
+        """``{skill: {"models": (...), "words": (...)}}`` of the installed skills:
+        what tells that a request belongs to an area (§6.5)."""
+        base = self.pool["xtd.ai.toolbox"]
+        result = {}
+        for model_name in sorted(self.pool.keys()):
+            cls = self.pool[model_name]
+            if not issubclass(cls, base) or model_name == "xtd.ai.toolbox":
+                continue
+            for klass in cls.__mro__:
+                for skill, hint in (
+                    vars(klass).get("_xtd_ai_skill_hints") or {}
+                ).items():
+                    result.setdefault(skill, hint)
+        return result
+
+    @api.model
+    def _xtd_ai_exposure(self):
+        """``areas`` (default): the tools of the areas of the request are loaded
+        and the rest deferred; ``all``: every visible tool is loaded (as before
+        wave 2; a fallback switch for the administrator)."""
+        # sudo: system parameter; agent users cannot read ir.config_parameter
+        value = (
+            self.env["ir.config_parameter"].sudo().get_param("xtd_ai.tool_exposure")
+            or "areas"
+        )
+        return "all" if value == "all" else "areas"
+
+    @api.model
+    def _xtd_ai_request_areas(self, run):
+        """Areas (skills) of the request that started ``run``, without a model:
+        the model on the user's screen, words of the last two user messages, and
+        the areas of the tools used in the last answer (follow-ups such as «sí,
+        hazlo»). The role of the user plays no part: an administrator gets the
+        same selection as anybody (§6.5)."""
+        hints = self._xtd_ai_area_hints()
+        tools = self._xtd_ai_tools()
+        # sudo: gateway-owned messages of the run's conversation
+        messages = (
+            self.env["xtd.ai.message"]
+            .sudo()
+            .search(
+                [
+                    ("conversation_id", "=", run.conversation_id.id),
+                    ("role", "in", ("user", "assistant")),
+                ],
+                order="id desc",
+                limit=4,
+            )
+        )
+        users = messages.filtered(lambda m: m.role == "user")[:2]
+        texts = [_fold(m.body or "") for m in users]
+        screen = users[:1].screen or {}
+        areas = set()
+        for skill, hint in hints.items():
+            if screen.get("model") in hint.get("models", ()):
+                areas.add(skill)
+            words = hint.get("words", ())
+            if any(
+                re.search(r"\b" + re.escape(_fold(w)), t) for w in words for t in texts
+            ):
+                areas.add(skill)
+        last = messages.filtered(lambda m: m.role == "assistant")[:1]
+        if last:
+            for used in last._xtd_ai_tools_used():
+                skill = (tools.get(used.get("tool")) or {}).get("skill")
+                if skill:
+                    areas.add(skill)
+        return areas
+
+    @api.model
     def _xtd_ai_read_skill(self, skill):
         files = self._xtd_ai_skill_files()
         if skill not in files:
@@ -126,6 +213,11 @@ class XtdAiToolbox(models.AbstractModel):
         for model in tool["requires"]:
             if model not in self.env:
                 return False
+        if (
+            tool.get("visible")
+            and not getattr(self.env[tool["model"]], tool["visible"])()
+        ):
+            return False
         groups = tool["groups"]
         if not groups:
             return True
@@ -147,8 +239,11 @@ class XtdAiToolbox(models.AbstractModel):
         }
 
     @api.model
-    def _xtd_ai_tool_descriptor(self, tool):
-        """MCP ``Tool`` object for ``tools/list``."""
+    def _xtd_ai_tool_descriptor(self, tool, deferred=False):
+        """MCP ``Tool`` object for ``tools/list``.
+
+        ``deferred``: outside the areas of the request; the agent sends it to
+        the model unloaded and ``load_skill`` loads it."""
         return {
             "name": tool["name"],
             "title": tool["title"],
@@ -159,6 +254,7 @@ class XtdAiToolbox(models.AbstractModel):
                 "destructiveHint": False,
                 "xtdKind": tool["kind"],
                 "xtdSkill": tool["skill"],
+                "xtdDeferred": bool(deferred),
             },
         }
 
@@ -191,14 +287,53 @@ class XtdAiToolbox(models.AbstractModel):
         if not self.env.context.get("xtd_ai_run"):
             raise RuntimeError("AI tools must run with xtd_ai_run in the context")
         toolbox = self.env[tool["model"]]
+        if tool.get("unlocks"):
+            # only this execution of this tool may lift its declared guards
+            toolbox = toolbox.with_context(**{GRANT_KEY: tuple(tool["unlocks"])})
+        elif self.env.context.get(GRANT_KEY):
+            toolbox = toolbox.with_context(**{GRANT_KEY: ()})
         with self.env.cr.savepoint():
             result = getattr(toolbox, tool["attr"])(args)
         return self._xtd_ai_normalize_result(result)
 
     @api.model
+    def _xtd_ai_call_level(self, tool, args):
+        """Action level (``N0``..``N4``) of a call, from the policy (§6.1).
+
+        The tool's ``policy`` method runs in a savepoint that is always rolled
+        back (it may resolve names, never write). The user's own preference
+        and the global ``force_confirmation`` can only raise it to a card.
+        """
+        if tool["kind"] == "read":
+            return "N0"
+        policy = self.env["xtd.ai.policy"]
+        if tool.get("policy"):
+            toolbox = self.env[tool["model"]].with_context(
+                **{GRANT_KEY: (), UNLOCK_KEY: None}
+            )
+            level = None
+            with suppress(_PreviewDone), self.env.cr.savepoint():
+                level = getattr(toolbox, tool["policy"])(args)
+                raise _PreviewDone()
+        elif tool.get("op_class"):
+            level = policy._xtd_ai_level(tool["op_class"])
+        elif tool["kind"] == "create":
+            level = policy._xtd_ai_level("confirm")
+        else:
+            level = policy._xtd_ai_level("create_draft")
+        level = policy._xtd_ai_tool_level(tool["name"], level)
+        user = self.env.user
+        if user._xtd_ai_force_confirmation() or user.sudo().xtd_ai_confirm_writes:
+            # sudo: own preference, always readable
+            level = max_level(level, "N2")
+        return policy._xtd_ai_tool_brakes(tool, level)
+
+    @api.model
     def _xtd_ai_preview(self, tool, args):
         """Run the preview (reads only): any side effect is rolled back."""
-        toolbox = self.env[tool["model"]]
+        toolbox = self.env[tool["model"]].with_context(
+            **{GRANT_KEY: (), UNLOCK_KEY: None}
+        )
         sentinel = _PreviewDone()
         preview = None
         with suppress(_PreviewDone), self.env.cr.savepoint():
@@ -208,6 +343,39 @@ class XtdAiToolbox(models.AbstractModel):
             raise XtdAiToolError("internal", "Invalid preview")
         preview.setdefault("lines", [])
         return preview
+
+    @api.model
+    def _xtd_ai_handoff(self, tool, args):
+        """N3 of a transition (§6.1, §6.2.4): instead of refusing, put the
+        record on the user's screen and tell the agent which button is left.
+
+        The tool's ``handoff`` method runs like a preview (rolled back, no
+        unlock): it checks the record and returns ``(record, button)``."""
+        toolbox = self.env[tool["model"]].with_context(
+            **{GRANT_KEY: (), UNLOCK_KEY: None}
+        )
+        found = None
+        with suppress(_PreviewDone), self.env.cr.savepoint():
+            found = getattr(toolbox, tool["handoff"])(args)
+            raise _PreviewDone()
+        record, button = found
+        record.check_access("read")
+        ref = self._xtd_ai_ref(record) | {"navigate": True}
+        return {
+            "status": "handoff",
+            "data": {
+                "record": ref,
+                "button": button,
+                "message": self.env._(
+                    "Lo dejas preparado: «%(name)s» se abre en la pantalla del "
+                    "usuario y solo falta que pulse «%(button)s» en XTD. Díselo en "
+                    "una línea, sin disculparte ni decir que no puedes.",
+                    name=ref["name"],
+                    button=button,
+                ),
+            },
+            "records": [ref],
+        }
 
     @api.model
     def _xtd_ai_ref(self, record):
@@ -239,8 +407,29 @@ class XtdAiToolbox(models.AbstractModel):
                     ref["view"] = item["view"]
                 if item.get("navigate") is True:
                     ref["navigate"] = True
+                # lines the tool added to an existing document (undo removes them)
+                lines = item.get("undo_lines")
+                if isinstance(lines, list):
+                    ref["undo_lines"] = [
+                        i
+                        for i in lines
+                        if isinstance(i, int) and not isinstance(i, bool)
+                    ][:50]
+                # fields the tool edited: values before and after (undo, audit)
+                edit = item.get("undo_edit")
+                if isinstance(edit, dict) and isinstance(edit.get("before"), dict):
+                    ref["undo_edit"] = {
+                        "before": edit["before"],
+                        "after": edit.get("after") or {},
+                    }
+                    # a transition with its own undo (xtd.ai.undo handlers)
+                    if isinstance(edit.get("transition"), str):
+                        ref["undo_edit"]["transition"] = edit["transition"][:40]
                 refs.append(ref)
-        return {"data": result.get("data", {}), "records": refs}
+        out = {"data": result.get("data", {}), "records": refs}
+        if result.get("load_tools"):
+            out["load_tools"] = [n for n in result["load_tools"] if isinstance(n, str)]
+        return out
 
     # ------------------------------------------------------------------
     # Helpers for tools (CONTRACT §6)
@@ -255,6 +444,19 @@ class XtdAiToolbox(models.AbstractModel):
             "untrusted_text": text[:TEXT_LIMIT],
             "truncated": len(text) > TEXT_LIMIT,
         }
+
+    @api.model
+    def _xtd_ai_mark_external(self):
+        """Record that this run has read text written outside the company (a
+        web form, an incoming email): from now on every write of the run is a
+        card (§6.1, external text brake). Tools call it from their bodies."""
+        run_id = self.env.context.get("xtd_ai_run")
+        if not run_id:
+            return
+        # sudo: the run is not writable by its user; only this flag is set
+        run = self.env["xtd.ai.run"].sudo().browse(run_id).exists()
+        if run and not run.external_text:
+            run.external_text = True
 
     @api.model
     def _xtd_ai_money(self, amount, currency):
@@ -372,6 +574,12 @@ class XtdAiToolbox(models.AbstractModel):
         if not ok:
             raise not_found
         return attachment
+
+
+def _fold(text):
+    """Lower case without accents, to match area words in a message."""
+    text = unicodedata.normalize("NFKD", str(text).lower())
+    return "".join(c for c in text if not unicodedata.combining(c))
 
 
 class _PreviewDone(Exception):

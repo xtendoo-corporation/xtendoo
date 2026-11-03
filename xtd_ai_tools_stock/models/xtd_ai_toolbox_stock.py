@@ -58,6 +58,26 @@ class XtdAiToolboxStock(models.AbstractModel):
     _description = "AI tools: stock"
 
     _xtd_ai_skills = {"inventario": "data/skills/inventario.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "inventario": {
+            "models": ("stock.picking", "stock.quant", "stock.move", "stock.move.line"),
+            "words": (
+                "stock",
+                "existencia",
+                "inventario",
+                "almacen",
+                "albaran",
+                "valida",
+                # document references (WH/IN/00002, WH/OUT/00042)
+                "wh/",
+                "entrega",
+                "recepcion",
+                "envio",
+                "disponib",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     # Helpers

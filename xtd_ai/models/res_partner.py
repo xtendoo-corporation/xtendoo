@@ -43,7 +43,20 @@ class ResPartner(models.Model):
     def write(self, vals):
         ctx = self.env.context
         if ctx.get("xtd_ai_run") and not ctx.get("_xtd_ai_partner_create"):
-            blocked = [f for f in vals if f in self._xtd_ai_protected_partner_fields]
+            # update_record lifts the guard only for the fields the registry
+            # declares editable (never bank accounts, parent, archive...).
+            allowed = (
+                self.env["xtd.ai.record.registry"]._xtd_ai_editable_fields(
+                    "res.partner"
+                )
+                if ctx.get("_xtd_ai_registry_write")
+                else set()
+            )
+            blocked = [
+                f
+                for f in vals
+                if f in self._xtd_ai_protected_partner_fields and f not in allowed
+            ]
             if blocked and self:
                 raise XtdAiDraftOnlyError(
                     self.env._(

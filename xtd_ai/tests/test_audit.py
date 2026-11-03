@@ -201,6 +201,7 @@ class TestAudit(XtdAiCase):
             runs.mapped("jti")
 
     def test_user_preference(self):
-        self.assertTrue(self.user.xtd_ai_confirm_writes)
-        self.user.with_user(self.user).write({"xtd_ai_confirm_writes": False})
+        # balanced profile: off by default, the user may harden it
         self.assertFalse(self.user.xtd_ai_confirm_writes)
+        self.user.with_user(self.user).write({"xtd_ai_confirm_writes": True})
+        self.assertTrue(self.user.xtd_ai_confirm_writes)

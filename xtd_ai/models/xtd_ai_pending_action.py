@@ -48,6 +48,12 @@ class XtdAiPendingAction(models.Model):
     )
     result_model = fields.Char()
     result_res_id = fields.Integer()
+    result_line_ids = fields.Json(
+        help="Ids of the lines the action added to an existing document (undo)."
+    )
+    result_edit = fields.Json(
+        help="Values before and after of the fields the action edited (undo)."
+    )
     error = fields.Char()
     expires_at = fields.Datetime(
         required=True,
@@ -128,6 +134,10 @@ class XtdAiPendingAction(models.Model):
         )
         if refs and not error:
             vals.update(result_model=refs[0]["model"], result_res_id=refs[0]["id"])
+            if refs[0].get("undo_lines"):
+                vals["result_line_ids"] = refs[0]["undo_lines"]
+            if "undo_edit" in refs[0]:
+                vals["result_edit"] = refs[0]["undo_edit"]
         action_su.write(vals)
         self.env["xtd.ai.audit"]._xtd_ai_log(
             "guard_blocked" if code == "draft_only" else "confirm",
@@ -182,26 +192,42 @@ class XtdAiPendingAction(models.Model):
         return action
 
     # ------------------------------------------------------------------
+    def _xtd_ai_confirmed_label(self):
+        """``creada X (modelo m, id N)``: what a confirmed action produced."""
+        self.ensure_one()
+        action = self.sudo()
+        # an action on an existing record (edit, confirm, send) is not "created"
+        done = bool(action.result_edit)
+        label = _("hecha") if done else _("creada")
+        if action.result_model and action.result_res_id:
+            record = self.env[action.result_model].sudo().browse(action.result_res_id)
+            if record.exists():
+                # model and id let the agent work on it next ("show it")
+                values = {
+                    "name": (record.display_name or "")[:60],
+                    "model": action.result_model,
+                    "id": action.result_res_id,
+                }
+                if done:
+                    tool = (
+                        self.env["xtd.ai.toolbox"]._xtd_ai_tools().get(action.tool_name)
+                    )
+                    label = _(
+                        "hecha «%(title)s» sobre %(name)s (modelo %(model)s, id "
+                        "%(id)s)",
+                        title=(tool or {}).get("title") or action.tool_name,
+                        **values,
+                    )
+                else:
+                    label = _("creada %(name)s (modelo %(model)s, id %(id)s)", **values)
+        return label
+
     def _xtd_ai_history_notes(self):
         """Lines such as ``[Acción #12: creada S00042]`` for the LLM history."""
         notes = []
         for action in self.sudo():
             if action.state == "confirmed":
-                label = _("creada")
-                if action.result_model and action.result_res_id:
-                    record = (
-                        self.env[action.result_model]
-                        .sudo()
-                        .browse(action.result_res_id)
-                    )
-                    if record.exists():
-                        # model and id let the agent work on it next ("show it")
-                        label = _(
-                            "creada %(name)s (modelo %(model)s, id %(id)s)",
-                            name=(record.display_name or "")[:60],
-                            model=action.result_model,
-                            id=action.result_res_id,
-                        )
+                label = action._xtd_ai_confirmed_label()
             else:
                 label = {
                     "pending": _("pendiente de confirmación"),

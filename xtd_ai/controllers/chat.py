@@ -123,13 +123,30 @@ class XtdAiChatController(http.Controller):
             return None
         return f"/odoo/{model}/{res_id}"
 
-    def _refs(self, refs):
+    def _undo_info(self, env, ref, since, lines=None, edit=None):
+        """``{"state", "lines", "edit"}`` when the chat can offer "Deshacer"."""
+        if edit:
+            state = env["xtd.ai.undo"]._xtd_ai_undo_edit_state(
+                ref.get("model"), ref.get("id"), edit, since=since
+            )
+            return {"state": state, "lines": False, "edit": True} if state else None
+        state = env["xtd.ai.undo"]._xtd_ai_undo_state(
+            ref.get("model"), ref.get("id"), since=since, line_ids=lines
+        )
+        return {"state": state, "lines": bool(lines), "edit": False} if state else None
+
+    def _refs(self, refs, env=None, since=None):
         result = []
         for ref in refs or []:
             if not isinstance(ref, dict):
                 continue
             url = self._record_link(ref.get("model"), ref.get("id"))
             if url:
+                lines = ref.get("undo_lines") or None
+                undo = None
+                edit = None if ref.get("created") else ref.get("undo_edit")
+                if env is not None and (ref.get("created") or lines or edit):
+                    undo = self._undo_info(env, ref, since, lines, edit)
                 result.append(
                     {
                         "model": ref["model"],
@@ -141,6 +158,7 @@ class XtdAiChatController(http.Controller):
                         if ref.get("view") in REF_VIEWS
                         else None,
                         "navigate": ref.get("navigate") is True,
+                        "undo": undo,
                     }
                 )
         return result
@@ -221,11 +239,19 @@ class XtdAiChatController(http.Controller):
                 record = env[action.result_model].browse(action.result_res_id)
                 name = record.display_name or name
             if url:
+                lines = action.result_line_ids or None
                 result = {
                     "model": action.result_model,
                     "id": action.result_res_id,
                     "name": str(name)[:100],
                     "url": url,
+                    "undo": self._undo_info(
+                        env,
+                        {"model": action.result_model, "id": action.result_res_id},
+                        action.create_date,
+                        lines,
+                        action.result_edit or None,
+                    ),
                 }
         return {
             "id": action.id,
@@ -233,6 +259,11 @@ class XtdAiChatController(http.Controller):
             "title": (tool or {}).get("title") or action.tool_name,
             "summary": str(preview.get("summary") or "")[:300],
             "lines": lines,
+            # transitions: the verb of the button, a highlighted warning (amount
+            # over the limit) and whether it can be undone
+            "confirm_label": str(preview.get("confirm_label") or "")[:30] or False,
+            "warning": str(preview.get("warning") or "")[:300] or False,
+            "irreversible": preview.get("irreversible") is True,
             "state": action.state,
             # a pending card of a closed conversation is shown but never actionable
             "actionable": action.state == "pending" and not closed,
@@ -252,7 +283,9 @@ class XtdAiChatController(http.Controller):
             "pending_actions": [
                 self._action_payload(env, a) for a in message.pending_action_ids
             ],
-            "record_refs": self._refs(message.record_refs),
+            "record_refs": self._refs(
+                message.record_refs, env, message.run_id.create_date
+            ),
             "attachments": self._attachments_payload(env, message),
         }
 
@@ -465,7 +498,8 @@ class XtdAiChatController(http.Controller):
         env = self._env()
         conversation = self._conversation(env, conversation_id)
         messages = env["xtd.ai.message"].search(
-            [("conversation_id", "=", conversation.id)],
+            # automatic continuations are for the agent, not for the user
+            [("conversation_id", "=", conversation.id), ("auto", "=", False)],
             order="id desc",
             limit=MESSAGES_LIMIT,
         )
@@ -528,6 +562,10 @@ class XtdAiChatController(http.Controller):
         run, token = conversations._xtd_ai_start_run(
             text, attachment_ids=ids or None, screen=screen
         )
+        return self._dispatch(env, run, token)
+
+    def _dispatch(self, env, run, token):
+        """Hand a queued run to the agent (integrated or external service)."""
         url = os.environ.get("XTD_AI_SERVICE_URL")
         key = os.environ.get("XTD_AI_SERVICE_KEY")
         if not url:
@@ -649,11 +687,26 @@ class XtdAiChatController(http.Controller):
         env = self._env()
         action = self._pending(env, action_id)
         result = action.action_confirm()
+        # The agent resumes the user's request by itself (no typing needed)
+        continuation = None
+        if result["state"] == "confirmed" and self._auto_continue_enabled(env):
+            started = action.conversation_id._xtd_ai_continue_after(action)
+            if started:
+                continuation = self._dispatch(env, *started)
         return {
             "state": result["state"],
             "error": result["error"],
             "action": self._action_payload(env, action),
+            "continuation": continuation,
         }
+
+    @staticmethod
+    def _auto_continue_enabled(env):
+        # sudo: system parameter; users cannot read ir.config_parameter
+        value = (
+            env["ir.config_parameter"].sudo().get_param("xtd_ai.auto_continue", "True")
+        )
+        return str(value).lower() not in ("0", "false", "no")
 
     @http.route("/xtd_ai/chat/pending/cancel", type="jsonrpc", auth="user")
     def pending_cancel(self, action_id):
@@ -676,6 +729,71 @@ class XtdAiChatController(http.Controller):
                 )
             )
         return action
+
+    @http.route("/xtd_ai/chat/undo", type="jsonrpc", auth="user")
+    def undo(  # noqa: C901  three origins (card, message, edit) of one undo
+        self, model, res_id, action_id=None, message_id=None, lines=False, edit=False
+    ):
+        """Undo (delete) an intact draft the agent created, as the session user.
+
+        The record must come from this user's own conversation: a confirmed
+        card's result or a record the run created (never an arbitrary id).
+        """
+        env = self._env()
+        if not isinstance(res_id, int) or isinstance(res_id, bool):
+            raise UserError(_("Registro no válido."))
+        line_ids, since, run = None, None, None
+        if action_id:
+            action = self._pending(env, action_id)
+            if (
+                action.state != "confirmed"
+                or action.result_model != model
+                or action.result_res_id != res_id
+            ):
+                raise AccessError(_("Ese registro no viene de esta acción."))
+            since, run = action.create_date, action.run_id
+            line_ids = (action.result_line_ids or None) if lines else None
+            edit_values = (action.result_edit or None) if edit else None
+        else:
+            message = env["xtd.ai.message"].search(
+                [
+                    ("id", "=", int(message_id or 0)),
+                    ("conversation_id.user_id", "=", env.uid),
+                ]
+            )
+            ref = next(
+                (
+                    r
+                    for r in message.record_refs or []
+                    if isinstance(r, dict)
+                    and r.get("model") == model
+                    and r.get("id") == res_id
+                    and (
+                        r.get("undo_edit")
+                        if edit
+                        else (r.get("undo_lines") if lines else r.get("created"))
+                    )
+                ),
+                None,
+            )
+            if not message or not ref:
+                raise AccessError(_("Ese registro no viene de esta conversación."))
+            if message.conversation_id.state != "open":
+                raise UserError(_("La conversación está cerrada."))
+            since, run = message.run_id.create_date, message.run_id
+            line_ids = ref.get("undo_lines") if lines else None
+            edit_values = ref.get("undo_edit") if edit else None
+        if not since:
+            raise AccessError(_("No se puede comprobar el origen del registro."))
+        if edit:
+            if not edit_values:
+                raise AccessError(_("Ese cambio no viene de esta conversación."))
+            return env["xtd.ai.undo"]._xtd_ai_undo_edit(
+                model, res_id, edit_values, since=since, run=run
+            )
+        return env["xtd.ai.undo"]._xtd_ai_undo(
+            model, res_id, since=since, line_ids=line_ids, run=run
+        )
 
     @http.route("/xtd_ai/chat/run/cancel", type="jsonrpc", auth="user")
     def run_cancel(self, run_id):

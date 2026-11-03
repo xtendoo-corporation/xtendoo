@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_xtd_ai_usage_report_list" model="ir.ui.view">
+        <field name="name">xtd.ai.usage.report.list</field>
+        <field name="model">xtd.ai.usage.report</field>
+        <field name="arch" type="xml">
+            <list
+        create="0"
+        edit="0"
+        delete="0"
+        decoration-success="candidate_n1"
+        decoration-warning="needs_improvement"
+      >
+                <field name="week" />
+                <field name="company_id" groups="base.group_multi_company" />
+                <field name="tool_name" />
+                <field name="total" sum="Total" />
+                <field name="accepted" sum="Total" />
+                <field name="rejected" sum="Total" />
+                <field name="expired" sum="Total" />
+                <field name="failed" sum="Total" optional="hide" />
+                <field name="pending" optional="hide" />
+                <field name="acceptance_rate" />
+                <field name="rejection_rate" />
+                <field name="candidate_n1" widget="boolean" />
+                <field name="needs_improvement" widget="boolean" />
+            </list>
+        </field>
+    </record>
+    <record id="view_xtd_ai_usage_report_search" model="ir.ui.view">
+        <field name="name">xtd.ai.usage.report.search</field>
+        <field name="model">xtd.ai.usage.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="tool_name" />
+                <filter
+          name="candidate_n1"
+          string="Candidatas a N1"
+          domain="[('candidate_n1', '=', True)]"
+        />
+                <filter
+          name="needs_improvement"
+          string="A mejorar"
+          domain="[('needs_improvement', '=', True)]"
+        />
+                <separator />
+                <filter
+          name="group_week"
+          string="Semana"
+          context="{'group_by': 'week'}"
+        />
+                <filter
+          name="group_tool"
+          string="Herramienta"
+          context="{'group_by': 'tool_name'}"
+        />
+            </search>
+        </field>
+    </record>
+    <record id="action_xtd_ai_usage_report" model="ir.actions.act_window">
+        <field name="name">Uso de tarjetas por semana</field>
+        <field name="res_model">xtd.ai.usage.report</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_week': 1}</field>
+        <field name="help" type="html">
+            <p>
+                Tarjetas aceptadas, rechazadas y expiradas por herramienta. En verde,
+                candidatas a pasar de tarjeta (N2) a «Hecho · Deshacer» (N1): más del
+                95 % aceptadas. En naranja, más del 20 % rechazadas: revisar su skill o
+                su vista previa.
+            </p>
+        </field>
+    </record>
+</odoo>

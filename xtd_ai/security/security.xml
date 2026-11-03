@@ -81,4 +81,14 @@
         <field name="domain_force">[('user_id', '=', user.id)]</field>
         <field name="groups" eval="[Command.link(ref('group_xtd_ai_user'))]" />
     </record>
+    <record id="rule_xtd_ai_policy_rule_company" model="ir.rule">
+        <field name="name">AI policy table: allowed companies</field>
+        <field name="model_id" ref="model_xtd_ai_policy_rule" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_xtd_ai_usage_report_company" model="ir.rule">
+        <field name="name">AI usage report: allowed companies</field>
+        <field name="model_id" ref="model_xtd_ai_usage_report" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

@@ -11,6 +11,7 @@ from odoo.tools.misc import formatLang
 from odoo.addons.xtd_ai.tools import (
     XtdAiDraftOnlyError,
     XtdAiToolError,
+    unlock,
     xtd_ai_tool,
 )
 
@@ -51,6 +52,23 @@ class XtdAiToolboxCrm(models.AbstractModel):
     _description = "AI tools: CRM"
 
     _xtd_ai_skills = {"crm": "data/skills/crm.md"}
+    # area of the request (§6.5): models of the screen and words of the message
+    _xtd_ai_skill_hints = {
+        "crm": {
+            "models": ("crm.lead",),
+            "words": (
+                "oportunidad",
+                "lead",
+                "pipeline",
+                "embudo",
+                "crm",
+                "ganad",
+                "perdid",
+                "etapa",
+                "iniciativa",
+            ),
+        }
+    }
 
     # ------------------------------------------------------------------
     # Helpers
@@ -97,6 +115,15 @@ class XtdAiToolboxCrm(models.AbstractModel):
 
     def _xtd_ai_is_sales_manager(self):
         return self.env.user.has_group(SALES_MANAGER_GROUP)
+
+    def _xtd_ai_taint(self, leads):
+        """Brake the run if any of ``leads`` holds text from outside (§6.1)."""
+        external = self.env["xtd.ai.record.registry"]._xtd_ai_is_external(
+            "crm.lead", leads
+        )
+        if external:
+            self._xtd_ai_mark_external()
+        return external
 
     # ------------------------------------------------------------------
     # Multi-company (results span env.companies; never wider)
@@ -319,6 +346,9 @@ class XtdAiToolboxCrm(models.AbstractModel):
         limit = self._xtd_ai_limit(args.get("limit"))
         found = leads.search(domain, limit=limit, order="date_deadline asc, id desc")
         total = leads.search_count(domain) if len(found) >= limit else len(found)
+        # lists only carry short names (untrusted_text): the run is braked when
+        # the full text of an external lead is read (get_opportunity), and any
+        # write on that lead is a card anyway
         rows = [self._xtd_ai_lead_row(lead) for lead in found]
         return {"data": self._xtd_ai_list(rows, total, limit), "records": found}
 
@@ -365,6 +395,11 @@ class XtdAiToolboxCrm(models.AbstractModel):
                 "date_closed": self._xtd_ai_iso(lead.date_closed),
                 "lost_reason": lead.lost_reason_id.name or None,
                 "description": self._xtd_ai_plain(lead.description),
+                "tags": lead.tag_ids.mapped("name"),
+                "activities": self.env["xtd.ai.toolbox.chatter"]._xtd_ai_activity_rows(
+                    lead
+                ),
+                "external_text": self._xtd_ai_taint(lead),
             }
         )
         return {"data": data, "records": lead}
@@ -658,3 +693,225 @@ class XtdAiToolboxCrm(models.AbstractModel):
             )
             lines.append({"field": "company", "value": self.env.company.name})
         return {"summary": summary, "lines": lines}
+
+    # ------------------------------------------------------------------
+    # CRM: stages (N1 with undo) and won/lost (always a card, transition_internal)
+    # ------------------------------------------------------------------
+    def _xtd_ai_open_lead(self, name_or_id):
+        lead = self._xtd_ai_resolve(
+            "crm.lead",
+            name_or_id,
+            domain=[("type", "=", "opportunity"), ("stage_id.is_won", "=", False)],
+        )
+        lead.check_access("write")
+        return lead
+
+    def _xtd_ai_target_stage(self, lead, value):
+        domain = [("is_won", "=", False)]
+        if lead.team_id:
+            domain += [
+                "|",
+                ("team_ids", "=", False),
+                ("team_ids", "in", lead.team_id.ids),
+            ]
+        try:
+            stage = self._xtd_ai_resolve("crm.stage", value, domain=domain)
+        except XtdAiToolError as exc:
+            won = self.env["crm.stage"].search(
+                [("is_won", "=", True), ("name", "ilike", str(value))], limit=1
+            )
+            if exc.code == "not_found" and won:
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._(
+                        "«%s» es la etapa de ganada: usa close_opportunity.",
+                        won.name,
+                    ),
+                ) from None
+            raise
+        if stage == lead.stage_id:
+            raise XtdAiToolError(
+                "validation",
+                self.env._("La oportunidad ya está en «%s».", stage.name),
+            )
+        return stage
+
+    @xtd_ai_tool(
+        name="move_opportunity_stage",
+        title="Mover oportunidad de etapa",
+        description=(
+            "Mueve una oportunidad abierta a otra etapa del embudo (no a ganada: "
+            "para ganar o perder usa close_opportunity). Se hace y el usuario "
+            "puede deshacerlo (vuelve a la etapa anterior)."
+        ),
+        input_schema=_schema(
+            {
+                "opportunity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Id (preferible) o nombre de la oportunidad.",
+                },
+                "stage": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Etapa de destino (id o nombre).",
+                },
+            },
+            ["opportunity", "stage"],
+        ),
+        kind="draft",
+        skill="crm",
+        groups=SALES_GROUPS,
+        # a stage is a low-risk edit: done with "Deshacer" (N1) in Equilibrado
+        op_class="edit_low",
+        preview="_xtd_ai_preview_move_opportunity_stage",
+    )
+    def tool_move_opportunity_stage(self, args):
+        lead = self._xtd_ai_open_lead(args["opportunity"])
+        stage = self._xtd_ai_target_stage(lead, args["stage"])
+        before = lead.stage_id
+        lead.write({"stage_id": stage.id})
+        data = self._xtd_ai_lead_row(lead) | {"previous_stage": before.name}
+        return {
+            "data": data,
+            "records": [
+                self._xtd_ai_ref(lead)
+                | {
+                    "undo_edit": {
+                        "before": {"stage_id": before.id},
+                        "after": {"stage_id": stage.id},
+                        "transition": "crm_stage",
+                    }
+                }
+            ],
+        }
+
+    def _xtd_ai_preview_move_opportunity_stage(self, args):
+        lead = self._xtd_ai_open_lead(args["opportunity"])
+        stage = self._xtd_ai_target_stage(lead, args["stage"])
+        return {
+            "summary": self.env._(
+                "Mover «%(name)s»: %(before)s → %(after)s",
+                name=(lead.name or "")[:80],
+                before=lead.stage_id.name,
+                after=stage.name,
+            ),
+            "lines": [
+                {
+                    "field": self.env._("Etapa"),
+                    "value": f"{lead.stage_id.name} → {stage.name}",
+                },
+                {
+                    "field": self.env._("Efecto"),
+                    "value": self.env._(
+                        "XTD puede recalcular la probabilidad según la etapa."
+                    ),
+                },
+            ],
+        }
+
+    @xtd_ai_tool(
+        name="close_opportunity",
+        title="Ganar o perder oportunidad",
+        description=(
+            "Marca una oportunidad abierta como ganada (result=won) o perdida "
+            "(result=lost, con motivo de pérdida si el usuario lo da). Queda una "
+            "tarjeta para que el usuario confirme. Una perdida se archiva y se "
+            "puede restaurar en XTD."
+        ),
+        input_schema=_schema(
+            {
+                "opportunity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Id (preferible) o nombre de la oportunidad.",
+                },
+                "result": {"type": "string", "enum": ["won", "lost"]},
+                "lost_reason": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Motivo de pérdida (id o nombre), solo con lost.",
+                },
+            },
+            ["opportunity", "result"],
+        ),
+        kind="draft",
+        skill="crm",
+        groups=SALES_GROUPS,
+        op_class="transition_internal",
+        preview="_xtd_ai_preview_close_opportunity",
+        unlocks=("crm.lead.action_set_won", "crm.lead.action_set_lost"),
+    )
+    def tool_close_opportunity(self, args):
+        lead, reason = self._xtd_ai_close_args(args)
+        if args["result"] == "won":
+            unlock(lead, "action_set_won").action_set_won()
+        else:
+            unlock(lead, "action_set_lost").action_set_lost(
+                **({"lost_reason_id": reason.id} if reason else {})
+            )
+        lead.invalidate_recordset()
+        data = self._xtd_ai_lead_row(lead.with_context(active_test=False))
+        data["lost_reason"] = reason.name if reason else None
+        return {
+            "data": data,
+            "records": [self._xtd_ai_ref(lead) | {"undo_edit": {"before": {}}}],
+        }
+
+    def _xtd_ai_close_args(self, args):
+        lead = self._xtd_ai_open_lead(args["opportunity"])
+        if not lead.active:
+            raise XtdAiToolError(
+                "validation", self.env._("La oportunidad ya está cerrada.")
+            )
+        reason = self.env["crm.lost.reason"]
+        if args.get("lost_reason"):
+            if args["result"] != "lost":
+                raise XtdAiToolError(
+                    "validation",
+                    self.env._("El motivo de pérdida solo vale para perderla."),
+                )
+            reason = self._xtd_ai_resolve("crm.lost.reason", args["lost_reason"])
+        return lead, reason
+
+    def _xtd_ai_preview_close_opportunity(self, args):
+        lead, reason = self._xtd_ai_close_args(args)
+        currency = lead.company_currency
+        won = args["result"] == "won"
+        lines = [
+            {
+                "field": self.env._("Resultado"),
+                "value": self.env._("Ganada") if won else self.env._("Perdida"),
+            },
+            {
+                "field": self.env._("Ingreso esperado"),
+                "value": self._xtd_ai_money_fmt(lead.expected_revenue, currency),
+            },
+        ]
+        if reason:
+            lines.append({"field": self.env._("Motivo"), "value": reason.name})
+        lines.append(
+            {
+                "field": self.env._("Efecto"),
+                "value": self.env._(
+                    "Pasa a la etapa ganada (100 %); cuenta como ganado en el "
+                    "pipeline del equipo."
+                )
+                if won
+                else self.env._(
+                    "Se archiva con probabilidad 0; sale del pipeline y se puede "
+                    "restaurar."
+                ),
+            }
+        )
+        return {
+            "summary": self.env._(
+                "Marcar «%(name)s» como %(result)s",
+                name=(lead.name or "")[:80],
+                result=self.env._("ganada") if won else self.env._("perdida"),
+            ),
+            "lines": lines,
+        }

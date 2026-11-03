@@ -273,7 +273,12 @@ class AgentLoop:
     def _run_tool(self, call: ToolCall) -> ToolResult:
         try:
             out = self.gateway.call_tool(call.name, call.arguments)
-            return ToolResult(call_id=call.id, content=out.text, is_error=out.is_error)
+            return ToolResult(
+                call_id=call.id,
+                content=out.text,
+                is_error=out.is_error,
+                load_tools=out.load_tools,
+            )
         except (RunCancelled, OdooAuthError, OdooForbiddenError):
             raise
         except OdooError as exc:

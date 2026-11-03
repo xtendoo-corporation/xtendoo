@@ -2,3 +2,9 @@ from . import test_sale_tools
 from . import test_guards
 from . import test_multicompany
 from . import test_availability
+from . import test_undo
+from . import test_records_sale
+from . import test_records_product
+from . import test_records_adversarial
+from . import test_transitions
+from . import test_transitions_adversarial
