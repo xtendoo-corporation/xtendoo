@@ -265,6 +265,13 @@ class XtdAiConversation(models.Model):
             )
         if user.company_id.id not in user.company_ids.ids:
             raise AccessError(_("Compañía no permitida."))
+        if self.env.company.sudo().xtd_ai_paused:  # sudo: company setting
+            raise UserError(
+                _(
+                    "El agente IA está en pausa en esta compañía. Puede "
+                    "reactivarlo un administrador en Ajustes."
+                )
+            )
 
         # sudo: users cannot create runs/messages through the ORM (read-only ACL);
         # the gateway creates them after the checks above.

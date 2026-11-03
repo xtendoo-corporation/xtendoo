@@ -45,6 +45,15 @@ class ResConfigSettings(models.TransientModel):
         inverse="_inverse_xtd_ai_policy",
     )
 
+    xtd_ai_paused = fields.Boolean(related="company_id.xtd_ai_paused", readonly=False)
+    xtd_ai_max_writes_hour = fields.Integer(
+        related="company_id.xtd_ai_max_writes_hour", readonly=False
+    )
+    xtd_ai_max_writes_message = fields.Integer(
+        related="company_id.xtd_ai_max_writes_message", readonly=False
+    )
+    xtd_ai_fiscal_brake = fields.Boolean(related="company_id.xtd_ai_fiscal_brake")
+
     @api.depends("company_id")
     def _compute_xtd_ai_policy(self):
         for settings in self:

@@ -18,7 +18,9 @@ Compatibility with waves 1A/1B: when a company has no value of its own, the
 still raises (never lowers) the level of every company.
 """
 
-from odoo import api, models
+from datetime import timedelta
+
+from odoo import api, fields, models
 
 from ..tools.errors import XtdAiToolError
 
@@ -55,6 +57,8 @@ POLICY_TABLE = {
 # Operation classes nobody can edit: read, publish or post (always N3, user
 # decision), payments and administration (N4, red lines of §5).
 FIXED_CLASSES = frozenset({"read", "post", "payment", "admin"})
+# Classes about publishing or sending documents: N3 under Veri*Factu / SII
+FISCAL_CLASSES = frozenset({"post", "send_external", "transition"})
 # The most an administrator can relax a class: the Ágil column of §6.1.
 FLOOR = {op: row[PROFILES.index("agile")] for op, row in POLICY_TABLE.items()}
 
@@ -169,8 +173,7 @@ class XtdAiPolicy(models.AbstractModel):
                 # the table may harden, or relax down to the Ágil floor
                 level = max_level(rule.level, FLOOR[op_class])
         override = str(self._xtd_ai_param(f"level.{op_class}", "")).strip().upper()
-        level = max_level(level, override) if override in LEVELS else level
-        return self._xtd_ai_brakes(op_class, level)
+        return max_level(level, override) if override in LEVELS else level
 
     @api.model
     def _xtd_ai_tool_level(self, tool_name, level):
@@ -179,16 +182,67 @@ class XtdAiPolicy(models.AbstractModel):
         return max_level(level, rule.level) if rule else level
 
     @api.model
-    def _xtd_ai_brakes(self, op_class, level):
-        """Automatic brakes of the company (§6.1, §6.4); see wave 2 task 4."""
+    def _xtd_ai_tool_brakes(self, tool, level):
+        """Brakes of the company that no profile or table can lower (§6.1).
+
+        Veri*Factu, SII or TicketBAI: anything about publishing or sending
+        invoices (accounting tools that post, send or move a document on) is
+        N3, the user does it."""
+        op_class = tool.get("op_class")
+        if op_class in FISCAL_CLASSES and (
+            op_class == "post" or tool.get("skill") == "contabilidad"
+        ):
+            if self._xtd_ai_company()._xtd_ai_has_fiscal_reporting():
+                level = max_level(level, "N3")
         return level
 
     @api.model
-    def _xtd_ai_forbidden_error(self):
+    def _xtd_ai_check_paused(self):
+        if self._xtd_ai_company().xtd_ai_paused:
+            raise XtdAiToolError(
+                "paused",
+                self.env._(
+                    "El agente IA está en pausa en esta compañía: no hagas nada "
+                    "más y díselo al usuario (lo reactiva un administrador en "
+                    "Ajustes)."
+                ),
+            )
+
+    @api.model
+    def _xtd_ai_check_rate(self, run, write_tools):
+        """Stop the agent when it writes too fast (§6.4): writes (done or as a
+        card) per user in the last hour and per message (run)."""
+        company = self._xtd_ai_company()
+        # sudo: users cannot read the audit log
+        audit = self.env["xtd.ai.audit"].sudo()
+        base = [
+            ("event", "=", "tool_call"),
+            ("outcome", "in", ("ok", "pending")),
+            ("tool_name", "in", list(write_tools)),
+        ]
+        per_message = company.xtd_ai_max_writes_message
+        if per_message and (
+            audit.search_count(base + [("run_id", "=", run.id)]) >= per_message
+        ):
+            raise self._xtd_ai_rate_error(per_message, self.env._("en este mensaje"))
+        per_hour = company.xtd_ai_max_writes_hour
+        if per_hour:
+            since = fields.Datetime.now() - timedelta(hours=1)
+            count = audit.search_count(
+                base + [("user_id", "=", self.env.uid), ("create_date", ">=", since)]
+            )
+            if count >= per_hour:
+                raise self._xtd_ai_rate_error(per_hour, self.env._("en una hora"))
+
+    @api.model
+    def _xtd_ai_rate_error(self, limit, when):
         return XtdAiToolError(
-            "forbidden",
+            "rate_limited",
             self.env._(
-                "Esta acción no la hace el agente: déjala preparada y que el "
-                "usuario la termine en XTD."
+                "Límite de seguridad: el agente ya ha hecho %(limit)s acciones "
+                "%(when)s. Para aquí, no lo intentes de nuevo y dile al usuario "
+                "que lo revise y siga él o que lo pida más tarde.",
+                limit=limit,
+                when=when,
             ),
         )

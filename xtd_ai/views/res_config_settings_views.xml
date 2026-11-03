@@ -52,6 +52,39 @@
                                 </div>
                             </div>
                         </setting>
+                        <setting
+              string="Pausar el agente"
+              help="Mientras esté en pausa, nadie puede usar el agente en esta compañía."
+            >
+                            <field name="xtd_ai_paused" />
+                        </setting>
+                        <setting
+              string="Límites de ritmo"
+              help="Si el agente los alcanza, se detiene y avisa al usuario. 0: sin límite."
+            >
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label
+                    for="xtd_ai_max_writes_hour"
+                    class="col-lg-6"
+                  />
+                                    <field name="xtd_ai_max_writes_hour" />
+                                </div>
+                                <div class="row mt8">
+                                    <label
+                    for="xtd_ai_max_writes_message"
+                    class="col-lg-6"
+                  />
+                                    <field name="xtd_ai_max_writes_message" />
+                                </div>
+                            </div>
+                        </setting>
+                        <setting
+              string="Veri*Factu, SII o TicketBAI"
+              help="Con el envío de facturas a Hacienda activo, publicar o enviar facturas lo hace siempre el usuario, sea cual sea el perfil."
+            >
+                            <field name="xtd_ai_fiscal_brake" />
+                        </setting>
                     </block>
                     <block title="Agente IA">
                         <setting

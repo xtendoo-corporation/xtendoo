@@ -326,7 +326,7 @@ class XtdAiToolbox(models.AbstractModel):
         if user._xtd_ai_force_confirmation() or user.sudo().xtd_ai_confirm_writes:
             # sudo: own preference, always readable
             level = max_level(level, "N2")
-        return level
+        return policy._xtd_ai_tool_brakes(tool, level)
 
     @api.model
     def _xtd_ai_preview(self, tool, args):

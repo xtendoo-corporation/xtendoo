@@ -302,7 +302,9 @@ class XtdAiMcp(models.AbstractModel):
 
         event, outcome, code, refs = "tool_call", "ok", None, None
         load_tools = []
+        policy = self.env["xtd.ai.policy"]
         try:
+            policy._xtd_ai_check_paused()
             errors = validate(toolbox._xtd_ai_schema(tool), arguments)
             if errors:
                 raise XtdAiToolError(
@@ -320,6 +322,15 @@ class XtdAiMcp(models.AbstractModel):
                 run.external_text or run.conversation_id._xtd_ai_run_has_attachments()
             ):
                 level = max_level(level, "N2")
+            if level != "N0":
+                policy._xtd_ai_check_rate(
+                    run,
+                    [
+                        n
+                        for n, t in toolbox._xtd_ai_tools().items()
+                        if t["kind"] != "read"
+                    ],
+                )
             if level in ("N3", "N4"):
                 raise XtdAiToolError(
                     "forbidden",
