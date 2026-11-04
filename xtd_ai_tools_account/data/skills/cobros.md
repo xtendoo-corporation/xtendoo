@@ -6,7 +6,9 @@ Herramientas: `send_payment_reminder`. Para encontrar la factura: `search_invoic
 ## Qué hacer
 
 1. ¿Quién debe o qué está vencido? `receivables_payables_summary` o `search_invoices`
-   (pendientes y vencidas). Nunca inventes importes.
+   (pendientes y vencidas). Nunca inventes importes. Los importes son solo lo que el usuario puede ver por sus
+   permisos: di «según lo que puedes ver» (también con `get_partner_summary`), no como
+   el total absoluto del cliente.
 2. ¿Piden recordar el pago de una factura vencida a un cliente?
    - Busca la factura y su **id** (`search_invoices` por cliente o número). Varias
      vencidas del mismo cliente: pregunta cuál, o una tarjeta por factura si dice
@@ -17,7 +19,9 @@ Herramientas: `send_payment_reminder`. Para encontrar la factura: `search_invoic
      el correo del contacto en XTD.
    - `pending_confirmation`: «Preparado el recordatorio a X (correo): confírmalo en la
      tarjeta». Un correo enviado no se puede deshacer.
-   - `validation` (no vencida, pagada, sin correo): dilo en una frase.
+   - `validation` (no vencida, pagada, sin correo, o ya se mandó un recordatorio de esa
+     factura en las últimas 24 h): dilo en una frase y no insistas ni lo reintentes. La
+     tarjeta indica si hubo recordatorios recientes.
 3. El recordatorio nunca publica, paga ni cambia la factura. Publicar o registrar pagos
    lo hace el usuario en XTD: ábrela con `open_record` y di qué botón falta.
 

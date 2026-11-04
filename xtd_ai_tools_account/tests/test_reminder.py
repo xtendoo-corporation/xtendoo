@@ -44,6 +44,25 @@ class TestPaymentReminder(XtdAiAccountCase):
         self.assertEqual(self.overdue.state, "posted")
         self.assertEqual(self.overdue.write_date, write_date)
 
+    def test_recent_reminder_not_resent(self):
+        res = self.sc({"invoice": str(self.overdue.id)})
+        action = self.env["xtd.ai.pending_action"].browse(res["pending_action_id"])
+        lines = {line["field"]: line["value"] for line in action.preview["lines"]}
+        self.assertIn("Ninguno", lines["Recordatorios previos"])
+        self.assertEqual(
+            action.with_user(self.biller).action_confirm()["state"], "confirmed"
+        )
+        # Segundo intento dentro de la ventana: no hay tarjeta, se explica
+        res = self.sc({"invoice": str(self.overdue.id)})
+        self.assertEqual(res["error"]["code"], "validation", res)
+        self.assertIn("recordatorio", res["error"]["message"])
+        # Fuera de la ventana (ventana de 0 h = desactivada) vuelve a ofrecerse
+        self.env["ir.config_parameter"].set_param(
+            "xtd_ai.payment_reminder_window_hours", "0"
+        )
+        res = self.sc({"invoice": str(self.overdue.id)})
+        self.assertEqual(res["status"], "pending_confirmation", res)
+
     def test_not_overdue_or_draft_refused(self):
         future = self.make_move("out_invoice", self.customer, 50, "2027-12-31")
         draft = self.make_move(

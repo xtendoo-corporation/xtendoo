@@ -523,8 +523,10 @@ class XtdAiToolboxCommon(models.AbstractModel):
         description=(
             "Ficha corta de un contacto y totales visibles para el usuario: pedidos "
             "de venta y "
-            "compra, y pendiente de cobro y pago. Usa el id de search_partners. Solo "
-            "lectura."
+            "compra, y pendiente de cobro y pago. Las cifras son solo lo que el "
+            "usuario puede ver (ver totals_scope): preséntalas como «según lo que "
+            "puedes ver», nunca como totales absolutos. Usa el id de search_partners. "
+            "Solo lectura."
         ),
         input_schema={
             "type": "object",
@@ -583,6 +585,11 @@ class XtdAiToolboxCommon(models.AbstractModel):
                     "amount": self._xtd_ai_money(amount, company_currency),
                 }
         data["totals"] = totals
+        # Las cifras dependen de los permisos del usuario: no son totales absolutos
+        data["totals_scope"] = self.env._(
+            "Cifras según lo que tú puedes ver (tus permisos y compañías activas); "
+            "pueden ser menores que el total real del contacto."
+        )
         return {"data": data, "records": partner}
 
     # ------------------------------------------------------------------
@@ -774,7 +781,8 @@ class XtdAiToolboxCommon(models.AbstractModel):
         return lines
 
     def _xtd_ai_find_duplicates(self, vals):
-        partner_model = self.env["res.partner"]
+        # active_test=False: un contacto archivado también es un duplicado probable
+        partner_model = self.env["res.partner"].with_context(active_test=False)
         clauses = [[("name", "=ilike", vals["name"])]]
         if vals.get("vat"):
             clauses.append([("vat", "=ilike", vals["vat"])])
@@ -803,8 +811,24 @@ class XtdAiToolboxCommon(models.AbstractModel):
         if duplicates:
             summary += " - " + self.env._("posibles duplicados: %s", len(duplicates))
         lines = self._xtd_ai_contact_card_lines(vals)
+        archived = duplicates.filtered(lambda p: not p.active)
+        if archived:
+            # No se reactiva solo: el usuario decide (reactivar el existente o crear)
+            lines.append(
+                {
+                    "field": self.env._("Aviso"),
+                    "value": self.env._(
+                        "Existe un contacto ARCHIVADO que coincide (%s): se puede "
+                        "reactivar desde su ficha en lugar de crear uno nuevo.",
+                        len(archived),
+                    ),
+                }
+            )
         return {
             "summary": summary,
             "lines": lines,
-            "duplicates": [self._xtd_ai_partner_row(p) for p in duplicates],
+            "duplicates": [
+                self._xtd_ai_partner_row(p) | {"archived": not p.active}
+                for p in duplicates
+            ],
         }
