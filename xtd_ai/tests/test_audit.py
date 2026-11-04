@@ -150,11 +150,11 @@ class TestAudit(XtdAiCase):
         self.assertFalse(old.exists())
         self.assertTrue(fresh.exists())
         self.env["ir.config_parameter"].sudo().set_param(
-            "xtd_ai.audit_retention_days", "1"
+            "xtd_ai.audit_retention_days", "30"
         )
         self.env.cr.execute(
             "UPDATE xtd_ai_audit SET create_date = %s WHERE id = %s",
-            (fields.Datetime.now() - timedelta(days=3), fresh.id),
+            (fields.Datetime.now() - timedelta(days=40), fresh.id),
         )
         self.env["xtd.ai.audit"].invalidate_model()
         self.env["xtd.ai.audit"]._xtd_ai_cron_purge()

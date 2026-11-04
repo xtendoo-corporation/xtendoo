@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import timedelta
 
 from odoo import api, fields, models
@@ -8,6 +9,84 @@ _logger = logging.getLogger(__name__)
 
 TEXT_LIMIT = 300
 AUTH_FAILED_BURST = 100  # max auth_failed rows per minute (flood protection)
+
+# Plazos de conservación (RGPD art. 5.1.c minimización y 5.1.e limitación del plazo;
+# LOPDGDD). El RGPD no fija un número de días: se conserva solo lo necesario para la
+# finalidad (trazabilidad y seguridad de las acciones del agente). Por defecto la
+# conversación (que contiene el texto libre del usuario) 90 días y el registro de
+# auditoría (sin texto libre, con datos personales ofuscados) 180 días, el plazo
+# habitual en registros de seguridad. Configurables por ``ir.config_parameter``;
+# los mínimos evitan dejar el registro inservible para investigar un incidente.
+DEFAULT_AUDIT_RETENTION_DAYS = 180
+MIN_AUDIT_RETENTION_DAYS = 30
+DEFAULT_CONVERSATION_RETENTION_DAYS = 90
+MIN_CONVERSATION_RETENTION_DAYS = 30
+PURGE_BATCH = 5000  # filas por lote en la purga de auditoría
+PURGE_MAX_BATCHES = 10  # lotes por ejecución del cron (el resto, al día siguiente)
+
+
+def retention_days(env, key, default, minimum):
+    """Días de retención del parámetro ``key``: valor inválido -> ``default``;
+    nunca menos de ``minimum``."""
+    # sudo: parámetro de sistema
+    raw = env["ir.config_parameter"].sudo().get_param(key, default)
+    try:
+        days = int(raw)
+    except (TypeError, ValueError):
+        days = default
+    if days <= 0:
+        days = default
+    return max(days, minimum)
+
+
+# Minimización (art. 5.1.c): en la auditoría se ofuscan los datos personales de los
+# argumentos; se conserva un prefijo corto para poder correlacionar a mano, nunca el
+# dato completo. Lo que no se puede detectar (nombres en texto libre) se acota con el
+# plazo corto. Se mantienen herramienta, ids, resultado y error.
+_EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_IBAN_RE = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]{4}){2,7}(?:[ -]?[A-Z0-9]{1,4})?\b")
+_NIF_RE = re.compile(
+    r"\b(?:ES-?)?(?:[XYZ]-?\d{7}-?[A-Z]|\d{8}-?[A-Z]|[A-HJNP-SUVW]-?\d{7}-?[0-9A-J])\b",
+    re.IGNORECASE,
+)
+_PHONE_RE = re.compile(
+    r"(?<![\w.])(?:(?:\+|00)\d{1,3}[\s.-]?)?[6-9]\d{2}[\s.-]?\d{2,3}[\s.-]?\d{2,3}"
+    r"(?:[\s.-]?\d{2,3})?(?![\w])"
+)
+# Claves cuyo valor es siempre un dato personal.
+_PERSONAL_KEYS = {
+    "vat", "nif", "cif", "dni", "email", "email_from", "email_to", "email_cc",
+    "phone", "mobile", "telefono", "iban", "acc_number", "partner_name",
+    "contact_name", "customer_name", "employee_name", "street", "street2",
+}  # fmt: skip
+
+
+def _mask(text, keep):
+    return text[:keep] + "***"
+
+
+def redact_personal_text(text):
+    """Ofusca en ``text`` emails, IBAN, NIF/CIF/NIE y teléfonos (prefijo + ``***``)."""
+    text = _EMAIL_RE.sub(lambda m: _mask(m.group(0), 2) + "@***", text)
+    text = _IBAN_RE.sub(lambda m: _mask(m.group(0), 4), text)
+    text = _NIF_RE.sub(lambda m: _mask(m.group(0), 2), text)
+    return _PHONE_RE.sub(lambda m: _mask(m.group(0), 3), text)
+
+
+def redact_personal(value, key=None, depth=0):
+    """Copia de ``value`` con los datos personales ofuscados (dicts/listas/textos)."""
+    if depth > 6:
+        return None
+    if key is not None and str(key).lower() in _PERSONAL_KEYS and value:
+        if isinstance(value, (str, int, float)) and not isinstance(value, bool):
+            return _mask(str(value), 2)
+    if isinstance(value, str):
+        return redact_personal_text(value)
+    if isinstance(value, dict):
+        return {k: redact_personal(v, k, depth + 1) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [redact_personal(v, key, depth + 1) for v in value]
+    return value
 
 
 def truncate_texts(value, depth=0):
@@ -101,7 +180,8 @@ class XtdAiAudit(models.Model):
             if values.get(key) is not None:
                 vals[key] = values[key]
         if values.get("arguments") is not None:
-            vals["arguments"] = truncate_texts(values["arguments"])
+            # Se ofusca antes de truncar: el dato no llega nunca a la tabla.
+            vals["arguments"] = truncate_texts(redact_personal(values["arguments"]))
         if values.get("record_refs") is not None:
             vals["record_refs"] = truncate_texts(values["record_refs"])
         return self.sudo().create(vals)
@@ -142,16 +222,17 @@ class XtdAiAudit(models.Model):
 
     @api.model
     def _xtd_ai_cron_purge(self):
-        days = int(
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("xtd_ai.audit_retention_days", "365")
-            or 365
+        """Borra la auditoría anterior al plazo de retención, por lotes."""
+        days = retention_days(
+            self.env,
+            "xtd_ai.audit_retention_days",
+            DEFAULT_AUDIT_RETENTION_DAYS,
+            MIN_AUDIT_RETENTION_DAYS,
         )
-        limit = fields.Datetime.now() - timedelta(days=max(days, 1))
-        old = (
-            self.sudo()
-            .with_context(_xtd_ai_audit_purge=True)
-            .search([("create_date", "<", limit)], limit=10000)
-        )
-        old.unlink()
+        limit = fields.Datetime.now() - timedelta(days=days)
+        purge = self.sudo().with_context(_xtd_ai_audit_purge=True)
+        for _batch in range(PURGE_MAX_BATCHES):
+            old = purge.search([("create_date", "<", limit)], limit=PURGE_BATCH)
+            old.unlink()
+            if len(old) < PURGE_BATCH:
+                break
