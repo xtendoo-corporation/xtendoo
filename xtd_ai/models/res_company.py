@@ -11,12 +11,15 @@ class ResCompany(models.Model):
         list(PROFILE_LABELS.items()),
         string="Perfil del agente IA",
     )
+    # Always filled (default and migration): 0 is a real value, «any discount
+    # asks for a card», not «empty, use the 15 %».
     xtd_ai_discount_threshold = fields.Float(
         string="Descuento máximo sin tarjeta (%)",
-        help="Por encima de este descuento de línea, el cambio pide tarjeta.",
-    )
-    xtd_ai_purchase_confirm_limit = fields.Float(
-        string="Importe máximo de compra con tarjeta simple",
+        default=lambda self: self.env[
+            "xtd.ai.policy"
+        ]._xtd_ai_default_discount_threshold(),
+        help="Por encima de este descuento de línea, crear o cambiar la línea "
+        "pide tarjeta. 0: cualquier descuento pide tarjeta.",
     )
     xtd_ai_policy_rule_ids = fields.One2many(
         "xtd.ai.policy.rule", "company_id", string="Tabla de políticas del agente IA"

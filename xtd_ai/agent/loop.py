@@ -46,7 +46,30 @@ MSG_TRUNCATED = (
     "con un alcance menor."
 )
 MSG_FAILED = "No he podido completar la petición. Inténtalo de nuevo en unos minutos."
-MSG_FAILED_SHORT = "Error interno del servicio del agente."
+MSG_PROVIDER_CONFIG = (
+    "La IA no está bien configurada (clave, modelo o permisos del proveedor). "
+    "Avisa al administrador de Odoo para que lo revise en Ajustes → Agente IA."
+)
+MSG_PROVIDER_QUOTA = (
+    "Se ha alcanzado el límite de uso o el crédito de la cuenta de IA. Avisa al "
+    "administrador de Odoo para que lo revise."
+)
+MSG_PROVIDER_TIMEOUT = (
+    "El servicio de IA ha tardado demasiado en responder y he cancelado la "
+    "petición. Prueba con una petición más acotada o inténtalo de nuevo."
+)
+MSG_RUN_TIMEOUT = (
+    "La petición ha superado el tiempo máximo de ejecución y la he cortado. "
+    "Prueba a dividirla en partes más pequeñas."
+)
+_PROVIDER_MESSAGES = {
+    "config": MSG_PROVIDER_CONFIG,
+    "quota": MSG_PROVIDER_QUOTA,
+    "timeout": MSG_PROVIDER_TIMEOUT,
+}
+# Total time of a run (seconds), checked between iterations, so that it ends with
+# its own message before the housekeeping cron closes it as stale.
+DEFAULT_MAX_SECONDS: float | None = None
 MSG_EMPTY = "No he podido generar una respuesta."
 MSG_REPEATED = (
     "He parado porque estaba repitiendo la misma operación y XTD la rechazaba "
@@ -84,7 +107,12 @@ class AgentLoop:
         post_retry_delay: float = 1.0,
         run_id: int | None = None,
         max_attachment_bytes: int = DEFAULT_MAX_ATTACHMENT_BYTES,
+        max_seconds: float | None = DEFAULT_MAX_SECONDS,
+        clock=time.monotonic,
     ):
+        self.max_seconds = max_seconds
+        self._clock = clock
+        self._deadline = None
         self.max_attachment_bytes = max_attachment_bytes
         self.provider = provider
         self.gateway = gateway
@@ -124,7 +152,9 @@ class AgentLoop:
                 "provider_error",
                 extra={"fields": {"run_id": self.run_id, "error": str(exc)}},
             )
-            reply = self._failed(MSG_FAILED_SHORT)
+            reply = self._failed(
+                exc.reason(), _PROVIDER_MESSAGES.get(exc.category, MSG_FAILED)
+            )
         except Exception as exc:  # noqa: BLE001 - last line of defence, nothing leaks
             log.error(
                 "run_failed",
@@ -132,7 +162,7 @@ class AgentLoop:
                     "fields": {"run_id": self.run_id, "error_type": type(exc).__name__}
                 },
             )
-            reply = self._failed(MSG_FAILED_SHORT)
+            reply = self._failed(f"error interno ({type(exc).__name__})")
         self._post(reply)
         return reply
 
@@ -144,8 +174,17 @@ class AgentLoop:
         tools = tuple(self.gateway.list_tools())
         messages = self._build_messages(history)
 
+        if self.max_seconds:
+            self._deadline = self._clock() + self.max_seconds
         for _ in range(self.max_iterations):
             self.gateway.check_active()  # honour cancellation between iterations
+            if self._deadline is not None and self._clock() > self._deadline:
+                return Reply(
+                    text=MSG_RUN_TIMEOUT,
+                    status="failed",
+                    error="tiempo máximo de ejecución superado",
+                    usage=self._usage_payload(),
+                )
             request = LLMRequest(
                 system=self.system_prompt, tools=tools, messages=tuple(messages)
             )
@@ -328,9 +367,9 @@ class AgentLoop:
     def _reply(self, text: str, status: str) -> Reply:
         return Reply(text=text, status=status, usage=self._usage_payload())  # type: ignore[arg-type]
 
-    def _failed(self, error: str) -> Reply:
+    def _failed(self, error: str, text: str = MSG_FAILED) -> Reply:
         return Reply(
-            text=MSG_FAILED, status="failed", error=error, usage=self._usage_payload()
+            text=text, status="failed", error=error, usage=self._usage_payload()
         )
 
     def _post(self, reply: Reply) -> None:

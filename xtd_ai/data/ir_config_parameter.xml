@@ -6,7 +6,7 @@
     </record>
     <record id="param_audit_retention_days" model="ir.config_parameter">
         <field name="key">xtd_ai.audit_retention_days</field>
-        <field name="value">365</field>
+        <field name="value">180</field>
     </record>
     <record id="param_max_tool_calls" model="ir.config_parameter">
         <field name="key">xtd_ai.max_tool_calls_per_run</field>
@@ -26,7 +26,7 @@
     </record>
     <record id="param_conversation_retention_days" model="ir.config_parameter">
         <field name="key">xtd_ai.conversation_retention_days</field>
-        <field name="value">365</field>
+        <field name="value">90</field>
     </record>
     <!-- Action policy (ANALISIS_PERMISOS 6.1): settings table in wave 2 -->
     <record id="param_policy_profile" model="ir.config_parameter">
@@ -36,9 +36,5 @@
     <record id="param_policy_discount_threshold" model="ir.config_parameter">
         <field name="key">xtd_ai.policy.discount_threshold</field>
         <field name="value">15</field>
-    </record>
-    <record id="param_policy_purchase_confirm_limit" model="ir.config_parameter">
-        <field name="key">xtd_ai.policy.purchase_confirm_limit</field>
-        <field name="value">1000</field>
     </record>
 </odoo>

@@ -227,7 +227,7 @@ hay más límites de coste en esta fase.
 | `xtd.ai.message`        | `conversation_id`, `role` (user/assistant/notice), `body` (Text, sin HTML), `run_id`, `pending_action_ids`, `record_refs` (JSON)                                                                                                                                        | Como su conversación                                                                                                                                                                               |
 | `xtd.ai.run`            | `conversation_id`, `user_id`, `state` (queued/running/done/failed/cancelled), `jti`, `provider`, `model`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `cost_estimate`, `iterations`, `tool_calls`, `started_at`, `finished_at`, `error` | Usuario: lectura de las suyas. Escritura solo vía gateway (`sudo` comentado, campos de control)                                                                                                    |
 | `xtd.ai.pending_action` | `run_id`, `conversation_id`, `user_id`, `tool_name`, `arguments` (JSON), `preview` (JSON), `state` (pending/confirmed/cancelled/expired/failed), `result_model`, `result_res_id`, `error`, `expires_at` (24 h)                                                          | Solo el propio usuario; confirmar requiere sesión web (§9)                                                                                                                                         |
-| `xtd.ai.audit`          | `run_id`, `user_id`, `company_id`, `event` (tool_call/auth_failed/confirm/cancel/guard_blocked), `tool_name`, `arguments` (JSON, textos > 300 caracteres cortados), `outcome` (ok/error/pending/denied), `error_code`, `record_refs` (JSON), `duration_ms`              | Solo lectura para el administrador del agente; nadie escribe ni borra por UI (`create` vía `sudo` en el gateway). Retención por cron, 365 días por defecto (`xtd_ai.audit_retention_days`) |
+| `xtd.ai.audit`          | `run_id`, `user_id`, `company_id`, `event` (tool_call/auth_failed/confirm/cancel/guard_blocked), `tool_name`, `arguments` (JSON, textos > 300 caracteres cortados), `outcome` (ok/error/pending/denied), `error_code`, `record_refs` (JSON), `duration_ms`              | Solo lectura para el administrador del agente; nadie escribe ni borra por UI (`create` vía `sudo` en el gateway). Retención por cron, 180 días por defecto, con datos personales ofuscados en los argumentos (`xtd_ai.audit_retention_days`) |
 
 `res.users`: campo `xtd_ai_confirm_writes` (Boolean, por defecto True), editable por el
 propio usuario. Parámetro `xtd_ai.force_confirmation` (por defecto `False`): si
@@ -560,7 +560,7 @@ ejecuciones guardan `cids` al crearse (`_xtd_ai_start_run`).
 
 **Configuración (Ajustes → Agente IA, solo administradores del sistema):** proveedor
 (`anthropic` | `fake`), modelo (por defecto `claude-haiku-5-5`), esfuerzo (`low`),
-timeout por llamada (30 s), workspace de Anthropic (opcional), registrar detalle de
+timeout por llamada (120 s), workspace de Anthropic (opcional), registrar detalle de
 errores 400 (desactivado), y la **clave de Anthropic** como campo contraseña guardado en
 `ir.config_parameter` `xtd_ai.anthropic_api_key` (solo `base.group_system`; nunca
 se devuelve al cliente, el campo se muestra vacío con «clave configurada»). La variable

@@ -66,7 +66,7 @@ Reiniciar Odoo.
 
 **Ajustes → Agente IA** (solo administradores). Los parámetros del sistema usan el
 prefijo `xtd_ai.` (p. ej. `xtd_ai.anthropic_api_key`, `xtd_ai.provider`, `xtd_ai.model`,
-`xtd_ai.force_confirmation`, `xtd_ai.audit_retention_days`):
+`xtd_ai.force_confirmation`, `xtd_ai.audit_retention_days`, `xtd_ai.conversation_retention_days`):
 
 1. Pegar la **clave de la API de Anthropic** y guardar. La clave no se vuelve a mostrar
    (aparece «Clave configurada»). Alternativa: variable de entorno `ANTHROPIC_API_KEY`
@@ -107,7 +107,7 @@ Las preguntas, los datos que el agente consulta para responderlas y los document
 adjuntos se envían a Anthropic (EE. UU.) para generar la respuesta. Antes de activarlo
 en un cliente: contrato de encargo del tratamiento, DPA de Anthropic, información a los
 usuarios y revisión de la retención. Las herramientas solo devuelven los campos
-necesarios y las conversaciones se borran pasados 365 días (configurable).
+necesarios y las conversaciones se borran pasados 90 días de inactividad (`xtd_ai.conversation_retention_days`) (configurable).
 
 ## 7. Coste orientativo
 

@@ -325,7 +325,8 @@ class TestChatRoutes(HttpCase):
         )
         self.assertEqual(len(auto), 1)
         self.assertEqual(auto.role, "user")
-        self.assertIn("Acción confirmada: creada Chat Test SL", auto.body)
+        self.assertIn("Acción confirmada: creada «Chat Test SL»", auto.body)
+        self.assertIn("dato no fiable", auto.body)
         self.assertIn("res.partner", auto.body)
         self.assertEqual(len(captured), 1)  # the service is called after the commit
         # the agent sees it in the history, the user does not see it in the chat

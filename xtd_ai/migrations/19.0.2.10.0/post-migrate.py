@@ -3,7 +3,6 @@ from odoo import SUPERUSER_ID, api
 from odoo.addons.xtd_ai.models.xtd_ai_policy import (
     DEFAULT_DISCOUNT_THRESHOLD,
     DEFAULT_PROFILE,
-    DEFAULT_PURCHASE_CONFIRM_LIMIT,
     FIXED_CLASSES,
     LEVELS,
     POLICY_TABLE,
@@ -14,7 +13,7 @@ from odoo.addons.xtd_ai.models.xtd_ai_policy import (
 
 def migrate(cr, version):
     """Policy of waves 1A/1B (``ir.config_parameter``) into the settings of
-    every company: profile, thresholds and the per-class levels (which could
+    every company: profile, discount threshold and the per-class levels (which could
     only harden, so they become hardening rows of the table). The parameters
     stay as a fallback and keep hardening, so nothing changes in behaviour."""
     env = api.Environment(cr, SUPERUSER_ID, {})
@@ -25,13 +24,9 @@ def migrate(cr, version):
     vals = {}
     if profile != DEFAULT_PROFILE:
         vals["xtd_ai_profile"] = profile
+    # (the purchase limit of those waves was removed in 19.0.2.13.0)
     for key, field, default in (
         ("discount_threshold", "xtd_ai_discount_threshold", DEFAULT_DISCOUNT_THRESHOLD),
-        (
-            "purchase_confirm_limit",
-            "xtd_ai_purchase_confirm_limit",
-            DEFAULT_PURCHASE_CONFIRM_LIMIT,
-        ),
     ):
         try:
             value = float(params.get_param(f"xtd_ai.policy.{key}") or default)

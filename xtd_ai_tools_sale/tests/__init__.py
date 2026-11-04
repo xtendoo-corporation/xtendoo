@@ -8,3 +8,4 @@ from . import test_records_product
 from . import test_records_adversarial
 from . import test_transitions
 from . import test_transitions_adversarial
+from . import test_policy_discount

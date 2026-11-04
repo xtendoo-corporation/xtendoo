@@ -274,7 +274,7 @@ class TestWriteFlow(XtdAiCase):
         action2 = self.env["xtd.ai.pending_action"].sudo().browse(action.id)
         # model and id of what was created: the agent can open or reuse it
         self.assertIn(
-            f"[Acción #{action.id}: creada tag-hist (modelo {action2.result_model}, "
+            f"[Acción #{action.id}: creada «tag-hist» (modelo {action2.result_model}, "
             f"id {action2.result_res_id})]",
             text,
         )

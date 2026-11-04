@@ -10,12 +10,18 @@ Per company (Ajustes > Agente IA):
   harden the profile or relax it down to ``FLOOR`` (never below); per tool, a
   level that can only harden. ``FIXED`` classes (read, publish or post, pay,
   administration) are not editable: publishing stays N3 with no option.
-- ``res.company.xtd_ai_discount_threshold`` / ``xtd_ai_purchase_confirm_limit``.
+- ``res.company.xtd_ai_discount_threshold``: a line discount above it (when
+  creating or editing lines) is a money edit, a card. ``0`` is a real value:
+  any discount asks for a card.
 
-Compatibility with waves 1A/1B: when a company has no value of its own, the
-``ir.config_parameter`` ``xtd_ai.policy.profile``, ``.discount_threshold`` and
-``.purchase_confirm_limit`` still apply, and ``xtd_ai.policy.level.<op_class>``
-still raises (never lowers) the level of every company.
+The company is the one of the document the call affects: the gateway runs the
+policy with it as ``env.company`` (``xtd.ai.toolbox._xtd_ai_call_company``).
+
+Compatibility with waves 1A/1B: when a company has no profile of its own, the
+``ir.config_parameter`` ``xtd_ai.policy.profile`` still applies (and
+``.discount_threshold`` is the default of new companies), and
+``xtd_ai.policy.level.<op_class>`` still raises (never lowers) the level of
+every company.
 """
 
 from datetime import timedelta
@@ -29,7 +35,6 @@ LEVELS = ("N0", "N1", "N2", "N3", "N4")
 PROFILES = ("prudent", "balanced", "agile")
 DEFAULT_PROFILE = "balanced"
 DEFAULT_DISCOUNT_THRESHOLD = 15.0
-DEFAULT_PURCHASE_CONFIRM_LIMIT = 1000.0
 
 # Operation classes: rows of the table of §6.1. Columns: prudent, balanced, agile.
 # "agile" lowers money edits to N1 below the thresholds; that nuance belongs to
@@ -133,22 +138,33 @@ class XtdAiPolicy(models.AbstractModel):
             return default
 
     @api.model
-    def _xtd_ai_discount_threshold(self):
-        company = self._xtd_ai_company()
-        if company.xtd_ai_discount_threshold:
-            return company.xtd_ai_discount_threshold
-        return self._xtd_ai_float_param(
+    def _xtd_ai_default_discount_threshold(self):
+        """Default of a new company: the parameter of waves 1A/1B (15 %)."""
+        value = self._xtd_ai_float_param(
             "discount_threshold", DEFAULT_DISCOUNT_THRESHOLD
         )
+        return value if value >= 0 else DEFAULT_DISCOUNT_THRESHOLD
 
     @api.model
-    def _xtd_ai_purchase_confirm_limit(self):
-        company = self._xtd_ai_company()
-        if company.xtd_ai_purchase_confirm_limit:
-            return company.xtd_ai_purchase_confirm_limit
-        return self._xtd_ai_float_param(
-            "purchase_confirm_limit", DEFAULT_PURCHASE_CONFIRM_LIMIT
-        )
+    def _xtd_ai_discount_threshold(self):
+        """Highest line discount (%) without a card. Every company has its own
+        value (the field has a default and the migration filled the old empty
+        ones), so ``0`` is honoured: any discount above 0 asks for a card."""
+        threshold = self._xtd_ai_company().xtd_ai_discount_threshold
+        return max(threshold or 0.0, 0.0)
+
+    @api.model
+    def _xtd_ai_discount_level(self, level, discounts):
+        """Lines created with a discount above the threshold are a money edit
+        (``edit_money``, a card), the same rule as editing a line: creating a
+        quotation is no way around it (H1)."""
+        threshold = self._xtd_ai_discount_threshold()
+        if any(
+            isinstance(d, (int, float)) and not isinstance(d, bool) and d > threshold
+            for d in discounts
+        ):
+            level = max_level(level, self._xtd_ai_level("edit_money"))
+        return level
 
     @api.model
     def _xtd_ai_profile_level(self, op_class, profile=None):
@@ -203,6 +219,20 @@ class XtdAiPolicy(models.AbstractModel):
             if self._xtd_ai_company()._xtd_ai_has_fiscal_reporting():
                 level = max_level(level, "N3")
         return level
+
+    @api.model
+    def _xtd_ai_policy_error(self, reason):
+        """The level of a call could not be worked out (a policy that fails or
+        returns something that is not ``N0``..``N4``): fail closed, as ``N4``."""
+        return XtdAiToolError(
+            "policy_error",
+            self.env._(
+                "No se ha podido comprobar si el agente puede hacer esta acción "
+                "(%s), así que no se hace. Díselo al usuario: que la haga él en "
+                "XTD o avise al administrador.",
+                reason,
+            ),
+        )
 
     @api.model
     def _xtd_ai_check_paused(self):

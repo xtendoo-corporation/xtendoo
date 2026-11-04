@@ -19,11 +19,36 @@ ACTIVE_STATES = ("queued", "running")
 # runs it in a thread (e.g. Odoo was not restarted after installing queue_job, so
 # its runner does not serve this database yet).
 WATCHDOG_DELAY = 20
+# Total time of a run: the loop ends it with its own message before the cron closes
+# it as stale (token TTL + 120 s).
+MAX_RUN_SECONDS = 540
+# Runs the in-process fallback (thread / watchdog) may execute at once in this
+# process. The fallback bypasses the queue_job channel, so it has its own limit.
+MAX_FALLBACK_RUNS = 2
+_fallback_slots = threading.BoundedSemaphore(MAX_FALLBACK_RUNS)
+
+
+def _fallback_busy_message(env):
+    return env._(
+        "El servicio del agente IA está ocupado con otras peticiones. Inténtalo de "
+        "nuevo en unos minutos."
+    )
 
 
 def _thread_main(dbname, run_id):
     """Fallback runner: own thread, own cursor (no queue_job runner available)."""
     threading.current_thread().dbname = dbname
+    if not _fallback_slots.acquire(blocking=False):
+        # over the limit: say so in the chat instead of leaving the run hanging
+        try:
+            with Registry(dbname).cursor() as cr:
+                env = api.Environment(cr, SUPERUSER_ID, {})
+                env["xtd.ai.run"].browse(run_id)._xtd_ai_fail(
+                    _fallback_busy_message(env)
+                )
+        except Exception:  # noqa: BLE001
+            _logger.exception("Could not mark run %s as failed", run_id)
+        return
     try:
         with Registry(dbname).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, {})
@@ -38,6 +63,8 @@ def _thread_main(dbname, run_id):
                 )
         except Exception:  # noqa: BLE001
             _logger.exception("Could not mark run %s as failed", run_id)
+    finally:
+        _fallback_slots.release()
 
 
 def _watchdog_main(dbname, run_id, delay):
@@ -49,16 +76,30 @@ def _watchdog_main(dbname, run_id, delay):
             env = api.Environment(cr, SUPERUSER_ID, {})
             run = env["xtd.ai.run"].browse(run_id).exists()
             if run and run._xtd_ai_watchdog_should_run():
-                _logger.warning(
-                    "AI agent run %s not picked up by queue_job after %ss: running "
-                    "it in a thread (restart Odoo so the queue_job runner serves "
-                    "this database)",
-                    run_id,
-                    delay,
-                )
-                run._xtd_ai_job_run()
+                if not _fallback_slots.acquire(blocking=False):
+                    _logger.warning(
+                        "AI agent run %s left queued: fallback threads are at the "
+                        "limit (%s)",
+                        run_id,
+                        MAX_FALLBACK_RUNS,
+                    )
+                    return
+                try:
+                    _watchdog_run(run, delay)
+                finally:
+                    _fallback_slots.release()
     except Exception:  # noqa: BLE001 - the thread must never die noisily
         _logger.exception("AI agent watchdog for run %s failed", run_id)
+
+
+def _watchdog_run(run, delay):
+    _logger.warning(
+        "AI agent run %s not picked up by queue_job after %ss: running it in a "
+        "thread (restart Odoo so the queue_job runner serves this database)",
+        run.id,
+        delay,
+    )
+    run._xtd_ai_job_run()
 
 
 class XtdAiRun(models.Model):
@@ -116,7 +157,30 @@ class XtdAiRun(models.Model):
         """Still queued and unclaimed: nobody is executing it."""
         self.ensure_one()
         run = self.sudo()  # sudo: control record of the gateway
-        return run.state == "queued" and not run.agent_claimed_at
+        if run.state != "queued" or run.agent_claimed_at:
+            return False
+        return not self._xtd_ai_channel_is_serving()
+
+    def _xtd_ai_channel_is_serving(self):
+        """True when queue_job is alive and merely busy: let the job wait its turn.
+
+        A job of the channel already enqueued or started means the runner serves
+        this database; the run is then waiting for channel capacity, and the
+        fallback thread must not bypass it.
+        """
+        if "queue.job" not in self.env:
+            return False
+        return bool(
+            self.env["queue.job"]
+            .sudo()
+            .search_count(
+                [
+                    ("channel", "=", CHANNEL),
+                    ("state", "in", ("enqueued", "started")),
+                ],
+                limit=1,
+            )
+        )
 
     def _xtd_ai_claim(self):
         """Atomically take the run for this executor. False if another took it."""
@@ -164,14 +228,16 @@ class XtdAiRun(models.Model):
         if not run._xtd_ai_claim():
             # queue_job and the safety net may both try: only one runs it
             return _("Otra instancia ya está ejecutando esta petición.")
+        reason = "respuesta no registrada"
         try:
             self._xtd_ai_job_execute()
             self.env.invalidate_all()
             still_active = run.state in ACTIVE_STATES
-        except Exception:  # noqa: BLE001 - nothing escapes to queue_job
+        except Exception as exc:  # noqa: BLE001 - nothing escapes to queue_job
             _logger.exception("AI agent run %s failed", run.id)
             self._xtd_ai_job_reset_transaction()
             still_active = True
+            reason = f"error interno ({type(exc).__name__})"
         if still_active:
             # The reply could not be posted (or the loop died): always leave an
             # answer in the chat.
@@ -179,7 +245,8 @@ class XtdAiRun(models.Model):
                 self.env._(
                     "No he podido completar la petición. Inténtalo de nuevo en unos "
                     "minutos."
-                )
+                ),
+                error=reason,
             )
         return run.state
 
@@ -214,6 +281,7 @@ class XtdAiRun(models.Model):
             post_retry_delay=0.0,
             run_id=run.id,
             max_attachment_bytes=max_bytes,
+            max_seconds=MAX_RUN_SECONDS,
         ).run()
         _logger.info(
             "AI agent run %s finished: status=%s iterations=%s tool_calls=%s",

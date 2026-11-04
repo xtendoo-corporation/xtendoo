@@ -16,7 +16,7 @@ class ProviderSettings:
     provider: str = "anthropic"
     model: str = "claude-haiku-5-5"
     effort: str = "low"
-    timeout: float = 30.0
+    timeout: float = 120.0
     max_tokens: int = 16000
     workspace_id: str = ""
     log_error_details: bool = False

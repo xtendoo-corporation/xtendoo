@@ -282,12 +282,19 @@ class TestAttachments(XtdAiCase):
         run, _token = self.start_run(attachment_ids=[att.id])
         run._xtd_ai_finish("done")
         self.env.flush_all()
-        self.env.cr.execute(
-            "UPDATE xtd_ai_conversation SET write_date = now() - interval '400 days'"
-            " WHERE id = %s",
-            [conversation.id],
-        )
-        conversation.invalidate_recordset()
+        # envejece también mensajes y ejecuciones: la antigüedad es la de la
+        # última actividad real, no la del write_date de la conversación
+        for table, column in (
+            ("xtd_ai_conversation", "id"),
+            ("xtd_ai_message", "conversation_id"),
+            ("xtd_ai_run", "conversation_id"),
+        ):
+            self.env.cr.execute(
+                f"UPDATE {table} SET create_date = now() - interval '400 days',"  # noqa: S608
+                f" write_date = now() - interval '400 days' WHERE {column} = %s",
+                [conversation.id],
+            )
+        self.env.invalidate_all()
         self.env[CONV]._xtd_ai_cron_retention()
         self.assertFalse(conversation.exists())
         self.assertFalse(att.exists())

@@ -217,6 +217,13 @@ class XtdAiToolboxSale(models.AbstractModel):
         )
         return self.with_context(allowed_company_ids=[company.id])
 
+    def _xtd_ai_order_company(self, args):
+        """Company of the order of ``args["order"]``: its policy rules the call."""
+        return self._xtd_ai_resolve("sale.order", args["order"]).company_id
+
+    def _xtd_ai_discounts(self, args):
+        return [line.get("discount") for line in args.get("lines") or ()]
+
     # ------------------------------------------------------------------
     # Sales: read
     # ------------------------------------------------------------------
@@ -717,6 +724,7 @@ class XtdAiToolboxSale(models.AbstractModel):
         skill="ventas",
         groups=SALES_GROUPS,
         preview="_xtd_ai_preview_create_sale_quotation",
+        policy="_xtd_ai_policy_sale_lines",
     )
     def tool_create_sale_quotation(self, args):
         scoped = self._xtd_ai_scoped(args)
@@ -731,6 +739,16 @@ class XtdAiToolboxSale(models.AbstractModel):
             data["company"] = order.company_id.name
         data["lines_count"] = len(order.order_line)
         return {"data": data, "records": order}
+
+    def _xtd_ai_policy_sale_lines(self, args):
+        """A draft (``create_draft``), but a line with a discount above the
+        company's threshold is a money edit, a card (H1): the same rule as
+        editing the line afterwards. ``env.company`` is the company of the
+        document (the gateway sets it)."""
+        policy = self.env["xtd.ai.policy"]
+        return policy._xtd_ai_discount_level(
+            policy._xtd_ai_level("create_draft"), self._xtd_ai_discounts(args)
+        )
 
     def _xtd_ai_preview_create_sale_quotation(self, args):
         return self._xtd_ai_scoped(args)._xtd_ai_quotation_preview(
@@ -787,6 +805,8 @@ class XtdAiToolboxSale(models.AbstractModel):
         skill="ventas",
         groups=SALES_GROUPS,
         preview="_xtd_ai_preview_add_sale_order_lines",
+        policy="_xtd_ai_policy_sale_lines",
+        company="_xtd_ai_order_company",
     )
     def tool_add_sale_order_lines(self, args):
         order = self._xtd_ai_editable_order(args["order"])

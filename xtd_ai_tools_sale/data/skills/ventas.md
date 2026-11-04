@@ -29,6 +29,8 @@ Herramientas: `search_sale_orders`, `get_sale_order`, `sales_report`,
    - Cantidad que falte: pregúntala (nunca inventes cantidades, precios ni descuentos).
      Sin precio indicado, no lo envíes: XTD aplica la tarifa del cliente.
    - Llama a `create_sale_quotation`. Tarifa, impuestos y condiciones los calcula XTD.
+     Un descuento por encima del umbral de la compañía (15 % por defecto) deja una
+     tarjeta (`pending_confirmation`), también al crear o añadir líneas.
    - Dilo en una línea: cliente, líneas e importe, y que queda en borrador.
 3. ¿Piden añadir líneas? `add_sale_order_lines` solo sirve en borradores; si el
    presupuesto ya fue enviado o confirmado, dilo en una frase. Úsalo para informar:
@@ -39,9 +41,9 @@ Herramientas: `search_sale_orders`, `get_sale_order`, `sales_report`,
      `validity_date`, `commitment_date` (AAAA-MM-DD), `note`.
    - Línea (`model=sale.order.line`, `record`=id de la línea): `product_uom_qty`
      (cantidad), `name` (descripción), `discount`, `price_unit`, `tax_ids`.
-   - Cantidad, descripción, fechas y descuentos hasta el 15 % se hacen y se pueden
-     deshacer; precio, impuestos y descuentos mayores piden tarjeta con «antes →
-     después». Cliente y producto de una línea no se cambian: dilo.
+   - Cantidad, descripción, fechas y descuentos hasta el umbral (15 % por defecto) se
+     hacen y se pueden deshacer; precio, impuestos y descuentos mayores piden tarjeta
+     con «antes → después». Cliente y producto de una línea no se cambian: dilo.
 4. ¿Piden confirmar, enviar o cancelar un presupuesto concreto? Llama a su herramienta
    con el **id** (búscalo antes con `search_sale_orders` o `get_sale_order` si te dan
    cliente o número):

@@ -1,6 +1,8 @@
 from contextlib import nullcontext
+from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
+from odoo import fields
 from odoo.tests import tagged
 from odoo.tools.misc import Callbacks
 
@@ -172,6 +174,106 @@ class TestAgentJob(XtdAiCase):
         body = self.messages().mapped("body")[-1]
         self.assertIn("No he podido", body)
         self.assertNotIn("anthropic", body)
+
+    def test_provider_failure_categories_reach_run_and_chat(self):
+        cases = (
+            ("config", 401, "no está bien configurada"),
+            ("quota", 402, "límite de uso"),
+            ("timeout", None, "tardado demasiado"),
+            ("transient", 503, "unos minutos"),
+        )
+        for category, status, needle in cases:
+            self.run._xtd_ai_finish("cancelled")  # one run at a time per conversation
+            run, _token = self.start_run(text="otra")
+            self.run = run
+            self.use_provider(
+                [
+                    ProviderError(
+                        "anthropic http sk-ant-SECRET",
+                        category=category,
+                        status=status,
+                    )
+                ]
+            )
+            self.job()
+            self.assertEqual(run.state, "failed", category)
+            self.assertIn(needle, self.messages()[-1].body, category)
+            self.assertIn(category, run.error)
+            self.assertNotIn("SECRET", run.error)
+            if status:
+                self.assertIn(str(status), run.error)
+
+    def make_stale(self):
+        self.env.cr.execute(
+            "UPDATE xtd_ai_run SET create_date = %s WHERE id = %s",
+            (fields.Datetime.now() - timedelta(hours=1), self.run.id),
+        )
+        self.run.invalidate_recordset()
+
+    def test_stale_run_is_closed_with_a_notice(self):
+        self.make_stale()
+        self.run._xtd_ai_expire_stale()
+        self.assertEqual(self.run.state, "failed")
+        self.assertTrue(self.run.error.startswith("timeout"))
+        self.assertIn("tardado demasiado", self.messages("notice")[-1].body)
+
+    def test_closed_run_cannot_be_answered_twice(self):
+        # a late executor after the cron closed the run does not post a reply
+        provider = self.use_provider([text_response("tarde")])
+        self.make_stale()
+        self.run._xtd_ai_expire_stale()
+        self.job()
+        self.assertEqual(len(provider.requests), 0)
+        self.assertFalse(self.messages("assistant"))
+
+    def test_watchdog_waits_while_queue_job_is_serving_the_channel(self):
+        with patch.object(
+            self.registry[self.run._name], "_xtd_ai_channel_is_serving", lambda s: True
+        ):
+            self.assertFalse(self.run._xtd_ai_watchdog_should_run())
+        self.assertTrue(self.run._xtd_ai_watchdog_should_run())
+
+    def test_watchdog_respects_the_fallback_limit(self):
+        provider = self.use_provider([text_response("no")])
+        slots = run_module.threading.BoundedSemaphore(1)
+        slots.acquire()  # the only slot is taken
+        registry = MagicMock()
+        registry.return_value.cursor.return_value = nullcontext(self.env.cr)
+        with (
+            patch.object(run_module, "_fallback_slots", slots),
+            patch.object(run_module, "Registry", registry),
+            patch.object(run_module.time, "sleep"),
+        ):
+            run_module._watchdog_main(self.env.cr.dbname, self.run.id, 0)
+        self.assertEqual(len(provider.requests), 0)
+        self.assertEqual(self.run.state, "queued")
+
+    def test_thread_over_the_limit_fails_with_a_clear_message(self):
+        provider = self.use_provider([text_response("no")])
+        slots = run_module.threading.BoundedSemaphore(1)
+        slots.acquire()
+        registry = MagicMock()
+        registry.return_value.cursor.return_value = nullcontext(self.env.cr)
+        with (
+            patch.object(run_module, "_fallback_slots", slots),
+            patch.object(run_module, "Registry", registry),
+        ):
+            run_module._thread_main(self.env.cr.dbname, self.run.id)
+        self.assertEqual(len(provider.requests), 0)
+        self.assertEqual(self.run.state, "failed")
+        self.assertIn("ocupado", self.messages("notice")[-1].body)
+
+    def test_slot_is_released_after_a_thread_run(self):
+        self.use_provider([text_response("ok")])
+        slots = run_module.threading.BoundedSemaphore(1)
+        registry = MagicMock()
+        registry.return_value.cursor.return_value = nullcontext(self.env.cr)
+        with (
+            patch.object(run_module, "_fallback_slots", slots),
+            patch.object(run_module, "Registry", registry),
+        ):
+            run_module._thread_main(self.env.cr.dbname, self.run.id)
+        self.assertTrue(slots.acquire(blocking=False))
 
     def test_unexpected_exception_never_escapes(self):
         patcher = patch.object(

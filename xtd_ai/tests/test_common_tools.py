@@ -98,6 +98,8 @@ class TestCommonTools(XtdAiCase):
         data = self.data("get_partner_summary", {"partner_id": partner.id})
         self.assertEqual(data["id"], partner.id)
         self.assertIn("totals", data)
+        # Las cifras se declaran como «según lo que puedes ver»
+        self.assertIn("puedes ver", data["totals_scope"])
 
     def test_search_products(self):
         if "product.product" not in self.env:
@@ -167,6 +169,29 @@ class TestCommonTools(XtdAiCase):
             ("ESB33333337", "Cadiz", "ES", True),
         )
         self.assertEqual(created.create_uid, self.user)
+
+    def test_create_contact_archived_duplicate_is_card(self):
+        archived = self.env["res.partner"].create(
+            {"name": "Archivada SL", "vat": "ESB44444444", "active": False}
+        )
+        self.set_confirm(self.user, False)
+        structured = self.call(
+            self.user,
+            self.run,
+            "create_contact",
+            {"name": "Archivada Nueva SL", "vat": "ESB44444444"},
+        )["structuredContent"]
+        self.assertEqual(structured["status"], "pending_confirmation")
+        action = (
+            self.env["xtd.ai.pending_action"]
+            .sudo()
+            .browse(structured["pending_action_id"])
+        )
+        self.assertEqual([d["id"] for d in action.preview["duplicates"]], [archived.id])
+        self.assertTrue(action.preview["duplicates"][0]["archived"])
+        self.assertTrue(any("ARCHIVADO" in line["value"] for line in action.preview["lines"]))
+        # No se reactiva automáticamente
+        self.assertFalse(archived.active)
 
     def test_create_contact_no_duplicates_and_validation(self):
         self.set_confirm(self.user, True)  # card flow (hardened)

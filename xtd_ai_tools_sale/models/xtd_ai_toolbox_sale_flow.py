@@ -111,7 +111,11 @@ class XtdAiToolboxSale(models.AbstractModel):
                         len(tasks),
                     )
                 )
-        threshold = env["xtd.ai.policy"]._xtd_ai_discount_threshold()
+        threshold = (
+            env["xtd.ai.policy"]
+            .with_company(order.company_id or env.company)
+            ._xtd_ai_discount_threshold()
+        )
         high = order.order_line.filtered(lambda line: line.discount > threshold)
         if high:
             effects.append(
@@ -170,6 +174,7 @@ class XtdAiToolboxSale(models.AbstractModel):
         skill="ventas",
         groups=SALES_GROUPS,
         op_class="confirm_sale",
+        company="_xtd_ai_order_company",
         preview="_xtd_ai_preview_confirm_sale_order",
         handoff="_xtd_ai_handoff_confirm_sale_order",
         unlocks=("sale.order.action_confirm",),
@@ -322,6 +327,7 @@ class XtdAiToolboxSale(models.AbstractModel):
         skill="ventas",
         groups=SALES_GROUPS,
         op_class="send_external",
+        company="_xtd_ai_order_company",
         preview="_xtd_ai_preview_send_quotation_email",
         handoff="_xtd_ai_handoff_send_quotation_email",
         unlocks=("sale.order.send_email",),
@@ -376,6 +382,7 @@ class XtdAiToolboxSale(models.AbstractModel):
         skill="ventas",
         groups=SALES_GROUPS,
         op_class="transition_internal",
+        company="_xtd_ai_order_company",
         preview="_xtd_ai_preview_cancel_sale_quotation",
         unlocks=("sale.order.action_cancel",),
     )

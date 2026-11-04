@@ -20,6 +20,7 @@ def xtd_ai_tool(
     core=False,
     unlocks=None,
     handoff=None,
+    company=None,
 ):
     """Declare a method of an ``xtd.ai.toolbox`` model as an AI tool (CONTRACT §6).
 
@@ -45,6 +46,12 @@ def xtd_ai_tool(
     refuse it: it opens ``record`` on the user's screen and tells the agent
     which button is left («solo falta Confirmar»). It runs like a preview
     (rolled back, no unlock).
+    ``company``: optional toolbox method ``f(args) -> res.company``, the
+    company of the document the call affects (empty: unknown). Its profile,
+    policy table, brakes and pause rule the call; it runs like a preview.
+    Without it, a tool with a ``company`` argument is ruled by that company
+    (or the one of the context) and any other by the strictest of the active
+    companies.
     """
     if kind not in KINDS:
         raise ValueError(f"Tool {name}: invalid kind {kind!r}")
@@ -76,6 +83,7 @@ def xtd_ai_tool(
             "core": bool(core or not skill),
             "unlocks": tuple(unlocks or ()),
             "handoff": handoff,
+            "company": company,
         }
         return func
 

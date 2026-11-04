@@ -38,7 +38,7 @@ class TestAgentSettings(TransactionCase):
         s = self.config._xtd_ai_provider_settings()
         self.assertEqual(
             (s.provider, s.model, s.effort, s.timeout),
-            ("anthropic", "claude-haiku-5-5", "low", 30.0),
+            ("anthropic", "claude-haiku-5-5", "low", 120.0),
         )
         self.assertFalse(s.log_error_details)
 

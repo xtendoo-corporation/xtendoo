@@ -59,14 +59,14 @@ class XtdAiAgentConfig(models.AbstractModel):
             provider = "anthropic"
         effort = self._xtd_ai_param("effort", "low")
         try:
-            timeout = float(self._xtd_ai_param("timeout", 30.0))
+            timeout = float(self._xtd_ai_param("timeout", 120.0))
         except ValueError:
-            timeout = 30.0
+            timeout = 120.0
         values = {
             "provider": provider,
             "model": self._xtd_ai_param("model", DEFAULT_MODEL),
             "effort": effort if effort in EFFORTS else "low",
-            "timeout": timeout if timeout > 0 else 30.0,
+            "timeout": timeout if timeout > 0 else 120.0,
             # Ajustes first; the container environment as a fallback (Doodba deploys)
             "workspace_id": self._xtd_ai_param("workspace_id", "")
             or (os.environ.get(WORKSPACE_ENV) or "").strip(),

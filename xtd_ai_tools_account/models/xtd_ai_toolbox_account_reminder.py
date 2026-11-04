@@ -6,6 +6,8 @@ the message on that invoice: it never posts, pays or modifies it. The email is
 the only way out and its guard is lifted for that one invoice inside this tool.
 """
 
+from datetime import timedelta
+
 from odoo import fields, models
 from odoo.tools import plaintext2html
 from odoo.tools.misc import format_date, formatLang
@@ -70,6 +72,47 @@ class XtdAiToolboxAccountReminder(models.AbstractModel):
             )
         return invoice
 
+    def _xtd_ai_reminder_window_hours(self):
+        """Ventana antirrepetición en horas (0 desactiva la protección)."""
+        # Parámetro xtd_ai.payment_reminder_window_hours (solo sistema: lo lee la config)
+        raw = self.env["xtd.ai.agent.config"]._xtd_ai_param(
+            "payment_reminder_window_hours", "24"
+        )
+        try:
+            return max(float(raw), 0.0)
+        except (TypeError, ValueError):
+            return 24.0
+
+    def _xtd_ai_recent_reminders(self, invoice):
+        """Recordatorios ya enviados para esta factura dentro de la ventana."""
+        hours = self._xtd_ai_reminder_window_hours()
+        if not hours:
+            return self.env["mail.message"]
+        subject, _body, _amount = self._xtd_ai_reminder_text(invoice)
+        since = fields.Datetime.now() - timedelta(hours=hours)
+        # La factura ya se leyó con los permisos del usuario: sus mensajes también
+        return invoice.message_ids.filtered(
+            lambda m: m.message_type == "comment"
+            and m.subject == subject
+            and m.date >= since
+        )
+
+    def _xtd_ai_check_no_recent_reminder(self, invoice):
+        recent = self._xtd_ai_recent_reminders(invoice)
+        if recent:
+            hours = self._xtd_ai_reminder_window_hours()
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "Ya se envió un recordatorio de %(name)s el %(date)s (hay "
+                    "protección de %(hours)s h contra repetidos): no se reenvía. "
+                    "Díselo al usuario.",
+                    name=invoice.name,
+                    date=format_date(self.env, max(recent.mapped("date"))),
+                    hours=int(hours),
+                ),
+            )
+
     def _xtd_ai_reminder_text(self, invoice):
         env = self.env
         amount = formatLang(
@@ -124,6 +167,8 @@ class XtdAiToolboxAccountReminder(models.AbstractModel):
     )
     def tool_send_payment_reminder(self, args):
         invoice = self._xtd_ai_overdue_invoice(args["invoice"])
+        # Se re-comprueba al confirmar: entre la tarjeta y el clic pudo salir otro
+        self._xtd_ai_check_no_recent_reminder(invoice)
         subject, body, _amount = self._xtd_ai_reminder_text(invoice)
         partner = invoice.partner_id
         unlock(invoice, "send_email").message_post(
@@ -145,8 +190,11 @@ class XtdAiToolboxAccountReminder(models.AbstractModel):
 
     def _xtd_ai_preview_send_payment_reminder(self, args):
         invoice = self._xtd_ai_overdue_invoice(args["invoice"])
+        # Con uno reciente no hay tarjeta: se explica y no se reenvía
+        self._xtd_ai_check_no_recent_reminder(invoice)
         subject, body, amount = self._xtd_ai_reminder_text(invoice)
         partner = invoice.partner_id
+        window = self._xtd_ai_reminder_window_hours()
         subtype = self.env.ref("mail.mt_comment")
         followers = invoice.message_follower_ids.filtered(
             lambda f: f.partner_id
@@ -181,6 +229,14 @@ class XtdAiToolboxAccountReminder(models.AbstractModel):
             ]
             + extra
             + [
+                {
+                    "field": self.env._("Recordatorios previos"),
+                    "value": self.env._(
+                        "Ninguno en las últimas %s h", int(window)
+                    )
+                    if window
+                    else self.env._("Protección antirrepetidos desactivada"),
+                },
                 {"field": self.env._("Asunto"), "value": subject},
                 {"field": self.env._("Texto"), "value": body[:300]},
                 {

@@ -239,6 +239,7 @@ class XtdAiToolboxRecords(models.AbstractModel):
         preview="_xtd_ai_preview_update_record",
         policy="_xtd_ai_policy_update_record",
         visible="_xtd_ai_visible_update_record",
+        company="_xtd_ai_company_update_record",
     )
     def tool_update_record(self, args):
         registry = self.env["xtd.ai.record.registry"]
@@ -283,6 +284,14 @@ class XtdAiToolboxRecords(models.AbstractModel):
             },
             "records": [ref],
         }
+
+    def _xtd_ai_company_update_record(self, args):
+        """Company of the edited record (a line: that of its document); none
+        for shared records (the strictest active company rules then)."""
+        record = self._xtd_ai_update_target(args["model"], args["record"])
+        if "company_id" in record._fields:
+            return record.company_id
+        return None
 
     def _xtd_ai_visible_update_record(self):
         return bool(self.env["xtd.ai.record.registry"]._xtd_ai_models("update"))

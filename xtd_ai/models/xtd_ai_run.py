@@ -216,16 +216,18 @@ class XtdAiRun(models.Model):
             },
         )
 
-    def _xtd_ai_fail(self, error):
+    def _xtd_ai_fail(self, message, error=None):
         """Mark the run as failed and leave a notice in the chat.
 
         For the chat routes, e.g. when the AI service cannot be reached.
+        ``message`` is what the user reads; ``error`` the short reason kept in
+        ``run.error`` (defaults to the message).
         """
         self.ensure_one()
         run = self.sudo()
         if run.state not in ("queued", "running"):
             return False
-        run._xtd_ai_finish("failed", error=error)
+        run._xtd_ai_finish("failed", error=error or message)
         notice = (
             self.env["xtd.ai.message"]
             .sudo()
@@ -233,7 +235,7 @@ class XtdAiRun(models.Model):
                 {
                     "conversation_id": run.conversation_id.id,
                     "role": "notice",
-                    "body": error or _("La ejecución ha fallado."),
+                    "body": message or _("La ejecución ha fallado."),
                     "run_id": run.id,
                 }
             )
@@ -263,7 +265,15 @@ class XtdAiRun(models.Model):
             and (r.create_date or limit) < limit
         )
         for run in stale:
-            run._xtd_ai_finish("failed", error="timeout")
+            # the same path as any failure: it leaves a notice in the chat. A late
+            # executor of the run cannot post a second reply (the run is closed).
+            run._xtd_ai_fail(
+                _(
+                    "La petición ha tardado demasiado y la he cerrado. Inténtalo "
+                    "de nuevo con una petición más acotada."
+                ),
+                error="timeout: ejecución sin terminar tras %s s" % STALE_SECONDS,
+            )
         return stale
 
     @api.model
