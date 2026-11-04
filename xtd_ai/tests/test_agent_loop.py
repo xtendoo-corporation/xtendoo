@@ -214,6 +214,38 @@ class TestAgentLoop(BaseCase):
         for leak in ("secret", "sk-ant"):
             self.assertNotIn(leak, r.error + r.text)
 
+    def test_provider_error_categories_have_their_own_message(self):
+        cases = {
+            "transient": ("Inténtalo de nuevo en unos minutos", "transient"),
+            "config": ("no está bien configurada", "config"),
+            "quota": ("límite de uso", "quota"),
+            "timeout": ("tardado demasiado", "timeout"),
+        }
+        for category, (needle, in_reason) in cases.items():
+            g = FakeGateway()
+            exc = ProviderError(
+                "secret sk-ant-xyz", category=category, status=401, request_id="rq1"
+            )
+            make_loop(FakeProvider([exc]), g).run()
+            r = g.replies[0]
+            self.assertEqual(r.status, "failed", category)
+            self.assertIn(needle, r.text, category)
+            self.assertIn(in_reason, r.error, category)
+            self.assertIn("401", r.error)
+            self.assertNotIn("sk-ant", r.error + r.text)
+
+    def test_run_time_limit_ends_with_its_own_message(self):
+        ticks = iter([0, 1, 1000, 1000, 1000])
+        g = FakeGateway()
+        provider = FakeProvider(
+            [tool_response(("get_user_context", {})) for _i in range(5)]
+        )
+        make_loop(provider, g, max_seconds=100, clock=lambda: next(ticks)).run()
+        r = g.replies[0]
+        self.assertEqual(r.status, "failed")
+        self.assertIn("tiempo máximo", r.text)
+        self.assertEqual(len(provider.requests), 1)
+
     def test_unexpected_exception_posts_failed(self):
         g = FakeGateway()
         provider = FakeProvider([RuntimeError("Traceback /home/x/secret.py")])

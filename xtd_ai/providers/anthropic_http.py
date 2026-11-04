@@ -51,6 +51,11 @@ def _logger_debug_ignored_retry_after():
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
 RETRY_STATUSES = frozenset({408, 409, 429})
+# Connection and read timeouts. A long answer (16k tokens, adaptive thinking) can
+# take minutes to generate; a read timeout that is too short cuts it AND is billed
+# by the API, so the read timeout has a floor and is never retried.
+CONNECT_TIMEOUT = 10.0
+MIN_READ_TIMEOUT = 120.0
 MAX_RETRY_DELAY = 8.0
 
 _STOP = {
@@ -81,6 +86,30 @@ def _grammar_too_large(resp: Any) -> bool:
     return "grammar is too large" in message
 
 
+def _status_category(resp: Any) -> str:
+    """Category of an HTTP error: transient, config, quota or other."""
+    status = resp.status_code
+    if status == 402:
+        return "quota"
+    if status == 400:
+        try:
+            body = resp.json()
+        except ValueError:
+            body = None
+        message = ""
+        if isinstance(body, dict) and isinstance(body.get("error"), dict):
+            message = str(body["error"].get("message") or "").lower()
+        # only inspected, never stored: no credit is an account matter
+        if "credit balance" in message or "billing" in message:
+            return "quota"
+        return "config"
+    if status in (401, 403, 404):
+        return "config"
+    if status == 429 or status >= 500 or status in RETRY_STATUSES:
+        return "transient"
+    return "other"
+
+
 class AnthropicHttpProvider:
     name = "anthropic"
 
@@ -91,7 +120,7 @@ class AnthropicHttpProvider:
         api_key: str,
         effort: str = "low",
         max_tokens: int = 16000,
-        timeout: float = 30.0,
+        timeout: float = MIN_READ_TIMEOUT,
         max_retries: int = 2,
         workspace_id: str | None = None,
         log_error_details: bool = False,
@@ -233,7 +262,10 @@ class AnthropicHttpProvider:
                 self._strict_cap //= 2
 
     def _post(self, params: dict[str, Any]) -> dict[str, Any]:
-        """POST with retries on 408/409/429/5xx and network failures."""
+        """POST with retries on 408/409/429/5xx and connection failures.
+
+        A read timeout is NOT retried (see ``MIN_READ_TIMEOUT``).
+        """
         attempt = 0
         while True:
             try:
@@ -241,8 +273,14 @@ class AnthropicHttpProvider:
                     self.url,
                     json=params,
                     headers=self._headers(),
-                    timeout=self.timeout,
+                    timeout=(CONNECT_TIMEOUT, max(self.timeout, MIN_READ_TIMEOUT)),
                 )
+            except requests.ReadTimeout:
+                # The request reached the API and the generation may have started
+                # (and be billed): retrying blindly would pay it again.
+                raise ProviderError(
+                    "anthropic read timeout", retryable=False, category="timeout"
+                ) from None
             except requests.RequestException as exc:
                 # type name only: exception messages may carry URLs or headers
                 if attempt < self.max_retries:
@@ -252,13 +290,16 @@ class AnthropicHttpProvider:
                 raise ProviderError(
                     f"anthropic connection error: {type(exc).__name__}",
                     retryable=True,
+                    category="transient",
                 ) from None
             status = resp.status_code
             if 200 <= status < 300:
                 try:
                     return resp.json()
                 except ValueError:
-                    raise ProviderError("anthropic malformed response") from None
+                    raise ProviderError(
+                        "anthropic malformed response", category="transient"
+                    ) from None
             if (status in RETRY_STATUSES or status >= 500) and (
                 attempt < self.max_retries
             ):
@@ -282,7 +323,10 @@ class AnthropicHttpProvider:
         rid = resp.headers.get("request-id") or resp.headers.get("x-request-id")
         if resp.status_code == 400 and _grammar_too_large(resp):
             return StrictGrammarTooLarge(
-                f"anthropic http 400 request_id={rid} strict grammar too large"
+                f"anthropic http 400 request_id={rid} strict grammar too large",
+                category="config",
+                status=400,
+                request_id=rid,
             )
         detail = ""
         if self.log_error_details and resp.status_code == 400:
@@ -293,9 +337,13 @@ class AnthropicHttpProvider:
             if isinstance(body, dict):
                 message = str((body.get("error") or {}).get("message") or "")
                 detail = f" message={message[:200]!r}"
+        status = resp.status_code
         return ProviderError(
-            f"anthropic http {resp.status_code} request_id={rid}{detail}",
-            retryable=resp.status_code >= 500 or resp.status_code == 429,
+            f"anthropic http {status} request_id={rid}{detail}",
+            retryable=status >= 500 or status == 429,
+            category=_status_category(resp),
+            status=status,
+            request_id=rid,
         )
 
     def parse_response(self, resp: dict[str, Any]) -> LLMResponse:

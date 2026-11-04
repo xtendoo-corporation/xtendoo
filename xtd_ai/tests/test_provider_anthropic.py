@@ -141,7 +141,7 @@ class TestAnthropicHttp(ProviderCase):
         self.assertEqual(headers["x-api-key"], KEY)
         self.assertEqual(headers["anthropic-version"], "2023-06-01")
         self.assertNotIn("anthropic-workspace-id", headers)
-        self.assertEqual(self.http.calls[0][1]["timeout"], 30.0)
+        self.assertEqual(self.http.calls[0][1]["timeout"], (10.0, 120.0))
 
     def test_workspace_header_only_when_configured(self):
         p = self.provider(
@@ -155,7 +155,13 @@ class TestAnthropicHttp(ProviderCase):
     def test_timeout_is_passed(self):
         p = self.provider([message_json([{"type": "text", "text": "x"}])], timeout=12)
         p.complete(request())
-        self.assertEqual(self.http.calls[0][1]["timeout"], 12)
+        # the read timeout never goes below the floor for long answers
+        self.assertEqual(self.http.calls[0][1]["timeout"], (10.0, 120.0))
+        p = self.provider(
+            [message_json([{"type": "text", "text": "x"}])], timeout=300
+        )
+        p.complete(request())
+        self.assertEqual(self.http.calls[0][1]["timeout"], (10.0, 300))
 
     def test_usage_mapping_includes_cache_tokens(self):
         p = self.provider([message_json([{"type": "text", "text": "x"}])])
@@ -351,6 +357,63 @@ class TestAnthropicHttp(ProviderCase):
         self.assertIn("ConnectionError", str(cm.exception))
         self.assertNotIn(KEY, str(cm.exception))
         self.assertIsNone(cm.exception.__cause__)
+
+    def test_read_timeout_is_not_retried(self):
+        # the generation may have started and be billed: never retry blindly
+        p = self.provider(
+            [
+                requests.ReadTimeout("slow https://x?key=" + KEY),
+                message_json([{"type": "text", "text": "ya"}]),
+            ]
+        )
+        with self.assertRaises(ProviderError) as cm:
+            p.complete(request())
+        self.assertEqual(len(self.http.calls), 1)
+        self.assertEqual(cm.exception.category, "timeout")
+        self.assertFalse(cm.exception.retryable)
+        self.assertNotIn(KEY, str(cm.exception))
+        self.assertIsNone(cm.exception.__cause__)
+
+    def test_connect_timeout_still_retries(self):
+        ok_body = message_json([{"type": "text", "text": "ya"}])
+        p = self.provider([requests.ConnectTimeout("no route"), ok_body])
+        self.assertEqual(p.complete(request()).message.text, "ya")
+        self.assertEqual(len(self.http.calls), 2)
+
+    def test_error_categories(self):
+        def category(status, body=None, items=None):
+            p = self.provider(items or [FakeResponse(status, body or {})] * 3)
+            with self.assertRaises(ProviderError) as cm:
+                p.complete(request())
+            return cm.exception
+
+        for status in (401, 403, 404):
+            exc = category(status)
+            self.assertEqual((exc.category, exc.status), ("config", status))
+        err = {"error": {"type": "invalid_request_error", "message": "x"}}
+        self.assertEqual(category(400, err).category, "config")
+        for status in (429, 500, 529):
+            self.assertEqual(category(status).category, "transient")
+        billing = {
+            "error": {
+                "type": "invalid_request_error",
+                "message": "Your credit balance is too low",
+            }
+        }
+        exc = category(400, billing)
+        self.assertEqual(exc.category, "quota")
+        self.assertNotIn("credit", exc.reason())
+        self.assertEqual(category(402).category, "quota")
+        exc = category(0, items=[requests.ConnectionError("x")] * 3)
+        self.assertEqual(exc.category, "transient")
+
+    def test_reason_has_type_and_status_only(self):
+        p = self.provider([FakeResponse(401, {"error": {"message": "sk-ant-LEAK"}})])
+        with self.assertRaises(ProviderError) as cm:
+            p.complete(request())
+        self.assertEqual(
+            cm.exception.reason(), "proveedor IA: config HTTP 401 req req_123"
+        )
 
     def test_malformed_response(self):
         p = self.provider([FakeResponse(200, None)])

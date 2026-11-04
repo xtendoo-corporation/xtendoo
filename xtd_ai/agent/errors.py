@@ -53,11 +53,39 @@ class OdooServerError(OdooError):
 
 
 class ProviderError(AgentError):
-    """LLM provider failure. The message is safe to log (no bodies, no keys)."""
+    """LLM provider failure. The message is safe to log (no bodies, no keys).
 
-    def __init__(self, message: str, *, retryable: bool = False):
+    ``category`` classifies the failure for the user message and ``run.error``:
+    ``transient`` (429, 5xx, network), ``config`` (401/403/404/400: key, model or
+    request not accepted), ``quota`` (credit or usage limit), ``timeout`` (read
+    timeout: never retried, the generation may be billed) or ``other``.
+    """
+
+    CATEGORIES = ("transient", "config", "quota", "timeout", "other")
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        retryable: bool = False,
+        category: str | None = None,
+        status: int | None = None,
+        request_id: str | None = None,
+    ):
         super().__init__(message)
         self.retryable = retryable
+        self.category = category or ("transient" if retryable else "other")
+        self.status = status
+        self.request_id = request_id
+
+    def reason(self) -> str:
+        """Short, secret-free reason for ``xtd.ai.run.error`` (type + HTTP code)."""
+        parts = [f"proveedor IA: {self.category}"]
+        if self.status:
+            parts.append(f"HTTP {self.status}")
+        if self.request_id:
+            parts.append(f"req {str(self.request_id)[:40]}")
+        return " ".join(parts)
 
 
 class ProviderNotConfigured(AgentError):
