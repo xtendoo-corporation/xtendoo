@@ -27,3 +27,7 @@ from . import test_unlock
 from . import test_policy_table
 from . import test_brakes
 from . import test_usage_report
+from . import test_retention
+from . import test_policy_guard
+from . import test_pending_policy
+from . import test_fiscal_tools

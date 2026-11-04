@@ -64,9 +64,9 @@ class TestSaleDraftEdits(XtdAiSaleCase):
                 pairs,
             )
         self.assertEqual(line.discount, 10.0)
-        self.env["ir.config_parameter"].set_param(
-            "xtd_ai.policy.discount_threshold", "25"
-        )
+        # the threshold of the company (the parameter is only the default of
+        # new companies: every company keeps its own value, 0 included)
+        self.company.xtd_ai_discount_threshold = 25
         self.assertEqual(
             self.update("sale.order.line", line.id, [("discount", "20")])["status"],
             "ok",

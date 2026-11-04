@@ -8,8 +8,7 @@ from odoo.addons.xtd_ai.tools.errors import XtdAiDraftOnlyError
 
 @tagged("post_install", "-at_install")
 class TestPurchaseTransitions(XtdAiCase):
-    """Wave 2B: confirm and cancel an RFQ (§4 Compras), reinforced card above
-    the purchase limit."""
+    """Wave 2B: confirm and cancel an RFQ (§4 Compras); no amount cap (H2)."""
 
     @classmethod
     def setUpClass(cls):
@@ -30,7 +29,6 @@ class TestPurchaseTransitions(XtdAiCase):
     def setUp(self):
         super().setUp()
         self.set_confirm(self.buyer, False)
-        self.company.xtd_ai_purchase_confirm_limit = 1000
         self.rfq = self.make_rfq(10, 2.0)
 
     def make_rfq(self, qty, price):
@@ -80,7 +78,7 @@ class TestPurchaseTransitions(XtdAiCase):
         self.assertEqual(res["status"], "handoff", res)
         self.assertEqual(self.rfq.state, "draft")
 
-    def test_card_below_limit_and_undo(self):
+    def test_card_and_undo(self):
         self.turn_on()
         action = self.pending(
             self.sc("confirm_purchase_order", {"order": str(self.rfq.id)})
@@ -93,14 +91,18 @@ class TestPurchaseTransitions(XtdAiCase):
         self.assertTrue(self.undo(action)["undone"])
         self.assertEqual(self.rfq.state, "draft")
 
-    def test_reinforced_card_above_limit(self):
+    def test_big_order_same_card_without_amount_cap(self):
+        """H2: no purchase limit: a big order is the same card (amount and
+        vendor in the summary), with no extra warning and no other level."""
+        self.assertNotIn("xtd_ai_purchase_confirm_limit", self.env["res.company"])
         self.turn_on()
-        big = self.make_rfq(100, 20.0)
+        big = self.make_rfq(1000, 300.0)
         action = self.pending(self.sc("confirm_purchase_order", {"order": str(big.id)}))
-        warning = action.preview["warning"]
-        self.assertIn("Proveedor Omega SL", warning)
-        self.assertIn("2.420", warning.replace("2,420", "2.420"))
+        self.assertFalse(action.preview.get("warning"))
         self.assertIn("Proveedor Omega SL", action.preview["summary"])
+        out = action.with_user(self.buyer).action_confirm()
+        self.assertEqual(out["state"], "confirmed", out)
+        self.assertEqual(big.state, "purchase")
 
     def test_unlock_only_its_order(self):
         other = self.make_rfq(1, 1.0)

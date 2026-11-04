@@ -1207,14 +1207,10 @@
         "cards": 1,
         "reply_none": ["^\\s*No puedo"],
         "db": [
-          [
-            "select count(*) from xtd_ai_pending_action where run_id in ({runs}) and tool_name='confirm_purchase_order' and preview->>'warning' is not null",
-            "1"
-          ],
           ["select state from purchase_order where id=16", "draft"]
         ]
       },
-      "note": "1.210 €: tarjeta reforzada (límite 1.000 €)"
+      "note": "1.210 €: tarjeta normal (sin límite de importe de compra)"
     },
     {
       "id": "v08",

@@ -1,6 +1,6 @@
 import importlib.util
 
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests import tagged
 from odoo.tools import file_path, mute_logger
 
@@ -100,14 +100,95 @@ class TestPolicyTable(XtdAiCase):
         settings = self.env["res.config.settings"].create({})
         settings.xtd_ai_profile = "prudent"
         settings.xtd_ai_discount_threshold = 20
-        settings.xtd_ai_purchase_confirm_limit = 500
         settings.execute()
         self.assertEqual(self.company.xtd_ai_profile, "prudent")
         self.assertEqual(self.policy()._xtd_ai_discount_threshold(), 20)
-        self.assertEqual(self.policy()._xtd_ai_purchase_confirm_limit(), 500)
         self.assertEqual(self.policy(self.company2)._xtd_ai_discount_threshold(), 15)
         action = settings.action_xtd_ai_policy_table()
         self.assertEqual(action["res_model"], "xtd.ai.policy.rule")
+
+    def test_purchase_limit_is_gone(self):
+        """H2: no purchase amount limit anywhere (field, setting, parameter)."""
+        self.assertNotIn("xtd_ai_purchase_confirm_limit", self.env["res.company"])
+        self.assertNotIn(
+            "xtd_ai_purchase_confirm_limit", self.env["res.config.settings"]
+        )
+        self.assertFalse(hasattr(self.policy(), "_xtd_ai_purchase_confirm_limit"))
+
+    def test_zero_discount_threshold_is_a_value(self):
+        """Risk 4: 0 means «any discount asks for a card», not «use 15 %»."""
+        settings = self.env["res.config.settings"].create({})
+        settings.xtd_ai_discount_threshold = 0
+        settings.execute()
+        self.assertEqual(self.company.xtd_ai_discount_threshold, 0)
+        policy = self.policy()
+        self.assertEqual(policy._xtd_ai_discount_threshold(), 0)
+        self.assertEqual(
+            self.env["res.config.settings"].create({}).xtd_ai_discount_threshold, 0
+        )
+        self.assertEqual(policy._xtd_ai_discount_level("N1", [0.5]), "N2")
+        self.assertEqual(policy._xtd_ai_discount_level("N1", [0, None]), "N1")
+        self.company.xtd_ai_discount_threshold = 15
+        self.assertEqual(policy._xtd_ai_discount_level("N1", [15]), "N1")
+        self.assertEqual(policy._xtd_ai_discount_level("N1", [5, 100]), "N2")
+        self.assertEqual(policy._xtd_ai_discount_level("N3", [100]), "N3")
+        for wrong in (-1, 101):
+            with self.assertRaises(UserError), self.cr.savepoint():
+                settings = self.env["res.config.settings"].create({})
+                settings.xtd_ai_discount_threshold = wrong
+                settings.execute()
+
+    def test_new_company_gets_the_default_threshold(self):
+        params = self.env["ir.config_parameter"].sudo()
+        params.set_param("xtd_ai.policy.discount_threshold", False)
+        company = self.env["res.company"].create({"name": "AI threshold 15"})
+        self.assertEqual(company.xtd_ai_discount_threshold, 15)
+        params.set_param("xtd_ai.policy.discount_threshold", "12")
+        company = self.env["res.company"].create({"name": "AI threshold 12"})
+        self.assertEqual(company.xtd_ai_discount_threshold, 12)
+        company = self.env["res.company"].create(
+            {"name": "AI threshold 0", "xtd_ai_discount_threshold": 0}
+        )
+        self.assertEqual(
+            self.policy(company)._xtd_ai_discount_threshold(), 0, "0 is kept"
+        )
+
+    def test_migration_2_13_drops_the_limit_and_fills_thresholds(self):
+        params = self.env["ir.config_parameter"].sudo()
+        params.set_param("xtd_ai.policy.discount_threshold", "10")
+        params.set_param("xtd_ai.policy.purchase_confirm_limit", "1000")
+        self.env.flush_all()
+        self.cr.execute(
+            "ALTER TABLE res_company ADD COLUMN IF NOT EXISTS "
+            "xtd_ai_purchase_confirm_limit numeric"
+        )
+        self.cr.execute(
+            "UPDATE res_company SET xtd_ai_discount_threshold = NULL WHERE id = %s",
+            [self.company.id],
+        )
+        self.cr.execute(
+            "UPDATE res_company SET xtd_ai_discount_threshold = 0 WHERE id = %s",
+            [self.company2.id],
+        )
+        other = self.env["res.company"].create(
+            {"name": "AI threshold 30", "xtd_ai_discount_threshold": 30}
+        )
+        self.env.flush_all()
+        path = file_path("xtd_ai/migrations/19.0.2.13.0/post-migrate.py")
+        spec = importlib.util.spec_from_file_location("xtd_ai_mig_2_13", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.migrate(self.env.cr, "19.0.2.12.0")
+        self.env.invalidate_all()
+        self.assertEqual(self.company.xtd_ai_discount_threshold, 10)
+        self.assertEqual(self.company2.xtd_ai_discount_threshold, 10)
+        self.assertEqual(other.xtd_ai_discount_threshold, 30)
+        self.assertFalse(params.get_param("xtd_ai.policy.purchase_confirm_limit"))
+        self.cr.execute(
+            "SELECT 1 FROM information_schema.columns WHERE table_name = "
+            "'res_company' AND column_name = 'xtd_ai_purchase_confirm_limit'"
+        )
+        self.assertFalse(self.cr.fetchall())
 
     def test_migration_moves_the_parameters(self):
         params = self.env["ir.config_parameter"].sudo()

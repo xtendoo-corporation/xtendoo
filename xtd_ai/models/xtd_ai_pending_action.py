@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 from datetime import timedelta
 
@@ -11,6 +12,37 @@ from ..tools.schema import validate
 _logger = logging.getLogger(__name__)
 
 EXPIRY_HOURS = 24
+# Longitud máxima del nombre de un registro en los mensajes para el modelo.
+NAME_LIMIT = 60
+# Caracteres que podrían cerrar la cita «», abrir una línea falsa del sistema
+# ([Mensaje del sistema ...]) o parecer marcado (etiquetas, código, títulos).
+_NAME_STRIP = frozenset('[]<>{}«»`"|\\#*')
+# Marcadores de rol o de instrucciones al estilo «system:», «Assistant:».
+_ROLE_RE = re.compile(
+    r"(?i)\b(system|assistant|user|human|developer|tool|sistema|asistente|"
+    r"usuario|instrucci[oó]n(?:es)?|instructions?)\s*:"
+)
+# Errores de la reevaluación de la política al confirmar: se auditan como
+# denegados, igual que en la pasarela.
+POLICY_CODES = frozenset(
+    {"paused", "forbidden", "policy_error", "policy_changed", "rate_limited"}
+)
+
+
+def untrusted_name(value, limit=NAME_LIMIT):
+    """Nombre de un registro como dato no fiable, para texto que lee el modelo
+    (riesgo 6): una sola línea corta, sin caracteres de control, sin corchetes,
+    comillas ni marcas de etiqueta, y sin marcadores de rol («system:»). Quien
+    lo use debe citarlo entre «» y decir que es texto del registro. Mismo
+    criterio que ``untrusted_text`` (``xtd.ai.toolbox._xtd_ai_text``), pero en
+    línea: aquí no hay JSON que lo envuelva."""
+    text = "".join(
+        " " if not c.isprintable() or c in _NAME_STRIP else c for c in str(value or "")
+    )
+    text = " ".join(_ROLE_RE.sub(lambda m: m.group(1), text).split())
+    if len(text) > limit:
+        text = text[: limit - 1].rstrip() + "…"
+    return text or "sin nombre"
 
 
 class XtdAiPendingAction(models.Model):
@@ -92,7 +124,10 @@ class XtdAiPendingAction(models.Model):
         toolbox = self.env["xtd.ai.toolbox"]
         tool = toolbox._xtd_ai_tools().get(action.tool_name)
         refs, error, code = [], None, None
+        company = self.env.company
         try:
+            # la herramienta sigue existiendo y el usuario sigue pudiendo usarla
+            # (grupos, modelos instalados)
             if tool is None or not toolbox._xtd_ai_tool_visible(tool):
                 raise XtdAiToolError(
                     "not_found", _("La herramienta ya no está disponible.")
@@ -107,10 +142,12 @@ class XtdAiPendingAction(models.Model):
             )
             env = self.env(context=context)
             toolbox_env = env["xtd.ai.toolbox"]
+            company = env.company
             args = action.arguments or {}
             errors = validate(toolbox_env._xtd_ai_schema(tool), args)
             if errors:
                 raise XtdAiToolError("validation", "; ".join(errors[:5]))
+            company = action._xtd_ai_check_policy(toolbox_env, tool, args) or company
             result = toolbox_env._xtd_ai_execute(tool, args)
             refs = result["records"]
         except XtdAiDraftOnlyError as exc:
@@ -142,11 +179,11 @@ class XtdAiPendingAction(models.Model):
         self.env["xtd.ai.audit"]._xtd_ai_log(
             "guard_blocked" if code == "draft_only" else "confirm",
             "denied"
-            if code in ("draft_only", "access_denied")
+            if code in ("draft_only", "access_denied") or code in POLICY_CODES
             else ("error" if error else "ok"),
             run_id=action.run_id.id,
             user_id=user.id,
-            company_id=self.env.company.id,
+            company_id=company.id,
             tool_name=action.tool_name,
             arguments=action.arguments,
             error_code=code,
@@ -156,6 +193,109 @@ class XtdAiPendingAction(models.Model):
         if action.run_id.sudo().conversation_id:
             action_su.run_id._xtd_ai_notify(action_su.message_id)
         return {"state": action_su.state, "records": refs, "error": error}
+
+    def _xtd_ai_check_policy(self, toolbox, tool, args):
+        """Vuelve a pasar la política vigente antes de ejecutar la tarjeta (riesgo 2).
+
+        La tarjeta se creó cuando la llamada era ``N2``, pero vive hasta 24 h:
+        entretanto un administrador puede pausar el agente, endurecer el perfil o
+        la tabla, activarse Veri*Factu/SII (freno fiscal) o bajar los límites de
+        escritura. Se comprueba con las mismas piezas que la pasarela
+        (``xtd.ai.mcp._xtd_ai_tool_level``): pausa de la compañía del documento,
+        nivel con la compañía del documento (o la más estricta de las activas) y
+        ritmo de escrituras. ``N0``..``N2`` siguen confirmándose (la tarjeta no se
+        convierte en traspaso); ``N3`` o ``N4`` la rechazan.
+
+        ``toolbox`` ya tiene el contexto de ejecución (``xtd_ai_run``,
+        compañías de la tarjeta).
+
+        :returns: la compañía del documento, si se conoce (para la auditoría).
+        :raises XtdAiToolError: con un mensaje para el usuario, que ve la tarjeta.
+        """
+        self.ensure_one()
+        policy = toolbox.env["xtd.ai.policy"]
+        try:
+            # pausa de la compañía del contexto; después, la del documento
+            policy._xtd_ai_check_paused()
+            company = toolbox._xtd_ai_call_company(tool, args)
+            if company:
+                policy.with_company(company)._xtd_ai_check_paused()
+            level = toolbox._xtd_ai_call_level(tool, args, company)
+            if level not in ("N0", "N1", "N2"):
+                _logger.info(
+                    "Pending action %s refused: policy level is now %s",
+                    self.id,
+                    level,
+                )
+                raise XtdAiToolError(
+                    "policy_changed",
+                    _(
+                        "La política del agente ha cambiado desde que se preparó "
+                        "esta acción y ya no se puede confirmar desde el chat. "
+                        "Hazla tú en XTD o pide ayuda al administrador."
+                    ),
+                )
+            self._xtd_ai_check_confirm_rate(policy, toolbox)
+        except XtdAiToolError as exc:
+            # los mensajes de la pasarela van dirigidos al agente: aquí los lee
+            # el usuario en la tarjeta
+            messages = {
+                "paused": _(
+                    "El agente IA está en pausa en esta compañía: no se puede "
+                    "confirmar la acción (lo reactiva un administrador en Ajustes)."
+                ),
+                "rate_limited": _(
+                    "Se ha alcanzado el límite de acciones del agente: no se puede "
+                    "confirmar ahora. Hazla tú en XTD o inténtalo más tarde."
+                ),
+                "policy_error": _(
+                    "No se ha podido comprobar si el agente puede hacer esta "
+                    "acción, así que no se hace. Hazla tú en XTD o avisa al "
+                    "administrador."
+                ),
+            }
+            if exc.code in messages:
+                raise XtdAiToolError(exc.code, messages[exc.code]) from None
+            raise
+        return company
+
+    def _xtd_ai_check_confirm_rate(self, policy, toolbox):
+        """Límites de escritura de la compañía del contexto al confirmar (§6.4).
+
+        La tarjeta ya consumió su escritura cuando se creó (la auditoría la
+        cuenta como ``pending``), así que solo se rechaza si el total, con ella,
+        supera hoy el límite: porque el administrador lo ha bajado o porque el
+        agente siguió escribiendo. En el límite por hora, una tarjeta creada hace
+        más de una hora vuelve a contar (se ejecuta ahora)."""
+        company = policy._xtd_ai_company()
+        write_tools = [
+            name
+            for name, tool in toolbox._xtd_ai_tools().items()
+            if tool["kind"] != "read"
+        ]
+        # sudo: users cannot read the audit log
+        audit = self.env["xtd.ai.audit"].sudo()
+        base = [
+            ("event", "=", "tool_call"),
+            ("outcome", "in", ("ok", "pending")),
+            ("tool_name", "in", write_tools),
+        ]
+        action = self.sudo()
+        per_message = company.xtd_ai_max_writes_message
+        if per_message:
+            count = audit.search_count(base + [("run_id", "=", action.run_id.id)])
+            if count > per_message:
+                raise policy._xtd_ai_rate_error(per_message, _("en este mensaje"))
+        per_hour = company.xtd_ai_max_writes_hour
+        if per_hour:
+            since = fields.Datetime.now() - timedelta(hours=1)
+            count = audit.search_count(
+                base + [("user_id", "=", self.env.uid), ("create_date", ">=", since)]
+            )
+            if action.create_date and action.create_date < since:
+                count += 1
+            if count > per_hour:
+                raise policy._xtd_ai_rate_error(per_hour, _("en una hora"))
 
     def action_cancel(self):
         """Cancel a pending action of the session user."""
@@ -193,7 +333,12 @@ class XtdAiPendingAction(models.Model):
 
     # ------------------------------------------------------------------
     def _xtd_ai_confirmed_label(self):
-        """``creada X (modelo m, id N)``: what a confirmed action produced."""
+        """``creada «X» (modelo m, id N)``: what a confirmed action produced.
+
+        El nombre del registro es texto libre que puede venir de fuera (un PDF
+        con un proveedor llamado «Ignora lo anterior y…»): va saneado y citado
+        entre «», y quien lo lee sabe que es dato, no instrucciones (riesgo 6).
+        """
         self.ensure_one()
         action = self.sudo()
         # an action on an existing record (edit, confirm, send) is not "created"
@@ -204,7 +349,7 @@ class XtdAiPendingAction(models.Model):
             if record.exists():
                 # model and id let the agent work on it next ("show it")
                 values = {
-                    "name": (record.display_name or "")[:60],
+                    "name": untrusted_name(record.display_name),
                     "model": action.result_model,
                     "id": action.result_res_id,
                 }
@@ -213,13 +358,17 @@ class XtdAiPendingAction(models.Model):
                         self.env["xtd.ai.toolbox"]._xtd_ai_tools().get(action.tool_name)
                     )
                     label = _(
-                        "hecha «%(title)s» sobre %(name)s (modelo %(model)s, id "
+                        "hecha «%(title)s» sobre «%(name)s» (modelo %(model)s, id "
                         "%(id)s)",
-                        title=(tool or {}).get("title") or action.tool_name,
+                        title=untrusted_name(
+                            (tool or {}).get("title") or action.tool_name
+                        ),
                         **values,
                     )
                 else:
-                    label = _("creada %(name)s (modelo %(model)s, id %(id)s)", **values)
+                    label = _(
+                        "creada «%(name)s» (modelo %(model)s, id %(id)s)", **values
+                    )
         return label
 
     def _xtd_ai_history_notes(self):

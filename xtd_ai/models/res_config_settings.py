@@ -21,7 +21,14 @@ class ResConfigSettings(models.TransientModel):
     xtd_ai_audit_retention_days = fields.Integer(
         string="Retención de la auditoría (días)",
         config_parameter="xtd_ai.audit_retention_days",
-        default=365,
+        default=180,
+        help="Mínimo 30 días. Por defecto 180 (RGPD: limitación del plazo).",
+    )
+    xtd_ai_conversation_retention_days = fields.Integer(
+        string="Retención de las conversaciones (días)",
+        config_parameter="xtd_ai.conversation_retention_days",
+        default=90,
+        help="Mínimo 30 días. Por defecto 90 (RGPD: limitación del plazo).",
     )
 
     # -- policy of the active company (ANALISIS_PERMISOS §6.1) ---------------
@@ -36,11 +43,6 @@ class ResConfigSettings(models.TransientModel):
     )
     xtd_ai_discount_threshold = fields.Float(
         string="Descuento máximo sin tarjeta (%)",
-        compute="_compute_xtd_ai_policy",
-        inverse="_inverse_xtd_ai_policy",
-    )
-    xtd_ai_purchase_confirm_limit = fields.Float(
-        string="Importe máximo de compra con tarjeta simple",
         compute="_compute_xtd_ai_policy",
         inverse="_inverse_xtd_ai_policy",
     )
@@ -60,26 +62,20 @@ class ResConfigSettings(models.TransientModel):
             policy = self.env["xtd.ai.policy"].with_company(settings.company_id)
             settings.xtd_ai_profile = policy._xtd_ai_profile()
             settings.xtd_ai_discount_threshold = policy._xtd_ai_discount_threshold()
-            settings.xtd_ai_purchase_confirm_limit = (
-                policy._xtd_ai_purchase_confirm_limit()
-            )
 
     def _inverse_xtd_ai_policy(self):
         for settings in self:
             if not self.env.user.has_group("base.group_system"):
                 raise AccessError(self.env._("Solo un administrador puede hacerlo."))
-            if settings.xtd_ai_discount_threshold < 0 or (
-                settings.xtd_ai_purchase_confirm_limit < 0
-            ):
-                raise UserError(self.env._("Los umbrales no pueden ser negativos."))
+            if not 0 <= settings.xtd_ai_discount_threshold <= 100:
+                raise UserError(
+                    self.env._("El descuento máximo debe estar entre 0 y 100.")
+                )
             # sudo: company settings written from the settings form (admin only)
             settings.company_id.sudo().write(
                 {
                     "xtd_ai_profile": settings.xtd_ai_profile,
                     "xtd_ai_discount_threshold": settings.xtd_ai_discount_threshold,
-                    "xtd_ai_purchase_confirm_limit": (
-                        settings.xtd_ai_purchase_confirm_limit
-                    ),
                 }
             )
 
@@ -124,7 +120,7 @@ class ResConfigSettings(models.TransientModel):
     )
     xtd_ai_timeout = fields.Float(
         string="Timeout por llamada (s)",
-        default=30.0,
+        default=120.0,
         config_parameter="xtd_ai.timeout",
     )
     xtd_ai_workspace_id = fields.Char(

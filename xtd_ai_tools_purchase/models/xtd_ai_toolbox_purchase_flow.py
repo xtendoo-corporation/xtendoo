@@ -1,9 +1,10 @@
 """Purchase transitions of wave 2B (ANALISIS_PERMISOS §4 Compras, §6.1).
 
-Confirm an RFQ (N2 card with its effects when the company turned it on, N3
-otherwise; above the purchase limit the card is reinforced with the total and
-the vendor) and cancel an RFQ. Each tool unlocks only its own operation on its
-one order (§6.5). Sending the RFQ to the vendor stays with the user.
+Confirm an RFQ (N2 card with its amount, vendor and effects when the company
+turned it on, N3 otherwise; there is no amount cap: companies with expensive
+products confirm big orders the same way) and cancel an RFQ. Each tool
+unlocks only its own operation on its one order (§6.5). Sending the RFQ to
+the vendor stays with the user.
 """
 
 from odoo import models
@@ -40,18 +41,12 @@ class XtdAiToolboxPurchase(models.AbstractModel):
             )
         return order
 
+    def _xtd_ai_order_company(self, args):
+        """Company of the order of ``args["order"]``: its policy rules the call."""
+        return self._xtd_ai_resolve("purchase.order", args["order"]).company_id
+
     def _xtd_ai_fmt(self, amount, currency):
         return formatLang(self.env, amount, currency_obj=currency)
-
-    def _xtd_ai_over_limit(self, order):
-        limit = self.env["xtd.ai.policy"]._xtd_ai_purchase_confirm_limit()
-        total = order.currency_id._convert(
-            order.amount_total,
-            order.company_id.currency_id,
-            order.company_id,
-            order.date_order or order.create_date,
-        )
-        return (limit if total > limit else None), limit
 
     def _xtd_ai_po_effects(self, order):
         env = self.env
@@ -112,6 +107,7 @@ class XtdAiToolboxPurchase(models.AbstractModel):
         skill="compras",
         groups=PURCHASE_GROUPS,
         op_class="confirm_purchase",
+        company="_xtd_ai_order_company",
         preview="_xtd_ai_preview_confirm_purchase_order",
         handoff="_xtd_ai_handoff_confirm_purchase_order",
         unlocks=("purchase.order.button_confirm",),
@@ -149,7 +145,6 @@ class XtdAiToolboxPurchase(models.AbstractModel):
     def _xtd_ai_preview_confirm_purchase_order(self, args):
         order = self._xtd_ai_open_rfq(args["order"])
         total = self._xtd_ai_fmt(order.amount_total, order.currency_id)
-        over, limit = self._xtd_ai_over_limit(order)
         lines = [
             {"field": self.env._("Proveedor"), "value": order.partner_id.display_name},
             {
@@ -169,7 +164,7 @@ class XtdAiToolboxPurchase(models.AbstractModel):
             {"field": self.env._("Efecto"), "value": effect}
             for effect in self._xtd_ai_po_effects(order)
         ]
-        preview = {
+        return {
             "summary": self.env._(
                 "Confirmar %(name)s a %(vendor)s (%(total)s)",
                 name=order.name,
@@ -179,16 +174,6 @@ class XtdAiToolboxPurchase(models.AbstractModel):
             "lines": lines,
             "confirm_label": self.env._("Confirmar compra"),
         }
-        if over is not None:
-            # reinforced card (§6.1): total and vendor in plain sight
-            preview["warning"] = self.env._(
-                "Compra de %(total)s a %(vendor)s: supera el límite de %(limit)s. "
-                "Revisa importe y proveedor antes de confirmar.",
-                total=total,
-                vendor=order.partner_id.display_name,
-                limit=self._xtd_ai_fmt(limit, order.company_id.currency_id),
-            )
-        return preview
 
     def _xtd_ai_handoff_confirm_purchase_order(self, args):
         return self._xtd_ai_open_rfq(args["order"]), self.env._("Confirmar pedido")
@@ -206,6 +191,7 @@ class XtdAiToolboxPurchase(models.AbstractModel):
         skill="compras",
         groups=PURCHASE_GROUPS,
         op_class="transition_internal",
+        company="_xtd_ai_order_company",
         preview="_xtd_ai_preview_cancel_purchase_rfq",
         unlocks=("purchase.order.button_cancel",),
     )

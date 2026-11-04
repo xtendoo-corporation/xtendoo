@@ -303,6 +303,23 @@ class TestPurchase(XtdAiCase):
         self.assertEqual(order.order_line[1].price_unit, 1.5)
         self.assertEqual(res["records"][0]["model"], "purchase.order")
 
+    def test_big_rfq_is_still_a_draft_with_undo(self):
+        """H2: no amount cap on creations: a 30.000 € RFQ is a draft (N1) like
+        any other; confirming it is a separate step (N2/N3)."""
+        self.set_confirm(self.buyer, False)
+        res = self.tool(
+            self.buyer,
+            "create_purchase_rfq",
+            {
+                "vendor": "Proveedor Zeta",
+                "lines": [{"product": "TZ-1", "quantity": 100, "price_unit": 300.0}],
+            },
+        )
+        self.assertEqual(res["status"], "ok", res)
+        order = self.env["purchase.order"].browse(res["data"]["id"])
+        self.assertEqual(order.state, "draft")
+        self.assertEqual(order.amount_untaxed, 30000.0)
+
     def test_rfq_pending_flow(self):
         self.set_confirm(self.buyer, True)
         before = self.env["purchase.order"].search_count([])

@@ -1,15 +1,18 @@
+import logging
 import re
 import unicodedata
 from contextlib import suppress
 
 from odoo import api, models, tools
-from odoo.exceptions import AccessError, MissingError
+from odoo.exceptions import AccessError, MissingError, UserError
 from odoo.tools import file_open
 
 from ..tools.errors import XtdAiToolError
 from ..tools.schema import check_tool_schema
 from ..tools.unlock import GRANT_KEY, UNLOCK_KEY
-from .xtd_ai_policy import max_level
+from .xtd_ai_policy import LEVELS, max_level
+
+_logger = logging.getLogger(__name__)
 
 TEXT_LIMIT = 300
 DEFAULT_LIMIT = 50
@@ -297,24 +300,81 @@ class XtdAiToolbox(models.AbstractModel):
         return self._xtd_ai_normalize_result(result)
 
     @api.model
-    def _xtd_ai_call_level(self, tool, args):
+    def _xtd_ai_call_company(self, tool, args):
+        """Company whose policy rules a call: profile, table, brakes and pause.
+
+        The company of the document the call affects (the tool's ``company``
+        method), else the company a creation goes to (``args["company"]``,
+        resolved among the active companies by the toolbox), else the
+        company of the execution context when the tool works on it (it has
+        a ``company`` argument and none was given). ``None`` when it is not
+        known: the gateway then checks the call against every active company
+        and keeps the strictest level. A company outside the active ones of
+        the run is refused (multi-company revalidation)."""
+        toolbox = self.env[tool["model"]].with_context(
+            **{GRANT_KEY: (), UNLOCK_KEY: None}
+        )
+        company = None
+        if tool.get("company"):
+            with suppress(_PreviewDone), self.env.cr.savepoint():
+                company = getattr(toolbox, tool["company"])(args)
+                raise _PreviewDone()
+        else:
+            properties = (self._xtd_ai_schema(tool) or {}).get("properties") or {}
+            if "company" in properties and hasattr(toolbox, "_xtd_ai_company"):
+                company = toolbox._xtd_ai_company(args) or self.env.company
+        if company is not None and not (
+            isinstance(company, models.BaseModel) and company._name == "res.company"
+        ):
+            _logger.error("AI tool %s: invalid company %r", tool["name"], company)
+            raise self.env["xtd.ai.policy"]._xtd_ai_policy_error(
+                self.env._("compañía no válida")
+            )
+        if not company:
+            return None
+        company = company[:1]
+        if company not in self.env.companies:
+            raise XtdAiToolError(
+                "forbidden",
+                self.env._(
+                    "Ese documento es de la compañía «%s», que no está activa en "
+                    "esta conversación: dile al usuario que la active en el "
+                    "selector de compañías y lo vuelva a pedir.",
+                    company.sudo().name,
+                ),
+            )
+        return company
+
+    @api.model
+    def _xtd_ai_call_level(self, tool, args, company=None):
         """Action level (``N0``..``N4``) of a call, from the policy (§6.1).
+
+        ``company``: the company of ``_xtd_ai_call_company``; without it the
+        call is checked against every active company and the strictest level
+        wins. The result is always one of ``LEVELS``: a policy that fails or
+        returns anything else stops the call (``policy_error``, as ``N4``).
+        """
+        if tool["kind"] == "read":
+            return "N0"
+        companies = company or self.env.companies
+        return max_level(
+            *(
+                self.with_company(c)._xtd_ai_company_call_level(tool, args)
+                for c in companies
+            )
+        )
+
+    @api.model
+    def _xtd_ai_company_call_level(self, tool, args):
+        """Level of a call with ``env.company`` as the company of the policy.
 
         The tool's ``policy`` method runs in a savepoint that is always rolled
         back (it may resolve names, never write). The user's own preference
         and the global ``force_confirmation`` can only raise it to a card.
         """
-        if tool["kind"] == "read":
-            return "N0"
         policy = self.env["xtd.ai.policy"]
         if tool.get("policy"):
-            toolbox = self.env[tool["model"]].with_context(
-                **{GRANT_KEY: (), UNLOCK_KEY: None}
-            )
-            level = None
-            with suppress(_PreviewDone), self.env.cr.savepoint():
-                level = getattr(toolbox, tool["policy"])(args)
-                raise _PreviewDone()
+            level = self._xtd_ai_policy_level(tool, args)
         elif tool.get("op_class"):
             level = policy._xtd_ai_level(tool["op_class"])
         elif tool["kind"] == "create":
@@ -326,7 +386,40 @@ class XtdAiToolbox(models.AbstractModel):
         if user._xtd_ai_force_confirmation() or user.sudo().xtd_ai_confirm_writes:
             # sudo: own preference, always readable
             level = max_level(level, "N2")
-        return policy._xtd_ai_tool_brakes(tool, level)
+        level = policy._xtd_ai_tool_brakes(tool, level)
+        if level not in LEVELS:
+            raise policy._xtd_ai_policy_error(self.env._("nivel no válido"))
+        return level
+
+    @api.model
+    def _xtd_ai_policy_level(self, tool, args):
+        """Run the tool's ``policy`` method and fail closed (risk 1): business
+        errors (a name that does not resolve, a wrong value) stop the call with
+        their own message; anything else, or a result that is not a level, is
+        a ``policy_error`` (never a direct execution)."""
+        toolbox = self.env[tool["model"]].with_context(
+            **{GRANT_KEY: (), UNLOCK_KEY: None}
+        )
+        policy = self.env["xtd.ai.policy"]
+        level = None
+        try:
+            with suppress(_PreviewDone), self.env.cr.savepoint():
+                level = getattr(toolbox, tool["policy"])(args)
+                raise _PreviewDone()
+        except (XtdAiToolError, UserError, AccessError, MissingError):
+            raise
+        except Exception:
+            _logger.exception("AI policy %s of %s failed", tool["policy"], tool["name"])
+            raise policy._xtd_ai_policy_error(self.env._("error interno")) from None
+        if level not in LEVELS:
+            _logger.error(
+                "AI policy %s of %s returned an invalid level: %r",
+                tool["policy"],
+                tool["name"],
+                level,
+            )
+            raise policy._xtd_ai_policy_error(self.env._("nivel no válido"))
+        return level
 
     @api.model
     def _xtd_ai_preview(self, tool, args):

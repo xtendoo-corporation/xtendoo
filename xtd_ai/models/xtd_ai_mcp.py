@@ -8,7 +8,7 @@ from odoo.exceptions import AccessError, MissingError, UserError
 
 from ..tools.errors import XtdAiDraftOnlyError, XtdAiRpcError, XtdAiToolError
 from ..tools.schema import validate
-from .xtd_ai_policy import max_level
+from .xtd_ai_policy import LEVELS, max_level
 
 _logger = logging.getLogger(__name__)
 
@@ -304,6 +304,8 @@ class XtdAiMcp(models.AbstractModel):
         load_tools = []
         policy = self.env["xtd.ai.policy"]
         try:
+            # pause of the context company first (nothing runs in it, not even
+            # resolving names); then that of the document's company
             policy._xtd_ai_check_paused()
             errors = validate(toolbox._xtd_ai_schema(tool), arguments)
             if errors:
@@ -317,7 +319,7 @@ class XtdAiMcp(models.AbstractModel):
             # attachment) always raises it to a card.
             # Text written outside the company read earlier in this run (a web
             # lead, an incoming email) brakes the same way (§6.1).
-            level = toolbox._xtd_ai_call_level(tool, arguments)
+            level = self._xtd_ai_tool_level(tool, arguments, audit)
             if level != "N0" and (
                 run.external_text or run.conversation_id._xtd_ai_run_has_attachments()
             ):
@@ -387,6 +389,25 @@ class XtdAiMcp(models.AbstractModel):
             response["_meta"] = {"xtd_ai/load_tools": load_tools}
         return response
 
+    def _xtd_ai_tool_level(self, tool, arguments, audit):
+        """Level of a call, ruled by the company of its document (risk 3: not
+        the first active one; unknown: the strictest active one), whose pause
+        is checked too. Anything that is not a level fails closed (risk 1):
+        only ``N0`` and ``N1`` ever run directly."""
+        toolbox = self.env["xtd.ai.toolbox"]
+        policy = self.env["xtd.ai.policy"]
+        company = None
+        if tool["kind"] != "read":
+            company = toolbox._xtd_ai_call_company(tool, arguments)
+        if company:
+            audit["company_id"] = company.id
+            policy.with_company(company)._xtd_ai_check_paused()
+        level = toolbox._xtd_ai_call_level(tool, arguments, company)
+        if level not in LEVELS:
+            _logger.error("AI tool %s: invalid level %r", tool["name"], level)
+            raise policy._xtd_ai_policy_error(self.env._("nivel no válido"))
+        return level
+
     def _xtd_ai_propose(self, run, tool, arguments):
         """Store a pending action and return the ``pending_confirmation`` result."""
         toolbox = self.env["xtd.ai.toolbox"]
@@ -431,6 +452,9 @@ class XtdAiMcp(models.AbstractModel):
             code, message, data = exc.code, exc.message, exc.data
             if code == "ambiguous":
                 outcome = "error"
+            elif code == "policy_error":
+                # the policy could not decide: refused like N4 (risk 1)
+                outcome = "denied"
         elif isinstance(exc, AccessError):
             code, message, outcome = "access_denied", str(exc), "denied"
         elif isinstance(exc, MissingError):
