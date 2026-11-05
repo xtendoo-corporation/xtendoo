@@ -279,7 +279,7 @@
                   t-esc="action.warning"
                 />
                                 <table
-                  t-if="action.lines.length"
+                  t-if="action.lines and action.lines.length"
                   class="table table-sm mb-1"
                 >
                                     <tbody>
