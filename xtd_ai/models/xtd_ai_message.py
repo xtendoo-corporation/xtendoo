@@ -40,6 +40,17 @@ class XtdAiMessage(models.Model):
         help="Documents the user attached to this message (CONTRACT §14). The "
         "attachments themselves live on the conversation (res_model/res_id).",
     )
+    record_attachment_ids = fields.Many2many(
+        "ir.attachment",
+        "xtd_ai_message_record_attachment_rel",
+        "message_id",
+        "attachment_id",
+        string="Record attachments read",
+        help="Documents of a record (an invoice's PDF, a photo) that the agent read "
+        "with get_record_attachments while answering this request. They stay on "
+        "their record; like the chat attachments, they force a card for every "
+        "write of the request (CONTRACT §14).",
+    )
 
     def _xtd_ai_tools_used(self, max_tools=30, max_refs=5):
         """Compact factual note of the tools used in this message's run.

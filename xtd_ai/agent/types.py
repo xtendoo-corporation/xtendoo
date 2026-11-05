@@ -41,6 +41,9 @@ class ToolResult:
     is_error: bool = False
     # tools this result makes available (load_skill): sent as tool references
     load_tools: tuple[str, ...] = ()
+    # documents whose content goes to the model with this result
+    # (get_record_attachments): ids for ``OdooGateway.get_attachment``
+    attachment_ids: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -116,6 +119,7 @@ class ToolOutcome:
     text: str
     is_error: bool = False
     load_tools: tuple[str, ...] = ()
+    attachment_ids: tuple[int, ...] = ()  # documents to fetch (see ToolResult)
 
 
 @dataclass(frozen=True)

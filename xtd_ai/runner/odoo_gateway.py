@@ -113,11 +113,16 @@ class OdooRunGateway:
                 break
         if not text and "structuredContent" in result:
             text = json.dumps(result["structuredContent"], ensure_ascii=False)
-        load = (result.get("_meta") or {}).get("xtd_ai/load_tools") or ()
+        meta = result.get("_meta") or {}
+        load = meta.get("xtd_ai/load_tools") or ()
+        docs = meta.get("xtd_ai/attachments") or ()
         return ToolOutcome(
             text=text,
             is_error=bool(result.get("isError", False)),
             load_tools=tuple(n for n in load if isinstance(n, str)),
+            attachment_ids=tuple(
+                i for i in docs if isinstance(i, int) and not isinstance(i, bool)
+            ),
         )
 
     def post_reply(self, reply: Reply):

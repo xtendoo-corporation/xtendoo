@@ -17,6 +17,7 @@ from . import test_job
 from . import test_settings
 from . import test_chat_routes
 from . import test_chat_js
+from . import test_chat_card_tour
 from . import test_screen
 from . import test_count_records
 from . import test_undo
@@ -31,3 +32,4 @@ from . import test_retention
 from . import test_policy_guard
 from . import test_pending_policy
 from . import test_fiscal_tools
+from . import test_record_attachments

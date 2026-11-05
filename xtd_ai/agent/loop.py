@@ -125,6 +125,7 @@ class AgentLoop:
         self.stats = RunStats()
         self._failures: dict[str, int] = {}
         self._repeated = False
+        self._sent_documents: set[int] = set()
 
     # ------------------------------------------------------------------ public
 
@@ -199,7 +200,15 @@ class AgentLoop:
                 and response.message.tool_calls
             ):
                 results = self._run_tools(response.message.tool_calls)
-                messages.append(Message(role="user", tool_results=tuple(results)))
+                docs, notes = self._tool_documents(results)
+                messages.append(
+                    Message(
+                        role="user",
+                        tool_results=tuple(results),
+                        text="\n".join(notes),
+                        attachments=docs,
+                    )
+                )
                 if self._repeated:
                     log.warning(
                         "repeated_failing_tool_call",
@@ -264,20 +273,11 @@ class AgentLoop:
             if ref.size > self.max_attachment_bytes:
                 lines.append(f"[Adjunto demasiado grande: {name} (id {ref.id})]")
                 continue
-            try:
-                att = self.gateway.get_attachment(ref.id)
-            except (OdooForbiddenError, OdooMethodNotFound, OdooInvalidParams):
-                log.info(
-                    "attachment_unavailable",
-                    extra={"fields": {"run_id": self.run_id, "attachment_id": ref.id}},
-                )
+            att = self._fetch_attachment(ref.id)
+            if att is None:
                 lines.append(f"[Adjunto no disponible: {name} (id {ref.id})]")
                 continue
-            # base64 length guard (4 chars per 3 bytes) on what really arrived
-            if (
-                len(att.data_base64) * 3 // 4 > self.max_attachment_bytes
-                or att.mimetype not in ATTACHMENT_MIMETYPES
-            ):
+            if not self._attachment_fits(att):
                 lines.append(f"[Adjunto no admitido: {name} (id {ref.id})]")
                 continue
             fetched.append(att)
@@ -287,6 +287,59 @@ class AgentLoop:
             text=_join(m.text, lines, notes_first=True),
             attachments=tuple(fetched),
         )
+
+    def _fetch_attachment(self, att_id: int) -> Attachment | None:
+        """Download one attachment; ``None`` if Odoo refuses it (a note for the
+        model). Other errors propagate and fail the run."""
+        try:
+            return self.gateway.get_attachment(att_id)
+        except (OdooForbiddenError, OdooMethodNotFound, OdooInvalidParams):
+            log.info(
+                "attachment_unavailable",
+                extra={"fields": {"run_id": self.run_id, "attachment_id": att_id}},
+            )
+            return None
+
+    def _attachment_fits(self, att: Attachment) -> bool:
+        # base64 length guard (4 chars per 3 bytes) on what really arrived
+        return (
+            len(att.data_base64) * 3 // 4 <= self.max_attachment_bytes
+            and att.mimetype in ATTACHMENT_MIMETYPES
+        )
+
+    def _tool_documents(
+        self, results: list[ToolResult]
+    ) -> tuple[tuple[Attachment, ...], list[str]]:
+        """Documents of a record that a tool read (``get_record_attachments``).
+
+        They go to the model in the same turn as the tool results, after them,
+        each announced by a ``[Adjunto del registro: ...]`` note (untrusted
+        data, like a chat attachment). A document already sent in this run is
+        not sent again. Names and content are never logged above DEBUG.
+        """
+        fetched: list[Attachment] = []
+        notes: list[str] = []
+        for result in results:
+            if result.is_error:
+                continue
+            for att_id in result.attachment_ids[:MAX_ATTACHMENTS]:
+                if att_id in self._sent_documents:
+                    notes.append(f"[Adjunto del registro ya enviado: id {att_id}]")
+                    continue
+                att = self._fetch_attachment(att_id)
+                if att is None:
+                    notes.append(f"[Adjunto del registro no disponible: id {att_id}]")
+                    continue
+                name = _safe_name(att.name)
+                if not self._attachment_fits(att):
+                    notes.append(
+                        f"[Adjunto del registro no admitido: {name} (id {att_id})]"
+                    )
+                    continue
+                self._sent_documents.add(att_id)
+                fetched.append(att)
+                notes.append(f"[Adjunto del registro: {name} (id {att_id})]")
+        return tuple(fetched), notes
 
     def _run_tools(self, calls: tuple[ToolCall, ...]) -> list[ToolResult]:
         # Sequential: the in-process gateway shares one database cursor.
@@ -317,6 +370,7 @@ class AgentLoop:
                 content=out.text,
                 is_error=out.is_error,
                 load_tools=out.load_tools,
+                attachment_ids=out.attachment_ids,
             )
         except (RunCancelled, OdooAuthError, OdooForbiddenError):
             raise

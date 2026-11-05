@@ -333,17 +333,22 @@ class XtdAiToolbox(models.AbstractModel):
         if not company:
             return None
         company = company[:1]
-        if company not in self.env.companies:
+        self._xtd_ai_check_active_company(company)
+        return company
+
+    @api.model
+    def _xtd_ai_check_active_company(self, company):
+        """Refuse a document of a company that is not active in the run."""
+        if company and company[:1] not in self.env.companies:
             raise XtdAiToolError(
                 "forbidden",
                 self.env._(
                     "Ese documento es de la compañía «%s», que no está activa en "
                     "esta conversación: dile al usuario que la active en el "
                     "selector de compañías y lo vuelva a pedir.",
-                    company.sudo().name,
+                    company[:1].sudo().name,
                 ),
             )
-        return company
 
     @api.model
     def _xtd_ai_call_level(self, tool, args, company=None):
@@ -522,6 +527,15 @@ class XtdAiToolbox(models.AbstractModel):
         out = {"data": result.get("data", {}), "records": refs}
         if result.get("load_tools"):
             out["load_tools"] = [n for n in result["load_tools"] if isinstance(n, str)]
+        if result.get("attachments"):
+            # documents whose content the agent receives with the result
+            # (get_record_attachments); xtd_ai/attachment serves them only if
+            # they were recorded as read in this request
+            out["attachments"] = [
+                i
+                for i in result["attachments"]
+                if isinstance(i, int) and not isinstance(i, bool)
+            ]
         return out
 
     # ------------------------------------------------------------------
@@ -665,6 +679,40 @@ class XtdAiToolbox(models.AbstractModel):
         except (AccessError, MissingError):
             ok = False
         if not ok:
+            raise not_found
+        return attachment
+
+    @api.model
+    def _xtd_ai_request_attachment(self, att_id):
+        """A document of the request being answered: a chat attachment of this
+        conversation, or a record document read in this request with
+        ``get_record_attachments``.
+
+        For write tools that work on a document the agent has read. Uses the
+        user's environment: the attachment must still be readable by the user
+        and, if it has a company, belong to an active one. Raises
+        ``not_found`` for anything else.
+        """
+        with suppress(XtdAiToolError):
+            return self._xtd_ai_conversation_attachment(att_id)
+        not_found = XtdAiToolError(
+            "not_found", self.env._("No se ha encontrado el adjunto %s.", att_id)
+        )
+        run_id = self.env.context.get("xtd_ai_run")
+        if not run_id or isinstance(att_id, bool) or not isinstance(att_id, int):
+            raise not_found
+        # sudo: the run and its messages are gateway-owned
+        conversation = self.env["xtd.ai.run"].sudo().browse(run_id).conversation_id
+        read = conversation._xtd_ai_last_user_message().record_attachment_ids
+        if att_id not in read.ids:
+            raise not_found
+        attachment = self.env["ir.attachment"].browse(att_id)
+        try:
+            attachment.check_access("read")
+            company = attachment.company_id
+        except (AccessError, MissingError):
+            raise not_found from None
+        if company and company not in self.env.companies:
             raise not_found
         return attachment
 

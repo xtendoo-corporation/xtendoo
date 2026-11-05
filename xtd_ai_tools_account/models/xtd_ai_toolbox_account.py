@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from odoo import Command, fields, models
 
+from odoo.addons.xtd_ai.models.xtd_ai_policy import max_level
 from odoo.addons.xtd_ai.tools import xtd_ai_tool
 from odoo.addons.xtd_ai.tools.errors import XtdAiDraftOnlyError, XtdAiToolError
 
@@ -230,6 +231,43 @@ _ENTRY_LINE_SCHEMA = _obj(
     },
     required=["account", "debit", "credit"],
 )
+
+
+def _fill_schema():
+    """Schema of ``fill_vendor_bill``: the data of a vendor bill read from a document
+    plus the invoice to fill. The company is the invoice's, and the document already
+    hangs from the invoice (no ``attachment_id``)."""
+    schema = _invoice_schema("proveedor", vendor=True)
+    properties = {
+        key: value
+        for key, value in schema["properties"].items()
+        if key not in ("company", "attachment_id")
+    }
+    schema["properties"] = {
+        "move_id": {
+            "type": "integer",
+            "minimum": 1,
+            "description": (
+                "Id de la factura de proveedor en BORRADOR que se rellena (la que "
+                "el usuario tiene abierta: get_invoice o el id de la pantalla)."
+            ),
+        },
+        **properties,
+        "on_existing_lines": {
+            "type": "string",
+            "enum": ["append", "replace"],
+            "description": (
+                "Solo si la factura YA tiene líneas: append las conserva y añade las "
+                "nuevas; replace las elimina y deja solo las nuevas. Si no se indica "
+                "y hay líneas, la herramienta se rechaza: pregunta al usuario."
+            ),
+        },
+    }
+    schema["required"] = ["move_id", *schema["required"]]
+    return schema
+
+
+_FILL_SCHEMA = _fill_schema()
 
 
 class XtdAiToolboxAccount(models.AbstractModel):
@@ -1186,12 +1224,17 @@ class XtdAiToolboxAccount(models.AbstractModel):
             ),
         )
 
-    def _xtd_ai_map_line_taxes(self, move, args):
-        """Explicit line taxes follow the partner's fiscal position, like the UI."""
+    def _xtd_ai_map_line_taxes(self, move, args, lines=None):
+        """Explicit line taxes follow the partner's fiscal position, like the UI.
+
+        ``lines``: the lines that come from ``args["lines"]`` (by default all those
+        of the invoice; when filling an invoice that already had lines, only the new
+        ones)."""
         fiscal_position = move.fiscal_position_id
         if not fiscal_position:
             return
-        for line, line_args in zip(move.invoice_line_ids, args["lines"], strict=False):
+        lines = move.invoice_line_ids if lines is None else lines
+        for line, line_args in zip(lines, args["lines"], strict=False):
             if str(line_args.get("tax") or "").strip():
                 line.tax_ids = fiscal_position.map_tax(line.tax_ids)
 
@@ -1261,8 +1304,22 @@ class XtdAiToolboxAccount(models.AbstractModel):
         # draft can be really created to let Odoo compute taxes and totals.
         move = self._xtd_ai_move_model(move_type).create(vals)
         self._xtd_ai_map_line_taxes(move, args)
+        return self._xtd_ai_preview_move(
+            move,
+            args,
+            label,
+            multi,
+            attachment=attachment,
+            new_partner=not args["partner_id"],
+        )
+
+    def _xtd_ai_preview_move(
+        self, move, args, label, multi, attachment=None, new_partner=False
+    ):
+        """Card data of an invoice already built (inside the preview's savepoint):
+        shared by the creation tools and by ``fill_vendor_bill``."""
         currency = move.currency_id or self.env.company.currency_id
-        partner = self.env["res.partner"].browse(vals["partner_id"])
+        partner = move.partner_id
         summary = self.env._(
             "%(label)s para %(partner)s: %(count)s líneas, %(amount)s sin impuestos, "
             "%(tax)s de impuestos, total %(total)s calculado por XTD (borrador)",
@@ -1287,7 +1344,7 @@ class XtdAiToolboxAccount(models.AbstractModel):
             summary += self.env._(
                 " Adjunto: %s.", self._xtd_ai_text(attachment.name)["untrusted_text"]
             )
-        if not args["partner_id"]:
+        if new_partner:
             summary += self.env._(
                 " Crea también el proveedor «%(name)s»%(vat)s.",
                 name=partner.name,
@@ -1392,3 +1449,217 @@ class XtdAiToolboxAccount(models.AbstractModel):
         return self._xtd_ai_preview_invoice(
             args, "in_invoice", self.env._("Factura de proveedor")
         )
+
+    # ------------------------------------------------------------------
+    # Fill an existing draft vendor bill from a document
+    # ------------------------------------------------------------------
+    def _xtd_ai_fill_target(self, args):
+        """The draft vendor bill to fill, with the user's own rights (no sudo).
+
+        Only ``in_invoice`` in draft: never posted, cancelled, customer or
+        refund documents. Raises ``XtdAiToolError`` otherwise."""
+        move = self._xtd_ai_resolve(
+            "account.move", args["move_id"], domain=[("move_type", "in", _ALL_TYPES)]
+        )
+        if move.move_type != "in_invoice":
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "Esta herramienta solo rellena facturas de proveedor: %s no lo "
+                    "es. Díselo al usuario en una frase.",
+                    move.display_name,
+                ),
+            )
+        if move.state != "draft":
+            raise XtdAiToolError(
+                "forbidden",
+                self.env._(
+                    "La factura %s no está en borrador: solo se rellenan borradores "
+                    "(una publicada se rectifica en XTD). Díselo al usuario en una "
+                    "frase.",
+                    move.display_name,
+                ),
+            )
+        move.check_access("write")
+        return move
+
+    def _xtd_ai_company_fill_vendor_bill(self, args):
+        """Company of the invoice (its policy rules the call)."""
+        return self._xtd_ai_fill_target(args).company_id
+
+    def _xtd_ai_policy_fill_vendor_bill(self, args):
+        """Always a card (N2 at least): it adds or replaces the content of an
+        existing document with data that comes from an outside document."""
+        move = self._xtd_ai_fill_target(args)
+        self._xtd_ai_fill_mode(move, args)
+        policy = self.env["xtd.ai.policy"]
+        return max_level(policy._xtd_ai_level("create_draft"), "N2")
+
+    def _xtd_ai_fill_mode(self, move, args):
+        """``None`` if the invoice has no lines, else ``append`` or ``replace``
+        (explicit: with lines and no choice the call is refused)."""
+        existing = move.invoice_line_ids.filtered(lambda line: line.display_type)
+        if not existing:
+            return None
+        mode = args.get("on_existing_lines")
+        if mode not in ("append", "replace"):
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "La factura %(name)s ya tiene %(count)s líneas. No las toco sin "
+                    "permiso: pregunta al usuario si las CONSERVAS y añades las del "
+                    "documento (on_existing_lines=append) o las REEMPLAZAS "
+                    "(on_existing_lines=replace).",
+                    name=move.display_name,
+                    count=len(existing),
+                ),
+            )
+        return mode
+
+    def _xtd_ai_fill_apply(self, args):
+        """Write the document data on the invoice. Returns ``(toolbox, move, info)``
+        with the toolbox scoped to the invoice's company. Shared by the tool and its
+        preview (which the gateway rolls back)."""
+        move = self._xtd_ai_fill_target(args)
+        scoped = self._xtd_ai_scoped(args, record=move)
+        move = move.with_env(scoped.env)
+        mode = scoped._xtd_ai_fill_mode(move, args)
+        if move.partner_id and args["partner_id"] != move.partner_id.id:
+            raise XtdAiToolError(
+                "validation",
+                self.env._(
+                    "La factura %(name)s ya es de %(partner)s: no cambio de "
+                    "proveedor. Pregunta al usuario si el documento es de otro "
+                    "proveedor y, en ese caso, que cree una factura nueva.",
+                    name=move.display_name,
+                    partner=move.partner_id.display_name,
+                ),
+            )
+        vals = scoped._xtd_ai_invoice_vals(args, "in_invoice")
+        vals.pop("move_type")
+        old_lines = move.invoice_line_ids
+        info = {
+            "mode": mode,
+            "previous": [
+                {"name": line.name, "subtotal": line.price_subtotal}
+                for line in old_lines.filtered(lambda line: line.display_type)
+            ],
+            "before": {
+                "ref": move.ref,
+                "invoice_date": move.invoice_date,
+                "invoice_date_due": move.invoice_date_due,
+            },
+        }
+        if mode == "replace":
+            vals["invoice_line_ids"] = [
+                Command.delete(line.id) for line in old_lines
+            ] + vals["invoice_line_ids"]
+        move.write(vals)
+        scoped._xtd_ai_map_line_taxes(
+            move, args, lines=move.invoice_line_ids - old_lines
+        )
+        if (
+            move.state != "draft"
+            or move.auto_post != "no"
+            or move.move_type != "in_invoice"
+            or move.payment_state not in ("not_paid", False)
+        ):
+            raise XtdAiDraftOnlyError(
+                self.env._("La factura no ha quedado en borrador.")
+            )
+        return scoped, move, info
+
+    @xtd_ai_tool(
+        name="fill_vendor_bill",
+        title="Rellenar factura de proveedor en borrador",
+        description=(
+            "Rellena una factura de proveedor que YA existe y está en BORRADOR "
+            "(normalmente vacía y con su PDF adjunto) con los datos de un documento: "
+            "proveedor, ref (número de la factura del proveedor), invoice_date, "
+            "invoice_date_due opcional y líneas (cantidad, producto o descripción, "
+            "price_unit, discount %, tax IVA %). move_id es la factura abierta. "
+            "SIEMPRE pide tarjeta de confirmación. Si la factura ya tiene líneas se "
+            "rechaza hasta que el usuario decida: on_existing_lines=append (las "
+            "conserva y añade) o replace (las sustituye). No cambia el proveedor de "
+            "una factura que ya lo tiene, ni sirve para publicadas, canceladas, de "
+            "cliente o rectificativas; para una factura nueva usa create_vendor_bill. "
+            "El documento ya está en el registro: no hay attachment_id. Las cuotas, "
+            "el total y las cuentas los calcula XTD."
+        ),
+        input_schema=_FILL_SCHEMA,
+        kind="draft",
+        skill="contabilidad",
+        groups=_WRITE_GROUPS,
+        preview="_xtd_ai_preview_fill_vendor_bill",
+        policy="_xtd_ai_policy_fill_vendor_bill",
+        company="_xtd_ai_company_fill_vendor_bill",
+    )
+    def tool_fill_vendor_bill(self, args):
+        multi = self._xtd_ai_multi()
+        scoped, move, info = self._xtd_ai_fill_apply(args)
+        data = scoped._xtd_ai_invoice_row(move, scoped._xtd_ai_today())
+        data["journal"] = move.journal_id.name
+        if multi:
+            data["company"] = move.company_id.name
+        data["currency"] = move.currency_id.name
+        data["amount_tax"] = scoped._xtd_ai_money(move.amount_tax, move.currency_id)
+        data["lines_count"] = len(move.invoice_line_ids)
+        data["previous_lines"] = len(info["previous"])
+        data["on_existing_lines"] = info["mode"]
+        records = [move]
+        if not args["partner_id"]:
+            data["new_partner"] = {
+                "id": move.partner_id.id,
+                "name": scoped._xtd_ai_text(move.partner_id.name),
+            }
+            records.append(move.partner_id)
+        return {"data": data, "records": records}
+
+    def _xtd_ai_preview_fill_vendor_bill(self, args):
+        multi = self._xtd_ai_multi()
+        scoped, move, info = self._xtd_ai_fill_apply(args)
+        card = scoped._xtd_ai_preview_move(
+            move,
+            args,
+            scoped.env._("Rellenar factura %s", move.display_name),
+            multi,
+            new_partner=not args["partner_id"],
+        )
+        ref = scoped._xtd_ai_text(move.ref) or {"untrusted_text": "-"}
+        card["summary"] += scoped.env._(
+            " Ref. proveedor «%s».", ref["untrusted_text"]
+        )
+        if info["previous"]:
+            names = ", ".join(
+                (scoped._xtd_ai_text(line["name"]) or {"untrusted_text": "-"})[
+                    "untrusted_text"
+                ][:40]
+                for line in info["previous"][:5]
+            )
+            if info["mode"] == "replace":
+                card["summary"] += scoped.env._(
+                    " ATENCIÓN: la factura ya tenía %(count)s líneas y se "
+                    "REEMPLAZAN (se eliminan: %(names)s).",
+                    count=len(info["previous"]),
+                    names=names,
+                )
+            else:
+                card["summary"] += scoped.env._(
+                    " Atención: la factura ya tenía %(count)s líneas, que se "
+                    "conservan; las del documento se añaden.",
+                    count=len(info["previous"]),
+                )
+        card["previous_lines"] = [
+            {
+                "description": scoped._xtd_ai_text(line["name"]),
+                "subtotal": scoped._xtd_ai_money(line["subtotal"], move.currency_id),
+            }
+            for line in info["previous"]
+        ]
+        card["on_existing_lines"] = info["mode"]
+        card["before"] = {
+            "ref": scoped._xtd_ai_text(info["before"]["ref"]),
+            "invoice_date": str(info["before"]["invoice_date"] or "") or None,
+            "invoice_date_due": str(info["before"]["invoice_date_due"] or "") or None,
+        }
+        return card

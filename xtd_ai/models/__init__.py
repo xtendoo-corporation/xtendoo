@@ -15,6 +15,7 @@ from . import xtd_ai_toolbox
 from . import xtd_ai_toolbox_common
 from . import xtd_ai_toolbox_records
 from . import xtd_ai_toolbox_chatter
+from . import xtd_ai_toolbox_attachments
 from . import xtd_ai_toolbox_test
 from . import xtd_ai_mcp
 from . import res_users
