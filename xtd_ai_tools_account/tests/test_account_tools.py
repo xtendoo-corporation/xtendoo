@@ -18,7 +18,7 @@ class TestAccountTools(XtdAiAccountCase):
 
     def test_permission_matrix(self):
         reads = {"search_invoices", "get_invoice", "receivables_payables_summary"}
-        writes = {"create_customer_invoice", "create_vendor_bill"}
+        writes = {"create_customer_invoice", "create_vendor_bill", "fill_vendor_bill"}
         self.assertTrue((reads | writes) <= self.tool_names(self.biller))
         reader_tools = self.tool_names(self.reader)
         self.assertTrue(reads <= reader_tools)
