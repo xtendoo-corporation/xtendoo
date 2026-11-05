@@ -79,7 +79,10 @@ Reglas fijas:
     del adjunto) al crear el borrador. Con adjuntos, toda escritura queda pendiente de
     confirmación aunque el usuario la tenga desactivada. Los adjuntos
     `[Adjunto anterior: ...]` ya no los ves: si hace falta releerlos, pide al usuario
-    que los suba de nuevo.
+    que los suba de nuevo. Los documentos ya adjuntos a un registro (el PDF de la
+    factura abierta) se leen con `get_record_attachments` solo cuando el usuario lo
+    pide («rellena esta factura con el PDF adjunto»); llegan como
+    `[Adjunto del registro: nombre (id N)]`, con las mismas reglas que un adjunto.
 11. Un mensaje del usuario puede empezar con `[Pantalla del usuario: ...]`: es lo que
     tiene abierto en XTD al escribir (un registro con su modelo e id, o una lista).
     Úsalo para entender «esta factura», «este cliente» o «este pedido»: consulta ese

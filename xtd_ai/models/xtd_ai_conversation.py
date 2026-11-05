@@ -134,7 +134,7 @@ class XtdAiConversation(models.Model):
                 ids.append(att_id)
         if not ids:
             return self.env["ir.attachment"]
-        max_bytes, max_files, max_pages = self._xtd_ai_attachment_limits()
+        max_files = self._xtd_ai_attachment_limits()[1]
         if len(ids) > max_files:
             raise UserError(
                 _("Demasiados adjuntos (máximo %s por mensaje).", max_files)
@@ -161,29 +161,46 @@ class XtdAiConversation(models.Model):
         if linked:
             raise UserError(_("Un adjunto ya está enlazado a otro mensaje."))
         for att in attachments:
-            raw = att.raw or b""
-            if len(raw) > max_bytes:
-                raise UserError(
-                    _(
-                        "El fichero «%(name)s» supera el tamaño máximo (%(mb)s MB).",
-                        name=att.name,
-                        mb=max_bytes // (1024 * 1024),
-                    )
-                )
-            if not raw:
-                raise UserError(_("El fichero «%s» está vacío.", att.name))
-            mimetype = guess_mimetype(raw)
-            if mimetype not in ATTACHMENT_MIMETYPES or att.mimetype != mimetype:
-                raise UserError(
-                    _(
-                        "Tipo de fichero no admitido («%s»). Solo PDF, PNG, JPEG o "
-                        "WebP.",
-                        att.name,
-                    )
-                )
-            if mimetype == "application/pdf":
-                self._xtd_ai_check_pdf(att.name, raw, max_pages)
+            self._xtd_ai_check_attachment_content(att)
         return attachments
+
+    @api.model
+    def _xtd_ai_check_attachment_content(self, att):
+        """Check the real content of ``att`` against the attachment limits.
+
+        Size, allowed type by its magic bytes (and equal to the declared one)
+        and, for PDFs, readable with at most the allowed pages. Shared by the
+        chat attachments and the documents of a record
+        (``get_record_attachments``). Raises ``UserError`` (Spanish message).
+        """
+        max_bytes, _max_files, max_pages = self._xtd_ai_attachment_limits()
+        if (att.file_size or 0) > max_bytes:
+            raise self._xtd_ai_too_big(att.name, max_bytes)
+        raw = att.raw or b""
+        if len(raw) > max_bytes:
+            raise self._xtd_ai_too_big(att.name, max_bytes)
+        if not raw:
+            raise UserError(_("El fichero «%s» está vacío.", att.name))
+        mimetype = guess_mimetype(raw)
+        if mimetype not in ATTACHMENT_MIMETYPES or att.mimetype != mimetype:
+            raise UserError(
+                _(
+                    "Tipo de fichero no admitido («%s»). Solo PDF, PNG, JPEG o WebP.",
+                    att.name,
+                )
+            )
+        if mimetype == "application/pdf":
+            self._xtd_ai_check_pdf(att.name, raw, max_pages)
+
+    @api.model
+    def _xtd_ai_too_big(self, name, max_bytes):
+        return UserError(
+            _(
+                "El fichero «%(name)s» supera el tamaño máximo (%(mb)s MB).",
+                name=name,
+                mb=max_bytes // (1024 * 1024),
+            )
+        )
 
     @api.model
     def _xtd_ai_check_pdf(self, name, raw, max_pages):
@@ -230,8 +247,12 @@ class XtdAiConversation(models.Model):
         )
 
     def _xtd_ai_run_has_attachments(self):
-        """Whether the message that started the current run carries attachments."""
-        return bool(self._xtd_ai_last_user_message().attachment_ids)
+        """Whether the request being answered carries a document: attachments of
+        the message that started it, or documents of a record the agent read
+        while answering it (``get_record_attachments``, kept on that message so
+        the automatic continuations after a card keep the restriction)."""
+        message = self._xtd_ai_last_user_message()
+        return bool(message.attachment_ids or message.record_attachment_ids)
 
     def _xtd_ai_start_run(self, text, attachment_ids=None, screen=None, auto=False):
         """Store the user message, create the run and mint its token.

@@ -31,3 +31,4 @@ from . import test_retention
 from . import test_policy_guard
 from . import test_pending_policy
 from . import test_fiscal_tools
+from . import test_record_attachments

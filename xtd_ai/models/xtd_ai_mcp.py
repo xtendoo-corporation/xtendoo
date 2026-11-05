@@ -205,11 +205,14 @@ class XtdAiMcp(models.AbstractModel):
         return {"message_id": message.id}
 
     def _xtd_ai_m_attachment(self, run, params):
-        """``xtd_ai/attachment``: content of a chat attachment (CONTRACT §14)."""
+        """``xtd_ai/attachment``: content of a chat attachment, or of a record
+        document read in this request with ``get_record_attachments`` (CONTRACT
+        §14)."""
         att_id = params.get("id")
         if isinstance(att_id, bool) or not isinstance(att_id, int):
             raise XtdAiRpcError(200, -32602, "Invalid params")
         started = time.monotonic()
+        audit_args = {"id": att_id}
 
         def finish_audit(outcome, code=None):
             self.env["xtd.ai.audit"]._xtd_ai_log(
@@ -219,7 +222,7 @@ class XtdAiMcp(models.AbstractModel):
                 user_id=self.env.uid,
                 company_id=self.env.company.id,
                 error_code=code,
-                arguments={"id": att_id},
+                arguments=audit_args,
                 duration_ms=int((time.monotonic() - started) * 1000),
             )
 
@@ -236,15 +239,38 @@ class XtdAiMcp(models.AbstractModel):
                 ]
             )
         )
+        # A record document is served only if get_record_attachments recorded it
+        # as read for the request being answered; access, company and content
+        # are checked again here with the user's rights.
+        record_doc = (
+            not linked
+            and att_id
+            in run.conversation_id._xtd_ai_last_user_message().record_attachment_ids.ids
+        )
         attachment = self.env["ir.attachment"].browse(att_id)
         try:
-            if not linked or not attachment.exists():
+            if not (linked or record_doc) or not attachment.exists():
                 raise AccessError(self.env._("not linked"))
             attachment.check_access("read")
+            if record_doc:
+                audit_args.update(
+                    res_model=attachment.res_model, res_id=attachment.res_id
+                )
+                company = attachment.company_id
+                if company and company not in self.env.companies:
+                    raise AccessError(self.env._("company not active"))
             name, mimetype, raw = attachment.name, attachment.mimetype, attachment.raw
         except (AccessError, MissingError):
             finish_audit("denied", "attachment_denied")
             raise XtdAiRpcError(403, -32003, "Attachment not accessible") from None
+        if record_doc:
+            try:
+                self.env["xtd.ai.conversation"]._xtd_ai_check_attachment_content(
+                    attachment
+                )
+            except UserError:
+                finish_audit("error", "attachment_invalid")
+                raise XtdAiRpcError(200, -32602, "Attachment not allowed") from None
         max_bytes = self.env["xtd.ai.conversation"]._xtd_ai_attachment_limits()[0]
         if len(raw or b"") > max_bytes:
             finish_audit("error", "attachment_too_large")
@@ -301,7 +327,7 @@ class XtdAiMcp(models.AbstractModel):
             raise XtdAiRpcError(200, -32601, "Tool not found")
 
         event, outcome, code, refs = "tool_call", "ok", None, None
-        load_tools = []
+        load_tools, attachments = [], []
         policy = self.env["xtd.ai.policy"]
         try:
             # pause of the context company first (nothing runs in it, not even
@@ -355,6 +381,7 @@ class XtdAiMcp(models.AbstractModel):
                 refs = result["records"]
                 visible = toolbox._xtd_ai_visible_tools()
                 load_tools = [n for n in result.get("load_tools", []) if n in visible]
+                attachments = result.get("attachments") or []
                 if refs:
                     # an edited record is not "created": its undo restores values
                     run._xtd_ai_add_record_refs(
@@ -379,14 +406,22 @@ class XtdAiMcp(models.AbstractModel):
         except Exception as exc:
             structured, event, outcome, code = self._xtd_ai_error_result(exc)
             payload = json.dumps(structured, ensure_ascii=False, default=str)
+            attachments = []
         finish_audit(event, outcome, code, refs)
         response = {
             "content": [{"type": "text", "text": payload}],
             "structuredContent": structured,
             "isError": structured.get("status") == "error",
         }
+        meta = {}
         if load_tools:
-            response["_meta"] = {"xtd_ai/load_tools": load_tools}
+            meta["xtd_ai/load_tools"] = load_tools
+        if attachments:
+            # documents the agent fetches with xtd_ai/attachment and sends to the
+            # model with this result (get_record_attachments)
+            meta["xtd_ai/attachments"] = attachments
+        if meta:
+            response["_meta"] = meta
         return response
 
     def _xtd_ai_tool_level(self, tool, arguments, audit):
