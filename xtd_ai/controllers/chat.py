@@ -239,7 +239,7 @@ class XtdAiChatController(http.Controller):
                 record = env[action.result_model].browse(action.result_res_id)
                 name = record.display_name or name
             if url:
-                lines = action.result_line_ids or None
+                undo_lines = action.result_line_ids or None
                 result = {
                     "model": action.result_model,
                     "id": action.result_res_id,
@@ -249,7 +249,7 @@ class XtdAiChatController(http.Controller):
                         env,
                         {"model": action.result_model, "id": action.result_res_id},
                         action.create_date,
-                        lines,
+                        undo_lines,
                         action.result_edit or None,
                     ),
                 }

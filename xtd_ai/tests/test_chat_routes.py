@@ -707,6 +707,28 @@ class TestChatRoutes(HttpCase):
         self.assertTrue(card["expires_at"])
         self.assertFalse(res["running_run_id"])
 
+    def test_confirmed_card_keeps_its_preview_lines(self):
+        """A confirmed card with a result and undo lines still sends ``lines`` as a
+        list of rows: the chat template reads ``action.lines.length``."""
+        partner = self.env["res.partner"].create({"name": "Chat Lines SL"})
+        action = self.make_action(
+            self.u1,
+            state="confirmed",
+            result_model="res.partner",
+            result_res_id=partner.id,
+            result_line_ids=[partner.id],
+        )
+        self.attach_to_message(action)
+        self.login(self.u1)
+        res = self.ok(
+            "/xtd_ai/chat/messages", conversation_id=action.conversation_id.id
+        )
+        card = next(
+            c for m in res["messages"] for c in m.get("pending_actions") or []
+        )
+        self.assertEqual(card["state"], "confirmed")
+        self.assertEqual(card["lines"], [{"field": "name", "value": "Chat Test SL"}])
+
     def test_open_fresh_from_icon(self):
         """The navbar icon starts a new conversation unless there is nothing to lose."""
         conversations = self.env["xtd.ai.conversation"]
