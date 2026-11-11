@@ -188,6 +188,58 @@ class StockWarehouseOrderpoint(models.Model):
             ("date_end", "<", today),
         ]
 
+    # ── Informe de reposición: una sola regla por producto/ubicación ──────
+    def _get_orderpoint_action(self):
+        """Abre el informe de reposición viendo solo la regla vigente.
+
+        El método estándar busca *todas* las reglas y las agrupa por
+        (producto, ubicación) esperando una sola por grupo
+        (``orderpoint.qty_to_order`` / ``qty_forecast`` sobre un singleton).
+        Con mínimos estacionales hay una regla por período más la manual, y
+        fallaba con ``Expected singleton``.  Mientras dura la llamada,
+        ``search`` devuelve por cada (producto, ubicación, compañía) la regla
+        automática vigente hoy y, si no la hay, la regla manual/sin período.
+        Las reglas de otros períodos se ignoran.
+        """
+        return super(
+            StockWarehouseOrderpoint, self.with_context(orderpoint_report_season=True)
+        )._get_orderpoint_action()
+
+    @api.model
+    def search(self, domain, offset=0, limit=None, order=None, **kwargs):
+        result = super().search(
+            domain, offset=offset, limit=limit, order=order, **kwargs
+        )
+        if (
+            self.env.context.get("orderpoint_report_season")
+            and not domain
+            and not limit
+            and not offset
+        ):
+            return result._keep_current_season_rule()
+        return result
+
+    def _keep_current_season_rule(self):
+        """Una regla por (producto, ubicación, compañía): la automática de la
+        temporada actual; si no hay, la manual/sin fechas; las reglas de otros
+        períodos se descartan."""
+        today = fields.Date.context_today(self)
+        best = {}
+        for rule in self:
+            if rule.date_start and rule.date_start > today:
+                continue
+            if rule.date_end and rule.date_end < today:
+                continue
+            key = (rule.product_id.id, rule.location_id.id, rule.company_id.id)
+            current = best.get(key)
+            # prioridad: activa > archivada; automática > manual
+            if current is None or (rule.active, rule.trigger == "auto") > (
+                current.active,
+                current.trigger == "auto",
+            ):
+                best[key] = rule
+        return self.browse([r.id for r in best.values()])
+
     # ── Reposición: las reglas fuera de período no ordenan nada ───────────
     @api.depends("date_start", "date_end")
     def _compute_qty_to_order_computed(self):

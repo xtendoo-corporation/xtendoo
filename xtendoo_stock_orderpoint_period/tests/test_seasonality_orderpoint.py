@@ -332,3 +332,37 @@ class TestSeasonalityOrderpoint(TransactionCase):
         wizard = self._create_wizard(year_reference=year)
         demand = wizard._compute_demand(self.product, [3])
         self.assertAlmostEqual(demand.get((self.product.id, 3), 0.0), 7.0)
+
+    # ────────────────────────────────────────────────────────────────────
+    #  Informe de reposición con varias reglas estacionales
+    # ────────────────────────────────────────────────────────────────────
+    def test_replenishment_report_with_seasonal_rules(self):
+        """Varias reglas por producto/ubicación no rompen el informe."""
+        product = self._create_product("Test Informe Estacional")
+        manual = self._create_op(product, trigger="manual", product_min_qty=0, product_max_qty=0)
+        current = self._create_op(product, self._days(-5), self._days(5))
+        self._create_op(product, self._days(20), self._days(30))
+        self._create_op(product, self._days(-40), self._days(-30))
+        # previsión negativa -> el producto entra en el cálculo del informe
+        self.env["stock.move"].create(
+            {
+                "product_id": product.id,
+                "product_uom_qty": 3.0,
+                "location_id": self.location.id,
+                "location_dest_id": self.env.ref("stock.stock_location_customers").id,
+                "state": "confirmed",
+            }
+        )
+        self.OP.with_context(force_orderpoint_recompute=True)._get_orderpoint_action()
+        kept = self.OP.with_context(orderpoint_report_season=True).search([])
+        mine = kept.filtered(lambda o: o.product_id == product)
+        self.assertEqual(len(mine), 1)
+        self.assertEqual(mine, current)
+        self.assertNotEqual(mine, manual)
+
+    def test_keep_current_season_rule_falls_back_to_manual(self):
+        product = self._create_product("Test Sin Temporada")
+        manual = self._create_op(product, trigger="manual", product_min_qty=0, product_max_qty=0)
+        self._create_op(product, self._days(20), self._days(30))
+        rules = self.OP.search([("product_id", "=", product.id)])
+        self.assertEqual(rules._keep_current_season_rule(), manual)
