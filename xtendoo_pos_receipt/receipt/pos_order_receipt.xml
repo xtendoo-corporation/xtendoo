@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--
+        Recibo del TPV de Xtendoo. En Odoo 20 el recibo se genera con plantillas QWeb
+        (point_of_sale.pos_order_receipt), las mismas en el backend y en el frontend,
+        así que basta con heredarlas; ya no hace falta JS ni OWL.
+    -->
+    <template id="pos_order_receipt_style" inherit_id="point_of_sale.pos_order_receipt_style">
+        <xpath expr="//style" position="inside">
+            #pos-receipt { font-family: 'Lucida Console', 'DejaVu Sans Mono', 'Liberation Mono', monospace !important; font-size: 20px !important; }
+            #pos-receipt .xtd-dash { border: none; border-top: 2px dashed #000000; margin: 6px 0; }
+            #pos-receipt .xtd-small { font-size: 17px; }
+        </xpath>
+    </template>
+
+    <template id="pos_order_receipt" inherit_id="point_of_sale.pos_order_receipt">
+        <!-- Cabecera propia -->
+        <xpath expr="//t[@t-call='point_of_sale.pos_order_receipt_header']" position="replace">
+            <div class="w-100 text-center mb-2" name="logo">
+                <img t-if="image['logo']" t-att-src="image['logo']" class="w-50" />
+            </div>
+            <div class="w-100 text-center" name="xtd_company">
+                <div><strong t-out="company.get('name')" /></div>
+                <div class="xtd-small">
+                    <div t-if="company.get('street')" t-out="company['street']" />
+                    <div t-if="company.get('street2')" t-out="company['street2']" />
+                    <div t-if="company.get('zip') or company.get('city')">
+                        <t t-out="company.get('zip') or ''" /> <t t-out="company.get('city') or ''" />
+                    </div>
+                    <div t-if="company.get('phone')">Tlf <t t-out="company['phone']" /></div>
+                    <div t-if="company.get('vat')" t-out="company['vat']" />
+                </div>
+            </div>
+            <hr class="xtd-dash" />
+            <div class="w-100 text-start xtd-small" name="xtd_order_info">
+                <div><strong>FACTURA SIMPLIFICADA:</strong> <t t-out="order['pos_reference']" /></div>
+                <div><strong>FECHA:</strong> <t t-out="extra_data['formated_date_order']" /></div>
+                <t t-if="partner">
+                    <div><strong>CLIENTE:</strong> <t t-out="partner.get('name')" /></div>
+                    <div t-if="partner.get('vat')"><strong>NIF/CIF:</strong> <t t-out="partner['vat']" /></div>
+                    <div t-if="partner.get('street') or partner.get('city')">
+                        <t t-out="partner.get('street') or ''" />
+                        <t t-if="partner.get('street') and partner.get('city')"> - </t>
+                        <t t-out="partner.get('city') or ''" />
+                        <t t-if="partner.get('zip')"> (<t t-out="partner['zip']" />)</t>
+                    </div>
+                </t>
+            </div>
+            <hr class="xtd-dash" />
+            <div t-if="order['state'] == 'draft'" class="text-center mb-1">Recibo pro forma</div>
+            <div t-if="config['receipt_header']" class="text-center mb-1" style="white-space:pre-line" t-out="config['receipt_header']" />
+        </xpath>
+
+        <!-- Líneas: Nombre / UD / TOTAL -->
+        <xpath expr="//div[table[@t-foreach='lines']]" position="replace">
+            <div t-else="" class="w-100 xtd-small" name="xtd_lines">
+                <table class="w-100">
+                    <tbody>
+                        <tr>
+                            <td class="text-start w-60"><strong>Nombre</strong></td>
+                            <td class="text-center w-10"><strong>UD</strong></td>
+                            <td class="text-end w-30"><strong>TOTAL</strong></td>
+                        </tr>
+                        <t t-foreach="lines" t-as="line">
+                            <tr class="lines" t-if="not line['combo_parent_id']">
+                                <td class="text-start w-60 top" t-out="line['product_data']['display_name']" />
+                                <td class="text-center w-10 top" t-out="line['qty']" />
+                                <td class="text-end w-30 top font-monospace" t-out="line['price_subtotal_incl']" />
+                            </tr>
+                            <tr class="lines" t-else="">
+                                <td class="text-start w-60 top">&#160;&#160;<t t-out="line['product_data']['display_name']" /></td>
+                                <td class="text-center w-10 top" t-out="line['qty']" />
+                                <td class="w-30" />
+                            </tr>
+                            <tr t-if="line['discount'] and not line['combo_parent_id']">
+                                <td colspan="3" class="text-start">Dto. <t t-out="line['discount']" />%</td>
+                            </tr>
+                            <tr t-if="line['customer_note']">
+                                <td colspan="3" class="text-start">[<t t-out="line['customer_note']" />]</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                <hr class="xtd-dash" />
+            </div>
+        </xpath>
+
+        <!-- Totales: TOTAL, forma de pago e impuestos -->
+        <xpath expr="//div[@name='prices']" position="replace">
+            <div class="w-100 mb-2" name="prices" t-if="not conditions['basic_receipt']">
+                <table class="w-100">
+                    <tbody>
+                        <tr class="text-bold">
+                            <td class="text-end w-70" name="total">TOTAL</td>
+                            <td class="text-end w-30"><span class="total-amount font-monospace" t-out="extra_data['prices']['total_amount']" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="w-100 text-center xtd-small mt-1 mb-1">
+                    <t t-foreach="payments" t-as="payment">
+                        <div name="payments">Forma de pago: <t t-out="payment['payment_method_data']['name'].lower()" /></div>
+                    </t>
+                </div>
+                <hr class="xtd-dash" />
+                <t t-if="extra_data['prices']['taxes']">
+                <table class="w-100 xtd-small">
+                    <tbody>
+                        <tr>
+                            <td class="text-start w-33">Impuesto</td>
+                            <td class="text-end w-33">Base</td>
+                            <td class="text-end w-33">Cuota</td>
+                        </tr>
+                        <tr t-foreach="extra_data['prices']['taxes']" t-as="tax" name="taxes_line">
+                            <td class="text-start w-33" t-out="tax['name']" />
+                            <td class="text-end w-33 font-monospace" t-out="tax['amount_base']" />
+                            <td class="text-end w-33 font-monospace" t-out="tax['amount']" />
+                        </tr>
+                    </tbody>
+                </table>
+                <hr class="xtd-dash" />
+                </t>
+            </div>
+        </xpath>
+
+        <!-- Sin "Total Items", factura online (QR) ni propinas -->
+        <xpath expr="//table[@name='total_item_count']" position="replace" />
+        <xpath expr="//div[table//img[hasclass('invoice-qr-code')]]" position="replace" />
+        <xpath expr="//div[@t-if=&quot;extra_data.get('tips_configuration')&quot;]" position="replace" />
+    </template>
+
+    <!-- Pie propio: sin "Powered by Odoo" -->
+    <template id="pos_order_receipt_footer" inherit_id="point_of_sale.pos_order_receipt_footer">
+        <xpath expr="//div[div[@name='footer']]" position="replace">
+            <div class="w-100 text-center mt-3 xtd-small">
+                <div class="w-100 mt-2" name="footer" />
+                <div t-if="config['receipt_footer']" class="w-100 text-center mt-2 mb-2" style="white-space:pre-line" t-out="config['receipt_footer']" />
+                <div>Gracias por su visita</div>
+                <hr class="xtd-dash" />
+                <div t-if="extra_data.get('cashier_name')">Atendido por: <t t-out="extra_data['cashier_name']" /></div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
