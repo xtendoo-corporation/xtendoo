@@ -1,0 +1,174 @@
+// TPV en modo oscuro. Se carga solo en point_of_sale.assets_prod_dark, que
+// además se compila con las variables oscuras del tema.
+:root {
+    --xtd-orange: #ff7a3d;
+    --xtd-burgundy: #ffa987;
+    --xtd-ink: #e9e5df;
+    --xtd-muted: #a09a92;
+    --xtd-paper: #1a1918;
+    --xtd-surface: #232220;
+    --xtd-raised: #2b2927;
+    --xtd-line: #33312e;
+    --xtd-soft: rgba(255, 122, 61, 0.16);
+    --o-brand-primary: var(--xtd-orange);
+}
+
+.pos,
+.pos-content,
+.pos .screen {
+    background: var(--xtd-paper);
+    color: var(--xtd-ink);
+}
+
+// Pantalla de bloqueo: sin el fondo claro de fichajes y con el logo en negativo.
+.login-overlay {
+    --homeMenu-bg-image: none;
+    --homeMenu-bg-color: var(--xtd-paper);
+    background-color: var(--xtd-paper) !important;
+    background-image: radial-gradient(900px 420px at 100% 0%, rgba(255, 122, 61, 0.07), transparent 65%) !important;
+
+    .open-register-btn {
+        background: var(--xtd-surface) !important;
+        border: 1px solid var(--xtd-line) !important;
+        color: var(--xtd-ink) !important;
+
+        &:hover {
+            border-color: var(--xtd-orange) !important;
+        }
+    }
+
+    .select-logout {
+        background: var(--xtd-surface) !important;
+        border: 1px solid var(--xtd-line) !important;
+        color: var(--xtd-ink) !important;
+    }
+}
+
+.pos-logo {
+    background-image: url('/xtendoo_xtd_theme/static/src/img/xtd_logo_negative.svg') !important;
+}
+
+// Botón principal: naranja con texto oscuro, como en el backend.
+.pos .btn-primary,
+.pos .button.btn-primary,
+.pos .pay-order-button,
+.pos .validation-button.next,
+.pos .modal-footer .btn-primary,
+.pos .button.pay-order-button,
+.pos .button.pay-order-button.highlight,
+.pos .button.pay-order-button.active,
+.pos .payment-screen .validation-button,
+.pos .payment-screen .validation-button.next,
+.pos .payment-screen .validation-button.highlight,
+.pos .payment-screen .validation-button.selected {
+    background: var(--xtd-orange) !important;
+    border-color: var(--xtd-orange) !important;
+    color: #14110f !important;
+
+    &:hover {
+        background: #ff9560 !important;
+        border-color: #ff9560 !important;
+        color: #14110f !important;
+    }
+
+    .fa,
+    .oi {
+        color: inherit !important;
+    }
+}
+
+// Botones secundarios, métodos de pago y teclado numérico: superficie oscura.
+.pos .btn-secondary,
+.pos .button.btn-secondary,
+.pos .paymentmethod,
+.pos .payment-buttons .button,
+.pos .control-buttons .button,
+.pos .numpad-button {
+    background: var(--xtd-surface) !important;
+    border: 1px solid var(--xtd-line) !important;
+    color: var(--xtd-ink) !important;
+
+    &:hover {
+        background: var(--xtd-raised) !important;
+        border-color: rgba(255, 122, 61, 0.4) !important;
+        color: var(--xtd-ink) !important;
+    }
+}
+
+.pos .button.highlight,
+.pos .button.active,
+.pos .paymentmethod.selected,
+.pos .selected,
+.pos .orderline.selected,
+.pos .numpad-button.active {
+    background: var(--xtd-soft) !important;
+    border-color: var(--xtd-orange) !important;
+    color: var(--xtd-ink) !important;
+}
+
+.pos .js_cashdrawer {
+    background: var(--xtd-surface) !important;
+    border: 2px solid var(--xtd-line) !important;
+    color: var(--xtd-ink) !important;
+
+    &:hover {
+        background: var(--xtd-raised) !important;
+        color: var(--xtd-ink) !important;
+    }
+}
+
+// Teclas de color del teclado numérico: mismo tono, atenuado.
+.pos .numpad-button.o_colorlist_item_numpad_color_1 {
+    background: #4a2a2d !important;
+    border-color: #6b3a3f !important;
+    color: #f5b8bc !important;
+}
+
+.pos .numpad-button.o_colorlist_item_numpad_color_6 {
+    background: #4a3529 !important;
+    border-color: #6b4a38 !important;
+    color: #ffc9ad !important;
+}
+
+.pos .numpad-button.o_colorlist_item_numpad_color_10 {
+    background: #473f22 !important;
+    border-color: #675b2e !important;
+    color: #f5dd85 !important;
+}
+
+.pos .modal-content {
+    background: var(--xtd-raised);
+    border-color: var(--xtd-line);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    color: var(--xtd-ink);
+}
+
+.pos .modal-header,
+.pos .modal-footer {
+    background: transparent;
+    border-color: var(--xtd-line);
+}
+
+.pos .modal-title {
+    color: var(--xtd-ink);
+}
+
+// El TPV fija en claro (#F4F4F4) el panel de productos y los botones
+// secundarios, fuera de las variables.
+.bg-secondary {
+    --background-color: var(--xtd-paper);
+}
+
+.btn-secondary {
+    --btn-bg: var(--xtd-surface);
+    --btn-border-color: var(--xtd-line);
+    --btn-color: var(--xtd-ink);
+}
+
+// Logo de la empresa en la pantalla de bloqueo: suele ser oscuro sobre
+// transparente, así que va sobre una pastilla clara para que se lea.
+.login-overlay img[src*="res.company"] {
+    background: #f7f5f2;
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+}

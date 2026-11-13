@@ -254,7 +254,7 @@
                                         </div>
                                     </t>
                                 </div>
-                                <button class="btn btn-link text-primary fw-bold text-decoration-none mt-auto pt-4 shadow-none btn-hover-arrow" t-on-click="() => this.openAction('mail.mail_activity_action_view_tree')">
+                                <button class="btn btn-link text-primary fw-bold text-decoration-none mt-auto pt-4 shadow-none btn-hover-arrow" t-on-click="() => this.openAction('mail.mail_activity_action')">
                                     Ver todas las actividades <i class="fa fa-arrow-right ms-2 transition-300"/>
                                 </button>
                             </div>

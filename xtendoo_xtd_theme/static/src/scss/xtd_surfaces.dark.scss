@@ -106,3 +106,16 @@
     color: #10140f !important;
     font-weight: 600;
 }
+
+// ---------- Tableros (hojas de cálculo) ----------
+// El tablero es una hoja dibujada en un <canvas> con los colores guardados en
+// la propia hoja (fondo blanco, texto negro): no hay variables que cambiar.
+// Se invierte la luminosidad de la rejilla completa y se gira el tono 180°
+// para que los colores (azules, naranjas, verdes) sigan siendo los mismos.
+.o_web_client .o_spreadsheet_dashboard_action {
+    background: var(--xtd-deep) !important;
+
+    .o-dashboard-grid {
+        filter: invert(0.9) hue-rotate(180deg);
+    }
+}

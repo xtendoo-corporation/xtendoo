@@ -23,6 +23,7 @@
     --xtd-line-strong: #403d39;
     --xtd-link: #ffb08f;
     --xtd-selected: rgba(255, 122, 61, 0.13);
+    --xtd-list-foot-bg: #1f1e1c;
     // Sombras discretas: sobre carbón una sombra grande solo ensucia.
     --xtd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
     --xtd-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.34);
@@ -1008,4 +1009,12 @@ body {
         --bs-table-color: var(--xtd-ink);
         --bs-table-border-color: rgba(255, 255, 255, 0.12);
     }
+}
+
+// ---------- Listas: filas seleccionadas ----------
+// El tinte es común a claro y oscuro (xtd_theme.scss, token --xtd-selected).
+// Aquí solo se asegura la superficie de la fila por debajo del tinte.
+.o_list_renderer .o_list_table tbody tr.o_data_row_selected,
+.o_list_renderer .o_list_table tbody tr.table-info {
+    background: var(--xtd-surface) !important;
 }

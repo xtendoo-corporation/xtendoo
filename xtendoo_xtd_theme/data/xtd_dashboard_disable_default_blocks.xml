@@ -45,13 +45,4 @@
     <record id="xtd_dashboard_block_pos_recent" model="xtd.dashboard.block"><field name="active">False</field></record>
     <record id="xtd_dashboard_block_pos_sessions" model="xtd.dashboard.block"><field name="active">False</field></record>
 
-    <record id="xtd_dashboard_layout_kpis" model="xtd.dashboard.layout"><field name="visible">False</field></record>
-    <record id="xtd_dashboard_layout_kpi_sales" model="xtd.dashboard.layout"><field name="visible">True</field></record>
-    <record id="xtd_dashboard_layout_kpi_orders" model="xtd.dashboard.layout"><field name="visible">True</field></record>
-    <record id="xtd_dashboard_layout_kpi_purchase_orders" model="xtd.dashboard.layout"><field name="visible">True</field></record>
-    <record id="xtd_dashboard_layout_kpi_invoiced" model="xtd.dashboard.layout"><field name="visible">True</field></record>
-    <record id="xtd_dashboard_layout_sales_chart" model="xtd.dashboard.layout"><field name="visible">True</field></record>
-    <record id="xtd_dashboard_layout_activities" model="xtd.dashboard.layout"><field name="visible">True</field></record>
-    <record id="xtd_dashboard_layout_top_products" model="xtd.dashboard.layout"><field name="visible">True</field></record>
-    <record id="xtd_dashboard_layout_order_status" model="xtd.dashboard.layout"><field name="visible">True</field></record>
 </odoo>

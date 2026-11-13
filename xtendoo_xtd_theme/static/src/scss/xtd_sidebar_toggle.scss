@@ -1,5 +1,6 @@
 $xtd-sidebar-width: 280px;
 $xtd-sidebar-collapsed-width: 76px;
+$xtd-sidebar-reorder-width: 360px;
 // --o-navbar-height la fija xtd_navbar_sidebar.esm.js con un ResizeObserver
 // sobre la navbar real (no viene definida por Odoo en esta versión); 50px es
 // solo el valor de reserva por si el JS aún no ha corrido.
@@ -14,7 +15,10 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px));
     height: calc(100vh - #{$xtd-sidebar-menu-top-offset}) !important;
     transform: translateX(0) !important;
     transition: width 0.3s ease !important;
-    z-index: 1200 !important;
+    // Por encima del contenido y sus cabeceras fijas (<= 1030), pero por
+    // debajo del fondo de los diálogos (1050): con 1200 la barra y el menú
+    // tapaban el borde superior de los diálogos altos ("Buscar más").
+    z-index: 1040 !important;
     border-right: 1px solid #e9ecef;
     background-color: #ffffff !important;
     visibility: visible !important;
@@ -147,7 +151,10 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px));
 }
 
 body.xtd-sidebar-hidden {
-    .xtd-sidebar-panel:hover {
+    // Mientras se ordenan las aplicaciones el menú se queda abierto aunque el
+    // ratón salga, igual que al pasar por encima.
+    .xtd-sidebar-panel:hover,
+    .xtd-sidebar-panel:has(.xtd-sidebar-settings--active) {
         width: $xtd-sidebar-width !important;
         border-right: 1px solid #e9ecef !important;
         box-shadow: 8px 0 28px rgba(21, 21, 21, 0.08);
@@ -214,7 +221,7 @@ body.xtd-sidebar-hidden {
 .o_main_navbar {
     margin-left: 0 !important;
     position: relative;
-    z-index: 1100 !important;
+    z-index: 1035 !important;
     transition: margin-left 0.3s ease;
 
     .o_menu_brand {
@@ -245,8 +252,30 @@ body.xtd-sidebar-hidden {
 
 .xtd-sidebar-reorder {
     display: inline-flex !important;
+    flex: 0 0 auto;
     gap: 0.25rem;
     padding-right: 0.75rem;
+}
+
+// Modo ordenar: el menú se ensancha para que quepan el nombre y los tres
+// botones (mostrar/ocultar, subir, bajar) sin cortarse.
+.xtd-sidebar-panel:has(.xtd-sidebar-settings--active),
+body.xtd-sidebar-hidden .xtd-sidebar-panel:has(.xtd-sidebar-settings--active) {
+    box-shadow: 8px 0 28px rgba(21, 21, 21, 0.12);
+    width: $xtd-sidebar-reorder-width !important;
+
+    .nav-link {
+        > img {
+            flex: 0 0 auto;
+        }
+
+        > span.fw-bold {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
 }
 
 .xtd-sidebar-reorder-btn {
@@ -270,7 +299,7 @@ body.xtd-sidebar-hidden {
 /* Mobile adjustments */
 @media (max-width: 767.98px) {
     .xtd-sidebar-panel {
-        z-index: 1050 !important;
+        z-index: 1045 !important;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         top: 0 !important;
         height: 100vh !important;
@@ -324,7 +353,7 @@ body.xtd-no-sidebar {
     opacity: 0.55;
     transition: left 0.3s ease, opacity 0.15s ease, width 0.15s ease;
     width: 12px;
-    z-index: 1210;
+    z-index: 1041;
 
     &:hover,
     &:focus-visible {

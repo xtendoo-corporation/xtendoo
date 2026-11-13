@@ -25,8 +25,18 @@ body .modal {
         padding: 1rem 1.5rem;
     }
 
+    // Sin relleno solo cuando el cuerpo contiene una vista, que ya trae el
+    // suyo. Los diálogos de contenido suelto (filtro personalizado, avisos,
+    // confirmaciones) conservan el relleno: con 0 el texto tocaba el borde.
     .modal-body {
-        padding: 0;
+        padding: 1rem 1.5rem;
+
+        &:has(.o_form_view),
+        &:has(.o_view_controller),
+        &:has(.o_list_renderer),
+        &:has(.o_kanban_renderer) {
+            padding: 0;
+        }
     }
 
     .o_form_view {

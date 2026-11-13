@@ -69,7 +69,8 @@
         </xpath>
         <!-- Contraseña (en Odoo 19 el campo está dentro de o_caps_lock_warning) -->
         <xpath expr="//div[hasclass('o_caps_lock_warning')]" position="replace">
-            <div class="mb-3 field-password">
+            <!-- o_caps_lock_warning: el aviso de Bloq Mayús de Odoo se engancha a esta clase -->
+            <div class="mb-3 field-password o_caps_lock_warning">
                 <label for="password" class="form-label">Contraseña</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fa fa-lock"/></span>
@@ -86,11 +87,20 @@
         </xpath>
         <!-- Botones Iniciar sesión, o, Passkey -->
         <xpath expr="//div[hasclass('oe_login_buttons')]" position="replace">
+            <!--
+                Se sustituye el bloque para darle el diseño Xtd, pero conservando
+                lo que Odoo y otros módulos cuelgan de él: el acceso como
+                superusuario en modo debug, el enlace de registro (auth_signup)
+                y web.login_oauth, donde se inyectan passkey y los proveedores
+                OAuth. Antes se perdían los tres.
+            -->
             <div class="oe_login_buttons d-grid mb-1">
                 <button type="submit" class="btn btn-primary btn-login">Iniciar sesión</button>
-                <div class="separator">
-                </div>
-                
+                <a t-if="signup_enabled" class="btn btn-link btn-sm mt-2" t-attf-href="/web/signup?{{ keep_query() }}">¿No tienes cuenta?</a>
+                <t t-if="debug">
+                    <button type="submit" name="redirect" value="/web/become" class="btn btn-link btn-sm">Iniciar sesión como superusuario</button>
+                </t>
+                <t t-call="web.login_oauth"/>
             </div>
         </xpath>
     </template>

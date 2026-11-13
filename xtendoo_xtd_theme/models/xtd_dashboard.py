@@ -6,6 +6,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
+from odoo.exceptions import AccessError, ValidationError
 
 
 class XtdDashboardBlock(models.Model):
@@ -118,11 +119,15 @@ class XtdDashboardService(models.AbstractModel):
 
         layout_lines = self.env[layout_model].sudo().search(domain)
         if use_custom and not layout_lines:
+            # Dashboard personalizado todavía sin líneas propias: se parte del
+            # diseño global, pero el modo sigue siendo "user" para que el
+            # usuario pueda editarlo y guardar su primera versión. (Antes se
+            # pasaba a modo global y un usuario no administrador perdía el
+            # botón de editar: nunca podía crear su dashboard.)
             layout_lines = self.env["xtd.dashboard.layout"].sudo().search([
                 ("visible", "=", True),
                 ("block_id.active", "=", True),
             ])
-            use_custom = False
 
         return {
             "mode": "user" if use_custom else "global",
@@ -153,12 +158,53 @@ class XtdDashboardService(models.AbstractModel):
             "config": config,
         }
 
+    def _check_internal_user(self):
+        """El dashboard es del backend: portal y público no pueden tocarlo."""
+        if not self.env.user._is_internal():
+            raise AccessError(self.env._("Only internal users can change the dashboard."))
+
+    @api.model
+    def _sanitize_layout_blocks(self, blocks):
+        """Deja solo lo que el cliente puede decidir: qué bloques, en qué orden,
+        con qué tamaño y si están ocultos.
+
+        El cliente recibe la configuración ya fusionada (bloque + línea +
+        etiquetas) y la devolvía entera: se guardaba congelada en la línea y
+        tapaba cualquier cambio posterior del bloque. Además un tamaño o un
+        bloque inválidos acababan en un error 500.
+        """
+        sizes = {key for key, _label in self.env["xtd.dashboard.layout"]._fields["size"].selection}
+        try:
+            requested_ids = [int(block_data["block_id"]) for block_data in blocks]
+        except (KeyError, TypeError, ValueError):
+            raise ValidationError(self.env._("Invalid dashboard layout."))
+        valid_ids = set(
+            self.env["xtd.dashboard.block"].sudo().search([("id", "in", requested_ids)]).ids
+        )
+        sanitized = []
+        seen = set()
+        for block_id, block_data in zip(requested_ids, blocks):
+            if block_id not in valid_ids or block_id in seen:
+                continue
+            seen.add(block_id)
+            size = block_data.get("size")
+            config = block_data.get("config")
+            hidden = bool(config.get("hidden")) if isinstance(config, dict) else False
+            sanitized.append({
+                "block_id": block_id,
+                "size": size if size in sizes else "medium",
+                "config": {"hidden": True} if hidden else {},
+            })
+        return sanitized
+
     @api.model
     def save_dashboard_layout(self, blocks):
+        self._check_internal_user()
         user = self.env.user
         use_custom = bool(user.xtd_use_custom_dashboard)
         if not use_custom and not user.has_group("base.group_system"):
             return self.get_dashboard_layout()
+        blocks = self._sanitize_layout_blocks(blocks or [])
         if not blocks:
             return self.get_dashboard_layout()
         layout_model = self.env["xtd.dashboard.user.layout" if use_custom else "xtd.dashboard.layout"].sudo()
@@ -168,13 +214,13 @@ class XtdDashboardService(models.AbstractModel):
 
         visible_block_ids = set()
         for index, block_data in enumerate(blocks):
-            block_id = int(block_data["block_id"])
+            block_id = block_data["block_id"]
             visible_block_ids.add(block_id)
             vals = {
                 "sequence": (index + 1) * 10,
-                "size": block_data.get("size") or "medium",
+                "size": block_data["size"],
                 "visible": True,
-                "config": block_data.get("config") or {},
+                "config": block_data["config"],
             }
             line = existing_by_block_id.get(block_id)
             if line:
@@ -372,13 +418,26 @@ class XtdDashboardService(models.AbstractModel):
 
     @api.model
     def delete_custom_block(self, block_id):
+        self._check_internal_user()
         user = self.env.user
         use_custom = bool(user.xtd_use_custom_dashboard)
-        if not use_custom and not user.has_group("base.group_system"):
+        is_admin = user.has_group("base.group_system")
+        if not use_custom and not is_admin:
             return self.get_dashboard_layout()
 
         block = self.env["xtd.dashboard.block"].sudo().browse(int(block_id)).exists()
         if not block or not self._can_delete_block(block):
+            return self.get_dashboard_layout()
+
+        if not is_admin:
+            # Un bloque es global: solo un administrador puede borrarlo para
+            # todos. Un usuario con dashboard personalizado solo lo quita del
+            # suyo. (Antes cualquiera que activase su dashboard personalizado
+            # podía borrar el bloque y sus líneas en los de todos.)
+            self.env["xtd.dashboard.user.layout"].sudo().search([
+                ("block_id", "=", block.id),
+                ("user_id", "=", user.id),
+            ]).unlink()
             return self.get_dashboard_layout()
 
         self.env["xtd.dashboard.layout"].sudo().search([("block_id", "=", block.id)]).unlink()

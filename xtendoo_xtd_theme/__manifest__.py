@@ -81,6 +81,11 @@
         "point_of_sale._assets_pos": [
             "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
         ],
+        # TPV en oscuro: mismas variables que el backend más los ajustes del TPV.
+        "point_of_sale.assets_prod_dark": [
+            ("include", "xtendoo_xtd_theme.assets_dark_variables"),
+            "xtendoo_xtd_theme/static/src/scss/xtd_pos.dark.scss",
+        ],
         "web.assets_tests": [
             "xtendoo_xtd_theme/static/tests/tours/xtd_theme_backend_tour.js",
         ],

@@ -4,6 +4,9 @@ from odoo import models
 from odoo.http import request
 
 
+POS_COLOR_SCHEME_COOKIE = "pos_color_scheme"
+
+
 class IrHttp(models.AbstractModel):
     _inherit = "ir.http"
 
@@ -41,12 +44,22 @@ class IrHttp(models.AbstractModel):
     def _post_logout(cls):
         super()._post_logout()
         request.future_response.set_cookie("color_scheme", max_age=0)
+        request.future_response.set_cookie(POS_COLOR_SCHEME_COOKIE, max_age=0)
 
     @classmethod
     def _post_dispatch(cls, response):
         target_scheme, existing_scheme = cls._get_preferred_color_scheme()
         if target_scheme and target_scheme != existing_scheme:
             response.set_cookie("color_scheme", target_scheme)
+        # El TPV decide su bundle (claro u oscuro) con su propia cookie, que en
+        # Community nadie escribe: se mantiene igual que la del backend para
+        # que /pos/ui respete la preferencia del usuario.
+        pos_scheme = target_scheme or existing_scheme
+        if (
+            pos_scheme in {"light", "dark"}
+            and request.httprequest.cookies.get(POS_COLOR_SCHEME_COOKIE) != pos_scheme
+        ):
+            response.set_cookie(POS_COLOR_SCHEME_COOKIE, pos_scheme)
         response.headers.add("Vary", "Sec-CH-Prefers-Color-Scheme")
         response.headers.add("Accept-CH", "Sec-CH-Prefers-Color-Scheme")
         return super()._post_dispatch(response)

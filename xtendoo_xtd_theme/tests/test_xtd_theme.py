@@ -105,7 +105,10 @@ class TestXtdTheme(TransactionCase):
             / "xtd_sidebar_toggle.scss"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("z-index: 1200 !important;", sidebar_scss)
+        # Por encima del contenido, pero por debajo de los diálogos (1050/1055).
+        self.assertIn("z-index: 1040 !important;", sidebar_scss)
+        self.assertNotIn("z-index: 1200", sidebar_scss)
+        self.assertNotIn("z-index: 1100", sidebar_scss)
 
     def test_xtd_login_layout_styles_are_scoped_to_login_page(self):
         login_scss = (

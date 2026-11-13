@@ -109,11 +109,15 @@
         }
 
         // Hoy, siempre en el naranja de marca.
+        // Las variables van en la celda de hoy, no en toda la vista: la vista
+        // anual (Ausencias) pinta cada día con --o-cw-bg y salían todos naranjas.
         .fc-timeGridDay-view,
         .fc-timeGridWeek-view,
         .fc-dayGridMonth-view {
-            --o-cw-bg: var(--xtd-cal-accent);
-            --o-cw-color: #fff;
+            .fc-day-today {
+                --o-cw-bg: var(--xtd-cal-accent);
+                --o-cw-color: #fff;
+            }
 
             .fc-day-today .o_cw_day_number {
                 color: #fff;

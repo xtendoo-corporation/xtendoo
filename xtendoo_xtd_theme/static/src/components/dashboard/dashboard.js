@@ -324,11 +324,15 @@ export class XtdDashboard extends Component {
 
     async _fetchActivities() {
         try {
+            // user.userId: en Odoo 19 session.uid ya no existe (el dominio
+            // salía con null y se listaban actividades sin responsable).
+            // Sin filtro de fecha: las vencidas son las que más importan, y
+            // se ordena por vencimiento para que salgan primero.
             this.state.activities = await this.orm.searchRead(
                 "mail.activity",
-                [["user_id", "=", this.session.uid], ["date_deadline", ">=", toLocalDate(new Date())]],
+                [["user_id", "=", user.userId]],
                 ["res_name", "summary", "date_deadline"],
-                { limit: 5 }
+                { limit: 5, order: "date_deadline asc, id asc" }
             );
         } catch {
             this.state.activities = [];

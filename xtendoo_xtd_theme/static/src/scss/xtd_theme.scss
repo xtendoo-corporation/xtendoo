@@ -1,4 +1,4 @@
-:root{--xtd-series-secondary:rgba(244,87,0,.28);--xtd-orange:#f45700;--xtd-burgundy:#4a0823;--xtd-ink:#151515;--xtd-paper:#f7f5f2;--xtd-line:#dedbd6;--xtd-muted:#8b8790;--xtd-radius:10px;--o-brand-primary:var(--xtd-orange);--o-brand-odoo:var(--xtd-burgundy);--o-brand-secondary:var(--xtd-ink);--bs-primary:var(--xtd-burgundy);--bs-primary-rgb:74,8,35;--bs-primary-text-emphasis:var(--xtd-burgundy);--bs-primary-bg-subtle:#f4eef1;--bs-primary-border-subtle:#decfd6;--bs-focus-ring-color:rgba(74,8,35,.16)}
+:root{--xtd-selected:rgba(244,87,0,.09);--xtd-series-secondary:rgba(244,87,0,.28);--xtd-orange:#f45700;--xtd-burgundy:#4a0823;--xtd-ink:#151515;--xtd-paper:#f7f5f2;--xtd-line:#dedbd6;--xtd-muted:#8b8790;--xtd-radius:10px;--o-brand-primary:var(--xtd-orange);--o-brand-odoo:var(--xtd-burgundy);--o-brand-secondary:var(--xtd-ink);--bs-primary:var(--xtd-burgundy);--bs-primary-rgb:74,8,35;--bs-primary-text-emphasis:var(--xtd-burgundy);--bs-primary-bg-subtle:#f4eef1;--bs-primary-border-subtle:#decfd6;--bs-focus-ring-color:rgba(74,8,35,.16)}
 body{background:var(--xtd-paper);color:var(--xtd-ink)}
 *{scrollbar-color:var(--xtd-orange) transparent;scrollbar-width:thin}
 ::-webkit-scrollbar{width:10px;height:10px}
@@ -34,3 +34,41 @@ a,.btn-link{color:var(--xtd-burgundy)}a:hover,.btn-link:hover{color:var(--xtd-or
 .o_web_client .text-muted:is(.fa,.oi,[class^="fa-"],[class*=" fa-"],[class^="oi-"],[class*=" oi-"]){color:#6c757d!important}
 .o_web_client .o-yellow:is(.fa,.oi,[class^="fa-"],[class*=" fa-"],[class^="oi-"],[class*=" oi-"]){color:#f0ad00!important}
 .o_web_client .text-700:is(.fa,.oi,[class^="fa-"],[class*=" fa-"],[class^="oi-"],[class*=" oi-"]){color:#6c757d!important}
+
+// Pie de totales de las listas. Odoo solo crea celdas en el pie hasta la
+// última columna con total, y el navegador solo pinta el fondo del pie detrás
+// de sus celdas: si quedan columnas a la derecha (p. ej. "Buscar: Producto")
+// aparecía un hueco en blanco. Una sombra interior en el propio pie sí cubre
+// todo el ancho y no genera desplazamiento horizontal.
+.o_list_renderer .o_list_table tfoot {
+    box-shadow:
+        inset 0 1px 0 var(--xtd-line, #dedbd6),
+        inset 0 0 0 9999px var(--xtd-list-foot-bg, var(--ListRenderer-thead-bg-color, #f8f9fa)) !important;
+}
+
+// Filas seleccionadas en las listas. Bootstrap las pinta (.table-info) con un
+// azul pastel fijo que no es de la paleta y que en oscuro deslumbraba y
+// alternaba con las filas impares. Tinte naranja suave y uniforme en ambos
+// modos; el color sale del token --xtd-selected.
+.o_web_client .table-info {
+    --table-bg: transparent;
+    --table-bg-state: var(--xtd-selected);
+    --table-bg-type: var(--xtd-selected);
+    --table-color: var(--xtd-ink);
+    --table-border-color: var(--xtd-line);
+}
+
+.o_list_renderer .o_list_table tbody tr.o_data_row_selected,
+.o_list_renderer .o_list_table tbody tr.table-info {
+    > td,
+    > th {
+        box-shadow: inset 0 0 0 9999px var(--xtd-selected) !important;
+    }
+}
+
+// Aviso "N seleccionado" del panel de control, a juego.
+.o_control_panel .o_list_selection_box {
+    background: var(--xtd-selected) !important;
+    border-color: transparent !important;
+    color: var(--xtd-ink) !important;
+}

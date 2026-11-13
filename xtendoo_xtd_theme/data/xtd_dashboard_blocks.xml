@@ -464,58 +464,68 @@
     <!-- ════════════════════════════════════════════════ -->
     <!--  LAYOUT POR DEFECTO                              -->
     <!-- ════════════════════════════════════════════════ -->
-    <record id="xtd_dashboard_layout_kpis" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_kpis"/>
-        <field name="sequence">10</field>
-        <field name="size">full</field>
-    </record>
+    <!--
+        noupdate: el administrador reordena, redimensiona y oculta estos
+        bloques desde "Editar dashboard", y eso se guarda en estos mismos
+        registros. Sin noupdate cada actualización del módulo devolvía el
+        diseño al de fábrica. La visibilidad final va aquí y no en
+        xtd_dashboard_disable_default_blocks.xml por el mismo motivo.
+    -->
+    <data noupdate="1">
+        <record id="xtd_dashboard_layout_kpis" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_kpis"/>
+            <field name="sequence">10</field>
+            <field name="size">full</field>
+            <field name="visible">False</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_kpi_sales" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_kpi_sales"/>
-        <field name="sequence">10</field>
-        <field name="size">small</field>
-    </record>
+        <record id="xtd_dashboard_layout_kpi_sales" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_kpi_sales"/>
+            <field name="sequence">10</field>
+            <field name="size">small</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_kpi_orders" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_kpi_orders"/>
-        <field name="sequence">11</field>
-        <field name="size">small</field>
-    </record>
+        <record id="xtd_dashboard_layout_kpi_orders" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_kpi_orders"/>
+            <field name="sequence">11</field>
+            <field name="size">small</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_kpi_purchase_orders" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_kpi_purchase_orders"/>
-        <field name="sequence">12</field>
-        <field name="size">small</field>
-    </record>
+        <record id="xtd_dashboard_layout_kpi_purchase_orders" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_kpi_purchase_orders"/>
+            <field name="sequence">12</field>
+            <field name="size">small</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_kpi_invoiced" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_kpi_invoiced"/>
-        <field name="sequence">13</field>
-        <field name="size">small</field>
-    </record>
+        <record id="xtd_dashboard_layout_kpi_invoiced" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_kpi_invoiced"/>
+            <field name="sequence">13</field>
+            <field name="size">small</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_sales_chart" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_sales_chart"/>
-        <field name="sequence">20</field>
-        <field name="size">large</field>
-    </record>
+        <record id="xtd_dashboard_layout_sales_chart" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_sales_chart"/>
+            <field name="sequence">20</field>
+            <field name="size">large</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_activities" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_activities"/>
-        <field name="sequence">30</field>
-        <field name="size">medium</field>
-    </record>
+        <record id="xtd_dashboard_layout_activities" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_activities"/>
+            <field name="sequence">30</field>
+            <field name="size">medium</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_top_products" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_top_products"/>
-        <field name="sequence">40</field>
-        <field name="size">large</field>
-    </record>
+        <record id="xtd_dashboard_layout_top_products" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_top_products"/>
+            <field name="sequence">40</field>
+            <field name="size">large</field>
+        </record>
 
-    <record id="xtd_dashboard_layout_order_status" model="xtd.dashboard.layout">
-        <field name="block_id" ref="xtd_dashboard_block_order_status"/>
-        <field name="sequence">50</field>
-        <field name="size">medium</field>
-    </record>
+        <record id="xtd_dashboard_layout_order_status" model="xtd.dashboard.layout">
+            <field name="block_id" ref="xtd_dashboard_block_order_status"/>
+            <field name="sequence">50</field>
+            <field name="size">medium</field>
+        </record>
+    </data>
 
 </odoo>
