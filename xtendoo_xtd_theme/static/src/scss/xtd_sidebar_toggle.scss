@@ -319,12 +319,18 @@ body.xtd-no-sidebar {
     position: fixed;
     top: 50%;
     transform: translateY(-50%);
-    transition: left 0.3s ease;
-    width: 18px;
+    // Estrecha y atenuada en reposo para no tapar la primera columna del
+    // contenido (casillas de las listas); se abre al pasar el ratón.
+    opacity: 0.55;
+    transition: left 0.3s ease, opacity 0.15s ease, width 0.15s ease;
+    width: 12px;
     z-index: 1210;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         color: var(--xtd-orange, #ff4f00);
+        opacity: 1;
+        width: 18px;
     }
 
     .fa {

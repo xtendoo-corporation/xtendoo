@@ -52,11 +52,31 @@
             "xtendoo_xtd_theme/static/src/scss/xtd_login.scss",
             "xtendoo_xtd_theme/static/src/xml/user_switch.xml",
         ],
+        # Capa de variables oscuras: se inyecta delante de las variables del
+        # core para que el bundle oscuro se compile en oscuro (Community no
+        # trae estas variables). Los bundles oscuros de web la incluyen.
+        "xtendoo_xtd_theme.assets_dark_variables": [
+            (
+                "before",
+                "web/static/src/scss/primary_variables.scss",
+                "xtendoo_xtd_theme/static/src/scss/variables/primary_variables.dark.scss",
+            ),
+            (
+                "before",
+                "web/static/src/scss/bootstrap_overridden.scss",
+                "xtendoo_xtd_theme/static/src/scss/variables/bootstrap_overridden.dark.scss",
+            ),
+        ],
+        "web.assets_backend_lazy_dark": [
+            ("include", "xtendoo_xtd_theme.assets_dark_variables"),
+        ],
         "web.assets_web_dark": [
+            ("include", "xtendoo_xtd_theme.assets_dark_variables"),
             "xtendoo_xtd_theme/static/src/scss/xtd_theme.dark.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_menu.dark.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_calendar.dark.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_surfaces.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_tags.dark.scss",
         ],
         "point_of_sale._assets_pos": [
             "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",

@@ -6,3 +6,4 @@ from . import test_color_scheme
 from . import test_xtd_dashboard
 from . import test_tours
 from . import test_calendar_settings
+from . import test_dark_assets

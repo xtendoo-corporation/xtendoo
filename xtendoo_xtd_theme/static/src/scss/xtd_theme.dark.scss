@@ -1,23 +1,37 @@
 :root {
-    // Paleta oscura cálida: carbón con matiz cálido (nada de azulados que
-    // choquen con el naranja y el burdeos de la marca) y elevación por tono.
+    // Paleta oscura Xtd: carbón cálido (nada de azulados que choquen con el
+    // naranja y el burdeos de la marca). Los mismos tonos están definidos como
+    // variables SCSS en variables/primary_variables.dark.scss: si cambias uno,
+    // cambia el otro.
+    //
+    // Elevación por tono, de más profundo a más alto:
+    //   chrome (barra superior y menú lateral) < deep (lienzo) < surface-soft
+    //   < surface (hojas, tarjetas, listas) < raised (desplegables, diálogos).
     --xtd-orange: #ff7a3d;
     --xtd-burgundy: #ffa987;
-    --xtd-ink: #ece9e4;
-    --xtd-paper: #141414;
-    --xtd-line: #2e2e32;
-    --xtd-line-strong: #3a3a3f;
-    --xtd-muted: #9d978f;
-    --xtd-deep: #141414;
-    --xtd-surface: #1d1d20;
-    --xtd-surface-soft: #18181a;
-    --xtd-surface-hover: #27272b;
-    --xtd-link: #ffa987;
+    --xtd-ink: #e9e5df;
+    --xtd-ink-soft: #c9c3bb;
+    --xtd-muted: #a09a92;
+    --xtd-chrome: #131211;
+    --xtd-deep: #1a1918;
+    --xtd-paper: #1a1918;
+    --xtd-surface-soft: #1f1e1c;
+    --xtd-surface: #232220;
+    --xtd-surface-hover: #2d2b28;
+    --xtd-raised: #2b2927;
+    --xtd-line: #302e2b;
+    --xtd-line-strong: #403d39;
+    --xtd-link: #ffb08f;
+    --xtd-selected: rgba(255, 122, 61, 0.13);
+    // Sombras discretas: sobre carbón una sombra grande solo ensucia.
+    --xtd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --xtd-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.34);
+    --xtd-shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.5);
     // Serie secundaria de los gráficos (en claro es un naranja translúcido).
     --xtd-series-secondary: #7d746b;
     --o-brand-primary: var(--xtd-orange);
     --o-brand-odoo: #2a1117;
-    --o-brand-secondary: #ece9e4;
+    --o-brand-secondary: var(--xtd-ink);
 }
 
 body {
@@ -98,20 +112,49 @@ body {
     color: var(--xtd-muted) !important;
 }
 
-.o_main_navbar,
 .o_control_panel,
 .o_search_panel,
 .o_form_view .o_form_sheet_bg,
-.modal-content,
-.card,
 .o_database_list {
     background: var(--xtd-deep) !important;
     color: var(--xtd-ink) !important;
     border-color: var(--xtd-line) !important;
 }
 
+.o_main_navbar {
+    background: var(--xtd-chrome) !important;
+    color: var(--xtd-ink) !important;
+    border-color: var(--xtd-line) !important;
+}
+
+.card {
+    background: var(--xtd-surface) !important;
+    color: var(--xtd-ink) !important;
+    border-color: var(--xtd-line) !important;
+}
+
+// Diálogos: una sola superficie elevada (cabecera, cuerpo y pie iguales).
+.modal-content {
+    background: var(--xtd-raised) !important;
+    color: var(--xtd-ink) !important;
+    border: 1px solid var(--xtd-line-strong) !important;
+
+    .modal-header,
+    .modal-body,
+    .modal-footer,
+    .o_form_view,
+    .o_form_view .o_form_sheet_bg,
+    .o_form_view .o_form_sheet,
+    .o_form_view.o_form_nosheet,
+    .o_form_view .o_form_nosheet {
+        background: transparent !important;
+        border-color: var(--xtd-line) !important;
+        box-shadow: none !important;
+    }
+}
+
 .o_control_panel {
-    border-bottom: 1px solid var(--xtd-line-strong) !important;
+    border-bottom: 1px solid var(--xtd-line) !important;
 
     .o_control_panel_main,
     .o_control_panel_navigation,
@@ -127,7 +170,7 @@ body {
         background: var(--xtd-surface) !important;
         border: 1px solid var(--xtd-line-strong) !important;
         border-radius: 0.65rem !important;
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32) !important;
+        box-shadow: var(--xtd-shadow-md) !important;
         color: var(--xtd-ink) !important;
     }
 
@@ -258,9 +301,9 @@ body {
 
     .o_form_sheet {
         background: var(--xtd-surface) !important;
-        border-color: var(--xtd-line-strong) !important;
+        border-color: var(--xtd-line) !important;
         color: var(--xtd-ink) !important;
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24) !important;
+        box-shadow: var(--xtd-shadow-sm) !important;
     }
 
     .o_form_statusbar {
@@ -278,7 +321,7 @@ body {
 
     .o_field_statusbar > .o_statusbar_status > .o_arrow_button:not(.d-none) {
         background: var(--xtd-surface-soft) !important;
-        color: #d1d1d1 !important;
+        color: var(--xtd-ink-soft) !important;
 
         &.o_arrow_button_current:disabled,
         &:active:not(.o_last) {
@@ -322,9 +365,12 @@ body {
     .text-muted,
     .text-body-secondary,
     small,
-    .o_field_empty,
+    .o_field_empty {
+        color: var(--xtd-muted) !important;
+    }
+
     .o_readonly_modifier {
-        color: #d1d1d1 !important;
+        color: var(--xtd-ink-soft) !important;
     }
 
     .o_notebook {
@@ -408,7 +454,7 @@ body {
     .o-mail-Chatter-topbar .text-action,
     .o-mail-Followers-button,
     .o-mail-Chatter-attachFiles {
-        color: #d1d1d1 !important;
+        color: var(--xtd-ink-soft) !important;
 
         &:hover,
         &:focus,
@@ -495,9 +541,12 @@ body {
 .o_form_view .o_form_sheet,
 .o_kanban_renderer .o_kanban_record,
 .o_list_renderer,
-.modal-content,
 .card {
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35) !important;
+    box-shadow: var(--xtd-shadow-sm) !important;
+}
+
+.modal-content {
+    box-shadow: var(--xtd-shadow-lg) !important;
 }
 
 .o_list_renderer {
@@ -519,12 +568,12 @@ body {
     border-spacing: 0;
 
     thead {
-        background: var(--xtd-deep) !important;
+        background: var(--xtd-surface-soft) !important;
 
         th {
-            background: var(--xtd-deep) !important;
-            color: var(--xtd-ink) !important;
-            border-bottom: 1px solid var(--xtd-line-strong) !important;
+            background: var(--xtd-surface-soft) !important;
+            color: var(--xtd-ink-soft) !important;
+            border-bottom: 1px solid var(--xtd-line) !important;
             box-shadow: none !important;
 
             &:hover,
@@ -566,14 +615,14 @@ body {
             }
 
             &.o_selected_row {
-                background: rgba(106, 181, 251, 0.14) !important;
+                background: var(--xtd-selected) !important;
             }
         }
 
         td {
             background: transparent !important;
             color: var(--xtd-ink) !important;
-            border-top-color: var(--xtd-line-strong) !important;
+            border-color: var(--xtd-line) !important;
 
             a:not(.btn) {
                 color: inherit !important;
@@ -588,13 +637,13 @@ body {
 }
 
 .o_list_renderer .o_list_table tfoot {
-    background: var(--xtd-deep) !important;
+    background: var(--xtd-surface-soft) !important;
 
     > tr > td,
     > tr > th {
-        background: var(--xtd-deep) !important;
-        color: #d1d1d1 !important;
-        border-top: 1px solid var(--xtd-line-strong) !important;
+        background: var(--xtd-surface-soft) !important;
+        color: var(--xtd-ink) !important;
+        border-top: 1px solid var(--xtd-line) !important;
         box-shadow: none !important;
     }
 }
@@ -628,12 +677,15 @@ body {
 .o_list_renderer .o_list_number,
 .o_list_renderer .text-muted,
 .o_list_renderer .text-body-secondary {
-    color: #d1d1d1 !important;
+    color: var(--xtd-ink-soft) !important;
 }
 
-.o_list_renderer .o_list_table tbody .text-danger,
+.o_list_renderer .o_list_table tbody .text-danger {
+    color: #ff8585 !important;
+}
+
 .o_list_renderer .o_list_table tbody .text-warning {
-    color: #ff6d6d !important;
+    color: #ffd166 !important;
 }
 
 .o_control_panel .o_breadcrumb,
@@ -707,8 +759,9 @@ body {
 .dropdown-menu,
 .o_popover,
 .o-dropdown--menu {
-    background: var(--xtd-surface-soft) !important;
+    background: var(--xtd-raised) !important;
     border-color: var(--xtd-line-strong) !important;
+    box-shadow: var(--xtd-shadow-md) !important;
     color: var(--xtd-ink) !important;
 }
 
@@ -718,7 +771,7 @@ body {
     --KanbanGroup-grouped-bg: var(--xtd-deep) !important;
     --KanbanColumn__highlight-background: rgba(255, 122, 61, 0.12) !important;
     --KanbanColumn__highlight-border: rgba(255, 122, 61, 0.35) !important;
-    --KanbanColumn__highlight-selected: rgba(106, 181, 251, 0.14) !important;
+    --KanbanColumn__highlight-selected: var(--xtd-selected) !important;
     background: var(--xtd-deep) !important;
 }
 
@@ -731,9 +784,9 @@ body {
 .o_kanban_renderer .o_kanban_quick_create,
 .o_kanban_renderer .o_kanban_record.o-kanban-button-new {
     background: var(--xtd-surface) !important;
-    border-color: var(--xtd-line-strong) !important;
+    border-color: var(--xtd-line) !important;
     color: var(--xtd-ink) !important;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
+    box-shadow: var(--xtd-shadow-sm) !important;
 }
 
 .o_kanban_renderer .o_kanban_record:not(.o_kanban_ghost):hover,
@@ -741,19 +794,13 @@ body {
     background: var(--xtd-surface-hover) !important;
 }
 
-.o_kanban_renderer .o_kanban_record a:not(.btn),
-.o_kanban_renderer .o_kanban_record div,
-.o_kanban_renderer .o_kanban_record span,
-.o_kanban_renderer .o_kanban_record strong,
-.o_kanban_renderer .o_kanban_record main,
-.o_kanban_renderer .o_kanban_record footer {
-    color: inherit !important;
-}
-
+// (Aquí había un `color: inherit !important` sobre todos los div/span de la
+// tarjeta: dejaba ilegibles las etiquetas de colores y ya no hace falta, el
+// texto sale claro desde las variables oscuras.)
 .o_kanban_renderer .o_kanban_record .text-muted,
 .o_kanban_renderer .o_kanban_record .text-body-secondary,
 .o_kanban_renderer .o_kanban_record small {
-    color: #d1d1d1 !important;
+    color: var(--xtd-ink-soft) !important;
 }
 
 .o_kanban_renderer .o_kanban_record .o_dropdown_kanban .dropdown-toggle,
@@ -768,7 +815,7 @@ body {
 .o_kanban_renderer .o_kanban_record .o_field_empty,
 .o_kanban_renderer .o_kanban_record .opacity-50,
 .o_kanban_renderer .o_kanban_record .text-opacity-50 {
-    color: rgba(247, 245, 242, 0.55) !important;
+    color: var(--xtd-muted) !important;
 }
 
 .dropdown-item,
@@ -844,7 +891,7 @@ body {
     .card {
         background: var(--xtd-surface) !important;
         border: 1px solid var(--xtd-line) !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+        box-shadow: var(--xtd-shadow-sm) !important;
         color: var(--xtd-ink) !important;
     }
 
@@ -852,7 +899,7 @@ body {
         background: var(--xtd-surface) !important;
 
         &:hover {
-            box-shadow: 0 22px 46px rgba(0, 0, 0, 0.42) !important;
+            box-shadow: var(--xtd-shadow-md) !important;
         }
     }
 
@@ -867,10 +914,10 @@ body {
 
     .kpi-card__create {
         background: var(--xtd-orange) !important;
-        color: #141414 !important;
+        color: var(--xtd-chrome) !important;
 
         span {
-            color: #141414 !important;
+            color: var(--xtd-chrome) !important;
         }
 
         &:hover {

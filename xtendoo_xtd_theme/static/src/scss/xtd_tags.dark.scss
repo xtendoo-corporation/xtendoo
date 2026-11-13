@@ -1,0 +1,77 @@
+// Etiquetas y pastillas de colores en modo oscuro.
+//
+// El core las pinta en pastel claro con texto oscuro (pensado para fondo
+// blanco); sobre carbón deslumbran. Aquí cada color conserva su tono pero con
+// fondo oscuro teñido y texto claro del mismo tono.
+@for $index from 1 through length($o-colors) {
+    $-base: nth($o-colors, $index);
+    $-bg: mix($-base, $o-view-background-color, 26%);
+    $-fg: mix($-base, #ffffff, 42%);
+
+    .o_tag.o_tag_color_#{$index - 1} {
+        &,
+        &::after {
+            background-color: $-bg !important;
+            color: $-fg !important;
+        }
+
+        .o_tag_badge_text,
+        .o_delete,
+        .fa,
+        .oi {
+            color: $-fg !important;
+        }
+    }
+
+    .badge.o_badge_color_#{$index - 1} {
+        background-color: $-bg !important;
+        color: $-fg !important;
+
+        .fa,
+        .oi {
+            color: $-fg !important;
+        }
+    }
+}
+
+// Pastillas de estado (text-bg-*: "Presupuesto", "Pedido de venta",
+// "Registrado"...). En sólido compiten con el botón principal y llenan las
+// listas de manchas de color: van en versión suave, fondo teñido y texto del
+// mismo tono, igual que las etiquetas.
+$-xtd-states: (
+    "primary": $o-brand-primary,
+    "success": $o-success,
+    "info": $o-info,
+    "warning": $o-warning,
+    "danger": $o-danger,
+);
+
+@each $-name, $-base in $-xtd-states {
+    .o_web_client .badge.text-bg-#{$-name} {
+        background-color: mix($-base, $o-view-background-color, 24%) !important;
+        color: mix($-base, #ffffff, 55%) !important;
+
+        .fa,
+        .oi {
+            color: inherit !important;
+        }
+    }
+
+    // Fondos sólidos (bg-*): se mantienen, con texto oscuro para que se lea.
+    .o_web_client .badge.bg-#{$-name}:not([class*="text-bg-"]) {
+        color: #14110f !important;
+
+        .fa,
+        .oi {
+            color: #14110f !important;
+        }
+    }
+}
+
+.o_web_client .badge.text-bg-secondary,
+.o_web_client .badge.text-bg-light,
+.o_web_client .badge.text-bg-300,
+.o_web_client .badge.text-bg-200 {
+    background-color: $o-gray-300 !important;
+    color: $o-gray-800 !important;
+}

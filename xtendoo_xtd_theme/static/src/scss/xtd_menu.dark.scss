@@ -1,5 +1,5 @@
 .o_main_navbar {
-    background: var(--xtd-deep) !important;
+    background: var(--xtd-chrome) !important;
     border-bottom: 0 !important;
     position: relative;
     --NavBar-menuToggle-color: var(--xtd-ink);
@@ -169,15 +169,15 @@
 }
 
 .o_app_menu_sidebar {
-    background: var(--xtd-deep) !important;
+    background: var(--xtd-chrome) !important;
     border-color: var(--xtd-line) !important;
 }
 
 .o_app_menu_sidebar.xtd-sidebar-panel,
 .xtd-sidebar-panel {
-    background: linear-gradient(180deg, var(--xtd-deep) 0%, var(--xtd-deep) 100%) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 18px 0 42px rgba(0, 0, 0, 0.32) !important;
+    background: var(--xtd-chrome) !important;
+    border-right: 1px solid var(--xtd-line) !important;
+    box-shadow: none !important;
     color: var(--xtd-ink) !important;
 
     .o_sidebar_topbar {
@@ -282,7 +282,7 @@
     }
 
     &__icon {
-        background: #202020 !important;
+        background: var(--xtd-surface) !important;
         box-shadow:
             0 0 0 1px rgba(247, 245, 242, 0.08),
             0 12px 24px rgba(0, 0, 0, 0.35) !important;

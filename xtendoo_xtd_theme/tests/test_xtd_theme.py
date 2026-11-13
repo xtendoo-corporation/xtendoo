@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from pathlib import Path
 
 from odoo.modules.module import get_manifest
@@ -164,6 +166,34 @@ class TestXtdTheme(TransactionCase):
         # El calendario, Ajustes y el chatter salían claros en modo oscuro.
         self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_calendar.dark.scss", assets)
         self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_surfaces.dark.scss", assets)
+        self.assertIn("xtendoo_xtd_theme/static/src/scss/xtd_tags.dark.scss", assets)
+        self.assertIn(("include", "xtendoo_xtd_theme.assets_dark_variables"), assets)
+        self.assertIn(
+            ("include", "xtendoo_xtd_theme.assets_dark_variables"),
+            manifest["assets"]["web.assets_backend_lazy_dark"],
+        )
+
+    def test_xtd_theme_dark_palette_matches_scss_variables(self):
+        """Los tokens CSS y las variables SCSS del modo oscuro van a la par."""
+        scss_dir = self.module_path / "static" / "src" / "scss"
+        tokens = (scss_dir / "xtd_theme.dark.scss").read_text(encoding="utf-8")
+        variables = (
+            scss_dir / "variables" / "primary_variables.dark.scss"
+        ).read_text(encoding="utf-8")
+
+        for token, variable in (
+            ("--xtd-deep", "$o-gray-100"),
+            ("--xtd-surface", "$o-gray-200"),
+            ("--xtd-ink", "$o-gray-900"),
+            ("--xtd-orange", "$o-brand-primary"),
+        ):
+            with self.subTest(token=token):
+                token_value = re.search(rf"{re.escape(token)}: (#[0-9a-f]{{6}});", tokens)
+                variable_value = re.search(
+                    rf"{re.escape(variable)}: (#[0-9a-f]{{6}}) !default;", variables
+                )
+                self.assertTrue(token_value and variable_value)
+                self.assertEqual(token_value.group(1), variable_value.group(1))
 
     def test_xtd_theme_brand_overrides_are_declared(self):
         manifest = get_manifest("xtendoo_xtd_theme")
@@ -292,8 +322,12 @@ class TestXtdTheme(TransactionCase):
         dark_theme_scss = self.module_path / "static" / "src" / "scss" / "xtd_theme.dark.scss"
         content = dark_theme_scss.read_text(encoding="utf-8")
 
-        self.assertIn("--xtd-deep: #141414;", content)
-        self.assertIn("--xtd-surface: #1d1d20;", content)
+        # Paleta: carbón cálido con elevación por tono (chrome < deep < surface
+        # < raised). Los mismos tonos están en variables/primary_variables.dark.scss.
+        self.assertIn("--xtd-chrome: #131211;", content)
+        self.assertIn("--xtd-deep: #1a1918;", content)
+        self.assertIn("--xtd-surface: #232220;", content)
+        self.assertIn("--xtd-raised: #2b2927;", content)
         self.assertIn(".o_web_client > .o_action_manager,", content)
         self.assertIn(".o_list_button_add,", content)
         self.assertIn("background: var(--o-brand-primary) !important;", content)
