@@ -3,3 +3,4 @@ from . import test_aggregated_internal_transfers
 from . import test_stock_barcode_gs1
 from . import test_stock_barcode_pda_flows
 from . import test_adjust_qty_calculation
+from . import test_dark_assets

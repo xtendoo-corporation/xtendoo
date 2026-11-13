@@ -1,0 +1,147 @@
+// Modo oscuro de Transferencias internas. La hoja clara fija negro y blanco
+// con !important (botones, cabeceras, texto), así que en oscuro el texto negro
+// quedaba sobre fondo oscuro y las cabeceras en blanco puro.
+//
+// Usa los tokens del tema Xtd si está instalado y, si no, los mismos valores
+// como reserva: el módulo no depende del tema.
+.o_xtendoo_stock_barcode {
+    --xsb-accent: var(--xtd-orange, #ff7a3d);
+    --xsb-accent-hover: #ff9560;
+    --xsb-on-accent: #14110f;
+    --xsb-ink: var(--xtd-ink, #e9e5df);
+    --xsb-muted: var(--xtd-muted, #a09a92);
+    --xsb-surface: var(--xtd-surface, #232220);
+    --xsb-surface-soft: var(--xtd-surface-soft, #1f1e1c);
+    --xsb-surface-hover: var(--xtd-surface-hover, #2d2b28);
+    --xsb-line: var(--xtd-line, #302e2b);
+    --xsb-line-strong: var(--xtd-line-strong, #403d39);
+
+    --primary: #ff7a3d;
+    --primary-rgb: 255, 122, 61;
+    --o-view-background: var(--xsb-surface);
+
+    color: var(--xsb-ink);
+
+    .btn-primary,
+    .btn-outline-primary.active,
+    .btn-primary:active {
+        background-color: var(--xsb-accent) !important;
+        border-color: var(--xsb-accent) !important;
+        color: var(--xsb-on-accent) !important;
+
+        &:hover {
+            background-color: var(--xsb-accent-hover) !important;
+            border-color: var(--xsb-accent-hover) !important;
+        }
+
+        .fa,
+        .oi {
+            color: inherit !important;
+        }
+    }
+
+    .btn-outline-primary {
+        background-color: var(--xsb-surface-soft) !important;
+        border-color: var(--xsb-line-strong) !important;
+        color: var(--xsb-ink) !important;
+
+        &:hover {
+            background-color: var(--xsb-surface-hover) !important;
+            border-color: var(--xsb-accent) !important;
+            color: var(--xsb-ink) !important;
+        }
+    }
+
+    .btn-light,
+    .btn-secondary,
+    .btn-outline-secondary {
+        background-color: var(--xsb-surface-soft) !important;
+        border: 1px solid var(--xsb-line-strong) !important;
+        box-shadow: none !important;
+        color: var(--xsb-ink) !important;
+
+        &:hover {
+            background-color: var(--xsb-surface-hover) !important;
+        }
+    }
+
+    .text-primary,
+    .text-dark,
+    .text-black {
+        color: var(--xsb-ink) !important;
+    }
+
+    .text-primary.fa-spin,
+    .text-primary.fa-circle-o-notch {
+        color: var(--xsb-accent) !important;
+    }
+
+    .text-muted {
+        color: var(--xsb-muted) !important;
+    }
+
+    .bg-primary,
+    .badge.bg-primary {
+        background-color: var(--xsb-accent) !important;
+        color: var(--xsb-on-accent) !important;
+    }
+
+    // Selector repetido a propósito: tiene que ganar a la regla del tema Xtd
+    // que pone texto oscuro en las pastillas .bg-success sólidas.
+    &.o_xtendoo_stock_barcode .badge.bg-success.bg-success {
+        background-color: #2d4836 !important;
+        color: #9ddcb6 !important;
+    }
+
+    .bg-light,
+    .bg-white {
+        background-color: var(--xsb-surface-soft) !important;
+        color: var(--xsb-ink) !important;
+    }
+
+    .border,
+    .border-top,
+    .border-bottom {
+        border-color: var(--xsb-line) !important;
+    }
+
+    .card {
+        background-color: var(--xsb-surface) !important;
+        border-color: var(--xsb-line) !important;
+
+        .card-header {
+            background-color: var(--xsb-surface-soft) !important;
+            border-bottom: 1px solid var(--xsb-line);
+            color: var(--xsb-ink);
+        }
+    }
+
+    .list-group-item {
+        background-color: var(--xsb-surface) !important;
+        border-color: var(--xsb-line) !important;
+        color: var(--xsb-ink) !important;
+
+        &:hover {
+            background-color: var(--xsb-surface-hover) !important;
+        }
+
+        &.active {
+            background-color: rgba(255, 122, 61, 0.14) !important;
+            border-color: var(--xsb-accent) !important;
+            color: var(--xsb-ink) !important;
+        }
+    }
+
+    .rounded-pill.border {
+        background-color: var(--xsb-surface-soft) !important;
+        border-color: var(--xsb-line-strong) !important;
+        color: var(--xsb-ink) !important;
+    }
+
+    .form-control,
+    .input-group-text {
+        background-color: var(--xsb-surface-soft) !important;
+        border-color: var(--xsb-line-strong) !important;
+        color: var(--xsb-ink) !important;
+    }
+}
