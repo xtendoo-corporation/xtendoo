@@ -45,9 +45,6 @@
             "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml",
             "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.scss",
         ],
-        "xtendoo_xtd_theme.chartjs": [
-            "xtendoo_xtd_theme/static/lib/chart.js/chart.umd.min.js",
-        ],
         "web.assets_frontend": [
             "xtendoo_xtd_theme/static/src/scss/xtd_login.scss",
             "xtendoo_xtd_theme/static/src/xml/user_switch.xml",

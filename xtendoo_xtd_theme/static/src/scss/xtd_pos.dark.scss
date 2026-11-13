@@ -172,3 +172,32 @@
     border-radius: 10px;
     padding: 0.5rem 0.75rem;
 }
+
+// "Validar" resaltado: la hoja clara lo fija con un selector más específico
+// (.next.highlight / .next.selected) y dejaba texto blanco sobre fondo claro.
+.pos .payment-screen .validation-button.next.highlight,
+.pos .payment-screen .validation-button.next.selected,
+.pos .payment-screen .validation-button.highlight,
+.pos .payment-screen .validation-button.selected,
+.pos .button.pay-order-button.highlight,
+.pos .button.pay-order-button.active {
+    background: var(--xtd-orange) !important;
+    border-color: var(--xtd-orange) !important;
+    color: #14110f !important;
+
+    &:hover {
+        background: #ff9560 !important;
+        border-color: #ff9560 !important;
+        color: #14110f !important;
+    }
+}
+
+// Importes de estado (cambio, pendiente): los verdes y rojos del TPV están
+// pensados para fondo blanco.
+.pos .text-success {
+    color: #4cc07a !important;
+}
+
+.pos .text-danger {
+    color: #f0606b !important;
+}

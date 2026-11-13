@@ -8,7 +8,7 @@ import { loadBundle } from "@web/core/assets";
 import { browser } from "@web/core/browser/browser";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
-import { deserializeDateTime, serializeDateTime } from "@web/core/l10n/dates";
+import { KeepLast } from "@web/core/utils/concurrency";
 
 const { DateTime } = luxon;
 
@@ -17,8 +17,6 @@ const { DateTime } = luxon;
 // medianoche local cae en el día anterior.
 const pad2 = (n) => String(n).padStart(2, "0");
 const toLocalDate = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-// Campos datetime (UTC en servidor): medianoche local -> datetime UTC.
-const toUtcDateTime = (d) => serializeDateTime(DateTime.fromJSDate(d).startOf("day"));
 
 export class XtdDashboard extends Component {
     static template = "xtendoo_xtd_theme.XtdDashboard";
@@ -31,6 +29,10 @@ export class XtdDashboard extends Component {
         this.userFirstName = (user.name || "").split(" ")[0];
 
         this.currencyCode = session.currency_code || "EUR";
+        // Si se cambia de periodo varias veces seguidas solo cuenta la última
+        // respuesta: sin esto podía quedar pintado un periodo anterior.
+        this.chartRequests = new KeepLast();
+        this.topRequests = new KeepLast();
         this.salesChartRef = useRef("salesChart");
         this.orderStatusChartRef = useRef("orderStatusChart");
         this._chartInstances = {};
@@ -72,9 +74,11 @@ export class XtdDashboard extends Component {
         });
 
         onWillStart(async () => {
-            // Chart.js (~200 KB) solo se descarga al abrir el dashboard.
+            // Chart.js de Odoo (el mismo bundle que usan las vistas de
+            // gráfico): cargar una copia propia duplicaba 200 KB y las dos
+            // instancias se pisaban en window.Chart.
             await Promise.all([
-                loadBundle("xtendoo_xtd_theme.chartjs").catch((error) => {
+                loadBundle("web.chartjs_lib").catch((error) => {
                     console.warn("No se pudo cargar Chart.js:", error);
                 }),
                 this._fetchData(),
@@ -191,36 +195,6 @@ export class XtdDashboard extends Component {
         await this._fetchTopProducts();
     }
 
-    _kpiPeriodRanges(period) {
-        const now = new Date();
-        let curStart, curEnd, prevStart, prevEnd;
-        if (period === "week") {
-            const day = now.getDay();
-            const diff = day === 0 ? 6 : day - 1;
-            curStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
-            curEnd = new Date(curStart);
-            curEnd.setDate(curStart.getDate() + 6);
-            prevStart = new Date(curStart);
-            prevStart.setDate(prevStart.getDate() - 7);
-            prevEnd = new Date(curStart);
-        } else if (period === "year") {
-            curStart = new Date(now.getFullYear(), 0, 1);
-            curEnd = new Date(now.getFullYear(), 11, 31);
-            prevStart = new Date(now.getFullYear() - 1, 0, 1);
-            prevEnd = new Date(now.getFullYear() - 1, 11, 31);
-        } else {
-            curStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            curEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            prevEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-        }
-        const endNext = new Date(curEnd);
-        endNext.setDate(endNext.getDate() + 1);
-        const prevEndNext = new Date(prevEnd);
-        prevEndNext.setDate(prevEndNext.getDate() + 1);
-        return { curStart, curEnd, prevStart, prevEnd, endNext, prevEndNext };
-    }
-
     async _fetchSummary() {
         try {
             const summary = await this.orm.call(
@@ -262,30 +236,20 @@ export class XtdDashboard extends Component {
     async _fetchChartData() {
         const period = this.state.chartPeriod || "year";
         const { start, end } = this._getPeriodRange(period);
-        const endNext = new Date(end);
-        endNext.setDate(endNext.getDate() + 1);
-        const fmt = toUtcDateTime;
 
-        const quotationsByBucket = {};
-        const ordersByBucket = {};
-
+        // El recuento por tramo se hace en el servidor (agrupado en base de
+        // datos y en la zona horaria del usuario).
+        let quotationsByBucket = {};
+        let ordersByBucket = {};
         try {
-            const orders = await this.orm.call("sale.order", "search_read", [
-                [["date_order", ">=", fmt(start)], ["date_order", "<", fmt(endNext)]],
-                ["date_order", "state"],
-            ], { limit: 10000 });
-            for (const order of orders) {
-                if (!order.date_order) continue;
-                // date_order viene en UTC: se pasa a hora local antes de agrupar.
-                const localOrderDate = deserializeDateTime(order.date_order);
-                const key = localOrderDate.toFormat(period === "year" ? "yyyy-MM" : "yyyy-MM-dd");
-                if (["sale", "done"].includes(order.state)) {
-                    ordersByBucket[key] = (ordersByBucket[key] || 0) + 1;
-                } else if (["draft", "sent"].includes(order.state)) {
-                    quotationsByBucket[key] = (quotationsByBucket[key] || 0) + 1;
-                }
-            }
-        } catch { /* no sale module */ }
+            const buckets = await this.chartRequests.add(
+                this.orm.call("xtd.dashboard.service", "get_sales_chart", [period])
+            );
+            quotationsByBucket = buckets.quotations || {};
+            ordersByBucket = buckets.orders || {};
+        } catch (error) {
+            console.warn("No se pudo cargar el gráfico de ventas:", error);
+        }
 
         const labels = [];
         const quotations = [];
@@ -758,32 +722,18 @@ export class XtdDashboard extends Component {
 
     async _fetchTopProducts() {
         const period = this.state.topPeriod || "month";
-        const { curStart, endNext } = this._kpiPeriodRanges(period);
-        const fmt = toUtcDateTime;
         const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
 
         try {
-            const data = await this.orm.call(
-                "sale.order.line",
-                "read_group",
-                [
-                    [
-                        ["state", "in", ["sale", "done"]],
-                        ["product_id", "!=", false],
-                        ["order_id.date_order", ">=", fmt(curStart)],
-                        ["order_id.date_order", "<", fmt(endNext)],
-                    ],
-                    ["product_id", "product_uom_qty:sum", "price_subtotal:sum"],
-                    ["product_id"]
-                ],
-                { limit: 5, orderby: "product_uom_qty desc" }
+            // Agrupado y convertido a la moneda de la empresa en el servidor.
+            const data = await this.topRequests.add(
+                this.orm.call("xtd.dashboard.service", "get_top_products", [period, 5])
             );
-
-            const products = data.map(item => ({
-                id: item.product_id[0],
-                name: item.product_id[1],
-                qty: Math.round(toNum(item.product_uom_qty)),
-                amount: toNum(item.price_subtotal),
+            const products = data.map((item) => ({
+                id: item.id,
+                name: item.name,
+                qty: Math.round(toNum(item.qty)),
+                amount: toNum(item.amount),
             }));
 
             const maxQty = products.reduce((max, p) => Math.max(max, p.qty), 0);
@@ -833,7 +783,7 @@ export class XtdDashboard extends Component {
                 trend: toNum(kpis.sales?.trend),
                 hasTrend: kpis.sales?.trend !== null && kpis.sales?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.sales?.trend),
-                label: kpis.sales?.label || "Pedidos venta",
+                label: kpis.sales?.label || _t("Pedidos venta"),
                 icon: "fa-shopping-bag",
                 ticket_medio: ticketMedio,
             },
@@ -843,7 +793,7 @@ export class XtdDashboard extends Component {
                 trend: toNum(kpis.orders?.trend),
                 hasTrend: kpis.orders?.trend !== null && kpis.orders?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.orders?.trend),
-                label: kpis.orders?.label || "Presupuestos",
+                label: kpis.orders?.label || _t("Presupuestos"),
                 icon: "fa-file-text-o",
             },
             purchase_orders: {
@@ -852,7 +802,7 @@ export class XtdDashboard extends Component {
                 trend: toNum(kpis.purchase_orders?.trend),
                 hasTrend: kpis.purchase_orders?.trend !== null && kpis.purchase_orders?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.purchase_orders?.trend),
-                label: kpis.purchase_orders?.label || "Pedidos de compra",
+                label: kpis.purchase_orders?.label || _t("Pedidos de compra"),
                 icon: "fa-truck",
             },
             invoiced: {
@@ -861,7 +811,7 @@ export class XtdDashboard extends Component {
                 trend: toNum(kpis.invoiced?.trend),
                 hasTrend: kpis.invoiced?.trend !== null && kpis.invoiced?.trend !== undefined,
                 trend_str: this._formatTrend(kpis.invoiced?.trend),
-                label: kpis.invoiced?.label || "Facturado (mes)",
+                label: kpis.invoiced?.label || _t("Facturado (mes)"),
                 icon: "fa-file-text-o",
             },
         };
@@ -1076,6 +1026,17 @@ export class XtdDashboard extends Component {
     _formatCurrency(amount) {
         const locale = (user.lang || "es_ES").replace("_", "-");
         return new Intl.NumberFormat(locale, { style: "currency", currency: this.currencyCode }).format(amount);
+    }
+
+    getGenericBlockTypeLabel(block) {
+        if (block.component === "generic_calendar") {
+            return _t("Calendario");
+        }
+        return block.component === "generic_kanban" ? _t("Kanban") : _t("Lista");
+    }
+
+    getBlockVisibilityTitle(block) {
+        return block.config?.hidden ? _t("Mostrar bloque") : _t("Ocultar bloque");
     }
 
     openAction(xmlid) {

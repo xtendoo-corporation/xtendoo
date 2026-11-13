@@ -20,6 +20,15 @@ export const colorSchemeService = {
             }
         }
 
+        // Con la preferencia "Sistema", si el sistema cambia de tema con la
+        // aplicación abierta se recarga una vez para aplicarlo.
+        if (preference === "system") {
+            browser.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+                cookie.set("color_scheme", systemColorScheme());
+                browser.location.reload();
+            });
+        }
+
         return {
             get currentColorScheme() {
                 return cookie.get("color_scheme") || targetColorScheme;

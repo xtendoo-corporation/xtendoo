@@ -5,6 +5,7 @@ import { AppsMenu } from "@web_responsive/components/apps_menu/apps_menu.esm";
 import { patch } from "@web/core/utils/patch";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { user } from "@web/core/user";
+import { _t } from "@web/core/l10n/translation";
 import { onMounted, onWillUnmount, useEffect, useRef, useState } from "@odoo/owl";
 
 const XTD_DASHBOARD_MENU_XMLID = "xtendoo_xtd_theme.menu_xtd_dashboard";
@@ -95,6 +96,20 @@ patch(NavBar.prototype, {
     // Menú lateral contraído del todo: en Ajustes siempre (salvo que el
     // usuario lo saque a mano) y en el resto según su preferencia. En móvil
     // nunca, porque es la única forma de navegar entre apps.
+    // Textos de los botones: ternarios dentro de la plantilla no se podían
+    // traducir, aquí pasan por _t.
+    get xtdSidebarToggleTitle() {
+        return this.isXtdSidebarOff ? _t("Mostrar menú lateral") : _t("Ocultar menú lateral");
+    },
+
+    get xtdAppsButtonTitle() {
+        return this.ui.isSmall ? _t("Abrir menú") : _t("Inicio");
+    },
+
+    getXtdSidebarVisibilityTitle(app) {
+        return this.isXtdSidebarAppHidden(app) ? _t("Mostrar") : _t("Ocultar");
+    },
+
     get isXtdSidebarOff() {
         if (this.ui.isSmall) {
             return false;
@@ -258,7 +273,7 @@ patch(AppsMenu.prototype, {
     async goToXtdDashboard() {
         const apps = this.menuService.getApps();
         const dashboardMenu = apps.find((app) => app.xmlid === XTD_DASHBOARD_MENU_XMLID)
-            || apps.find((app) => app.name === "Inicio");
+            || apps.find((app) => app.name === _t("Inicio"));
         if (dashboardMenu) {
             await this.menuService.selectMenu(dashboardMenu);
         }

@@ -168,6 +168,35 @@
     <template id="webclient_bootstrap_xtd_theme_color" inherit_id="web.webclient_bootstrap" name="Xtd Webclient Bootstrap Theme Color">
         <xpath expr="//meta[@name='theme-color']" position="replace">
             <meta name="theme-color" content="#FF7A00"/>
+            <!--
+                Con la preferencia "Sistema" el servidor no conoce el tema del
+                navegador en la primera carga y pintaba claro: el cliente lo
+                detectaba cuando ya había descargado todos los bundles y
+                recargaba la página (parpadeo). Este script va antes de ellos:
+                si el tema del sistema no coincide con el que se ha renderizado
+                guarda la cookie y recarga solo el HTML. Una marca en
+                sessionStorage evita cualquier bucle.
+            -->
+            <script type="text/javascript"
+                    t-att-data-scheme="color_scheme"
+                    t-att-data-preference="xtd_color_preference">
+                (function () {
+                    var script = document.currentScript;
+                    if (!script || script.dataset.preference !== "system") { return; }
+                    var wanted = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+                    var guard = "xtd_scheme_reload";
+                    try {
+                        if (wanted === script.dataset.scheme) {
+                            sessionStorage.removeItem(guard);
+                            return;
+                        }
+                        if (sessionStorage.getItem(guard) === wanted) { return; }
+                        sessionStorage.setItem(guard, wanted);
+                    } catch (e) { return; }
+                    document.cookie = "color_scheme=" + wanted + "; path=/; max-age=31536000";
+                    window.location.reload();
+                })();
+            </script>
         </xpath>
     </template>
 </odoo>

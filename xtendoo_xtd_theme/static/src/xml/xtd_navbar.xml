@@ -9,7 +9,7 @@
                 </t>
                 <button type="button"
                         class="xtd-sidebar-arrow"
-                        t-att-title="isXtdSidebarOff ? 'Mostrar menú lateral' : 'Ocultar menú lateral'"
+                        t-att-title="xtdSidebarToggleTitle"
                         t-on-click.stop.prevent="toggleXtdSidebarOff">
                     <i t-att-class="'fa ' + (isXtdSidebarOff ? 'fa-chevron-right' : 'fa-chevron-left')"/>
                 </button>
@@ -22,7 +22,7 @@
         <xpath expr="//button[hasclass('o_grid_apps_menu__button')]" position="replace">
             <button
                 class="o_grid_apps_menu__button o_xtd_dashboard_home"
-                t-att-title="this.ui.isSmall ? 'Abrir menú' : 'Inicio'"
+                t-att-title="xtdAppsButtonTitle"
                 t-on-click.stop="onXtdAppsButtonClick"
             >
                 <img src="/xtendoo_xtd_theme/static/src/img/xtd_symbol.svg" alt="Xtd"/>
@@ -77,7 +77,7 @@
                                 <span t-if="xtdSidebarState.isReordering" class="xtd-sidebar-reorder ms-auto">
                                     <button type="button"
                                             class="xtd-sidebar-reorder-btn"
-                                            t-att-title="isXtdSidebarAppHidden(app) ? 'Mostrar' : 'Ocultar'"
+                                            t-att-title="getXtdSidebarVisibilityTitle(app)"
                                             t-on-click.stop.prevent="() => this.toggleXtdSidebarAppHidden(app)">
                                         <i t-att-class="'fa ' + (isXtdSidebarAppHidden(app) ? 'fa-eye-slash' : 'fa-eye')"/>
                                     </button>

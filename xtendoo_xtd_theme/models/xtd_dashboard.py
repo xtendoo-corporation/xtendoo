@@ -398,6 +398,81 @@ class XtdDashboardService(models.AbstractModel):
             })
         return result
 
+    # ------------------------------------------------------------------
+    # Gráfico "Presupuestos vs Pedidos" y top de productos
+    # ------------------------------------------------------------------
+    @api.model
+    def get_sales_chart(self, period="year"):
+        """Nº de presupuestos y de pedidos por tramo del periodo actual.
+
+        Devuelve ``{"quotations": {clave: n}, "orders": {clave: n}}`` con
+        claves ``AAAA-MM`` (año) o ``AAAA-MM-DD`` (semana y mes), en la zona
+        horaria del usuario. Se agrupa en base de datos: antes el navegador
+        descargaba hasta 10.000 pedidos para contarlos, y con más pedidos el
+        gráfico salía truncado sin avisar.
+        """
+        result = {"quotations": {}, "orders": {}}
+        if "sale.order" not in self.env or not self.env["sale.order"].has_access("read"):
+            return result
+        start, end = self._period_ranges(period)["current"]
+        by_month = period == "year"
+        tz_name = self.env.context.get("tz") or self.env.user.tz or "UTC"
+        groups = self.env["sale.order"].with_context(tz=tz_name)._read_group(
+            [
+                ("date_order", ">=", self._local_day_start_utc(start)),
+                ("date_order", "<", self._local_day_start_utc(end)),
+                ("state", "in", ("draft", "sent", "sale", "done")),
+            ],
+            ["date_order:month" if by_month else "date_order:day", "state"],
+            ["__count"],
+        )
+        key_format = "%Y-%m" if by_month else "%Y-%m-%d"
+        for bucket, state, count in groups:
+            if not bucket:
+                continue
+            series = result["orders" if state in ("sale", "done") else "quotations"]
+            key = bucket.strftime(key_format)
+            series[key] = series.get(key, 0) + count
+        return result
+
+    @api.model
+    def get_top_products(self, period="month", limit=5):
+        """Productos más vendidos del periodo, por unidades.
+
+        El importe se convierte a la moneda de la empresa línea a línea de
+        moneda (igual que los KPI): antes se sumaban importes de monedas
+        distintas tal cual.
+        """
+        if "sale.order.line" not in self.env or not self.env["sale.order.line"].has_access("read"):
+            return []
+        start, end = self._period_ranges(period)["current"]
+        groups = self.env["sale.order.line"]._read_group(
+            [
+                ("state", "in", ("sale", "done")),
+                ("product_id", "!=", False),
+                ("display_type", "=", False),
+                ("order_id.date_order", ">=", self._local_day_start_utc(start)),
+                ("order_id.date_order", "<", self._local_day_start_utc(end)),
+            ],
+            ["product_id", "currency_id"],
+            ["product_uom_qty:sum", "price_subtotal:sum"],
+        )
+        totals = {}
+        for product, currency, qty, amount in groups:
+            entry = totals.setdefault(product, {"qty": 0.0, "amount": 0.0})
+            entry["qty"] += qty or 0.0
+            entry["amount"] += self._to_company_currency(amount, currency)
+        ranked = sorted(totals.items(), key=lambda item: (-item[1]["qty"], item[0].id))
+        return [
+            {
+                "id": product.id,
+                "name": product.display_name,
+                "qty": values["qty"],
+                "amount": values["amount"],
+            }
+            for product, values in ranked[: max(int(limit or 0), 0) or 5]
+        ]
+
     @api.model
     def _order_status(self):
         if "sale.order" not in self.env or not self.env["sale.order"].has_access("read"):

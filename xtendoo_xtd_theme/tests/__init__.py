@@ -9,3 +9,5 @@ from . import test_calendar_settings
 from . import test_dark_assets
 from . import test_dashboard_access
 from . import test_ui_contracts
+from . import test_i18n
+from . import test_compiled_css

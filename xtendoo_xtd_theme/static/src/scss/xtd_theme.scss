@@ -1,4 +1,4 @@
-:root{--xtd-selected:rgba(244,87,0,.09);--xtd-series-secondary:rgba(244,87,0,.28);--xtd-orange:#f45700;--xtd-burgundy:#4a0823;--xtd-ink:#151515;--xtd-paper:#f7f5f2;--xtd-line:#dedbd6;--xtd-muted:#8b8790;--xtd-radius:10px;--o-brand-primary:var(--xtd-orange);--o-brand-odoo:var(--xtd-burgundy);--o-brand-secondary:var(--xtd-ink);--bs-primary:var(--xtd-burgundy);--bs-primary-rgb:74,8,35;--bs-primary-text-emphasis:var(--xtd-burgundy);--bs-primary-bg-subtle:#f4eef1;--bs-primary-border-subtle:#decfd6;--bs-focus-ring-color:rgba(74,8,35,.16)}
+:root{--xtd-selected:rgba(244,87,0,.09);--xtd-star:#f0ad00;--xtd-series-secondary:rgba(244,87,0,.28);--xtd-orange:#f45700;--xtd-burgundy:#4a0823;--xtd-ink:#151515;--xtd-paper:#f7f5f2;--xtd-line:#dedbd6;--xtd-muted:#8b8790;--xtd-radius:10px;--o-brand-primary:var(--xtd-orange);--o-brand-odoo:var(--xtd-burgundy);--o-brand-secondary:var(--xtd-ink);--bs-primary:var(--xtd-burgundy);--bs-primary-rgb:74,8,35;--bs-primary-text-emphasis:var(--xtd-burgundy);--bs-primary-bg-subtle:#f4eef1;--bs-primary-border-subtle:#decfd6;--bs-focus-ring-color:rgba(74,8,35,.16)}
 body{background:var(--xtd-paper);color:var(--xtd-ink)}
 *{scrollbar-color:var(--xtd-orange) transparent;scrollbar-width:thin}
 ::-webkit-scrollbar{width:10px;height:10px}
@@ -71,4 +71,31 @@ a,.btn-link{color:var(--xtd-burgundy)}a:hover,.btn-link:hover{color:var(--xtd-or
     background: var(--xtd-selected) !important;
     border-color: transparent !important;
     color: var(--xtd-ink) !important;
+}
+
+// Enlaces de campos en los formularios (cliente, producto, unidad, moneda...).
+// En una ficha de solo lectura casi todos los campos son enlaces: en naranja o
+// burdeos competían con los botones de acción de la cabecera. Van en el color
+// del texto, con un subrayado tenue que confirma que son enlaces, y toman el
+// color de marca al pasar el ratón.
+.o_web_client .o_form_view a.o_form_uri:not(.btn):not(.dropdown-item):not(.o-dropdown-item):not(.nav-link) {
+    color: var(--xtd-ink) !important;
+    text-decoration: underline;
+    text-decoration-color: var(--xtd-line);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--xtd-burgundy) !important;
+        text-decoration-color: currentColor;
+    }
+}
+
+// Prioridad (estrellas) y favoritos: el tema pone todos los iconos en el color
+// del texto, lo que las dejaba sin el amarillo que indica "marcada".
+.o_web_client .o_priority a.o_priority_star.fa-star,
+.o_web_client .o_favorite .fa-star {
+    color: var(--xtd-star) !important;
 }
