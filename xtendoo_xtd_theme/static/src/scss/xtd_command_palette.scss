@@ -1,0 +1,26 @@
+// Ventana del buscador (paleta de comandos) más grande que la de Odoo.
+.modal-dialog:has(.o_command_palette) {
+    --bs-modal-width: 960px;
+    max-width: 94vw;
+    width: 960px;
+}
+
+.o_command_palette {
+    top: 90px;
+
+    .o_command_palette_search input {
+        font-size: 1.25rem;
+        padding-top: 1.1rem;
+        padding-bottom: 1.1rem;
+    }
+
+    .o_command_palette_listbox {
+        max-height: 65vh;
+
+        .o_command {
+            font-size: 1.05rem;
+            padding-top: .7rem;
+            padding-bottom: .7rem;
+        }
+    }
+}
