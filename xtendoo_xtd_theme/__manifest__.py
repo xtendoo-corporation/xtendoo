@@ -34,6 +34,8 @@
             "xtendoo_xtd_theme/static/src/scss/xtd_brand.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_modal.scss",
             "xtendoo_xtd_theme/static/src/scss/xtd_command_palette.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_control_panel.scss",
+            "xtendoo_xtd_theme/static/src/js/xtd_dashboard_graph.esm.js",
             "xtendoo_xtd_theme/static/src/scss/xtd_calendar.scss",
             "xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js",
             "xtendoo_xtd_theme/static/src/xml/xtd_calendar.xml",

@@ -102,7 +102,7 @@
                                                     <span class="fw-bold" t-esc="statistics[kpiKey].trend_str"/>
                                                     <span class="text-muted fw-normal" t-esc="kpiPeriodLabel"/>
                                                 </span>
-                                                <span t-else="" class="kpi-card__trend text-muted" title="Sin datos en este periodo">—</span>
+                                                <span t-else="" class="kpi-card__trend text-muted" title="Sin datos en este periodo">Sin datos</span>
                                             </div>
                                             <t t-if="state.recentItems[kpiKey] &amp;&amp; state.recentItems[kpiKey].length">
                                                 <div class="kpi-card__list xtd-recent-list">

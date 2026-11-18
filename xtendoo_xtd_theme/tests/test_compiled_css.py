@@ -105,3 +105,44 @@ class TestXtdThemeCompiledCss(TransactionCase):
                 self.assertRule(css, ".o_web_client .o_priority a.o_priority_star.fa-star", "color:var(--xtd-star)!important")
         self.assertRule(self.light, ":root", "--xtd-star:#f0ad00")
         self.assertRule(self.dark, ":root", "--xtd-star:#ffd166")
+
+    def test_scrollbars_are_neutral_and_only_orange_on_hover(self):
+        for scheme, css in (("light", self.light), ("dark", self.dark)):
+            with self.subTest(scheme=scheme):
+                self.assertRule(css, "*", "scrollbar-color:var(--xtd-scroll) transparent")
+                self.assertRule(css, "::-webkit-scrollbar-thumb", "background:var(--xtd-scroll)")
+                self.assertRule(css, "::-webkit-scrollbar-thumb:hover", "background:var(--xtd-orange)")
+        self.assertRule(self.light, ":root", "--xtd-scroll:rgba(21,21,21,.22)")
+        self.assertRule(self.dark, ":root", "--xtd-scroll:rgba(233, 229, 223, 0.22)")
+
+    def test_searchview_and_filter_toggle_form_one_pill(self):
+        self.assertRule(
+            self.light, ".o_control_panel .o_cp_searchview",
+            "border-radius:999px", "overflow:hidden",
+        )
+        self.assertRule(
+            self.light, ".o_control_panel .o_cp_searchview:focus-within",
+            "border-color:var(--xtd-orange, #f45700)",
+        )
+        self.assertRule(
+            self.light, ".o_control_panel .o_cp_searchview .o_searchview_dropdown_toggler",
+            "border:0!important", "border-radius:0!important",
+        )
+
+    def test_current_breadcrumb_is_ink_not_link_colour(self):
+        self.assertRule(
+            self.light, ".o_control_panel .o_last_breadcrumb_item",
+            "color:var(--xtd-ink, #151515)", "font-weight:600",
+        )
+
+    def test_dashboard_activity_date_is_a_single_line_pill(self):
+        self.assertRule(
+            self.light, ".o_xtd_dashboard .activity-item .text-danger.x-small",
+            "white-space:nowrap", "border-radius:999px",
+        )
+
+    def test_form_list_amount_column_stays_visible(self):
+        self.assertRule(
+            self.light, '.o_form_view .o_list_renderer table.o_list_table th[data-name="price_subtotal"]',
+            "position:sticky", "min-width:6.5rem",
+        )

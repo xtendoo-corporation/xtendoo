@@ -232,6 +232,17 @@
 
     .activity-item {
         transition: background 0.2s;
+
+        // Fecha en pastilla: no se parte en dos líneas.
+        .text-danger.x-small {
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-left: 0.5rem;
+            padding: 0.1rem 0.55rem;
+            border-radius: 999px;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
         &:hover {
             background-color: rgba(0,0,0,0.02);
         }

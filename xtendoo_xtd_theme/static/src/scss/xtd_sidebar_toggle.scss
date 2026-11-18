@@ -44,7 +44,7 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px));
     .o_burger_menu_content {
         padding: 0 !important;
         margin: 0 !important;
-        scrollbar-color: var(--xtd-orange) transparent;
+        scrollbar-color: var(--xtd-scroll) transparent;
         scrollbar-width: thin;
 
         &::-webkit-scrollbar {
@@ -56,7 +56,7 @@ $xtd-sidebar-menu-top-offset: calc(var(--o-navbar-height, 50px));
         }
 
         &::-webkit-scrollbar-thumb {
-            background: var(--xtd-orange);
+            background: var(--xtd-scroll);
             border: 2px solid transparent;
             border-radius: 999px;
             background-clip: padding-box;
