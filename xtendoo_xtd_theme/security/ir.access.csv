@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_xtd_dashboard_block_user,xtd.dashboard.block.user,xtd.dashboard.block,base.group_user,r,
+access_xtd_dashboard_layout_user,xtd.dashboard.layout.user,xtd.dashboard.layout,base.group_user,r,
+access_xtd_dashboard_block_admin,xtd.dashboard.block.admin,xtd.dashboard.block,base.group_system,crud,
+access_xtd_dashboard_layout_admin,xtd.dashboard.layout.admin,xtd.dashboard.layout,base.group_system,crud,

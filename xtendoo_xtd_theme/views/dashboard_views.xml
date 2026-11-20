@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Accion del Dashboard (Cambiado a ir.actions.act_window para mayor compatibilidad de búsqueda) -->
+    <record id="action_xtd_dashboard" model="ir.actions.client">
+        <field name="name">Inicio Dashboard Xtd</field>
+        <field name="tag">xtendoo_xtd_theme.dashboard</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Menú del Dashboard -->
+    <menuitem id="menu_xtd_dashboard"
+              name="Inicio"
+              action="action_xtd_dashboard"
+              web_icon="xtendoo_xtd_theme,static/src/img/xtd_symbol.svg"
+              sequence="0"/>
+</odoo>

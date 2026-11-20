@@ -1,0 +1,53 @@
+// Acento de marca: sustituye los restos del morado de Odoo (#71639e) que el
+// tema no cubría. Usa las variables --xtd-* para que valga en claro y oscuro.
+
+// Los enlaces comparten un solo color (burdeos en claro; en oscuro lo redefine
+// xtd_theme.dark.scss con --xtd-link).
+:root {
+    --xtd-link: #4a0823;
+}
+
+.o_web_client {
+    // Enlaces de campos (many2one, URLs) y pestañas de los cuadernos.
+    a.o_form_uri,
+    .o_field_widget a:not(.btn):not(.dropdown-item) {
+        color: var(--xtd-link);
+
+        &:hover {
+            color: var(--xtd-orange);
+        }
+    }
+
+    .o_notebook .nav-tabs .nav-link:not(.active) {
+        color: var(--xtd-muted);
+
+        &:hover {
+            color: var(--xtd-ink);
+        }
+    }
+
+    // Buscador: foco naranja en vez de morado.
+    .o_searchview:focus-within,
+    .o_searchview.form-control:focus-within {
+        border-color: var(--xtd-orange);
+        box-shadow: 0 0 0 3px rgba(244, 87, 0, 0.14);
+
+        .o_searchview_dropdown_toggler {
+            border-color: var(--xtd-orange) !important;
+        }
+    }
+
+    // Selector de vistas (lista, kanban, calendario...): la activa en naranja suave.
+    .o_cp_switch_buttons .btn.active,
+    .btn.o_switch_view.active {
+        background-color: rgba(244, 87, 0, 0.12);
+        border-color: var(--xtd-orange);
+        color: var(--xtd-ink);
+    }
+
+    // Barra de estado de los formularios.
+    .o_statusbar_status {
+        --o-statusbar-border-active: var(--xtd-orange);
+        --o-statusbar-background-active: rgba(244, 87, 0, 0.1);
+    }
+}

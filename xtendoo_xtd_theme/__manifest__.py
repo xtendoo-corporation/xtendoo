@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+{
+    "name": "Xtendoo Xtd Theme",
+    "summary": "Personalización visual y debranding del entorno de trabajo Xtd",
+    "version": "20.0.1.0.0",
+    "author": "Xtendoo SLU",
+    "website": "https://xtendoo.es",
+    "license": "LGPL-3",
+    "category": "Themes/Backend",
+    "depends": [
+        "web",
+        "web_responsive",
+        "disable_odoo_online",
+        "mail_debranding",
+        "portal_debranding",
+        "auth_signup",
+    ],
+    "data": [
+        "security/ir.access.csv",
+        "security/xtd_dashboard_security.xml",
+        "views/dashboard_views.xml",
+        "data/dashboard_data.xml",
+        "data/xtd_dashboard_blocks.xml",
+        "data/xtd_dashboard_disable_default_blocks.xml",
+        "data/xtd_dashboard_available_blocks.xml",
+        "views/res_users_views.xml",
+        "views/webclient_templates.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "xtendoo_xtd_theme/static/src/scss/xtd_theme.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_menu.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_sidebar_toggle.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_brand.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_modal.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_command_palette.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_control_panel.scss",
+            "xtendoo_xtd_theme/static/src/js/xtd_dashboard_graph.esm.js",
+            "xtendoo_xtd_theme/static/src/scss/xtd_calendar.scss",
+            "xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js",
+            "xtendoo_xtd_theme/static/src/xml/xtd_calendar.xml",
+            "xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js",
+            "xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js",
+            "xtendoo_xtd_theme/static/src/xml/error_dialogs.xml",
+            "xtendoo_xtd_theme/static/src/js/xtd_color_scheme.esm.js",
+            "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js",
+            "xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml",
+            "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml",
+            "xtendoo_xtd_theme/static/src/components/dashboard/dashboard.scss",
+        ],
+        "web.assets_frontend": [
+            "xtendoo_xtd_theme/static/src/scss/xtd_login.scss",
+            "xtendoo_xtd_theme/static/src/xml/user_switch.xml",
+        ],
+        # Capa de variables oscuras: se inyecta delante de las variables del
+        # core para que el bundle oscuro se compile en oscuro (Community no
+        # trae estas variables). Los bundles oscuros de web la incluyen.
+        "xtendoo_xtd_theme.assets_dark_variables": [
+            (
+                "before",
+                "web/static/src/scss/primary_variables.scss",
+                "xtendoo_xtd_theme/static/src/scss/variables/primary_variables.dark.scss",
+            ),
+            (
+                "before",
+                "web/static/src/scss/bootstrap_overridden.scss",
+                "xtendoo_xtd_theme/static/src/scss/variables/bootstrap_overridden.dark.scss",
+            ),
+        ],
+        "web.assets_backend_lazy_dark": [
+            ("include", "xtendoo_xtd_theme.assets_dark_variables"),
+        ],
+        "web.assets_web_dark": [
+            ("include", "xtendoo_xtd_theme.assets_dark_variables"),
+            "xtendoo_xtd_theme/static/src/scss/xtd_theme.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_menu.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_calendar.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_surfaces.dark.scss",
+            "xtendoo_xtd_theme/static/src/scss/xtd_tags.dark.scss",
+        ],
+        "point_of_sale._assets_pos": [
+            "xtendoo_xtd_theme/static/src/scss/xtd_pos.scss",
+        ],
+        # TPV en oscuro: mismas variables que el backend más los ajustes del TPV.
+        "point_of_sale.assets_prod_dark": [
+            ("include", "xtendoo_xtd_theme.assets_dark_variables"),
+            "xtendoo_xtd_theme/static/src/scss/xtd_pos.dark.scss",
+        ],
+        "web.assets_tests": [
+            "xtendoo_xtd_theme/static/tests/tours/xtd_theme_backend_tour.js",
+        ],
+    },
+    "installable": True,
+    "auto_install": False,
+    "application": False,
+}

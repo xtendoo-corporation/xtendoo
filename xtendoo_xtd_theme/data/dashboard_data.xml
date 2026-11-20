@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Establecer el Dashboard como Home Action para el administrador por defecto -->
+        <record id="base.user_admin" model="res.users">
+            <field name="action_id" ref="xtendoo_xtd_theme.action_xtd_dashboard"/>
+        </record>
+    </data>
+</odoo>
+

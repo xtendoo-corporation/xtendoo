@@ -1,0 +1,57 @@
+// Ajustes de Bootstrap para el modo oscuro Xtd. Se carga justo ANTES de
+// web/static/src/scss/bootstrap_overridden.scss (cuyos valores llevan
+// !default), con las variables primarias oscuras ya definidas.
+
+// Bootstrap calcula los fondos "subtle" aclarando el color hacia el blanco y
+// los textos "emphasis" oscureciéndolo: en oscuro tiene que ser al revés.
+$primary-bg-subtle: mix($o-brand-primary, $o-gray-200, 18%) !default;
+$primary-border-subtle: mix($o-brand-primary, $o-gray-200, 40%) !default;
+$primary-text-emphasis: mix($o-brand-primary, #ffffff, 70%) !default;
+$secondary-bg-subtle: $o-gray-300 !default;
+$secondary-border-subtle: $o-gray-400 !default;
+$secondary-text-emphasis: $o-gray-800 !default;
+$success-bg-subtle: mix($o-success, $o-gray-200, 18%) !default;
+$success-border-subtle: mix($o-success, $o-gray-200, 40%) !default;
+$success-text-emphasis: mix($o-success, #ffffff, 70%) !default;
+$info-bg-subtle: mix($o-info, $o-gray-200, 18%) !default;
+$info-border-subtle: mix($o-info, $o-gray-200, 40%) !default;
+$info-text-emphasis: mix($o-info, #ffffff, 70%) !default;
+$warning-bg-subtle: mix($o-warning, $o-gray-200, 18%) !default;
+$warning-border-subtle: mix($o-warning, $o-gray-200, 40%) !default;
+$warning-text-emphasis: mix($o-warning, #ffffff, 70%) !default;
+$danger-bg-subtle: mix($o-danger, $o-gray-200, 18%) !default;
+$danger-border-subtle: mix($o-danger, $o-gray-200, 40%) !default;
+$danger-text-emphasis: mix($o-danger, #ffffff, 70%) !default;
+$light-bg-subtle: $o-gray-200 !default;
+$light-border-subtle: $o-gray-300 !default;
+$light-text-emphasis: $o-gray-800 !default;
+$dark-bg-subtle: $o-gray-300 !default;
+$dark-border-subtle: $o-gray-400 !default;
+$dark-text-emphasis: $o-gray-900 !default;
+
+// Sombras: negras de verdad (con $o-black invertido saldrían blancas).
+$box-shadow: 0 0.5rem 1rem rgba(#000000, 0.38) !default;
+$box-shadow-sm: 0 0.125rem 0.25rem rgba(#000000, 0.28) !default;
+$box-shadow-lg: 0 1rem 3rem rgba(#000000, 0.5) !default;
+$box-shadow-inset: inset 0 1px 2px rgba(#000000, 0.3) !default;
+
+// Capas flotantes: un tono por encima de las superficies.
+$dropdown-bg: #2b2927 !default;
+$popover-bg: #2b2927 !default;
+$tooltip-bg: #3a3835 !default;
+$tooltip-color: $o-gray-900 !default;
+$modal-backdrop-bg: #000000 !default;
+$modal-backdrop-opacity: 0.6 !default;
+
+// Pestañas
+$nav-tabs-link-active-bg: transparent !default;
+
+// Teclas (kbd)
+$kbd-color: $o-gray-900 !default;
+$kbd-bg: $o-gray-300 !default;
+
+// Formularios
+$input-focus-border-color: $o-brand-primary !default;
+$form-check-input-checked-color: $o-white !default;
+$form-check-input-checked-bg-color: $o-brand-primary !default;
+$form-check-input-checked-border-color: $o-brand-primary !default;

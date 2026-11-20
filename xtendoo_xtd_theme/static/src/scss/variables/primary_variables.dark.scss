@@ -1,0 +1,129 @@
+// Variables primarias del modo oscuro Xtd.
+//
+// Odoo Community trae el bundle `web.assets_web_dark` pero no las variables
+// oscuras (son de Enterprise): sin este fichero el bundle oscuro es el CSS
+// claro con parches encima. Se carga justo ANTES de
+// web/static/src/scss/primary_variables.scss, así que cada valor (todos los
+// del core llevan !default) sustituye al de modo claro y Bootstrap + Odoo se
+// compilan ya en oscuro: grises, bordes, tablas, modales, desplegables...
+//
+// Paleta: carbón cálido (sin azulados que choquen con el naranja y el burdeos
+// de la marca). La elevación se expresa por tono: cuanto más alta la
+// superficie, más clara.
+
+$o-webclient-color-scheme: dark !default;
+
+// En oscuro "blanco" es la superficie más profunda y "negro" el texto más
+// intenso: así todo lo que el core pinta con $o-white/$o-black se invierte.
+$o-white: #121110 !default;
+$o-black: #ffffff !default;
+
+$o-gray-100: #1a1918 !default; // lienzo de la aplicación
+$o-gray-200: #232220 !default; // superficies: hojas, tarjetas, listas
+$o-gray-300: #33312e !default; // bordes y superficies elevadas
+$o-gray-400: #48453f !default; // bordes marcados
+$o-gray-500: #6c6760 !default;
+$o-gray-600: #948e86 !default; // texto atenuado
+$o-gray-700: #b5afa7 !default;
+$o-gray-800: #d1cbc3 !default;
+$o-gray-900: #e9e5df !default; // texto principal
+
+// Marca
+$o-community-color: #ff7a3d !default;
+$o-brand-odoo: #ff7a3d !default;
+$o-brand-primary: #ff7a3d !default;
+$o-brand-secondary: $o-gray-900 !default;
+$o-action: #ff7a3d !default;
+
+// Estados: algo más luminosos que en claro para leerse sobre carbón.
+$o-success: #4cc07a !default;
+$o-info: #4db5c9 !default;
+$o-warning: #f5b53d !default;
+$o-danger: #f0606b !default;
+
+// Texto
+$o-main-text-color: $o-gray-900 !default;
+$o-main-headings-color: #f5f2ed !default;
+$o-main-link-color: #ffa987 !default;
+$o-main-code-color: #ff8fb8 !default;
+
+// Componentes
+$o-view-background-color: $o-gray-200 !default;
+$o-webclient-background-color: $o-gray-100 !default;
+$o-shadow-color: #000000 !default;
+$o-form-lightsecondary: $o-gray-500 !default;
+$o-component-active-color: $o-black !default;
+$o-component-active-bg: mix($o-action, $o-gray-200, 16%) !default;
+$o-component-active-border: $o-action !default;
+$o-list-group-active-color: $o-black !default;
+$o-list-group-active-bg: mix($o-action, $o-gray-200, 16%) !default;
+
+// Botones. El core fusiona este mapa sobre sus valores por defecto.
+$o-btns-bs-override: () !default;
+$o-btns-bs-override: map-merge(
+    $o-btns-bs-override,
+    (
+        "primary": (
+            background: $o-brand-primary,
+            border: $o-brand-primary,
+            color: $o-white,
+            hover-background: lighten($o-brand-primary, 6%),
+            hover-border: lighten($o-brand-primary, 6%),
+            hover-color: $o-white,
+            active-background: lighten($o-brand-primary, 10%),
+            active-border: lighten($o-brand-primary, 10%),
+            active-color: $o-white,
+        ),
+        "secondary": (
+            background: $o-gray-300,
+            border: $o-gray-300,
+            color: $o-gray-900,
+            hover-background: $o-gray-400,
+            hover-border: $o-gray-400,
+            hover-color: $o-black,
+            active-background: mix($o-action, $o-gray-200, 16%),
+            active-border: $o-action,
+            active-color: $o-black,
+        ),
+        "light": (
+            background: transparent,
+            border: transparent,
+            color: $o-gray-800,
+            hover-background: $o-gray-300,
+            hover-border: $o-gray-300,
+            hover-color: $o-black,
+            active-background: mix($o-action, $o-gray-200, 16%),
+            active-border: $o-action,
+            active-color: $o-black,
+        ),
+    )
+);
+
+$o-btns-bs-outline-override: () !default;
+$o-btns-bs-outline-override: map-merge(
+    $o-btns-bs-outline-override,
+    (
+        "primary": (
+            background: transparent,
+            border: $o-brand-primary,
+            color: lighten($o-brand-primary, 8%),
+            hover-background: $o-brand-primary,
+            hover-border: $o-brand-primary,
+            hover-color: $o-white,
+            active-background: lighten($o-brand-primary, 6%),
+            active-border: lighten($o-brand-primary, 6%),
+            active-color: $o-white,
+        ),
+        "secondary": (
+            background: transparent,
+            border: $o-gray-400,
+            color: $o-gray-900,
+            hover-background: $o-gray-300,
+            hover-border: $o-gray-400,
+            hover-color: $o-black,
+            active-background: mix($o-action, $o-gray-200, 16%),
+            active-border: $o-action,
+            active-color: $o-black,
+        ),
+    )
+);

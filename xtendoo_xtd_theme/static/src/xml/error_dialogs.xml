@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="xtendoo_xtd_theme.SessionExpiredDialog" t-inherit="web.SessionExpiredDialog" t-inherit-mode="extension">
+        <xpath expr="//Dialog" position="attributes">
+            <attribute name="title.translate">Xtd Session Expired</attribute>
+        </xpath>
+        <xpath expr="//p[hasclass('text-prewrap')]" position="replace">
+            <p class="text-prewrap">
+                Your Xtd session expired. The current page is about to be refreshed.
+            </p>
+        </xpath>
+    </t>
+</templates>

@@ -1,0 +1,59 @@
+// Panel de control: buscador neutro con foco naranja y título actual en tinta.
+.o_control_panel {
+    // Buscador + botón de filtros forman una sola píldora: el borde, el fondo
+    // y el foco naranja los lleva el contenedor, no cada pieza.
+    .o_cp_searchview {
+        background: var(--xtd-surface, #fff);
+        border: 1px solid var(--xtd-line, #dedbd6);
+        border-radius: 999px;
+        overflow: hidden;
+
+        &:focus-within {
+            border-color: var(--xtd-orange, #f45700);
+            box-shadow: 0 0 0 3px rgba(244, 87, 0, 0.14);
+        }
+
+        .o_searchview,
+        .o_searchview:focus-within {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .o_searchview_dropdown_toggler,
+        .o_searchview_dropdown_toggler:hover,
+        .o_searchview_dropdown_toggler:focus {
+            background: transparent !important;
+            border: 0 !important;
+            border-left: 1px solid var(--xtd-line, #dedbd6) !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        input::placeholder {
+            color: var(--xtd-muted, #8b8790) !important;
+        }
+    }
+
+    // El título de la vista actual no es un enlace: se distingue de las
+    // migas anteriores (burdeos) con tinta y negrita.
+    .o_last_breadcrumb_item,
+    .o_last_breadcrumb_item span {
+        color: var(--xtd-ink, #151515) !important;
+        font-weight: 600;
+    }
+}
+
+// Líneas de factura: el importe queda siempre visible aunque la tabla sea
+// más ancha que la hoja (con el chatter al lado no cabe todo).
+.o_form_view .o_list_renderer table.o_list_table {
+    th[data-name="price_subtotal"],
+    td[name="price_subtotal"] {
+        position: sticky;
+        right: 2rem;
+        z-index: 1;
+        min-width: 6.5rem;
+        background: var(--xtd-surface, #fff);
+    }
+}

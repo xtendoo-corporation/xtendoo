@@ -1,0 +1,1197 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* xtendoo_xtd_theme
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-13 12:06+0000\n"
+"PO-Revision-Date: 2026-11-13 12:06+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+"Language: es\n"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js:0
+msgid ""
+"%(count)s eventos fuera del horario visible (%(start)s:00 - %(end)s:00)"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js:0
+msgid "1 evento fuera del horario visible (%(start)s:00 - %(end)s:00)"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_layout_xtd_branding
+msgid "<span>Powered by Xtd</span>"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_layout_xtd_branding
+msgid "<span>|</span>"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.constraint,message:xtendoo_xtd_theme.constraint_xtd_dashboard_user_layout_user_block_unique
+msgid "A user dashboard can only contain a block once."
+msgstr "Un dashboard de usuario solo puede contener un bloque una vez."
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js:0
+msgid "Abrir menú"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Acciones rápidas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__action_xmlid
+msgid "Action Xmlid"
+msgstr "Id externo de la acción"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_crm_activities
+msgid "Actividades CRM vencidas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_activities
+msgid "Actividades pendientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Aquí tienes un resumen de la actividad de tu empresa."
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Arrastra para reordenar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Año"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml:0
+msgid "Bajar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Bienvenido"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__block_id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout_mixin__block_id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__block_id
+msgid "Block"
+msgstr "Bloque"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__block_type
+msgid "Block Type"
+msgstr "Tipo de bloque"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Bloque no disponible"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml:0
+msgid "Buscar menús..."
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users__xtd_calendar_hour_start
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__xtd_calendar_hour_start
+msgid "Calendar first visible hour"
+msgstr "Primera hora visible del calendario"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users__xtd_calendar_hour_end
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__xtd_calendar_hour_end
+msgid "Calendar last visible hour"
+msgstr "Última hora visible del calendario"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Calendario"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_simple_modif_xtd_color_scheme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_xtd_color_scheme
+msgid "Calendario: primera hora visible"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_simple_modif_xtd_color_scheme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_xtd_color_scheme
+msgid "Calendario: última hora visible"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Cambios sin guardar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Cancelar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__block_type__chart
+msgid "Chart"
+msgstr "Gráfico"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_account_recent_payments
+msgid "Cobros recientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__component
+msgid "Component"
+msgstr "Componente"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_kpi_purchase_orders
+msgid "Compras"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_purchase_pending_receipt
+msgid "Compras pendientes de recibir"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__config
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__config
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout_mixin__config
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__config
+msgid "Config"
+msgstr "Configuración"
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_fields_xtd
+msgid "Confirma tu contraseña"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_fields_xtd
+msgid "Confirmar contraseña"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_fields_xtd
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Contraseña"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_hr_contracts
+msgid "Contratos activos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Conversión"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_fields_xtd
+msgid "Crea una contraseña"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Crear"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Crear compra"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "Crear cuenta"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "Crear cuenta <i class=\"fa fa-arrow-right ms-auto\"/>"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Crear factura"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Crear pedido de venta"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Crear presupuesto"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__create_uid
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__create_uid
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__create_date
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__create_date
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__block_type__custom
+msgid "Custom"
+msgstr "Personalizado"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__res_users_settings__color_scheme__dark
+msgid "Dark"
+msgstr "Oscuro"
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_simple_modif_xtd_color_scheme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_xtd_color_scheme
+msgid "Dashboard personalizado Xtd"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__default_size
+msgid "Default Size"
+msgstr "Tamaño por defecto"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Descartar cambios"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_ir_http__display_name
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users__display_name
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__display_name
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__display_name
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__display_name
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout_mixin__display_name
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_service__display_name
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Editar dashboard"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/user_switch.xml:0
+msgid "Elige un usuario"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Eliminar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Eliminar bloque"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_hr_employees
+msgid "Empleados activos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "Empresa"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_stock_outgoing
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_stock_outgoing
+msgid "Entregas pendientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_order_status
+msgid "Estado de pedidos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Facturación"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_kpi_invoiced
+msgid "Facturado"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Facturado (mes)"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_account_vendor_bills
+msgid "Facturas de proveedor pendientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_draft_invoices
+msgid "Facturas en borrador"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_account_unpaid_invoices
+msgid "Facturas pendientes de cobro"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_vendor_bills_pending
+msgid "Facturas proveedor pendientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_overdue_invoices
+msgid "Facturas vencidas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_hr_attendance
+msgid "Fichajes recientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_hr_open_attendance
+msgid "Fichajes sin salida"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,help:xtendoo_xtd_theme.field_xtd_dashboard_block__component
+msgid "Frontend component key used by the Xtd dashboard OWL renderer."
+msgstr "Clave del componente de interfaz que usa el dashboard Xtd."
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__default_size__full
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout__size__full
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout_mixin__size__full
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_user_layout__size__full
+msgid "Full Width"
+msgstr "Ancho completo"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Guardar dashboard"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_ir_http
+msgid "HTTP Routing"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Hola,"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_ir_http__id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users__id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout_mixin__id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_service__id
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__id
+msgid "ID"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "Inicia sesión"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Inicia sesión para continuar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Iniciar sesión"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Iniciar sesión como superusuario"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js:0
+#: model:ir.ui.menu,name:xtendoo_xtd_theme.menu_xtd_dashboard
+msgid "Inicio"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.actions.client,name:xtendoo_xtd_theme.action_xtd_dashboard
+msgid "Inicio Dashboard Xtd"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Introduce tu contraseña"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Introduce tu usuario"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-python
+#: code:addons/xtendoo_xtd_theme/models/xtd_dashboard.py:0
+msgid "Invalid dashboard layout."
+msgstr "Diseño de dashboard no válido."
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__block_type__kpi_grid
+msgid "KPI Grid"
+msgstr "Rejilla de KPI"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_kpis
+msgid "KPIs principales"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Kanban"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__default_size__large
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout__size__large
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout_mixin__size__large
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_user_layout__size__large
+msgid "Large"
+msgstr "Grande"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__write_uid
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__write_uid
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__write_date
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__write_date
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_crm_leads
+msgid "Leads recientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__res_users_settings__color_scheme__light
+msgid "Light"
+msgstr "Claro"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__block_type__list
+msgid "List"
+msgstr "Lista"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Lista"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_layout_xtd_branding
+msgid "Manage Xtd Databases"
+msgstr "Gestionar bases de datos de Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__default_size__medium
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout__size__medium
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout_mixin__size__medium
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_user_layout__size__medium
+msgid "Medium"
+msgstr "Mediano"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_sale_top_customers
+msgid "Mejores clientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Mes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__model_name
+msgid "Model Name"
+msgstr "Nombre del modelo"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js:0
+msgid "Mostrando todas las horas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js:0
+msgid "Mostrar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Mostrar bloque"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js:0
+msgid "Mostrar menú lateral"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js:0
+msgid "Mostrar todo"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Más ancho"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Más estrecho"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "Nombre de tu empresa"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Nueva Factura"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Nuevo Pedido"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js:0
+msgid "Ocultar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Ocultar bloque"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_navbar_sidebar.esm.js:0
+msgid "Ocultar menú lateral"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-python
+#: code:addons/xtendoo_xtd_theme/models/xtd_dashboard.py:0
+msgid "Only internal users can change the dashboard."
+msgstr "Solo los usuarios internos pueden modificar el dashboard."
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_crm_opportunities
+msgid "Oportunidades abiertas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_crm_won
+msgid "Oportunidades ganadas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml:0
+msgid "Ordenar aplicaciones"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Pedidos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Pedidos de compra"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Pedidos de venta"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_sale_recent_orders
+msgid "Pedidos de venta recientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_sale_pending_delivery
+msgid "Pedidos pendientes de entregar"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_kpi_sales
+msgid "Pedidos venta"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_crm_pipeline
+msgid "Pipeline comercial"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_kpi_orders
+msgid "Presupuestos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_purchase_rfq_month
+msgid "Presupuestos de compra"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Presupuestos vs Pedidos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_stock_low
+msgid "Productos con stock bajo"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_project_active
+msgid "Proyectos activos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_crm_activities
+msgid "Próximas actividades CRM"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_stock_incoming
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_stock_incoming
+msgid "Recepciones pendientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Resumen"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Seguir editando"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Semana"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__sequence
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__sequence
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout_mixin__sequence
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_pos_sessions
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_pos_sessions
+msgid "Sesiones TPV abiertas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__xtd_show_sidebar
+msgid "Show Xtd Sidebar Menu"
+msgstr "Mostrar el menú lateral Xtd"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "Si cancelas se perderán los cambios hechos en el dashboard."
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Sin datos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Sin datos en este periodo"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Sin descripción"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__size
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout_mixin__size
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__size
+msgid "Size"
+msgstr "Tamaño"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__default_size__small
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout__size__small
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_layout_mixin__size__small
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_user_layout__size__small
+msgid "Small"
+msgstr "Pequeño"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_purchase_rfq
+msgid "Solicitudes de presupuesto de compra"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__xtd_dashboard_block__block_type__status
+msgid "Status"
+msgstr "Estado"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_stock_low
+msgid "Stock bajo"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml:0
+msgid "Subir"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields.selection,name:xtendoo_xtd_theme.selection__res_users_settings__color_scheme__system
+msgid "System"
+msgstr "Sistema"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_project_tasks
+msgid "Tareas pendientes"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_project_tasks
+msgid "Tareas vencidas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_block__technical_key
+msgid "Technical Key"
+msgstr "Clave técnica"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.constraint,message:xtendoo_xtd_theme.constraint_xtd_dashboard_block_technical_key_unique
+msgid "The technical key of a dashboard block must be unique."
+msgstr "La clave técnica de un bloque del dashboard debe ser única."
+
+#. module: xtendoo_xtd_theme
+#. odoo-python
+#: code:addons/xtendoo_xtd_theme/models/res_users_settings.py:0
+msgid ""
+"The visible calendar hours must satisfy 0 <= first hour < last hour <= 24."
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users__color_scheme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__color_scheme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_simple_modif_xtd_color_scheme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.view_users_form_xtd_color_scheme
+msgid "Theme"
+msgstr "Tema"
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_available_helpdesk_tickets
+msgid "Tickets abiertos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_top_products
+msgid "Top productos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users__xtd_use_custom_dashboard
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__xtd_use_custom_dashboard
+msgid "Use Custom Xtd Dashboard"
+msgstr "Usar dashboard personalizado Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_res_users
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__user_id
+msgid "User"
+msgstr "Usuario"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_res_users_settings
+msgid "User Settings"
+msgstr "Ajustes de usuario"
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "Usuario"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "Usuario / Correo electrónico"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_sales_chart
+msgid "Ventas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "Ver todas las actividades"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout__visible
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_layout_mixin__visible
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_xtd_dashboard_user_layout__visible
+msgid "Visible"
+msgstr "Visible"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_calendar.esm.js:0
+msgid "Volver a %(start)s:00 - %(end)s:00"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/xtd_navbar.xml:0
+msgid "Xtd"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js:0
+msgid "Xtd Client Error"
+msgstr "Error de cliente de Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_xtd_dashboard_block
+msgid "Xtd Dashboard Block"
+msgstr "Bloque del dashboard Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_xtd_dashboard_layout_mixin
+msgid "Xtd Dashboard Layout Mixin"
+msgstr "Diseño del dashboard Xtd (base común)"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_xtd_dashboard_service
+msgid "Xtd Dashboard Service"
+msgstr "Servicio del dashboard Xtd"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js:0
+msgid "Xtd Error"
+msgstr "Error de Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_xtd_dashboard_layout
+msgid "Xtd Global Dashboard Layout"
+msgstr "Diseño global del dashboard Xtd"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js:0
+msgid "Xtd Network Error"
+msgstr "Error de red de Xtd"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js:0
+msgid "Xtd Server Error"
+msgstr "Error de servidor de Xtd"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/error_dialogs.xml:0
+msgid "Xtd Session Expired"
+msgstr "Sesión de Xtd caducada"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__xtd_sidebar_app_order
+msgid "Xtd Sidebar App Order"
+msgstr "Orden de aplicaciones del menú lateral Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model.fields,field_description:xtendoo_xtd_theme.field_res_users_settings__xtd_sidebar_hidden_apps
+msgid "Xtd Sidebar Hidden Apps"
+msgstr "Aplicaciones ocultas del menú lateral Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model:ir.model,name:xtendoo_xtd_theme.model_xtd_dashboard_user_layout
+msgid "Xtd User Dashboard Layout"
+msgstr "Diseño del dashboard Xtd por usuario"
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/js/xtd_branding.esm.js:0
+msgid "Xtd Warning"
+msgstr "Aviso de Xtd"
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_layout_xtd_branding
+msgid "Xtd logo"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/xml/error_dialogs.xml:0
+msgid "Your Xtd session expired. The current page is about to be refreshed."
+msgstr "Tu sesión de Xtd ha caducado. La página actual se va a actualizar."
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "pedidos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "tu@email.com"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "uds"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "vs año anterior"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "vs mes anterior"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "vs periodo anterior"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "vs semana anterior"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.xml:0
+msgid "¡Todo al día!"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#. odoo-javascript
+#: code:addons/xtendoo_xtd_theme/static/src/components/dashboard/dashboard.js:0
+msgid "¿Eliminar definitivamente el bloque \"%s\"?"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "¿Has olvidado tu contraseña?"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.login_xtd
+msgid "¿No tienes cuenta?"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model_terms:ir.ui.view,arch_db:xtendoo_xtd_theme.auth_signup_signup_xtd
+msgid "¿Ya tienes una cuenta?"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_mrp_orders
+msgid "Órdenes de fabricación"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_account_recent_out
+msgid "Últimas facturas emitidas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_account_recent_in
+msgid "Últimas facturas recibidas"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_stock_recent_moves
+msgid "Últimos movimientos de stock"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_sale_confirmed_orders
+msgid "Últimos pedidos confirmados"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_purchase_recent
+msgid "Últimos pedidos de compra"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_sale_recent_quotes
+msgid "Últimos presupuestos"
+msgstr ""
+
+#. module: xtendoo_xtd_theme
+#: model:xtd.dashboard.block,name:xtendoo_xtd_theme.xtd_dashboard_block_pos_recent
+msgid "Últimos tickets TPV"
+msgstr ""
